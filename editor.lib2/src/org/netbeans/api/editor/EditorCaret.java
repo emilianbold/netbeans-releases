@@ -73,6 +73,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -1146,13 +1147,49 @@ public final class EditorCaret implements Caret {
     }
 
     private void updateSystemSelection() {
-        if (getDot() != getMark() && component != null) {
-            Clipboard clip = component.getToolkit().getSystemSelection();
-            
-            if (clip != null) {
-                clip.setContents(new java.awt.datatransfer.StringSelection(component.getSelectedText()), null);
+        if(component == null) return;
+        
+        StringBuilder builder = new StringBuilder();
+        boolean first = true;
+        for (CaretInfo caret : carets) {
+            if(caret.isSelection()) {
+                if(!first) {
+                    builder.append("\n");
+                } else {
+                    first = false;
+                }
+                builder.append(getSelectedText(caret));
             }
         }
+        Clipboard clip = component.getToolkit().getSystemSelection();
+        if(clip != null && builder.length() > 0) {
+            clip.setContents(new java.awt.datatransfer.StringSelection(builder.toString()), null);
+        }
+    }
+    
+    /**
+     * Returns the selected text contained for this
+     * <code>Caret</code>.  If the selection is
+     * <code>null</code> or the document empty, returns <code>null</code>.
+     *
+     * @param caret
+     * @return the text
+     * @exception IllegalArgumentException if the selection doesn't
+     *  have a valid mapping into the document for some reason
+     */
+    private String getSelectedText(CaretInfo caret) {
+        String txt = null;
+        int p0 = Math.min(caret.getDot(), caret.getMark());
+        int p1 = Math.max(caret.getDot(), caret.getMark());
+        if (p0 != p1) {
+            try {
+                Document doc = component.getDocument();
+                txt = doc.getText(p0, p1 - p0);
+            } catch (BadLocationException e) {
+                throw new IllegalArgumentException(e.getMessage());
+            }
+        }
+        return txt;
     }
 
     private void updateRectangularSelectionPositionBlocks() {
