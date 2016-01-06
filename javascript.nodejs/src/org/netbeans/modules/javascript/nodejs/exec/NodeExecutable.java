@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.javascript.nodejs.exec;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -230,23 +231,39 @@ public class NodeExecutable {
         return VERSIONS.containsKey(nodePath);
     }
 
+    // #255878
     @CheckForNull
-    public Version getVersion() {
+    public Version getRealVersion() {
+        detectVersion();
         Version version = VERSIONS.get(nodePath);
         if (version == UNKNOWN_VERSION) {
             return null;
         }
-        if (version != null) {
-            return version;
+        return version;
+    }
+
+    @CheckForNull
+    public Version getVersion() {
+        Version version = getRealVersion();
+        if (version == null) {
+            return null;
         }
-        return getAndStoreVersion();
+        // #255872 - for node.js, use latest 0.12
+        if (!isIojs()
+                && !Integer.valueOf("0").equals(version.getMajor())) { // NOI18N
+            return Version.fromDottedNotationWithFallback("0.12.9"); // NOI18N
+        }
+        return version;
     }
 
     @NbBundle.Messages({
         "NodeExecutable.version.detecting=Detecting node version..."
     })
-    @CheckForNull
-    private Version getAndStoreVersion() {
+    private void detectVersion() {
+        if (VERSIONS.get(nodePath) != null) {
+            return;
+        }
+        assert !EventQueue.isDispatchThread();
         VersionOutputProcessorFactory versionOutputProcessorFactory = new VersionOutputProcessorFactory();
         try {
             getExecutable("node version") // NOI18N
@@ -255,24 +272,17 @@ public class NodeExecutable {
             String detectedVersion = versionOutputProcessorFactory.getVersion();
             if (detectedVersion != null) {
                 Version version = Version.fromDottedNotationWithFallback(detectedVersion);
-                // #255872 - for node.js, use latest 0.12
-                if (!isIojs()
-                        && !Integer.valueOf("0").equals(version.getMajor())) { // NOI18N
-                    version = Version.fromDottedNotationWithFallback("0.12.7"); // NOI18N
-                }
                 VERSIONS.put(nodePath, version);
-                return version;
+                return;
             }
             // no version detected, store UNKNOWN_VERSION
             VERSIONS.put(nodePath, UNKNOWN_VERSION);
-            return null;
         } catch (CancellationException ex) {
             // cancelled, cannot happen
             assert false;
         } catch (ExecutionException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
-        return null;
     }
 
     @NbBundle.Messages({

@@ -107,7 +107,11 @@ public final class DockerNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        return Utilities.actionsForPath("Docker/Actions").toArray(new Action[0]); // NOI18N
+        List<Action> ret = new ArrayList<>();
+        ret.addAll(Utilities.actionsForPath("Docker/Wizard")); // NOI18N
+        ret.add(null);
+        ret.addAll(Utilities.actionsForPath("Docker/Credentials")); // NOI18N
+        return ret.toArray(new Action[ret.size()]);
     }
 
     private static class ChildFactory extends org.openide.nodes.ChildFactory<EnhancedDockerInstance>

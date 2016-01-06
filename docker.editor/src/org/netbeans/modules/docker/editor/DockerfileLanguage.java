@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,50 +40,35 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.api;
+package org.netbeans.modules.docker.editor;
 
-import java.io.IOException;
-import java.util.List;
-import org.netbeans.modules.docker.DockerConfig;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.spi.LanguageRegistration;
+import org.netbeans.modules.docker.editor.lexer.DockerfileTokenId;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author Petr Hejl
+ * @author Tomas Zezula
  */
-public final class CredentialsManager {
+@LanguageRegistration(mimeType = DockerfileResolver.MIME_TYPE)
+@NbBundle.Messages({"Dockerfile=Docker Build Files"})
+public final class DockerfileLanguage extends DefaultLanguageConfig {
 
-    private static final CredentialsManager INSTANCE = new CredentialsManager();
-
-    private CredentialsManager() {
-        super();
+    @Override
+    public Language getLexerLanguage() {
+        return DockerfileTokenId.language();
     }
 
-    public static CredentialsManager getDefault() {
-        return INSTANCE;
+    @Override
+    public String getDisplayName() {
+        return Bundle.Dockerfile();
     }
 
-    public List<Credentials> getAllCredentials() throws IOException {
-        //assert !SwingUtilities.isEventDispatchThread();
-        return DockerConfig.getDefault().getAllCredentials();
-    }
-
-    public Credentials getCredentials(String registry) throws IOException {
-        //assert !SwingUtilities.isEventDispatchThread();
-        return DockerConfig.getDefault().getCredentials(registry);
-    }
-
-    public void setCredentials(Credentials credentials) throws IOException {
-        //assert !SwingUtilities.isEventDispatchThread();
-        DockerConfig.getDefault().setCredentials(credentials);
-    }
-
-    public void removeCredentials(Credentials credentials) throws IOException {
-        //assert !SwingUtilities.isEventDispatchThread();
-        DockerConfig.getDefault().removeCredentials(credentials);
+    @Override
+    public String getLineCommentPrefix() {
+        return "#"; //NOI18N
     }
 }
