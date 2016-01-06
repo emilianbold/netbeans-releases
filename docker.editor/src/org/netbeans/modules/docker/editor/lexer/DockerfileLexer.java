@@ -291,6 +291,9 @@ final class DockerfileLexer implements Lexer<DockerfileTokenId> {
             switch (c) {
                 case '0': case '1': case '2': case '3': case '4':   //NOI18N
                 case '5': case '6': case '7': case '8': case '9':   //NOI18N
+                case 'a': case 'b': case 'c': case 'd': case 'e':   //NOI18N
+                case 'f': case 'A': case 'B': case 'C': case 'D':   //NOI18N
+                case 'E': case 'F':
                     break;
                 default:
                     backup(1);
