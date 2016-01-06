@@ -125,7 +125,7 @@ public final class OutputUtils {
                 }
 
                 IOTerm.connect(io, stdin ? result.getStdIn() : null,
-                        new TerminalInputStream(io, result.getStdOut(), result, l), result.getStdErr(), "UTF-8");
+                        new TerminalInputStream(io, result.getStdOut(), result, l), result.getStdErr(), result.getCharset().name());
                 focusTerminal(io);
             }
         } else {

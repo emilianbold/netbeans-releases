@@ -70,6 +70,7 @@ import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -485,6 +486,7 @@ public class DockerAction {
                                 container.getId(), container.getImage(), System.currentTimeMillis() / 1000));
             }
 
+            Charset ch = HttpUtils.getCharset(response);
             Integer length = HttpUtils.getLength(response.getHeaders());
             if (length != null && length <= 0) {
                 closeSocket(s);
@@ -493,9 +495,9 @@ public class DockerAction {
             is = HttpUtils.getResponseStream(is, response);
 
             if (info.isTty()) {
-                return new ActionStreamResult(new DirectStreamResult(s, is));
+                return new ActionStreamResult(new DirectStreamResult(s, ch, is));
             } else {
-                return new ActionStreamResult(new MuxedStreamResult(s, is));
+                return new ActionStreamResult(new MuxedStreamResult(s, ch, is));
             }
         } catch (MalformedURLException e) {
             closeSocket(s);
@@ -1345,6 +1347,11 @@ public class DockerAction {
         @Override
         public boolean hasTty() {
             return tty;
+        }
+
+        @Override
+        public Charset getCharset() {
+            return Charset.forName("UTF-8");
         }
 
         @Override
