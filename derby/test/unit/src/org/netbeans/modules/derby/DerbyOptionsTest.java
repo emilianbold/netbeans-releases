@@ -45,8 +45,6 @@ package org.netbeans.modules.derby;
 
 import java.io.File;
 import java.io.IOException;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
 import org.netbeans.modules.derby.test.TestBase;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -65,8 +63,9 @@ public class DerbyOptionsTest extends TestBase {
         super(testName);
     }
 
+    @Override
     public void setUp() throws Exception {
-        clearWorkDir();
+        super.setUp();
 
         userdir = new File(getWorkDir(), ".netbeans");
         userdir.mkdirs();
@@ -90,7 +89,7 @@ public class DerbyOptionsTest extends TestBase {
                             } catch (IOException ex) {
                                 throw new RuntimeException(ex);
                             }
-                        };
+                        }
 
                         assertNull(DerbyOptions.getDefaultInstallLocation());
 
@@ -104,6 +103,8 @@ public class DerbyOptionsTest extends TestBase {
     }
     
     public void testLocationWhenNDSHPropertySetIssue76908() throws IOException {
+        DerbyOptions.getDefault().setSystemHome(null);
+        
         assertEquals("", DerbyOptions.getDefault().getSystemHome());
 
         File ndshSystemHome = new File(getWorkDir(), ".netbeans-derby-ndsh");
@@ -126,12 +127,13 @@ public class DerbyOptionsTest extends TestBase {
     
     public static final class InstalledFileLocatorImpl extends InstalledFileLocator {
         
-        private File userdir;
+        private final File userdir;
         
         public InstalledFileLocatorImpl(File userdir) {
             this.userdir = userdir;
         }
         
+        @Override
         public File locate(String relativePath, String codeNameBase, boolean localized) {
             File f = new File(userdir, relativePath);
             return f.exists() ? f : null;

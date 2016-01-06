@@ -49,7 +49,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.derby.DerbyOptions;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -76,6 +75,8 @@ public class DerbySupportTest extends NbTestCase {
         String origUserHome = System.getProperty("user.home");
         String origOsName = System.getProperty("os.name");
         
+        System.setProperty("org.netbeans.modules.derby.spi.support.DerbySupport.overrideAppData", getWorkDirPath());
+        
         System.setProperty("user.home", getWorkDirPath());
         
         // This test is only partitially correct (the tested method reads
@@ -84,14 +85,15 @@ public class DerbySupportTest extends NbTestCase {
         // On windows system default system home has "Derby" as final path part
         
         System.setProperty("os.name", "Linux");
-        assertTrue(DerbySupport.getDefaultSystemHome().equals(new File(getWorkDirPath(), ".netbeans-derby").getAbsolutePath()));
+        assertEquals(new File(getWorkDirPath(), ".netbeans-derby").getAbsolutePath(), DerbySupport.getDefaultSystemHome());
 
         System.setProperty("os.name", "Windows 8");
-        assertTrue(new File(DerbySupport.getDefaultSystemHome()).getName().equals("Derby"));
+        assertEquals("Derby", new File(DerbySupport.getDefaultSystemHome()).getName());
         
         Files.createDirectory(new File(getWorkDirPath(), ".netbeans-derby").toPath());
-        assertTrue(DerbySupport.getDefaultSystemHome().equals(new File(getWorkDirPath(), ".netbeans-derby").getAbsolutePath()));
+        assertEquals(new File(getWorkDirPath(), ".netbeans-derby").getAbsolutePath(), DerbySupport.getDefaultSystemHome());
         
+        System.clearProperty("org.netbeans.modules.derby.spi.support.DerbySupport.overrideAppData");
         System.setProperty("user.home", origUserHome);
         System.setProperty("os.name", origOsName);
     }
