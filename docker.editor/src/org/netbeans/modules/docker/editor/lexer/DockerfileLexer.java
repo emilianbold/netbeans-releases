@@ -131,6 +131,7 @@ final class DockerfileLexer implements Lexer<DockerfileTokenId> {
                                ? tokenFactory.getFlyweightToken(DockerfileTokenId.WHITESPACE, " ") //NOI18N
                                : tokenFactory.createToken(DockerfileTokenId.WHITESPACE);
                     }
+                    backup(1);
                     return finishWhitespace(newStateHolder);
                 case EOF:
                     return null;
