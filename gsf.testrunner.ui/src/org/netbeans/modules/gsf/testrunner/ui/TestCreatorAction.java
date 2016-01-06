@@ -46,6 +46,8 @@ package org.netbeans.modules.gsf.testrunner.ui;
 
 import org.netbeans.modules.gsf.testrunner.ui.api.TestCreatorPanelDisplayer;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -73,6 +75,8 @@ import org.openide.util.actions.NodeAction;
 @NbBundle.Messages({"LBL_CreateCommonTestAction=Create/Update Tests"})
 public class TestCreatorAction extends NodeAction {
     
+    private static final Logger LOGGER = Logger.getLogger(TestCreatorAction.class.getName());
+    
     /** Creates a new instance of TestCreatorAction */
     public TestCreatorAction() {
         putValue("noIconInMenu", Boolean.TRUE);                         //NOI18N
@@ -93,6 +97,7 @@ public class TestCreatorAction extends NodeAction {
         return false;
     }
     
+    @NbBundle.Messages({"MSG_no_FOs_from_Nodes=No File Object found for the selected Nodes."})
     @Override
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes.length == 0) {
@@ -113,10 +118,15 @@ public class TestCreatorAction extends NodeAction {
                 return false;
             }
         }
+        FileObject[] activatedFOs = UICommonUtils.getFileObjectsFromNodes(activatedNodes);
+        if(activatedFOs == null) {
+            LOGGER.log(Level.FINE, "{0}", Bundle.MSG_no_FOs_from_Nodes());
+            return false;
+        }
         Collection<? extends Lookup.Item<TestCreatorProvider>> providers = Lookup.getDefault().lookupResult(TestCreatorProvider.class).allItems();
         boolean enable;
         for (Lookup.Item<TestCreatorProvider> provider : providers) {
-            enable = provider.getInstance().enable(UICommonUtils.getFileObjectsFromNodes(activatedNodes));
+            enable = provider.getInstance().enable(activatedFOs);
             if(enable) {
                 return true;
             }
