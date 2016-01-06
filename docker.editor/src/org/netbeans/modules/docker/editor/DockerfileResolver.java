@@ -54,10 +54,14 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Tomas Zezula
  */
 @ServiceProvider(service = MIMEResolver.class)
-public class DockerfileResolver extends MIMEResolver {
+public final class DockerfileResolver extends MIMEResolver {
 
     public static final String MIME_TYPE = "text/x-dockerfile"; //NOI18N
     private static final String FILE_NAME = "Dockerfile";   //NOI18N
+
+    public DockerfileResolver() {
+        super(MIME_TYPE);
+    }
 
     @CheckForNull
     @Override
