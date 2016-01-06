@@ -45,11 +45,13 @@ package org.netbeans.modules.docker.editor.indent;
 
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.docker.editor.DockerfileResolver;
 import org.netbeans.modules.docker.editor.lexer.DockerfileTokenId;
@@ -95,7 +97,7 @@ public final class DockerfileTypedBreakInterceptor implements TypedBreakIntercep
                 break;
             }
         }
-        final boolean lineContinuation = token != null && token.id() == DockerfileTokenId.ESCAPE;
+        final boolean lineContinuation = isLineContinuation(token, offset-seq.offset());
         final Pair<Integer,TokenSequence<DockerfileTokenId>> p = findImportantLine(seq, doc, lineStart, tokenEnd);
         int indent;
         if (lineContinuation) {
@@ -131,6 +133,22 @@ public final class DockerfileTypedBreakInterceptor implements TypedBreakIntercep
 
     @Override
     public void cancelled(Context context) {
+    }
+
+    private boolean isLineContinuation(
+            @NullAllowed final Token<DockerfileTokenId> token,
+            final int offsetInToken) {
+        if (token == null) {
+            return false;
+        }
+        if (token.id() == DockerfileTokenId.ESCAPE) {
+            return true;
+        }
+        if (token.id() == DockerfileTokenId.STRING_LITERAL &&
+            TokenUtilities.endsWith(TokenUtilities.trim(token.text().subSequence(0, offsetInToken)),"\\")) {  //NOI18N
+            return true;
+        }
+        return false;
     }
 
     @NonNull
