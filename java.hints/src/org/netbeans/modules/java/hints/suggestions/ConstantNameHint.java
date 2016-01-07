@@ -92,7 +92,7 @@ public class ConstantNameHint {
     
     // constant name: starts with capital, followed by capital-digit strings, possibly terminated by _. Must end with
     // capital/digit, not _.
-    static final String DEFAULT_CONSTANT_NAME_PATTERN = "([A-Z][A-Z\\d]*_?)*[A-Z\\d]+";
+    static final String DEFAULT_CONSTANT_NAME_PATTERN = "[A-Z]([A-Z\\d_]*[A-Z\\d])?";
     static final int DEFAULT_MIN_LENGTH = 0;
     static final int DEFAULT_MAX_LENGTH = 35;
     static final boolean DEFAULT_CHECK_ONLY_IMMUTABLES = true;
