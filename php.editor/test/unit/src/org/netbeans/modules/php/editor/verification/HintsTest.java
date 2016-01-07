@@ -109,6 +109,14 @@ public class HintsTest extends PHPHintsTestBase {
         checkHints(new TypeRedeclarationHintError(), "testTypeRedeclarationHint.php");
     }
 
+    public void testFieldRedeclarationHint() throws Exception {
+        checkHints(new FieldRedeclarationHintError(), "testFieldRedeclarationHint.php");
+    }
+
+    public void testConstantRedeclarationHint() throws Exception {
+        checkHints(new ConstantRedeclarationHintError(), "testConstantRedeclarationHint.php");
+    }
+
     public void testWrongOrderOfArgsHint() throws Exception {
         checkHints(new WrongOrderOfArgsHint(), "testWrongOrderOfArgsHint.php");
     }
