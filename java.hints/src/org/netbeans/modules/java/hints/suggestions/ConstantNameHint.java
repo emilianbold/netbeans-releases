@@ -233,7 +233,7 @@ public class ConstantNameHint {
     
     private static boolean isImmutableValue(CompilationInfo info, TreePath val, Preferences p) {
         TypeMirror m = info.getTrees().getTypeMirror(val);
-        if (m.getKind() == TypeKind.ARRAY) {
+        if (Utilities.isValidType(m) && m.getKind() == TypeKind.ARRAY) {
             return checkZeroSizeArray(info, val);
         } 
         return isImmutableType(info, m, p);
