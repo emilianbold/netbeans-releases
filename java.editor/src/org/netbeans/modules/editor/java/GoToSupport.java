@@ -295,7 +295,7 @@ public class GoToSupport {
 
     public static Context resolveContext(CompilationInfo controller, Document doc, int offset, boolean goToSource, boolean tooltip) {
         Token<JavaTokenId>[] token = new Token[1];
-        int[] span = getIdentifierSpan(doc, offset, token);
+        int[] span = getIdentifierOrLambdaArrowSpan(doc, offset, token);
 
         if (span == null) {
             return null;
@@ -323,14 +323,17 @@ public class GoToSupport {
                 } else if (parentLeaf.getKind() == Kind.IMPORT && ((ImportTree) parentLeaf).isStatic()) {
                     el = handleStaticImport(controller, (ImportTree) parentLeaf);
                     insideImportStmt = true;
-                } else {
-                    if (   parentLeaf.getKind() == Kind.PARAMETERIZED_TYPE
-                        && parent.getParentPath().getLeaf().getKind() == Kind.NEW_CLASS
-                        && ((ParameterizedTypeTree) parentLeaf).getType() == path.getLeaf()) {
-                        if (!isError(controller.getTrees().getElement(parent.getParentPath()))) {
-                            path = parent.getParentPath();
-                            classType = controller.getTrees().getTypeMirror(path);
-                        }
+                } else if (parentLeaf.getKind() == Kind.PARAMETERIZED_TYPE
+                    && parent.getParentPath().getLeaf().getKind() == Kind.NEW_CLASS
+                    && ((ParameterizedTypeTree) parentLeaf).getType() == path.getLeaf()) {
+                    if (!isError(controller.getTrees().getElement(parent.getParentPath()))) {
+                        path = parent.getParentPath();
+                        classType = controller.getTrees().getTypeMirror(path);
+                    }
+                } else if (path.getLeaf().getKind() == Kind.LAMBDA_EXPRESSION) {
+                    classType = controller.getTrees().getTypeMirror(path);
+                    if (classType != null && classType.getKind() == TypeKind.DECLARED) {
+                        el = controller.getElementUtilities().getDescriptorElement((TypeElement)((DeclaredType)classType).asElement());
                     }
                 }
 
@@ -502,9 +505,9 @@ public class GoToSupport {
         return result;
     }
     
-    private static final Set<JavaTokenId> USABLE_TOKEN_IDS = EnumSet.of(JavaTokenId.IDENTIFIER, JavaTokenId.THIS, JavaTokenId.SUPER);
+    private static final Set<JavaTokenId> USABLE_TOKEN_IDS = EnumSet.of(JavaTokenId.IDENTIFIER, JavaTokenId.THIS, JavaTokenId.SUPER, JavaTokenId.ARROW);
     
-    public static int[] getIdentifierSpan(final Document doc, final int offset, final Token<JavaTokenId>[] token) {
+    public static int[] getIdentifierOrLambdaArrowSpan(final Document doc, final int offset, final Token<JavaTokenId>[] token) {
         if (getFileObject(doc) == null) {
             //do nothing if FO is not attached to the document - the goto would not work anyway:
             return null;
