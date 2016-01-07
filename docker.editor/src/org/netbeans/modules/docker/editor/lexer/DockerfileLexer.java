@@ -65,7 +65,8 @@ import static org.netbeans.spi.lexer.LexerInput.EOF;
  */
 final class DockerfileLexer implements Lexer<DockerfileTokenId> {
     private static final int STATE_NEW_LINE = 0;
-    private static final int STATE_ONBUILD = STATE_NEW_LINE + 1;
+    private static final int STATE_CONT_LINE = STATE_NEW_LINE + 1;
+    private static final int STATE_ONBUILD = STATE_CONT_LINE + 1;
     private static final int STATE_REST = STATE_ONBUILD + 1;
     private static final int STATE_ESCAPE = STATE_REST + 1;
 
@@ -114,7 +115,10 @@ final class DockerfileLexer implements Lexer<DockerfileTokenId> {
             switch (c) {
                 case '\r':
                 case '\n':
-                    newStateHolder[0] = STATE_NEW_LINE;
+                    newStateHolder[0] =
+                            currentState == STATE_ESCAPE ?
+                            STATE_CONT_LINE :
+                            STATE_NEW_LINE;
                 case '\t':
                 case 0x0b:
                 case '\f':
@@ -122,7 +126,7 @@ final class DockerfileLexer implements Lexer<DockerfileTokenId> {
                 case 0x1d:
                 case 0x1e:
                 case 0x1f:
-                    return finishWhitespace(newStateHolder);
+                    return finishWhitespace(currentState, newStateHolder);
                 case ' ':
                     c = nextChar();
                     if (c == EOF || !Character.isWhitespace(c)) { // Return single space as flyweight token
@@ -132,7 +136,7 @@ final class DockerfileLexer implements Lexer<DockerfileTokenId> {
                                : tokenFactory.createToken(DockerfileTokenId.WHITESPACE);
                     }
                     backup(1);
-                    return finishWhitespace(newStateHolder);
+                    return finishWhitespace(currentState, newStateHolder);
                 case EOF:
                     return null;
                 case '[':   //NOI18N
@@ -145,7 +149,8 @@ final class DockerfileLexer implements Lexer<DockerfileTokenId> {
                     newStateHolder[0] = STATE_REST;
                     return token(DockerfileTokenId.COMMA);
                 case '#':   //NOI18N
-                    if (currentState == STATE_NEW_LINE) {
+                    if (currentState == STATE_NEW_LINE ||
+                        currentState == STATE_CONT_LINE) {
                         while (true) {
                             switch (nextChar()) {
                                 case '\r': consumeNewline();
@@ -160,13 +165,13 @@ final class DockerfileLexer implements Lexer<DockerfileTokenId> {
                 case '\'':  //NOI18N
                     newStateHolder[0] = STATE_REST;
                     if (currentState != STATE_ESCAPE) {
-                        return finishString('\'', '"'); //NOI18N
+                        return finishString('\'', '"', newStateHolder); //NOI18N
                     }
                     return token(DockerfileTokenId.IDENTIFIER);
                 case '"':   //NOI18N
                     newStateHolder[0] = STATE_REST;
                     if (currentState != STATE_ESCAPE) {
-                        return finishString('"','\'');  //NOI18N
+                        return finishString('"','\'', newStateHolder);  //NOI18N
                     }
                     return token(DockerfileTokenId.IDENTIFIER);
                 case '0': case '1': case '2': case '3': case '4':
@@ -241,13 +246,17 @@ final class DockerfileLexer implements Lexer<DockerfileTokenId> {
         if (nextChar() != '\n') backup(1);
     }
 
-    private Token<DockerfileTokenId> finishWhitespace(int[] stateHolder) {
+    private Token<DockerfileTokenId> finishWhitespace(
+            int currentState,
+            int[] stateHolder) {
         while (true) {
             int c = nextChar();
             switch (c) {
                 case '\r':
                 case '\n':
-                    stateHolder[0] = STATE_NEW_LINE;
+                    stateHolder[0] = currentState == STATE_ESCAPE ?
+                            STATE_CONT_LINE:
+                            STATE_NEW_LINE;
                     break;
                 case '\t':
                 case 0x0b:
@@ -269,24 +278,49 @@ final class DockerfileLexer implements Lexer<DockerfileTokenId> {
     @NonNull
     private Token<DockerfileTokenId> finishString(
             final char closingChar,
-            final char otherStringChar) {
+            final char otherStringChar,
+            int[] stateHolder) {
         boolean inEscapeBlock = false;
         while (true) {
-            final int c = nextChar();
-            if (c == EOF) {
+            int c = nextChar();
+            if (c == '\r') {    //NOI18N
+                stateHolder[0] = STATE_NEW_LINE;
+                consumeNewline();
                 return tokenFactory.createToken(
                             DockerfileTokenId.STRING_LITERAL,
                             input.readLength(),
                             PartType.START);
-            }
-            if (c == closingChar) {
+            } else if (c == '\n') { //NOI18N
+                stateHolder[0] = STATE_NEW_LINE;
+                return tokenFactory.createToken(
+                            DockerfileTokenId.STRING_LITERAL,
+                            input.readLength(),
+                            PartType.START);
+            } else if (c == EOF) {
+                return tokenFactory.createToken(
+                            DockerfileTokenId.STRING_LITERAL,
+                            input.readLength(),
+                            PartType.START);
+            } else if (c == closingChar) {
                 if (!inEscapeBlock) {
                     return token(DockerfileTokenId.STRING_LITERAL);
                 }
             } else if (c == otherStringChar) {
                 inEscapeBlock = !inEscapeBlock;
             } else if (c == '\\') {    //NOI18N
-                nextChar();
+                boolean followedBySpace = false;
+                for (c = nextChar(); isSpaceOnLine(c); c = nextChar()) {
+                    followedBySpace = true;
+                }
+                if (followedBySpace) {
+                    switch (c) {
+                        case '\r':  //NOI18N
+                        case '\n':  //NOI18N
+                            break;
+                        default:
+                            backup(1);
+                    }
+                }
             }
         }
     }
@@ -332,7 +366,7 @@ final class DockerfileLexer implements Lexer<DockerfileTokenId> {
 
     private static boolean isIdentifierStart(final int c, final int currentState) {
         return Character.isJavaIdentifierStart(c) ||
-            (currentState != STATE_NEW_LINE && c == '#');   //NOI18N
+            (c == '#' && currentState != STATE_NEW_LINE && currentState != STATE_CONT_LINE);   //NOI18N
     }
 
     private static boolean isIdentifierPart(final int c, int currentState) {
@@ -340,7 +374,17 @@ final class DockerfileLexer implements Lexer<DockerfileTokenId> {
                 c == '.' || //NOI18N
                 c == '-' || //NOI18N
                 c == '_' || //NOI18N
-                (currentState != STATE_NEW_LINE && c == '#');   //NOI18N
+                (c == '#' && currentState != STATE_NEW_LINE && currentState != STATE_CONT_LINE);   //NOI18N
+    }
+
+    private static boolean isSpaceOnLine(int c) {
+        switch(c) {
+            case ' ':   //NOI18N
+            case '\t':  //NOI18N
+                return  true;
+            default:
+                return false;
+        }
     }
 
 }
