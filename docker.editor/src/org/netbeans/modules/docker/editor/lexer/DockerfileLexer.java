@@ -157,16 +157,16 @@ final class DockerfileLexer implements Lexer<DockerfileTokenId> {
                     }
                     newStateHolder[0] = STATE_REST;
                     return token(DockerfileTokenId.IDENTIFIER);
-                case '\'':
+                case '\'':  //NOI18N
                     newStateHolder[0] = STATE_REST;
                     if (currentState != STATE_ESCAPE) {
-                        return finishString('\'');
+                        return finishString('\'', '"'); //NOI18N
                     }
                     return token(DockerfileTokenId.IDENTIFIER);
-                case '\"':
+                case '"':   //NOI18N
                     newStateHolder[0] = STATE_REST;
                     if (currentState != STATE_ESCAPE) {
-                        return finishString('\"');
+                        return finishString('"','\'');  //NOI18N
                     }
                     return token(DockerfileTokenId.IDENTIFIER);
                 case '0': case '1': case '2': case '3': case '4':
@@ -267,19 +267,25 @@ final class DockerfileLexer implements Lexer<DockerfileTokenId> {
     }
 
     @NonNull
-    private Token<DockerfileTokenId> finishString(final char closingChar) {
+    private Token<DockerfileTokenId> finishString(
+            final char closingChar,
+            final char otherStringChar) {
+        boolean inEscapeBlock = false;
         while (true) {
-            int c = nextChar();
-            if (c == closingChar) {
-                return token(DockerfileTokenId.STRING_LITERAL);
-            }
+            final int c = nextChar();
             if (c == EOF) {
                 return tokenFactory.createToken(
                             DockerfileTokenId.STRING_LITERAL,
                             input.readLength(),
                             PartType.START);
             }
-            if (c == '\\') {    //NOI18N
+            if (c == closingChar) {
+                if (!inEscapeBlock) {
+                    return token(DockerfileTokenId.STRING_LITERAL);
+                }
+            } else if (c == otherStringChar) {
+                inEscapeBlock = !inEscapeBlock;
+            } else if (c == '\\') {    //NOI18N
                 nextChar();
             }
         }
