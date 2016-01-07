@@ -114,7 +114,9 @@ final class DockerfileLexer implements Lexer<DockerfileTokenId> {
             switch (c) {
                 case '\r':
                 case '\n':
-                    newStateHolder[0] = STATE_NEW_LINE;
+                    if (currentState != STATE_ESCAPE) {
+                        newStateHolder[0] = STATE_NEW_LINE;
+                    }
                 case '\t':
                 case 0x0b:
                 case '\f':
@@ -122,7 +124,7 @@ final class DockerfileLexer implements Lexer<DockerfileTokenId> {
                 case 0x1d:
                 case 0x1e:
                 case 0x1f:
-                    return finishWhitespace(newStateHolder);
+                    return finishWhitespace(currentState, newStateHolder);
                 case ' ':
                     c = nextChar();
                     if (c == EOF || !Character.isWhitespace(c)) { // Return single space as flyweight token
@@ -132,7 +134,7 @@ final class DockerfileLexer implements Lexer<DockerfileTokenId> {
                                : tokenFactory.createToken(DockerfileTokenId.WHITESPACE);
                     }
                     backup(1);
-                    return finishWhitespace(newStateHolder);
+                    return finishWhitespace(currentState, newStateHolder);
                 case EOF:
                     return null;
                 case '[':   //NOI18N
@@ -241,13 +243,17 @@ final class DockerfileLexer implements Lexer<DockerfileTokenId> {
         if (nextChar() != '\n') backup(1);
     }
 
-    private Token<DockerfileTokenId> finishWhitespace(int[] stateHolder) {
+    private Token<DockerfileTokenId> finishWhitespace(
+            int currentState,
+            int[] stateHolder) {
         while (true) {
             int c = nextChar();
             switch (c) {
                 case '\r':
                 case '\n':
-                    stateHolder[0] = STATE_NEW_LINE;
+                    if (currentState != STATE_ESCAPE) {
+                        stateHolder[0] = STATE_NEW_LINE;
+                    }
                     break;
                 case '\t':
                 case 0x0b:
