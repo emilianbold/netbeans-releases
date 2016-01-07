@@ -280,7 +280,8 @@ final class DockerfileLexer implements Lexer<DockerfileTokenId> {
             final char closingChar,
             final char otherStringChar,
             int[] stateHolder) {
-        boolean inEscapeBlock = false;
+        boolean inEscapeBlock = false,
+                escapeBlockAllowed = true;
         while (true) {
             int c = nextChar();
             if (c == '\r') {    //NOI18N
@@ -305,9 +306,12 @@ final class DockerfileLexer implements Lexer<DockerfileTokenId> {
                 if (!inEscapeBlock) {
                     return token(DockerfileTokenId.STRING_LITERAL);
                 }
-            } else if (c == otherStringChar) {
+            } else if (c == otherStringChar && escapeBlockAllowed) {
                 inEscapeBlock = !inEscapeBlock;
-            } else if (c == '\\') {    //NOI18N
+            } else if (c == '#') {    //NOI18N
+                //Special handling for sh comment which may be followd by nonclosing otherStringChar
+                escapeBlockAllowed = false;
+            }else if (c == '\\') {    //NOI18N
                 boolean followedBySpace = false;
                 for (c = nextChar(); isSpaceOnLine(c); c = nextChar()) {
                     followedBySpace = true;
