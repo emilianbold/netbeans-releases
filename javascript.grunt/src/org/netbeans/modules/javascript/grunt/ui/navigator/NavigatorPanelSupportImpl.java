@@ -121,7 +121,7 @@ public class NavigatorPanelSupportImpl implements BuildTools.NavigatorPanelSuppo
 
     //~ Factories
 
-    @NavigatorPanel.Registration(mimeType = "text/grunt+javascript", displayName = "#NavigatorPanelSupportImpl.name", position = 100)
+    @NavigatorPanel.Registration(mimeType = "text/grunt+javascript", displayName = "#NavigatorPanelSupportImpl.name")
     public static NavigatorPanel createNavigatorPanel() {
         return BuildTools.getDefault().createNavigatorPanel(new NavigatorPanelSupportImpl());
     }
