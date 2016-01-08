@@ -62,6 +62,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 
 public final class GulpTasks implements ChangeListener {
 
@@ -71,6 +72,7 @@ public final class GulpTasks implements ChangeListener {
 
     private final Project project;
     private final Gulpfile gulpfile;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     final FileChangeListener nodeModulesListener = new NodeModulesListener();
 
     private volatile List<String> tasks;
@@ -91,6 +93,14 @@ public final class GulpTasks implements ChangeListener {
         gulpfile.addChangeListener(gulpTasks);
         FileUtil.addFileChangeListener(gulpTasks.nodeModulesListener, new File(gulpfile.getFile().getParent(), "node_modules")); // NOI18N
         return gulpTasks;
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
     }
 
     @CheckForNull
@@ -136,6 +146,7 @@ public final class GulpTasks implements ChangeListener {
 
     public void reset() {
         tasks = null;
+        changeSupport.fireChange();
     }
 
     @Override
