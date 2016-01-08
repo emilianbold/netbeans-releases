@@ -42,17 +42,20 @@
 package org.netbeans.libs.git.jgit.commands;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.JGitInternalException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.jgit.GitClassFactory;
+import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.libs.git.progress.RevisionInfoListener;
 
@@ -81,6 +84,8 @@ public class StashListCommand extends GitCommand {
             for (RevCommit stash : stashes) {
                 addRevision(getClassFactory().createRevisionInfo(fullWalk.parseCommit(stash), repository));
             }
+        } catch (JGitInternalException ex) {
+            throw new GitException(Utils.getBundle(CatCommand.class).getString("MSG_Error_StashMissingCommit"), ex);
         } catch (GitAPIException | IOException ex) {
             throw new GitException(ex);
         } finally {
