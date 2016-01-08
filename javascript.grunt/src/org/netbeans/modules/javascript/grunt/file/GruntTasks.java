@@ -61,6 +61,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 
 public final class GruntTasks implements ChangeListener {
 
@@ -68,6 +69,7 @@ public final class GruntTasks implements ChangeListener {
 
     private final Project project;
     private final Gruntfile gruntfile;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     final FileChangeListener nodeModulesListener = new NodeModulesListener();
 
     private volatile List<String> tasks;
@@ -88,6 +90,14 @@ public final class GruntTasks implements ChangeListener {
         gruntfile.addChangeListener(gruntTasks);
         FileUtil.addFileChangeListener(gruntTasks.nodeModulesListener, new File(gruntfile.getFile().getParent(), "node_modules")); // NOI18N
         return gruntTasks;
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
     }
 
     @CheckForNull
@@ -133,6 +143,7 @@ public final class GruntTasks implements ChangeListener {
 
     public void reset() {
         tasks = null;
+        changeSupport.fireChange();
     }
 
     @Override

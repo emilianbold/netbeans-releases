@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,94 +37,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.web.clientproject.build;
 
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
-public final class AdvancedTask {
+public final class Tasks {
 
-    private volatile String name;
-    private volatile String options;
-    private volatile String tasks;
-    private volatile String parameters;
-    private volatile boolean shared = true;
+    private final List<AdvancedTask> advancedTasks;
+    private final boolean showSimpleTasks;
+    private final List<String> simpleTasks;
 
 
-    @CheckForNull
-    public String getName() {
-        return name;
+    public Tasks(List<AdvancedTask> advancedTasks, boolean showSimpleTasks, List<String> simpleTasks) {
+        assert advancedTasks != null;
+        assert simpleTasks != null;
+        this.advancedTasks = new CopyOnWriteArrayList<>(advancedTasks);
+        this.showSimpleTasks = showSimpleTasks;
+        this.simpleTasks = new CopyOnWriteArrayList<>(simpleTasks);
     }
 
-    public AdvancedTask setName(String name) {
-        this.name = name;
-        return this;
+    public List<AdvancedTask> getAdvancedTasks() {
+        return Collections.unmodifiableList(advancedTasks);
     }
 
-    @CheckForNull
-    public String getOptions() {
-        return options;
+    public boolean isShowSimpleTasks() {
+        return showSimpleTasks;
     }
 
-    public AdvancedTask setOptions(String options) {
-        this.options = options;
-        return this;
-    }
-
-    @CheckForNull
-    public String getTasks() {
-        return tasks;
-    }
-
-    public AdvancedTask setTasks(String tasks) {
-        this.tasks = tasks;
-        return this;
-    }
-
-    @CheckForNull
-    public String getParameters() {
-        return parameters;
-    }
-
-    public AdvancedTask setParameters(String parameters) {
-        this.parameters = parameters;
-        return this;
-    }
-
-    public boolean isShared() {
-        return shared;
-    }
-
-    public AdvancedTask setShared(boolean shared) {
-        this.shared = shared;
-        return this;
-    }
-
-    public String getFullCommand() {
-        StringBuilder sb = new StringBuilder();
-        if (StringUtilities.hasText(options)) {
-            sb.append(options);
-        }
-        if (StringUtilities.hasText(tasks)) {
-            if (sb.length() > 0) {
-                sb.append(" "); // NOI18N
-            }
-            sb.append(tasks);
-        }
-        if (StringUtilities.hasText(parameters)) {
-            if (sb.length() > 0) {
-                sb.append(" "); // NOI18N
-            }
-            sb.append(parameters);
-        }
-        return sb.toString();
+    public List<String> getSimpleTasks() {
+        return Collections.unmodifiableList(simpleTasks);
     }
 
     @Override
     public String toString() {
-        return "AdvancedTask{" + "name=" + name + ", options=" + options + ", tasks=" + tasks + ", parameters=" + parameters + ", shared=" + shared + '}'; // NOI18N
+        return "Tasks{" + "advancedTasks=" + advancedTasks + ", showSimpleTasks=" + showSimpleTasks + ", simpleTasks=" + simpleTasks + '}'; // NOI18N
     }
 
 }

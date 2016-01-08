@@ -137,7 +137,8 @@ public final class GruntBuildTool implements BuildToolImplementation {
     }
 
     public GruntTasks getGruntTasks(@NullAllowed FileObject gruntfile) {
-        if (gruntfile == null) {
+        if (gruntfile == null
+                || gruntfile.getParent().equals(project.getProjectDirectory())) {
             return getProjectGruntTasks();
         }
         GruntTasks tasks = gruntTasks.get(gruntfile);

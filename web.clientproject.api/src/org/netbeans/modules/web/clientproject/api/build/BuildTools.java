@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.web.clientproject.api.build;
 
@@ -47,14 +47,17 @@ import java.util.List;
 import java.util.concurrent.Future;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.build.ui.CustomizerPanel;
+import org.netbeans.modules.web.clientproject.build.ui.NavigatorPanelImpl;
 import org.netbeans.modules.web.clientproject.build.ui.TasksMenu;
 import org.netbeans.modules.web.clientproject.spi.build.BuildToolImplementation;
 import org.netbeans.modules.web.clientproject.spi.build.CustomizerPanelImplementation;
+import org.netbeans.spi.navigator.NavigatorPanel;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
@@ -71,6 +74,10 @@ public final class BuildTools {
     private BuildTools() {
     }
 
+    /**
+     * Get instance of build tools.
+     * @return instance of build tools
+     */
     public static BuildTools getDefault() {
         return INSTANCE;
     }
@@ -130,6 +137,19 @@ public final class BuildTools {
     public JMenu createTasksMenu(@NonNull TasksMenuSupport tasksMenuSupport) {
         Parameters.notNull("tasksMenuSupport", tasksMenuSupport); // NOI18N
         return new TasksMenu(tasksMenuSupport);
+    }
+
+    /**
+     * Helper method for creating Navigator panel.
+     * <p>
+     * This panel simply lists and runs tasks of the build tool.
+     * @param navigatorPanelSupport support for the panel
+     * @return Navigator panel
+     * @since 1.104
+     */
+    public NavigatorPanel createNavigatorPanel(@NonNull NavigatorPanelSupport navigatorPanelSupport) {
+        Parameters.notNull("navigatorPanelSupport", navigatorPanelSupport); // NOI18N
+        return new NavigatorPanelImpl(navigatorPanelSupport);
     }
 
     private Collection<BuildToolImplementation> getEnabledBuildTools(Project project) {
@@ -201,7 +221,7 @@ public final class BuildTools {
      * Support for creating standard UI for context menu for build tool tasks.
      * @since 1.92
      */
-    public interface TasksMenuSupport {
+    public interface TasksMenuSupport extends BuildToolSupport {
 
         /**
          * Required titles.
@@ -209,38 +229,10 @@ public final class BuildTools {
         enum Title {
             MENU,
             LOADING_TASKS,
-            RELOAD_TASKS,
             CONFIGURE_TOOL,
             MANAGE_ADVANCED,
             TASKS_LABEL,
-            BUILD_TOOL_EXEC,
         }
-
-        /**
-         * Gets project we run tasks for.
-         * @return project we run tasks for
-         * @since 1.93
-         */
-        @NonNull
-        Project getProject();
-
-        /**
-         * Gets working directory. This path is used for storing/loading
-         * advanced tasks.
-         * @return working directory, never {@code null}
-         * @since 1.103
-         */
-        @NonNull
-        FileObject getWorkDir();
-
-        /**
-         * Gets unique identifier, <b>non-localized</b> identifier of the build tool.
-         * @return unique identifier, <b>non-localized</b> identifier of the build tool
-         * @see BuildToolImplementation#getIdentifier()
-         * @since 1.93
-         */
-        @NonNull
-        String getIdentifier();
 
         /**
          * Gets title for the given {@link Title}.
@@ -258,6 +250,99 @@ public final class BuildTools {
         String getDefaultTaskName();
 
         /**
+         * Reloads tasks.
+         * <p>
+         * This method always runs in a background thread.
+         */
+        void reloadTasks();
+
+        /**
+         * Configures build tool (typically shows IDE Options or Project Properties dialog).
+         */
+        void configure();
+
+    }
+
+    /**
+     * Support for creating Navigator panels.
+     * @since 1.104
+     */
+    public interface NavigatorPanelSupport {
+
+        /**
+         * Gets display name of the panel.
+         * @return display name of the panel
+         */
+        @NonNull
+        String getDisplayName();
+
+        /**
+         * Gets display hint of the panel.
+         * @return display hint of the panel
+         */
+        @NonNull
+        String getDisplayHint();
+
+        /**
+         * Gets build tool support for the given file. Can be {@code null}
+         * if the given file is not supported.
+         * @param buildFile file to create build tool support for, never {@code null}
+         * @return build tool support for the given file, can be {@code null}
+         */
+        @CheckForNull
+        BuildToolSupport getBuildToolSupport(@NonNull FileObject buildFile);
+
+        /**
+         * Adds listener to listen on panel changes.
+         * @param listener listener to be added
+         */
+        void addChangeListener(ChangeListener listener);
+
+        /**
+         * Removes listener.
+         * @param listener listener to be removed
+         */
+        void removeChangeListener(ChangeListener listener);
+
+    }
+
+    /**
+     * Basic support for build tool.
+     * @since 1.104
+     */
+    public interface BuildToolSupport {
+
+        /**
+         * Gets unique identifier, <b>non-localized</b> identifier of the build tool.
+         * @return unique identifier, <b>non-localized</b> identifier of the build tool
+         * @see BuildToolImplementation#getIdentifier()
+         */
+        @NonNull
+        String getIdentifier();
+
+        /**
+         * Gets executable name of the build tool, e.g. <tt>grunt</tt>.
+         * @return executable name of the build tool, e.g. <tt>grunt</tt>
+         */
+        @NonNull
+        String getBuildToolExecName();
+
+        /**
+         * Gets project we run tasks for.
+         * @return project we run tasks for
+         */
+        @NonNull
+        Project getProject();
+
+        /**
+         * Gets working directory. This path is used for storing/loading
+         * advanced tasks.
+         * @return working directory, never {@code null}
+         */
+        @NonNull
+        FileObject getWorkDir();
+
+        /**
          * Gets future representing tasks.
          * <p>
          * Loading of tasks is done in a background thread automatically.
@@ -273,18 +358,6 @@ public final class BuildTools {
          * @param args task arguments
          */
         void runTask(@NullAllowed String... args);
-
-        /**
-         * Reloads tasks.
-         * <p>
-         * This method always runs in a background thread.
-         */
-        void reloadTasks();
-
-        /**
-         * Configures build tool (typically shows IDE Options or Project Properties dialog).
-         */
-        void configure();
 
     }
 
