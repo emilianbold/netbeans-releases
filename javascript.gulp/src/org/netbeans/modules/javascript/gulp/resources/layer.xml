@@ -58,6 +58,7 @@ Portions Copyrighted 2014 Sun Microsystems, Inc.
             <folder name="text">
                 <folder name="gulp+javascript">
                     <file name="org-netbeans-modules-csl-navigation-ClassMemberPanel.instance"/>
+                    <attr name="position" intvalue="200"/>
                 </folder>
             </folder>
         </folder>
