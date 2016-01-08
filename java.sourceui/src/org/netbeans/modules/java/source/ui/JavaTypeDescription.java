@@ -210,7 +210,10 @@ public class JavaTypeDescription extends TypeDescriptor {
                     uri);
                 path = new File(rootFile,relativePath).getAbsolutePath();
             } catch (IllegalArgumentException e) {
-                path = FileUtil.getFileDisplayName(cacheItem.getRoot());
+                final FileObject rootFo = cacheItem.getRoot();
+                path = rootFo == null ?
+                    "" : //NOI18N
+                    FileUtil.getFileDisplayName(rootFo);
             }
             cachedPath = path;
         }

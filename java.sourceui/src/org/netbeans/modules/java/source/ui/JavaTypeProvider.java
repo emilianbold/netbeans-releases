@@ -607,6 +607,7 @@ public class JavaTypeProvider implements TypeProvider {
             return false;
         }
 
+        @CheckForNull
         public FileObject getRoot() {
             synchronized (this) {
                 if (cachedRoot != null) {
