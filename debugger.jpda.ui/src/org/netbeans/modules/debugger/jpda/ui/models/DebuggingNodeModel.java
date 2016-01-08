@@ -132,6 +132,8 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             "org/netbeans/modules/debugger/resources/threadsView/thread_suspended_16.png";
     public static final String THREAD_RUNNING = 
             "org/netbeans/modules/debugger/resources/threadsView/thread_running_16.png";
+    public static final String THREAD_ZOMBIE = 
+            "org/netbeans/modules/debugger/resources/threadsView/thread_zombie_16.png";
     public static final String CALL_STACK2 =
             "org/netbeans/modules/debugger/resources/threadsView/call_stack_16.png";
     
@@ -306,6 +308,9 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             } else {
                 return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_State_Suspended", name);
             }
+        } else if (JPDAThread.STATE_ZOMBIE == t.getState()) {
+            // Died, but is still around
+            return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_State_Zombie", name);
         } else {
             return NbBundle.getMessage(DebuggingNodeModel.class, "CTL_Thread_State_Running", name);
         }
@@ -563,6 +568,8 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         }
         if (thread.isSuspended()) {
             return THREAD_SUSPENDED;
+        } else if (JPDAThread.STATE_ZOMBIE == thread.getState()) {
+            return THREAD_ZOMBIE;
         } else {
             return THREAD_RUNNING;
         }
