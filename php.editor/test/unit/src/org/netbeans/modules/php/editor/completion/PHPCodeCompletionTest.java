@@ -241,10 +241,13 @@ public class PHPCodeCompletionTest extends PHPCodeCompletionTestBase {
         checkCompletion("testfiles/completion/lib/issue146187.php",
                 "echo $tst->^", false);
     }
-    public void test146648() throws Exception {
-        checkCompletion("testfiles/completion/lib/issue146648.php",
-                "$v146648::^", false);
-    }
+
+// This is valid since PHP 5.3.0. Fixed in #240527
+//    public void test146648() throws Exception {
+//        checkCompletion("testfiles/completion/lib/issue146648.php",
+//                "$v146648::^", false);
+//    }
+
     public void test146648_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue146648.php",
                 "echo Hello146648::^", false);
