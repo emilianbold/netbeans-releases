@@ -46,11 +46,11 @@ import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 
 public final class AdvancedTask {
 
-    private String name;
-    private String options;
-    private String tasks;
-    private String parameters;
-    private boolean shared = true;
+    private volatile String name;
+    private volatile String options;
+    private volatile String tasks;
+    private volatile String parameters;
+    private volatile boolean shared = true;
 
 
     @CheckForNull
