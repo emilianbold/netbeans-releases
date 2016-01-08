@@ -77,6 +77,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
 import org.netbeans.modules.php.api.PhpVersion;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.completion.CompletionContextFinder.CompletionContext;
 import org.netbeans.modules.php.editor.completion.CompletionContextFinder.KeywordCompletionType;
@@ -877,9 +878,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             List<String> invalidProposalsForClsMembers = INVALID_PROPOSALS_FOR_CLS_MEMBERS;
             Model model = request.result.getModel();
 
-            if (staticContext && varName.startsWith("$")) {
-                return;
-            }
             Collection<? extends TypeScope> types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor);
             boolean selfContext = false;
             boolean staticLateBindingContext = false;
@@ -891,10 +889,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                 case "parent": //NOI18N
                     invalidProposalsForClsMembers = Collections.emptyList();
                     staticContext = true;
-                    instanceContext = true;
-                    break;
-                case "$this": //NOI18N
-                    staticContext = false;
                     instanceContext = true;
                     break;
                 case "static": //NOI18N
@@ -948,9 +942,14 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                         }
                     }
                     if (staticContext) {
+                        boolean isVariableAccess = isVariableAccess(varName);
                         Set<TypeConstantElement> magicConstants = constantsFilter.filter(request.index.getAccessibleMagicConstants(typeScope));
                         for (TypeConstantElement magicConstant : magicConstants) {
                             if (magicConstant != null) {
+                                // $instance::class is invalid
+                                if ("class".equals(magicConstant.getName()) && isVariableAccess) { // NOI18N
+                                    continue;
+                                }
                                 completionResult.add(PHPCompletionItem.TypeConstantItem.getItem(magicConstant, request));
                             }
                         }
@@ -958,6 +957,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                 }
             }
         }
+    }
+
+    private static boolean isVariableAccess(String varName) {
+        // "]" : array
+        return !StringUtils.isEmpty(varName) && (varName.startsWith("$") || varName.equals("]")); // NOI18N
     }
 
     private void autoCompleteClassFields(final PHPCompletionResult completionResult, final PHPCompletionItem.CompletionRequest request) {
