@@ -75,9 +75,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -154,6 +156,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
     private JPDADebuggerImpl    debugger;
     /** Thread is suspended and everybody know about this. */
     private boolean             suspended;
+    private boolean             suspendedOnAnEvent; // Suspended by an event that occured in this thread
     /** Thread is suspended, but only this class knows it.
         A notification about real suspend or resume is expected to come soon.
         Typically just some evaluation, which will decide what's going to be done next, is just being performed.
@@ -187,7 +190,13 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
     private List<JPDAThread>    lockerThreadsList;
     private List<ThreadReference> resumedBlockingThreads;
     private final Object        stepBreakpointLock = new Object();
+    /** Step in some thread got suspended by this breakpoint hit in this thread. */
     private JPDABreakpoint      stepSuspendedByBreakpoint;
+    /** A set of threads in which a step is pending and which got suspended
+     *  by a breakpoint hit in this thread. */
+    private Set<JPDAThreadImpl> suspendedSteppingThreads;
+    /** A set of threads which hit breakpoints that suspended a step in this thread. */
+    private Set<JPDAThreadImpl> steppingSuspendedByBptsInThreads;
     private VirtualMachine      vm;
 
     public final ReadWriteLock  accessLock = new ThreadReentrantReadWriteLock();
@@ -455,6 +464,16 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
         } catch (VMDisconnectedExceptionWrapper ex) {
         }
         return false;
+    }
+    
+    /**
+     * Test if this thread was suspended on an event that occurred in this thread.
+     * This flag survives method invocations.
+     * 
+     * @return true if this thread is suspended on an event.
+     */
+    public boolean isSuspendedOnAnEvent() {
+        return suspendedOnAnEvent;
     }
 
     /**
@@ -969,13 +988,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
             clearLastOperations();
         }
         cleanCachedFrames();
-        JPDABreakpoint brkp = null;
-        synchronized (stepBreakpointLock) {
-            if (stepSuspendedByBreakpoint != null) {
-                brkp = stepSuspendedByBreakpoint;
-                stepSuspendedByBreakpoint = null;
-            }
-        }
+        JPDABreakpoint brkp = removeSuspendedByBreakpoint();
         PropertyChangeEvent suspEvt = new PropertyChangeEvent(this, JPDAThread.PROP_SUSPENDED, true, false);
         if (brkp != null) {
             PropertyChangeEvent brkpEvt = new PropertyChangeEvent(this, PROP_STEP_SUSPENDED_BY_BREAKPOINT,
@@ -1060,6 +1073,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
         if (suspendCount == 0) {
             //System.err.println("resume("+getName()+") suspended = false");
             suspended = false;
+            suspendedOnAnEvent = false;
             suspendedNoFire = false;
             debugger.setCurrentSuspendedNoFireThread(null);
             methodInvokingDisabledUntilResumed = false;
@@ -1148,6 +1162,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
             }
             if (resumed) {
                 suspendedNoFire = false;
+                suspendedOnAnEvent = false;
                 debugger.setCurrentSuspendedNoFireThread(null);
             }
         } finally {
@@ -1155,12 +1170,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
         }
         cleanCachedFrames();
         PropertyChangeEvent stepBrkpEvt = null;
-        synchronized (stepBreakpointLock) {
-            if (stepSuspendedByBreakpoint != null) {
-                stepBrkpEvt = new PropertyChangeEvent(this, PROP_STEP_SUSPENDED_BY_BREAKPOINT,
-                        stepSuspendedByBreakpoint, null);
-                stepSuspendedByBreakpoint = null;
-            }
+        JPDABreakpoint stepBrkp = removeSuspendedByBreakpoint();
+        if (stepBrkp != null) {
+            stepBrkpEvt = new PropertyChangeEvent(this, PROP_STEP_SUSPENDED_BY_BREAKPOINT,
+                                                  stepBrkp, null);
         }
         if (suspendedToFire != null) {
             PropertyChangeEvent suspEvt = new PropertyChangeEvent(this, JPDAThread.PROP_SUSPENDED,
@@ -1193,14 +1206,21 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
         notifySuspended(true, false);
     }
 
-    public void notifySuspendedNoFire(boolean threadDied) {
+    public void notifySuspendedNoFire(boolean eventInThisThread, boolean threadDied) {
         //notifySuspended(false);
         // Keep the thread look like running until we get a firing notification
         accessLock.writeLock().lock();
         try {
-            loggerS.fine("["+threadName+"]: "+"notifySuspendedNoFire() suspended = "+suspended+", suspendCount = "+suspendCount);
+            if (eventInThisThread) {    // Do not reset to false when we do not know.
+                suspendedOnAnEvent = eventInThisThread;
+            }
+            if (loggerS.isLoggable(Level.FINE)) {
+                loggerS.fine("["+threadName+"]: "+"notifySuspendedNoFire() suspended = "+suspended+", suspendCount = "+suspendCount+", suspendedOnAnEvent = "+eventInThisThread);
+            }
             if (suspended && suspendCount > 0 && !initiallySuspended) {
-                loggerS.fine("["+threadName+"]: notifySuspendedNoFire(): SETTING suspendRequested = "+true);
+                if (loggerS.isLoggable(Level.FINE)) {
+                    loggerS.fine("["+threadName+"]: notifySuspendedNoFire(): SETTING suspendRequested = "+true);
+                }
                 suspendRequested = true; // The thread was just suspended, leave it suspended afterwards.
             }
             if (!threadDied) {
@@ -1221,22 +1241,30 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
             }
             suspendedNoFire = true;
             debugger.setCurrentSuspendedNoFireThread(this);
-            loggerS.fine("["+threadName+"]: (notifySuspendedNoFire() END) suspended = "+suspended+", suspendedNoFire = "+suspendedNoFire+", suspendRequested = "+suspendRequested);
+            if (loggerS.isLoggable(Level.FINE)) {
+                loggerS.fine("["+threadName+"]: (notifySuspendedNoFire() END) suspended = "+suspended+", suspendedNoFire = "+suspendedNoFire+", suspendRequested = "+suspendRequested);
+            }
         } finally {
             accessLock.writeLock().unlock();
         }
     }
 
     public PropertyChangeEvent notifySuspended(boolean doFire, boolean explicitelyPaused) {
-        loggerS.fine("["+threadName+"]: "+"notifySuspended(doFire = "+doFire+", explicitelyPaused = "+explicitelyPaused+")");
+        if (loggerS.isLoggable(Level.FINE)) {
+            loggerS.fine("["+threadName+"]: "+"notifySuspended(doFire = "+doFire+", explicitelyPaused = "+explicitelyPaused+")");
+        }
         Boolean suspendedToFire = null;
         accessLock.writeLock().lock();
         initiallySuspended = false;
         try {
-            loggerS.fine("["+threadName+"]: (notifySuspended() BEGIN) suspended = "+suspended+", suspendedNoFire = "+suspendedNoFire);
+            if (loggerS.isLoggable(Level.FINE)) {
+                loggerS.fine("["+threadName+"]: (notifySuspended() BEGIN) suspended = "+suspended+", suspendedNoFire = "+suspendedNoFire);
+            }
             if (explicitelyPaused && !suspended && suspendedNoFire) {
                 suspendRequested = true;
-                loggerS.fine("["+threadName+"]: suspendRequested = "+suspendRequested);
+                if (loggerS.isLoggable(Level.FINE)) {
+                    loggerS.fine("["+threadName+"]: suspendRequested = "+suspendRequested);
+                }
                 return null;
             }
             try {
@@ -1268,7 +1296,9 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
                     }
                 }
             }
-            loggerS.fine("["+threadName+"]: (notifySuspended() END) suspended = "+suspended+", suspendedNoFire = "+suspendedNoFire+", suspendRequested = "+suspendRequested);
+            if (loggerS.isLoggable(Level.FINE)) {
+                loggerS.fine("["+threadName+"]: (notifySuspended() END) suspended = "+suspended+", suspendedNoFire = "+suspendedNoFire+", suspendRequested = "+suspendRequested);
+            }
         } finally {
             accessLock.writeLock().unlock();
         }
@@ -1306,8 +1336,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
         List<PropertyChangeEvent> evts;
         accessLock.writeLock().lock();
         try {
-            logger.fine("Invoking a method in thread "+threadName);
-            loggerS.fine("["+threadName+"]: Invoking a method, suspended = "+suspended+", suspendedNoFire = "+suspendedNoFire+", suspendRequested = "+suspendRequested);
+            logger.log(Level.FINE, "Invoking a method in thread {0}", threadName);
+            if (loggerS.isLoggable(Level.FINE)) {
+                loggerS.fine("["+threadName+"]: Invoking a method, suspended = "+suspended+", suspendedNoFire = "+suspendedNoFire+", suspendRequested = "+suspendRequested);
+            }
             if (methodInvokingDisabledUntilResumed) {
                 throw new PropertyVetoException(
                         NbBundle.getMessage(JPDAThreadImpl.class, "MSG_DisabledUntilResumed"), null);
@@ -1320,7 +1352,9 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
                 throw new PropertyVetoException(
                         NbBundle.getMessage(JPDAThreadImpl.class, "MSG_NoCurrentContext"), null);
             }
-            loggerS.fine("Suspend count of "+this+" before notifyMethodInvoking() is: "+suspendCount);
+            if (loggerS.isLoggable(Level.FINE)) {
+                loggerS.fine("Suspend count of "+this+" before notifyMethodInvoking() is: "+suspendCount);
+            }
             try {
                 int tsc = ThreadReferenceWrapper.suspendCount(threadReference);
                 if (suspendCount != tsc) {
@@ -1382,7 +1416,9 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
             watcher = new SingleThreadWatcher(this);
             //logger.severe("Before method invoke: "+getThreadStateLog());
         } finally {
-            loggerS.fine("["+threadName+"]: unsuspendedStateWhenInvoking = "+unsuspendedStateWhenInvoking);
+            if (loggerS.isLoggable(Level.FINE)) {
+                loggerS.fine("["+threadName+"]: unsuspendedStateWhenInvoking = "+unsuspendedStateWhenInvoking);
+            }
             accessLock.writeLock().unlock();
         }
         if (watcherToDestroy != null) {
@@ -1398,8 +1434,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
         boolean wasUnsuspendedStateWhenInvoking;
         accessLock.writeLock().lock();
         try {
-            logger.fine("Method invoke done in thread "+threadName);
-            loggerS.fine("["+threadName+"]: Method invoke done, suspended = "+suspended+", suspendedNoFire = "+suspendedNoFire+", suspendRequested = "+suspendRequested+", unsuspendedStateWhenInvoking = "+unsuspendedStateWhenInvoking);
+            logger.log(Level.FINE, "Method invoke done in thread {0}", threadName);
+            if (loggerS.isLoggable(Level.FINE)) {
+                loggerS.fine("["+threadName+"]: Method invoke done, suspended = "+suspended+", suspendedNoFire = "+suspendedNoFire+", suspendRequested = "+suspendRequested+", unsuspendedStateWhenInvoking = "+unsuspendedStateWhenInvoking);
+            }
             try {
                 if (resumedToFinishMethodInvocation) {
                     // HACK becuase of JDI, we've resumed this thread so that method invocation can be finished.
@@ -2123,15 +2161,106 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
         }
     }
 
-    public void setStepSuspendedBy(JPDABreakpoint breakpoint) {
+    public void setStepSuspendedBy(JPDABreakpoint breakpoint, boolean fire, List<JPDAThreadImpl> steppingThreads) {
         synchronized (stepBreakpointLock) {
             this.stepSuspendedByBreakpoint = breakpoint;
+            if (this.suspendedSteppingThreads == null) {
+                this.suspendedSteppingThreads = new HashSet<>();
+            }
+            this.suspendedSteppingThreads.addAll(steppingThreads);
+            if (logger.isLoggable(Level.FINER)) {
+                logger.finer("setStepSuspendedBy("+threadReference+"): stepSuspendedByBreakpoint = "+stepSuspendedByBreakpoint+", steppingThreads = "+steppingThreads);
+            }
         }
-        pch.firePropertyChange(PROP_STEP_SUSPENDED_BY_BREAKPOINT, null, breakpoint);
+        for (JPDAThreadImpl st : steppingThreads) {
+            st.addSteppingSuspendedBy(this);
+        }
+        if (fire) {
+            pch.firePropertyChange(PROP_STEP_SUSPENDED_BY_BREAKPOINT, null, breakpoint);
+        }
+    }
+    
+    void addSteppingSuspendedBy(JPDAThreadImpl thread) {
+        synchronized (stepBreakpointLock) {
+            if (this.steppingSuspendedByBptsInThreads == null) {
+                this.steppingSuspendedByBptsInThreads = new HashSet<>();
+            }
+            this.steppingSuspendedByBptsInThreads.add(thread);
+        }
+    }
+    
+    public boolean unsetSteppingSuspendedByBpts() {
+        Set<JPDAThreadImpl> suspByThreads;
+        synchronized (stepBreakpointLock) {
+            suspByThreads = this.steppingSuspendedByBptsInThreads;
+            this.steppingSuspendedByBptsInThreads = null;
+        }
+        if (suspByThreads != null) {
+            for (JPDAThreadImpl t : suspByThreads) {
+                t.unsetStepSuspendedByBpIn(this);
+            }
+        }
+        return suspByThreads != null;
+    }
+    
+    void unsetStepSuspendedByBpIn(JPDAThreadImpl thread) {
+        JPDABreakpoint oldBp;
+        synchronized (stepBreakpointLock) {
+            oldBp = this.stepSuspendedByBreakpoint;
+            this.stepSuspendedByBreakpoint = null;
+            if (logger.isLoggable(Level.FINER)) {
+                logger.finer("unsetStepSuspendedByBp("+threadReference+"): stepSuspendedByBreakpoint = "+stepSuspendedByBreakpoint);
+            }
+            if (this.suspendedSteppingThreads == null) {
+                this.suspendedSteppingThreads.remove(thread);
+                if (this.suspendedSteppingThreads.isEmpty()) {
+                    this.suspendedSteppingThreads = null;
+                }
+            }
+        }
+        if (oldBp != null) {
+            pch.firePropertyChange(PROP_STEP_SUSPENDED_BY_BREAKPOINT, oldBp, null);
+        }
+        //return oldBp != null;
+    }
+    
+    private JPDABreakpoint removeSuspendedByBreakpoint() {
+        JPDABreakpoint brkp = null;
+        Set<JPDAThreadImpl> steppingThreads = null;
+        synchronized (stepBreakpointLock) {
+            if (stepSuspendedByBreakpoint != null) {
+                brkp = stepSuspendedByBreakpoint;
+                stepSuspendedByBreakpoint = null;
+                if (logger.isLoggable(Level.FINER)) {
+                    logger.finer("removeSuspendedByBreakpoint("+threadReference+"): stepSuspendedByBreakpoint = "+stepSuspendedByBreakpoint);
+                }
+            }
+            if (this.suspendedSteppingThreads != null) {
+                steppingThreads = this.suspendedSteppingThreads;
+                this.suspendedSteppingThreads = null;
+            }
+        }
+        if (steppingThreads != null) {
+            for (JPDAThreadImpl t : steppingThreads) {
+                t.removeSteppingSuspendedBy(this);
+            }
+        }
+        return brkp;
+    }
+    
+    private void removeSteppingSuspendedBy(JPDAThreadImpl thread) {
+        synchronized (stepBreakpointLock) {
+            if (this.steppingSuspendedByBptsInThreads != null) {
+                this.steppingSuspendedByBptsInThreads.remove(thread);
+                if (this.steppingSuspendedByBptsInThreads.isEmpty()) {
+                    this.steppingSuspendedByBptsInThreads = null;
+                }
+            }
+        }
     }
 
     public String getThreadStateLog() {
-        return getThreadStateLog(threadReference)+", internal suspend status = "+suspended+", suspendedNoFire = "+suspendedNoFire+", invoking a method = "+methodInvoking+", is in step = "+inStep;
+        return getThreadStateLog(threadReference)+", internal suspend status = "+suspended+", suspendedNoFire = "+suspendedNoFire+", suspendedOnAnEvent = "+suspendedOnAnEvent+", invoking a method = "+methodInvoking+", is in step = "+inStep;
     }
 
     public static String getThreadStateLog(ThreadReference threadReference) {
