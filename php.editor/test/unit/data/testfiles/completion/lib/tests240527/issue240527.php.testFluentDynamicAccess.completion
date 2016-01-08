@@ -1,0 +1,25 @@
+Code completion result for source line:
+$extendedClass::newInstance()->|publicExMethod(); // test
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+METHOD     newInstance()                   [STATIC]   ExClass
+METHOD     privateBaseTraitMethod()        [PUBLIC]   BaseTrait
+METHOD     privateExMethod()               [PUBLIC]   ExClass
+METHOD     privateSAMethod()               [PUBLIC]   StaticAccessTest
+METHOD     protectedBaseTraitMethod()      [PUBLIC]   BaseTrait
+METHOD     protectedExMethod()             [PUBLIC]   ExClass
+METHOD     protectedSAMethod()             [PUBLIC]   StaticAccessTest
+METHOD     publicBaseTraitMethod()         [PUBLIC]   BaseTrait
+METHOD     publicExMethod()                [PUBLIC]   ExClass
+METHOD     publicSAMethod()                [PUBLIC]   StaticAccessTest
+METHOD     publicStaticBaseTraitMethod()   [STATIC]   BaseTrait
+METHOD     publicStaticExMethod()          [STATIC]   ExClass
+METHOD     publicStaticSAMethod()          [STATIC]   StaticAccessTest
+VARIABLE   ? privateBaseTraitField         [PUBLIC]   BaseTrait
+VARIABLE   ? privateExField                [PUBLIC]   ExClass
+VARIABLE   ? privateSAField                [PUBLIC]   StaticAccessTest
+VARIABLE   ? protectedBaseTraitField       [PUBLIC]   BaseTrait
+VARIABLE   ? protectedExField              [PUBLIC]   ExClass
+VARIABLE   ? protectedSAField              [PUBLIC]   StaticAccessTest
+VARIABLE   ? publicBaseTraitField          [PUBLIC]   BaseTrait
+VARIABLE   ? publicExField                 [PUBLIC]   ExClass
+VARIABLE   ? publicSAField                 [PUBLIC]   StaticAccessTest
