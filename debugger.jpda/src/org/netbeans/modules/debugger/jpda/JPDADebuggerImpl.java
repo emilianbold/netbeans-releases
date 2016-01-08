@@ -1349,17 +1349,35 @@ public class JPDADebuggerImpl extends JPDADebugger {
     * Performs stop action.
     */
     public void setStoppedState (ThreadReference thread, boolean stoppedAll) {
-        PropertyChangeEvent evt;
+        setStoppedState(thread, true, false);
+    }
+    
+    public void setStoppedState (ThreadReference thread, boolean stoppedAll, boolean forceThreadSwitch) {
+        PropertyChangeEvent evt = null;
         accessLock.readLock().lock();
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("setStoppedState("+thread+", "+stoppedAll+", "+forceThreadSwitch+")");
+        }
         try {
             // this method can be called in stopped state to switch
             // the current thread only
-            JPDAThread c = getCurrentThread();
             JPDAThread t = getThread (thread);
-            if (!stoppedAll && c != null && c != t && c.isSuspended()) {
-                // We already have a suspended current thread, do not switch in that case.
-                return ;
+            if (!forceThreadSwitch) {
+                JPDAThread c = getCurrentThread();
+                if (logger.isLoggable(Level.FINER)) {
+                    logger.finer("Have c = "+((c == null) ? null : ((JPDAThreadImpl) c).getThreadStateLog()));
+                    logger.finer("Have t = "+((t == null) ? null : ((JPDAThreadImpl) t).getThreadStateLog()));
+                }
+                if (c != null && c != t
+                    && (!stoppedAll || ((JPDAThreadImpl) c).isSuspendedOnAnEvent())
+                    && c.isSuspended()) {
+                    // We already have a suspended current thread, do not switch in that case.
+                    // But update it's frames:
+                    evt = updateCurrentCallStackFrameNoFire(c);
+                    return ;
+                }
             }
+            logger.fine("  changing the current thread.");
             checkJSR45Languages (t);
             evt = setCurrentThreadNoFire(t);
             PropertyChangeEvent evt2 = setStateNoFire(STATE_STOPPED);
@@ -1375,12 +1393,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
         } finally {
             accessLock.readLock().unlock();
-        }
-        if (evt != null) {
-            do {
-                firePropertyChange(evt);
-                evt = (PropertyChangeEvent) evt.getPropagationId();
-            } while (evt != null);
+            if (evt != null) {
+                do {
+                    firePropertyChange(evt);
+                    evt = (PropertyChangeEvent) evt.getPropagationId();
+                } while (evt != null);
+            }
         }
     }
 
@@ -1632,27 +1650,30 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     public void notifySuspendAllNoFire() {
-        notifySuspendAllNoFire(null);
+        notifySuspendAllNoFire(null, null);
     }
 
-    public void notifySuspendAllNoFire(Set<ThreadReference> ignoredThreads) {
+    public void notifySuspendAllNoFire(Set<ThreadReference> ignoredThreads, ThreadReference eventThread) {
         Collection threads = threadsTranslation.getTranslated();
         for (Iterator it = threads.iterator(); it.hasNext(); ) {
             Object threadOrGroup = it.next();
-            if (threadOrGroup instanceof JPDAThreadImpl &&
-                    (ignoredThreads == null || !ignoredThreads.contains(((JPDAThreadImpl) threadOrGroup).getThreadReference()))) {
-                int status = ((JPDAThreadImpl) threadOrGroup).getState();
-                boolean invalid = (status == JPDAThread.STATE_NOT_STARTED ||
-                                   status == JPDAThread.STATE_UNKNOWN ||
-                                   status == JPDAThread.STATE_ZOMBIE);
-                if (!invalid) {
-                    try {
-                        ((JPDAThreadImpl) threadOrGroup).notifySuspendedNoFire(false);
-                    } catch (ObjectCollectedException ocex) {
-                        invalid = true;
+            if (threadOrGroup instanceof JPDAThreadImpl) {
+                JPDAThreadImpl thread = (JPDAThreadImpl) threadOrGroup;
+                ThreadReference tr = thread.getThreadReference();
+                if (ignoredThreads == null || !ignoredThreads.contains(tr)) {
+                    int status = thread.getState();
+                    boolean invalid = (status == JPDAThread.STATE_NOT_STARTED ||
+                                       status == JPDAThread.STATE_UNKNOWN ||
+                                       status == JPDAThread.STATE_ZOMBIE);
+                    if (!invalid) {
+                        try {
+                            thread.notifySuspendedNoFire(tr == eventThread, false);
+                        } catch (ObjectCollectedException ocex) {
+                            invalid = true;
+                        }
+                    } else if (status == JPDAThread.STATE_UNKNOWN || status == JPDAThread.STATE_ZOMBIE) {
+                        threadsTranslation.remove(tr);
                     }
-                } else if (status == JPDAThread.STATE_UNKNOWN || status == JPDAThread.STATE_ZOMBIE) {
-                    threadsTranslation.remove(((JPDAThreadImpl) threadOrGroup).getThreadReference());
                 }
             }
         }
@@ -1729,7 +1750,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
                 threadsToResume = new ArrayList<JPDAThreadImpl>();
                 for (JPDAThread t : allThreads) {
-                    if (t.isSuspended()) {
+                    if (t.isSuspended() || ((JPDAThreadImpl) t).getThreadReference().suspendCount() > 0) {
+                        // There can be threads that have running state, are not suspended, but their suspend count is > 0. These need to be resumed I guess...
                         threadsToResume.add((JPDAThreadImpl) t);
                     }
                 }
@@ -1756,10 +1778,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     //Operator.dumpThreadsStatus(vm, Level.SEVERE);
                     VirtualMachineWrapper.resume(vm);
                     vmSuspended = false;
-                    logger.finer("All threads resumed.");
+                    logger.finer("All VM threads resumed.");
                     //logger.severe("After VM.resume():");
                     //Operator.dumpThreadsStatus(vm, Level.SEVERE);
                 } else {
+                    logger.finer("Resuming selected suspended threads.");
                     for (JPDAThreadImpl t : threadsToResume) {
                         t.setAsResumed(false);
                         t.resumeAfterClean();
