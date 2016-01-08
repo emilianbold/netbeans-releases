@@ -137,7 +137,8 @@ public final class GulpBuildTool implements BuildToolImplementation {
     }
 
     public GulpTasks getGulpTasks(@NullAllowed FileObject gulpfile) {
-        if (gulpfile == null) {
+        if (gulpfile == null
+                || gulpfile.getParent().equals(project.getProjectDirectory())) {
             return getProjectGulpTasks();
         }
         GulpTasks tasks = gulpTasks.get(gulpfile);
