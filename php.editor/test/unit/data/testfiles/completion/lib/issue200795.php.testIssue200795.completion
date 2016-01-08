@@ -208,6 +208,7 @@ CLASS      EmptyClass                      [PUBLIC]   issue194875.php
 CLASS      EmptyClass                      [PUBLIC]   issue201310.php
 CLASS      EmptyClassFromNs                [PUBLIC]   Extra
 CLASS      EmptyClassFromNs                [PUBLIC]   ExtraThrow
+CLASS      ExClass                         [PUBLIC]   issue240527.php
 CLASS      ExMyException                   [PUBLIC]   issue194875.php
 CLASS      ExMyException                   [PUBLIC]   issue201310.php
 CLASS      ExMyException1                  [PUBLIC]   issue204958.php
@@ -305,6 +306,7 @@ CLASS      SomeClass                       [PUBLIC]   issue240522.php
 CLASS      SomeClass                       [PUBLIC]   useCase4.php
 CLASS      Space                           [PUBLIC]   Test\Space
 CLASS      SpaceUniverse                   [PUBLIC]   Test\Space
+CLASS      StaticAccessTest                [PUBLIC]   issue240527.php
 CLASS      StringClass                     [PUBLIC]   scalarTypeHints.php
 CLASS      Strings                         [PUBLIC]   Nette\Utils
 CLASS      SubClass157534                  [PUBLIC]   issue157534.php
