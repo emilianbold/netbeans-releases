@@ -209,10 +209,14 @@ public final class RunPhingTargetAction extends AbstractAction implements Contex
             return PhingBuildTool.IDENTIFIER;
         }
 
+        @Override
+        public String getBuildToolExecName() {
+            return PhingExecutable.PHING_NAME;
+        }
+
         @NbBundle.Messages({
             "TasksMenuSupportImpl.targets.label=&Target(s)",
             "TasksMenuSupportImpl.targets.loading=Loading Targets...",
-            "TasksMenuSupportImpl.targets.reload=Reload Targets",
             "TasksMenuSupportImpl.targets.manage.advanced=Manage Target(s)",
             "TasksMenuSupportImpl.phing.configure=Configure Phing...",
         })
@@ -223,16 +227,12 @@ public final class RunPhingTargetAction extends AbstractAction implements Contex
                     return Bundle.RunPhingTargetAction_name();
                 case LOADING_TASKS:
                     return Bundle.TasksMenuSupportImpl_targets_loading();
-                case RELOAD_TASKS:
-                    return Bundle.TasksMenuSupportImpl_targets_reload();
                 case CONFIGURE_TOOL:
                     return Bundle.TasksMenuSupportImpl_phing_configure();
                 case MANAGE_ADVANCED:
                     return Bundle.TasksMenuSupportImpl_targets_manage_advanced();
                 case TASKS_LABEL:
                     return Bundle.TasksMenuSupportImpl_targets_label();
-                case BUILD_TOOL_EXEC:
-                    return PhingExecutable.PHING_NAME;
                 default:
                     assert false : "Unknown title: " + title;
             }
