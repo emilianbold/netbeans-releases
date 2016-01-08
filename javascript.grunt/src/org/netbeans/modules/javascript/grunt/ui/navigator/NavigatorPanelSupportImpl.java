@@ -117,7 +117,6 @@ public class NavigatorPanelSupportImpl implements BuildTools.NavigatorPanelSuppo
 
     void fireChange() {
         changeSupport.fireChange();
-
     }
 
     //~ Factories
