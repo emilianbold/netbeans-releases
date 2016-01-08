@@ -365,6 +365,9 @@ public class Operator {
             } else if (suspendedCurrentThread) {
                 suspendedThread = debugger.getThread(thref);
                 eventAccessLock = suspendedThread.accessLock.writeLock();
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.finer(suspendedThread.getThreadStateLog()+" Write access lock TAKEN "+eventAccessLock+" on the current thread.");
+                }
             }
             if (eventAccessLock != null) {
                 eventAccessLock.lock();
@@ -407,6 +410,7 @@ public class Operator {
                         if (logger.isLoggable(Level.FINER)) {
                             logger.finer("Suspend count of "+thref+" is "+sc+"."+((sc > 1) ? "Reducing to one." : ""));
                         }
+                        suspendCount.removeSuspendCountFor(thref);
                         while (sc-- > 1) {
                             suspendCount.add(thref);
                             ThreadReferenceWrapper.resume(thref);
@@ -421,10 +425,10 @@ public class Operator {
             }
             if (suspendedAll) {
                 //TODO: Not really all might be suspended! If some were already.
-                debugger.notifySuspendAllNoFire(ignoredThreads);
+                debugger.notifySuspendAllNoFire(ignoredThreads, thref);
             } else if (suspendedCurrentThread && (ignoredThreads == null || !ignoredThreads.contains(thref))) {
                 threadWasInitiallySuspended = suspendedThread.isSuspended();
-                suspendedThread.notifySuspendedNoFire(isThreadDeath);
+                suspendedThread.notifySuspendedNoFire(true, isThreadDeath);
             }
         }
         if (logger.isLoggable(Level.FINE)) {
@@ -457,6 +461,7 @@ public class Operator {
                 eventsToProcess.put(e, exec);
             }
         }
+        boolean stepFinished = false;
         if (!eventsToProcess.isEmpty()) {
             for (Event e: eventSet) {
                 if (!eventsToProcess.containsKey(e)) {
@@ -484,6 +489,14 @@ public class Operator {
                     }
                     continue;
                 }
+                
+                if (thref != null && (e instanceof StepEvent)) {
+                    stepFinished = true;
+                    JPDAThreadImpl jt = debugger.getThread(thref);
+                    // The step can not be suspended by anything any more.
+                    jt.unsetSteppingSuspendedByBpts();
+                }
+                
                 Executor exec = null;
                 if (EventWrapper.request(e) == null) {
                     if (logger.isLoggable(Level.FINE)) {
@@ -596,14 +609,12 @@ public class Operator {
                 }*/
             }
             int sc = suspendCount.removeSuspendCountFor(thref);
-            if (!isThreadDeath) {
+            if (!isThreadDeath && sc > 1) {
                 for (int sci = 1; sci < sc; sci++) {
                     ThreadReferenceWrapper.suspend(thref);
                 }
-                if (sc > 1) {
-                    JPDAThreadImpl jt = debugger.getThread(thref);
-                    jt.updateSuspendCount(sc);
-                }
+                JPDAThreadImpl jt = debugger.getThread(thref);
+                jt.updateSuspendCount(sc);
             }
             if (!silent && suspendedAll) {
                 //TODO: Not really all might be suspended!
@@ -641,7 +652,7 @@ public class Operator {
                 DebuggerManager.getDebuggerManager().setCurrentSession(session);
             }
             if (thref != null) {
-                debugger.setStoppedState (thref, suspendedAll);
+                debugger.setStoppedState (thref, suspendedAll, stepFinished);
             }
         }
 
@@ -702,15 +713,10 @@ public class Operator {
     }
     
     private static void dumpThreadsStatus(VirtualMachine vm) {
-        if (!logger.isLoggable(Level.FINE)) {
+        if (!logger.isLoggable(Level.FINER)) {
             return;
         }
-        logger.fine("DUMP of threads:\n");
-        List<ThreadReference> allThreads = vm.allThreads();
-        for (ThreadReference t : allThreads) {
-            logger.fine("   "+t+" "+JPDAThreadImpl.getThreadStateLog(t));
-        }
-        logger.fine("DUMP DONE.");
+        dumpThreadsStatus(vm, Level.FINER);
     }
     
     private static ThreadReference getEventThread(Event e) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {

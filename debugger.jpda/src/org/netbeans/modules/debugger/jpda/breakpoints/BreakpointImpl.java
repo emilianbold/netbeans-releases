@@ -628,12 +628,14 @@ public abstract class BreakpointImpl implements ConditionedExecutor, PropertyCha
         List<StepRequest> stepRequests = EventRequestManagerWrapper.stepRequests(
                 VirtualMachineWrapper.eventRequestManager(MirrorWrapper.virtualMachine(thread)));
         if (stepRequests.size() > 0) {
+            logger.log(Level.FINE, "checkWhetherResumeToFinishStep() stepRequests = {0}", stepRequests);
             int suspendState = breakpoint.getSuspend();
             if (suspendState == JPDABreakpoint.SUSPEND_ALL ||
                 suspendState == JPDABreakpoint.SUSPEND_EVENT_THREAD) {
 
                 boolean thisThreadHasStep = false;
                 List<StepRequest> activeStepRequests = new ArrayList<StepRequest>(stepRequests);
+                List<ThreadReference> steppingThreads = new ArrayList<>(stepRequests.size());
                 for (int i = 0; i < activeStepRequests.size(); i++) {
                     StepRequest step = activeStepRequests.get(i);
                     ThreadReference stepThread = StepRequestWrapper.thread(step);
@@ -662,18 +664,28 @@ public abstract class BreakpointImpl implements ConditionedExecutor, PropertyCha
                     if (thread.equals(stepThread)) {
                         thisThreadHasStep = true;
                     }
+                    steppingThreads.add(stepThread);
                 }
                 if (thisThreadHasStep) { // remove this if the debugger should warn you in the same thread as well. See #104101.
                     return false;
                 }
                 if (activeStepRequests.size() > 0 && (thisThreadHasStep || suspendState == JPDABreakpoint.SUSPEND_ALL)) {
+                    boolean resume;
                     Boolean resumeDecision = debugger.getStepInterruptByBptResumeDecision();
                     if (resumeDecision != null) {
-                        return resumeDecision.booleanValue();
+                        resume = resumeDecision.booleanValue();
+                    } else {
+                        resume = false;
                     }
-                    JPDAThreadImpl tr = debugger.getThread(thread);
-                    tr.setStepSuspendedBy(breakpoint);
-
+                    if (!resume) {
+                        List<JPDAThreadImpl> jsts = new ArrayList<JPDAThreadImpl>(steppingThreads.size());
+                        for (ThreadReference tr : steppingThreads) {
+                            jsts.add(debugger.getThread(tr));
+                        }
+                        JPDAThreadImpl tr = debugger.getThread(thread);
+                        tr.setStepSuspendedBy(breakpoint, resumeDecision == null, jsts);
+                    }
+                    return resume;
                     /*final String message;
                     if (thisThreadHasStep) {
                         message = NbBundle.getMessage(BreakpointImpl.class,
@@ -723,7 +735,6 @@ public abstract class BreakpointImpl implements ConditionedExecutor, PropertyCha
                             }
                         }
                     });*/
-                    return false;
                     
                     /*
                     JCheckBox cb = new JCheckBox(NbBundle.getMessage(BreakpointImpl.class, "RememberDecision"));
