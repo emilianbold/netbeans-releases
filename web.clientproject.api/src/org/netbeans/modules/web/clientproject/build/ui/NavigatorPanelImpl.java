@@ -52,6 +52,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -67,7 +68,6 @@ import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.netbeans.modules.web.clientproject.build.AdvancedTask;
 import org.netbeans.modules.web.clientproject.build.AdvancedTasksStorage;
 import org.netbeans.modules.web.clientproject.build.Tasks;
-import static org.netbeans.modules.web.clientproject.build.ui.TasksMenu.LOGGER;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
@@ -89,6 +89,8 @@ import org.openide.util.Utilities;
 
 // Inspired by AntNavigatorPanel
 public final class NavigatorPanelImpl implements NavigatorPanel, LookupListener, ChangeListener {
+
+    private static final Logger LOGGER = Logger.getLogger(NavigatorPanelImpl.class.getName());
 
     private final BuildTools.NavigatorPanelSupport navigatorPanelSupport;
     private final ExplorerManager manager = new ExplorerManager();
