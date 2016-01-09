@@ -216,7 +216,11 @@ public class RepositoryInfo {
                     } catch (GitException ex) {
                         LOG.log(logged.add(root.getAbsolutePath() + ex.getMessage()) ? Level.INFO : Level.FINE, null, ex);
                     }
-                    refreshStashes(client);
+                    try {
+                        refreshStashes(client);
+                    } catch (GitException ex) {
+                        LOG.log(logged.add(root.getAbsolutePath() + ex.getMessage()) ? Level.INFO : Level.FINE, null, ex);
+                    }
                     GitRepositoryState newState = client.getRepositoryState(GitUtils.NULL_PROGRESS_MONITOR);
                     // now set new values and fire events when needed
                     setActiveBranch(newBranches);
