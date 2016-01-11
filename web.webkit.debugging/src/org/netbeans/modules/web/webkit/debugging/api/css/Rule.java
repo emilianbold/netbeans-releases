@@ -104,7 +104,7 @@ public class Rule {
         }
         String originCode = (String)rule.get("origin"); // NOI18N
         origin = StyleSheetOrigin.forCode(originCode);
-        style = new Style((JSONObject)rule.get("style")); // NOI18N
+        style = new Style((JSONObject)rule.get("style"), (String)rule.get("styleSheetId")); // NOI18N
         if (rule.containsKey("media")) { // NOI18N
             JSONArray array = (JSONArray)rule.get("media"); // NOI18N
             media = new ArrayList<Media>(array.size());
