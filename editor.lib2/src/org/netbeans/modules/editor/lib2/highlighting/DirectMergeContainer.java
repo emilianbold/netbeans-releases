@@ -57,6 +57,7 @@ import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
 import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.ReleasableHighlightsContainer;
+import org.netbeans.spi.editor.highlighting.ShiftHighlightsSequence;
 import org.openide.util.WeakListeners;
 
 /**
@@ -65,6 +66,9 @@ import org.openide.util.WeakListeners;
  * <br/>
  * It's somewhat similar to a view building process in view hierarchy which also maintains
  * next-change-offset where a change in the particular layer occurs and needs to be processed.
+ * <br/>
+ * {@link ShiftHighlightsSequence} are supported and the highlights sequences returned by the container
+ * are always instances of this interface.
  *
  * @author Miloslav Metelka
  */
@@ -124,9 +128,9 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
         layerEvent = event;
         try {
             if (!listeners.isEmpty()) {
-                event = new HighlightsChangeEvent(this, event.getStartOffset(), event.getEndOffset());
+                HighlightsChangeEvent thisEvt = new HighlightsChangeEvent(this, event.getStartOffset(), event.getEndOffset());
                 for (HighlightsChangeListener l : listeners) {
-                    l.highlightChanged(event);
+                    l.highlightChanged(thisEvt);
                 }
             }
             synchronized (activeHlSeqs) {
@@ -177,7 +181,7 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
         }
     }
     
-    static final class HlSequence implements HighlightsSequenceEx {
+    static final class HlSequence implements ShiftHighlightsSequence {
 
         /**
          * Wrappers around layers used to compute merged highlights.
@@ -190,7 +194,11 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
         
         int mergedHighlightStartOffset;
         
+        int mergedHighlightStartShift;
+        
         int mergedHighlightEndOffset;
+        
+        int mergedHighlightEndShift;
         
         AttributeSet mergedAttrs;
         
@@ -206,36 +214,38 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
                 HighlightsContainer container = layers[i];
                 HighlightsSequence hlSequence = container.getHighlights(startOffset, endOffset);
                 Wrapper wrapper = new Wrapper(container, hlSequence, startOffset);
-                if (!wrapper.isFinished()) { // For no-highlight wrapper do not include it at all in the array
+                if (wrapper.init(startOffset)) { // For no-highlight wrapper do not include it at all in the array
                     wrappers[topWrapperIndex++] = wrapper;
                 }
             }
             topWrapperIndex--;
-            updateMergeVars(-1, startOffset); // Update all layers to fetch correct values
+            updateMergeVars(-1, startOffset, 0); // Update all layers to fetch correct values
         }
         
         @Override
         public boolean moveNext() {
-            if (finished || topWrapperIndex < 0) {
+            if (finished) {
                 return false;
             }
             Wrapper topWrapper;
-            int lastHighlightEndOffset = mergedHighlightEndOffset;
-            while ((topWrapper = nextMerge(lastHighlightEndOffset)) != null) {
-                int nextChangeOffset = topWrapper.mNextChangeOffset;
-                if (nextChangeOffset <= lastHighlightEndOffset) { // No advance in change offset => Finished
-                    finished = true;
-                    return false;
-                }
+            int nextHighlightStartOffset = mergedHighlightEndOffset;
+            int nextHighlightStartShift = mergedHighlightEndShift;
+            while ((topWrapper = nextMerge(nextHighlightStartOffset, nextHighlightStartShift)) != null) {
+                int nextChangeOffset = topWrapper.mergedNextChangeOffset;
+                int nextChangeShift = topWrapper.mergedNextChangeShift;
                 AttributeSet attrs = topWrapper.mAttrs;
-                if (attrs != null) {
-                    mergedHighlightStartOffset = lastHighlightEndOffset;
+                if (attrs != null) { // Do not return regions with empty attrs (they are not highlights)
+                    mergedHighlightStartOffset = nextHighlightStartOffset;
+                    mergedHighlightStartShift = nextHighlightStartShift;
                     mergedHighlightEndOffset = nextChangeOffset;
+                    mergedHighlightEndShift = nextChangeShift;
                     mergedAttrs = attrs;
                     return true;
                 }
-                lastHighlightEndOffset = nextChangeOffset;
+                nextHighlightStartOffset = nextChangeOffset;
+                nextHighlightStartShift = nextChangeShift;
             }
+            finished = true;
             return false;
         }
 
@@ -245,20 +255,25 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
         }
 
         @Override
+        public int getStartShift() {
+            return mergedHighlightStartShift;
+        }
+        
+        @Override
         public int getEndOffset() {
             return mergedHighlightEndOffset;
         }
 
         @Override
+        public int getEndShift() {
+            return mergedHighlightEndShift;
+        }
+        
+        @Override
         public AttributeSet getAttributes() {
             return mergedAttrs;
         }
 
-        @Override
-        public boolean isStale() {
-            return finished;
-        }
-        
         void notifyLayersChanged() { // Notify that layers were changed => stop iteration
             finished = true;
         }
@@ -267,59 +282,70 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
          * Do merge above the given offset.
          *
          * @param offset end of last merged highlight.
+         * @param shift end shift of last merged highlight (accompanying the offset).
          * @return top wrapper containing info about the performed merge or null
          *  if there is zero wrappers.
          */
-        Wrapper nextMerge(int offset) {
+        Wrapper nextMerge(int offset, int shift) {
             int i = topWrapperIndex;
-            for (; i >= 0 && wrappers[i].mNextChangeOffset <= offset; i--) { }
-            // i contains first layer which has mNextChangeOffset > offset
-            return updateMergeVars(i, offset);
+            for (; i >= 0 && wrappers[i].isMergedNextChangeBelowOrAt(offset, shift); i--) { }
+            // i contains first layer which has mergedNextChangeOffset > offset
+            return updateMergeVars(i, offset, shift);
         }
         
         /**
          * Update merged vars of wrappers at (startIndex+1) and above.
          *
-         * @param startIndex index of first wrapper which has mNextChangeOffset &lt; offset.
-         *  All wrappers above it will have their mNextChangeOffset and mAttrs updated.
-         * @param offset.
-         * @return mNextChangeOffset of the top wrapper.
+         * @param startIndex index of first wrapper which has mergedNextChangeOffset above given offset (and shift)
+         *  or -1 if all wrappers need to be updated.
+         *  All wrappers above this index will have their mergedNextChangeOffset and mAttrs updated.
+         * @param offset current offset at which to update.
+         * @param shift current shift "within" the char at offset.
+         * @return top wrapper (wrapper at topWrapperIndex).
          */
-        Wrapper updateMergeVars(int startIndex, int offset) {
+        Wrapper updateMergeVars(int startIndex, int offset, int shift) {
             Wrapper wrapper = null;
             int nextChangeOffset;
+            int nextChangeShift;
             AttributeSet lastAttrs;
             if (startIndex < 0) { // No valid layers
                 nextChangeOffset = endOffset;
+                nextChangeShift = 0;
                 lastAttrs = null;
             } else {
                 wrapper = wrappers[startIndex];
-                nextChangeOffset = wrapper.mNextChangeOffset;
+                nextChangeOffset = wrapper.mergedNextChangeOffset;
+                nextChangeShift = wrapper.mergedNextChangeShift;
                 lastAttrs = wrapper.mAttrs;
             }
-            startIndex++; // Move to first wrapper that needs to be updated
-            for (; startIndex <= topWrapperIndex; startIndex++) {
-                wrapper = wrappers[startIndex];
-                if (wrapper.nextChangeOffset <= offset) {
-                    if (wrapper.updateCurrentState(offset)) { // Requires next highlight fetch
-                        if (!wrapper.fetchNextHighlight(offset)) { // Finished all highlights in sequence
-                            removeWrapper(startIndex); // Remove this wrapper
+            // Start with first wrapper that needs to be updated
+            wrapperIteration:
+            for (int i = startIndex + 1; i <= topWrapperIndex; i++) {
+                wrapper = wrappers[i];
+                if (wrapper.isNextChangeBelowOrAt(offset, shift)) {
+                    while (wrapper.updateCurrentState(offset, shift)) { // Check if next highlight fetch is necessary
+                        if (!wrapper.fetchNextHighlight()) { // Finished all highlights in sequence
+                            removeWrapper(i); // Remove this wrapper (does topWrapperIndex--)
                             // Ensure that the wrapper returned from method is correct after removeWrapper()
                             // topWrapperIndex already decreased by removeWrapper()
-                            startIndex--; // Compensate for addition in for(;;)
-                            if (startIndex == topWrapperIndex) { // Would be no more iterations
-                                // Previous wrapper or null
-                                wrapper = (startIndex >= 0) ? wrappers[startIndex] : null;
+                            i--; // Compensate wrapper removal in for(;;)
+                            if (i == topWrapperIndex) {
+                                // Since "wrapper" variable should return wrapper at current topWrapperIndex
+                                // that in this particular case was just removed
+                                // then assign current top wrapper explicitly.
+                                wrapper = (i >= 0) ? wrappers[i] : null;
+                                break wrapperIteration;
                             }
-                            continue; // Use next wrapper (now at same index i)
+                            continue wrapperIteration;
                         }
-                        wrapper.updateCurrentState(offset); // Update state to just fetched highlight
                     }
                 }
-                if (wrapper.nextChangeOffset < nextChangeOffset) {
+                if (wrapper.isNextChangeBelow(nextChangeOffset, nextChangeShift)) {
                     nextChangeOffset = wrapper.nextChangeOffset;
+                    nextChangeShift = wrapper.nextChangeShift;
                 }
-                wrapper.mNextChangeOffset = nextChangeOffset;
+                wrapper.mergedNextChangeOffset = nextChangeOffset;
+                wrapper.mergedNextChangeShift = nextChangeShift;
                 lastAttrs = (lastAttrs != null)
                         ? ((wrapper.currentAttrs != null)
                             ? AttributesUtilities.createComposite(wrapper.currentAttrs, lastAttrs) // first prior second
@@ -370,9 +396,19 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
         final HighlightsSequence hlSequence;
         
         /**
+         * Highlights sequence supporting coloring of characters inside tabs or newlines.
+         */
+        final ShiftHighlightsSequence shiftHLSequence;
+        
+        /**
          * Start offset of the last fetched highlight.
          */
         int hlStartOffset;
+        
+        /**
+         * Possible shift accompanying hlStartOffset or zero for non-ShiftHighlightsSequence.
+         */
+        int hlStartShift;
         
         /**
          * End offset of the last fetched highlight.
@@ -380,16 +416,32 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
         int hlEndOffset;
         
         /**
+         * Possible shift accompanying hlEndOffset or zero for non-ShiftHighlightsSequence.
+         */
+        int hlEndShift;
+
+        /**
          * Attributes of the last fetched highlight.
          */
         AttributeSet hlAttrs;
         
         /**
          * Offset where a change in highlighting for the current layer will occur.
-         * If an offset is below hlStartOffset then the value is hlStartOffset.
-         * Otherwise it will be hlEndOffset.
+         * If currently processed offset is below current highlight (fetched into hlStartOffset and hlEndOffset)
+         * then the value is set to hlStartOffset.
+         * For an offset inside current highlight the value will be set to hlEndOffset.
+         * Offset above hlEndOffset will trigger a next highlight fetching.
          */
         int nextChangeOffset;
+        
+        /**
+         * If shiftHLSequence != null then (similarly to nextChangeOffset)
+         * this is set either to start shift of the next highlight
+         * or (if the offset and its shift are inside current highlight) then
+         * this variable is set to end shift of the current highlight
+         * or a next highlight will be fetched (if current offset and shift are above the highlight).
+         */
+        int nextChangeShift;
         
         /**
          * Attributes for an offset: when before hlStartOffset it's null.
@@ -401,7 +453,12 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
          * Merged next change offset: minimum of nextChangeOffset from all
          * wrappers below this one in the wrappers array.
          */
-        int mNextChangeOffset;
+        int mergedNextChangeOffset;
+        
+        /**
+         * Merged next change shift - possible shift accompanying mergedNextChangeOffset or zero.
+         */
+        int mergedNextChangeShift;
         
         /**
          * Merged attributes: merge of currentAttrs from all
@@ -415,31 +472,94 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
         public Wrapper(HighlightsContainer layer, HighlightsSequence hlSequence, int startOffset) {
             this.layer = layer;
             this.hlSequence = hlSequence;
-            fetchNextHighlight(startOffset);
-            updateCurrentState(startOffset);
-            this.mNextChangeOffset = startOffset; // Will cause recomputation
+            this.shiftHLSequence = (hlSequence instanceof ShiftHighlightsSequence) ? (ShiftHighlightsSequence) hlSequence : null;
         }
         
-        boolean isFinished() { // Whether no more highlights from 
-            return (hlStartOffset == Integer.MAX_VALUE);
+        boolean init(int startOffset) {
+            do {
+                if (!fetchNextHighlight()) {
+                    return false;
+                }
+            } while (hlEndOffset <= startOffset); // Exclude any possible highlights ending below startOffset
+            updateCurrentState(startOffset, 0);
+            return true;
         }
         
         /**
+         * Whether next change offset and shift of this wrapper are below the given parameters.
+         *
+         * @param offset current offset.
+         * @param shift current shift (accompanying the current offset).
+         * @return true if next change offset and shift of this wrapper are below the given parameters
+         *  or false otherwise.
+         */
+        boolean isNextChangeBelow(int offset, int shift) {
+            return nextChangeOffset < offset || (nextChangeOffset == offset && nextChangeShift < shift);
+        }
+
+        /**
+         * Whether next change offset and shift of this wrapper are below the given parameters
+         * or right at them.
+         *
+         * @param offset current offset.
+         * @param shift current shift (accompanying the current offset).
+         * @return true if next change offset and shift of this wrapper are below or right at the given parameters
+         *  or false otherwise.
+         */
+        boolean isNextChangeBelowOrAt(int offset, int shift) {
+            return nextChangeOffset < offset || (nextChangeOffset == offset && nextChangeShift <= shift);
+        }
+
+        /**
+         * Whether merged next change offset and shift of this wrapper are below the given parameters
+         * or right at them.
+         *
+         * @param offset current offset.
+         * @param shift current shift (accompanying the current offset).
+         * @return true if next change offset and shift of this wrapper are below or right at the given parameters
+         *  or false otherwise.
+         */
+        boolean isMergedNextChangeBelowOrAt(int offset, int shift) {
+            return mergedNextChangeOffset < offset || (mergedNextChangeOffset == offset && mergedNextChangeShift <= shift);
+        }
+
+        /**
          * Update currentAttrs and nextChangeOffset according to given offset.
          * @param offset offset to which to update
+         * @param shift shift inside tab or newline character on the given offset.
          * @return true if the offset is >= hlEndOffset and so fetchNextHighlight() is necessary.
          */
-        boolean updateCurrentState(int offset) {
-            if (offset < hlStartOffset) { // before hl start
+        boolean updateCurrentState(int offset, int shift) {
+            if (offset < hlStartOffset) { // offset before current hl start
                 currentAttrs = null;
                 nextChangeOffset = hlStartOffset;
+                nextChangeShift = hlStartShift;
                 return false;
-            } else if (offset < hlEndOffset) { // inside hl (assuming call after fetchNextHighlight())
+            } else if (offset == hlStartOffset) { // inside hl (assuming call after fetchNextHighlight())
+                if (shift < hlStartShift) {
+                    currentAttrs = null;
+                    nextChangeOffset = hlStartOffset;
+                    nextChangeShift = hlStartShift;
+                    return false;
+                    
+                } else { // Above (or at) highlight's start
+                    if (offset < hlEndOffset || (offset == hlEndOffset && shift < hlEndShift)) {
+                        currentAttrs = hlAttrs;
+                        nextChangeOffset = hlEndOffset;
+                        nextChangeShift = hlEndShift;
+                        return false;
+                    } else {
+                        return true; // Fetch next highlight
+                    }
+                } // else: fetch next highlight
+            } else if (offset < hlEndOffset || (offset == hlEndOffset && shift < hlEndShift)) {
                 currentAttrs = hlAttrs;
                 nextChangeOffset = hlEndOffset;
+                nextChangeShift = hlEndShift;
                 return false;
-            } // else: offset >= hlEndOffset
-            return true;
+            } else { // Above hlEndOffset (or hlEndShift) => fetch next highlight
+                return true; // Fetch next highlight
+            }
         }
         
         /**
@@ -447,56 +567,56 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
          * @param offset
          * @return true if highlight fetched successfully or false if there are no more highlights.
          */
-        boolean fetchNextHighlight(int offset) {
-            assert (hlStartOffset != Integer.MAX_VALUE);
-            do {
-                if (hlSequence.moveNext()) {
-                    hlStartOffset = hlSequence.getStartOffset();
-                    if (hlStartOffset < hlEndOffset) { // Invalid layer: next highlight overlaps previous one
+        boolean fetchNextHighlight() {
+            if (hlSequence.moveNext()) {
+                hlStartOffset = hlSequence.getStartOffset();
+                if (hlStartOffset < hlEndOffset) { // Invalid layer: next highlight overlaps previous one
+                    // To prevent infinite loops finish this HL
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("Disabled an invalid highlighting layer: hlStartOffset=" + hlStartOffset + // NOI18N
+                            " < previous hlEndOffset=" + hlEndOffset + " for layer=" + layer); // NOI18N
+                    }
+                    return false;
+                }
+                hlEndOffset = hlSequence.getEndOffset();
+                if (hlEndOffset <= hlStartOffset) {
+                    if (hlEndOffset < hlStartOffset) { // Invalid highlight: end offset before start offset
                         // To prevent infinite loops finish this HL
                         if (LOG.isLoggable(Level.FINE)) {
                             LOG.fine("Disabled an invalid highlighting layer: hlStartOffset=" + hlStartOffset + // NOI18N
-                                " < previous hlEndOffset=" + hlEndOffset + " for layer=" + layer); // NOI18N
+                                " > hlEndOffset=" + hlEndOffset + " for layer=" + layer); // NOI18N
                         }
-                        hlStartOffset = hlEndOffset = Integer.MAX_VALUE;
                         return false;
                     }
-                    hlEndOffset = hlSequence.getEndOffset();
-                    if (hlEndOffset <= hlStartOffset) {
-                        if (hlEndOffset < hlStartOffset) { // Invalid highlight: end offset before start offset
-                            // To prevent infinite loops finish this HL
-                            if (LOG.isLoggable(Level.FINE)) {
-                                LOG.fine("Disabled an invalid highlighting layer: hlStartOffset=" + hlStartOffset + // NOI18N
-                                    " > hlEndOffset=" + hlEndOffset + " for layer=" + layer); // NOI18N
-                            }
-                            hlStartOffset = hlEndOffset = Integer.MAX_VALUE;
-                            return false;
+                    emptyHighlightCount++;
+                    if (emptyHighlightCount >= MAX_EMPTY_HIGHLIGHT_COUNT) {
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.fine("Disabled an invalid highlighting layer: too many empty highlights=" + emptyHighlightCount); // NOI18N
                         }
-                        emptyHighlightCount++;
-                        if (emptyHighlightCount >= MAX_EMPTY_HIGHLIGHT_COUNT) {
-                            if (LOG.isLoggable(Level.FINE)) {
-                                LOG.fine("Disabled an invalid highlighting layer: too many empty highlights=" + emptyHighlightCount); // NOI18N
-                            }
-                            hlStartOffset = hlEndOffset = Integer.MAX_VALUE;
-                            return false;
-                        }
+                        return false;
                     }
-                    hlAttrs = hlSequence.getAttributes();
-                    if (LOG.isLoggable(Level.FINER)) {
-                        LOG.fine("Fetched highlight: <" + hlStartOffset + // NOI18N
-                                "," + hlEndOffset + "> for layer=" + layer + '\n'); // NOI18N
-                    }
-                } else {
-                    hlStartOffset = hlEndOffset = Integer.MAX_VALUE; // Signal that sequence is finished
-                    return false;
                 }
-            } while (hlEndOffset <= offset);
+                if (shiftHLSequence != null) {
+                    hlStartShift = shiftHLSequence.getStartShift();
+                    hlEndShift = shiftHLSequence.getEndShift();
+                    // Do not perform extra checking of validity (non-overlapping with previous highlight
+                    //  and validity of shifts since it should not be crucial
+                    //  for proper functioning of updateCurrentState() method.
+                } // else hlStartShift and hlEndShift are always zero in the wrapper
+                hlAttrs = hlSequence.getAttributes();
+                if (LOG.isLoggable(Level.FINER)) {
+                    LOG.fine("Fetched highlight: <" + hlStartOffset + // NOI18N
+                            "," + hlEndOffset + "> for layer=" + layer + '\n'); // NOI18N
+                }
+            } else {
+                return false;
+            }
             return true; // Valid highlight fetched
         }
 
         @Override
         public String toString() {
-            return  "M[" + mNextChangeOffset + ",A=" + mAttrs + // NOI18N
+            return  "M[" + mergedNextChangeOffset + ",A=" + mAttrs + // NOI18N
                     "]  Next[" + nextChangeOffset + ",A=" + currentAttrs + // NOI18N
                     "]  HL:<" + hlStartOffset + "," + hlEndOffset + ">,A=" + hlAttrs; // NOI18N
         }

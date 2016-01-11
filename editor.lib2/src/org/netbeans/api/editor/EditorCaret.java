@@ -123,6 +123,7 @@ import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib2.RectangularSelectionTransferHandler;
 import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
 import org.netbeans.modules.editor.lib2.actions.EditorActionUtilities;
+import org.netbeans.modules.editor.lib2.highlighting.CaretOverwriteModeHighlighting;
 import org.netbeans.modules.editor.lib2.view.DocumentView;
 import org.netbeans.modules.editor.lib2.view.LockedViewHierarchy;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchy;
@@ -375,6 +376,7 @@ public final class EditorCaret implements Caret {
     }
 
     public void setDot(int offset, boolean expandFold) {
+        setDot(offset);
         // TODO get rid of this
     }
     
@@ -554,6 +556,7 @@ public final class EditorCaret implements Caret {
                 if (c == null || c.getCaret() != EditorCaret.this) {
                     return;
                 }
+                fireEditorCaretChange(new EditorCaretEvent(EditorCaret.this, 0, Integer.MAX_VALUE)); // [TODO] temp firing without detailed info
                 ChangeEvent evt = new ChangeEvent(EditorCaret.this);
                 List<ChangeListener> listeners = changeListenerList.getListeners();
                 for (ChangeListener l : listeners) {
@@ -660,10 +663,13 @@ public final class EditorCaret implements Caret {
         
         component = c;
         visible = true;
-        blinkVisible = true;
-        
         modelChanged(null, c.getDocument());
 
+        Boolean b = (Boolean) c.getClientProperty(EditorUtilities.CARET_OVERWRITE_MODE_PROPERTY);
+        overwriteMode = (b != null) ? b : false;
+        updateOverwriteModeLayer(true);
+        setBlinkVisible(true);
+        
         // Attempt to assign initial bounds - usually here the component
         // is not yet added to the component hierarchy.
         updateCaretBounds();
@@ -884,6 +890,8 @@ public final class EditorCaret implements Caret {
 
             carets.clear();
             carets.add(new CaretInfo(this));
+            sortedCarets.clear();
+            sortedCarets.add(carets.get(0));
 
             activeDoc = null;
             if (prefs != null && weakPrefsListener != null) {
@@ -912,7 +920,7 @@ public final class EditorCaret implements Caret {
             updateType();
         }
     }
-
+    
     /**
      * Renders the caret
      */
@@ -1260,7 +1268,7 @@ public final class EditorCaret implements Caret {
             synchronized (listenerImpl) {
                 if (flasher != null) {
                     flasher.stop();
-                    this.blinkVisible = true;
+                    setBlinkVisible(true);
                     if (visible) {
                         if (LOG.isLoggable(Level.FINER)){
                             LOG.finer("Reset blinking (caret already visible)" + // NOI18N
@@ -1274,6 +1282,22 @@ public final class EditorCaret implements Caret {
                         }
                     }
                 }
+            }
+        }
+    }
+    
+    void setBlinkVisible(boolean blinkVisible) {
+        this.blinkVisible = blinkVisible;
+        updateOverwriteModeLayer(false);
+    }
+    
+    private void updateOverwriteModeLayer(boolean forceUpdate) {
+        JTextComponent c;
+        if ((forceUpdate || overwriteMode) && (c = component) != null) {
+            CaretOverwriteModeHighlighting overwriteModeHighlighting = (CaretOverwriteModeHighlighting)
+                    c.getClientProperty(CaretOverwriteModeHighlighting.class);
+            if (overwriteModeHighlighting != null) {
+                overwriteModeHighlighting.setVisible(visible && blinkVisible);
             }
         }
     }
@@ -1317,7 +1341,7 @@ public final class EditorCaret implements Caret {
                     flasher.stop();
                     flasher.removeActionListener(listenerImpl);
                     flasher = null;
-                    blinkVisible = true;
+                    setBlinkVisible(true);
                     if (LOG.isLoggable(Level.FINER)){
                         LOG.finer("Zero blink rate - no blinking. flasher=null; blinkVisible=true"); // NOI18N
                     }
@@ -1344,7 +1368,7 @@ public final class EditorCaret implements Caret {
             doc.readLock();
             try {
                 boolean dotChanged = false;
-                if (offset >= 0 && offset <= doc.getLength()) {
+                if (offset != caret.getDot() && offset >= 0 && offset <= doc.getLength()) {
                     dotChanged = true;
                     try {
                         caret.setDotPos(doc.createPosition(offset));
@@ -1731,6 +1755,7 @@ public final class EditorCaret implements Caret {
             } else if (EditorUtilities.CARET_OVERWRITE_MODE_PROPERTY.equals(propName)) {
                 Boolean b = (Boolean) evt.getNewValue();
                 overwriteMode = (b != null) ? b : false;
+                updateOverwriteModeLayer(true);
                 updateType();
 
             } else if ("ancestor".equals(propName) && evt.getSource() == component) { // NOI18N
@@ -1794,7 +1819,7 @@ public final class EditorCaret implements Caret {
         public @Override void actionPerformed(ActionEvent evt) {
             JTextComponent c = component;
             if (c != null) {
-                blinkVisible = !blinkVisible;
+                setBlinkVisible(!blinkVisible);
                 for (CaretInfo caret : carets) {
                     if (caret.getCaretBounds() != null) {
                         Rectangle repaintRect = caret.getCaretBounds();

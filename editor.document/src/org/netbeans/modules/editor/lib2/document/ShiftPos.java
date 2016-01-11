@@ -45,34 +45,34 @@ import javax.swing.text.Position;
 
 
 /**
- * Implementation of a virtual position. The clients should only use methods
- * in {@link org.netbeans.api.editor.document.VirtualPositions} and never check
+ * Implementation of a shift position. The clients should only use methods
+ * in {@link org.netbeans.api.editor.document.ShiftPositions} and never check
  * for an instance of this particular class.
  *
  * @author Miloslav Metelka
  */
-public final class VirtualPos implements Position {
+public final class ShiftPos implements Position {
 
     private final Position pos;
     
-    private final int extraColumns;
+    private final int shift;
 
-    public VirtualPos(Position pos, int extraColumns) {
+    public ShiftPos(Position pos, int shift) {
         this.pos = pos;
-        this.extraColumns = extraColumns;
+        this.shift = shift;
     }
     
-    public VirtualPos(VirtualPos vPos, int extraColumns) {
-        this.pos = vPos.pos;
-        this.extraColumns = vPos.extraColumns + extraColumns;
+    public ShiftPos(ShiftPos shiftPos, int shift) {
+        this.pos = shiftPos.pos;
+        this.shift = shiftPos.shift + shift;
     }
 
-    public Position pos() {
+    public Position getPosition() {
         return pos;
     }
     
-    public int extraColumns() {
-        return extraColumns;
+    public int getShift() {
+        return shift;
     }
 
     @Override

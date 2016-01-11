@@ -43,59 +43,57 @@ package org.netbeans.api.editor.document;
 
 import javax.swing.text.Position;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.editor.lib2.document.VirtualPos;
+import org.netbeans.modules.editor.lib2.document.ShiftPos;
 import org.openide.util.Parameters;
 
 /**
- * A virtual position is a regular position togehter with a number of extra virtual columns.
- * That allows for positions behind line's last character.
- * Virtual position points at newline character of a particular line and {@link #extraColumns(Position)}
- * give an additional shift information.
+ * A position together with a shift of extra columns.
+ * This allows for positions behind line's last character (newline) or within a tab character.
  *
  * @author Miloslav Metelka
  */
-public final class VirtualPositions {
+public final class ShiftPositions {
 
-    private VirtualPositions() {
+    private ShiftPositions() {
         // No instances
     }
     
     /**
-     * Produce an immutable virtual position.
+     * Produce an immutable shift position.
      * The returned position acts like the original position and it does not handle in any way
      * any subsequent document modifications.
      *
-     * @param pos non-null position. If this is already a virtual position its extraColumns
-     *  get added to the extraColumns parameter passed to this method.
-     * @param extraColumns >= 0 number of extra columns added to the position.
+     * @param pos non-null position. If this is already a shift position its shift
+     *  gets added to the shift parameter passed to this method.
+     * @param shift >= 0 number of extra columns added to the position.
      *  For 0 the original position gets returned. Negative value throws an IllegalArgumentException.
      * @return virtual position whose {@link Position#getOffset()} returns the same value
-     *  like the pos parameter.
+     *  like the getPosition parameter.
      */
-    public static Position create(@NonNull Position pos, int extraColumns) {
+    public static Position create(@NonNull Position pos, int shift) {
         Parameters.notNull("pos", pos);   //NOI18N
-        if (extraColumns > 0) {
-            if (pos.getClass() == VirtualPos.class) {
-                return new VirtualPos((VirtualPos)pos, extraColumns);
+        if (shift > 0) {
+            if (pos.getClass() == ShiftPos.class) {
+                return new ShiftPos((ShiftPos)pos, shift);
             } else {
-                return new VirtualPos(pos, extraColumns);
+                return new ShiftPos(pos, shift);
             }
-        } else if (extraColumns == 0) {
+        } else if (shift == 0) {
             return pos;
         } else {
-            throw new IllegalArgumentException("extraColumns=" + extraColumns + " < 0");
+            throw new IllegalArgumentException("shift=" + shift + " < 0");
         }
     }
 
     /**
-     * Return extra columns of a passed virtual position or zero for regular positions.
+     * Return shift of a passed virtual position or zero for regular positions.
      * @param pos non-null position.
-     * @return >=0 extra columns count or zero for regular positions.
+     * @return >=0 shift or zero for regular positions.
      */
-    public static int extraColumns(@NonNull Position pos) {
+    public static int getShift(@NonNull Position pos) {
         Parameters.notNull("pos", pos);   //NOI18N
-        return (pos.getClass() == VirtualPos.class)
-                ? ((VirtualPos)pos).extraColumns()
+        return (pos.getClass() == ShiftPos.class)
+                ? ((ShiftPos)pos).getShift()
                 : 0;
     }
     

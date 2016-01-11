@@ -41,47 +41,34 @@
  */
 package org.netbeans.modules.editor.lib2.highlighting;
 
-import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JComboBox;
-import javax.swing.JTextField;
-import javax.swing.UIManager;
-import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Caret;
-import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.CaretInfo;
 import org.netbeans.api.editor.EditorCaret;
 import org.netbeans.api.editor.EditorCaretEvent;
 import org.netbeans.api.editor.EditorCaretListener;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.AttributesUtilities;
-import org.netbeans.api.editor.settings.FontColorNames;
-import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.lib.editor.util.ListenerList;
+import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
-import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
-import org.netbeans.spi.editor.highlighting.support.PositionsBag;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
+import org.netbeans.spi.editor.highlighting.ReleasableHighlightsContainer;
 import org.openide.util.WeakListeners;
 
 /**
- * Color a single character under the block caret with inverse colors in
+ * Used by EditorCaret to color a single character under the block caret(s) with inverse colors in
  * overwrite mode when the caret blinking timer ticks.
  *
  * @author Miloslav Metelka
  */
-public final class CaretOverwriteModeHighlighting implements HighlightsContainer, PropertyChangeListener, EditorCaretListener {
+public final class CaretOverwriteModeHighlighting implements ReleasableHighlightsContainer, PropertyChangeListener, EditorCaretListener {
 
     public static final String LAYER_TYPE_ID = "org.netbeans.modules.editor.lib2.highlighting.CaretOverwriteModeHighlighting"; //NOI18N
 
@@ -92,51 +79,53 @@ public final class CaretOverwriteModeHighlighting implements HighlightsContainer
 
     private boolean inited;
     
-    private boolean active;
-
-    private boolean caretChanged;
-
-    private MimePath mimePath;
+    private boolean visible;
 
     private EditorCaret editorCaret;
 
-    private EditorCaretListener editorCaretListener;
+    private EditorCaretListener weakEditorCaretListener;
     
-    private ListenerList<HighlightsChangeListener> listenerList;
+    private ListenerList<HighlightsChangeListener> listenerList = new ListenerList<>();
     
     private AttributeSet coloringAttrs;
     
-    private LookupListener lookupListener;
-    
     private List<CaretInfo> sortedCarets;
-
+    
     /** Creates a new instance of CaretSelectionLayer */
-    protected CaretOverwriteModeHighlighting(JTextComponent component) {
+    public CaretOverwriteModeHighlighting(JTextComponent component) {
         this.component = component;
+        component.putClientProperty(CaretOverwriteModeHighlighting.class, this);
+    }
+    
+    public void setVisible(boolean visible) {
+        if (visible != this.visible) {
+            this.visible = visible;
+            if (editorCaret != null) {
+                List<CaretInfo> sortedCaretsL;
+                if (visible) {
+                    sortedCaretsL = editorCaret.getSortedCarets();
+                    synchronized (this) {
+                        sortedCarets = sortedCaretsL;
+                    }
+                } else {
+                    synchronized (this) {
+                        sortedCaretsL = sortedCarets;
+                        sortedCarets = null;
+                    }
+                }
+                if (sortedCaretsL != null) {
+                    int changeStartOffset = sortedCaretsL.get(0).getDot();
+                    int changeEndOffset = sortedCaretsL.get(sortedCaretsL.size() - 1).getDot() + 1;
+                    fireHighlightsChange(changeStartOffset, changeEndOffset);
+                }
+            }
+        }
     }
     
     private void init() {
-        // Determine the mime type
-        String mimeType = BlockHighlighting.getMimeType(component);
-        mimePath = mimeType == null ? MimePath.EMPTY : MimePath.parse(mimeType);
-
         component.addPropertyChangeListener(WeakListeners.propertyChange(this, component));
-
-        Caret caret = component.getCaret();
-        if (editorCaret != null) {
-            editorCaretListener = WeakListeners.create(EditorCaretListener.class, this, editorCaret);
-            editorCaret.addEditorCaretListener(editorCaretListener);
-        }
-
-        update(false);
-    }
-    
-    protected final JTextComponent component() {
-        return component;
-    }
-    
-    protected final Caret caret() {
-        return editorCaret;
+        updateActiveCaret();
+        updateColoring();
     }
     
     // ------------------------------------------------
@@ -149,7 +138,22 @@ public final class CaretOverwriteModeHighlighting implements HighlightsContainer
             inited = true;
             init();
         }
-        return null; // TODO
+        HighlightsSequence hs;
+        boolean visibleL;
+        List<CaretInfo> sortedCaretsL;
+        synchronized (this) {
+            visibleL = visible;
+            sortedCaretsL = sortedCarets;
+        }
+        if (editorCaret != null && visibleL) {
+            hs = new HS(sortedCaretsL, startOffset, endOffset);
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("CaretOverwriteModeHighlighting.getHighlights() <" + startOffset + "," + endOffset + ">\n");
+            }
+        } else {
+            hs = HighlightsSequence.EMPTY;
+        }
+        return hs;
     }
 
     @Override
@@ -162,8 +166,14 @@ public final class CaretOverwriteModeHighlighting implements HighlightsContainer
         listenerList.remove(listener);
     }
     
-    private void fireHighlightsChange() {
-        // TODO
+    private void fireHighlightsChange(HighlightsChangeEvent evt) {
+        for (HighlightsChangeListener listener : listenerList.getListeners()) {
+            listener.highlightChanged(evt);
+        }
+    }
+
+    private void fireHighlightsChange(int startOffset, int endOffset) {
+        fireHighlightsChange(new HighlightsChangeEvent(this, startOffset, endOffset));
     }
 
     // ------------------------------------------------
@@ -172,93 +182,107 @@ public final class CaretOverwriteModeHighlighting implements HighlightsContainer
     
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName() == null || "caret".equals(evt.getPropertyName())) { //NOI18N
-            if (editorCaret != null) {
-                editorCaret.removeEditorCaretListener(editorCaretListener);
-                editorCaretListener = null;
-            }
-            
-            Caret caret = component.getCaret();
-            if (caret instanceof EditorCaret) {
-                editorCaret = (EditorCaret) caret;
-            }
-            
-            if (editorCaret != null) {
-                editorCaretListener = WeakListeners.create(EditorCaretListener.class, this, editorCaret);
-                editorCaret.addEditorCaretListener(editorCaretListener);
-            }
-            update(true);
+        String propName = evt.getPropertyName();
+        if (propName == null || "caret".equals(evt.getPropertyName())) { //NOI18N
+            updateActiveCaret();
+        } else if ("caretColor".equals(propName) || "background".equals(propName)) {
+            updateColoring();
         }
     }
     
-    // ------------------------------------------------
-    // private implementation
-    // ------------------------------------------------
-    
-    private final void update(boolean fire) {
-        ((AbstractDocument) component.getDocument()).readLock();
-        try {
-            sortedCarets = editorCaret.getSortedCarets();
-        } finally {
-            ((AbstractDocument) component.getDocument()).readUnlock();
-        }
-    }
-    
-    protected final AttributeSet getAttribs() {
-        if (lookupListener == null) {
-            lookupListener = new LookupListener() {
-                @Override
-                public void resultChanged(LookupEvent ev) {
-                    @SuppressWarnings("unchecked")
-                    final Lookup.Result<FontColorSettings> result = (Lookup.Result<FontColorSettings>) ev.getSource();
-                    setAttrs(result);
-                }
-            };
-            Lookup lookup = MimeLookup.getLookup(mimePath);
-            Lookup.Result<FontColorSettings> result = lookup.lookupResult(FontColorSettings.class);
-            setAttrs(result);
-            result.addLookupListener(WeakListeners.create(LookupListener.class,
-                    lookupListener, result));
-        }
-        return coloringAttrs;
-    }
-        
-    private void setAttrs(Lookup.Result<FontColorSettings> result) {
-        if (Boolean.TRUE.equals(component.getClientProperty("AsTextField"))) {
-            if (UIManager.get("TextField.selectionBackground") != null) {
-                coloringAttrs = AttributesUtilities.createImmutable(
-                        StyleConstants.Background, (Color) UIManager.get("TextField.selectionBackground"),
-                        StyleConstants.Foreground, (Color) UIManager.get("TextField.selectionForeground"));
-            } else {
-                final JTextField referenceTextField = (JTextField) new JComboBox<String>().getEditor().getEditorComponent();
-                coloringAttrs = AttributesUtilities.createImmutable(
-                        StyleConstants.Background, referenceTextField.getSelectionColor(),
-                        StyleConstants.Foreground, referenceTextField.getSelectedTextColor());
-            }
-        } else {
-            FontColorSettings fcs = result.allInstances().iterator().next();
-            coloringAttrs = fcs.getFontColors(FontColorNames.CARET_COLOR_OVERWRITE_MODE);
-            if (coloringAttrs == null) {
-                coloringAttrs = SimpleAttributeSet.EMPTY;
+    @Override
+    public void caretChanged(EditorCaretEvent evt) {
+        if (visible) {
+            fireHighlightsChange(evt.getAffectedStartOffset(), evt.getAffectedEndOffset());
+            List<CaretInfo> sortedCaretsL;
+            sortedCaretsL = editorCaret.getSortedCarets();
+            synchronized (this) {
+                sortedCarets = sortedCaretsL;
             }
         }
     }
 
     @Override
-    public void caretChanged(EditorCaretEvent evt) {
-        caretChanged = true;
-        if (active) {
-            update(true);
+    public void released() {
+        component.removePropertyChangeListener(this);
+    }
+    
+    private void updateActiveCaret() {
+        if (visible) {
+            setVisible(false);
+        }
+        if (editorCaret != null) {
+            editorCaret.removeEditorCaretListener(weakEditorCaretListener);
+            weakEditorCaretListener = null;
+            editorCaret = null;
+        }
+
+        Caret caret = component.getCaret();
+        if (caret instanceof EditorCaret) { // Only work for editor caret
+            editorCaret = (EditorCaret) caret;
+        }
+
+        if (editorCaret != null) {
+            weakEditorCaretListener = WeakListeners.create(EditorCaretListener.class, this, editorCaret);
+            editorCaret.addEditorCaretListener(weakEditorCaretListener);
         }
     }
 
+    private void updateColoring() {
+        coloringAttrs = AttributesUtilities.createImmutable(
+                StyleConstants.Background, component.getCaretColor(),
+                StyleConstants.Foreground, component.getBackground());
+    }
+    
     private final class HS implements HighlightsSequence {
         
-        int caretOffset;
+        private final List<CaretInfo> sortedCarets;
+        
+        private final int startOffset;
+        
+        private final int endOffset;
+
+        private int caretOffset = -1;
+
+        private int caretIndex;
+        
+        HS(List<CaretInfo> sortedCarets, int startOffset, int endOffset) {
+            this.sortedCarets = sortedCarets;
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
+        }
 
         @Override
         public boolean moveNext() {
-            return true; // TODOO
+            if (caretOffset == -1) { // Return first highlight
+                while (caretOffset < startOffset && caretIndex < sortedCarets.size()) {
+                    CaretInfo caret = sortedCarets.get(caretIndex++);
+                    caretOffset = caret.getDot();
+                }
+                if (caretOffset != -1) {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("  CaretOverwriteModeHighlighting.Highlight <" + caretOffset + "," + (caretOffset+1) + ">\n");
+                    }
+                    return true;
+                }
+            } else {
+                while (caretIndex < sortedCarets.size()) {
+                    CaretInfo caret = sortedCarets.get(caretIndex++);
+                    int offset = caret.getDot();
+                    // Check for case if sorted carets would not be truly sorted or there would be duplicates
+                    if (offset > caretOffset) {
+                        caretOffset = offset;
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.fine("  CaretOverwriteModeHighlighting.Highlight <" + caretOffset + "," + (caretOffset + 1) + ">\n");
+                        }
+                        return true;
+                    }
+                    if (offset >= endOffset) {
+                        return false;
+                    }
+                }
+            }
+            return false;
         }
 
         @Override

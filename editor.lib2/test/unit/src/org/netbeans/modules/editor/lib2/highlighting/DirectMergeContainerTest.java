@@ -83,11 +83,17 @@ public class DirectMergeContainerTest {
     @Test
     public void testRandomMerges() throws Exception {
         RandomTestContainer container = HighlightsMergeTesting.createContainer();
+        container.setName("testRandomMerges");
         RandomTestContainer.Round round = HighlightsMergeTesting.addRound(container);
         round.setOpCount(100);
-        container.setLogOp(false);
-        container.run(1303832573413L);
-        container.run(0L);
+//        container.setLogOp(true);
+//        HighlightsMergeTesting.setLogChecks(true);
+        container.runInit(1303832573413L);
+        container.runOps(1);
+        container.runOps(1);
+        container.runOps(0); // Run till end
+
+//        container.run(0L);
     }
 
 }
