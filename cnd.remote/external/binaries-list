@@ -1,1 +1,6 @@
-BB83D4F8047D608858154CB041054F5CAE35B903 cnd-rfs-1.0.zip
+#changeset:   305227:774ad5bda08e
+#branch:      release81
+#user:        Vladimir Kvashin <vkvashin@netbeans.org>
+#date:        Fri Dec 25 10:37:09 2015 +0300
+#summary:     fixed leak in rfs_controller (fixing  #256919 - fix issues discovered in rfs_controller and rfs_preload)
+99127724436E87C18B66DAAA317CA4C2D40E92E0 cnd-rfs-1.0.zip

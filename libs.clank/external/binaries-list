@@ -1,6 +1,6 @@
-#changeset:   16179:0aadaa8f70b6
-#user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Thu Dec 17 21:14:24 2015 +0300
-#summary:     JAVA FIX: APInt.__toString should handle Long.MIN_VALUE in a special way (#256629 - [newcodemodel] StringIndexOutOfBoundsException: String index out of range: -8)
-#6AE76DCC58313A6B48DDDDE3D19011AA4BE343CF clank_0.3.6.zip
-BD0FF6016C9AAF367D5F01625AC4E2BDE75EB355 clank_0.3.6.zip
+#changeset:   16256:7250abf9b350
+#tag:         tip
+#user:        Petr Kudryavtsev <petrk@netbeans.org>
+#date:        Tue Dec 29 15:27:30 2015 +0300
+#summary:     Fixed #253625 - [newcodemodel] OutOfMemoryError when preprocessing delay.c
+A21C58CFB61ABF2BE8A71C920F36583C122BC8F9 clank_0.3.6.zip

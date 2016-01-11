@@ -15,11 +15,11 @@
             </sourceRootList>
             <confList>
                 <confElem>
-                    <name>Debug32</name>
+                    <name>Debug-Linux-32</name>
                     <type>0</type>
                 </confElem>
                 <confElem>
-                    <name>Debug64</name>
+                    <name>Debug-Linux-64</name>
                     <type>0</type>
                 </confElem>
                 <confElem>
@@ -27,19 +27,31 @@
                     <type>0</type>
                 </confElem>
                 <confElem>
-                    <name>Solaris-x86</name>
+                    <name>Release-Solaris-x86-32</name>
                     <type>0</type>
                 </confElem>
                 <confElem>
-                    <name>Linux-x86</name>
+                    <name>Release-Solaris-x86-64</name>
                     <type>0</type>
                 </confElem>
                 <confElem>
-                    <name>Solaris-SPARC</name>
+                    <name>Release-Linux-x86-32</name>
                     <type>0</type>
                 </confElem>
                 <confElem>
-                    <name>Linux-SPARC</name>
+                    <name>Release-Linux-x86-64</name>
+                    <type>0</type>
+                </confElem>
+                <confElem>
+                    <name>Release-Solaris-SPARC-32</name>
+                    <type>0</type>
+                </confElem>
+                <confElem>
+                    <name>Release-Solaris-SPARC-64</name>
+                    <type>0</type>
+                </confElem>
+                <confElem>
+                    <name>Release-Linux-SPARC-64</name>
                     <type>0</type>
                 </confElem>
                 <confElem>

@@ -337,8 +337,11 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
             } else if (col == 1) {
                 if (libraryItem instanceof LibraryItem.ProjectItem) {
                     Project libProject = ((LibraryItem.ProjectItem) libraryItem).getProject(baseDir);
+                    if (libProject == null) {
+                        return false;
+                    }
                     ConfigurationDescriptorProvider configurationDescriptorProvider = libProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-                    if (!configurationDescriptorProvider.gotDescriptor()) {
+                    if (configurationDescriptorProvider == null || !configurationDescriptorProvider.gotDescriptor()) {
                         //return false if there is no description yet, means we are not ready
                         return false;
                     }
@@ -346,11 +349,7 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
                     if (makeConfigurationDescriptor.getState() == ConfigurationDescriptor.State.BROKEN) { // See IZ 193075
                         return false;
                     }
-                    if (((LibraryItem.ProjectItem) libraryItem).getProject(baseDir) != null) {
-                        return true;
-                    } else {
-                        return false;
-                    }
+                    return true;
                 } else {
                     return false;
                 }

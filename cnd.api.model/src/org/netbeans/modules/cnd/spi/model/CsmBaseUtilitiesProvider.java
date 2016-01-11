@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.spi.model;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
-import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
@@ -78,14 +77,33 @@ public abstract class CsmBaseUtilitiesProvider {
      * Implementation of the compound provider
      */
     private static final class Default extends CsmBaseUtilitiesProvider {
-        private final Collection<? extends CsmBaseUtilitiesProvider> svcs;;
+        private final Collection<? extends CsmBaseUtilitiesProvider> svcs;
+        private static final boolean FIX_SERVICE = true;
+        private CsmBaseUtilitiesProvider fixedResolver;
+        
         Default() {
             svcs = Lookup.getDefault().lookupAll(CsmBaseUtilitiesProvider.class);
         }
         
+        private CsmBaseUtilitiesProvider getService(){
+            CsmBaseUtilitiesProvider service = fixedResolver;
+            if (service == null) {
+                for (CsmBaseUtilitiesProvider selector : svcs) {
+                    service = selector;
+                    break;
+                }
+                if (FIX_SERVICE && service != null) {
+                    // I see that it is ugly solution, but NB core cannot fix performance of FolderInstance.waitFinished()
+                    fixedResolver = service;
+                }
+            }
+            return service;
+        }
+        
         @Override
         public boolean isGlobalVariable(CsmVariable var) {
-            for (CsmBaseUtilitiesProvider provider : svcs) {
+            CsmBaseUtilitiesProvider provider = getService();
+            if (provider != null) {
                 return provider.isGlobalVariable(var);
             }
             return true;
@@ -93,51 +111,44 @@ public abstract class CsmBaseUtilitiesProvider {
 
         @Override
         public CsmFunction getFunctionDeclaration(CsmFunction fun) {
-            for (CsmBaseUtilitiesProvider provider : svcs) {
-                CsmFunction out = provider.getFunctionDeclaration(fun);
-                if (out != null) {
-                    return out;
-                }
+            CsmBaseUtilitiesProvider provider = getService();
+            if (provider != null) {
+                return provider.getFunctionDeclaration(fun);
             }
             return null;
         }
 
         @Override
         public CsmNamespace getFunctionNamespace(CsmFunction fun) {
-            for (CsmBaseUtilitiesProvider provider : svcs) {
-                CsmNamespace out = provider.getFunctionNamespace(fun);
-                if (out != null) {
-                    return out;
-                }
+            CsmBaseUtilitiesProvider provider = getService();
+            if (provider != null) {
+                return provider.getFunctionNamespace(fun);
             }
             return null;
         }
 
         @Override
         public CsmNamespace getClassNamespace(CsmClassifier cls) {
-            for (CsmBaseUtilitiesProvider provider : svcs) {
-                CsmNamespace out = provider.getClassNamespace(cls);
-                if (out != null) {
-                    return out;
-                }
+            CsmBaseUtilitiesProvider provider = getService();
+            if (provider != null) {
+                return provider.getClassNamespace(cls);
             }
             return null;
         }
 
         @Override
         public CsmClass getFunctionClass(CsmFunction fun) {
-            for (CsmBaseUtilitiesProvider provider : svcs) {
-                CsmClass out = provider.getFunctionClass(fun);
-                if (out != null) {
-                    return out;
-                }
+            CsmBaseUtilitiesProvider provider = getService();
+            if (provider != null) {
+                return provider.getFunctionClass(fun);
             }
             return null;
         }
 
         @Override
         public boolean isUnresolved(Object obj) {
-            for (CsmBaseUtilitiesProvider provider : svcs) {
+            CsmBaseUtilitiesProvider provider = getService();
+            if (provider != null) {
                 return provider.isUnresolved(obj);
             }
             return false;

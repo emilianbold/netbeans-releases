@@ -154,6 +154,7 @@ public final class CsmProjectContentResolver {
     }
 
     private List<CsmEnumerator> getEnumeratorsFromEnumsEnumeratorsAndTypedefs(List enumsEnumeratorsAndTypedefs, boolean match, String strPrefix, boolean sort) {
+        CsmFilter nameFilter = null;
         List<CsmEnumerator> res = new ArrayList<CsmEnumerator>();
         if (enumsEnumeratorsAndTypedefs != null) {
             for (Iterator it = enumsEnumeratorsAndTypedefs.iterator(); it.hasNext();) {
@@ -193,7 +194,10 @@ public final class CsmProjectContentResolver {
                     }
                 }
                 if (elemEnum != null && !elemEnum.isStronglyTyped()) {
-                    for (Iterator<CsmEnumerator> enmtrIter = elemEnum.getEnumerators().iterator(); enmtrIter.hasNext();) {
+                    if (nameFilter == null) {
+                        nameFilter = CsmSelect.getFilterBuilder().createNameFilter(strPrefix, match, caseSensitive, false);
+                    }
+                    for (Iterator<CsmEnumerator> enmtrIter = CsmSelect.getEnumerators(elemEnum, nameFilter); enmtrIter.hasNext();) {
                         CsmEnumerator elem = enmtrIter.next();
                         if (matchName(elem.getName(), strPrefix, match)) {
                             res.add(elem);
@@ -706,7 +710,8 @@ public final class CsmProjectContentResolver {
                 CsmDeclaration.Kind.VARIABLE_DEFINITION
             };
             Collection<CsmScopeElement> se = new ArrayList<CsmScopeElement>();
-            getFileLocalIncludeNamespaceMembers(ns, file, se, needDeclFromUnnamedNS);
+            CsmFilter filter = CsmContextUtilities.createFilter(kinds, strPrefix, match, caseSensitive, false);
+            getFileLocalIncludeNamespaceMembers(ns, file, filter, se, needDeclFromUnnamedNS);
             List<CsmVariable> vars = new ArrayList<CsmVariable>();
             filterDeclarations(se.iterator(), vars, kinds, strPrefix, match, false);
             vars = filterVariables(vars);
@@ -747,7 +752,8 @@ public final class CsmProjectContentResolver {
                 CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION
             };
             Collection<CsmScopeElement> se = new ArrayList<CsmScopeElement>();
-            getFileLocalIncludeNamespaceMembers(ns, file, se, needDeclFromUnnamedNS);
+            CsmFilter filter = CsmContextUtilities.createFilter(kinds, strPrefix, match, caseSensitive, false);
+            getFileLocalIncludeNamespaceMembers(ns, file, filter, se, needDeclFromUnnamedNS);
 
             List<CsmFunction> funs = new ArrayList<CsmFunction>();
             filterDeclarations(se.iterator(), funs, kinds, strPrefix, match, false);
@@ -761,8 +767,7 @@ public final class CsmProjectContentResolver {
         }
     }
 
-    private void getFileLocalIncludeNamespaceMembers(CsmNamespace ns, CsmFile file,
-            Collection<CsmScopeElement> out, boolean needDeclFromUnnamedNS) {
+    private void getFileLocalIncludeNamespaceMembers(CsmNamespace ns, CsmFile file, CsmFilter scopeFilter, Collection<CsmScopeElement> out, boolean needDeclFromUnnamedNS) {
         CsmFilterBuilder builder = CsmSelect.getFilterBuilder();
         CsmFilter filter = builder.createKindFilter(CsmDeclaration.Kind.NAMESPACE_DEFINITION);
         for (Iterator<CsmOffsetableDeclaration> itFile = CsmSelect.getDeclarations(file, filter); itFile.hasNext();) {
@@ -770,33 +775,39 @@ public final class CsmProjectContentResolver {
             if (CsmKindUtilities.isNamespaceDefinition(decl)) {
                 CsmNamespaceDefinition nsd = (CsmNamespaceDefinition) decl;
                 if (nsd.getQualifiedName().equals(ns.getQualifiedName())) {
-                    out.addAll(nsd.getScopeElements());
+                    for (Iterator<CsmScopeElement> itNs = CsmSelect.getScopeDeclarations(nsd, scopeFilter); itNs.hasNext();) {
+                        out.add(itNs.next());
+                    }
                 } else if (CharSequenceUtilities.startsWith(ns.getQualifiedName(), nsd.getQualifiedName())) {
-                    getFileLocalIncludeNamespaceMembersFromNested(ns.getQualifiedName(), nsd, out, needDeclFromUnnamedNS);
+                    getFileLocalIncludeNamespaceMembersFromNested(filter, ns.getQualifiedName(), nsd, scopeFilter, out, needDeclFromUnnamedNS);
                 }
                 if (needDeclFromUnnamedNS && CharSequenceUtilities.startsWith(ns.getQualifiedName(), nsd.getQualifiedName())) {
-                    getFileLocalIncludeNamespaceMembersFromNested("<unnamed>", nsd, out, needDeclFromUnnamedNS); // NOI18N
+                    getFileLocalIncludeNamespaceMembersFromNested(filter, "<unnamed>", nsd, scopeFilter, out, needDeclFromUnnamedNS); // NOI18N
                 }
             }
         }
     }
 
-    private void getFileLocalIncludeNamespaceMembersFromNested(CharSequence nsName, CsmNamespaceDefinition ns, Collection<CsmScopeElement> out,
-            boolean needDeclFromUnnamedNS) {
-        for (CsmOffsetableDeclaration decl : ns.getDeclarations()) {
+    private void getFileLocalIncludeNamespaceMembersFromNested(CsmFilter nsDefinitionFilter, CharSequence nsName, CsmNamespaceDefinition ns, CsmFilter scopeFilter, Collection<CsmScopeElement> out, boolean needDeclFromUnnamedNS) {
+        for (Iterator<CsmOffsetableDeclaration> itFile = CsmSelect.getDeclarations(ns, nsDefinitionFilter); itFile.hasNext();) {
+            CsmOffsetableDeclaration decl = itFile.next();
             if (CsmKindUtilities.isNamespaceDefinition(decl)) {
                 CsmNamespaceDefinition nsd = (CsmNamespaceDefinition) decl;
                 if (nsd.getQualifiedName().equals(nsName)) {
-                    out.addAll(nsd.getScopeElements());
+                    for (Iterator<CsmScopeElement> itNs = CsmSelect.getScopeDeclarations(nsd, scopeFilter); itNs.hasNext();) {
+                        out.add(itNs.next());
+                    }
                 } else if (nsName.toString().startsWith(nsd.getQualifiedName().toString())) {
-                    getFileLocalIncludeNamespaceMembersFromNested(nsName, nsd, out, needDeclFromUnnamedNS);
+                    getFileLocalIncludeNamespaceMembersFromNested(nsDefinitionFilter, nsName, nsd, scopeFilter, out, needDeclFromUnnamedNS);
                 }
                 if (needDeclFromUnnamedNS && nsName.toString().startsWith(nsd.getQualifiedName().toString())) {
-                    getFileLocalIncludeNamespaceMembersFromNested("<unnamed>", nsd, out, needDeclFromUnnamedNS); // NOI18N
+                    getFileLocalIncludeNamespaceMembersFromNested(nsDefinitionFilter, "<unnamed>", nsd, scopeFilter, out, needDeclFromUnnamedNS); // NOI18N
                 }
                 if ((needDeclFromUnnamedNS && nsd.getName().length() == 0) || nsd.isInline()) {
-                    out.addAll(nsd.getScopeElements());
-                    getFileLocalIncludeNamespaceMembersFromNested(nsName, nsd, out, needDeclFromUnnamedNS);
+                    for (Iterator<CsmScopeElement> itNs = CsmSelect.getScopeDeclarations(nsd, scopeFilter); itNs.hasNext();) {
+                        out.add(itNs.next());
+                    }
+                    getFileLocalIncludeNamespaceMembersFromNested(nsDefinitionFilter, nsName, nsd, scopeFilter, out, needDeclFromUnnamedNS);
                 }
             }
         }
