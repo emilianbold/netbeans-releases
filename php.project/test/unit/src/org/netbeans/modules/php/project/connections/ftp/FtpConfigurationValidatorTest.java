@@ -54,6 +54,9 @@ public class FtpConfigurationValidatorTest extends NbTestCase {
     private static final String INITIAL_DIRECTORY = "/pub";
     private static final String TIMEOUT = "30";
     private static final String KEEP_ALIVE_INTERVAL = "10";
+    private static final String EXTERNAL_IP = "10.100.0.1";
+    private static final String EXTERNAL_PORT_MIN = "100";
+    private static final String EXTERNAL_PORT_MAX = "200";
 
 
     public FtpConfigurationValidatorTest(String name) {
@@ -74,7 +77,7 @@ public class FtpConfigurationValidatorTest extends NbTestCase {
 
     public void testValidate() {
         ValidationResult result = new FtpConfigurationValidator()
-                .validate(LOCALHOST, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, true)
+                .validate(LOCALHOST, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, true, EXTERNAL_IP, EXTERNAL_PORT_MIN, EXTERNAL_PORT_MAX)
                 .getResult();
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
@@ -82,7 +85,7 @@ public class FtpConfigurationValidatorTest extends NbTestCase {
 
     public void testInvalidHost() {
         ValidationResult result = new FtpConfigurationValidator()
-                .validate(null, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, true)
+                .validate(null, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, true, EXTERNAL_IP, EXTERNAL_PORT_MIN, EXTERNAL_PORT_MAX)
                 .getResult();
         assertEquals(1, result.getErrors().size());
         assertTrue(result.getWarnings().isEmpty());
@@ -91,7 +94,7 @@ public class FtpConfigurationValidatorTest extends NbTestCase {
 
     public void testInvalidPort() {
         ValidationResult result = new FtpConfigurationValidator()
-                .validate(LOCALHOST, null, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, true)
+                .validate(LOCALHOST, null, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, true, EXTERNAL_IP, EXTERNAL_PORT_MIN, EXTERNAL_PORT_MAX)
                 .getResult();
         assertEquals(1, result.getErrors().size());
         assertTrue(result.getWarnings().isEmpty());
@@ -100,7 +103,7 @@ public class FtpConfigurationValidatorTest extends NbTestCase {
 
     public void testInvalidUser() {
         ValidationResult result = new FtpConfigurationValidator()
-                .validate(LOCALHOST, PORT, false, null, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, true)
+                .validate(LOCALHOST, PORT, false, null, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, true, EXTERNAL_IP, EXTERNAL_PORT_MIN, EXTERNAL_PORT_MAX)
                 .getResult();
         assertEquals(1, result.getErrors().size());
         assertTrue(result.getWarnings().isEmpty());
@@ -109,7 +112,7 @@ public class FtpConfigurationValidatorTest extends NbTestCase {
 
     public void testAnonymousLogin() {
         ValidationResult result = new FtpConfigurationValidator()
-                .validate(LOCALHOST, PORT, true, null, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, true)
+                .validate(LOCALHOST, PORT, true, null, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, true, EXTERNAL_IP, EXTERNAL_PORT_MIN, EXTERNAL_PORT_MAX)
                 .getResult();
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
@@ -117,7 +120,7 @@ public class FtpConfigurationValidatorTest extends NbTestCase {
 
     public void testInvalidInitialDirectory() {
         ValidationResult result = new FtpConfigurationValidator()
-                .validate(LOCALHOST, PORT, true, USER, null, TIMEOUT, KEEP_ALIVE_INTERVAL, true)
+                .validate(LOCALHOST, PORT, true, USER, null, TIMEOUT, KEEP_ALIVE_INTERVAL, true, EXTERNAL_IP, EXTERNAL_PORT_MIN, EXTERNAL_PORT_MAX)
                 .getResult();
         assertEquals(1, result.getErrors().size());
         assertTrue(result.getWarnings().isEmpty());
@@ -126,7 +129,7 @@ public class FtpConfigurationValidatorTest extends NbTestCase {
 
     public void testInvalidTimeout() {
         ValidationResult result = new FtpConfigurationValidator()
-                .validate(LOCALHOST, PORT, true, USER, INITIAL_DIRECTORY, null, KEEP_ALIVE_INTERVAL, true)
+                .validate(LOCALHOST, PORT, true, USER, INITIAL_DIRECTORY, null, KEEP_ALIVE_INTERVAL, true, EXTERNAL_IP, EXTERNAL_PORT_MIN, EXTERNAL_PORT_MAX)
                 .getResult();
         assertEquals(1, result.getErrors().size());
         assertTrue(result.getWarnings().isEmpty());
@@ -135,7 +138,7 @@ public class FtpConfigurationValidatorTest extends NbTestCase {
 
     public void testInvalidKeepAliveInterval() {
         ValidationResult result = new FtpConfigurationValidator()
-                .validate(LOCALHOST, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, null, true)
+                .validate(LOCALHOST, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, null, true, EXTERNAL_IP, EXTERNAL_PORT_MIN, EXTERNAL_PORT_MAX)
                 .getResult();
         assertEquals(1, result.getErrors().size());
         assertTrue(result.getWarnings().isEmpty());
@@ -144,7 +147,7 @@ public class FtpConfigurationValidatorTest extends NbTestCase {
 
     public void testNoProxyPassiveMode() {
         ValidationResult result = new FtpConfigurationValidator()
-                .validate(LOCALHOST, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, true)
+                .validate(LOCALHOST, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, true, EXTERNAL_IP, EXTERNAL_PORT_MIN, EXTERNAL_PORT_MAX)
                 .getResult();
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
@@ -152,7 +155,7 @@ public class FtpConfigurationValidatorTest extends NbTestCase {
 
     public void testNoProxyActiveMode() {
         ValidationResult result = new FtpConfigurationValidator()
-                .validate(LOCALHOST, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, false)
+                .validate(LOCALHOST, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, false, EXTERNAL_IP, EXTERNAL_PORT_MIN, EXTERNAL_PORT_MAX)
                 .getResult();
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
@@ -161,7 +164,7 @@ public class FtpConfigurationValidatorTest extends NbTestCase {
     public void testProxyPassiveModeLocalhost() {
         setupProxy();
         ValidationResult result = new FtpConfigurationValidator()
-                .validate(LOCALHOST, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, true)
+                .validate(LOCALHOST, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, true, EXTERNAL_IP, EXTERNAL_PORT_MIN, EXTERNAL_PORT_MAX)
                 .getResult();
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
@@ -170,7 +173,7 @@ public class FtpConfigurationValidatorTest extends NbTestCase {
     public void testProxyPassiveModeForeignhost() {
         setupProxy();
         ValidationResult result = new FtpConfigurationValidator()
-                .validate(FOREIGNHOST, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, true)
+                .validate(FOREIGNHOST, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, true, EXTERNAL_IP, EXTERNAL_PORT_MIN, EXTERNAL_PORT_MAX)
                 .getResult();
         assertTrue(result.getErrors().isEmpty());
         assertEquals(1, result.getWarnings().size());
@@ -180,7 +183,7 @@ public class FtpConfigurationValidatorTest extends NbTestCase {
     public void testProxyActiveModeLocalhost() {
         setupProxy();
         ValidationResult result = new FtpConfigurationValidator()
-                .validate(LOCALHOST, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, false)
+                .validate(LOCALHOST, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, false, EXTERNAL_IP, EXTERNAL_PORT_MIN, EXTERNAL_PORT_MAX)
                 .getResult();
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
@@ -189,12 +192,82 @@ public class FtpConfigurationValidatorTest extends NbTestCase {
     public void testProxyActiveModeForeignhost() {
         setupProxy();
         ValidationResult result = new FtpConfigurationValidator()
-                .validate(FOREIGNHOST, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, false)
+                .validate(FOREIGNHOST, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, false, EXTERNAL_IP, EXTERNAL_PORT_MIN, EXTERNAL_PORT_MAX)
                 .getResult();
         assertEquals(1, result.getErrors().size());
         assertEquals(1, result.getWarnings().size());
         assertEquals("proxy", result.getErrors().get(0).getSource());
         assertEquals("proxy", result.getWarnings().get(0).getSource());
+    }
+
+    public void testInvalidExternalIp() {
+        ValidationResult result = new FtpConfigurationValidator()
+                .validate(LOCALHOST, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, false, "hola", EXTERNAL_PORT_MIN, EXTERNAL_PORT_MAX)
+                .getResult();
+        assertEquals(1, result.getErrors().size());
+        assertTrue(result.getWarnings().isEmpty());
+        assertEquals("external.ip", result.getErrors().get(0).getSource());
+    }
+
+    public void testNoExternalIp() {
+        ValidationResult result = new FtpConfigurationValidator()
+                .validate(LOCALHOST, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, false, "", EXTERNAL_PORT_MIN, EXTERNAL_PORT_MAX)
+                .getResult();
+        assertTrue(result.getErrors().isEmpty());
+        assertTrue(result.getWarnings().isEmpty());
+    }
+
+    public void testInvalidExternalIpPassiveMode() {
+        ValidationResult result = new FtpConfigurationValidator()
+                .validate(LOCALHOST, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, true, "hola", EXTERNAL_PORT_MIN, EXTERNAL_PORT_MAX)
+                .getResult();
+        assertTrue(result.getErrors().isEmpty());
+        assertTrue(result.getWarnings().isEmpty());
+    }
+
+    public void testInvalidPortRange01() {
+        ValidationResult result = new FtpConfigurationValidator()
+                .validate(LOCALHOST, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, false, EXTERNAL_IP, "a", "b")
+                .getResult();
+        assertEquals(2, result.getErrors().size());
+        assertTrue(result.getWarnings().isEmpty());
+        assertEquals("port.min", result.getErrors().get(0).getSource());
+        assertEquals("port.max", result.getErrors().get(1).getSource());
+    }
+
+    public void testInvalidPortRange02() {
+        ValidationResult result = new FtpConfigurationValidator()
+                .validate(LOCALHOST, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, false, EXTERNAL_IP, "50", "20")
+                .getResult();
+        assertEquals(1, result.getErrors().size());
+        assertTrue(result.getWarnings().isEmpty());
+        assertEquals("port.min", result.getErrors().get(0).getSource());
+    }
+
+    public void testInvalidPortRange03() {
+        ValidationResult result = new FtpConfigurationValidator()
+                .validate(LOCALHOST, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, false, EXTERNAL_IP, "a", "")
+                .getResult();
+        assertEquals(2, result.getErrors().size());
+        assertTrue(result.getWarnings().isEmpty());
+        assertEquals("port.min", result.getErrors().get(0).getSource());
+        assertEquals("port.max", result.getErrors().get(1).getSource());
+    }
+
+    public void testEmptyPortRange() {
+        ValidationResult result = new FtpConfigurationValidator()
+                .validate(LOCALHOST, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, false, EXTERNAL_IP, "", "")
+                .getResult();
+        assertTrue(result.getErrors().isEmpty());
+        assertTrue(result.getWarnings().isEmpty());
+    }
+
+    public void testInvalidPortRangePassiveMode() {
+        ValidationResult result = new FtpConfigurationValidator()
+                .validate(LOCALHOST, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, true, EXTERNAL_IP, "a", "b")
+                .getResult();
+        assertTrue(result.getErrors().isEmpty());
+        assertTrue(result.getWarnings().isEmpty());
     }
 
     private void setupProxy() {

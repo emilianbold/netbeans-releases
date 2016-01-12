@@ -65,6 +65,9 @@ public final class FtpConfiguration extends RemoteConfiguration {
     private final int timeout;
     private final int keepAliveInterval;
     private final boolean passiveMode;
+    private final String activeExternalIp;
+    private final int activePortMin;
+    private final int activePortMax;
     private final boolean ignoreDisconnectErrors;
 
     // @GuardedBy(this)
@@ -85,6 +88,9 @@ public final class FtpConfiguration extends RemoteConfiguration {
         timeout = readNumber(FtpConnectionProvider.TIMEOUT, FtpConnectionProvider.DEFAULT_TIMEOUT);
         keepAliveInterval = readNumber(FtpConnectionProvider.KEEP_ALIVE_INTERVAL, FtpConnectionProvider.DEFAULT_KEEP_ALIVE_INTERVAL);
         passiveMode = Boolean.valueOf(cfg.getValue(FtpConnectionProvider.PASSIVE_MODE));
+        activeExternalIp = cfg.getValue(FtpConnectionProvider.ACTIVE_EXTERNAL_IP);
+        activePortMin = readNumber(FtpConnectionProvider.ACTIVE_PORT_MIN, -1);
+        activePortMax = readNumber(FtpConnectionProvider.ACTIVE_PORT_MAX, -1);
         ignoreDisconnectErrors = Boolean.valueOf(cfg.getValue(FtpConnectionProvider.IGNORE_DISCONNECT_ERRORS));
     }
 
@@ -119,6 +125,18 @@ public final class FtpConfiguration extends RemoteConfiguration {
 
     public boolean isPassiveMode() {
         return passiveMode;
+    }
+
+    public String getActiveExternalIp() {
+        return activeExternalIp;
+    }
+
+    public int getActivePortMin() {
+        return activePortMin;
+    }
+
+    public int getActivePortMax() {
+        return activePortMax;
     }
 
     public boolean getIgnoreDisconnectErrors() {
@@ -229,6 +247,12 @@ public final class FtpConfiguration extends RemoteConfiguration {
         sb.append(timeout);
         sb.append(", passiveMode: "); // NOI18N
         sb.append(passiveMode);
+        sb.append(", activeExternalIp: "); // NOI18N
+        sb.append(activeExternalIp);
+        sb.append(", activePortMin: "); // NOI18N
+        sb.append(activePortMin);
+        sb.append(", activePortMax: "); // NOI18N
+        sb.append(activePortMax);
         sb.append(", ignoreDisconnectErrors: "); // NOI18N
         sb.append(ignoreDisconnectErrors);
         sb.append("]"); // NOI18N
