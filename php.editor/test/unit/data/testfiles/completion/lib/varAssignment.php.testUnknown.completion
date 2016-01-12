@@ -1,5 +1,0 @@
-Code completion result for source line:
-$unknown->aCreate|A();
-(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-METHOD     aCreateA()                      [PUBLIC]   clsAVarAssignment
-METHOD     aCreateC()                      [PUBLIC]   clsAVarAssignment
