@@ -65,10 +65,6 @@ public class PHPCodeCompletionTest extends PHPCodeCompletionTestBase {
         super(testName);
     }
 
-    public void test186936() throws Exception {
-        checkCompletion("testfiles/completion/lib/_base/test186936/issue186936.php", "$myFoo->^", false);
-    }
-
     public void testPhpContextWithPrefix() throws Exception {
         checkCompletion("testfiles/completion/lib/_base/tst.php", "^GL", false);
     }
@@ -658,9 +654,6 @@ public class PHPCodeCompletionTest extends PHPCodeCompletionTestBase {
     public void test148213() throws Exception {
         checkCompletion("testfiles/completion/lib/_base/issue148213.php", "$oldguy148213 = $newguy^", false);
     }
-    public void test171178() throws Exception {
-        checkCompletion("testfiles/completion/lib/_base/test171178/html.php", "$hTML->^", false);
-    }
 
     public void testSanitizedCode() throws Exception {
         checkCompletion("testfiles/sanitize/curly04.php", "$baba = $param^", false);
@@ -812,26 +805,6 @@ public class PHPCodeCompletionTest extends PHPCodeCompletionTestBase {
         checkCompletion("testfiles/completion/lib/_base/classConstructorOptionalParam.php", "$var = new A^", false);
     }
 
-    public void testIssue194836() throws Exception {
-        checkCompletion("testfiles/completion/lib/_base/test194836/index.php", "$user->^", false);
-    }
-
-    public void testIssue194836_02() throws Exception {
-        checkCompletion("testfiles/completion/lib/_base/test194836/index_02.php", "$user->^", false);
-    }
-
-    public void testIssue194836_03() throws Exception {
-        checkCompletion("testfiles/completion/lib/_base/test194836/index_03.php", "$user->^", false);
-    }
-
-    public void testIssue194836_04() throws Exception {
-        checkCompletion("testfiles/completion/lib/_base/test194836/index_04.php", "$user->^", false);
-    }
-
-    public void testIssue194836_05() throws Exception {
-        checkCompletion("testfiles/completion/lib/_base/test194836/index_05.php", "$user->^", false);
-    }
-
     public void testIssue153707_01() throws Exception {
         checkCompletion("testfiles/completion/lib/_base/issue153707.php", "class property: ^", false);
     }
@@ -930,7 +903,7 @@ public class PHPCodeCompletionTest extends PHPCodeCompletionTestBase {
         return Collections.singletonMap(
             PhpSourcePath.SOURCE_CP,
             ClassPathSupport.createClassPath(new FileObject[] {
-                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/_base"))
+                FileUtil.toFileObject(new File(getDataDir(), "testfiles/completion/lib/_base"))
             })
         );
     }
