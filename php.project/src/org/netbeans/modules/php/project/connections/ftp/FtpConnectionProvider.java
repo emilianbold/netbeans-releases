@@ -72,6 +72,9 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
     static final String TIMEOUT = "timeout"; // NOI18N
     static final String KEEP_ALIVE_INTERVAL = "keepAliveInterval"; // NOI18N
     static final String PASSIVE_MODE = "passiveMode"; // NOI18N
+    static final String ACTIVE_EXTERNAL_IP = "activeExternalIp"; // NOI18N
+    static final String ACTIVE_PORT_MIN = "activePortMin"; // NOI18N
+    static final String ACTIVE_PORT_MAX = "activePortMax"; // NOI18N
     static final String IGNORE_DISCONNECT_ERRORS = "ignoreDisconnectErrors"; // NOI18N
 
     private static final Set<String> PROPERTIES = new HashSet<>(Arrays.asList(
@@ -87,6 +90,9 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
         TIMEOUT,
         KEEP_ALIVE_INTERVAL,
         PASSIVE_MODE,
+        ACTIVE_EXTERNAL_IP,
+        ACTIVE_PORT_MIN,
+        ACTIVE_PORT_MAX,
         IGNORE_DISCONNECT_ERRORS
     ));
     static final int DEFAULT_PORT = 21;
@@ -127,6 +133,9 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
         configuration.putValue(TIMEOUT, String.valueOf(DEFAULT_TIMEOUT));
         configuration.putValue(KEEP_ALIVE_INTERVAL, String.valueOf(DEFAULT_KEEP_ALIVE_INTERVAL));
         configuration.putValue(PASSIVE_MODE, String.valueOf(true));
+        configuration.putValue(ACTIVE_EXTERNAL_IP, "");
+        configuration.putValue(ACTIVE_PORT_MIN, "");
+        configuration.putValue(ACTIVE_PORT_MAX, "");
         configuration.putValue(IGNORE_DISCONNECT_ERRORS, String.valueOf(true));
 
         assert accept(configuration) : "Not my configuration?!";

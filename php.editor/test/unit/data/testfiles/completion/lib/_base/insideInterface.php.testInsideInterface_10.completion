@@ -3,5 +3,4 @@ public func|tion doSomething();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     functionName($param)            [PUBLIC]   issue202281.php
-METHOD     functionName($param)            [PUBLIC]   test209255.php
 KEYWORD    function                                   null

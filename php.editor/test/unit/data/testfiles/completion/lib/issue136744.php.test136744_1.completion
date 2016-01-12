@@ -1,4 +1,0 @@
-Code completion result for source line:
-print $test1|;
-(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-VARIABLE   ? $test1                                   issue136744.php
