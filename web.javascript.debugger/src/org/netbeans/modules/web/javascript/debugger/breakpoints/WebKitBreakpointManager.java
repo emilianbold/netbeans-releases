@@ -203,7 +203,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                         }
                         ignoreLineUpdate.set(Boolean.TRUE);
                         try {
-                            lb.setLine((int) brLine);
+                            lb.setLine((int) brLine + 1);
                         } finally {
                             ignoreLineUpdate.remove();
                         }
@@ -347,7 +347,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                 }
                 ignoreLineUpdate.set(Boolean.TRUE);
                 try {
-                    lb.setLine(lineNumber);
+                    lb.setLine(lineNumber + 1);
                 } finally {
                     ignoreLineUpdate.remove();
                 }
