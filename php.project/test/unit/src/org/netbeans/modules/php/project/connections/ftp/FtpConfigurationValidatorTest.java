@@ -202,7 +202,7 @@ public class FtpConfigurationValidatorTest extends NbTestCase {
 
     public void testInvalidExternalIp() {
         ValidationResult result = new FtpConfigurationValidator()
-                .validate(LOCALHOST, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, false, "hola", EXTERNAL_PORT_MIN, EXTERNAL_PORT_MAX)
+                .validate(LOCALHOST, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, false, "invalid ip address", EXTERNAL_PORT_MIN, EXTERNAL_PORT_MAX)
                 .getResult();
         assertEquals(1, result.getErrors().size());
         assertTrue(result.getWarnings().isEmpty());
@@ -219,7 +219,7 @@ public class FtpConfigurationValidatorTest extends NbTestCase {
 
     public void testInvalidExternalIpPassiveMode() {
         ValidationResult result = new FtpConfigurationValidator()
-                .validate(LOCALHOST, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, true, "hola", EXTERNAL_PORT_MIN, EXTERNAL_PORT_MAX)
+                .validate(LOCALHOST, PORT, true, USER, INITIAL_DIRECTORY, TIMEOUT, KEEP_ALIVE_INTERVAL, true, "invalid ip address", EXTERNAL_PORT_MIN, EXTERNAL_PORT_MAX)
                 .getResult();
         assertTrue(result.getErrors().isEmpty());
         assertTrue(result.getWarnings().isEmpty());
