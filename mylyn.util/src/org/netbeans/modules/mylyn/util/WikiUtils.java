@@ -47,6 +47,7 @@ import org.eclipse.mylyn.wikitext.core.parser.MarkupParser;
 import org.eclipse.mylyn.wikitext.core.parser.markup.MarkupLanguage;
 import org.eclipse.mylyn.wikitext.core.util.ServiceLocator;
 import org.netbeans.modules.mylyn.util.wiki.WikiEditPanel;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -68,7 +69,14 @@ public class WikiUtils {
             LOG.log(Level.FINE, "Wiki language name is empty"); //NOI18N
             return null;
         }
-        MarkupLanguage markupLanguage = ServiceLocator.getInstance().getMarkupLanguage(language);
+        MarkupLanguage markupLanguage;
+        ClassLoader originalContextCL = null;
+        try {
+            originalContextCL = setupContextClassLoader();
+            markupLanguage = ServiceLocator.getInstance().getMarkupLanguage(language);
+        } finally {
+            restoreContextClassLoader(originalContextCL);
+        }
         if (markupLanguage == null) {
             LOG.log(Level.FINE, "Markup language for name {0} not found",language); //NOI18N
             return null;
@@ -90,5 +98,27 @@ public class WikiUtils {
             html = html.replaceFirst("</p>", ""); //NOI18N
         }
         return html;
+    }
+
+    // In JDeveloper we need the NetBeans system classloader as the thread context CL
+    // in order to find wikitext registrations. The Equinox' ContextFinder used by default
+    // is not usable. Unfortunatelly it's not possible to set the context classloader in
+    // JDeveloper explicitly (no entry point). In NetBeans this code effectively does nothing.
+    private static ClassLoader setupContextClassLoader() {
+        ClassLoader systemCL = Lookup.getDefault().lookup(ClassLoader.class);
+        if (systemCL != null) {
+            ClassLoader currentContextCL = Thread.currentThread().getContextClassLoader();
+            if (currentContextCL != null && currentContextCL != systemCL) {
+                Thread.currentThread().setContextClassLoader(systemCL);
+                return currentContextCL;
+            }
+        }
+        return null;
+    }
+
+    private static void restoreContextClassLoader(ClassLoader originalContextCL) {
+        if (originalContextCL != null) {
+            Thread.currentThread().setContextClassLoader(originalContextCL);
+        }
     }
 }
