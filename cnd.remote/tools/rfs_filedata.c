@@ -112,7 +112,7 @@ void start_adding_file_data() {
 
 void stop_adding_file_data() {
     int el_size = sizeof(struct file_data *);
-    data = malloc(data_cnt * el_size);
+    data = malloc_wrapper(data_cnt * el_size);
     int next = 0;
     while (adding_file_data_root) {
         data[next++] = adding_file_data_root->fd;
@@ -131,9 +131,9 @@ file_data *add_file_data(const char* filename, enum file_state state) {
         return NULL;
     }
     data_cnt++;
-    struct adding_file_data_node *node = malloc(sizeof(struct adding_file_data_node));
+    struct adding_file_data_node *node = malloc_wrapper(sizeof(struct adding_file_data_node));
 
-    node->fd = (file_data*) malloc(sizeof(file_data) + strlen(filename) + 1);
+    node->fd = (file_data*) malloc_wrapper(sizeof(file_data) + strlen(filename) + 1);
     pthread_mutex_init(&node->fd->mutex, NULL);
     strcpy(node->fd->filename, filename);
     node->fd->state = state;

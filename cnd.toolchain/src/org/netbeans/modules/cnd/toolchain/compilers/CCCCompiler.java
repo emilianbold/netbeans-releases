@@ -124,7 +124,7 @@ public abstract class CCCCompiler extends AbstractCompiler {
 
     @Override
     public boolean setSystemIncludeHeaders(List<String> values) {
-        return copySystemIncludeDirectoriesImpl(values, true);
+        return copySystemIncludeHeadersImpl(values, true);
     }
 
     protected final boolean copySystemIncludeHeaders(List<String> values) {

@@ -1,13 +1,7 @@
-#changeset:   304539:4b9dbf5eed77
+#changeset:   305242:557e519a2a66
 #branch:      release81
+#tag:         tip
 #user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Mon Nov 30 18:51:38 2015 +0300
-#summary:     Always use Studio when building for Solaris(#256855 - Fix security issues in fs_server that were discovered by dynamic tests)
-#
-#changeset:   304538:a977dda5c330
-#branch:      release81
-#user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Mon Nov 30 18:50:12 2015 +0300
-#summary:     fixed #256855 - Fix security issues in fs_server that were discovered by dynamic tests
-D84D17804FB0587297CCB4CFF3918561212671A0 fs_server-1.0.zip
-
+#date:        Mon Dec 28 17:02:59 2015 +0300
+#summary:     additional fix for #256919 - fix issues discovered in rfs_controller and rfs_preload - source changes
+B04B2918B79C287651DDC88A9C3D115C62056F4C fs_server-1.0.zip

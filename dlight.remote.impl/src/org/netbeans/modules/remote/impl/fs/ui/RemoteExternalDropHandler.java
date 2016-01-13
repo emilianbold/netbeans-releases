@@ -92,7 +92,14 @@ public class RemoteExternalDropHandler extends ExternalDropHandler {
 
     @Override
     public boolean canDrop(DropTargetDragEvent e) {
-        return canDrop(e.getCurrentDataFlavors());
+        if (canDrop(e.getCurrentDataFlavors())) {
+            Transferable t = e.getTransferable();
+            if (t != null) {
+                FileObject fo = getFileObject(t);
+                return fo instanceof RemoteFileObject;
+            }
+        }
+        return false;
     }
 
     @Override

@@ -48,7 +48,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import org.netbeans.modules.cnd.spi.project.NativeFileSearchProvider;
 import org.netbeans.modules.cnd.spi.project.NativeProjectExecutionProvider;
+import org.netbeans.modules.cnd.utils.CndLanguageStandards;
 import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -61,6 +64,7 @@ public final class NativeProjectSupport {
     /**
      * Execute a command from user's PATH in the context of the native project
      *
+     * @param project Native project
      * @param executable Executable name (not path)
      * @param env Additional environment variables
      * @param args Arguments
@@ -80,6 +84,7 @@ public final class NativeProjectSupport {
      * Return the name of the development platform (Solaris-x86, Solaris-sparc,
      * MacOSX, Windows, Linux-x86)
      *
+     * @param project Native project
      * @return development platform name
      */
     public static String getPlatformName(NativeProject project) {
@@ -96,6 +101,7 @@ public final class NativeProjectSupport {
      * *
      * Searcher for find project file by name
      *
+     * @param project Native project
      * @return searcher
      */
     public static NativeFileSearch getNativeFileSearch(final NativeProject project) {
@@ -117,7 +123,96 @@ public final class NativeProjectSupport {
             }
         };
     }
+    
+    /**
+     *  Default standard for language.
+     *  See Tools->Options->C++/Other->Default Standard.
+     * 
+     * @param lang language
+     * @return default language flavor
+     */
+    public static NativeFileItem.LanguageFlavor getDefaultLanguageFlavor(NativeFileItem.Language lang) {
+        NativeFileItem.LanguageFlavor bestFlavor = NativeFileItem.LanguageFlavor.UNKNOWN;
+        switch(lang) {
+            case C:
+                bestFlavor = getDefaultCStandard();
+                break;
+            case CPP:
+                bestFlavor = getDefaultCppStandard();
+                break;
+            case C_HEADER:
+                bestFlavor = getDefaultHeaderStandard();
+                break;
+        }
+        return bestFlavor;
+    }
+    
+    /**
+     *  Default standard for C++ language.
+     *  See Tools->Options->C++/Other->Default Standard.
+     * 
+     * @return language flavor
+     */
+    public static NativeFileItem.LanguageFlavor getDefaultCppStandard() {
+        MIMEExtensions me = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE);
+        CndLanguageStandards.CndLanguageStandard defaultStandard = me.getDefaultStandard();
+        if (defaultStandard != null) {
+            switch(defaultStandard) {
+                case CPP11:
+                    return NativeFileItem.LanguageFlavor.CPP11;
+                case CPP14:
+                    return NativeFileItem.LanguageFlavor.CPP14;
+                case CPP98:
+                    return NativeFileItem.LanguageFlavor.CPP;
+            }
+        }
+        return NativeFileItem.LanguageFlavor.UNKNOWN;
+    }
 
+    /**
+     *  Default standard for headers.
+     *  See Tools->Options->C++/Other->Default Standard.
+     * 
+     * @return language flavor
+     */
+    public static NativeFileItem.LanguageFlavor getDefaultHeaderStandard() {
+        MIMEExtensions me = MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE);
+        CndLanguageStandards.CndLanguageStandard defaultStandard = me.getDefaultStandard();
+        if (defaultStandard != null) {
+            switch(defaultStandard) {
+                case CPP11:
+                    return NativeFileItem.LanguageFlavor.CPP11;
+                case CPP14:
+                    return NativeFileItem.LanguageFlavor.CPP14;
+                case CPP98:
+                    return NativeFileItem.LanguageFlavor.CPP;
+            }
+        }
+        return NativeFileItem.LanguageFlavor.UNKNOWN;
+    }
+    
+    /**
+     *  Default standard for C language.
+     *  See Tools->Options->C++/Other->Default Standard.
+     * 
+     * @return language flavor
+     */
+    public static NativeFileItem.LanguageFlavor getDefaultCStandard() {
+        MIMEExtensions me = MIMEExtensions.get(MIMENames.C_MIME_TYPE);
+        CndLanguageStandards.CndLanguageStandard defaultStandard = me.getDefaultStandard();
+        if (defaultStandard != null) {
+            switch(defaultStandard) {
+                case C89:
+                    return NativeFileItem.LanguageFlavor.C89;
+                case C99:
+                    return NativeFileItem.LanguageFlavor.C99;
+                case C11:
+                    return NativeFileItem.LanguageFlavor.C11;
+            }
+        }
+        return NativeFileItem.LanguageFlavor.UNKNOWN;
+    }
+    
     public static final class NativeExitStatus {
 
         public final int exitCode;

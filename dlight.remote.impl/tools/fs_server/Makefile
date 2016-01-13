@@ -66,6 +66,12 @@ else
     CODEAN_TARGET = 
 endif
 
+ifdef ASSERTIONS
+    NDEBUG_FLAG =
+else
+    NDEBUG_FLAG = -DNDEBUG
+endif
+
 SOURCES=\
 	$(ROOT_DIR)/src/fs_server.c \
 	$(ROOT_DIR)/src/queue.c \
@@ -87,8 +93,8 @@ EXEC=$(DIST_DIR)/$(PNAME)
 
 
 #CF_COMMON         = --std=c99 -s -O2
-CF_COMMON         = --std=c99 -g -Wall -Werror -D_REENTRANT
-CF_SOLARIS         = -std=c99 -g -errwarn -D_REENTRANT
+CF_COMMON         = --std=c99 -g -Wall -Werror -D_REENTRANT ${NDEBUG_FLAG}
+CF_SOLARIS         = -std=c99 -g -errwarn -D_REENTRANT ${NDEBUG_FLAG}
 
 CF_Linux-arm      = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700
 CF_Linux-x86      = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -m32

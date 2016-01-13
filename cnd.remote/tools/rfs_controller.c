@@ -95,8 +95,7 @@ static bool mutex_unlock(pthread_mutex_t* mutex) {
     }
 }
 
-static void serve_connection(void* data) {
-    connection_data *conn_data = (connection_data*) data;
+static void serve_connection_impl(connection_data *conn_data) {
     trace("New connection from  %s:%d sd=%d\n", inet_ntoa(conn_data->pin.sin_addr), ntohs(conn_data->pin.sin_port), conn_data->sd);
 
     const int maxsize = PATH_MAX + 32;
@@ -214,6 +213,11 @@ static void serve_connection(void* data) {
     }
     close(conn_data->sd);
     trace("Connection to %s:%d (%s) closed sd=%d\n", inet_ntoa(conn_data->pin.sin_addr), ntohs(conn_data->pin.sin_port), requestor_id, conn_data->sd);
+}
+
+static void serve_connection(void* data) {
+    serve_connection_impl((connection_data*) data);
+    free(data);
 }
 
 static int _mkdir(const char *dir, int mask) {
@@ -408,7 +412,7 @@ static file_elem* add_file_to_list(file_elem* tail, const char* filename, enum f
     int namelen = strlen(filename);
     int realpath_len = strlen(real_path);
     int size = sizeof(file_elem) + namelen + realpath_len + 2;
-    file_elem *fe = (file_elem*) malloc(size);
+    file_elem *fe = (file_elem*) malloc_wrapper(size);
     fe->next = NULL;
     strcpy(fe->filename, filename);
     fe->state = state;
@@ -516,7 +520,8 @@ static int calc_time_skew() {
 
 static int init() {
     trace("Initialization. Sending supported versions: %c %c\n", VERSION_1, VERSION_2);
-    fprintf(stdout, "VERSIONS %c %c 6\n", VERSION_1, VERSION_2);
+    fprintf(stdout, "CONTROLLER VERSION 1.2.60  (%s %s)\n", __DATE__, __TIME__);
+    fprintf(stdout, "VERSIONS %c %c\n", VERSION_1, VERSION_2);
     fflush(stdout);
     int bufsize = 256;
     char buffer[bufsize];
@@ -780,7 +785,7 @@ int main(int argc, char* argv[]) {
 
     while (1) {
         /* wait for a client to talk to us */
-        connection_data* conn_data = (connection_data*) malloc(sizeof (connection_data));
+        connection_data* conn_data = (connection_data*) malloc_wrapper(sizeof (connection_data));
         socklen_t addrlen = sizeof (conn_data->pin);
         if ((conn_data->sd = accept(sd, (struct sockaddr *) & conn_data->pin, &addrlen)) == -1) {
             perror("accept");

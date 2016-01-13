@@ -62,7 +62,7 @@ public class NativeProjectItemsAdapter implements NativeProjectItemsListener {
     }
 
     @Override
-    public void filesPropertiesChanged() {
+    public void filesPropertiesChanged(NativeProject nativeProject) {
     }
 
     @Override

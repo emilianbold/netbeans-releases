@@ -1,1 +1,8 @@
-BB83D4F8047D608858154CB041054F5CAE35B903 cnd-rfs-1.0.zip
+#changeset:   305478:92c8dea4f01b
+#branch:      release81
+#tag:         tip
+#parent:      305455:3d6099405a38
+#user:        Vladimir Kvashin <vkvashin@netbeans.org>
+#date:        Wed Jan 13 13:52:12 2016 +0300
+#summary:     fixing #256919 - fix issues discovered in rfs_controller and rfs_preload
+A37258D6D286A8FB9575AEE688C76643DF317D16 cnd-rfs-1.0.zip

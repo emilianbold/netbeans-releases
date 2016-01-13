@@ -85,38 +85,38 @@ public class CsmStatementResolver {
         boolean found = true;
         switch (kind) {
             case COMPOUND:
-                found = findInner((CsmCompoundStatement) stmt, offset, context);
+                found = findInnerCompound((CsmCompoundStatement) stmt, offset, context);
                 break;
             case IF:
-                found = findInner((CsmIfStatement) stmt, offset, context);
+                found = findInnerIf((CsmIfStatement) stmt, offset, context);
                 break;
             case TRY_CATCH:
-                found = findInner((CsmTryCatchStatement) stmt, offset, context);
+                found = findInnerTry((CsmTryCatchStatement) stmt, offset, context);
                 break;
             case CATCH:
-                found = findInner((CsmExceptionHandler) stmt, offset, context);
+                found = findInnerCatch((CsmExceptionHandler) stmt, offset, context);
                 break;
             case DECLARATION:
-                found = findInner((CsmDeclarationStatement) stmt, offset, context);
+                found = findInnerDeclaration((CsmDeclarationStatement) stmt, offset, context);
                 break;
             case WHILE:
             case DO_WHILE:
-                found = findInner((CsmLoopStatement) stmt, offset, context);
+                found = findInnerWhile((CsmLoopStatement) stmt, offset, context);
                 break;
             case FOR:
-                found = findInner((CsmForStatement) stmt, offset, context);
+                found = findInnerFor((CsmForStatement) stmt, offset, context);
                 break;
             case RANGE_FOR:
-                found = findInner((CsmRangeForStatement) stmt, offset, context);
+                found = findInnerRange((CsmRangeForStatement) stmt, offset, context);
                 break;
             case SWITCH:
-                found = findInner((CsmSwitchStatement) stmt, offset, context);
+                found = findInnerSwitch((CsmSwitchStatement) stmt, offset, context);
                 break;
             case EXPRESSION:
-                found = findInner(((CsmExpressionStatement) stmt).getExpression(), offset, context);
+                found = findInnerExpression(((CsmExpressionStatement) stmt).getExpression(), offset, context);
                 break;
             case RETURN:
-                found = findInner(((CsmReturnStatement) stmt).getReturnExpression(), offset, context);
+                found = findInnerExpression(((CsmReturnStatement) stmt).getReturnExpression(), offset, context);
                 break;
             case BREAK:
             case CASE:
@@ -134,7 +134,7 @@ public class CsmStatementResolver {
         return found;
     }
 
-    private static boolean findInner(CsmCompoundStatement stmt, int offset, CsmContext context) {
+    private static boolean findInnerCompound(CsmCompoundStatement stmt, int offset, CsmContext context) {
         assert (CsmOffsetUtilities.isInObject(stmt, offset)) : "we must be in statement when called"; //NOI18N
         if (stmt != null) {
             for (CsmStatement curSt : stmt.getStatements()) {
@@ -146,7 +146,7 @@ public class CsmStatementResolver {
         return false;
     }
 
-    private static boolean findInner(CsmTryCatchStatement stmt, int offset, CsmContext context) {
+    private static boolean findInnerTry(CsmTryCatchStatement stmt, int offset, CsmContext context) {
         assert (CsmOffsetUtilities.isInObject(stmt, offset)) : "we must be in statement when called";
         if (findInnerObject(stmt.getTryStatement(), offset, context)) {
             return true;
@@ -159,12 +159,12 @@ public class CsmStatementResolver {
         return false;
     }
 
-    private static boolean findInner(CsmExceptionHandler stmt, int offset, CsmContext context) {
+    private static boolean findInnerCatch(CsmExceptionHandler stmt, int offset, CsmContext context) {
         assert (CsmOffsetUtilities.isInObject(stmt, offset)) : "we must be in statement when called";
-        return findInner((CsmCompoundStatement) stmt, offset, context);
+        return findInnerCompound((CsmCompoundStatement) stmt, offset, context);
     }
 
-    private static boolean findInner(CsmIfStatement stmt, int offset, CsmContext context) {
+    private static boolean findInnerIf(CsmIfStatement stmt, int offset, CsmContext context) {
         assert (CsmOffsetUtilities.isInObject(stmt, offset)) : "we must be in statement when called";
 
         if (!CsmOffsetUtilities.sameOffsets(stmt, stmt.getCondition())
@@ -190,7 +190,7 @@ public class CsmStatementResolver {
         return false;
     }
 
-    private static boolean findInner(CsmDeclarationStatement stmt, int offset, CsmContext context) {
+    private static boolean findInnerDeclaration(CsmDeclarationStatement stmt, int offset, CsmContext context) {
         assert (CsmOffsetUtilities.isInObject(stmt, offset)) : "we must be in declaration statement when called"; //NOI18N
         List<CsmDeclaration> decls = stmt.getDeclarators();
         CsmDeclaration decl = CsmOffsetUtilities.findObject(decls, context, offset);
@@ -205,9 +205,9 @@ public class CsmStatementResolver {
                 }
             }
             if (CsmKindUtilities.isEnum(decl)) {
-                findInner((CsmEnum)decl, offset, context);
+                findInnerEnum((CsmEnum)decl, offset, context);
             } else if (CsmKindUtilities.isClass(decl)) {
-                findInner((CsmClass)decl, offset, context);
+                findInnerClass((CsmClass)decl, offset, context);
             } else  if (CsmKindUtilities.isFunction(decl)) {
                 CsmFunction fun = (CsmFunction) decl;
 
@@ -247,14 +247,14 @@ public class CsmStatementResolver {
                     }
                 }   
             } else if (CsmKindUtilities.isVariable(decl)) {
-                findInner(((CsmVariable)decl).getInitialValue(), offset, context);
+                findInnerExpression(((CsmVariable)decl).getInitialValue(), offset, context);
             }
             return true;
         }
         return false;
     }
 
-    private static boolean findInner(CsmEnum enumm, int offset, CsmContext context) {
+    private static boolean findInnerEnum(CsmEnum enumm, int offset, CsmContext context) {
         CsmContextUtilities.updateContext(enumm, offset, context);
         CsmEnumerator enumerator = CsmOffsetUtilities.findObject(enumm.getEnumerators(), context, offset);
         if (enumerator != null && !CsmOffsetUtilities.sameOffsets(enumm, enumerator)) {
@@ -263,12 +263,12 @@ public class CsmStatementResolver {
         return true;
     }
 
-    private static boolean findInner(CsmClass clazz, int offset, CsmContext context) {
+    private static boolean findInnerClass(CsmClass clazz, int offset, CsmContext context) {
         CsmContextUtilities.updateContext(clazz, offset, context);
         CsmMember member = CsmOffsetUtilities.findObject(clazz.getMembers(), context, offset);
         if (!CsmOffsetUtilities.sameOffsets(clazz, member)) {
             if (CsmKindUtilities.isClass(member)) {
-                findInner((CsmClass)member, offset, context);
+                findInnerClass((CsmClass)member, offset, context);
             } else if (CsmKindUtilities.isFunctionDefinition(member)) {
                 CsmContextUtilities.updateContext(member, offset, context);
                 CsmCompoundStatement body = ((CsmFunctionDefinition)member).getBody();
@@ -280,7 +280,7 @@ public class CsmStatementResolver {
         return true;
     }
 
-    private static boolean findInner(CsmLoopStatement stmt, int offset, CsmContext context) {
+    private static boolean findInnerWhile(CsmLoopStatement stmt, int offset, CsmContext context) {
         assert (CsmOffsetUtilities.isInObject(stmt, offset)) : "we must be in statement when called"; //NOI18N
         if (!CsmOffsetUtilities.sameOffsets(stmt, stmt.getCondition())
                 && CsmOffsetUtilities.isInObject(stmt.getCondition(), offset)) {
@@ -293,7 +293,7 @@ public class CsmStatementResolver {
         return findInnerObject(stmt.getBody(), offset, context);
     }
 
-    private static boolean findInner(CsmForStatement stmt, int offset, CsmContext context) {
+    private static boolean findInnerFor(CsmForStatement stmt, int offset, CsmContext context) {
         assert (CsmOffsetUtilities.isInObject(stmt, offset)) : "we must be in statement when called"; //NOI18N
         if (findInnerObject(stmt.getInitStatement(), offset, context)) {
             if (CsmUtilities.DEBUG) {
@@ -308,7 +308,7 @@ public class CsmStatementResolver {
             CsmExpression iterationExpression = stmt.getIterationExpression();
             CsmContextUtilities.updateContextObject(iterationExpression, offset, context);
             
-            if(findInner(iterationExpression, offset, context)) {
+            if(findInnerExpression(iterationExpression, offset, context)) {
                 return true;
             }
             return true;
@@ -319,7 +319,7 @@ public class CsmStatementResolver {
             }
             CsmCondition condition = stmt.getCondition();
             CsmContextUtilities.updateContextObject(condition, offset, context);
-            if(findInner(condition.getExpression(), offset, context)) {
+            if(findInnerExpression(condition.getExpression(), offset, context)) {
                 return true;
             }
             return true;
@@ -327,7 +327,7 @@ public class CsmStatementResolver {
         return findInnerObject(stmt.getBody(), offset, context);
     }
 
-    private static boolean findInner(CsmRangeForStatement stmt, int offset, CsmContext context) {
+    private static boolean findInnerRange(CsmRangeForStatement stmt, int offset, CsmContext context) {
         assert (CsmOffsetUtilities.isInObject(stmt, offset)) : "we must be in statement when called"; //NOI18N
         if (findInnerObject(stmt.getDeclaration(), offset, context)) {
             return true;
@@ -336,7 +336,7 @@ public class CsmStatementResolver {
             CsmExpression initializerExpression = stmt.getInitializer();
             CsmContextUtilities.updateContextObject(initializerExpression, offset, context);
             
-            if(findInner(initializerExpression, offset, context)) {
+            if(findInnerExpression(initializerExpression, offset, context)) {
                 return true;
             }
             return true;
@@ -344,7 +344,7 @@ public class CsmStatementResolver {
         return findInnerObject(stmt.getBody(), offset, context);
     }
     
-    private static boolean findInner(CsmSwitchStatement stmt, int offset, CsmContext context) {
+    private static boolean findInnerSwitch(CsmSwitchStatement stmt, int offset, CsmContext context) {
         assert (CsmOffsetUtilities.isInObject(stmt, offset)) : "we must be in statement when called"; //NOI18N
         if (!CsmOffsetUtilities.sameOffsets(stmt, stmt.getCondition())
                 && CsmOffsetUtilities.isInObject(stmt.getCondition(), offset)) {
@@ -354,7 +354,7 @@ public class CsmStatementResolver {
         return findInnerObject(stmt.getBody(), offset, context);
     }
 
-    private static boolean findInner(CsmExpression expr, int offset, CsmContext context) {
+    private static boolean findInnerExpression(CsmExpression expr, int offset, CsmContext context) {
         if(expr != null) {
             for (CsmStatement csmStatement : expr.getLambdas()) {
                 CsmDeclarationStatement lambda = (CsmDeclarationStatement)csmStatement;
