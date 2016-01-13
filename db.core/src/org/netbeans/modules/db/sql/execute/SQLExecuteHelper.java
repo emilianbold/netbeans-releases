@@ -64,8 +64,7 @@ import org.netbeans.modules.db.sql.history.SQLHistoryManager;
 public final class SQLExecuteHelper {
 
     private static final Logger LOGGER = Logger.getLogger(SQLExecuteHelper.class.getName());
-    private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
-    
+
     /**
      * Executes a SQL string, possibly containing multiple statements. Returns the execution
      * result, but only if the string contained a single statement.
@@ -91,9 +90,9 @@ public final class SQLExecuteHelper {
         boolean cancelled = false;
         
         List<StatementInfo> statements = getStatements(sqlScript, startOffset, endOffset,
-                conn.getDriverClass().contains("mysql"));               //NOI18N
+                                                       getCompatibility(conn));
         
-        List<SQLExecutionResult> results = new ArrayList<SQLExecutionResult>();
+        List<SQLExecutionResult> results = new ArrayList<>();
         long totalExecutionTime = 0;
         String url = conn.getDatabaseURL();
 
@@ -106,19 +105,14 @@ public final class SQLExecuteHelper {
             
             String sql = info.getSQL();
 
-            SQLExecutionResult result;
-            
-            
-            if (LOG) {
-                LOGGER.log(Level.FINE, "Executing: " + sql);
-            }
-
+            LOGGER.log(Level.FINE, "Executing: {0}", sql);
+                
             DataView view = DataView.create(conn, sql, pageSize);
 
             // Save SQL statements executed for the SQLHistoryManager
             SQLHistoryManager.getInstance().saveSQL(new SQLHistoryEntry(url, sql, new Date()));
 
-            result = new SQLExecutionResult(info, view);
+            SQLExecutionResult result = new SQLExecutionResult(info, view);
 
             boolean isIllegal = false;
             for (Throwable th : view.getExceptions()) {
@@ -143,9 +137,7 @@ public final class SQLExecuteHelper {
         if (!cancelled) {
             executionLogger.finish(totalExecutionTime);
         } else {
-            if (LOG) {
-                LOGGER.log(Level.FINE, "Execution cancelled"); // NOI18N
-            }
+            LOGGER.log(Level.FINE, "Execution cancelled"); // NOI18N
             executionLogger.cancel();
         }
                 
@@ -159,11 +151,25 @@ public final class SQLExecuteHelper {
         }
     }
     
+    static Compatibility getCompatibility(DatabaseConnection conn) {
+        String driverClass = conn.getDriverClass();
+        
+        if (driverClass.contains("mysql")) { //NOI18N
+            return Compatibility.COMPAT_MYSQL;
+        }
+
+        if (driverClass.contains("postgresql")) { //NOI18N
+            return Compatibility.COMPAT_POSTGERSQL;
+        }
+        
+        return Compatibility.COMPAT_GENERIC;
+    }
+    
     private static List<StatementInfo> getStatements(String script, int startOffset, int endOffset,
-            boolean useHashComments) {
+            Compatibility compat) {
         if ((startOffset == 0 && endOffset == script.length()) || (startOffset == endOffset)) {
             // Either the whole script, or the statement at offset startOffset.
-            List<StatementInfo> allStatements = split(script, useHashComments);
+            List<StatementInfo> allStatements = split(script, compat);
             if (startOffset == 0 && endOffset == script.length()) {
                 return allStatements;
             }
@@ -175,7 +181,7 @@ public final class SQLExecuteHelper {
                     : Collections.singletonList(foundStatement);
         } else {
             // Just execute the selected subscript.
-            return split(script.substring(startOffset, endOffset), useHashComments);
+            return split(script.substring(startOffset, endOffset), compat);
         }
     }
 
@@ -205,45 +211,27 @@ public final class SQLExecuteHelper {
     }
         
     public static List<StatementInfo> split(String script) {
-        return split(script, true);
+        return split(script, Compatibility.COMPAT_MYSQL);
     }
     
-    static List<StatementInfo> split(String script,
-            boolean useHashComments) {
-        return new SQLSplitter(script, useHashComments).getStatements();
+    static List<StatementInfo> split(String script, Compatibility compat) {
+        return new SQLSplitter(script, compat).getStatements();
     }
 
     private static final class SQLSplitter {
-        
-        private static final int STATE_MEANINGFUL_TEXT = 0;
-        private static final int STATE_MAYBE_LINE_COMMENT = 1;
-        private static final int STATE_LINE_COMMENT = 2;
-        private static final int STATE_MAYBE_BLOCK_COMMENT = 3;
-        private static final int STATE_BLOCK_COMMENT = 4;
-        private static final int STATE_MAYBE_END_BLOCK_COMMENT = 5;
-        private static final int STATE_QUOTED = 6;
-        
         private final String sql;
-        private final int sqlLength;
-        private final boolean useHashComments;
+        private final List<Integer> newLineOffsets;
+        private final Compatibility compat;
         
         private final StringBuilder statement = new StringBuilder();
-        private final List<StatementInfo> statements = new ArrayList<StatementInfo>();
+        private final List<StatementInfo> statements = new ArrayList<>();
         
         private int pos = 0;
-        private int line = -1;
-        private int column;
-        private boolean wasEOL = true;
-        
         private int rawStartOffset;
-        private int startOffset;
-        private int startLine;
-        private int startColumn;
-        private int endOffset;
+        private int startOffset = 0;
+        private int endOffset = 0;
         private int rawEndOffset;
-        
-        private int state = STATE_MEANINGFUL_TEXT;
-        
+
         private String delimiter = ";"; // NOI18N
         private static final String DELIMITER_TOKEN = "delimiter"; // NOI18N
                 
@@ -253,212 +241,220 @@ public final class SQLExecuteHelper {
          * @param useHashComments True if hash symbol (#) should be used as
          * start of line comment (MySQL supports it).
          */
-        public SQLSplitter(String sql, boolean useHashComments) {
+        public SQLSplitter(String sql, Compatibility compat) {
             assert sql != null;
             this.sql = sql;
-            sqlLength = sql.length();
-            this.useHashComments = useHashComments;
+            this.newLineOffsets = extractNewLineOffsets();
+            this.compat = compat;
             parse();
         }
-
-        private void parse() {
-            checkDelimiterStatement();
-            int startQuote = -1;
-            int commentStart = 0;
-            while (pos < sqlLength) {
-                char ch = sql.charAt(pos);
-                
-                if (ch == '\r') { // NOI18N
-                    // the string should not contain these
-                    if (LOG) {
-                        LOGGER.log(Level.FINE, "The SQL string contained non-supported \r characters."); // NOI18N
-                    }
-                    continue;
-                }
-                
-                nextColumn();
-                
-                switch (state) {
-                    case STATE_MEANINGFUL_TEXT:
-                        if (isDelimiter()) {
-                            rawEndOffset = pos;
-                            addStatement();
-                            statement.setLength(0);
-                            rawStartOffset = pos + delimiter.length(); // skip the delimiter
-                            pos += delimiter.length();
-                            continue;
-                        }
-                        if (ch == '-') {
-                            state = STATE_MAYBE_LINE_COMMENT;
-                        } else if (ch == '/') {
-                            state = STATE_MAYBE_BLOCK_COMMENT;
-                        } else if (ch == '#' && useHashComments) {
-                            if (statement.length() == 0 || !Character.isLetterOrDigit(statement.charAt(statement.length() - 1))) {
-                                state = STATE_LINE_COMMENT;
-                            }
-                        } else if (isStartQuote(ch)) {
-                            startQuote = ch;
-                            state = STATE_QUOTED;
-                        }
+        
+        private void appendSQL(int startPos, int endPos) {
+            if(statement.length() == 0) {
+                // Skip Whitespace on appending
+                for(int i = startPos; i <= endPos && i < sql.length(); i++) {
+                    if(Character.isWhitespace(sql.charAt(i))) {
+                        startPos++;
+                    } else {
                         break;
-                        
-                    case STATE_MAYBE_LINE_COMMENT:
-                        if (ch == '-') {
-                            commentStart = pos + 1;
-                            state = STATE_LINE_COMMENT;
-                        } else {
-                            state = STATE_MEANINGFUL_TEXT;
-                            statement.append('-'); // previous char
-                            endOffset = pos;
-                        }
-                        break;
-                        
-                    case STATE_LINE_COMMENT:
-                        if (ch == '\n') {
-                            checkForDelimiterStmt(commentStart, pos - 1);
-                            state = STATE_MEANINGFUL_TEXT;
-                        } 
-                        break;
-                        
-                    case STATE_MAYBE_BLOCK_COMMENT:
-                        if (ch == '*') {
-                            commentStart = pos + 1;
-                            state = STATE_BLOCK_COMMENT;
-                        } else {
-                            statement.append('/'); // previous char
-                            endOffset = pos;
-                            if (ch != '/') {
-                                state = STATE_MEANINGFUL_TEXT;
-                            }
-                        }
-                        break;
-                        
-                    case STATE_BLOCK_COMMENT:
-                        if (ch == '*') {
-                            state = STATE_MAYBE_END_BLOCK_COMMENT;
-                        }
-                        break;
-                        
-                    case STATE_MAYBE_END_BLOCK_COMMENT:
-                        if (ch == '/') {
-                            checkForDelimiterStmt(commentStart, pos - 2);
-                            state = STATE_MEANINGFUL_TEXT;
-                            // avoid writing the final / to the result
-                            pos++;
-                            continue;
-                        } else if (ch != '*') {
-                            state = STATE_BLOCK_COMMENT;
-                        }
-                        break;
-                        
-                    case STATE_QUOTED:
-                        int lookAhead = -1;
-                        if((pos + 1) < sqlLength) {
-                            lookAhead = sql.charAt(pos + 1);
-                        }
-                        if (isEndQuote(startQuote, ch)) {
-                            if (lookAhead >= 0 && isEndQuote(startQuote, lookAhead)) {
-                                statement.append(ch);
-                                statement.append((char) lookAhead);
-                                pos += 2;
-                                // the end offset is the character after the last non-whitespace character
-                                if (state == STATE_QUOTED || !Character.isWhitespace(ch)) {
-                                    endOffset = pos + 1;
-                                }
-                                continue;
-                            } else {
-                                state = STATE_MEANINGFUL_TEXT;
-                            }
-                        }
-                        break;
-                        
-                    default:
-                        assert false;
-                }
-                
-                if (state == STATE_MEANINGFUL_TEXT || state == STATE_QUOTED) {
-                    // don't append leading whitespace
-                    if (statement.length() > 0 || !Character.isWhitespace(ch)) {
-                        // remember the position of the first appended char
-                        if (statement.length() == 0) {
-                            // See if the next statement changes the delimiter
-                            // Note how we skip over a 'delimiter' statement - it's not
-                            // something we send to the server.
-                            if (checkDelimiterStatement()) {
-                                continue;
-                            }
-                            startOffset = pos;
-                            endOffset = pos;
-                            startLine = line;
-                            startColumn = column;
-                        }
-                        statement.append(ch);
-                        // the end offset is the character after the last non-whitespace character
-                        if (state == STATE_QUOTED || !Character.isWhitespace(ch)) {
-                            endOffset = pos + 1;
-                        }
                     }
                 }
-                pos++;
+                if(startPos >= endPos) {
+                    return;
+                }
+                this.startOffset = startPos;
             }
+            statement.append(sql.substring(startPos, endPos));
+            for(int i = endPos - 1; i >= startPos; i--) {
+                if(! Character.isWhitespace(sql.charAt(i))) {
+                    this.endOffset = i;
+                    break;
+                }
+            }
+        }
+
+        private List<Integer> extractNewLineOffsets() {
+            List<Integer> newlines = new ArrayList<>();
+            int nextNewLine = this.sql.indexOf('\n');
+            while(nextNewLine >= 0) {
+                newlines.add(nextNewLine);
+                nextNewLine = this.sql.indexOf('\n', nextNewLine + 1);
+            }
+            return newlines;
+        }
+        
+        private void parse() {
+            if (sql.contains("\r")) {
+                // the string should not contain these
+                LOGGER.log(Level.FINE, "The SQL string contained non-supported \\r characters."); // NOI18N
+            }
+
+            rawStartOffset = 0;
             
+            while (pos < sql.length()) {
+                if(isDelimiter()) {
+                    rawEndOffset = pos;
+                    addStatement();
+                    pos += delimiter.length();
+                    rawStartOffset = pos;
+                } else if(! (consumeDelimiterStatement() 
+                        || consumeCommentString()
+                        || consumeQuotedString())) {
+                    appendSQL(pos, pos + 1);
+                    pos++;
+                }
+            }
+
             rawEndOffset = pos;
             addStatement();
         }
 
-        // The methods to detect quoting chars are copied from SQLLexer from the 
-        // org.netbeans.modules.db.sql.editor module
-        // Copied to not introduce another dependency
-        private static boolean isStartQuote(int start) {
-            return isStartStringQuoteChar(start) || isStartIdentifierQuoteChar(start);
-        }
-        
-        private static boolean isEndQuote(int start, int end) {
-            return isEndIdentifierQuoteChar(start, end) || isEndStringQuoteChar(start, end);
-        }
-        
-        private static boolean isStartStringQuoteChar(int start) {
-            return start == '\'';  // SQL-99 string
-        }
-
-        private static boolean isStartIdentifierQuoteChar(int start) {
-            return start == '\"' || // SQL-99
-                    start == '`' || // MySQL
-                    start == '[';    // MS SQL Server
-        }
-
-        private static int getMatchingQuote(int start) {
-            switch (start) {
-                case '[':
-                    return ']';
-                default:
-                    return start;
+        /**
+         * Consume comment and check for embedded delimiter statement
+         * 
+         * <p>Contents is not added to final SQL</p>
+         */
+        private boolean consumeCommentString() {
+            String first = null;
+            String firstTwo = null;
+            
+            if((pos + 1) <= sql.length()) {
+                first = sql.substring(pos, pos + 1);
             }
-        }
-
-        private static boolean isEndIdentifierQuoteChar(int start, int end) {
-            return isStartIdentifierQuoteChar(start) && end == getMatchingQuote(start);
-        }
-
-        private static boolean isEndStringQuoteChar(int start, int end) {
-            return isStartStringQuoteChar(start) && end == getMatchingQuote(start);
+            if((pos + 2) <= sql.length()) {
+                firstTwo = sql.substring(pos, pos + 2);
+            }
+            
+            int startPos = pos;
+            int startLength = 0;
+            String endString = null;
+            
+            if(firstTwo != null && "/*".equals(firstTwo)) {
+                    startLength = 2;
+                    endString = "*/";
+            } else if (firstTwo != null && "--".equals(firstTwo)) {
+                    startLength = 2;
+                    endString = "\n";
+            } else if (first != null && "#".equals(first)) {
+                    startLength = 1;
+                    if(compat.isUseHashComments()) {
+                        endString = "\n";
+                    }
+            }
+            
+            if(endString == null) {
+                return false;
+            }
+            
+            int endCandidate = sql.indexOf(endString, pos + startLength);
+            if (endCandidate == -1) {
+                pos = sql.length();
+            } else {
+                pos = endCandidate + endString.length();
+            }
+            
+            checkForDelimiterStmt(startPos + startLength, pos - endString.length() - 1);
+            
+            return true;
         }
         
         /**
-         * See if the user wants to use a different delimiter for splitting
+         * Consume quoted Strings.
+         * 
+         * <p>Contents is added to extracted SQL</p>
+         */
+        private boolean consumeQuotedString() {
+            String ch = sql.substring(pos, pos + 1);
+            
+            int startPos = pos;
+            String endString = null;
+            int quoteLength = 0;
+            boolean doubleEscapePossible = false;
+                    
+            switch(ch) {
+                case SQL99_STRING_QUOTE:
+                    quoteLength = SQL99_STRING_QUOTE.length();
+                    endString = SQL99_STRING_QUOTE;
+                    doubleEscapePossible = true;
+                    break;
+                case SQL99_IDENTIFIER_QUOTE:
+                    quoteLength = SQL99_IDENTIFIER_QUOTE.length();
+                    endString = SQL99_IDENTIFIER_QUOTE;
+                    doubleEscapePossible = true;
+                    break;
+                case MYSQL_QUOTE:
+                    quoteLength = MYSQL_QUOTE.length();
+                    endString = MYSQL_QUOTE;
+                    doubleEscapePossible = true;
+                    break;
+                case MSSQL_BEGIN_QUOTE:
+                    quoteLength = MSSQL_BEGIN_QUOTE.length();
+                    endString = MSSQL_END_QUOTE;
+                    doubleEscapePossible = true;
+                    break;
+                case "$":
+                    if(compat.isUseDollarQuotes()) {
+                        int nextDollar = sql.indexOf('$', pos + 1);
+                        if(nextDollar >= 0) {
+                            String tagWithDollar = sql.substring(pos, nextDollar + 1);
+                            if(tagWithDollar.matches("\\$\\S*?\\$")) {
+                                quoteLength = tagWithDollar.length();
+                                endString = tagWithDollar;
+                            } else {
+                                return false;
+                            }
+                        }
+                    }
+                    doubleEscapePossible = false;
+                    break;
+            }
+            
+            if(endString == null) {
+                return false;
+            }
+
+            do {
+                int endCandidate = sql.indexOf(endString, pos + quoteLength);
+                // EndQuote not found ...
+                if (endCandidate == -1) {
+                    pos = sql.length();
+                } else {
+                    pos = endCandidate + endString.length();
+                }
+                // If the string following the quote is the endquote and 
+                // doubling the endquote escaped it, continue scanning
+            } while (doubleEscapePossible
+                    && pos < sql.length()
+                    && sql.startsWith(endString, pos));
+
+            appendSQL(startPos, pos);
+            
+            return true;
+        }
+        
+        private final static String SQL99_STRING_QUOTE = "'";
+        private final static String SQL99_IDENTIFIER_QUOTE = "\"";
+        private final static String MYSQL_QUOTE = "`";
+        private final static String MSSQL_END_QUOTE = "]";
+        private final static String MSSQL_BEGIN_QUOTE = "[";
+        
+        /**
+         * Consume a delimiter statement.
+         * 
+         * <p>See if the user wants to use a different delimiter for splitting
          * up statements.  This is useful if, for example, their SQL contains
          * stored procedures or triggers or other blocks that contain multiple
-         * statements but should be executed as a single unit. 
+         * statements but should be executed as a single unit. </p>
          * 
-         * If we see the delimiter token, we read in what the new delimiter 
+         * <p>If we see the delimiter token, we read in what the new delimiter 
          * should be, and then return the new character position past the
          * delimiter statement, as this shouldn't be passed on to the 
-         * database.
+         * database.</p>
+         * 
+         * <p>Contents won't be part of the extracted statement</p>
          */
-        private boolean checkDelimiterStatement() {
-            skipWhitespace();
-                        
-            if ( pos == sqlLength) {
+        private boolean consumeDelimiterStatement() {     
+            if ( pos == sql.length()) {
                 return false;
             }
             
@@ -466,27 +462,34 @@ public final class SQLExecuteHelper {
                 return false;
             }
             
+            if ( statement.length() > 0 ) {
+                return false;
+            }
+            
+            int startPos = pos;
+            
             // Skip past the delimiter token
             int tokenLength = DELIMITER_TOKEN.length();
             pos += tokenLength;
             
-            skipWhitespace();
+            // Skip over Whitespace
+            while ( pos < sql.length() &&
+                    Character.isWhitespace(sql.charAt(pos))) {
+                pos++;
+            }
             
+            // 
             int endPos = pos;
-            while ( endPos < sqlLength &&
+            while ( endPos < sql.length() &&
                     ! Character.isWhitespace(sql.charAt(endPos))) {
                 endPos++;
             }
             
-            if ( pos == endPos ) {
+            if ( startPos == endPos ) {
                 return false;
             }
             
             delimiter = sql.substring(pos, endPos);
-            
-            pos = endPos;
-            statement.setLength(0);
-            rawStartOffset = pos;
 
             return true;
         }
@@ -494,14 +497,14 @@ public final class SQLExecuteHelper {
         /**
          * Check for Delimiter Statement in comment.
          * 
-         * Simulates regular behaviour found in checkDelimiterStatement
+         * <p>Simulates regular behaviour found in checkDelimiterStatement</p>
          */
-        private void checkForDelimiterStmt(int initialOffset, int end) {
+        private void checkForDelimiterStmt(int initialOffset, int lastPosToScan) {
             int start = initialOffset;
-            while(Character.isWhitespace(sql.charAt(start)) && start < end) {
+            while(Character.isWhitespace(sql.charAt(start)) && start < lastPosToScan) {
                 start++;
             }
-            if(start >= end && (end - start + 1) <= DELIMITER_TOKEN.length()) {
+            if(start >= lastPosToScan && (lastPosToScan - start + 1) <= DELIMITER_TOKEN.length()) {
                 return;
             }
             boolean delimiterMatched = true;
@@ -516,11 +519,11 @@ public final class SQLExecuteHelper {
             if(! delimiterMatched) {
                 return;
             }
-            while (Character.isWhitespace(sql.charAt(start)) && start < end) {
+            while (Character.isWhitespace(sql.charAt(start)) && start < lastPosToScan) {
                 start++;
             }
             StringBuilder sb = new  StringBuilder();
-            for(int i = start; i <= end; i++) {
+            for(int i = start; i <= lastPosToScan; i++) {
                 if(! Character.isWhitespace(sql.charAt(i))) {
                     sb.append(sql.charAt(i));
                 } else {
@@ -532,17 +535,10 @@ public final class SQLExecuteHelper {
             }
         }
         
-        private void skipWhitespace() {
-            while ( pos < sqlLength && Character.isWhitespace(sql.charAt(pos)) ) {
-                nextColumn();
-                pos++;
-            }            
-        }
-        
         private boolean isDelimiter() {
             int length = delimiter.length();
             
-            if ( pos + length > sqlLength) {
+            if ( pos + length > sql.length()) {
                 return false;
             }
             
@@ -555,21 +551,6 @@ public final class SQLExecuteHelper {
             
             return true;
         }
-        
-        private void nextColumn() {
-            if (wasEOL) {
-                line++;
-                column = 0;
-                wasEOL = false;
-            } else {
-                column++;
-            }
-                            
-            if (sql.charAt(pos) == '\n') {
-                wasEOL = true;
-            }
-        }
-        
         
         /** 
          * See if the SQL text starting at the given position is a given token 
@@ -620,15 +601,24 @@ public final class SQLExecuteHelper {
         }
         
         private void addStatement() {
-            // PENDING since startOffset is the first non-whitespace char and
-            // endOffset is the offset after the last non-whitespace char,
-            // the trim() call could be replaced with statement.substring(startOffset, endOffset)
             String sqlTrimmed = statement.toString().trim();
+            statement.setLength(0);
             if (sqlTrimmed.length() <= 0) {
                 return;
             }
             
-            StatementInfo info = new StatementInfo(sqlTrimmed, rawStartOffset, startOffset, startLine, startColumn, endOffset, rawEndOffset);
+            int line = 0;
+            int newLinePos = -1;
+            for(Integer offset: newLineOffsets) {
+                if(offset < startOffset) {
+                    line++;
+                    newLinePos = offset;
+                } else {
+                    break;
+                }
+            }
+            
+            StatementInfo info = new StatementInfo(sqlTrimmed, rawStartOffset, startOffset, line, startOffset - newLinePos - 1, endOffset + 1, rawEndOffset);
             statements.add(info);
         }
         
@@ -636,5 +626,89 @@ public final class SQLExecuteHelper {
             return Collections.unmodifiableList(statements);
         }
         
+    }
+    
+    /**
+     * Hold information about compatiblity settings to apply when cutting
+     * SQL string.
+     */
+    static class Compatibility {
+
+        public final static Compatibility COMPAT_GENERIC = new Compatibility(false, false);
+
+        public final static Compatibility COMPAT_MYSQL = new Compatibility(true, false);
+
+        public final static Compatibility COMPAT_POSTGERSQL = new Compatibility(false, true);
+        
+        /**
+         * Mysql supports "#" ('hash'-Char) as line comment in addition to
+         * SQL-Standard "--"
+         * 
+         * See:
+         * http://dev.mysql.com/doc/refman/5.7/en/comments.html
+         */
+        private final boolean useHashComments;
+
+        /**
+         * Refer to PostgreSQL documentation:
+         * http://www.postgresql.org/docs/9.0/static/sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING
+         *
+         * These two string are "equivalent" in PostgreSQL notation, first one
+         * uses '$$' as quote mark, second one uses '$SomeTag$': $$Dianne's
+         * horse$$ $SomeTag$Dianne's horse$SomeTag$
+         *
+         * The most typical usage - quoting of the body of stored procedures to
+         * avoid splitting of sql on ';' occurring inside of 'CREATE FUNCTION'
+         * statement
+         * http://www.postgresql.org/docs/9.1/static/sql-createfunction.html
+         *
+         * CREATE OR REPLACE FUNCTION dummy(IN dummy_arg varchar) RETURNS
+         * varchar LANGUAGE plpgsql AS $$ DECLARE dummy_result varchar; BEGIN
+         * select concat('dummy(', dummy_arg, ')') into dummy_result; return
+         * dummy_result; END $$;
+         */
+        private final boolean useDollarQuotes;
+
+        public Compatibility(boolean useHashComments, boolean useDollarQuotes) {
+            this.useHashComments = useHashComments;
+            this.useDollarQuotes = useDollarQuotes;
+        }
+
+        public boolean isUseHashComments() {
+            return useHashComments;
+        }
+
+        public boolean isUseDollarQuotes() {
+            return useDollarQuotes;
+        }
+        
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 29 * hash + (this.useHashComments ? 1 : 0);
+            hash = 29 * hash + (this.useDollarQuotes ? 1 : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Compatibility other = (Compatibility) obj;
+            if (this.useHashComments != other.useHashComments) {
+                return false;
+            }
+            if (this.useDollarQuotes != other.useDollarQuotes) {
+                return false;
+            }
+            return true;
+        }
     }
 }
