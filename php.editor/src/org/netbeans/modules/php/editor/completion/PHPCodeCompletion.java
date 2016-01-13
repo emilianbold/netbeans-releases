@@ -134,7 +134,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
 import org.openide.filesystems.FileObject;
 
 import static org.netbeans.modules.php.editor.completion.CompletionContextFinder.lexerToASTOffset;
-import static org.netbeans.modules.php.editor.completion.CompletionContextFinder.lexerToASTOffset;
 
 /**
  *
