@@ -520,7 +520,7 @@ static int calc_time_skew() {
 
 static int init() {
     trace("Initialization. Sending supported versions: %c %c\n", VERSION_1, VERSION_2);
-    fprintf(stdout, "CONTROLLER VERSION 1.2.60  (%s %s)\n", __DATE__, __TIME__);
+    fprintf(stdout, "CONTROLLER VERSION 1.2.61  (%s %s)\n", __DATE__, __TIME__);
     fprintf(stdout, "VERSIONS %c %c\n", VERSION_1, VERSION_2);
     fflush(stdout);
     int bufsize = 256;
@@ -698,6 +698,8 @@ static int init_files() {
     return success;
 }
 
+static const char* exit_flag_file = NULL;
+
 /**
  * From time to time prints to stdout.
  * This guarantees that, as soon as as ssh connection breaks, program will get SIGPIPE and terminate
@@ -712,10 +714,18 @@ static void check_stdout_pipe(void* data) {
         // fgets(response, sizeof response, stdin);
         mutex_unlock(&mutex);
         sleep(20);
+        if (exit_flag_file) {
+            struct stat stat_buf;
+            if (lstat(exit_flag_file, &stat_buf) == 0) {
+                exit(0);
+            }
+        }
+
     } while (1);
 }
 
 int main(int argc, char* argv[]) {
+    exit_flag_file = getenv("RFS_CONTROLLER_EXIT_FLAG_FILE");
     init_trace_flag("RFS_CONTROLLER_TRACE");
     trace_startup("RFS_C", "RFS_CONTROLLER_LOG", argv[0]);
     int port = default_controller_port;
