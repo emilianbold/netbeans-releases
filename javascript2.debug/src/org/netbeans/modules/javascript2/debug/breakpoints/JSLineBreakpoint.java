@@ -123,7 +123,12 @@ public class JSLineBreakpoint extends Breakpoint {
         firePropertyChange(PROP_LINE, oldLine, line);
     }
     
+    /**
+     * Set a 1-based line number to this breakpoint.
+     * @param lineNumber the line number.
+     */
     public void setLine(int lineNumber) {
+        lineNumber--; // Line works with 0-based lines.
         if (line.getLineNumber() == lineNumber) {
             return ;
         }
@@ -144,7 +149,12 @@ public class JSLineBreakpoint extends Breakpoint {
         }
         setLine(cline);
     }
-    
+
+    /**
+     * Get the 1-based line number of this breakpoint.
+     * 
+     * @return the line number.
+     */
     public int getLineNumber() {
         return line.getLineNumber() + 1;
     }

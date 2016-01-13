@@ -94,12 +94,12 @@ public final class SubmittedBreakpoint {
     private void adjustLocation(V8Breakpoint.ActualLocation[] actualLocations) {
         if (actualLocations != null && actualLocations.length > 0) {
             long line = actualLocations[0].getLine();
-            breakpoint.setLine((int) line);
+            breakpoint.setLine((int) line + 1);
         }
     }
     
     void updatePosition(long line, long column) {
-        breakpoint.setLine((int) line);
+        breakpoint.setLine((int) line + 1);
     }
 
     void notifyDestroyed() {
