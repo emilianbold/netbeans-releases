@@ -77,3 +77,4 @@ void _trace_unresolved_path(const char* path, const char* action);
 #define dbg_sleep(time) if (trace_flag) { _dbg_sleep(time); }
 void _dbg_sleep(int time);
 
+void *malloc_wrapper(size_t size);
