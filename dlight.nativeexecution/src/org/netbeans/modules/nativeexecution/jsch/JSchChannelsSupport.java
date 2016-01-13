@@ -232,10 +232,6 @@ public final class JSchChannelsSupport {
                 try {
                     newSession = jsch.getSession(env.getUser(), env.getHostAddress(), env.getSSHPort());
                     newSession.setUserInfo(userInfo);
-                    newSession.setConfig(
-                            "kex", //NOI18N
-                            "diffie-hellman-group1-sha1,diffie-hellman-group14-sha1,diffie-hellman-group-exchange-sha1,diffie-hellman-group-exchange-sha256" //NOI18N
-                    );
 
                     for (Entry<String, String> entry : jschSessionConfig.entrySet()) {
                         newSession.setConfig(entry.getKey(), entry.getValue());
