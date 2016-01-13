@@ -253,7 +253,7 @@ import org.openide.util.RequestProcessor;
     private boolean checkVersion() throws IOException {
         String versionsString = requestReader.readLine();
         // this is made optional in order not to break compatibility
-        final String controllerVersionPattern = "CONTROLLER VERSION ";
+        final String controllerVersionPattern = "CONTROLLER VERSION "; // NOI18N
         if (versionsString.startsWith(controllerVersionPattern)) { //NOI18N
             // for now we don't check controller versions, only protocol versions are checked
             RemoteLogger.fine("rfs_controller at {0} has version {1}", execEnv, versionsString.substring(controllerVersionPattern.length()));
