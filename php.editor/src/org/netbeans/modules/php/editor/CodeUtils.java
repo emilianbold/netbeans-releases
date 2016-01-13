@@ -110,7 +110,7 @@ public final class CodeUtils {
     }
 
     // XXX remove!
-    public static boolean isPhp70OrLess(FileObject file) {
+    public static boolean isLessThanPhp70(FileObject file) {
         return CodeUtils.isPhpVersionLessThan(file, PhpVersion.PHP_56);
     }
 
