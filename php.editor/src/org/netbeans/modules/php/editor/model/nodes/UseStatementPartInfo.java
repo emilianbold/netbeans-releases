@@ -43,21 +43,21 @@
 package org.netbeans.modules.php.editor.model.nodes;
 
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleUseStatementPart;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class UseStatementPartInfo extends ASTNodeInfo<UseStatementPart> {
+public class UseStatementPartInfo extends ASTNodeInfo<SingleUseStatementPart> {
     private final UseStatement.Type type;
 
-    public UseStatementPartInfo(UseStatementPart node, UseStatement.Type type) {
+    public UseStatementPartInfo(SingleUseStatementPart node, UseStatement.Type type) {
         super(node);
         this.type = type;
     }
 
-    public static UseStatementPartInfo create(UseStatementPart node, UseStatement.Type type) {
+    public static UseStatementPartInfo create(SingleUseStatementPart node, UseStatement.Type type) {
         return new UseStatementPartInfo(node, type);
     }
 

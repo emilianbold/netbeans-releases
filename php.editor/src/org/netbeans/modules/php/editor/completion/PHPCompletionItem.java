@@ -76,6 +76,7 @@ import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.api.PhpVersion;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.Cache;
 import org.netbeans.modules.php.editor.completion.CompletionContextFinder.CompletionContext;
 import org.netbeans.modules.php.editor.completion.CompletionContextFinder.KeywordCompletionType;
@@ -335,7 +336,17 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                     assert false : generateAs;
             }
 
-            return template.toString();
+            // XXX improve?
+            String tpl = template.toString();
+            String searchPrefix = request.extraPrefix;
+            if (StringUtils.hasText(searchPrefix)) {
+                if (tpl.startsWith(searchPrefix)) {
+                    tpl = tpl.substring(searchPrefix.length());
+                } else {
+                    assert false : "[" + tpl + "] should start with [" + searchPrefix + "]";
+                }
+            }
+            return tpl;
         }
 
         return getName();
@@ -1721,6 +1732,8 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         public PHPParseResult result;
         public ParserResult info;
         public String prefix;
+        // used in special cases (e.g. in group use)
+        public String extraPrefix;
         public String currentlyEditedFileURL;
         public CompletionContext context;
         ElementQuery.Index index;

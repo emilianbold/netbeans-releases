@@ -144,7 +144,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.TraitMethodAliasDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.TryStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
@@ -420,6 +420,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(NamespaceName namespaceName) {
+        // XXX group
         super.visit(namespaceName);
         ASTNode parent = getPath().get(0);
         if (parent instanceof FunctionName) {
@@ -434,7 +435,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     }
 
     @Override
-    public void visit(UseStatementPart statementPart) {
+    public void visit(SingleUseStatementPart statementPart) {
         UseStatement.Type type = ((UseStatement) getPath().get(0)).getType();
         UseStatementPartInfo useStatementPartInfo = UseStatementPartInfo.create(statementPart, type);
         modelBuilder.getCurrentNameSpace().createUseStatementPart(useStatementPartInfo);

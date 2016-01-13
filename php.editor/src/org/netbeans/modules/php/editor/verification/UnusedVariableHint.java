@@ -107,7 +107,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.SwitchStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ThrowStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
@@ -664,7 +664,7 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
         }
 
         @Override
-        public void visit(UseStatementPart node) {
+        public void visit(SingleUseStatementPart node) {
             // intentionally
         }
 

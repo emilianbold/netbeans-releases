@@ -1,8 +1,12 @@
 Code completion result for source line:
 function &bar(): \|My\Firm\Comment {
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+PACKAGE    A                               [PUBLIC]   null
 PACKAGE    My                              [PUBLIC]   null
+PACKAGE    Run                             [PUBLIC]   null
 ------------------------------------
+PACKAGE    B                               [PUBLIC]   A
+PACKAGE    C                               [PUBLIC]   A\B
 PACKAGE    Firm                            [PUBLIC]   My
 CLASS      BoolClass                       [PUBLIC]   scalarTypeHints.php
 CLASS      Comment                         [PUBLIC]   returnTypesTyping05.php

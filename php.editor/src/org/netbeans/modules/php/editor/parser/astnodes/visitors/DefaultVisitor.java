@@ -81,6 +81,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
 import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.GroupUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.HaltCompiler;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
@@ -128,7 +129,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.TraitMethodAliasDeclarati
 import org.netbeans.modules.php.editor.parser.astnodes.TryStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
@@ -615,9 +616,17 @@ public class DefaultVisitor implements Visitor {
     }
 
     @Override
-    public void visit(UseStatementPart statementPart) {
+    public void visit(SingleUseStatementPart statementPart) {
         scan(statementPart.getName());
         scan(statementPart.getAlias());
+    }
+
+    @Override
+    public void visit(GroupUseStatementPart statementPart) {
+        for (SingleUseStatementPart item : statementPart.getItems()) {
+            scan(item.getName());
+            scan(item.getAlias());
+        }
     }
 
     @Override

@@ -289,12 +289,10 @@ terminal T_COALESCE;
 
 non terminal Program thestart;
 non terminal List namespace_name;
+non terminal List namespace_parts;
+non terminal SingleUseStatementPart namespace_part;
 non terminal UseStatementPart use_declaration;
 non terminal List use_declarations;
-non terminal UseStatementPart use_function_declaration;
-non terminal List use_function_declarations;
-non terminal UseStatementPart use_const_declaration;
-non terminal List use_const_declarations;
 non terminal List top_statement_list;
 non terminal Statement top_statement;
 non terminal Statement statement;
@@ -585,12 +583,12 @@ statement:statement
 	RESULT = new UseStatement(sleft, eright, list);
 :}
 
-| T_USE:use T_FUNCTION use_function_declarations:list T_SEMICOLON:e
+| T_USE:use T_FUNCTION use_declarations:list T_SEMICOLON:e
 {:
 	RESULT = new UseStatement(useleft, eright, list, UseStatement.Type.FUNCTION);
 :}
 
-| T_USE:use T_CONST use_const_declarations:list T_SEMICOLON:e
+| T_USE:use T_CONST use_declarations:list T_SEMICOLON:e
 {:
 	RESULT = new UseStatement(useleft, eright, list, UseStatement.Type.CONST);
 :}
@@ -619,114 +617,65 @@ use_declarations:list T_COMMA use_declaration:useDecl
 use_declaration ::=
 namespace_name:list
 {:
-	RESULT = new UseStatementPart(listleft, listright,
+	RESULT = new SingleUseStatementPart(listleft, listright,
 		new NamespaceName(listleft, listright, list, false, false), null);
 :}
 
 | namespace_name:list T_AS T_STRING:aliasName
 {:
-	RESULT = new UseStatementPart(listleft, aliasNameright,
+	RESULT = new SingleUseStatementPart(listleft, aliasNameright,
 		new NamespaceName(listleft, listright, list, false, false),
 		new Identifier(aliasNameleft, aliasNameright, aliasName));
 :}
 
+| namespace_name:basens T_NS_SEPARATOR:s T_CURLY_OPEN:open namespace_parts:parts T_CURLY_CLOSE:close
+{:
+	RESULT = new GroupUseStatementPart(basensleft, closeright, new NamespaceName(basensleft, basensright, basens, false, false), parts);
+:}
+
 | T_NS_SEPARATOR:s namespace_name:list
 {:
-	RESULT = new UseStatementPart(sleft, listright,
+	RESULT = new SingleUseStatementPart(sleft, listright,
 		new NamespaceName(sleft, listright, list, true, false), null);
 :}
 
 | T_NS_SEPARATOR:s namespace_name:list T_AS T_STRING:aliasName
 {:
-	RESULT = new UseStatementPart(sleft, aliasNameright,
+	RESULT = new SingleUseStatementPart(sleft, aliasNameright,
 		new NamespaceName(sleft, listright, list, true, false),
 		new Identifier(aliasNameleft, aliasNameright, aliasName));
 :}
+
+| T_NS_SEPARATOR:s namespace_name:basens T_NS_SEPARATOR:ss T_CURLY_OPEN:open namespace_parts:parts T_CURLY_CLOSE:close
+{:
+	RESULT = new GroupUseStatementPart(sleft, closeright, new NamespaceName(basensleft, basensright, basens, true, false), parts);
+:}
 ;
 
-use_function_declarations ::=
-use_function_declarations:list T_COMMA use_function_declaration:useDecl
+namespace_parts ::=
+namespace_parts:list T_COMMA namespace_part:part
 {:
-	list.add(useDecl);
+	list.add(part);
 	RESULT = list;
 :}
 
-| use_function_declaration:useDecl
+| namespace_part:part
 {:
 	List list = new LinkedList();
-	list.add(useDecl);
+	list.add(part);
 	RESULT = list;
 :}
 ;
 
-use_function_declaration ::=
-namespace_name:list
+namespace_part ::=
+namespace_name:part
 {:
-	RESULT = new UseStatementPart(listleft, listright,
-		new NamespaceName(listleft, listright, list, false, false), null);
+    RESULT = new SingleUseStatementPart(partleft, partright, new NamespaceName(partleft, partright, part, false, false), null);
 :}
 
-| namespace_name:list T_AS T_STRING:aliasName
+| namespace_name:part T_AS T_STRING:alias
 {:
-	RESULT = new UseStatementPart(listleft, aliasNameright,
-		new NamespaceName(listleft, listright, list, false, false),
-		new Identifier(aliasNameleft, aliasNameright, aliasName));
-:}
-
-| T_NS_SEPARATOR:s namespace_name:list
-{:
-	RESULT = new UseStatementPart(sleft, listright,
-		new NamespaceName(sleft, listright, list, true, false), null);
-:}
-
-| T_NS_SEPARATOR:s namespace_name:list T_AS T_STRING:aliasName
-{:
-	RESULT = new UseStatementPart(sleft, aliasNameright,
-		new NamespaceName(sleft, listright, list, true, false),
-		new Identifier(aliasNameleft, aliasNameright, aliasName));
-:}
-;
-
-use_const_declarations ::=
-use_const_declarations:list T_COMMA use_const_declaration:useDecl
-{:
-	list.add(useDecl);
-	RESULT = list;
-:}
-
-| use_const_declaration:useDecl
-{:
-	List list = new LinkedList();
-	list.add(useDecl);
-	RESULT = list;
-:}
-;
-
-use_const_declaration ::=
-namespace_name:list
-{:
-	RESULT = new UseStatementPart(listleft, listright,
-		new NamespaceName(listleft, listright, list, false, false), null);
-:}
-
-| namespace_name:list T_AS T_STRING:aliasName
-{:
-	RESULT = new UseStatementPart(listleft, aliasNameright,
-		new NamespaceName(listleft, listright, list, false, false),
-		new Identifier(aliasNameleft, aliasNameright, aliasName));
-:}
-
-| T_NS_SEPARATOR:s namespace_name:list
-{:
-	RESULT = new UseStatementPart(sleft, listright,
-		new NamespaceName(sleft, listright, list, true, false), null);
-:}
-
-| T_NS_SEPARATOR:s namespace_name:list T_AS T_STRING:aliasName
-{:
-	RESULT = new UseStatementPart(sleft, aliasNameright,
-		new NamespaceName(sleft, listright, list, true, false),
-		new Identifier(aliasNameleft, aliasNameright, aliasName));
+    RESULT = new SingleUseStatementPart(partleft, aliasright, new NamespaceName(partleft, partright, part, false, false), new Identifier(aliasleft, aliasright, alias));
 :}
 ;
 

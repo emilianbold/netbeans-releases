@@ -65,7 +65,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticDispatch;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
-import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.Variadic;
 
@@ -119,8 +119,8 @@ public class ASTNodeInfo<T extends ASTNode> {
         } else if (node instanceof ClassInstanceCreation) {
             ClassInstanceCreation instanceCreation = (ClassInstanceCreation) node;
             retval = QualifiedName.create(instanceCreation.getClassName().getName());
-        } else if (node instanceof UseStatementPart) {
-            UseStatementPart statementPart = (UseStatementPart) node;
+        } else if (node instanceof SingleUseStatementPart) {
+            SingleUseStatementPart statementPart = (SingleUseStatementPart) node;
             retval = QualifiedName.create(statementPart.getName());
         } else if (type && node instanceof StaticDispatch) {
             StaticDispatch staticDispatch = (StaticDispatch) node;
@@ -198,7 +198,7 @@ public class ASTNodeInfo<T extends ASTNode> {
         return new ASTNodeInfo<>(fieldAccess);
     }
 
-    public static ASTNodeInfo<UseStatementPart> create(UseStatementPart statementPart) {
+    public static ASTNodeInfo<SingleUseStatementPart> create(SingleUseStatementPart statementPart) {
         return new ASTNodeInfo<>(statementPart);
     }
 
@@ -285,7 +285,7 @@ public class ASTNodeInfo<T extends ASTNode> {
             return Kind.FIELD;
         } else if (node instanceof ReturnStatement) {
             return Kind.RETURN_MARKER;
-        } else if (node instanceof UseStatementPart) {
+        } else if (node instanceof SingleUseStatementPart) {
             return Kind.USE_STATEMENT;
         }
         throw new IllegalStateException();
@@ -337,7 +337,7 @@ public class ASTNodeInfo<T extends ASTNode> {
             return "return"; //NOI18N
         } else if (node instanceof Reference) {
             return toName(((Reference) node).getExpression());
-        } else if (node instanceof UseStatementPart) {
+        } else if (node instanceof SingleUseStatementPart) {
             return toQualifiedName(node, false).toString();
         } else if (node instanceof Variadic) {
             return toName(((Variadic) node).getExpression());
@@ -399,7 +399,7 @@ public class ASTNodeInfo<T extends ASTNode> {
             return new OffsetRange(returnStatement.getStartOffset(), returnStatement.getEndOffset());
         } else if (node instanceof Reference) {
             return toOffsetRange(((Reference) node).getExpression());
-        } else if (node instanceof UseStatementPart) {
+        } else if (node instanceof SingleUseStatementPart) {
             return new OffsetRange(node.getStartOffset(), node.getEndOffset());
         } else if (node instanceof Variadic) {
             return toOffsetRange(((Variadic) node).getExpression());

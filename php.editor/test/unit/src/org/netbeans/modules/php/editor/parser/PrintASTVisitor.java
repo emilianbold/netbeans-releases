@@ -531,13 +531,19 @@ public class PrintASTVisitor implements Visitor {
     }
 
     @Override
-    public void visit(UseStatementPart statementPart) {
-        XMLPrintNode printNode = new XMLPrintNode(statementPart, "UseStatementPart");
+    public void visit(SingleUseStatementPart statementPart) {
+        XMLPrintNode printNode = new XMLPrintNode(statementPart, "SingleUseStatementPart");
         printNode.addChild("Name", statementPart.getName());
         printNode.addChild("Alias", statementPart.getAlias());
         printNode.print(this);
     }
 
+    @Override
+    public void visit(GroupUseStatementPart statementPart) {
+        XMLPrintNode printNode = new XMLPrintNode(statementPart, "GroupUseStatementPart");
+        printNode.addChildren(statementPart.getItems());
+        printNode.print(this);
+    }
 
     @Override
     public void visit(IfStatement node) {

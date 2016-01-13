@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,58 +37,32 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 /**
- * Represents an element of the 'use' declaration.
- * <pre>e.g.<pre>MyNamespace;
- *MyNamespace as MyAlias;
- *MyProject\Sub\Level as MyAlias;
- *\MyProject\Sub\Level as MyAlias;
+ * Represents one element in 'use' declaration. This element
+ * can be a single use, e.g.:
+ * <pre>
+ * MyNamespace\MyClass as MyAlias;
+ * </pre>
+ * or group use, e.g.:
+ * <pre>
+ * MyNamespace{MyClass as MyAlias, YourClass};
+ * </pre>
+ * @see SingleUseStatementPart
+ * @see GroupUseStatementPart
  */
-public class UseStatementPart extends ASTNode {
+public abstract class UseStatementPart extends ASTNode {
 
-    private NamespaceName name;
-    private Identifier alias;
-
-    public UseStatementPart(int start, int end, NamespaceName name, Identifier alias) {
+    public UseStatementPart(int start, int end) {
         super(start, end);
-        if (name == null) {
-            throw new IllegalArgumentException();
-        }
-
-        this.name = name;
-        this.alias = alias;
-    }
-
-    /**
-     * Returns the name of this array element(null if missing).
-     *
-     * @return the name of the array element
-     */
-    public NamespaceName getName() {
-        return name;
-    }
-
-    /**
-     * Returns the alias expression of this array element.
-     *
-     * @return the alias expression of this array element
-     */
-    public Identifier getAlias() {
-        return this.alias;
     }
 
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
-    }
-
-    @Override
-    public String toString() {
-        return getName() + (getAlias() == null ? "" : " as " + getAlias()); //NOI18N
     }
 
 }

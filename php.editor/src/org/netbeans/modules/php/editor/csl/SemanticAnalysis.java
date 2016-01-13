@@ -80,6 +80,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
+import org.netbeans.modules.php.editor.parser.astnodes.GroupUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
@@ -95,6 +96,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.TraitMethodAliasDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
@@ -795,9 +797,20 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             List<UseStatementPart> parts = node.getParts();
             for (int i = 0; i < parts.size(); i++) {
                 UseStatementPart useStatementPart = parts.get(i);
-                boolean isDeprecated = isDeprecatedNamespaceName(useStatementPart.getName());
-                if (isDeprecated) {
-                    addColoringForNode(useStatementPart.getName(), DEPRECATED_SET);
+                if (useStatementPart instanceof SingleUseStatementPart) {
+                    SingleUseStatementPart singleUseStatementPart = (SingleUseStatementPart) useStatementPart;
+                    if (isDeprecatedNamespaceName(singleUseStatementPart.getName())) {
+                        addColoringForNode(singleUseStatementPart.getName(), DEPRECATED_SET);
+                    }
+                } else if (useStatementPart instanceof GroupUseStatementPart) {
+                    GroupUseStatementPart groupUseStatementPart = (GroupUseStatementPart) useStatementPart;
+                    for (SingleUseStatementPart item : groupUseStatementPart.getItems()) {
+                        if (isDeprecatedNamespaceName(groupUseStatementPart.resolveItemName(item, true))) {
+                            addColoringForNode(item.getName(), DEPRECATED_SET);
+                        }
+                    }
+                } else {
+                    assert false : "Unexpected class type: " + useStatementPart.getClass().getName(); // NOI18N
                 }
             }
         }

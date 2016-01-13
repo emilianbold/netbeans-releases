@@ -134,6 +134,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
 import org.openide.filesystems.FileObject;
 
 import static org.netbeans.modules.php.editor.completion.CompletionContextFinder.lexerToASTOffset;
+import static org.netbeans.modules.php.editor.completion.CompletionContextFinder.lexerToASTOffset;
 
 /**
  *
@@ -142,6 +143,13 @@ import static org.netbeans.modules.php.editor.completion.CompletionContextFinder
 public class PHPCodeCompletion implements CodeCompletionHandler2 {
 
     private static final Logger LOGGER = Logger.getLogger(PHPCodeCompletion.class.getName());
+
+    private static enum UseType {
+        TYPE,
+        CONST,
+        FUNCTION,
+    };
+
     static final Map<String, KeywordCompletionType> PHP_KEYWORDS = new HashMap<>();
 
     static {
@@ -251,7 +259,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
 
         final PHPCompletionResult completionResult = new PHPCompletionResult(completionContext);
         ParserResult info = completionContext.getParserResult();
-        int caretOffset = completionContext.getCaretOffset();
+        final int caretOffset = completionContext.getCaretOffset();
 
         this.caseSensitive = completionContext.isCaseSensitive();
         this.nameKind = caseSensitive ? QuerySupport.Kind.PREFIX : QuerySupport.Kind.CASE_INSENSITIVE_PREFIX;
@@ -280,6 +288,19 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             return CodeCompletionResult.NONE;
         }
         prefix = prefix.trim().isEmpty() ? completionContext.getPrefix() : prefix;
+        // prefix for index search (used for group use, equals to the base NS (before curly open))
+        String searchPrefix;
+        switch (context) {
+            case GROUP_USE_KEYWORD:
+            case GROUP_USE_CONST_KEYWORD:
+            case GROUP_USE_FUNCTION_KEYWORD:
+                searchPrefix = getPrefix(info, findBaseNamespaceEnd(info, caretOffset), true, PrefixBreaker.WITH_NS_PARTS);
+                break;
+            default:
+                searchPrefix = null;
+                break;
+        }
+        request.extraPrefix = searchPrefix;
 
         request.anchor = caretOffset
                 // can't just use 'prefix.getLength()' here cos it might have been calculated with
@@ -292,6 +313,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         request.index = ElementQueryFactory.getIndexQuery(info);
 
         request.currentlyEditedFileURL = fileObject.toURL().toString();
+        CodeStyle codeStyle;
         switch (context) {
             case DEFAULT_PARAMETER_VALUE:
                 final CaseInsensitivePrefix nameKindPrefix = NameKind.caseInsensitivePrefix(request.prefix);
@@ -346,37 +368,45 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                 autoCompleteNamespaces(completionResult, request);
                 autoCompleteInterfaceNames(completionResult, request);
                 break;
-            case USE_KEYWORD: {
-                CodeStyle codeStyle = CodeStyle.get(request.result.getSnapshot().getSource().getDocument(caseSensitive));
-                autoCompleteAfterUses(
-                        completionResult,
-                        request,
-                        codeStyle.startUseWithNamespaceSeparator() ? QualifiedNameKind.FULLYQUALIFIED : QualifiedNameKind.QUALIFIED,
-                        false);
+            case GROUP_USE_KEYWORD:
+                autoCompleteGroupUse(UseType.TYPE, completionResult, request);
                 break;
-            }
-            case USE_CONST_KEYWORD: {
-                CodeStyle codeStyle = CodeStyle.get(request.result.getSnapshot().getSource().getDocument(caseSensitive));
-                autoCompleteAfterUsesConst(
-                        completionResult,
-                        request,
-                        codeStyle.startUseWithNamespaceSeparator() ? QualifiedNameKind.FULLYQUALIFIED : QualifiedNameKind.QUALIFIED);
+            case GROUP_USE_CONST_KEYWORD:
+                autoCompleteGroupUse(UseType.CONST, completionResult, request);
                 break;
-            }
-            case USE_FUNCTION_KEYWORD: {
-                CodeStyle codeStyle = CodeStyle.get(request.result.getSnapshot().getSource().getDocument(caseSensitive));
-                autoCompleteAfterUsesFunction(
+            case GROUP_USE_FUNCTION_KEYWORD:
+                autoCompleteGroupUse(UseType.FUNCTION, completionResult, request);
+                break;
+            case USE_KEYWORD:
+                codeStyle = CodeStyle.get(request.result.getSnapshot().getSource().getDocument(caseSensitive));
+                autoCompleteAfterUse(
+                        UseType.TYPE,
                         completionResult,
                         request,
                         codeStyle.startUseWithNamespaceSeparator() ? QualifiedNameKind.FULLYQUALIFIED : QualifiedNameKind.QUALIFIED);
                 break;
-            }
+            case USE_CONST_KEYWORD:
+                codeStyle = CodeStyle.get(request.result.getSnapshot().getSource().getDocument(caseSensitive));
+                autoCompleteAfterUse(
+                        UseType.CONST,
+                        completionResult,
+                        request,
+                        codeStyle.startUseWithNamespaceSeparator() ? QualifiedNameKind.FULLYQUALIFIED : QualifiedNameKind.QUALIFIED);
+                break;
+            case USE_FUNCTION_KEYWORD:
+                codeStyle = CodeStyle.get(request.result.getSnapshot().getSource().getDocument(caseSensitive));
+                autoCompleteAfterUse(
+                        UseType.FUNCTION,
+                        completionResult,
+                        request,
+                        codeStyle.startUseWithNamespaceSeparator() ? QualifiedNameKind.FULLYQUALIFIED : QualifiedNameKind.QUALIFIED);
+                break;
             case USE_TRAITS:
-                CodeStyle traitCodeStyle = CodeStyle.get(request.result.getSnapshot().getSource().getDocument(caseSensitive));
+                codeStyle = CodeStyle.get(request.result.getSnapshot().getSource().getDocument(caseSensitive));
                 autoCompleteAfterUseTrait(
                         completionResult,
                         request,
-                        traitCodeStyle.startUseWithNamespaceSeparator() ? QualifiedNameKind.FULLYQUALIFIED : QualifiedNameKind.QUALIFIED);
+                        codeStyle.startUseWithNamespaceSeparator() ? QualifiedNameKind.FULLYQUALIFIED : QualifiedNameKind.QUALIFIED);
                 break;
             case TYPE_NAME:
                 autoCompleteNamespaces(completionResult, request);
@@ -675,26 +705,48 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         }
     }
 
-    private void autoCompleteAfterUses(
-            final PHPCompletionResult completionResult,
-            PHPCompletionItem.CompletionRequest request,
-            QualifiedNameKind kind,
-            boolean endWithDoubleColon) {
+    private void autoCompleteGroupUse(UseType useType, PHPCompletionResult completionResult, CompletionRequest request) {
+        assert request.extraPrefix != null;
+        // we will "complete" FQN so handle search prefix as well
+        if (!request.extraPrefix.startsWith("\\")) { // NOI18N
+            request.extraPrefix = "\\" + request.extraPrefix; // NOI18N
+        }
+        final String prefix = request.extraPrefix + request.prefix;
         Set<NamespaceElement> namespaces = request.index.getNamespaces(
-                NameKind.caseInsensitivePrefix(QualifiedName.create(request.prefix).toNotFullyQualified()));
+                NameKind.caseInsensitivePrefix(QualifiedName.create(prefix).toNotFullyQualified()));
         for (NamespaceElement namespace : namespaces) {
-            completionResult.add(new PHPCompletionItem.NamespaceItem(namespace, request, kind));
+            completionResult.add(new PHPCompletionItem.NamespaceItem(namespace, request, QualifiedNameKind.FULLYQUALIFIED));
         }
-        final NameKind nameQuery = NameKind.caseInsensitivePrefix(request.prefix);
-        for (ClassElement clazz : request.index.getClasses(nameQuery)) {
-            completionResult.add(new PHPCompletionItem.ClassItem(clazz, request, endWithDoubleColon, kind));
-        }
-        for (InterfaceElement iface : request.index.getInterfaces(nameQuery)) {
-            completionResult.add(new PHPCompletionItem.InterfaceItem(iface, request, kind, false));
+        final NameKind nameQuery = NameKind.caseInsensitivePrefix(prefix);
+        switch (useType) {
+            case TYPE:
+                for (ClassElement clazz : request.index.getClasses(nameQuery)) {
+                    completionResult.add(new PHPCompletionItem.ClassItem(clazz, request, false, QualifiedNameKind.FULLYQUALIFIED));
+                }
+                for (InterfaceElement iface : request.index.getInterfaces(nameQuery)) {
+                    completionResult.add(new PHPCompletionItem.InterfaceItem(iface, request, QualifiedNameKind.FULLYQUALIFIED, false));
+                }
+                break;
+            case CONST:
+                for (ConstantElement constant : request.index.getConstants(nameQuery)) {
+                    completionResult.add(new PHPCompletionItem.ConstantItem(constant, request));
+                }
+                break;
+            case FUNCTION:
+                for (FunctionElement function : request.index.getFunctions(nameQuery)) {
+                    List<PHPCompletionItem.FunctionElementItem> items = PHPCompletionItem.FunctionElementItem.getItems(function, request);
+                    for (PHPCompletionItem.FunctionElementItem item : items) {
+                        completionResult.add(item);
+                    }
+                }
+                break;
+            default:
+                assert false : "Unknown use type: " + useType;
         }
     }
 
-    private void autoCompleteAfterUsesConst(
+    private void autoCompleteAfterUse(
+            UseType useType,
             final PHPCompletionResult completionResult,
             PHPCompletionItem.CompletionRequest request,
             QualifiedNameKind kind) {
@@ -704,25 +756,30 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             completionResult.add(new PHPCompletionItem.NamespaceItem(namespace, request, kind));
         }
         final NameKind nameQuery = NameKind.caseInsensitivePrefix(request.prefix);
-        for (ConstantElement constant : request.index.getConstants(nameQuery)) {
-            completionResult.add(new PHPCompletionItem.ConstantItem(constant, request));
-        }
-    }
-
-    private void autoCompleteAfterUsesFunction(
-            final PHPCompletionResult completionResult,
-            PHPCompletionItem.CompletionRequest request,
-            QualifiedNameKind kind) {
-        Set<NamespaceElement> namespaces = request.index.getNamespaces(NameKind.caseInsensitivePrefix(QualifiedName.create(request.prefix).toNotFullyQualified()));
-        for (NamespaceElement namespace : namespaces) {
-            completionResult.add(new PHPCompletionItem.NamespaceItem(namespace, request, kind));
-        }
-        final NameKind nameQuery = NameKind.caseInsensitivePrefix(request.prefix);
-        for (FunctionElement function : request.index.getFunctions(nameQuery)) {
-            List<PHPCompletionItem.FunctionElementItem> items = PHPCompletionItem.FunctionElementItem.getItems(function, request);
-            for (PHPCompletionItem.FunctionElementItem item : items) {
-                completionResult.add(item);
-            }
+        switch (useType) {
+            case TYPE:
+                for (ClassElement clazz : request.index.getClasses(nameQuery)) {
+                    completionResult.add(new PHPCompletionItem.ClassItem(clazz, request, false, kind));
+                }
+                for (InterfaceElement iface : request.index.getInterfaces(nameQuery)) {
+                    completionResult.add(new PHPCompletionItem.InterfaceItem(iface, request, kind, false));
+                }
+                break;
+            case CONST:
+                for (ConstantElement constant : request.index.getConstants(nameQuery)) {
+                    completionResult.add(new PHPCompletionItem.ConstantItem(constant, request));
+                }
+                break;
+            case FUNCTION:
+                for (FunctionElement function : request.index.getFunctions(nameQuery)) {
+                    List<PHPCompletionItem.FunctionElementItem> items = PHPCompletionItem.FunctionElementItem.getItems(function, request);
+                    for (PHPCompletionItem.FunctionElementItem item : items) {
+                        completionResult.add(item);
+                    }
+                }
+                break;
+            default:
+                assert false : "Unknown use type: " + useType;
         }
     }
 
@@ -1450,6 +1507,39 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         return caseSensitive ? theString.startsWith(prefix)
                 : theString.toLowerCase().startsWith(prefix.toLowerCase());
     }
+
+    private int findBaseNamespaceEnd(ParserResult info, int caretOffset) {
+        TokenHierarchy<?> th = info.getSnapshot().getTokenHierarchy();
+        assert th != null;
+        TokenSequence<PHPTokenId> tokenSequence = LexUtilities.getPHPTokenSequence(th, caretOffset);
+        assert tokenSequence != null;
+        tokenSequence.move(caretOffset);
+        final boolean moveNextSucces = tokenSequence.moveNext();
+        if (!moveNextSucces && !tokenSequence.movePrevious()) {
+            assert false;
+            return caretOffset;
+        }
+        boolean hasCurly = false;
+        while (tokenSequence.movePrevious()) {
+            if (!hasCurly) {
+                if (tokenSequence.token().id() == PHPTokenId.PHP_CURLY_OPEN) {
+                    hasCurly = true;
+                }
+            } else {
+                // possibly some whitespace before curly open?
+                if (tokenSequence.token().id() != PHPTokenId.WHITESPACE) {
+                    tokenSequence.moveNext();
+                    break;
+                }
+            }
+        }
+        if (hasCurly) {
+            return tokenSequence.offset();
+        }
+        assert false;
+        return caretOffset;
+    }
+
 
     private static class StaticOrInstanceMembersFilter extends ElementFilter {
 
