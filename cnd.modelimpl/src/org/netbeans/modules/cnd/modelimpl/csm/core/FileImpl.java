@@ -118,6 +118,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.impl.services.FileInfoQueryImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParser;
@@ -513,7 +514,13 @@ public final class FileImpl implements CsmFile,
             }
             NativeFileItem nativeFileItem = getNativeFileItem();
             if(nativeFileItem != null) {
-                return Utils.getLanguageFlavor(nativeFileItem.getLanguageFlavor());
+                NativeFileItem.LanguageFlavor languageFlavor = nativeFileItem.getLanguageFlavor();
+                if (languageFlavor == NativeFileItem.LanguageFlavor.UNKNOWN) {
+                    Pair<NativeFileItem.Language, NativeFileItem.LanguageFlavor> fileLanguageFlavor
+                            = FileInfoQueryImpl.getDefault().getFileLanguageFlavor(this);
+                    languageFlavor = fileLanguageFlavor.second();
+                }
+                return Utils.getLanguageFlavor(languageFlavor);
             }
         }
         return APTLanguageSupport.FLAVOR_UNKNOWN;
