@@ -114,7 +114,7 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <flagsDictionary>
-        <element flagsID="0" commonFlags="-g -fPIC -m64"/>
+        <element flagsID="0" commonFlags="-g -fPIC -std=c99 -m64"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -831,7 +831,7 @@
     </conf>
     <conf name="Previse_32" type="0">
       <toolsSet>
-        <compilerSet>default</compilerSet>
+        <compilerSet>OracleSolarisStudio_12.5|OSS</compilerSet>
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
@@ -915,7 +915,7 @@
     </conf>
     <conf name="Previse_64" type="0">
       <toolsSet>
-        <compilerSet>default</compilerSet>
+        <compilerSet>OracleSolarisStudio_12.5|OSS</compilerSet>
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>

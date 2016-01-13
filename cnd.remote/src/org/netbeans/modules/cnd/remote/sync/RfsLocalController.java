@@ -52,6 +52,7 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
+import org.netbeans.modules.cnd.remote.support.RemoteLogger;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil.PrefixedLogger;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -251,6 +252,13 @@ import org.openide.util.RequestProcessor;
 
     private boolean checkVersion() throws IOException {
         String versionsString = requestReader.readLine();
+        // this is made optional in order not to break compatibility
+        final String controllerVersionPattern = "CONTROLLER VERSION ";
+        if (versionsString.startsWith(controllerVersionPattern)) { //NOI18N
+            // for now we don't check controller versions, only protocol versions are checked
+            RemoteLogger.fine("rfs_controller at {0} has version {1}", execEnv, versionsString.substring(controllerVersionPattern.length()));
+            versionsString = requestReader.readLine();
+        }
         if (versionsString == null) {
             return false;
         }
