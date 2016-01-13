@@ -36,8 +36,8 @@ CLASS  ( ) [1:1/0-7:2/179] lcurly=12 SCOPE: $Global$
             UNIQUE NAME F:operator &() const
             PARAMETERS:
             RETURNS void TEXT=void  [6:3/154-6:7/158]
-VARIABLE nullptr [7:4/181-7:16/193]  TYPE:  TEXT=nullptr  [1:1/0-7:2/179]  INIT: text='{}'  SCOPE: $Global$ 
+VARIABLE nullptr1 [7:4/181-7:17/194]  TYPE:  TEXT=nullptr1  [1:1/0-7:2/179]  INIT: text='{}'  SCOPE: $Global$ 
 
 ========== Dumping model of PROJECT DummyProject
-VARIABLE nullptr [7:4/181-7:16/193]  TYPE:  TEXT=nullptr  [1:1/0-7:2/179]  INIT: text='{}'  SCOPE: $Global$ 
+VARIABLE nullptr1 [7:4/181-7:17/194]  TYPE:  TEXT=nullptr1  [1:1/0-7:2/179]  INIT: text='{}'  SCOPE: $Global$ 
 

@@ -90,6 +90,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsAdapter;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
+import org.netbeans.modules.cnd.api.project.NativeProjectSupport;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
@@ -1458,7 +1459,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         assert (nativeFile != null);
         PPMacroMap macroMap = getMacroMap(nativeFile);
         PPIncludeHandler inclHandler = getIncludeHandler(nativeFile);
-        return APTHandlersSupport.createPreprocHandler(macroMap, inclHandler, isSourceFile(nativeFile), nativeFile.getLanguage().toString(), nativeFile.getLanguageFlavor().toString());
+        NativeFileItem.LanguageFlavor languageFlavor = nativeFile.getLanguageFlavor();
+        Language language = nativeFile.getLanguage();
+        if (languageFlavor == NativeFileItem.LanguageFlavor.UNKNOWN) {
+            languageFlavor = NativeProjectSupport.getDefaultLanguageFlavor(language);
+        }
+        return APTHandlersSupport.createPreprocHandler(macroMap, inclHandler, isSourceFile(nativeFile), language.toString(), languageFlavor.toString());
     }
 
     private PPIncludeHandler getIncludeHandler(NativeFileItem nativeFile) {
