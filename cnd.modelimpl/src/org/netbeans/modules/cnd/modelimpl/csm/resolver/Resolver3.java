@@ -478,45 +478,28 @@ public final class Resolver3 implements Resolver {
         }
         return false;
     }
-
-    private CsmObject resolveInInlinedNamespaces(CsmObject result, CsmNamespace namespace, CharSequence nameToken, AtomicBoolean outVisibility) {
-        return resolveInInlinedNamespaces(result, new HashSet<CharSequence>(), namespace, nameToken, outVisibility);
-    }
     
-    private CsmObject resolveInInlinedNamespaces(CsmObject result, Set<CharSequence> checked, CsmNamespace namespace, CharSequence nameToken, AtomicBoolean outVisibility) {
+    private CsmObject resolveInInlinedNamespaces(CsmObject result, CsmNamespace namespace, CharSequence nameToken, AtomicBoolean outVisibility) {
         if (result == null || !outVisibility.get()) {
-            for (CsmNamespace ns : namespace.getInlinedNamespaces()) {
-                CsmObject fromInlined = resolveInInlinedNamespace(ns, checked, nameToken, outVisibility);
+            Collection<CsmNamespace> inlinedNamespaces = CsmBaseUtilities.getInlinedNamespaces(namespace, getLibraries());
+            for (CsmNamespace ns : inlinedNamespaces) {
+                CsmObject fromInlined = resolveInInlinedNamespace(ns, nameToken, outVisibility);
                 if (fromInlined != null && outVisibility.get()) {
                     return fromInlined;
-                }
-            }
-            for (CsmProject library : project.getLibraries()) {
-                CsmNamespace libNs = library.findNamespace(namespace.getQualifiedName());
-                if (libNs != null) {
-                    for (CsmNamespace ns : libNs.getInlinedNamespaces()) {
-                        CsmObject fromInlined = resolveInInlinedNamespace(ns, checked, nameToken, outVisibility);
-                        if (fromInlined != null && outVisibility.get()) {
-                            return fromInlined;
-                        }
-                    }
                 }
             }
         }
         return result;
     }   
     
-    private CsmObject resolveInInlinedNamespace(CsmNamespace ns, Set<CharSequence> checked, CharSequence nameToken, AtomicBoolean outVisibility) {
-        CsmObject result = null;
+    private CsmObject resolveInInlinedNamespace(CsmNamespace ns, CharSequence nameToken, AtomicBoolean outVisibility) {
         final CharSequence name = ns.getQualifiedName();
-        if (checked.add(name)) {
-            String fqn = name + "::" + nameToken; // NOI18N
-            if (fqn.startsWith("::")) { // NOI18N
-                fqn = fqn.substring(2);
-            }
-            result = findClassifierUsedInFile(fqn, outVisibility);
-            result = resolveInInlinedNamespaces(result, checked, ns, nameToken, outVisibility);
+        String fqn = name + "::" + nameToken; // NOI18N
+        if (fqn.startsWith("::")) { // NOI18N
+            fqn = fqn.substring(2);
         }
+        CsmObject result = findClassifierUsedInFile(fqn, outVisibility);
+        result = resolveInInlinedNamespaces(result, ns, nameToken, outVisibility);
         return result;
     }
 

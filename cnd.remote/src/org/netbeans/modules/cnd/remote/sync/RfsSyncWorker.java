@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteException;
+import org.netbeans.modules.cnd.remote.support.RemoteLogger;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -92,6 +93,7 @@ import org.openide.util.RequestProcessor;
     private RemoteProcessController remoteController;
     private String remoteDir;
     private ErrorReader errorReader;
+    private static final String exitFlagFile = System.getProperty("cnd.rfs.controller.exit.flag.file");
 
     public RfsSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err,
             FileObject privProjectStorageDir, List<FSPath> paths, List<FSPath> buildResults) {
@@ -182,6 +184,11 @@ import org.openide.util.RequestProcessor;
         String rfsTrace = System.getProperty("cnd.rfs.controller.trace");
         if (rfsTrace != null) {
             pb.getEnvironment().put("RFS_CONTROLLER_TRACE", rfsTrace); // NOI18N
+        }        
+        // For the purpose of dynamic testing with discover;
+        // Usually we stop controller via sending SIGTERM, but discover doesn't flush its output in this case
+        if (exitFlagFile != null) {
+            pb.getEnvironment().put("RFS_CONTROLLER_EXIT_FLAG_FILE", exitFlagFile); // NOI18N
         }
         NativeProcess remoteControllerProcess = pb.call();
         remoteController = new RemoteProcessController(remoteControllerProcess);
@@ -369,8 +376,30 @@ import org.openide.util.RequestProcessor;
             return stopped.get();
         }
 
+        private void stopViaFlag() {
+            try {
+                ExecutionEnvironment env = this.remoteControllerProcess.getExecutionEnvironment();
+                RemoteLogger.info("Stopping remote controller via flag: {0}", exitFlagFile);
+                CommonTasksSupport.mkDir(env, exitFlagFile, null).get();
+                RemoteLogger.info("Waiting for remote controller to finish... ");
+                remoteControllerProcess.waitFor();
+                RemoteLogger.info("Remote controller has finished");
+                RemoteLogger.info("Remvoing flag fo;e: {0}", exitFlagFile); 
+                CommonTasksSupport.rmDir(env, exitFlagFile, true, null);
+                RemoteLogger.info("Stopping remote controller via flag: {0}", exitFlagFile);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
         void stop() {
             stopped.set(true);
+            if (exitFlagFile != null) {
+                stopViaFlag();
+                return;
+            }
             remoteControllerProcess.destroy();
         }
     }

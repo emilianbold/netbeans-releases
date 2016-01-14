@@ -772,7 +772,7 @@ public final class ClankToAPTUtils {
     public static CharSequence getTokenText(Token token, Preprocessor PP, SmallString spell) {
         // all remainings
         CharSequence textID;
-        IdentifierInfo II = token.getIdentifierInfo();
+        IdentifierInfo II = token.is(tok.TokenKind.raw_identifier) ? null : token.getIdentifierInfo();
         if (II != null) {
             textID = getIdentifierText(II);
         } else {

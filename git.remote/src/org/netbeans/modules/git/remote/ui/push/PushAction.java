@@ -355,6 +355,16 @@ public class PushAction extends SingleRepositoryAction {
                                         }
                                     }
                                 }
+                            } else if (update.getNewObjectId() == null && update.getOldObjectId() == null && "new branch".equals(update.getOperation())) { //NOI18N
+                                // add
+                                if (!remote) {
+                                    int pos = update.getLocalName().indexOf('/');
+                                    if (pos >= 0 && update.getLocalName().substring(pos + 1).equals(currBranch.getName())) {
+                                        if (shallSetupTracking(currBranch, update.getLocalName())) {
+                                            SystemAction.get(SetTrackingAction.class).setupTrackedBranchImmediately(repository, currBranch.getName(), update.getLocalName());
+                                        }
+                                    }
+                                }
                             } else {
                                 logger.outputLine(Bundle.MSG_PushAction_updates_updateBranch(update.getRemoteName(),
                                         update.getOldObjectId(), update.getNewObjectId(), update.getResult()));

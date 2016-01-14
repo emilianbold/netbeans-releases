@@ -211,6 +211,50 @@ public class CsmBaseUtilities {
         }
         return null;
     }
+    
+    public static Collection<CsmNamespace> getInlinedNamespaces(CsmNamespace ns, Collection<CsmProject> libs) {
+        if (libs != null && !libs.isEmpty()) {
+            List<CsmNamespace> inlinedNamespaces = new ArrayList<CsmNamespace>(ns.getInlinedNamespaces());
+            for (CsmProject lib : libs) {
+                CsmNamespace libNmsp = lib.findNamespace(ns.getQualifiedName());
+                if (libNmsp != null) {
+                    inlinedNamespaces.addAll(libNmsp.getInlinedNamespaces());
+                }
+            }
+            List<CsmNamespace> indirectlyInlinedNamespaces = new ArrayList<CsmNamespace>();
+            for (CsmProject lib : libs) {
+                for (CsmNamespace inlinedNs : inlinedNamespaces) {
+                    if (lib != inlinedNs.getProject()) {
+                        CsmNamespace potentialInlinedNmsp = lib.findNamespace(inlinedNs.getQualifiedName());
+                        // if it is marked as inlined, we do not need to add it, as it must already be in the list.
+                        if (potentialInlinedNmsp != null && !potentialInlinedNmsp.isInline()) {
+                            indirectlyInlinedNamespaces.add(potentialInlinedNmsp);
+                        }
+                    }
+                }
+            }
+            inlinedNamespaces.addAll(indirectlyInlinedNamespaces);
+            return inlinedNamespaces;
+        }
+        return ns.getInlinedNamespaces();
+    }
+    
+    public static boolean isInlinedNamespace(CsmNamespace ns, Collection<CsmProject> libs) {
+        if (!ns.isGlobal()) {
+            if (ns.isInline()) {
+                return true;
+            }
+            if (libs != null && !libs.isEmpty()) {
+                for (CsmProject lib : libs) {
+                    CsmNamespace libNmsp = lib.findNamespace(ns.getQualifiedName());
+                    if (libNmsp != null && libNmsp.isInline()) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 
     public static boolean sameSignature(CsmFunction checkDecl, CsmFunction targetDecl) {
         // we treat const and non-const functions as the same
