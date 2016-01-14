@@ -51,8 +51,10 @@
 #include "rfs_util.h"
 
 /** the name of the directory under control, including trailing "\" */
-static const char *my_dir = 0;
+static char my_dir[PATH_MAX + 3]; // static => zero-initialized
+static const int my_dir_capacity = PATH_MAX + 1; // less by 2: reserve space for trailing '/' and '\0'
 static int my_dir_len;
+static bool initialized = false;
 
 static int test_env = 0;
 
@@ -112,7 +114,7 @@ static void post_open(const char *path, int flags) {
         trace("post open: %s not writing - returning\n", path);
         return;
     }
-    if (my_dir == 0) { // isn't yet initialized?
+    if (!initialized || *my_dir == '\0') { // isn't yet initialized? (checking my_dir check is a paranoia)
         trace("post open: %s not yet initialized - returning\n", path);
         return;
     }
@@ -176,7 +178,7 @@ static bool pre_open(const char *path, int flags) {
             trace("pre open: %s is writing, but not truncating - proceed\n", path);
         }
     }
-    if (my_dir == 0) { // isn't yet initialized?
+    if (!initialized || *my_dir == '\0') { // isn't yet initialized? (checking my_dir check is a paranoia)
         trace("pre open: %s not yet initialized - returning\n", path);
         return true;
     }
@@ -345,40 +347,24 @@ rfs_startup(void) {
     test_env = getenv("RFS_TEST_ENV") ? true : false; // like #ifdef :)
     trace("test_env %s\n", test_env ? "ON" : "OFF");
     
-//#if TRACE
-//    print_dlsym();
-//#endif
-    //curr_dir = malloc(curr_dir_len = PATH_MAX + 1);
-    //getcwd(curr_dir, curr_dir_len);
     char* dir = getenv("RFS_CONTROLLER_DIR");
     if (dir) {
-        dir = strdup(dir);
+        strncpy(my_dir, dir, my_dir_capacity);
     } else {
-        char* p = malloc_wrapper(PATH_MAX + 1);
-        getcwd(p, PATH_MAX + 1);
-        dir = p;
+        getcwd(my_dir, my_dir_capacity);
     }
-    char* real_dir = malloc_wrapper(PATH_MAX + 1);
-    if ( realpath(dir, real_dir)) {
-        char *to_free = dir;
-        dir = real_dir;
-        free(to_free);
+    char real_dir[PATH_MAX + 1];
+    if ( realpath(my_dir, real_dir)) {
+        strncpy(my_dir, real_dir, my_dir_capacity);
     } else {
         trace_unresolved_path(dir, "RFS startup");
     }
-    my_dir_len = strlen(dir);
-    char *to_free = dir;
-    if (dir[my_dir_len-1] == '/') {
-        dir = strdup(dir);
-    } else {
+    my_dir_len = strlen(my_dir);
+    if (dir[my_dir_len-1] != '/') {
         my_dir_len++;
-        void *p = malloc_wrapper(my_dir_len + 1);
-        strcpy(p, dir);
-        strcat(p, "/");
-        dir = p;
+        strcat(my_dir, "/");
     }
-    free(to_free);
-    my_dir = dir;
+    initialized = true;
 
     static int startup_count = 0;
     startup_count++;
