@@ -227,14 +227,14 @@ import org.openide.util.RequestProcessor;
         RP.post(localController);
 
         String preload = RfsSetupProvider.getPreloadName(executionEnvironment);
-        CndUtils.assertTrue(preload != null);
-        // to be able to trace what we're doing, first put it all to a map
-
-        //Alas, this won't work
-        //MacroMap mm = MacroMap.forExecEnv(executionEnvironment);
-        //mm.prependPathVariable("LD_LIBRARY_PATH", ldLibraryPath);
-        //mm.prependPathVariable("LD_PRELOAD", preload); // NOI18N
-
+        CndUtils.assertTrue(preload != null);        
+        if (Boolean.getBoolean("cnd.rfs.discover")) {
+            preload = "libdiscover.so:" + preload;
+            String studioPath = System.getProperty("cnd.rfs.discover.studio.path", "/opt/solarisstudio12.5"); //NOI18N
+            ldLibraryPath = studioPath + "/lib/compilers:" + studioPath + "/lib/compilers/amd64:" + ldLibraryPath;
+            String discoverFile = System.getProperty("cnd.rfs.discover.file", "/tmp/rfs_preload.%p.log"); //NOI18N
+            env2add.put("SUNW_DISCOVER_OPTIONS", "-w " + discoverFile); // NOI18N
+        }
         env2add.put("LD_PRELOAD", preload); // NOI18N
         String ldLibPathVar = "LD_LIBRARY_PATH"; // NOI18N
         String oldLdLibPath = MacroMap.forExecEnv(executionEnvironment).get(ldLibPathVar);
