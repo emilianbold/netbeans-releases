@@ -42,10 +42,10 @@
 package org.netbeans.modules.cnd.highlight.hints.formatstring;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.MissingResourceException;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
@@ -56,15 +56,10 @@ import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.analysis.api.AnalyzerResponse;
-import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
-import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
-import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
-import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
+import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
+import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;
 import static org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit.toSeverity;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
@@ -74,6 +69,7 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfoHintProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.highlight.hints.CsmHintProvider;
 import org.netbeans.modules.cnd.highlight.hints.ErrorInfoImpl;
@@ -129,12 +125,148 @@ public class FormatStringAudit extends AbstractCodeAudit {
             final Document doc = doc_;
             
             result = new LinkedList<>();
-            visit(file.getDeclarations(), file, doc, request, response);
-            
-            List<FormatError> errors = new LinkedList<>();
-            for (FormattedPrintFunction function : result) {
-                errors.addAll(function.validate());
+            CsmFileReferences.getDefault().accept(request.getFile()
+                                                 ,request.getDocument()
+                                                 ,new FormatStringAudit.ReferenceVisitor(request, response, doc, file)
+                                                 ,CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE);
+        }
+    }
+    
+    private class ReferenceVisitor implements CsmFileReferences.Visitor {
+        private final CsmErrorProvider.Request request;
+        private final CsmErrorProvider.Response response;
+        private final CsmFile file;
+        private final Document doc;
+        
+        public ReferenceVisitor(CsmErrorProvider.Request request, CsmErrorProvider.Response response, Document doc, CsmFile file) {
+            this.request = request;
+            this.response = response;
+            this.file = file;
+            this.doc = doc;
+        }
+        
+        @Override
+        public void visit(CsmReferenceContext context) {
+            CsmReference reference =  context.getReference();
+            if (reference != null) {
+                if (Utilities.checkPrintf(reference.getText()) == -1) {
+                    return;
+                }
+                CsmObject object = reference.getReferencedObject();
+                final int formatStringPosition = Utilities.checkFormattedPrintFunction(object);
+                if (formatStringPosition > -1) {
+                    final int startOffset = reference.getStartOffset();
+                    doc.render(new Runnable() {
+                        @Override
+                        public void run() {
+                            TokenSequence<TokenId> docTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, startOffset, false, true);
+                            if (docTokenSequence == null) {
+                                return;
+                            }
+
+                            CsmReferenceResolver rr = CsmReferenceResolver.getDefault();
+                            State state = State.START;
+                            int formatStringOffset = -1;
+                            int innerBracketsCounter = 0;
+                            int parameterPosition = 0;
+                            int parameterOffset = -1;
+                            boolean containsMacros = false;
+                            StringBuilder formatString = null;
+                            ArrayList<Parameter> parameters = new ArrayList<>();
+                            StringBuilder parameterBuffer = new StringBuilder();
+                            while (docTokenSequence.moveNext()) {
+                                Token<TokenId> token = docTokenSequence.token();
+                                TokenId tokenId = token.id();
+                                if (state == State.START && tokenId.equals(CppTokenId.LPAREN)) {
+                                    state = State.BEFOR_FORMAT;
+                                } else if (tokenId.equals(CppTokenId.COMMA)) {
+                                    parameterPosition++;
+
+                                    if (state == State.FORMAT) { // if state is FORMAT it should be changed to VAR_ARGS
+                                        state = State.VAR_ARGS;
+                                    } else if (state == State.VAR_ARGS) { // if state is VAR_ARGS parameter should be stored
+                                        parameters.add(new Parameter(parameterBuffer.toString(), parameterOffset, !containsMacros));
+                                        // set default values
+                                        assert (innerBracketsCounter == 0);
+                                        containsMacros = false;
+                                        parameterOffset = -1;
+                                        parameterBuffer = new StringBuilder();
+                                    }
+                                } else if (state == State.BEFOR_FORMAT && parameterPosition == formatStringPosition) {
+                                    state = State.FORMAT;
+                                    formatString = new StringBuilder();
+                                    if (tokenId.equals(CppTokenId.STRING_LITERAL)) {
+                                        formatStringOffset = docTokenSequence.offset();
+                                        formatString.append(token.text().toString());
+                                    } else {
+                                        return; // skip checking for complicated expressions
+                                    }
+                                } else if (state == State.FORMAT && tokenId.equals(CppTokenId.STRING_LITERAL)) {
+                                    formatString.append(token.text().toString());
+                                } else if (state == State.FORMAT && !tokenId.equals(CppTokenId.STRING_LITERAL)
+                                                                 && !tokenId.equals(CppTokenId.RPAREN) 
+                                                                 && !tokenId.primaryCategory().equals(CppTokenId.WHITESPACE_CATEGORY)
+                                                                 && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)) {
+                                    // skip checking for complicated expressions
+                                    return; 
+                                } else if ((state == State.VAR_ARGS || state == State.VAR_ARGS_IN_BRACKETS) 
+                                                                    && !tokenId.equals(CppTokenId.LPAREN)
+                                                                    && !tokenId.equals(CppTokenId.RPAREN)
+                                                                    && !tokenId.primaryCategory().equals(CppTokenId.WHITESPACE_CATEGORY)
+                                                                    && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)) {
+                                    parameterBuffer.append(token.text());
+                                    if (parameterOffset == -1) {
+                                        parameterOffset = docTokenSequence.offset();
+                                    }
+                                    // do not resolve expression type if it contains macros
+                                    CsmReference ref = rr.findReference(file, doc, docTokenSequence.offset());
+                                    if (ref != null && CsmKindUtilities.isMacro(ref.getReferencedObject())) {
+                                        containsMacros = true;
+                                    }
+                                } else if (state == State.VAR_ARGS && tokenId.equals(CppTokenId.LPAREN)) {
+                                    innerBracketsCounter++;
+                                    state = State.VAR_ARGS_IN_BRACKETS;
+
+                                    parameterBuffer.append(token.text());
+                                    if (parameterOffset == -1) {
+                                        parameterOffset = docTokenSequence.offset();
+                                    }
+                                } else if (state == State.VAR_ARGS_IN_BRACKETS && tokenId.equals(CppTokenId.LPAREN)) {
+                                    innerBracketsCounter++;
+
+                                    parameterBuffer.append(token.text());
+                                    if (parameterOffset == -1) {
+                                        parameterOffset = docTokenSequence.offset();
+                                    }
+                                } else if (state == State.VAR_ARGS_IN_BRACKETS && tokenId.equals(CppTokenId.RPAREN)) {
+                                    innerBracketsCounter--;
+                                    if (innerBracketsCounter == 0) {
+                                        state = State.VAR_ARGS;
+                                    }
+
+                                    parameterBuffer.append(token.text());
+                                    if (parameterOffset == -1) {
+                                        parameterOffset = docTokenSequence.offset();
+                                    }
+                                } else if ((state == State.VAR_ARGS || state == State.FORMAT) && tokenId.equals(CppTokenId.RPAREN)) {
+                                    if (parameterBuffer.length() > 0) {
+                                        parameters.add(new Parameter(parameterBuffer.toString(), parameterOffset, !containsMacros));
+                                    }
+                                    addMessage(new FormattedPrintFunction(file
+                                                                         ,formatStringOffset
+                                                                         ,(formatString == null) ? "" : formatString.toString()
+                                                                         ,parameters));
+                                    return;
+                                }
+                            }
+                        }
+                    });
+                }
             }
+        }
+        
+        private void addMessage(FormattedPrintFunction function) throws MissingResourceException {
+            List<FormatError> errors = new LinkedList<>(function.validate());
             for (FormatError error : errors) {
                 CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
                 try {
@@ -158,170 +290,12 @@ public class FormatStringAudit extends AbstractCodeAudit {
                 }
             }
         }
-    }
-    
-    private void visit(Collection<? extends CsmOffsetableDeclaration> decls, final CsmFile file, final Document doc, CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
-        for (CsmOffsetableDeclaration decl : decls) {
-            if (CsmKindUtilities.isClass(decl)) {
-                visit(((CsmClass) decl).getMembers(), file, doc, request, response);
-            } else if (CsmKindUtilities.isNamespaceDefinition(decl)) {
-                visit(((CsmNamespaceDefinition) decl).getDeclarations(), file, doc, request, response);
-            } else if (CsmKindUtilities.isFunctionDeclaration(decl)) {
-                visit(((CsmFunction) decl).getDefinition(), file, doc, request, response);
-            } else if (CsmKindUtilities.isFunctionDefinition(decl)) {
-                visit((CsmFunctionDefinition) decl, file, doc, request, response);
-            }
-        }
-    }
-    
-    private void visit(CsmFunctionDefinition function, final CsmFile file, final Document doc, CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
-        if (function == null) {
-            return;
-        }
-        if (!file.equals(function.getContainingFile())) {
-            return;
+        
+        @Override
+        public boolean cancelled() {
+            return request.isCancelled();
         }
         
-        for (CsmStatement statement : function.getBody().getStatements()) {
-            if (request.isCancelled()) {
-                return;
-            }
-            
-            if (CsmKindUtilities.isCompoundStatement(statement)) {
-                visit((CsmCompoundStatement) statement, file, doc, request, response);
-            } else {
-                visit(statement, file, doc, request, response);
-            }
-        }
-    }
-    
-    private void visit(CsmCompoundStatement compoundStatement, final CsmFile file, final Document doc, CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
-        for (CsmStatement statement : compoundStatement.getStatements()) {
-            if (request.isCancelled()) {
-                return;
-            }
-            
-            visit(statement, file, doc, request, response);
-        }
-    }
-    
-    private void visit(CsmStatement statement, final CsmFile file, final Document doc, CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
-        CsmReference reference = CsmReferenceResolver.getDefault().findReference(file, doc, statement.getStartOffset());
-        if (reference != null) {
-            if (Utilities.checkPrintf(reference.getText()) == -1) {
-                return;
-            }
-            CsmObject object = reference.getReferencedObject();
-            final int formatStringPosition = Utilities.checkFormattedPrintFunction(object);
-            if (formatStringPosition > -1) {
-                final int startOffset = reference.getStartOffset();
-                doc.render(new Runnable() {
-                    @Override
-                    public void run() {
-                        TokenSequence<TokenId> docTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, startOffset, false, true);
-                        if (docTokenSequence == null) {
-                            return;
-                        }
-                        
-                        CsmReferenceResolver rr = CsmReferenceResolver.getDefault();
-                        State state = State.START;
-                        int formatStringOffset = -1;
-                        int innerBracketsCounter = 0;
-                        int parameterPosition = 0;
-                        int parameterOffset = -1;
-                        boolean containsMacros = false;
-                        StringBuilder formatString = null;
-                        ArrayList<Parameter> parameters = new ArrayList<>();
-                        StringBuilder parameterBuffer = new StringBuilder();
-                        while (docTokenSequence.moveNext()) {
-                            Token<TokenId> token = docTokenSequence.token();
-                            TokenId tokenId = token.id();
-                            if (state == State.START && tokenId.equals(CppTokenId.LPAREN)) {
-                                state = State.BEFOR_FORMAT;
-                            } else if (tokenId.equals(CppTokenId.COMMA)) {
-                                parameterPosition++;
-                                
-                                if (state == State.FORMAT) { // if state is FORMAT it should be changed to VAR_ARGS
-                                    state = State.VAR_ARGS;
-                                } else if (state == State.VAR_ARGS) { // if state is VAR_ARGS parameter should be stored
-                                    parameters.add(new Parameter(parameterBuffer.toString(), parameterOffset, !containsMacros));
-                                    // set default values
-                                    assert (innerBracketsCounter == 0);
-                                    containsMacros = false;
-                                    parameterOffset = -1;
-                                    parameterBuffer = new StringBuilder();
-                                }
-                            } else if (state == State.BEFOR_FORMAT && parameterPosition == formatStringPosition) {
-                                state = State.FORMAT;
-                                formatString = new StringBuilder();
-                                if (tokenId.equals(CppTokenId.STRING_LITERAL)) {
-                                    formatStringOffset = docTokenSequence.offset();
-                                    formatString.append(token.text().toString());
-                                } else {
-                                    return; // skip checking for complicated expressions
-                                }
-                            } else if (state == State.FORMAT && tokenId.equals(CppTokenId.STRING_LITERAL)) {
-                                formatString.append(token.text().toString());
-                            } else if (state == State.FORMAT && !tokenId.equals(CppTokenId.STRING_LITERAL)
-                                                             && !tokenId.equals(CppTokenId.RPAREN) 
-                                                             && !tokenId.primaryCategory().equals(CppTokenId.WHITESPACE_CATEGORY)
-                                                             && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)) {
-                                // skip checking for complicated expressions
-                                return; 
-                            } else if ((state == State.VAR_ARGS || state == State.VAR_ARGS_IN_BRACKETS) 
-                                                                && !tokenId.equals(CppTokenId.LPAREN)
-                                                                && !tokenId.equals(CppTokenId.RPAREN)
-                                                                && !tokenId.primaryCategory().equals(CppTokenId.WHITESPACE_CATEGORY)
-                                                                && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)) {
-                                parameterBuffer.append(token.text());
-                                if (parameterOffset == -1) {
-                                    parameterOffset = docTokenSequence.offset();
-                                }
-                                // do not resolve expression type if it contains macros
-                                CsmReference ref = rr.findReference(file, doc, docTokenSequence.offset());
-                                if (ref != null && CsmKindUtilities.isMacro(ref.getReferencedObject())) {
-                                    containsMacros = true;
-                                }
-                            } else if (state == State.VAR_ARGS && tokenId.equals(CppTokenId.LPAREN)) {
-                                innerBracketsCounter++;
-                                state = State.VAR_ARGS_IN_BRACKETS;
-                                
-                                parameterBuffer.append(token.text());
-                                if (parameterOffset == -1) {
-                                    parameterOffset = docTokenSequence.offset();
-                                }
-                            } else if (state == State.VAR_ARGS_IN_BRACKETS && tokenId.equals(CppTokenId.LPAREN)) {
-                                innerBracketsCounter++;
-                                
-                                parameterBuffer.append(token.text());
-                                if (parameterOffset == -1) {
-                                    parameterOffset = docTokenSequence.offset();
-                                }
-                            } else if (state == State.VAR_ARGS_IN_BRACKETS && tokenId.equals(CppTokenId.RPAREN)) {
-                                innerBracketsCounter--;
-                                if (innerBracketsCounter == 0) {
-                                    state = State.VAR_ARGS;
-                                }
-                                
-                                parameterBuffer.append(token.text());
-                                if (parameterOffset == -1) {
-                                    parameterOffset = docTokenSequence.offset();
-                                }
-                            } else if ((state == State.VAR_ARGS || state == State.FORMAT) && tokenId.equals(CppTokenId.RPAREN)) {
-                                if (parameterBuffer.length() > 0) {
-                                    parameters.add(new Parameter(parameterBuffer.toString(), parameterOffset, !containsMacros));
-                                }
-                                result.add(new FormattedPrintFunction(file
-                                                                     ,formatStringOffset
-                                                                     ,(formatString == null) ? "" : formatString.toString()
-                                                                     ,parameters));
-                                return;
-                            }
-                        }
-                    }
-                });
-            }
-        }
     }
     
     private static enum State {
