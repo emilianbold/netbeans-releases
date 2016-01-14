@@ -57,6 +57,7 @@ import java.net.URL;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.event.SwingPropertyChangeSupport;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.lib.profiler.ui.components.HTMLLabel;
@@ -78,12 +79,15 @@ public abstract class ProfilingPoint {
         
         {
             setOpaque(true);
-            setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
+            setBorder(BorderFactory.createEmptyBorder());
+            setHorizontalAlignment(SwingConstants.RIGHT);
         }
         
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             ProfilingPoint ppoint = (ProfilingPoint)value;
-            setText(ppoint.getResultsText());
+            setText("<table cellspacing='0' cellpadding='0'><tr><td height='" + // NOI18N
+                    table.getRowHeight() + "' valign='middle'><nobr>&nbsp;" + // NOI18N
+                    ppoint.getResultsText() + "&nbsp;</nobr></td></tr></table>"); // NOI18N
             setEnabled(ppoint.isEnabled());
             lastTable = new WeakReference(table);
             lastProfilingPoint = new WeakReference(ppoint);
