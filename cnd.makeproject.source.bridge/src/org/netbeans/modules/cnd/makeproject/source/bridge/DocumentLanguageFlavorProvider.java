@@ -393,8 +393,7 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
         }
 
         @Override
-        public void filesPropertiesChanged() {
-            NativeProject nativeProject = this.prjRef.get();
+        public void filesPropertiesChanged(NativeProject nativeProject) {
             if (nativeProject != null) {
                 NativeFileItem findFileItem = nativeProject.findFileItem(fo);
                 filePropertiesChanged(findFileItem);

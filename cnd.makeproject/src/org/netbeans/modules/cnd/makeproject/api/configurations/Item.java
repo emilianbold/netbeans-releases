@@ -944,6 +944,31 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     }
     
     public String getImportantFlags() {
+        String res = getImportantFlagsImpl();
+        if (res.isEmpty()) {
+            // important flags were lost or user set language standard
+            // try to restore right important flag by standard
+            LanguageFlavor languageFlavor = getLanguageFlavor();
+            switch(languageFlavor) {
+                case C11:
+                    // see also org.netbeans.modules.cnd.discovery.api.DriverFactory.DriverImpl.C11
+                    res = "-std=c11"; //NOI18N
+                    break;
+                case CPP11:
+                    // see also org.netbeans.modules.cnd.discovery.api.DriverFactory.DriverImpl.CPP11
+                    res = "-std=c++11"; //NOI18N
+                    break;
+                case CPP14:
+                    // see also org.netbeans.modules.cnd.discovery.api.DriverFactory.DriverImpl.CPP14
+                    res = "-std=c++14"; //NOI18N
+                    break;
+                default:
+            }
+        } 
+        return res;
+    }
+    
+    private String getImportantFlagsImpl() {
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         ItemConfiguration itemConfiguration = getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) { // FIXUP: itemConfiguration should never be null

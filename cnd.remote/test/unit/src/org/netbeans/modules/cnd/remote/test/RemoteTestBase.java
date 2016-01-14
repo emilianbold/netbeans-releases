@@ -59,6 +59,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import static junit.framework.TestCase.assertNotNull;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
@@ -71,6 +72,7 @@ import org.netbeans.modules.cnd.remote.sync.FtpSyncFactory;
 import org.netbeans.modules.cnd.remote.sync.RemoteSyncTestSupport;
 import org.netbeans.modules.cnd.remote.sync.RfsSyncFactory;
 import org.netbeans.modules.cnd.remote.sync.SharedSyncFactory;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -80,6 +82,7 @@ import org.netbeans.modules.nativeexecution.test.RcFile;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -324,9 +327,23 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         assertTrue("Failed to remove " + dirToRemove, isOk);
     }
 
+    protected String mkTempAndRefreshParent(boolean directory) throws Exception {
+        String path = mkTemp(getTestExecutionEnvironment(), directory);
+        String parent = PathUtilities.getDirName(path);
+        getFileObject(parent).refresh();
+        return path;
+    }
+
+    protected FileObject getFileObject(String path) throws Exception {
+        ExecutionEnvironment env = getTestExecutionEnvironment();
+        FileObject fo = FileSystemProvider.getFileObject(env, path);
+        assertNotNull("Null file object for " + env + ":" + path, fo);
+        return fo;
+    }
+
     protected static void addPropertyFromRcFile(String section, String varName) throws IOException, FormatException {
         addPropertyFromRcFile(section, varName, null);
-}
+    }
 
     protected static void addPropertyFromRcFile(String section, String varName, String defaultValue) throws IOException, FormatException {
         RcFile rcFile = NativeExecutionTestSupport.getRcFile();

@@ -78,10 +78,20 @@ public class CppSymbolDescriptor extends SymbolDescriptor implements Runnable {
     private final CharSequence name;
     
     public CppSymbolDescriptor(CsmOffsetable csmObj) {
+        this(csmObj, null);
+    }
+    
+    public CppSymbolDescriptor(CsmOffsetable csmObj, CsmOffsetable toOpen) {
         Parameters.notNull("csmObj", csmObj);
-        CsmFile csmFile = csmObj.getContainingFile();
+        CsmFile csmFile;
+        if (toOpen != null) {
+            csmFile = toOpen.getContainingFile();
+            offset = toOpen.getStartOffset();
+        } else {
+            csmFile = csmObj.getContainingFile();
+            offset = csmObj.getStartOffset();
+        }
         filePath = csmFile.getAbsolutePath();
-        offset = csmObj.getStartOffset();
         project = csmFile.getProject();
         if (CsmKindUtilities.isClass(csmObj) && CsmKindUtilities.isTemplate(csmObj)) {
             name = ((CsmTemplate)csmObj).getDisplayName();

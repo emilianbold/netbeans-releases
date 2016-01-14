@@ -40,7 +40,7 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <flagsDictionary>
-        <element flagsID="0" commonFlags="-std=c99 -g"/>
+        <element flagsID="0" commonFlags="-std=c99 -g -m64"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -52,13 +52,16 @@
           <executablePath>../../release/bin/Linux-x86/fs_server</executablePath>
           <cTool>
             <incDir>
-              <pElem>.</pElem>
+              <pElem>../../../../../../.netbeans/dev-bis/var/cache/remote-files/localhost_2225_vk/home/vkvashin/.netbeans/dev-bis/var/cache/remote-files/localhost_2225_vk/home/vkvashin/.netbeans/remote/calypso-t72p-d07.us.oracle.com/vk-laptop-Linux-x86_64/home/vkvashin/src/netbeans/release81_elif/dlight.remote.impl/tools/fs_server</pElem>
             </incDir>
             <preprocessorList>
               <Elem>LINUX</Elem>
+              <Elem>NDEBUG</Elem>
               <Elem>_GNU_SOURCE</Elem>
+              <Elem>_POSIX_PTHREAD_SEMANTICS</Elem>
               <Elem>_REENTRANT</Elem>
               <Elem>_XOPEN_SOURCE=700</Elem>
+              <Elem>__EXTENSIONS__</Elem>
             </preprocessorList>
           </cTool>
         </makeTool>
@@ -100,7 +103,7 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <flagsDictionary>
-        <element flagsID="0" commonFlags="-std=c99 -g -m64"/>
+        <element flagsID="0" commonFlags="-std=c99 -m64"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -115,9 +118,12 @@
               <pElem>.</pElem>
             </incDir>
             <preprocessorList>
-              <Elem>SOLARIS</Elem>
+              <Elem>LINUX</Elem>
+              <Elem>NDEBUG</Elem>
+              <Elem>_GNU_SOURCE</Elem>
               <Elem>_POSIX_PTHREAD_SEMANTICS</Elem>
               <Elem>_REENTRANT</Elem>
+              <Elem>_XOPEN_SOURCE=700</Elem>
               <Elem>__EXTENSIONS__</Elem>
             </preprocessorList>
           </cTool>
@@ -176,6 +182,7 @@
             </incDir>
             <preprocessorList>
               <Elem>LINUX</Elem>
+              <Elem>NDEBUG</Elem>
               <Elem>_GNU_SOURCE</Elem>
               <Elem>_POSIX_PTHREAD_SEMANTICS</Elem>
               <Elem>_REENTRANT</Elem>
@@ -216,7 +223,7 @@
     </conf>
     <conf name="MacOS" type="0" platformSpecific="true">
       <toolsSet>
-        <compilerSet>default</compilerSet>
+        <compilerSet>GNU_1|GNU</compilerSet>
         <platform>4</platform>
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
@@ -356,13 +363,16 @@
           <executablePath>../../release/bin/Linux-x86_64/fs_server</executablePath>
           <cTool>
             <incDir>
-              <pElem>.</pElem>
+              <pElem>../../../../../../.netbeans/dev-bis/var/cache/remote-files/localhost_2225_vk/home/vkvashin/.netbeans/dev-bis/var/cache/remote-files/localhost_2225_vk/home/vkvashin/.netbeans/remote/calypso-t72p-d07.us.oracle.com/vk-laptop-Linux-x86_64/home/vkvashin/src/netbeans/release81_elif/dlight.remote.impl/tools/fs_server</pElem>
             </incDir>
             <preprocessorList>
               <Elem>LINUX</Elem>
+              <Elem>NDEBUG</Elem>
               <Elem>_GNU_SOURCE</Elem>
+              <Elem>_POSIX_PTHREAD_SEMANTICS</Elem>
               <Elem>_REENTRANT</Elem>
               <Elem>_XOPEN_SOURCE=700</Elem>
+              <Elem>__EXTENSIONS__</Elem>
             </preprocessorList>
           </cTool>
         </makeTool>
@@ -408,7 +418,7 @@
       <makefileType>
         <makeTool>
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
-          <buildCommand>${MAKE} -f Makefile all-debug</buildCommand>
+          <buildCommand>${MAKE} -f Makefile ASSERTIONS=1 all-debug</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
           <executablePath>../../release/bin/Linux-x86/fs_server</executablePath>
           <cTool>
@@ -456,7 +466,7 @@
       <makefileType>
         <makeTool>
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
-          <buildCommand>${MAKE} -f Makefile 64BITS=1 all-debug</buildCommand>
+          <buildCommand>${MAKE} -f Makefile 64BITS=1 ASSERTIONS=1 all-debug</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean 64BITS=1</cleanCommand>
           <executablePath>../../release/bin/Linux-x86_64/fs_server</executablePath>
           <cTool>
@@ -466,9 +476,12 @@
             </incDir>
             <preprocessorList>
               <Elem>LINUX</Elem>
+              <Elem>NDEBUG</Elem>
               <Elem>_GNU_SOURCE</Elem>
+              <Elem>_POSIX_PTHREAD_SEMANTICS</Elem>
               <Elem>_REENTRANT</Elem>
               <Elem>_XOPEN_SOURCE=700</Elem>
+              <Elem>__EXTENSIONS__</Elem>
             </preprocessorList>
           </cTool>
         </makeTool>
@@ -514,7 +527,7 @@
       <makefileType>
         <makeTool>
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
-          <buildCommand>${MAKE} -f Makefile all-debug</buildCommand>
+          <buildCommand>${MAKE} -f Makefile ASSERTIONS=1all-debug</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
           <executablePath>../../release/bin/SunOS-x86/fs_server</executablePath>
           <cTool>

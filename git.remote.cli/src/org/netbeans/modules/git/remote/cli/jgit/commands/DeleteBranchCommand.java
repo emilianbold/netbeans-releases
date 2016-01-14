@@ -100,6 +100,9 @@ public class DeleteBranchCommand extends GitCommand {
                             throw new GitException.NotMergedException(branchName);
                         } else if (msg.startsWith("error: Cannot delete the branch")) {
                             throw new GitException.DeleteBranchException(branchName);
+                        } else if (msg.startsWith("error: branch") &&  msg.endsWith("not found.")) {
+                            // delete unexisting branch. Consider as success.
+                            return;
                         }
                     }
                     super.errorParser(error);

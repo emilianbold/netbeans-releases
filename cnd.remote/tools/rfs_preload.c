@@ -354,11 +354,11 @@ rfs_startup(void) {
     if (dir) {
         dir = strdup(dir);
     } else {
-        char* p = malloc(PATH_MAX + 1);
+        char* p = malloc_wrapper(PATH_MAX + 1);
         getcwd(p, PATH_MAX + 1);
         dir = p;
     }
-    char* real_dir = malloc(PATH_MAX + 1);
+    char* real_dir = malloc_wrapper(PATH_MAX + 1);
     if ( realpath(dir, real_dir)) {
         char *to_free = dir;
         dir = real_dir;
@@ -367,15 +367,17 @@ rfs_startup(void) {
         trace_unresolved_path(dir, "RFS startup");
     }
     my_dir_len = strlen(dir);
+    char *to_free = dir;
     if (dir[my_dir_len-1] == '/') {
         dir = strdup(dir);
     } else {
         my_dir_len++;
-        void *p = malloc(my_dir_len + 1);
+        void *p = malloc_wrapper(my_dir_len + 1);
         strcpy(p, dir);
         strcat(p, "/");
         dir = p;
     }
+    free(to_free);
     my_dir = dir;
 
     static int startup_count = 0;
@@ -422,7 +424,7 @@ int pthread_create(void *newthread,
     if (!prev) {
         prev = (int (*)(void*, void*, void * (*)(void *), void*)) get_real_addr(pthread_create);
     }
-    pthread_routine_data *data = malloc(sizeof (pthread_routine_data));
+    pthread_routine_data *data = malloc_wrapper(sizeof (pthread_routine_data));
     // TODO: check for null???
     data->user_start_routine = user_start_routine;
     data->arg = arg;

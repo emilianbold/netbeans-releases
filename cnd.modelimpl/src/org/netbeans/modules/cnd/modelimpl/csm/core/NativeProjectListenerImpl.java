@@ -153,7 +153,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
     }
 
     @Override
-    public void filesPropertiesChanged() {
+    public void filesPropertiesChanged(NativeProject nativeProject) {
         List<NativeFileItem> allFiles = nativeProject.getAllFiles();
         if (TRACE) {
             String title = "Native event projectPropertiesChanged:" + allFiles.size(); // NOI18N

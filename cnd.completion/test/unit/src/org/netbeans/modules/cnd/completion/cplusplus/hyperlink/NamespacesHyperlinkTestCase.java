@@ -469,6 +469,11 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug256058_2.cpp", 16, 14, "bug256058_2.cpp", 9, 17);
     }
     
+    public void testBug257187() throws Exception {
+        // Bug 257187 - FindUsages resolving regression
+        performTest("bug257187.cpp", 10, 11, "bug257187.cpp", 9, 20);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

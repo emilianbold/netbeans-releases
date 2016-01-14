@@ -111,20 +111,6 @@ public class FullRemoteCodeModelTestCase extends RemoteBuildTestBase {
         ModelSupport.instance().startup();
     }
 
-    protected FileObject getFileObject(String path) throws Exception {
-        ExecutionEnvironment env = getTestExecutionEnvironment();
-        FileObject fo = FileSystemProvider.getFileObject(env, path);
-        assertNotNull("Null file object for " + env + ":" + path, fo);
-        return fo;
-    }
-    
-    protected String mkTempAndRefreshParent(boolean directory) throws Exception {
-        String path = mkTemp(getTestExecutionEnvironment(), directory);
-        String parent = PathUtilities.getDirName(path);
-        getFileObject(parent).refresh();
-        return path;
-    }
-
     protected void processSample(String sampleName) throws Exception {
         final ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         String remoteTempDir = null;

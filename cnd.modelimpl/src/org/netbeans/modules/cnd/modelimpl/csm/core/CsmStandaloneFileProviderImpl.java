@@ -634,7 +634,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                     }
                 }
                 for(NativeProjectItemsListener listener : list) {
-                    listener.filesPropertiesChanged();
+                    listener.filesPropertiesChanged(this);
                 }
             }
         }
@@ -760,7 +760,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 list.addAll(listeners);
             }
             for(NativeProjectItemsListener listener : list) {
-                listener.filesPropertiesChanged();
+                listener.filesPropertiesChanged(this);
             }
         }
 
