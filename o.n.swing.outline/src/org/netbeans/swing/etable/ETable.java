@@ -430,7 +430,7 @@ public class ETable extends JTable {
     }
 
     /*
-     * Overriden to call convertRowIndexToModel(...).
+     * Overridden to call convertRowIndexToModel(...).
      * @see javax.swing.JTable#getCellRenderer(int, int)
      *
      * NOT NECESSARY - JTable does not use the "row" argument.
@@ -443,7 +443,7 @@ public class ETable extends JTable {
      */
 
     /*
-     * Overriden to call convertRowIndexToModel(...).
+     * Overridden to call convertRowIndexToModel(...).
      * @see javax.swing.JTable#getCellEditor(int, int)
      *
      * NOT NECESSARY - JTable does not use the "row" argument.
@@ -759,7 +759,7 @@ public class ETable extends JTable {
     }
    
     /**
-     * Overriden to use ETableColumnModel as TableColumnModel.
+     * Overridden to use ETableColumnModel as TableColumnModel.
      * @see javax.swing.JTable#createDefaultColumnModel()
      */
     @Override
@@ -768,7 +768,7 @@ public class ETable extends JTable {
     }
 
     /**
-     * Overriden to call convertRowIndexToModel(...).
+     * Overridden to call convertRowIndexToModel(...).
      * @see javax.swing.JTable#getValueAt(int, int)
      */
     @Override
@@ -778,7 +778,7 @@ public class ETable extends JTable {
     }
 
     /**
-     * Overriden to call convertRowIndexToModel(...).
+     * Overridden to call convertRowIndexToModel(...).
      * @see javax.swing.JTable#setValueAt(Object, int, int)
      */
     @Override
@@ -802,10 +802,10 @@ public class ETable extends JTable {
     }
 
     /**
-     * Makes the table disply only the rows that match the given "quick-filter".
+     * Makes the table display only the rows that match the given "quick-filter".
      * Filtering is done according to values from column with index column and
      * according to filterObject. There are 2 possibilities for the filterObject
-     * paramterer
+     * parameter
      * <OL> <LI> filterObject implements <strong>QuickFilter</strong> 
      *           interface: the method <code>accept(Object)</code> 
      *           of the QuickFilter is called to determine whether the 
@@ -858,8 +858,8 @@ public class ETable extends JTable {
     }
     
     /**
-     * Overriden to update the header listeners and also to adjust the
-     * preferred width of the collumns.
+     * Overridden to update the header listeners and also to adjust the
+     * preferred width of the columns.
      * @see javax.swing.JTable#setModel(TableModel)
      */
     @Override
@@ -879,7 +879,7 @@ public class ETable extends JTable {
     }
     
     /**
-     * Overriden to make a speed optimization.
+     * Overridden to make a speed optimization.
      */
     @Override
     public String getToolTipText(MouseEvent event) {
@@ -972,7 +972,7 @@ public class ETable extends JTable {
     }
     
     /**
-     * Overriden to implement CTRL-+ for resizing of all columns,
+     * Overridden to implement CTRL-+ for resizing of all columns,
      * CTRL-- for clearing the quick filter and CTRL-* for invoking the
      * column selection dialog.
      * @see javax.swing.JTable#processKeyBinding(KeyStroke, KeyEvent, int, boolean)
