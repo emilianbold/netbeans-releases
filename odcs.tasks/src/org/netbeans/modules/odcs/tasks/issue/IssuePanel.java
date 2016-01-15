@@ -1863,6 +1863,8 @@ public class IssuePanel extends javax.swing.JPanel {
                 Boolean b = enableMap.get(comp);
                 if (b != null) {
                     comp.setEnabled(b);
+                } else {
+                    comp.setEnabled(true);
                 }
             } else {
                 enableMap.put(comp, comp.isEnabled());
