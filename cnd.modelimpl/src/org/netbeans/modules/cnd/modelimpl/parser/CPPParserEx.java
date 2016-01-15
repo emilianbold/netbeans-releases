@@ -1240,10 +1240,18 @@ public class CPPParserEx extends CPPParser {
     }
 
     private void updateExceptionIfNeeded(RecognitionException e, boolean updateLineColumn) {
-        if (updateLineColumn) {
-            if (e.line == FAKE_LINE && e.column == FAKE_COLUMN
-                    && (e instanceof NoViableAltException)) {
+        if (updateLineColumn && e.line == FAKE_LINE && e.column == FAKE_COLUMN) {
+            if (e instanceof NoViableAltException) {
                 NoViableAltException ex = (NoViableAltException) e;
+                if ((ex.token instanceof APTToken)
+                        && (action.getCurrentFile() instanceof FileImpl)) {
+                    FileImpl impl = (FileImpl) action.getCurrentFile();
+                    int[] lineColumn = impl.getLineColumn(((APTToken) ex.token).getOffset());
+                    ex.line = lineColumn[0];
+                    ex.column = lineColumn[1];
+                }
+            } else if (e instanceof MismatchedTokenException) {
+                MismatchedTokenException ex = (MismatchedTokenException) e;
                 if ((ex.token instanceof APTToken)
                         && (action.getCurrentFile() instanceof FileImpl)) {
                     FileImpl impl = (FileImpl) action.getCurrentFile();

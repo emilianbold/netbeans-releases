@@ -277,7 +277,8 @@ public final class CsmEventDispatcher {
                 break;
             }
             case ITEMS_ALL_PROPERTY_CHANGED:
-                dispatchAll(event);
+                CndUtils.assertNotNullInConsole(event.getNativeProject(), "NativeProject should not be null: " + event); //NOI18N
+                dispatch(event, event.getNativeProject());
                 break;
             case PROJECT_DELETED:
             {
@@ -355,16 +356,6 @@ public final class CsmEventDispatcher {
         //</editor-fold>
     }
 
-    private void dispatchAll(CsmEvent event) {
-        Collection<CsmEventListener> listenersCopy = new ArrayList<>();
-        synchronized (listenersLock) {
-            listenersCopy.addAll(listeners.values());
-        }
-        for (CsmEventListener l : listenersCopy) {
-            l.fireEvent(event);
-        }
-    }
-            
     private void dispatch(CsmEvent event, CsmProject project) {
         CsmEventListener listener = getListener(project);
         if (listener != null) {
@@ -447,8 +438,8 @@ public final class CsmEventDispatcher {
         }
 
         @Override
-        public void filesPropertiesChanged() {
-            registerEvents(CsmEvent.createEmptyEvent(CsmEvent.Kind.ITEMS_ALL_PROPERTY_CHANGED));
+        public void filesPropertiesChanged(NativeProject nativeProject) {
+            registerEvents(CsmEvent.createProjectEvent(CsmEvent.Kind.ITEMS_ALL_PROPERTY_CHANGED, nativeProject));
         }
 
         @Override

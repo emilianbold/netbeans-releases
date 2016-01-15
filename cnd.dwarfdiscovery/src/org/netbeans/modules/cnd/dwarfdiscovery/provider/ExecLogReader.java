@@ -405,18 +405,7 @@ public final class ExecLogReader {
             language = ItemProperties.LanguageKind.Unknown;
         }
         if (args.size() > 0) {
-            if (pathMapper != null) {
-                compilePath = pathMapper.getLocalPath(args.get(0));
-                if (compilePath == null) {
-                    compilePath = args.get(0);
-                } else {
-                    if (Utilities.isWindows()) {
-                        compilePath = compilePath.replace('\\', '/');
-                    }
-                }
-            } else {
-                compilePath = args.get(0);
-            }
+            compilePath = args.get(0);
         }
         Iterator<String> iterator = args.iterator();
         if (iterator.hasNext()) {

@@ -69,7 +69,7 @@ import org.openide.filesystems.FileObject;
         ITEM_ADDED(NativeFileItem.class),
         ITEM_REMOVED(NativeFileItem.class),
         ITEM_PROPERTY_CHANGED(NativeFileItem.class),
-        ITEMS_ALL_PROPERTY_CHANGED(null),
+        ITEMS_ALL_PROPERTY_CHANGED(NativeProject.class),
         ITEM_RENAMED_DELETED(NativeFileItem.class),
         ITEM_RENAMED_CREATED(NativeFileItem.class),
         PROJECT_DELETED(NativeProject.class),

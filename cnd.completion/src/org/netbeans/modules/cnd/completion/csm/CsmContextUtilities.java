@@ -105,6 +105,7 @@ import org.netbeans.modules.cnd.completion.cplusplus.CsmFinderFactory;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionSupport;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmFinder;
 import org.netbeans.modules.cnd.utils.MutableObject;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.CharSequences;
 
@@ -1229,11 +1230,14 @@ public class CsmContextUtilities {
      * @return true if type is based on decltype
      */
     static boolean checkDecltype(CsmType type) {
-        String fullName = type.getClassifierText().toString();
-        String nameParts[] = fullName.split("::"); // NOI18N
-        for (String part : nameParts) {
-            if (part.equals("decltype")) { // NOI18N
-                return true;
+        final CharSequence classifierText = type.getClassifierText();
+        if (CharSequenceUtils.indexOf(classifierText, "decltype") >= 0) { // NOI18N
+            String fullName = classifierText.toString();
+            String nameParts[] = fullName.split("::"); // NOI18N
+            for (String part : nameParts) {
+                if (part.equals("decltype")) { // NOI18N
+                    return true;
+                }
             }
         }
         return false;

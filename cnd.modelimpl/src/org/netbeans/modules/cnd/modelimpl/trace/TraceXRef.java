@@ -59,6 +59,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import javax.swing.JEditorPane;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -255,7 +256,7 @@ public class TraceXRef extends TraceModel {
     public static void traceProjectRefsStatistics(CsmProject csmPrj, final Map<CharSequence, Long> times, final StatisticsParameters params, final PrintWriter printOut, final OutputWriter printErr, final CsmProgressListener callback, final AtomicBoolean canceled) {
         final XRefResultSet<XRefEntry> bag = new XRefResultSet<>();
         final boolean collect = times.isEmpty();
-        Collection<CsmFile> allFiles = new ArrayList<>();
+        List<CsmFile> allFiles = new ArrayList<>();
         int i = 0;
         for (CsmFile file : csmPrj.getAllFiles()) {
             i++;
@@ -266,12 +267,27 @@ public class TraceXRef extends TraceModel {
             }
             allFiles.add(file);
         }
+        final AtomicLong time = new AtomicLong();
+        Collections.sort(allFiles, new Comparator<CsmFile>(){
+            @Override
+            public int compare(CsmFile o1, CsmFile o2) {
+                int res = 0;
+                if ((o1 instanceof FileImpl) && (o2 instanceof FileImpl)) {
+                    FileImpl f1 = (FileImpl) o1;
+                    FileImpl f2 = (FileImpl) o2;
+                    res = (int) (f2.getLastParseTime() - f1.getLastParseTime());
+                }
+                if (res == 0) {
+                    return o1.getAbsolutePath().toString().compareTo(o2.getAbsolutePath().toString());
+                }
+                return res;
+            }
+        });
         if (callback != null) {
             callback.projectFilesCounted(csmPrj, allFiles.size());
         }
         RequestProcessor rp = new RequestProcessor("TraceXRef", params.numThreads); // NOI18N
         final CountDownLatch waitFinished = new CountDownLatch(allFiles.size());
-        long time = System.nanoTime();
         for (final CsmFile file : allFiles) {
             Runnable task = new Runnable() {
                 @Override
@@ -290,9 +306,10 @@ public class TraceXRef extends TraceModel {
                                 return;
                             }
                             Thread.currentThread().setName("Testing xRef " + absolutePath); //NOI18N
-                            long time = analyzeFile(file, params, bag, printOut, printErr, canceled);
-                            if (collect && (time > params.timeThreshold)) {
-                                times.put(absolutePath, time);
+                            long aTime = analyzeFile(file, params, bag, printOut, printErr, canceled);
+                            time.getAndAdd(aTime);
+                            if (collect && (aTime > params.timeThreshold)) {
+                                times.put(absolutePath, aTime);
                             }
                         } finally {
                             Thread.currentThread().setName(oldName);
@@ -306,7 +323,7 @@ public class TraceXRef extends TraceModel {
         }
         try {
             waitFinished.await();
-            bag.setTime(System.nanoTime() - time);
+            bag.setTime(time.get()/params.numThreads);
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -377,7 +394,7 @@ public class TraceXRef extends TraceModel {
     private static long analyzeFile(final CsmFile file, final StatisticsParameters params,
             final XRefResultSet<XRefEntry> bag, final PrintWriter out, final OutputWriter printErr,
             final AtomicBoolean canceled) {
-        long time = System.currentTimeMillis();
+        long time = System.nanoTime();
         if (params.analyzeSmartAlgorith) {
             // for smart algorithm visit functions
             visitDeclarations(file.getDeclarations(), params, bag, out, printErr, canceled);
@@ -388,7 +405,7 @@ public class TraceXRef extends TraceModel {
             // otherwise visit active code in whole file
             CsmFileReferences.getDefault().accept(file, null, new LWCheckReferenceVisitor(bag, printErr, canceled, params.reportUnresolved), params.interestedReferences);
         }
-        time = System.currentTimeMillis() - time;
+        time = System.nanoTime() - time;
         // get line num
         CharSequence text = file.getText();
         int lineCount = 1;
@@ -399,7 +416,7 @@ public class TraceXRef extends TraceModel {
         }
         bag.incrementLineCounter(lineCount);
         if (params.printFileStatistic) {
-            out.println(file.getAbsolutePath() + " has " + lineCount + " lines; took " + time + "ms"); // NOI18N
+            out.println(file.getAbsolutePath() + " has " + lineCount + " lines; took " + time/1000/1000 + "ms"); // NOI18N
         }
         return time;
     }

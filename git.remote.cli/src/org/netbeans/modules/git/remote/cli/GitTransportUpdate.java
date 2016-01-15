@@ -57,6 +57,7 @@ public final class GitTransportUpdate {
     private final String remoteName;
     private final String oldObjectId;
     private final String newObjectId;
+    private final String operation;
     private final GitRefUpdateResult result;
     private final String uri;
     private final Type type;
@@ -99,16 +100,18 @@ public final class GitTransportUpdate {
         this.result = null;//GitRefUpdateResult.valueOf(update.getStatus().name());
         this.uri = null;//uri.toString();
         this.type = null;//getType(update.getRemoteName());
+        this.operation = null;
     }
 
     GitTransportUpdate (GitTransportUpdateContainer container) {
         this.localName = container.localBranch;
         this.remoteName = container.remoteBranch;
-        this.oldObjectId = null;//getOldRevisionId(remoteBranches.get(remoteName));
-        this.newObjectId = null;//update.getNewObjectId() == null || ObjectId.zeroId().equals(update.getNewObjectId()) ? null : update.getNewObjectId().getName();
+        this.oldObjectId = container.oldID;//getOldRevisionId(remoteBranches.get(remoteName));
+        this.newObjectId = container.newID;//update.getNewObjectId() == null || ObjectId.zeroId().equals(update.getNewObjectId()) ? null : update.getNewObjectId().getName();
         this.result = container.status;
         this.uri = container.url;
         this.type = container.type;
+        this.operation = container.operation;
     }
     
     /**
@@ -148,6 +151,16 @@ public final class GitTransportUpdate {
      */
     public String getNewObjectId () {
         return newObjectId;
+    }
+
+    /**
+     * Push command does not print IDs in case up-to-date, create new branch, ...
+     * Instead command prints [up to date], [new branch]
+     * 
+     * @return operation in []
+     */
+    public String getOperation() {
+        return operation;
     }
 
     /**
@@ -210,5 +223,8 @@ public final class GitTransportUpdate {
         public String url;
         public Type type;
         public GitRefUpdateResult status;
+        public String oldID;
+        public String newID;
+        public String operation;
     }
 }
