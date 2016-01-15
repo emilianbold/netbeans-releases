@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
-import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants.WizardConstant;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Utilities;
@@ -63,28 +62,6 @@ import org.openide.util.Utilities;
  */
 @SuppressWarnings("unchecked") // NOI18N
 public class DiscoveryWizardDescriptor extends WizardDescriptor implements DiscoveryDescriptor {
-    // Common properties
-    public static final WizardConstant<String> ROOT_FOLDER =  WizardConstants.DISCOVERY_ROOT_FOLDER;
-    public static final WizardConstant<String> BUILD_RESULT = WizardConstants.DISCOVERY_BUILD_RESULT;
-    public static final WizardConstant<FileSystem> FILE_SYSTEM = WizardConstants.DISCOVERY_BINARY_FILESYSTEM;
-    public static final WizardConstant<String> ADDITIONAL_LIBRARIES = WizardConstants.DISCOVERY_LIBRARIES;
-    public static final WizardConstant<String> COMPILER_NAME = WizardConstants.DISCOVERY_COMPILER;
-    public static final WizardConstant<List<String>> DEPENDENCIES = WizardConstants.DISCOVERY_BINARY_DEPENDENCIES;
-    public static final WizardConstant<List<String>> SEARCH_PATHS = WizardConstants.DISCOVERY_BINARY_SEARCH_PATH;
-    public static final WizardConstant<List<String>> ERRORS = WizardConstants.DISCOVERY_ERRORS;
-    public static final WizardConstant<Boolean> RESOLVE_SYMBOLIC_LINKS = WizardConstants.DISCOVERY_RESOLVE_LINKS;
-
-    public static final WizardConstant<Project> PROJECT = new WizardConstant<>("DW:project"); // NOI18N
-    public static final WizardConstant<DiscoveryProvider> PROVIDER = new WizardConstant<>("DW:provider"); // NOI18N
-    public static final WizardConstant<String> BUILD_FOLDER = new WizardConstant<>("DW:buildFolder"); // NOI18N
-    public static final WizardConstant<String> LOG_FILE = new WizardConstant<>("DW:logFile"); // NOI18N
-    public static final WizardConstant<String> EXEC_LOG_FILE = new WizardConstant<>("DW:execLogFile"); // NOI18N
-    public static final WizardConstant<List<ProjectConfiguration>> CONFIGURATIONS = new WizardConstant<>("DW:configurations"); // NOI18N
-    public static final WizardConstant<List<String>> INCLUDED = new WizardConstant<>("DW:included"); // NOI18N
-    public static final WizardConstant<Boolean> INVOKE_PROVIDER = new WizardConstant<>("DW:invokeProvider"); // NOI18N
-    public static final WizardConstant<List<String>>  BUILD_ARTIFACTS = new WizardConstant<>("DW:buildArtifacts"); // NOI18N
-    public static final WizardConstant<Boolean> INCREMENTAL = new WizardConstant<>("DW:incremental"); // NOI18N
-    
     private boolean stateChanged = true;
     private boolean cutResult = false;
     
