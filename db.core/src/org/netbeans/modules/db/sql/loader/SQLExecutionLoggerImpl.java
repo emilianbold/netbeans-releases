@@ -46,6 +46,7 @@ package org.netbeans.modules.db.sql.loader;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.sql.SQLWarning;
 import java.text.NumberFormat;
 import java.util.Collection;
 import org.netbeans.modules.db.sql.execute.SQLExecutionLogger;
@@ -85,6 +86,7 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
 
     @Override
     public void log(SQLExecutionResult result) {
+        logWarnings(result);
         if (result.hasExceptions()) {
             logException(result);
         } else {
@@ -115,6 +117,16 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
         inputOutput.closeInputOutput();
     }
 
+    private void logWarnings(SQLExecutionResult result) {
+        try (OutputWriter writer = inputOutput.getOut()) {
+            for(SQLWarning s: result.getWarnings()) {
+                writeSQLWarning(s, writer);
+            }
+            
+            writer.println(""); // NOI18N
+        }
+    }
+    
     private void logException(SQLExecutionResult result) {
         errorCount++;
 
@@ -123,21 +135,29 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
             inputOutput.select();
         }
 
-        OutputWriter writer = inputOutput.getErr();
-
-        for(Throwable e: result.getExceptions()) {
-            if (e instanceof SQLException) {
-                writeSQLException((SQLException)e, writer);
-            } else {
-                Exceptions.printStackTrace(e);
+        try (OutputWriter writer = inputOutput.getErr()) {
+            for(Throwable e: result.getExceptions()) {
+                if (e instanceof SQLException) {
+                    writeSQLException((SQLException)e, writer);
+                } else {
+                    Exceptions.printStackTrace(e);
+                }
             }
+            
+            printLineColumn(writer, result, true, result.getExceptions());
+            writer.println(""); // NOI18N
         }
-        
-        printLineColumn(writer, result, true, result.getExceptions());
-        writer.println(""); // NOI18N
-        writer.close();
     }
+    
+    
 
+    private void writeSQLWarning(SQLWarning e, OutputWriter writer) {
+        writer.println(NbBundle.getMessage(SQLEditorSupport.class, "LBL_WarningCodeStateMessage",
+                String.valueOf(e.getErrorCode()),
+                e.getSQLState(),
+                e.getMessage()));
+    }
+            
     private void writeSQLException(SQLException e, OutputWriter writer) {
         while (e != null) {
             writer.println(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ErrorCodeStateMessage",

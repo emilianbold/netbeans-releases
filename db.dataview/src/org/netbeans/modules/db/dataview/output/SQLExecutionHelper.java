@@ -48,6 +48,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -158,7 +159,7 @@ class SQLExecutionHelper {
                             DataViewDBTable dvTable = new DataViewDBTable(tables);
                             DataViewPageContext pageContext = dataView.addPageContext(dvTable);
 
-                                loadDataFrom(pageContext, rs, useScrollableCursors);
+                            loadDataFrom(pageContext, rs, useScrollableCursors);
 
                             DataViewUtils.closeResources(rs);
                             
@@ -620,7 +621,6 @@ class SQLExecutionHelper {
                 }
                 boolean getTotal = false;
 
-                // Get total row count
                 for (DataViewPageContext pageContext : dataView.getPageContexts()) {
                     if (pageContext.getTotalRows() == -1) {
                         getTotal = true;
@@ -628,7 +628,6 @@ class SQLExecutionHelper {
                     }
                 }
 
-                // Get total row count
                 stmt = prepareSQLStatement(conn, sql, getTotal);
 
                 // Execute the query and retrieve all resultsets
@@ -876,7 +875,9 @@ class SQLExecutionHelper {
                 throw sqlExc;
             }
         }
-
+        
+        extractWarnings(stmt);
+        
         long executionTime = System.currentTimeMillis() - startTime;
         synchronized (dataView) {
             dataView.setUpdateCount(stmt.getUpdateCount());
@@ -1047,6 +1048,27 @@ class SQLExecutionHelper {
         } catch (Exception ex) {
             LOGGER.log(Level.WARNING, "Exception while querying" //NOI18N
                     + " database for scrollable resultset support"); //NOI18N
+        }
+    }
+
+    private void extractWarnings(Statement stmt) {
+        try {
+            for (SQLWarning warning = stmt.getConnection().getWarnings(); warning != null; warning = warning.getNextWarning()) {
+                dataView.addWarning(warning);
+            }
+            stmt.getConnection().clearWarnings();
+        } catch (Throwable ex) {
+            LOGGER.log(Level.FINE, "Failed to retrieve warnings", ex);
+            // Exceptions will be ignored at this point
+        }
+        try {
+            for(SQLWarning warning = stmt.getWarnings(); warning != null; warning = warning.getNextWarning()) {
+                dataView.addWarning(warning);
+            }
+            stmt.clearWarnings();
+        } catch (Throwable ex) {
+            LOGGER.log(Level.FINE, "Failed to retrieve warnings", ex);
+            // Exceptions will be ignored at this point
         }
     }
 }

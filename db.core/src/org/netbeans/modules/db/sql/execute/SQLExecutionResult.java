@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.db.sql.execute;
 
+import java.sql.SQLWarning;
 import java.util.Collection;
 import org.netbeans.modules.db.dataview.api.DataView;
 
@@ -127,6 +128,14 @@ public class SQLExecutionResult {
                 getStatementInfo().getStartLine(), 
                 getStatementInfo().getStartColumn()};
         }
+    }
+
+    public boolean hasWarnings() {
+        return dataView.hasWarnings();
+    }
+
+    public Collection<SQLWarning> getWarnings() {
+        return dataView.getWarnings();
     }
     
     public String toString() {

@@ -49,6 +49,7 @@ import java.io.CharConversionException;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -84,6 +85,7 @@ public class DataView {
     private static final int MAX_TAB_LENGTH = 25;
     private DatabaseConnection dbConn;
     private final List<Throwable> errMessages = new ArrayList<>();
+    private final List<SQLWarning> warningMessages = new ArrayList<>();
     private String sqlString; // Once Set, Data View assumes it will never change
     private SQLStatementGenerator stmtGenerator;
     private SQLExecutionHelper execHelper;
@@ -197,6 +199,15 @@ public class DataView {
     }
 
     /**
+     * Returns true if there were any warnings in the last database call.
+     * 
+     * @return true if a warning resulted from the last database call, false otherwise.
+     */
+    public boolean hasWarnings() {
+        return !warningMessages.isEmpty();
+    }
+    
+    /**
      * Returns true if the statement executed has ResultSet.
      * 
      * @return true if the statement executed has ResultSet, false otherwise.
@@ -215,6 +226,16 @@ public class DataView {
         return Collections.unmodifiableCollection(errMessages);
     }
 
+    /**
+     * Returns Collection of SQLWarnings, if there were any 
+     * warnings in the last database call, empty otherwise
+     * 
+     * @return Collection<Throwable>
+     */
+    public Collection<SQLWarning> getWarnings() {
+        return Collections.unmodifiableCollection(warningMessages);
+    }
+    
     /**
      * Get updated row count for the last executed sql statement.
      * 
@@ -334,6 +355,7 @@ public class DataView {
             }
         });
         errMessages.clear();
+        warningMessages.clear();
     }
 
     synchronized void removeComponents() {
@@ -417,6 +439,10 @@ public class DataView {
         } else {
             return errorPosition;
         }
+    }
+    
+    public void addWarning(SQLWarning warning) {
+        warningMessages.add(warning);
     }
     
     private DataView() {
