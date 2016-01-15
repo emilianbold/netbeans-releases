@@ -416,7 +416,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private void removeNestedNamespace(NamespaceImpl nsp) {
         assert nsp != null;
         CsmUID<CsmNamespace> nestedNsUid = nestedNamespaces.remove(nsp.getQualifiedName());
-        assert nestedNsUid != null;
+        assert nestedNsUid != null : "can not remove " + nsp.getQualifiedName() + " from " + this.getQualifiedName();
         // handle unnamed namespace index
         if (nsp.getName().length() == 0) {
             String fqn = nsp.getQualifiedName().toString();
