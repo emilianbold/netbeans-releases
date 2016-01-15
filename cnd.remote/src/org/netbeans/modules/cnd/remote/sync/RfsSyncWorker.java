@@ -384,13 +384,13 @@ import org.openide.util.RequestProcessor;
                 RemoteLogger.info("Waiting for remote controller to finish... ");
                 remoteControllerProcess.waitFor();
                 RemoteLogger.info("Remote controller has finished");
-                RemoteLogger.info("Remvoing flag fo;e: {0}", exitFlagFile); 
+                RemoteLogger.info("Remvoing flag file: {0}", exitFlagFile);
                 CommonTasksSupport.rmDir(env, exitFlagFile, true, null);
                 RemoteLogger.info("Stopping remote controller via flag: {0}", exitFlagFile);
             } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
+                ex.printStackTrace(System.err);
             } catch (ExecutionException ex) {
-                Exceptions.printStackTrace(ex);
+                ex.printStackTrace(System.err);
             }
         }
 
