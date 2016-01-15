@@ -229,9 +229,9 @@ import org.openide.util.RequestProcessor;
         String preload = RfsSetupProvider.getPreloadName(executionEnvironment);
         CndUtils.assertTrue(preload != null);        
         if (Boolean.getBoolean("cnd.rfs.discover")) {
-            preload = "libdiscover.so:" + preload;
+            preload = "libdiscover.so:" + preload; // NOI18N
             String studioPath = System.getProperty("cnd.rfs.discover.studio.path", "/opt/solarisstudio12.5"); //NOI18N
-            ldLibraryPath = studioPath + "/lib/compilers:" + studioPath + "/lib/compilers/amd64:" + ldLibraryPath;
+            ldLibraryPath = studioPath + "/lib/compilers:" + studioPath + "/lib/compilers/amd64:" + ldLibraryPath; // NOI18N
             String discoverFile = System.getProperty("cnd.rfs.discover.file", "/tmp/rfs_preload.%p.log"); //NOI18N
             env2add.put("SUNW_DISCOVER_OPTIONS", "-w " + discoverFile); // NOI18N
         }
