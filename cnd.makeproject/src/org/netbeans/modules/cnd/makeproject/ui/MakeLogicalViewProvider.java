@@ -315,12 +315,12 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         Node[] nodes = parentNode.getChildren().getNodes(true);
         String id = folder.getId();
         for (int i = 0; i < nodes.length; i++) {
-            Object folderValue = nodes[i].getValue("Folder");
+            Object folderValue = nodes[i].getValue("Folder"); // NOI18N
             if (folderValue == folder) {
                 return nodes[i];
             } else if (folderValue != null) {
                 // fallback check by folder-ID
-                if (id.equals(((Folder) folderValue).getId())) { // NOI18N
+                if (id.equals(((Folder) folderValue).getId())) { 
                     return nodes[i];
                 }
             }
