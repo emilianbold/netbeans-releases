@@ -257,6 +257,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 }
             }
         }
+        for (Entry<String, Item> entry : projectItems.entrySet()) {
+            entry.getValue().onClose();
+        }
         projectItems.clear();
         synchronized (sourceRoots) {
             sourceRoots.clear();

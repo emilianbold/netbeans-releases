@@ -142,7 +142,9 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         if (ignoreFutureVersion) {
             checkVersion = false;
         }
-        projectRootNode.reInit(configurationDescriptor);
+        if (projectRootNode != null) {
+            projectRootNode.reInit(configurationDescriptor);
+        }
     }
     
     public boolean isIncorectVersion() {
@@ -262,10 +264,17 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 if (folderNode != null) {
                     Node[] nodes = folderNode.getChildren().getNodes(true);
                     int index = 0;
+                    String name = item.getName();
                     for (index = 0; index < nodes.length; index++) {
                         Item nodeItem = (Item) nodes[index].getValue("Item"); // NOI18N
                         if (nodeItem == item) {
                             break;
+                        } else if (nodeItem != null) {
+                            // try fallback by name
+                            String checkName = nodeItem.getName();
+                            if (name.equals(checkName)) {
+                                break;
+                            }
                         }
                     }
                     if (nodes.length > 0 && index < nodes.length) {
@@ -304,9 +313,16 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
 
         Node[] nodes = parentNode.getChildren().getNodes(true);
+        String id = folder.getId();
         for (int i = 0; i < nodes.length; i++) {
-            if (nodes[i].getValue("Folder") == folder) { // NOI18N
+            Object folderValue = nodes[i].getValue("Folder");
+            if (folderValue == folder) {
                 return nodes[i];
+            } else if (folderValue != null) {
+                // fallback check by folder-ID
+                if (id.equals(((Folder) folderValue).getId())) { // NOI18N
+                    return nodes[i];
+                }
             }
         }
         return null;
