@@ -47,8 +47,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
@@ -153,8 +156,30 @@ import org.openide.util.RequestProcessor;
         }
     }
 
+    private final AtomicReference<CountDownLatch> shutDownLatch = new AtomicReference();
+
+    /*package*/ void waitShutDownFinished() {
+        CountDownLatch latch = shutDownLatch.get();
+        if (latch != null) {
+            try {
+                latch.await();
+            } catch (InterruptedException ex) {
+                RemoteLogger.getInstance().log(Level.FINE, "That's just FYI: interrupted", ex);
+            }
+        }
+    }
+
     @Override
     protected void runImpl() {
+        try {
+            shutDownLatch.set(new CountDownLatch(1));
+            work();
+        } finally {
+            shutDownLatch.get().countDown();
+        }
+    }
+
+    private void work() {
         long totalCopyingTime = 0;
         while (true) {
             try {
