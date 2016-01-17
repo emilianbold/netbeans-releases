@@ -44,10 +44,13 @@
 
 package org.netbeans.modules.db.sql.execute;
 
-/**
- *
- * @author Andrei Badea
- */
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
+
 public class StatementInfo {
 
     private final String sql;
@@ -57,8 +60,10 @@ public class StatementInfo {
     private final int startColumn;
     private final int rawEndOffset;
     private final int endOffset;
+    private final Map<Integer,Integer> sqlPosToRawPos;
+    private final List<Integer> newLineOffsets;
 
-    public StatementInfo(String sql, int rawStartOffset, int startOffset, int startLine, int startColumn, int endOffset, int rawEndOffset) {
+    public StatementInfo(String sql, int rawStartOffset, int startOffset, int startLine, int startColumn, int endOffset, int rawEndOffset, Map<Integer,Integer> sqlPosToRawPos, List<Integer> newLineOffsets) {
         this.sql = sql;
         this.rawStartOffset = rawStartOffset;
         this.startOffset = startOffset;
@@ -66,6 +71,8 @@ public class StatementInfo {
         this.startColumn = startColumn;
         this.endOffset = endOffset;
         this.rawEndOffset = rawEndOffset;
+        this.sqlPosToRawPos = Collections.unmodifiableMap(new TreeMap<>(sqlPosToRawPos));
+        this.newLineOffsets = Collections.unmodifiableList(new ArrayList<>(newLineOffsets));
     }
 
     /**
@@ -116,5 +123,52 @@ public class StatementInfo {
      */
     public int getRawEndOffset() {
         return rawEndOffset;
+    }
+    
+    private int translateToRawPos(int sqlPos) {
+        int rawOffset = 0;
+        int locicalOffset = 0;
+        for(Entry<Integer,Integer> entry: sqlPosToRawPos.entrySet()) {
+            if(entry.getKey() <= sqlPos) {
+                locicalOffset = entry.getKey();
+                rawOffset = entry.getValue();
+            } else {
+                break;
+            }
+        }
+        return rawOffset + (sqlPos - locicalOffset);
+    }
+
+    // Package private for unittesting
+    Map<Integer, Integer> getSqlPosToRawPos() {
+        return sqlPosToRawPos;
+    }
+
+    // Package private for unittesting
+    List<Integer> getNewLineOffsets() {
+        return newLineOffsets;
+    }
+    
+    /**
+     * Translate a logicalOffset (an offset in the sql) into a line/column
+     * pair in the complete script environment.
+     * 
+     * <p>Both values are zero-based</p>
+     * 
+     * @param logicalOffset
+     * @return int array with two components, first denotes line, second column
+     */
+    public int[] translateToRawPosLineColumn(int logicalOffset) {
+        int rawOffset = translateToRawPos(logicalOffset);
+        int line = 0;
+        int newLineOffset = -1;
+        for (Integer offset : getNewLineOffsets()) {
+            if (offset > rawOffset) {
+                break;
+            }
+            newLineOffset = offset;
+            line++;
+        }
+        return new int[] {line, rawOffset - newLineOffset - 1};
     }
 }

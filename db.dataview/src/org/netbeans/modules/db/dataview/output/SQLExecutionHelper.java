@@ -43,10 +43,12 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -99,7 +101,7 @@ class SQLExecutionHelper {
         this.dataView = dataView;
     }
 
-    void initialDataLoad() throws SQLException {
+    void initialDataLoad() {
         assert (! SwingUtilities.isEventDispatchThread()) : "Must be called off the EDT!";
 
         /**
@@ -115,15 +117,14 @@ class SQLExecutionHelper {
         class Loader implements Runnable, Cancellable {
             // Indicate whether the execution is finished
             private boolean finished = false;
-            // Hold an exception if it is thrown in the body of the runnable
-            private SQLException ex = null;
+            private Connection conn = null;
             private Statement stmt = null;
 
             @Override
             public void run() {
                 try {
                     DatabaseConnection dc = dataView.getDatabaseConnection();
-                    Connection conn = DBConnectionFactory.getInstance().getConnection(dc);
+                    conn = DBConnectionFactory.getInstance().getConnection(dc);
                     checkNonNullConnection(conn);
                     checkSupportForMultipleResultSets(conn);
                     DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
@@ -158,7 +159,7 @@ class SQLExecutionHelper {
                             DataViewDBTable dvTable = new DataViewDBTable(tables);
                             DataViewPageContext pageContext = dataView.addPageContext(dvTable);
 
-                                loadDataFrom(pageContext, rs, useScrollableCursors);
+                            loadDataFrom(pageContext, rs, useScrollableCursors);
 
                             DataViewUtils.closeResources(rs);
                             
@@ -181,8 +182,18 @@ class SQLExecutionHelper {
                     if (!useScrollableCursors && dataView.getPageContexts().size() > 0) {
                         getTotalCount(isSelect, sql, stmt, dataView.getPageContext(0));
                     }
-                } catch (SQLException sqlEx) {
-                    this.ex = sqlEx;
+                } catch (final SQLException sqlEx) {
+                    try {
+                        SwingUtilities.invokeAndWait(new Runnable() {
+                            @Override
+                            public void run() {
+                                dataView.setErrorStatusText(conn, stmt, sqlEx);
+                            }
+                        });
+                    } catch (InterruptedException | InvocationTargetException ex) {
+                        assert false;
+                        // Ok - we were denied access to Swing EDT
+                    }
                 } catch (InterruptedException ex) {
                     // Expected when interrupted while waiting to get enter to
                     // the swing EDT
@@ -241,14 +252,12 @@ class SQLExecutionHelper {
                 } catch (SQLException | RuntimeException e) {
                     LOGGER.log(Level.INFO, "Database driver throws exception "  //NOI18N
                             + "when checking for multiple resultset support."); //NOI18N
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINE, null, ex);
-                    }
+                    LOGGER.log(Level.FINE, null, e);
                 }
             }
         }
-        Loader l = new Loader();
-        Future<?> f = rp.submit(l);
+        Loader loader = new Loader();
+        Future<?> f = rp.submit(loader);
         try {
             f.get();
         } catch (InterruptedException ex) {
@@ -256,20 +265,17 @@ class SQLExecutionHelper {
         } catch (ExecutionException ex) {
             throw new RuntimeException(ex.getCause());
         }
-        synchronized (l) {
+        synchronized (loader) {
             while (true) {
-                if (!l.finished) {
+                if (!loader.finished) {
                     try {
-                        l.wait();
+                        loader.wait();
                     } catch (InterruptedException ex) {
                     }
                 } else {
                     break;
                 }
             }
-        }
-        if (l.ex != null) {
-            throw l.ex;
         }
     }
 
@@ -615,7 +621,6 @@ class SQLExecutionHelper {
                 }
                 boolean getTotal = false;
 
-                // Get total row count
                 for (DataViewPageContext pageContext : dataView.getPageContexts()) {
                     if (pageContext.getTotalRows() == -1) {
                         getTotal = true;
@@ -623,7 +628,6 @@ class SQLExecutionHelper {
                     }
                 }
 
-                // Get total row count
                 stmt = prepareSQLStatement(conn, sql, getTotal);
 
                 // Execute the query and retrieve all resultsets
@@ -662,6 +666,7 @@ class SQLExecutionHelper {
                     }
                     DataViewUtils.closeResources(rs);
                 } catch (SQLException sqlEx) {
+                    LOGGER.log(Level.INFO, "Failed to retrieve resultset", sqlEx);
                     String title = NbBundle.getMessage(SQLExecutionHelper.class, "MSG_error");
                     String msg = NbBundle.getMessage(SQLExecutionHelper.class, "Confirm_Close");
                     NotifyDescriptor nd = new NotifyDescriptor.Confirmation(sqlEx.getMessage() + "\n" + msg, title,
@@ -670,20 +675,19 @@ class SQLExecutionHelper {
                     if (nd.getValue().equals(NotifyDescriptor.YES_OPTION)) {
                         dataView.removeComponents();
                     }
-                    throw sqlEx;
                 }
             }
 
             @Override
             public void finished() {
-                DataViewUtils.closeResources(stmt);
-                dataView.resetEditable();
                 synchronized (dataView) {
+                    dataView.resetEditable();
                     if (error) {
-                        dataView.setErrorStatusText(ex);
+                        dataView.setErrorStatusText(conn, stmt, ex);
                     }
                     dataView.resetToolbar(error);
                 }
+                DataViewUtils.closeResources(stmt);
             }
 
             @Override
@@ -791,7 +795,7 @@ class SQLExecutionHelper {
                 pageContext.setTotalRows(result);
             }
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Failed to set up table model.", e); // NOI18N
+            LOGGER.log(Level.INFO, "Failed to set up table model.", e); // NOI18N
             throw e;
         } finally {
             Mutex.EVENT.writeAccess(new Runnable() {
@@ -871,7 +875,9 @@ class SQLExecutionHelper {
                 throw sqlExc;
             }
         }
-
+        
+        extractWarnings(stmt);
+        
         long executionTime = System.currentTimeMillis() - startTime;
         synchronized (dataView) {
             dataView.setUpdateCount(stmt.getUpdateCount());
@@ -1042,6 +1048,27 @@ class SQLExecutionHelper {
         } catch (Exception ex) {
             LOGGER.log(Level.WARNING, "Exception while querying" //NOI18N
                     + " database for scrollable resultset support"); //NOI18N
+        }
+    }
+
+    private void extractWarnings(Statement stmt) {
+        try {
+            for (SQLWarning warning = stmt.getConnection().getWarnings(); warning != null; warning = warning.getNextWarning()) {
+                dataView.addWarning(warning);
+            }
+            stmt.getConnection().clearWarnings();
+        } catch (Throwable ex) {
+            LOGGER.log(Level.FINE, "Failed to retrieve warnings", ex);
+            // Exceptions will be ignored at this point
+        }
+        try {
+            for(SQLWarning warning = stmt.getWarnings(); warning != null; warning = warning.getNextWarning()) {
+                dataView.addWarning(warning);
+            }
+            stmt.clearWarnings();
+        } catch (Throwable ex) {
+            LOGGER.log(Level.FINE, "Failed to retrieve warnings", ex);
+            // Exceptions will be ignored at this point
         }
     }
 }

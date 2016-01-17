@@ -156,7 +156,9 @@ public final class DBMetaDataFactory {
         try {
             rs = dbmeta.getPrimaryKeys(setToNullIfEmpty(tcatalog), setToNullIfEmpty(tschema), tname);
             return new DBPrimaryKey(rs);
-        } catch (SQLException e) {
+        } catch (SQLException | NullPointerException e) {
+            // NullPointerException is thrown by Microsoft SQL Server when
+            // set showplan_* on is issued
             return null;
         } finally {
             DataViewUtils.closeResources(rs);
@@ -169,7 +171,9 @@ public final class DBMetaDataFactory {
         try {
             rs = dbmeta.getImportedKeys(setToNullIfEmpty(table.getCatalog()), setToNullIfEmpty(table.getSchema()), table.getName());
             fkList = DBForeignKey.createForeignKeyColumnMap(table, rs);
-        } catch (SQLException e) {
+        } catch (SQLException | NullPointerException e) {
+            // NullPointerException is thrown by Microsoft SQL Server when
+            // set showplan_* on is issued
             return null;
         } finally {
             DataViewUtils.closeResources(rs);
@@ -331,7 +335,9 @@ public final class DBMetaDataFactory {
                     col.setDefaultValue(defaultValue.trim());
                 }
             }
-        } catch (SQLException e) {
+        } catch (SQLException | NullPointerException e) {
+            // NullPointerException is thrown by Microsoft SQL Server when
+            // set showplan_* on is issued
         } finally {
             DataViewUtils.closeResources(rs);
         }

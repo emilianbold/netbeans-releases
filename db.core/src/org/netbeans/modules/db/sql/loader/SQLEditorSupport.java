@@ -72,6 +72,7 @@ import org.netbeans.modules.db.dataview.api.DataViewPageContext;
 import org.netbeans.modules.db.sql.execute.SQLExecuteHelper;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResult;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResults;
+import org.netbeans.modules.db.sql.execute.StatementInfo;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
@@ -84,6 +85,7 @@ import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
+import org.openide.text.Line;
 import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.CloneableOpenSupport;
@@ -444,6 +446,27 @@ public class SQLEditorSupport extends DataEditorSupport
                 
                 if (editor != null) {
                     editor.setResults(components);
+                    if( results != null ) {
+                        for (SQLExecutionResult result : results.getResults()) {
+                            if (result.hasExceptions()) {
+                                // If an exception happend - move editor to that
+                                // location, if driver supplied enough information,
+                                // the exact location is targettet, else the start
+                                // of the statement
+                                //
+                                // The first error is focused
+                                int[] errorCoords = result.getRawErrorLocation();
+                                int errLine = errorCoords[0];
+                                int errCol = errorCoords[1];
+                                getLineSet()
+                                        .getCurrent(errLine)
+                                        .show(Line.ShowOpenType.OPEN,
+                                                Line.ShowVisibilityType.FOCUS,
+                                                errCol);
+                                break;
+                            }
+                        }
+                    }
                 } else {
                 Enumeration editors = allEditors.getComponents();
                 while (editors.hasMoreElements()) {
