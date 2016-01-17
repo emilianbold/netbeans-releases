@@ -120,6 +120,17 @@ public class DataView {
     }
 
     /**
+     * If exception is reportet this indicates the position of the error.
+     * 
+     * <p>The reported position is the zero-based index into the supplied SQL</p>
+     * 
+     * @return position of reported error, -1 if not available
+     */
+    public int getErrorPosition() {
+        return delegate.getErrorPosition();
+    }
+    
+    /**
      * Get updated row count for the last executed sql statement.
      * 
      * @return number of rows updated in last execution, -1 if no rows updated

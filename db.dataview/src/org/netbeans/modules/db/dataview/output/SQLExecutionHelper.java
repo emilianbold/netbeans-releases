@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -99,7 +100,7 @@ class SQLExecutionHelper {
         this.dataView = dataView;
     }
 
-    void initialDataLoad() throws SQLException {
+    void initialDataLoad() {
         assert (! SwingUtilities.isEventDispatchThread()) : "Must be called off the EDT!";
 
         /**
@@ -115,15 +116,14 @@ class SQLExecutionHelper {
         class Loader implements Runnable, Cancellable {
             // Indicate whether the execution is finished
             private boolean finished = false;
-            // Hold an exception if it is thrown in the body of the runnable
-            private SQLException ex = null;
+            private Connection conn = null;
             private Statement stmt = null;
 
             @Override
             public void run() {
                 try {
                     DatabaseConnection dc = dataView.getDatabaseConnection();
-                    Connection conn = DBConnectionFactory.getInstance().getConnection(dc);
+                    conn = DBConnectionFactory.getInstance().getConnection(dc);
                     checkNonNullConnection(conn);
                     checkSupportForMultipleResultSets(conn);
                     DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
@@ -181,8 +181,18 @@ class SQLExecutionHelper {
                     if (!useScrollableCursors && dataView.getPageContexts().size() > 0) {
                         getTotalCount(isSelect, sql, stmt, dataView.getPageContext(0));
                     }
-                } catch (SQLException sqlEx) {
-                    this.ex = sqlEx;
+                } catch (final SQLException sqlEx) {
+                    try {
+                        SwingUtilities.invokeAndWait(new Runnable() {
+                            @Override
+                            public void run() {
+                                dataView.setErrorStatusText(conn, stmt, sqlEx);
+                            }
+                        });
+                    } catch (InterruptedException | InvocationTargetException ex) {
+                        assert false;
+                        // Ok - we were denied access to Swing EDT
+                    }
                 } catch (InterruptedException ex) {
                     // Expected when interrupted while waiting to get enter to
                     // the swing EDT
@@ -241,14 +251,12 @@ class SQLExecutionHelper {
                 } catch (SQLException | RuntimeException e) {
                     LOGGER.log(Level.INFO, "Database driver throws exception "  //NOI18N
                             + "when checking for multiple resultset support."); //NOI18N
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINE, null, ex);
-                    }
+                    LOGGER.log(Level.FINE, null, e);
                 }
             }
         }
-        Loader l = new Loader();
-        Future<?> f = rp.submit(l);
+        Loader loader = new Loader();
+        Future<?> f = rp.submit(loader);
         try {
             f.get();
         } catch (InterruptedException ex) {
@@ -256,20 +264,17 @@ class SQLExecutionHelper {
         } catch (ExecutionException ex) {
             throw new RuntimeException(ex.getCause());
         }
-        synchronized (l) {
+        synchronized (loader) {
             while (true) {
-                if (!l.finished) {
+                if (!loader.finished) {
                     try {
-                        l.wait();
+                        loader.wait();
                     } catch (InterruptedException ex) {
                     }
                 } else {
                     break;
                 }
             }
-        }
-        if (l.ex != null) {
-            throw l.ex;
         }
     }
 
@@ -676,14 +681,14 @@ class SQLExecutionHelper {
 
             @Override
             public void finished() {
-                DataViewUtils.closeResources(stmt);
-                dataView.resetEditable();
                 synchronized (dataView) {
+                    dataView.resetEditable();
                     if (error) {
-                        dataView.setErrorStatusText(ex);
+                        dataView.setErrorStatusText(conn, stmt, ex);
                     }
                     dataView.resetToolbar(error);
                 }
+                DataViewUtils.closeResources(stmt);
             }
 
             @Override

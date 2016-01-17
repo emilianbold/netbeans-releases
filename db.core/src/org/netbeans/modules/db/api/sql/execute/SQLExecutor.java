@@ -159,7 +159,7 @@ public class SQLExecutor {
 
     }
 
-    private static class StatementExecutionInfoImpl implements StatementExecutionInfo {
+    private static class StatementExecutionInfoImpl extends StatementExecutionInfo {
         private SQLExecutionResult result;
         public StatementExecutionInfoImpl(SQLExecutionResult result) {
             this.result = result;
@@ -181,6 +181,10 @@ public class SQLExecutor {
             return result.getExecutionTime();
         }
 
+        @Override
+        public int getErrorPosition() {
+            return result.getErrorPosition();
+        }
     }
 
 

@@ -98,6 +98,37 @@ public class SQLExecutionResult {
         return dataView.getExecutionTime();
     }
     
+    /**
+     * Retrieve logical error position.
+     *
+     * @param logicalOffset
+     * @return -1 if no error position is availble, else it is an offset into the SQL
+     */
+    public int getErrorPosition() {
+        return dataView.getErrorPosition();
+    }
+    
+    /**
+     * Translate a logicalOffset (an offset in the sql) into a line/column
+     * pair in the complete script environment.
+     * 
+     * <p>Both values are zero-based</p>
+     * 
+     * @param logicalOffset
+     * @return int array with two components, first denotes line, second column
+     */
+    public int[] getRawErrorLocation() {
+        int errorOffset = getErrorPosition();
+
+        if (errorOffset >= 0) {
+            return getStatementInfo().translateToRawPosLineColumn(errorOffset);
+        } else {
+            return new int[] { 
+                getStatementInfo().getStartLine(), 
+                getStatementInfo().getStartColumn()};
+        }
+    }
+    
     public String toString() {
         return "SQLExecutionResult[dataView=" + dataView + ",rowCount=" + getUpdateCount() + ",exception=" + getExceptions() + ",executionTime=" + getExecutionTime() + "]";
     }

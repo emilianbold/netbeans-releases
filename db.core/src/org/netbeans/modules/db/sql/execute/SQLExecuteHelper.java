@@ -47,7 +47,9 @@ package org.netbeans.modules.db.sql.execute;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseConnection;
@@ -225,12 +227,14 @@ public final class SQLExecuteHelper {
         
         private final StringBuilder statement = new StringBuilder();
         private final List<StatementInfo> statements = new ArrayList<>();
+        private final Map<Integer,Integer> positionMap = new HashMap<>();
         
         private int pos = 0;
-        private int rawStartOffset;
-        private int startOffset = 0;
+        
+        private int lastAddedEndPos = 0;
+        private int rawStartOffset = 0;
         private int endOffset = 0;
-        private int rawEndOffset;
+        private int rawEndOffset = 0;
 
         private String delimiter = ";"; // NOI18N
         private static final String DELIMITER_TOKEN = "delimiter"; // NOI18N
@@ -262,9 +266,15 @@ public final class SQLExecuteHelper {
                 if(startPos >= endPos) {
                     return;
                 }
-                this.startOffset = startPos;
+                positionMap.put(0, startPos);
+                lastAddedEndPos = 0;
+            } else {
+                if(startPos != lastAddedEndPos) {
+                    positionMap.put(statement.length(), startPos);
+                }
             }
             statement.append(sql.substring(startPos, endPos));
+            lastAddedEndPos = endPos;
             for(int i = endPos - 1; i >= startPos; i--) {
                 if(! Character.isWhitespace(sql.charAt(i))) {
                     this.endOffset = i;
@@ -610,7 +620,7 @@ public final class SQLExecuteHelper {
             int line = 0;
             int newLinePos = -1;
             for(Integer offset: newLineOffsets) {
-                if(offset < startOffset) {
+                if(offset < positionMap.get(0)) {
                     line++;
                     newLinePos = offset;
                 } else {
@@ -618,8 +628,9 @@ public final class SQLExecuteHelper {
                 }
             }
             
-            StatementInfo info = new StatementInfo(sqlTrimmed, rawStartOffset, startOffset, line, startOffset - newLinePos - 1, endOffset + 1, rawEndOffset);
+            StatementInfo info = new StatementInfo(sqlTrimmed, rawStartOffset, positionMap.get(0), line, positionMap.get(0) - newLinePos - 1, endOffset + 1, rawEndOffset, positionMap, newLineOffsets);
             statements.add(info);
+            positionMap.clear();
         }
         
         public List<StatementInfo> getStatements() {

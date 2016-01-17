@@ -47,7 +47,9 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.io.CharConversionException;
 import java.lang.reflect.InvocationTargetException;
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -92,6 +94,7 @@ public class DataView {
     private boolean nbOutputComponent = false;
     private int updateCount;
     private long executionTime;
+    private int errorPosition = -1;
 
     /**
      * Create and populate a DataView Object. Populates 1st data page of default size.
@@ -118,7 +121,7 @@ public class DataView {
             dv.execHelper.initialDataLoad();
             dv.stmtGenerator = new SQLStatementGenerator();
         } catch (Exception ex) {
-            dv.setErrorStatusText(ex);
+            dv.setErrorStatusText(null, null, ex);
         }
         return dv;
     }
@@ -179,7 +182,7 @@ public class DataView {
             LOG.log(Level.WARNING, "", ex);
         }
 
-        results = new ArrayList<Component>();
+        results = new ArrayList<>();
         results.add(container);
         return results;
     }
@@ -356,7 +359,7 @@ public class DataView {
         }
     }
 
-    synchronized void setErrorStatusText(Throwable ex) {
+    synchronized void setErrorStatusText(Connection con, Statement stmt, Throwable ex) {
         if (ex != null) {
             if (ex instanceof DBException) {
                 if (ex.getCause() instanceof SQLException) {
@@ -364,17 +367,20 @@ public class DataView {
                 }
             }
             errMessages.add(ex);
-
+            errorPosition = ErrorPositionExtractor.extractErrorPosition(con, stmt, ex, sqlString);
+            
             String title = NbBundle.getMessage(DataView.class, "MSG_error");
             StatusDisplayer.getDefault().setStatusText(title + ": " + ex.getMessage());
         }
     }
 
-    synchronized void setErrorStatusText(String message, Throwable ex) {
+    synchronized void setErrorStatusText(Connection con, Statement stmt, String message, Throwable ex) {
         if (ex != null) {
             errMessages.add(ex);
         }
 
+        errorPosition = ErrorPositionExtractor.extractErrorPosition(con, stmt, ex, sqlString);
+        
         String title = NbBundle.getMessage(DataView.class, "MSG_error");
         StatusDisplayer.getDefault().setStatusText(title + ": " + message);
     }
@@ -400,6 +406,19 @@ public class DataView {
         this.executionTime = executionTime;
     }
 
+    /**
+     * If exception is reportet this indicates the position of the error
+     * 
+     * @return position of reported error, -1 if not available
+     */
+    public int getErrorPosition() {
+        if(errMessages.isEmpty()) {
+            return -1;
+        } else {
+            return errorPosition;
+        }
+    }
+    
     private DataView() {
     }
 }

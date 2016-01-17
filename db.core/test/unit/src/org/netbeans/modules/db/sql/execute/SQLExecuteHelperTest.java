@@ -44,7 +44,10 @@
 
 package org.netbeans.modules.db.sql.execute;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.db.sql.execute.SQLExecuteHelper.Compatibility;
 
@@ -127,16 +130,28 @@ public class SQLExecuteHelperTest extends NbTestCase {
         
         // splitting and start/end positions
         String test = "  select foo  ;   select /* comment */bar;\n   select baz -- comment";
+        
+        Map<Integer,Integer> posMap1 = new HashMap<>();
+        posMap1.put(0, 2);
+        Map<Integer,Integer> posMap2 = new HashMap<>();
+        posMap2.put(0, 18);
+        posMap2.put(7, 38);
+        Map<Integer,Integer> posMap3 = new HashMap<>();
+        posMap3.put(0, 46);
+        
         assertSplit(test, new StatementInfo[] { 
-            new StatementInfo("select foo", 0, 2, 0, 2, 12, 14),
-            new StatementInfo("select bar", 15, 18, 0, 18, 41, 41),
-            new StatementInfo("select baz", 42, 46, 1, 3, 56, 67),
+            new StatementInfo("select foo", 0, 2, 0, 2, 12, 14, posMap1, Arrays.asList(42)),
+            new StatementInfo("select bar", 15, 18, 0, 18, 41, 41, posMap2, Arrays.asList(42)),
+            new StatementInfo("select baz", 42, 46, 1, 3, 56, 67, posMap3, Arrays.asList(42))
         });
 
         // correct start line with line comments (#171865)
         String sql = "\n\n-- ---\n-- line comment\n-- ---\nselect foo  ;";
+
+        Map<Integer,Integer> posMap4 = new HashMap<>();
+        posMap4.put(0, 32);        
         assertSplit(sql, "select foo");
-        assertSplit(sql, new StatementInfo("select foo", 0, 32, 5, 0, 42, 44));
+        assertSplit(sql, new StatementInfo("select foo", 0, 32, 5, 0, 42, 44, posMap4, Arrays.asList(0,1,8,24, 31)));
     }
     
     public void testQuoteHandling() {
@@ -225,6 +240,8 @@ public class SQLExecuteHelperTest extends NbTestCase {
             assertEquals(expected[i].getStartColumn(), stmts.get(i).getStartColumn());
             assertEquals(expected[i].getEndOffset(), stmts.get(i).getEndOffset());
             assertEquals(expected[i].getRawEndOffset(), stmts.get(i).getRawEndOffset());
+            assertEquals(expected[i].getNewLineOffsets(), stmts.get(i).getNewLineOffsets());
+            assertEquals(expected[i].getSqlPosToRawPos(), stmts.get(i).getSqlPosToRawPos());
         }
     }
 

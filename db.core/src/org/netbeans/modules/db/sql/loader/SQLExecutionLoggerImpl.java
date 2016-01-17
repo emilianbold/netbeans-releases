@@ -47,9 +47,9 @@ package org.netbeans.modules.db.sql.loader;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.NumberFormat;
+import java.util.Collection;
 import org.netbeans.modules.db.sql.execute.SQLExecutionLogger;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResult;
-import org.netbeans.modules.db.sql.execute.StatementInfo;
 import org.openide.cookies.LineCookie;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
@@ -133,7 +133,7 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
             }
         }
         
-        printLineColumn(writer, result.getStatementInfo(), true);
+        printLineColumn(writer, result, true, result.getExceptions());
         writer.println(""); // NOI18N
         writer.close();
     }
@@ -163,18 +163,29 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
                     String.valueOf(executionTimeStr));
         }
         writer.println(successLine);
-        printLineColumn(writer, result.getStatementInfo(), false);
+        printLineColumn(writer, result, false);
         writer.println(""); // NOI18N
         writer.close();
     }
 
-    private void printLineColumn(OutputWriter writer, StatementInfo statementInfo, boolean hyperlink) {
+    private void printLineColumn(OutputWriter writer, SQLExecutionResult result, boolean hyperlink) {
+        printLineColumn(writer, result, hyperlink, null);
+    }
+    
+    private void printLineColumn(OutputWriter writer, SQLExecutionResult result, boolean hyperlink, 
+                                 Collection<Throwable> exceptions) {
+        int[] errorCoords = result.getRawErrorLocation();
+        int errLine = errorCoords[0];
+        int errCol = errorCoords[1];
+        
         String lineColumn = NbBundle.getMessage(SQLEditorSupport.class, "LBL_LineColumn",
-                String.valueOf(statementInfo.getStartLine() + 1),
-                String.valueOf(statementInfo.getStartColumn() + 1));
+                String.valueOf(errLine + 1),
+                String.valueOf(errCol + 1));
+
         try {
             if (hyperlink) {
-                writer.println(lineColumn, new Hyperlink(statementInfo.getStartLine(), statementInfo.getStartColumn()));
+                Hyperlink errLink = new Hyperlink(errLine, errCol);
+                writer.println(lineColumn, errLink);
             } else {
                 writer.println(lineColumn);
             }
@@ -194,11 +205,11 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
      */
     private final class Hyperlink implements OutputListener {
 
-        private final int line;
+        private final Line line;
         private final int column;
 
         public Hyperlink(int line, int column) {
-            this.line = line;
+            this.line = lineCookie.getLineSet().getCurrent(line);
             this.column = column;
         }
 
@@ -218,9 +229,8 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
 
         @SuppressWarnings("deprecation")
         private void goToLine(boolean focus) {
-            Line l = lineCookie.getLineSet().getOriginal(line);
-            if (!l.isDeleted()) {
-                l.show(focus ? Line.SHOW_GOTO : Line.SHOW_TRY_SHOW, column);
+            if (!line.isDeleted()) {
+                line.show(focus ? Line.SHOW_GOTO : Line.SHOW_TRY_SHOW, column);
             }
         }
     }
