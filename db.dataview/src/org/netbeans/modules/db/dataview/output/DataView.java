@@ -364,8 +364,9 @@ public class DataView {
             @Override
             public void run() {
                 if (container != null) {
-                    if (container != null) {
+                    try {
                         container.getParent().remove(container);
+                    } catch (NullPointerException ex) {
                     }
                     container.removeAll();
                     container.repaint();

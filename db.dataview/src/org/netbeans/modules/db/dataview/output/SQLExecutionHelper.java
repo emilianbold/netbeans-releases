@@ -666,6 +666,7 @@ class SQLExecutionHelper {
                     }
                     DataViewUtils.closeResources(rs);
                 } catch (SQLException sqlEx) {
+                    LOGGER.log(Level.INFO, "Failed to retrieve resultset", sqlEx);
                     String title = NbBundle.getMessage(SQLExecutionHelper.class, "MSG_error");
                     String msg = NbBundle.getMessage(SQLExecutionHelper.class, "Confirm_Close");
                     NotifyDescriptor nd = new NotifyDescriptor.Confirmation(sqlEx.getMessage() + "\n" + msg, title,
@@ -674,7 +675,6 @@ class SQLExecutionHelper {
                     if (nd.getValue().equals(NotifyDescriptor.YES_OPTION)) {
                         dataView.removeComponents();
                     }
-                    throw sqlEx;
                 }
             }
 
@@ -795,7 +795,7 @@ class SQLExecutionHelper {
                 pageContext.setTotalRows(result);
             }
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Failed to set up table model.", e); // NOI18N
+            LOGGER.log(Level.INFO, "Failed to set up table model.", e); // NOI18N
             throw e;
         } finally {
             Mutex.EVENT.writeAccess(new Runnable() {
