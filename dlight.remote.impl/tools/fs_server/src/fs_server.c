@@ -746,7 +746,7 @@ static bool response_entry_create(buffer response_buf,
         }
 
         // name_len name type size mtime access device inode link_len link
-        snprintf(response_buf.data, response_buf.size, "%i %s %c %lu %lli %c%c%c %lu %lu %i %s\n",
+        snprintf(response_buf.data, response_buf.size, "%i %s %c %lu %llu %c%c%c %lu %lu %i %s\n",
                 utf8_char_count(escaped_name, escaped_name_size),
                 escaped_name,
                 mode_to_file_type_char(stat_buf.st_mode),
@@ -948,7 +948,7 @@ static void response_stat(int request_id, const char* path) {
         get_access_c(path, &stat_buf, &can_read, &can_write, &can_exec);
         
         // name_len name type size mtime access device inode link_len link
-        my_fprintf(STDOUT, "%c %i %i %s %c %lu %lli %c%c%c %lu %lu %i %s\n",
+        my_fprintf(STDOUT, "%c %i %i %s %c %lu %llu %c%c%c %lu %lu %i %s\n",
                 FS_RSP_ENTRY,
                 request_id,
                 utf8_char_count(escaped_name, escaped_name_size),
