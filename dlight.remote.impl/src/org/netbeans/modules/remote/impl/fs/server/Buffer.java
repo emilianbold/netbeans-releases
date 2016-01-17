@@ -80,9 +80,18 @@ package org.netbeans.modules.remote.impl.fs.server;
     }
 
     public int getInt() {
+        long result = getLong();
+        if (Integer.MIN_VALUE <= result && result <= Integer.MAX_VALUE) {
+            return (int) result;
+        } else {
+            throw new IllegalArgumentException("Too long integer " + result + " in buffer " + text); //NOI18N
+        }
+    }
+
+    public long getLong() {
         skipSpaces();
         //StringBuilder sb = new StringBuilder(16);
-        int result = 0;
+        long result = 0;
         boolean first = true;
         boolean negative = false;
         while (curr < text.length()) {
@@ -101,22 +110,6 @@ package org.netbeans.modules.remote.impl.fs.server;
             }
         }
         return negative ? -result : result;
-    }
-
-    public long getLong() {
-        skipSpaces();
-        //StringBuilder sb = new StringBuilder(16);
-        long result = 0;
-        while (curr < text.length()) {
-            char c = text.charAt(curr++);
-            if (Character.isDigit(c)) {
-                result *= 10;
-                result += (int) c - (int) '0';
-            } else {
-                break;
-            }
-        }
-        return result;
     }
 
     private void skipSpaces() {
