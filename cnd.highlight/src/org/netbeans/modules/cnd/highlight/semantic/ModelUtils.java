@@ -169,7 +169,7 @@ public class ModelUtils {
         public void visit(CsmReference ref, CsmFile file) {
             if (!cancelled()) {
                 CsmObject obj = ref.getReferencedObject();
-                if (CsmKindUtilities.isTypedef(obj)) {
+                if (CsmKindUtilities.isTypedefOrTypeAlias(obj)) {
                     list.add(ref);
                 }
             }
