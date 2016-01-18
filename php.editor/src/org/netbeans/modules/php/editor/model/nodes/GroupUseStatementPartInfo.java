@@ -63,4 +63,10 @@ public final class GroupUseStatementPartInfo extends ASTNodeInfo<GroupUseStateme
         return type;
     }
 
+    @Override
+    public String getName() {
+        // XXX what to return here???
+        return ""; // toName(getOriginalNode().getBaseNamespaceName());
+    }
+
 }
