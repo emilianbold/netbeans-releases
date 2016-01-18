@@ -44,7 +44,9 @@
 package org.netbeans.modules.db.dataview.api;
 
 import java.awt.Component;
+import java.sql.SQLWarning;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.JButton;
 import org.netbeans.api.db.explorer.DatabaseConnection;
@@ -101,6 +103,15 @@ public class DataView {
     }
 
     /**
+     * Returns true if there were any warnings in the last database call.
+     * 
+     * @return true if a warning resulted from the last database call, false otherwise.
+     */
+    public boolean hasWarnings() {
+        return delegate.hasWarnings();
+    }
+    
+    /**
      * Returns true if the statement executed has ResultSet.
      * 
      * @return true if the statement executed has ResultSet, false otherwise.
@@ -119,6 +130,27 @@ public class DataView {
         return delegate.getExceptions();
     }
 
+    /**
+     * Returns Collection of SQLWarnings, if there were any 
+     * warnings in the last database call, empty otherwise
+     * 
+     * @return Collection<Throwable>
+     */
+    public Collection<SQLWarning> getWarnings() {
+        return delegate.getWarnings();
+    }
+    
+    /**
+     * If exception is reportet this indicates the position of the error.
+     * 
+     * <p>The reported position is the zero-based index into the supplied SQL</p>
+     * 
+     * @return position of reported error, -1 if not available
+     */
+    public int getErrorPosition() {
+        return delegate.getErrorPosition();
+    }
+    
     /**
      * Get updated row count for the last executed sql statement.
      * 

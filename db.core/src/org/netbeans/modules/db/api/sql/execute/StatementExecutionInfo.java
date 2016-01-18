@@ -44,13 +44,19 @@ package org.netbeans.modules.db.api.sql.execute;
 
 import java.util.Collection;
 
-/**
- *
- * @author David Van Couvering
- */
-public interface StatementExecutionInfo {
-    public String getSQL();
-    public boolean hasExceptions();
-    public Collection<Throwable> getExceptions();
-    public long getExecutionTime();
+public abstract class StatementExecutionInfo {
+    public abstract String getSQL();
+    public abstract boolean hasExceptions();
+    public abstract Collection<Throwable> getExceptions();
+    public abstract long getExecutionTime();
+    /**
+     * If exception is reportet this indicates the position of the error.
+     * 
+     * <p>The reported position is the zero-based index into the supplied SQL</p>
+     * 
+     * @return position of reported error, -1 if not available
+     */
+    public int getErrorPosition() {
+        return -1;
+    }
 }
