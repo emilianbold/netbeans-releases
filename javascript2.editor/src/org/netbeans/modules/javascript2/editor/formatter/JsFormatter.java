@@ -837,7 +837,14 @@ public class JsFormatter implements Formatter {
                 startToken = ft;
             }
             FormatToken endToken = FormatTokenStream.getNextImportant(token);
-            FormatToken lastBeforeStart = startToken != null ? startToken.previous() : null;
+            FormatToken lastBeforeStart = null;
+            if (startToken != null) {
+                lastBeforeStart = startToken.previous();
+                while (lastBeforeStart != null && lastBeforeStart.getKind().isIndentationMarker()) {
+                    lastBeforeStart = lastBeforeStart.previous();
+                }
+            }
+
             if (canReformat && startToken != null
                     && lastBeforeStart != null && lastBeforeStart.getKind() == FormatToken.Kind.AFTER_END_BRACE
                     && endToken != null && keywordIds.contains(endToken.getId())) {
@@ -845,7 +852,7 @@ public class JsFormatter implements Formatter {
                 String spaceBeforeBrace = isSpace(token, formatContext, codeStyle) ? " " : ""; // NOI18N
                 formatContext.replace(startToken.getOffset() - formatContext.getOffsetDiff() + lastOffsetDiff,
                         endToken.getOffset() - startToken.getOffset() + formatContext.getOffsetDiff() - lastOffsetDiff, spaceBeforeBrace);
-            } else if (canReformat && !(lastBeforeStart != null && lastBeforeStart.getKind() == FormatToken.Kind.INDENTATION_DEC)) {
+            } else if (canReformat && !(lastBeforeStart != null && lastBeforeStart.getKind() == FormatToken.Kind.AFTER_STATEMENT)) {
                 formatSpace(tokens, index, formatContext, codeStyle);
             }
         }
