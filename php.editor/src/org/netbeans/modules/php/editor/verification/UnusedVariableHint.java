@@ -80,6 +80,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
 import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.GroupUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
@@ -665,6 +666,11 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
         @Override
         public void visit(SingleUseStatementPart node) {
+            // intentionally
+        }
+
+        @Override
+        public void visit(GroupUseStatementPart node) {
             // intentionally
         }
 
