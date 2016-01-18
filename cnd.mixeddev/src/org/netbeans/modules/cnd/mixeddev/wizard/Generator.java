@@ -58,11 +58,14 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmModel;
@@ -83,7 +86,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
-import org.netbeans.modules.cnd.mixeddev.MixedDevUtils;
 import org.netbeans.modules.cnd.mixeddev.java.JNISupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -91,14 +93,11 @@ import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.java.j2seproject.api.J2SEProjectPlatform;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -277,6 +276,7 @@ public class Generator implements PropertyChangeListener {
                                 Exceptions.printStackTrace(ex);
                             }
                             p.waitParse();
+                            np.fireFilesPropertiesChanged();
                             CsmUtilities.openSource(newSource, 0);
                             updateLibraryPath(configurationDescriptor);
                         }
@@ -319,7 +319,7 @@ public class Generator implements PropertyChangeListener {
         }
     }
 
-    public static void createStub(FileObject newHeader, FileObject newSource, StringBuilder buf) throws IOException {
+    public static void createStub(FileObject newHeader, FileObject newSource, final StringBuilder buf) throws IOException {
         CsmFile includeFile = CsmUtilities.getCsmFile(newHeader, true, false);
         if (includeFile != null) {
             for(CsmOffsetableDeclaration declaration : includeFile.getDeclarations()) {
@@ -348,9 +348,24 @@ public class Generator implements PropertyChangeListener {
                     }
                 }
             }
-            Writer w = new OutputStreamWriter(newSource.getOutputStream());
-            w.write(buf.toString());
-            w.close();
+            Document document = CsmUtilities.getDocument(newSource);
+            if (document instanceof BaseDocument) {
+                final BaseDocument doc = (BaseDocument) document;
+                doc.runAtomicAsUser(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            doc.insertString(0, buf.toString(), null);
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+            } else {
+                Writer w = new OutputStreamWriter(newSource.getOutputStream());
+                w.write(buf.toString());
+                w.close();
+            }
         }
     }
 
@@ -366,9 +381,6 @@ public class Generator implements PropertyChangeListener {
         newSource = folder.createData(header.getName(), "cpp"); //NOI18N
         buf.append("// Native methods implementation of\n// ").append(fileObject.getPath()).append("\n\n"); //NOI18N
         buf.append("#include \"").append(header.getNameExt()).append("\"\n"); //NOI18N
-        Writer w = new OutputStreamWriter(newSource.getOutputStream());
-        w.write(buf.toString());
-        w.close();
         Item item = Item.createInFileSystem(configurationDescriptor.getBaseDirFileSystem(),newSource.getPath());
         sourceFolder.addItemAction(item);
         return newSource;
