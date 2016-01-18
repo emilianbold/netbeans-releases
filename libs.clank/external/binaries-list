@@ -1,6 +1,6 @@
-#changeset:   16256:7250abf9b350
+#changeset:   16323:ddad395204ab
 #tag:         tip
-#user:        Petr Kudryavtsev <petrk@netbeans.org>
-#date:        Tue Dec 29 15:27:30 2015 +0300
-#summary:     Fixed #253625 - [newcodemodel] OutOfMemoryError when preprocessing delay.c
-A21C58CFB61ABF2BE8A71C920F36583C122BC8F9 clank_0.3.6.zip
+#user:        Vladimir Voskresensky <vv159170@netbeans.org>
+#date:        Mon Jan 18 17:20:40 2016 +0300
+#summary:     JAVA PERF: less SourceRange instances
+C796A5575BF0F5364ACD3D8173ED6EC664686AC2 clank_0.3.6.zip
