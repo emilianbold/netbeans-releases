@@ -44,6 +44,7 @@ package org.netbeans.modules.php.editor.model.impl;
 import java.util.Collection;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
@@ -51,7 +52,7 @@ import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.UseAliasElement;
 import org.netbeans.modules.php.editor.model.UseScope;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
-import org.netbeans.modules.php.editor.model.nodes.UseStatementPartInfo;
+import org.netbeans.modules.php.editor.model.nodes.SingleUseStatementPartInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.openide.filesystems.FileObject;
@@ -61,7 +62,7 @@ class UseScopeImpl extends ScopeImpl implements UseScope {
     private AliasedName aliasName;
     private UseScope.Type type;
 
-    UseScopeImpl(NamespaceScopeImpl inScope, UseStatementPartInfo nodeInfo) {
+    UseScopeImpl(NamespaceScopeImpl inScope, SingleUseStatementPartInfo nodeInfo) {
         this(inScope, nodeInfo.getName(), inScope.getFile(), nodeInfo.getRange());
         final Identifier alias = nodeInfo.getOriginalNode().getAlias();
         this.aliasName = alias != null ? new AliasedName(alias.getName(), QualifiedName.create(getName())) : null;
@@ -72,17 +73,7 @@ class UseScopeImpl extends ScopeImpl implements UseScope {
             new UseAliasElementImpl(this, aliasNodeInfo);
         }
         this.aliasName = aliasedName;
-        switch (nodeInfo.getType()) {
-            case CONST:
-                type = Type.CONST;
-                break;
-            case FUNCTION:
-                type = Type.FUNCTION;
-                break;
-            case TYPE:
-                type = Type.TYPE;
-                break;
-        }
+        type = CodeUtils.mapType(nodeInfo.getType());
     }
 
     private UseScopeImpl(ScopeImpl inScope, String name,

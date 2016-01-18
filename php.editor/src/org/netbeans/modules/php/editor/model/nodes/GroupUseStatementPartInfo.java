@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,68 +37,36 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.parser.astnodes;
+package org.netbeans.modules.php.editor.model.nodes;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.php.editor.parser.astnodes.GroupUseStatementPart;
+import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
 
-/**
- * Represents an group element of the 'use' declaration.
- * <pre>
- * use some\namespace\{ClassA, sub\ClassB, ClassC as C};
- * </pre>
- */
-public class GroupUseStatementPart extends UseStatementPart {
+public final class GroupUseStatementPartInfo extends ASTNodeInfo<GroupUseStatementPart> {
 
-    @NonNull
-    private final NamespaceName baseNamespaceName;
-    @NonNull
-    private final List<SingleUseStatementPart> items;
+    private final UseStatement.Type type;
 
 
-    public GroupUseStatementPart(int start, int end, NamespaceName baseNamespaceName, List items) {
-        super(start, end);
-        this.baseNamespaceName = baseNamespaceName;
-        this.items = new ArrayList<>(items);
+    private GroupUseStatementPartInfo(GroupUseStatementPart node, UseStatement.Type type) {
+        super(node);
+        assert type != null : node;
+        this.type = type;
     }
 
-    @NonNull
-    public NamespaceName getBaseNamespaceName() {
-        return baseNamespaceName;
+    public static GroupUseStatementPartInfo create(GroupUseStatementPart node, UseStatement.Type type) {
+        return new GroupUseStatementPartInfo(node, type);
     }
 
-    @NonNull
-    public List<SingleUseStatementPart> getItems() {
-        return Collections.unmodifiableList(items);
+    public UseStatement.Type getType() {
+        return type;
     }
 
     @Override
-    public void accept(Visitor visitor) {
-        visitor.visit(this);
+    public String getName() {
+        // XXX what to return here???
+        return ""; // toName(getOriginalNode().getBaseNamespaceName());
     }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(baseNamespaceName);
-        sb.append('{'); // NOI18N
-        boolean first = true;
-        for (SingleUseStatementPart item : items) {
-            if (first) {
-                first = false;
-            } else {
-                sb.append(", "); // NOI18N
-            }
-            sb.append(item);
-        }
-        sb.append('}'); // NOI18N
-        return super.toString(); //To change body of generated methods, choose Tools | Templates.
-    }
-
-
 
 }

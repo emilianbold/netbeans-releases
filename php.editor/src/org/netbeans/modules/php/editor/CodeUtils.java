@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,10 +37,11 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -48,6 +49,7 @@ import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.api.PhpVersion;
+import org.netbeans.modules.php.editor.model.UseScope;
 import org.netbeans.modules.php.editor.model.impl.Type;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
@@ -63,6 +65,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
+import org.netbeans.modules.php.editor.parser.astnodes.GroupUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
@@ -70,12 +73,14 @@ import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticDispatch;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation;
 import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation.Operator;
+import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.Variadic;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
@@ -107,6 +112,53 @@ public final class CodeUtils {
             return ((DataObject) sdp).getPrimaryFile();
         }
         return null;
+    }
+
+    public static UseScope.Type mapType(UseStatement.Type type) {
+        UseScope.Type newType = null;
+        switch (type) {
+            case CONST:
+                newType = UseScope.Type.CONST;
+                break;
+            case FUNCTION:
+                newType = UseScope.Type.FUNCTION;
+                break;
+            case TYPE:
+                newType = UseScope.Type.TYPE;
+                break;
+            default:
+                assert false : "Unknown type: " + type;
+        }
+        return newType;
+    }
+
+    // XXX move to proper place
+    /**
+     * Compounds full namespace for the given part of group use.
+     * @param groupUseStatementPart group use part
+     * @param singleUseStatementPart part to be resolved
+     * @param baseOffsets if {@code true}, offsets of base namespace name are used
+     * @return full namespace for the given part of group use
+     */
+    public static NamespaceName compoundName(GroupUseStatementPart groupUseStatementPart, SingleUseStatementPart singleUseStatementPart, boolean baseOffsets) {
+        assert groupUseStatementPart != null;
+        assert singleUseStatementPart != null;
+        assert groupUseStatementPart.getItems().contains(singleUseStatementPart) : singleUseStatementPart + " not found in: " + groupUseStatementPart.getItems();
+        NamespaceName baseNamespaceName = groupUseStatementPart.getBaseNamespaceName();
+        NamespaceName namespaceName = singleUseStatementPart.getName();
+        List<Identifier> segments = new ArrayList<>(baseNamespaceName.getSegments().size() + namespaceName.getSegments().size());
+        segments.addAll(baseNamespaceName.getSegments());
+        segments.addAll(namespaceName.getSegments());
+        int start;
+        int end;
+        if (baseOffsets) {
+            start = baseNamespaceName.getStartOffset();
+            end = baseNamespaceName.getEndOffset();
+        } else {
+            start = namespaceName.getStartOffset();
+            end = namespaceName.getEndOffset();
+        }
+        return new NamespaceName(start, end, segments, baseNamespaceName.isGlobal(), baseNamespaceName.isCurrent());
     }
 
     // XXX remove!
