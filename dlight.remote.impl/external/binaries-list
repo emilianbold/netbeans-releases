@@ -1,7 +1,7 @@
-#changeset:   305242:557e519a2a66
+#changeset:   305565:8a432db1bb68
 #branch:      release81
 #tag:         tip
 #user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Mon Dec 28 17:02:59 2015 +0300
-#summary:     additional fix for #256919 - fix issues discovered in rfs_controller and rfs_preload - source changes
-B04B2918B79C287651DDC88A9C3D115C62056F4C fs_server-1.0.zip
+#date:        Sun Jan 17 17:32:21 2016 +0300
+#summary:     server-side fix (source part - binaries update TBD) for #257604 - IllegalArgumentException: Error processing response Package[FS_RSP_ENTRY e 96 5 IMAGE d 4096 -1161096504000 rwx 2049 39674529 0 ]
+B7431AF81CFB94DB4569A15128D6E19E2AB3C9FB fs_server-1.0.zip
