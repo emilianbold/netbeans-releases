@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,31 +37,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.editor.model.impl;
 
-package org.netbeans.modules.php.editor.model.nodes;
-
-import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.model.GroupUseScope;
+import org.netbeans.modules.php.editor.model.UseScope;
+import org.netbeans.modules.php.editor.model.nodes.GroupUseStatementPartInfo;
+import org.netbeans.modules.php.editor.model.nodes.SingleUseStatementPartInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleUseStatementPart;
 
-/**
- *
- * @author Ondrej Brejla <obrejla@netbeans.org>
- */
-public class UseStatementPartInfo extends ASTNodeInfo<SingleUseStatementPart> {
-    private final UseStatement.Type type;
+public class GroupUseScopeImpl extends ScopeImpl implements GroupUseScope {
 
-    public UseStatementPartInfo(SingleUseStatementPart node, UseStatement.Type type) {
-        super(node);
-        this.type = type;
+    private final UseScope.Type type;
+    private final List<UseScope> useScopes;
+
+
+    GroupUseScopeImpl(NamespaceScopeImpl inScope, GroupUseStatementPartInfo nodeInfo) {
+        super(inScope, nodeInfo.getName(), inScope.getFile(), nodeInfo.getRange(), PhpElementKind.GROUP_USE_STATEMENT, false);
+        type = CodeUtils.mapType(nodeInfo.getType());
+        List<SingleUseStatementPart> items = nodeInfo.getOriginalNode().getItems();
+        useScopes = new ArrayList<>(items.size());
+        for (SingleUseStatementPart item : items) {
+            useScopes.add(inScope.createUseStatementPart(SingleUseStatementPartInfo.create(item, nodeInfo)));
+        }
     }
 
-    public static UseStatementPartInfo create(SingleUseStatementPart node, UseStatement.Type type) {
-        return new UseStatementPartInfo(node, type);
+    @Override
+    public List<UseScope> getUseScopes() {
+        return Collections.unmodifiableList(useScopes);
     }
 
-    public UseStatement.Type getType() {
+    @Override
+    public UseScope.Type getType() {
         return type;
     }
 

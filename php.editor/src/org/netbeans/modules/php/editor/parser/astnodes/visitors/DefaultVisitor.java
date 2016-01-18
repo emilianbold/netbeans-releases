@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser.astnodes.visitors;
 
@@ -336,6 +336,7 @@ public class DefaultVisitor implements Visitor {
         scan(node.getFunctionName());
         scan(node.getFormalParameters());
         scan(node.getBody());
+        scan(node.getReturnType());
     }
 
     @Override
@@ -608,6 +609,7 @@ public class DefaultVisitor implements Visitor {
         scan(declaration.getFormalParameters());
         scan(declaration.getLexicalVariables());
         scan(declaration.getBody());
+        scan(declaration.getReturnType());
     }
 
     @Override
@@ -623,10 +625,8 @@ public class DefaultVisitor implements Visitor {
 
     @Override
     public void visit(GroupUseStatementPart statementPart) {
-        for (SingleUseStatementPart item : statementPart.getItems()) {
-            scan(item.getName());
-            scan(item.getAlias());
-        }
+        scan(statementPart.getBaseNamespaceName());
+        scan(statementPart.getItems());
     }
 
     @Override

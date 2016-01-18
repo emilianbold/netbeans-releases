@@ -55,6 +55,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
 import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.GroupUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
@@ -78,7 +79,7 @@ public class ASTNodeInfo<T extends ASTNode> {
     private Kind kind;
 
     public enum Kind {
-        NAMESPACE_DECLARATION, USE_STATEMENT, IFACE, CLASS, CLASS_INSTANCE_CREATION,
+        NAMESPACE_DECLARATION, USE_STATEMENT, GROUP_USE_STATEMENT, IFACE, CLASS, CLASS_INSTANCE_CREATION,
         METHOD, STATIC_METHOD,
         FIELD, STATIC_FIELD,
         CLASS_CONSTANT, STATIC_CLASS_CONSTANT,
@@ -177,6 +178,8 @@ public class ASTNodeInfo<T extends ASTNode> {
                 return PhpElementKind.FUNCTION;
             case USE_STATEMENT:
                 return PhpElementKind.USE_STATEMENT;
+            case GROUP_USE_STATEMENT:
+                return PhpElementKind.GROUP_USE_STATEMENT;
             case TRAIT:
                 return PhpElementKind.TRAIT;
             case USE_ALIAS:
@@ -287,8 +290,10 @@ public class ASTNodeInfo<T extends ASTNode> {
             return Kind.RETURN_MARKER;
         } else if (node instanceof SingleUseStatementPart) {
             return Kind.USE_STATEMENT;
+        } else if (node instanceof GroupUseStatementPart) {
+            return Kind.GROUP_USE_STATEMENT;
         }
-        throw new IllegalStateException();
+        throw new IllegalStateException(node.getClass().getName());
     }
 
     protected static String toName(ASTNode node) {
@@ -339,6 +344,10 @@ public class ASTNodeInfo<T extends ASTNode> {
             return toName(((Reference) node).getExpression());
         } else if (node instanceof SingleUseStatementPart) {
             return toQualifiedName(node, false).toString();
+        } else if (node instanceof GroupUseStatementPart) {
+            // XXX
+            assert false : "should not get here: " + node;
+            return "?? GroupUseStatementPart ??"; // NOI18N
         } else if (node instanceof Variadic) {
             return toName(((Variadic) node).getExpression());
         }
@@ -399,12 +408,13 @@ public class ASTNodeInfo<T extends ASTNode> {
             return new OffsetRange(returnStatement.getStartOffset(), returnStatement.getEndOffset());
         } else if (node instanceof Reference) {
             return toOffsetRange(((Reference) node).getExpression());
-        } else if (node instanceof SingleUseStatementPart) {
+        } else if (node instanceof SingleUseStatementPart
+                || node instanceof GroupUseStatementPart) {
             return new OffsetRange(node.getStartOffset(), node.getEndOffset());
         } else if (node instanceof Variadic) {
             return toOffsetRange(((Variadic) node).getExpression());
         }
-        throw new IllegalStateException();
+        throw new IllegalStateException(node.getClass().toString());
     }
 
     static String toNameVar(Variable var) {

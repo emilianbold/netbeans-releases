@@ -52,6 +52,7 @@ import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ConstantElement;
 import org.netbeans.modules.php.editor.model.FunctionScope;
+import org.netbeans.modules.php.editor.model.GroupUseScope;
 import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
@@ -63,8 +64,9 @@ import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.ConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.GroupUseStatementPartInfo;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
-import org.netbeans.modules.php.editor.model.nodes.UseStatementPartInfo;
+import org.netbeans.modules.php.editor.model.nodes.SingleUseStatementPartInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
@@ -96,9 +98,13 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
         ConstantElementImpl retval = new ConstantElementImpl(this, node);
         return retval;
     }
-    UseScopeImpl createUseStatementPart(UseStatementPartInfo node) {
+    UseScopeImpl createUseStatementPart(SingleUseStatementPartInfo node) {
         UseScopeImpl retval = new UseScopeImpl(this, node);
         return retval;
+    }
+
+    GroupUseScopeImpl createUseStatementPart(GroupUseStatementPartInfo useStatementPartInfo) {
+        return new GroupUseScopeImpl(this, useStatementPartInfo);
     }
 
     FunctionScopeImpl createElement(Program program, FunctionDeclaration node) {
@@ -168,7 +174,6 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
         });
     }
 
-
     @Override
     public Collection<? extends FunctionScope> getDeclaredFunctions() {
         return filter(getElements(), new ElementFilter() {
@@ -185,6 +190,17 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
             @Override
             public boolean isAccepted(ModelElement element) {
                 return element.getPhpElementKind().equals(PhpElementKind.USE_STATEMENT);
+            }
+        });
+    }
+
+    // XXX verify usages (in comparison to getDeclaredUses() above)
+    @Override
+    public Collection<? extends GroupUseScope> getDeclaredGroupUses() {
+        return filter(getElements(), new ElementFilter() {
+            @Override
+            public boolean isAccepted(ModelElement element) {
+                return element.getPhpElementKind().equals(PhpElementKind.GROUP_USE_STATEMENT);
             }
         });
     }

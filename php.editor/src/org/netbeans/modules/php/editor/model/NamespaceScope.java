@@ -52,6 +52,7 @@ public interface NamespaceScope extends VariableScope, FullyQualifiedElement {
 
     QualifiedName getQualifiedName();
     Collection<? extends UseScope> getDeclaredUses();
+    Collection<? extends GroupUseScope> getDeclaredGroupUses();
     Collection<? extends TypeScope> getDeclaredTypes();
     Collection<? extends ClassScope> getDeclaredClasses();
     Collection<? extends InterfaceScope> getDeclaredInterfaces();

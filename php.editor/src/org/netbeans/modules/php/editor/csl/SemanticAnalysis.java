@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.csl;
 
@@ -805,7 +805,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 } else if (useStatementPart instanceof GroupUseStatementPart) {
                     GroupUseStatementPart groupUseStatementPart = (GroupUseStatementPart) useStatementPart;
                     for (SingleUseStatementPart item : groupUseStatementPart.getItems()) {
-                        if (isDeprecatedNamespaceName(groupUseStatementPart.resolveItemName(item, true))) {
+                        if (isDeprecatedNamespaceName(CodeUtils.compoundName(groupUseStatementPart, item, true))) {
                             addColoringForNode(item.getName(), DEPRECATED_SET);
                         }
                     }
