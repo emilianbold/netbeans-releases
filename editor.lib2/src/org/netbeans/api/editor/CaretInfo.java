@@ -150,15 +150,23 @@ public final class CaretInfo {
      * @return true if there's a selection or false if there's no selection for this caret.
      */
     public boolean isSelection() {
-        return dotPos != markPos;
+        return dotPos != markPos && dotPos.getOffset() != markPos.getOffset();
     }
 
     public Position getSelectionStart() {
-        return dotPos; // TBD - possibly inspect virtual columns etc.
+        if(dotPos.getOffset() < markPos.getOffset()) {
+            return dotPos;
+        } else {
+            return markPos;
+        }
     }
 
     public Position getSelectionEnd() {
-        return dotPos; // TBD - possibly inspect virtual columns etc.
+        if(dotPos.getOffset() > markPos.getOffset()) {
+            return dotPos;
+        } else {
+            return markPos;
+        }
     }
     
     public Point getMagicCaretPosition() {

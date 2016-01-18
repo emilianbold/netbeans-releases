@@ -2243,23 +2243,29 @@ public class BaseKit extends DefaultEditorKit {
                         // If on last line (without newline) then insert newline at very end temporarily
                         // then cut and remove previous newline.
                         int removeNewlineOffset = -1;
-                        if (!Utilities.isSelectionShowing(target)) {
-                            Element elem = ((AbstractDocument) target.getDocument()).getParagraphElement(
-                                    target.getCaretPosition());
-                            int lineStartOffset = elem.getStartOffset();
-                            int lineEndOffset = elem.getEndOffset();
-                            if (lineEndOffset == doc.getLength() + 1) { // Very end
-                                // Temporarily insert extra newline
-                                try {
-                                    doc.insertString(lineEndOffset - 1, "\n", null);
-                                    if (lineStartOffset > 0) { // Only when not on first line
-                                        removeNewlineOffset = lineStartOffset - 1;
+                        Caret caret = target.getCaret();
+                        boolean disableNoSelectionCopy =
+                            Boolean.getBoolean("org.netbeans.editor.disable.no.selection.copy");
+                        if(!disableNoSelectionCopy &&
+                                (!(caret instanceof EditorCaret)) || !(((EditorCaret)caret).getCarets().size() > 1)) {
+                            if (!Utilities.isSelectionShowing(target)) {
+                                Element elem = ((AbstractDocument) target.getDocument()).getParagraphElement(
+                                        target.getCaretPosition());
+                                int lineStartOffset = elem.getStartOffset();
+                                int lineEndOffset = elem.getEndOffset();
+                                if (lineEndOffset == doc.getLength() + 1) { // Very end
+                                    // Temporarily insert extra newline
+                                    try {
+                                        doc.insertString(lineEndOffset - 1, "\n", null);
+                                        if (lineStartOffset > 0) { // Only when not on first line
+                                            removeNewlineOffset = lineStartOffset - 1;
+                                        }
+                                    } catch (BadLocationException e) {
+                                        // could not insert extra newline
                                     }
-                                } catch (BadLocationException e) {
-                                    // could not insert extra newline
                                 }
+                                target.select(lineStartOffset, lineEndOffset);
                             }
-                            target.select(lineStartOffset, lineEndOffset);
                         }
 
                         target.cut();
@@ -2294,16 +2300,21 @@ public class BaseKit extends DefaultEditorKit {
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 try {
-                    int caretPosition = target.getCaretPosition();
-                    boolean emptySelection = !Utilities.isSelectionShowing(target);
+                    Caret caret = target.getCaret();
+                    boolean emptySelection = false;
                     boolean disableNoSelectionCopy =
                             Boolean.getBoolean("org.netbeans.editor.disable.no.selection.copy");
-                    // If there is no selection then pre-select a current line including newline
-                    if (emptySelection && !disableNoSelectionCopy) {
-                        Element elem = ((AbstractDocument) target.getDocument()).getParagraphElement(
-                                caretPosition);
-                        if (!Utilities.isRowWhite((BaseDocument) target.getDocument(), elem.getStartOffset())) {
-                            target.select(elem.getStartOffset(), elem.getEndOffset());
+                    int caretPosition = caret.getDot();
+                    if(!disableNoSelectionCopy &&
+                            (!(caret instanceof EditorCaret)) || !(((EditorCaret)caret).getCarets().size() > 1)) {
+                        emptySelection = !Utilities.isSelectionShowing(target);
+                        // If there is no selection then pre-select a current line including newline
+                        if (emptySelection && !disableNoSelectionCopy) {
+                            Element elem = ((AbstractDocument) target.getDocument()).getParagraphElement(
+                                    caretPosition);
+                            if (!Utilities.isRowWhite((BaseDocument) target.getDocument(), elem.getStartOffset())) {
+                                target.select(elem.getStartOffset(), elem.getEndOffset());
+                            }
                         }
                     }
                     target.copy();

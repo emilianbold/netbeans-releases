@@ -1,4 +1,3 @@
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -50,15 +49,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.TransferHandler;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
+import org.netbeans.api.editor.CaretInfo;
+import org.netbeans.api.editor.EditorCaret;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -69,38 +72,38 @@ import org.openide.util.NbBundle;
  * It overrides the original transfer handler during the rectangular selection.
  *
  * @author Miloslav Metelka
- * @deprecated replaced by {@link EditorCaretTransferHandler}, kept in place for BaseCaret
  */
-@Deprecated
-public class RectangularSelectionTransferHandler extends TransferHandler {
+public class EditorCaretTransferHandler extends TransferHandler {
     
     public static void install(JTextComponent c) {
         TransferHandler origHandler = c.getTransferHandler();
-        if (!(origHandler instanceof RectangularSelectionTransferHandler)) {
-            c.setTransferHandler(new RectangularSelectionTransferHandler(c.getTransferHandler()));
+        if (!(origHandler instanceof EditorCaretTransferHandler)) {
+            c.setTransferHandler(new EditorCaretTransferHandler(c.getTransferHandler()));
         }
     }
     
     public static void uninstall(JTextComponent c) {
         TransferHandler origHandler = c.getTransferHandler();
-        if (origHandler instanceof RectangularSelectionTransferHandler) {
-            c.setTransferHandler(((RectangularSelectionTransferHandler)origHandler).getDelegate());
+        if (origHandler instanceof EditorCaretTransferHandler) {
+            c.setTransferHandler(((EditorCaretTransferHandler)origHandler).getDelegate());
         }
     }
     
     private static final DataFlavor RECTANGULAR_SELECTION_FLAVOR = new DataFlavor(RectangularSelectionData.class,
-            NbBundle.getMessage(RectangularSelectionTransferHandler.class, "MSG_RectangularSelectionClipboardFlavor"));
+            NbBundle.getMessage(EditorCaretTransferHandler.class, "MSG_RectangularSelectionClipboardFlavor"));
+    
+    private static final DataFlavor MULTI_CARET_FLAVOR = new DataFlavor(MultiCaretData.class,
+            NbBundle.getMessage(EditorCaretTransferHandler.class, "MSG_MultiCaretClipboardFlavor"));
 
     /** Boolean property defining whether selection is being rectangular in a particular text component. */
     private static final String RECTANGULAR_SELECTION_PROPERTY = "rectangular-selection"; // NOI18N
 
     // -J-Dorg.netbeans.modules.editor.lib2.RectangularSelectionClipboardHandler.level=FINE
-    private static final Logger LOG = Logger.getLogger(RectangularSelectionTransferHandler.class.getName());
-
+    private static final Logger LOG = Logger.getLogger(EditorCaretTransferHandler.class.getName());
 
     private final TransferHandler delegate;
 
-    public RectangularSelectionTransferHandler(TransferHandler delegate) {
+    public EditorCaretTransferHandler(TransferHandler delegate) {
         this.delegate = delegate;
     }
     
@@ -197,7 +200,7 @@ public class RectangularSelectionTransferHandler extends TransferHandler {
             }
 
             clip.setContents(
-                    new WrappedTransferable(
+                    new RectangularTransferable(
                         new StringSelection(stringSelectionBuffer.toString()),
                         new RectangularSelectionData(data)),
                     null);
@@ -211,7 +214,69 @@ public class RectangularSelectionTransferHandler extends TransferHandler {
             }
             return;
 
-        } else { // No rectangular selection
+        } else if (c instanceof JTextComponent &&
+                ((JTextComponent)c).getCaret() instanceof EditorCaret &&
+                ((EditorCaret)((JTextComponent)c).getCaret()).getCarets().size() > 1)
+        {
+            EditorCaret editorCaret = (EditorCaret) ((JTextComponent)c).getCaret();
+            final JTextComponent tc = (JTextComponent) c;
+            StringBuilder stringSelectionBuffer;
+            String[] lines = null;
+            AbstractDocument doc = (AbstractDocument) tc.getDocument();
+            doc.readLock();
+            try {
+                CharSequence docText = DocumentUtilities.getText(doc);
+                stringSelectionBuffer = new StringBuilder(100);
+                List<CaretInfo> carets = editorCaret.getSortedCarets();
+                lines = new String[carets.size()];
+                boolean newline = false;
+                for (int i = 0; i < carets.size(); i++) {
+                    CaretInfo caret = carets.get(i);
+                    if(!caret.isSelection()) continue;
+                    Position startPos = caret.getSelectionStart();
+                    Position endPos = caret.getSelectionEnd();
+                    CharSequence lineSel = docText.subSequence(startPos.getOffset(), endPos.getOffset());
+                    if (newline) {
+                        stringSelectionBuffer.append('\n');
+                    } else {
+                        newline = true;
+                    }
+                    stringSelectionBuffer.append(lineSel);
+                    lines[i] = lineSel.toString();
+                }
+            } finally {
+                doc.readUnlock();
+            }
+
+            clip.setContents(
+                    new MultiCaretTransferable(
+                        new StringSelection(stringSelectionBuffer.toString()),
+                        new MultiCaretData(lines)),
+                    null);
+
+            if (action == TransferHandler.MOVE) {
+                List<CaretInfo> carets = editorCaret.getSortedCarets();
+                for (CaretInfo caret : carets) {
+                    if (caret.isSelection()) {
+                        // remove selection
+                        final int dot = caret.getDot();
+                        final int mark = caret.getMark();
+                        try {
+                            if (RectangularSelectionUtils.isRectangularSelection(tc)) {
+                                RectangularSelectionUtils.removeSelection(tc);
+                                editorCaret.setRectangularSelectionToDotAndMark();
+                            } else {
+                                doc.remove(Math.min(dot, mark), Math.abs(dot - mark));
+                                caret.setDot(Math.min(dot, mark));
+                            }
+                        } catch (BadLocationException ble) {
+                            LOG.log(Level.FINE, null, ble);
+                        }
+                    }
+                }
+            }
+            return;
+        } else { // No rectangular selection or multiple carets
             delegate.exportToClipboard(c, clip, action);
         }
     }
@@ -264,7 +329,7 @@ public class RectangularSelectionTransferHandler extends TransferHandler {
                     } else { // Regular selection
                         String s = (String) t.getTransferData(DataFlavor.stringFlavor); // There should be string flavor
                         if (s != null) {
-                            tc.replaceSelection("");
+                            tc.replaceSelection(s);
                         }
                     }
                     result = true;
@@ -317,9 +382,81 @@ public class RectangularSelectionTransferHandler extends TransferHandler {
                         Exceptions.printStackTrace(ex);
                     }
                 }
+            } else {
+                Caret caret = ((JTextComponent) c).getCaret();
+                if(caret instanceof EditorCaret && ((EditorCaret) caret).getSortedCarets().size() > 1) {
+                    final EditorCaret editorCaret = (EditorCaret) caret;
+                    boolean result = false;
+                    MultiCaretData multiCaretData = null;
+                    if(t.isDataFlavorSupported(MULTI_CARET_FLAVOR)) {
+                        try {
+                            multiCaretData = (MultiCaretData) t.getTransferData(MULTI_CARET_FLAVOR);
+                        } catch (UnsupportedFlavorException | IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                    if(multiCaretData != null && multiCaretData.strings().length == editorCaret.getCarets().size()) {
+                        final MultiCaretData content = multiCaretData;
+                        final Document doc = ((JTextComponent) c).getDocument();
+                        DocUtils.runAtomicAsUser(doc, new Runnable() {
+                            @Override
+                            public void run() {
+                                for (int i = 0; i < editorCaret.getSortedCarets().size(); i++) {
+                                    CaretInfo ci = editorCaret.getSortedCarets().get(i);
+                                    try {
+                                        Position startPos = ci.getSelectionStart();
+                                        Position endPos = ci.getSelectionEnd();
+                                        if (startPos != endPos) {
+                                            doc.remove(startPos.getOffset(), endPos.getOffset() - startPos.getOffset());
+                                        }
+                                        if (content.strings()[i] != null && content.strings()[i].length() > 0) {
+                                            doc.insertString(startPos.getOffset(), content.strings()[i], null);
+                                        }
+                                    } catch (BadLocationException ex) {
+                                        //ignore ?
+                                    }
+                                }
+                            }
+                        });
+                    } else {
+                        try {
+                            final String content = (String) t.getTransferData(DataFlavor.stringFlavor); // There should be string flavor
+                            final Document doc = ((JTextComponent) c).getDocument();
+                            DocUtils.runAtomicAsUser(doc, new Runnable() {
+                                @Override
+                                public void run() {
+                                    for (CaretInfo ci : editorCaret.getSortedCarets()) {
+                                        try {
+                                            Position startPos = ci.getSelectionStart();
+                                            Position endPos = ci.getSelectionEnd();
+                                            if (startPos != endPos) {
+                                                doc.remove(startPos.getOffset(), endPos.getOffset() - startPos.getOffset());
+                                            }
+                                            if (content != null && content.length() > 0) {
+                                                doc.insertString(startPos.getOffset(), content, null);
+                                            }
+                                        } catch (BadLocationException ex) {
+                                            //ignore ?
+                                        }
+                                    }
+                                }
+                            });
+                            result = true;
+                        } catch (UnsupportedFlavorException | IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+
+                    return result;
+                }
             }
         }
         return delegate.importData(support); // Regular importData()
+    }
+
+    @Override
+    public boolean importData(JComponent comp, Transferable t) {
+        return delegate.importData(comp, t);
     }
 
     private static List<String> splitByLines(String s) {
@@ -331,7 +468,7 @@ public class RectangularSelectionTransferHandler extends TransferHandler {
         return lines;
     }
 
-    private static final class WrappedTransferable implements Transferable {
+    private static final class RectangularTransferable implements Transferable {
 
         private final Transferable delegate;
 
@@ -339,7 +476,7 @@ public class RectangularSelectionTransferHandler extends TransferHandler {
 
         private DataFlavor[] transferDataFlavorsCache;
 
-        public WrappedTransferable(Transferable delegate, RectangularSelectionData rectangularSelectionData) {
+        public RectangularTransferable(Transferable delegate, RectangularSelectionData rectangularSelectionData) {
             this.delegate = delegate;
             this.rectangularSelectionData = rectangularSelectionData;
         }
@@ -367,6 +504,61 @@ public class RectangularSelectionTransferHandler extends TransferHandler {
                 return rectangularSelectionData;
             }
             return delegate.getTransferData(flavor);
+        }
+    }
+    
+    private static final class MultiCaretTransferable implements Transferable {
+
+        private final Transferable delegate;
+
+        private final MultiCaretData multiCaretData;
+
+        private DataFlavor[] transferDataFlavorsCache;
+
+        public MultiCaretTransferable(Transferable delegate, MultiCaretData multiCaretData) {
+            this.delegate = delegate;
+            this.multiCaretData = multiCaretData;
+        }
+
+        @Override
+        public synchronized DataFlavor[] getTransferDataFlavors() {
+            if (transferDataFlavorsCache != null) {
+                return transferDataFlavorsCache;
+            }
+            DataFlavor[] flavors = delegate.getTransferDataFlavors();
+            DataFlavor[] result = Arrays.copyOf(flavors, flavors.length + 1);
+            result[flavors.length] = MULTI_CARET_FLAVOR;
+
+            return transferDataFlavorsCache = result;
+        }
+
+        @Override
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            return MULTI_CARET_FLAVOR.equals(flavor) || delegate.isDataFlavorSupported(flavor);
+        }
+
+        @Override
+        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+            if (MULTI_CARET_FLAVOR.equals(flavor)) {
+                return multiCaretData;
+            }
+            return delegate.getTransferData(flavor);
+        }
+    }
+    
+    public static final class MultiCaretData {
+        
+        private final String[] strings;
+        
+        public MultiCaretData(String[] strings) {
+            this.strings = strings;
+        }
+        
+        /**
+         * Strings containing rectangular selection (on particular selected line).
+         */
+        public String[] strings() {
+            return strings;
         }
     }
 

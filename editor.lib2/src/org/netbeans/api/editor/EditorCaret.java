@@ -51,6 +51,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.HeadlessException;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Stroke;
@@ -120,7 +121,7 @@ import org.netbeans.lib.editor.util.ListenerList;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
-import org.netbeans.modules.editor.lib2.RectangularSelectionTransferHandler;
+import org.netbeans.modules.editor.lib2.EditorCaretTransferHandler;
 import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
 import org.netbeans.modules.editor.lib2.actions.EditorActionUtilities;
 import org.netbeans.modules.editor.lib2.highlighting.CaretOverwriteModeHighlighting;
@@ -131,8 +132,11 @@ import org.netbeans.modules.editor.lib2.view.ViewHierarchyEvent;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchyListener;
 import org.netbeans.modules.editor.lib2.view.ViewUtils;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 import org.openide.util.Pair;
+import org.openide.util.datatransfer.ExClipboard;
+import sun.swing.SwingUtilities2;
 
 /**
  * Extension to standard Swing caret used by all NetBeans editors.
@@ -372,6 +376,7 @@ public final class EditorCaret implements Caret {
             }
         }
         carets.remove(0, carets.size()-1);
+        sortedCarets.remove(0, sortedCarets.size()-1);
         setDotCaret(offset, getLastCaret(), true);
     }
 
@@ -390,7 +395,9 @@ public final class EditorCaret implements Caret {
                 if (doc != null && offset >= 0 && offset <= doc.getLength()) {
                     dotChanged = true;
                     try {
-                        carets.add(new CaretInfo(this, doc.createPosition(offset), doc.createPosition(offset)));
+                        CaretInfo caret = new CaretInfo(this, doc.createPosition(offset), doc.createPosition(offset));
+                        carets.add(caret);
+                        sortedCarets.add(caret);
                     } catch (BadLocationException e) {
                         throw new IllegalStateException(e.toString());
                         // setting the caret to wrong position leaves it at current position
@@ -443,6 +450,7 @@ public final class EditorCaret implements Caret {
         synchronized (carets) {
             carets.add(caret);
             // Add to sorted carets too
+            sortedCarets.add(caret);
         }
         fireStateChanged();
         dispatchUpdate(true);
@@ -465,6 +473,7 @@ public final class EditorCaret implements Caret {
             CaretInfo caretInfo = new CaretInfo(this, dotPos.first(), dotPos.second());
             created.add(caretInfo);
             carets.add(caretInfo);
+            sortedCarets.add(caretInfo);
         }
         fireStateChanged();
         dispatchUpdate(true);
@@ -481,10 +490,12 @@ public final class EditorCaret implements Caret {
     public @NonNull List<CaretInfo> replaceCarets(@NonNull List<Pair<Position, Position>> dotAndSelectionStartPosPairs) {
         List<CaretInfo> created = new LinkedList<>();
         carets.clear();
+        sortedCarets.clear();
         for (Pair<Position, Position> dotPos : dotAndSelectionStartPosPairs) {
             CaretInfo caretInfo = new CaretInfo(this, dotPos.first(), dotPos.second());
             created.add(caretInfo);
             carets.add(caretInfo);
+            sortedCarets.add(caretInfo);
         }
         fireStateChanged();
         dispatchUpdate(true);
@@ -685,6 +696,8 @@ public final class EditorCaret implements Caret {
         component.addMouseListener(listenerImpl);
         component.addMouseMotionListener(listenerImpl);
         ViewHierarchy.get(component).addViewHierarchyListener(listenerImpl);
+        
+        EditorCaretTransferHandler.install(component);
 
         if (component.hasFocus()) {
             if (LOG.isLoggable(Level.FINE)) {
@@ -889,9 +902,10 @@ public final class EditorCaret implements Caret {
             }
 
             carets.clear();
-            carets.add(new CaretInfo(this));
             sortedCarets.clear();
-            sortedCarets.add(carets.get(0));
+            CaretInfo caretInfo = new CaretInfo(this);
+            carets.add(caretInfo);
+            sortedCarets.add(caretInfo);
 
             activeDoc = null;
             if (prefs != null && weakPrefsListener != null) {
@@ -1046,6 +1060,31 @@ public final class EditorCaret implements Caret {
             }
             Document doc = c.getDocument();
             if (doc != null) {
+//                carets.sort(new Comparator<CaretInfo>() {
+//                    @Override
+//                    public int compare(CaretInfo c1, CaretInfo c2) {
+//                        return c1.getDot() - c2.getDot();
+//                    }
+//                });
+//                List<CaretInfo> toRemove = new LinkedList<>();
+//                for (int i = 0; i < carets.size()-1; i++) {
+//                    CaretInfo current = carets.get(i);
+//                    CaretInfo next = carets.get(i+1);
+//                    // Not connected
+//                    if(Math.max(current.getDot(), current.getMark()) >= Math.min(next.getDot(), next.getMark())) {
+//                        if(current.isSelection()) {
+//                            if(next.isSelection()) {// Connected Selection
+//                                toRemove.add(next);
+//                                current.moveDot(Math.max(next.getDot(), next.getMark()));
+//                            } else {
+//                                toRemove.add(next);
+//                            }
+//                        } else {
+//                            toRemove.add(current); // Remove current
+//                        }
+//                    }
+//                }
+//                carets.removeAll(toRemove);
                 for (CaretInfo caret : carets) {
                     Rectangle oldCaretBounds = caret.getCaretBounds(); // no need to deep copy
                     if (oldCaretBounds != null) {
@@ -1156,22 +1195,29 @@ public final class EditorCaret implements Caret {
 
     private void updateSystemSelection() {
         if(component == null) return;
-        
-        StringBuilder builder = new StringBuilder();
-        boolean first = true;
-        for (CaretInfo caret : carets) {
-            if(caret.isSelection()) {
-                if(!first) {
-                    builder.append("\n");
-                } else {
-                    first = false;
-                }
-                builder.append(getSelectedText(caret));
-            }
+        Clipboard clip = null;
+        try {
+            clip = component.getToolkit().getSystemSelection();
+        } catch (SecurityException ex) {
+            // XXX: ignore for now, there is no ExClipboard for SystemSelection Clipboard
         }
-        Clipboard clip = component.getToolkit().getSystemSelection();
-        if(clip != null && builder.length() > 0) {
-            clip.setContents(new java.awt.datatransfer.StringSelection(builder.toString()), null);
+        if(clip != null) {
+            StringBuilder builder = new StringBuilder();
+            boolean first = true;
+            for (CaretInfo caret : sortedCarets) {
+                if(caret.isSelection()) {
+                    if(!first) {
+                        builder.append("\n");
+                    } else {
+                        first = false;
+                    }
+                    builder.append(getSelectedText(caret));
+                }
+            }
+
+            if(builder.length() > 0) {
+                clip.setContents(new java.awt.datatransfer.StringSelection(builder.toString()), null);
+            }
         }
     }
     
@@ -1802,10 +1848,10 @@ public final class EditorCaret implements Caret {
                 if (rectangularSelection != origRectangularSelection) {
                     if (rectangularSelection) {
                         setRectangularSelectionToDotAndMark();
-                        RectangularSelectionTransferHandler.install(component);
+//                        EditorCaretTransferHandler.install(component);
 
                     } else { // No rectangular selection
-                        RectangularSelectionTransferHandler.uninstall(component);
+//                        EditorCaretTransferHandler.uninstall(component);
                     }
                     fireStateChanged();
                 }
