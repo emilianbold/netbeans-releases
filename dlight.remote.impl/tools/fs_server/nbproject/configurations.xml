@@ -40,7 +40,7 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <flagsDictionary>
-        <element flagsID="0" commonFlags="-std=c99 -g -m64"/>
+        <element flagsID="0" commonFlags="-std=c99 -g"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -52,16 +52,14 @@
           <executablePath>../../release/bin/Linux-x86/fs_server</executablePath>
           <cTool>
             <incDir>
-              <pElem>../../../../../../.netbeans/dev-bis/var/cache/remote-files/localhost_2225_vk/home/vkvashin/.netbeans/dev-bis/var/cache/remote-files/localhost_2225_vk/home/vkvashin/.netbeans/remote/calypso-t72p-d07.us.oracle.com/vk-laptop-Linux-x86_64/home/vkvashin/src/netbeans/release81_elif/dlight.remote.impl/tools/fs_server</pElem>
+              <pElem>../../../../../../.netbeans/dev-bis/var/cache/remote-files/localhost_2225_vk/home/vkvashin/src/netbeans/release81_elif/dlight.remote.impl/tools/fs_server</pElem>
             </incDir>
             <preprocessorList>
               <Elem>LINUX</Elem>
               <Elem>NDEBUG</Elem>
               <Elem>_GNU_SOURCE</Elem>
-              <Elem>_POSIX_PTHREAD_SEMANTICS</Elem>
               <Elem>_REENTRANT</Elem>
               <Elem>_XOPEN_SOURCE=700</Elem>
-              <Elem>__EXTENSIONS__</Elem>
             </preprocessorList>
           </cTool>
         </makeTool>
@@ -223,7 +221,7 @@
     </conf>
     <conf name="MacOS" type="0" platformSpecific="true">
       <toolsSet>
-        <compilerSet>GNU_1|GNU</compilerSet>
+        <compilerSet>CLang|CLang</compilerSet>
         <platform>4</platform>
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
@@ -802,7 +800,7 @@
     <conf name="Previse_Solaris-x86" type="0" platformSpecific="true">
       <toolsSet>
         <compilerSet>OracleSolarisStudio_12.5|OSS</compilerSet>
-        <platform>1</platform>
+        <platform>2</platform>
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
