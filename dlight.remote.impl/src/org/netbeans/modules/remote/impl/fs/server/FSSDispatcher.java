@@ -750,6 +750,11 @@ import org.openide.util.RequestProcessor;
                 argsList.add("-t"); // NOI18N
                 argsList.add(Integer.toString(SERVER_THREADS));
             }
+            int killCacheLocker = Integer.getInteger("remote.fs_server.kill.locker", 0);
+            if (killCacheLocker > 0) {
+                argsList.add("-K"); // NOI18N
+                argsList.add(Integer.toString(killCacheLocker)); // NOI18N
+            }
             this.args = argsList.toArray(new String[argsList.size()]);
             processBuilder.setArguments(this.args);
             process = processBuilder.call();
