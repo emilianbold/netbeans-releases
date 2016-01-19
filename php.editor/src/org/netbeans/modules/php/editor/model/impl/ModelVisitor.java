@@ -96,6 +96,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayElement;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
@@ -423,11 +424,15 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(NamespaceName namespaceName) {
-        // XXX group
         super.visit(namespaceName);
-        ASTNode parent = getPath().get(0);
+        ASTNode parent = getPath().get(0); // replace/combine with modelBuilder.getCurrentScope()?
         if (parent instanceof FunctionName) {
             occurencesBuilder.prepare(Kind.FUNCTION, namespaceName, fileScope);
+        } else if (parent instanceof Program
+                || parent instanceof Block) {
+            // return type
+            Kind[] kinds = {Kind.CLASS, Kind.IFACE}; // also TRAIT?
+            occurencesBuilder.prepare(kinds, namespaceName, fileScope);
         } else if (!(parent instanceof ClassDeclaration) && !(parent instanceof InterfaceDeclaration)
                 && !(parent instanceof FormalParameter) && !(parent instanceof InstanceOfExpression)
                 && !(parent instanceof UseTraitStatementPart) && !(parent instanceof TraitConflictResolutionDeclaration)
@@ -527,6 +532,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         if (lazyScan) {
             modelBuilder.build(node, occurencesBuilder, this);
             markerBuilder.prepare(node, modelBuilder.getCurrentScope());
+            scan(node.getFunction().getReturnType());
             checkComments(node);
         }
         try {
@@ -1003,6 +1009,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         scan(lexicalVariables);
         modelBuilder.setCurrentScope(fncScope);
         scan(node.getFormalParameters());
+        scan(node.getReturnType());
         previousScope = scope;
         scan(node.getBody());
         previousScope = null;
@@ -1023,6 +1030,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         markerBuilder.prepare(node, fncScope);
         checkComments(node);
         scan(node.getFormalParameters());
+        scan(node.getReturnType());
         scan(node.getBody());
         modelBuilder.reset();
     }
