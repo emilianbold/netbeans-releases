@@ -99,7 +99,6 @@ import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
 import org.netbeans.modules.php.editor.api.elements.VariableElement;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
-import org.netbeans.modules.php.editor.model.GroupUseScope;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
@@ -143,20 +142,12 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     private void initAliases(final Model model) {
         for (final NamespaceScope namespaceScope : model.getFileScope().getDeclaredNamespaces()) {
             if (namespaceScope != null) {
-                initAliases(namespaceScope.getDeclaredUses());
-                Collection<? extends GroupUseScope> declaredGroupUses = namespaceScope.getDeclaredGroupUses();
-                for (GroupUseScope groupUseElement : declaredGroupUses) {
-                    initAliases(groupUseElement.getUseScopes());
+                for (UseScope useElement : namespaceScope.getDeclaredUses()) {
+                    AliasedName aliasedName = useElement.getAliasedName();
+                    if (aliasedName != null) {
+                        aliases.add(aliasedName);
+                    }
                 }
-            }
-        }
-    }
-
-    private void initAliases(Collection<? extends UseScope> uses) {
-        for (UseScope useElement : uses) {
-            AliasedName aliasedName = useElement.getAliasedName();
-            if (aliasedName != null) {
-                aliases.add(aliasedName);
             }
         }
     }

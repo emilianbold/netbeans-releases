@@ -194,7 +194,6 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
         });
     }
 
-    // XXX verify usages (in comparison to getDeclaredUses() above)
     @Override
     public Collection<? extends GroupUseScope> getDeclaredGroupUses() {
         return filter(getElements(), new ElementFilter() {
