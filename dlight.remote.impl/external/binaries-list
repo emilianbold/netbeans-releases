@@ -1,7 +1,7 @@
-#changeset:   305565:8a432db1bb68
+#changeset:   305587:bf45556b7c3a
 #branch:      release81
-#tag:         tip
+#parent:      305580:9a948a3a89f2
 #user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Sun Jan 17 17:32:21 2016 +0300
-#summary:     server-side fix (source part - binaries update TBD) for #257604 - IllegalArgumentException: Error processing response Package[FS_RSP_ENTRY e 96 5 IMAGE d 4096 -1161096504000 rwx 2049 39674529 0 ]
-B7431AF81CFB94DB4569A15128D6E19E2AB3C9FB fs_server-1.0.zip
+#date:        Tue Jan 19 12:44:59 2016 +0300
+#summary:     fixing #257591 - java.util.concurrent.ExecutionException: fs_server [3770 140022993700672]: error locking lock file:
+AE86A01A66ADBA4126F61A340A97B093FDFC1F47 fs_server-1.0.zip
