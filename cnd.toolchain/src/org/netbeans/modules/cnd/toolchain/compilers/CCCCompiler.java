@@ -882,18 +882,19 @@ public abstract class CCCCompiler extends AbstractCompiler {
             }
         }
         List<String> undefinedAlternatives = new ArrayList<String>();
-        if (getPath().endsWith("/g++") || getPath().endsWith("/gcc")) { // NOI18N
+        if (getPath().endsWith("/CC") || getPath().endsWith("/cc")) { // NOI18N
             List<String> flags = new ArrayList<String>();
-            getCompilerOutput("-v --help", flags, undefinedAlternatives, true); // NOI18N
+            getCompilerOutput(" -flags", flags, undefinedAlternatives, false); // NOI18N
             for(final String flag : flags) {
                 if (!checked.contains(flag)) {
                     allFlags.add(flag);
                     checked.add(flag);
                 }
             }
-        } else if (getPath().endsWith("/CC") || getPath().endsWith("/cc")) { // NOI18N
+        } else { //if (getPath().endsWith("/g++") || getPath().endsWith("/gcc")) { // NOI18N
+            // suppose that compiler supports help as GNU compiler
             List<String> flags = new ArrayList<String>();
-            getCompilerOutput(" -flags", flags, undefinedAlternatives, false); // NOI18N
+            getCompilerOutput("-v --help", flags, undefinedAlternatives, true); // NOI18N
             for(final String flag : flags) {
                 if (!checked.contains(flag)) {
                     allFlags.add(flag);
@@ -1086,9 +1087,10 @@ public abstract class CCCCompiler extends AbstractCompiler {
         List<String> argsList = new ArrayList<String>();
         argsList.addAll(Arrays.asList(arguments.trim().split(" +"))); // NOI18N
         ProcessUtils.ExitStatus execute = ProcessUtils.execute(execEnv, compilerPath, argsList.toArray(new String[argsList.size()]));
-        if (execute.isOK()) {
+        // GNU 4.9.2 returns exit code 1
+        //if (execute.isOK()) {
             discoverFlags(execute.output, options, undefinedAlternatives, isGcc);
-        }
+        //}
     }
 
     //For testing. Discover compiler flags from compiler help output.

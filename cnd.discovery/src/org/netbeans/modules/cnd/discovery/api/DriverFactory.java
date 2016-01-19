@@ -103,9 +103,9 @@ public final class DriverFactory {
         private static final List<String> C89 = Collections.unmodifiableList(Arrays.asList("-std=c89", "-std=iso9899:1990", "-std=iso9899:1990", "-std=c90")); // NOI18N
         private static final List<String> C99 = Collections.unmodifiableList(Arrays.asList("-xc99", "-std=c9x", "-std=iso9899:199409", "-std=iso9899:199x", "-std=iso9899:1999", "-std=gnu99", "-std=gnu9x", "-std=c99")); // NOI18N
         private static final List<String> C11 = Collections.unmodifiableList(Arrays.asList("-std=c11", "-std=gnu1x", "-std=gnu11", "-std=iso9899:2011", "-std=c1x", "-std=c11")); // NOI18N
-        private static final List<String> CPP98 = Collections.unmodifiableList(Arrays.asList("-std=c++98", "-std=c++03")); // NOI18N
+        private static final List<String> CPP98 = Collections.unmodifiableList(Arrays.asList("-std=c++98", "-std=c++03", "-std=sun03")); // NOI18N
         private static final List<String> CPP11 = Collections.unmodifiableList(Arrays.asList("-std=c++0x", "-std=c++11", "-std=gnu++0x", "-std=gnu++11")); // NOI18N
-        private static final List<String> CPP14 = Collections.unmodifiableList(Arrays.asList("-std=c++14", "-std=gnu++1y", "-std=c++1y", "-std=gnu++1z", "-std=c++1z")); // NOI18N
+        private static final List<String> CPP14 = Collections.unmodifiableList(Arrays.asList("-std=c++14", "-std=gnu++14", "-std=gnu++1y", "-std=c++1y", "-std=gnu++1z", "-std=c++1z", "-std=c++17", "-std=gnu++17")); // NOI18N
 
         private Pattern cPattern;
         private boolean cPatternInited;
