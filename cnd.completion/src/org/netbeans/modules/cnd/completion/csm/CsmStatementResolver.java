@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.MutableObject;
 
 /**
  * utility class
@@ -173,6 +174,7 @@ public class CsmStatementResolver {
                 System.out.println("in CONDITION of if statement "); //NOI18N
             }
             CsmContextUtilities.updateContextObject(stmt.getCondition(), offset, context);
+            findInnerExpression(stmt.getCondition().getExpression(), offset, context);
             return true;
         }
         if (findInnerObject(stmt.getThen(), offset, context)) {
@@ -288,6 +290,7 @@ public class CsmStatementResolver {
                 System.out.println("in condition of loop statement isPostCheck()=" + stmt.isPostCheck()); //NOI18N
             }
             CsmContextUtilities.updateContextObject(stmt.getCondition(), offset, context);
+            findInnerExpression(stmt.getCondition().getExpression(), offset, context);
             return true;
         }
         return findInnerObject(stmt.getBody(), offset, context);
@@ -354,7 +357,7 @@ public class CsmStatementResolver {
         return findInnerObject(stmt.getBody(), offset, context);
     }
 
-    private static boolean findInnerExpression(CsmExpression expr, int offset, CsmContext context) {
+    /*package*/ static boolean findInnerExpression(CsmExpression expr, int offset, CsmContext context) {
         if(expr != null) {
             for (CsmStatement csmStatement : expr.getLambdas()) {
                 CsmDeclarationStatement lambda = (CsmDeclarationStatement)csmStatement;
