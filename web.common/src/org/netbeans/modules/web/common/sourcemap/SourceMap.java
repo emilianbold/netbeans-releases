@@ -60,6 +60,7 @@ import org.json.simple.parser.ParseException;
 public class SourceMap {
     /** Source map version supported by this class. */
     private static final String SUPPORTED_VERSION = "3"; // NOI18N
+    private static final String INVALIDATING_STRING = ")]}";    // NOI18N
     /** Cache of parsed source maps. Maps the text of the map to the map itself. */
     private static final Map<String,SourceMap> cache = new WeakHashMap<String,SourceMap>();
     /** JSON representation of this source map. */
@@ -87,6 +88,16 @@ public class SourceMap {
         }
         return map;
     }
+    
+    private static String removeInvalidatingString(String sourceMap) {
+        if (sourceMap.startsWith(INVALIDATING_STRING)) {
+            int firstLineEnd = sourceMap.indexOf('\n');
+            if (firstLineEnd > 0) {
+                return sourceMap.substring(firstLineEnd + 1);
+            }
+        }
+        return sourceMap;
+    }
 
     /**
      * Creates a new {@code SourceMap}.
@@ -94,7 +105,7 @@ public class SourceMap {
      * @param sourceMap {@code String} representation of the source map.
      */
     private SourceMap(String sourceMap) {
-        this(toJSONObject(sourceMap));
+        this(toJSONObject(removeInvalidatingString(sourceMap)));
     }
 
     /**
