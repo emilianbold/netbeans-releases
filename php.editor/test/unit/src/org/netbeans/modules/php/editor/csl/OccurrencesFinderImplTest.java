@@ -1224,6 +1224,110 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
         checkOccurrences(getTestPath(), "echo self::test^Constant;", true);
     }
 
+    public void testReturnTypes01_01() throws Exception {
+        checkOccurrences(getTestPath(), "interface Ifac^eA {", true);
+    }
+
+    public void testReturnTypes01_02() throws Exception {
+        checkOccurrences(getTestPath(), "    static function make(): Ifa^ceA;", true);
+    }
+
+    public void testReturnTypes01_03() throws Exception {
+        checkOccurrences(getTestPath(), "class ClsB implements Iface^A {", true);
+    }
+
+    public void testReturnTypes01_04() throws Exception {
+        checkOccurrences(getTestPath(), "    static function make(): If^aceA {", true);
+    }
+
+    public void testReturnTypes01_05() throws Exception {
+        checkOccurrences(getTestPath(), "function create(Ifa^ceA $a): ClsB {", true);
+    }
+
+    public void testReturnTypes01_06() throws Exception {
+        checkOccurrences(getTestPath(), "class Cls^B implements IfaceA {", true);
+    }
+
+    public void testReturnTypes01_07() throws Exception {
+        checkOccurrences(getTestPath(), "function create(IfaceA $a): C^lsB {", true);
+    }
+
+    public void testReturnTypes01_08() throws Exception {
+        checkOccurrences(getTestPath(), "function create2(Cl^sB $b): array {", true);
+    }
+
+    public void testReturnTypes01_09() throws Exception {
+        // no occurences for 'array'
+        checkOccurrences(getTestPath(), "    function test(): a^rray {", true);
+    }
+
+    public void testReturnTypes01_10() throws Exception {
+        // no occurences for 'array'
+        checkOccurrences(getTestPath(), "function create2(ClsB $b): arr^ay {", true);
+    }
+
+    public void testGroupUses01_01() throws Exception {
+        checkOccurrences(getTestPath(), "class C^lsA {", true);
+    }
+
+    public void testGroupUses01_02() throws Exception {
+        checkOccurrences(getTestPath(), "    Cl^sA,", true);
+    }
+
+    public void testGroupUses01_03() throws Exception {
+        checkOccurrences(getTestPath(), "$a = new Cls^A();", true);
+    }
+
+    public void testGroupUses01_04() throws Exception {
+        checkOccurrences(getTestPath(), "class Cls^AB {", true);
+    }
+
+    public void testGroupUses01_05() throws Exception {
+        checkOccurrences(getTestPath(), "    B\\ClsA^B,", true);
+    }
+
+    public void testGroupUses01_06() throws Exception {
+        checkOccurrences(getTestPath(), "$ab = new C^lsAB();", true);
+    }
+
+    public void testGroupUses01_07() throws Exception {
+        checkOccurrences(getTestPath(), "class C^lsABC {", true);
+    }
+
+    public void testGroupUses01_08() throws Exception {
+        checkOccurrences(getTestPath(), "    B\\C\\ClsAB^C,", true);
+    }
+
+    public void testGroupUses01_09() throws Exception {
+        checkOccurrences(getTestPath(), "$abc = new ClsA^BC();", true);
+    }
+
+    public void testGroupUses01_10() throws Exception {
+        checkOccurrences(getTestPath(), "class ClsAB^C2 {", true);
+    }
+
+    public void testGroupUses01_11() throws Exception {
+        checkOccurrences(getTestPath(), "    B\\C\\Cl^sABC2 AS MyCls", true);
+    }
+
+    public void testGroupUses01_12() throws Exception {
+        checkOccurrences(getTestPath(), "    B\\C\\ClsABC2 AS MyCl^s", true);
+    }
+
+    public void testGroupUses01_13() throws Exception {
+        checkOccurrences(getTestPath(), "$mycls = new MyCl^s();", true);
+    }
+
+    public void testGroupUses01_14() throws Exception {
+        // unused
+        checkOccurrences(getTestPath(), "class Cl^sAB implements Iface {", true);
+    }
+
+    public void testGroupUses01_15() throws Exception {
+        // unused
+        checkOccurrences(getTestPath(), "class MyC^ls implements Iface {", true);
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};
