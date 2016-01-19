@@ -62,6 +62,10 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <sys/param.h>
+
+#define	MIN(a,b) (((a)<(b))?(a):(b))
+#define	MAX(a,b) (((a)>(b))?(a):(b))
 
 #define MAX_THREAD_COUNT 80
 #define DEFAULT_THREAD_COUNT 4
@@ -86,11 +90,12 @@ static bool refresh = false;
 static bool refresh_explicit = false;
 static bool statistics = false;
 static int refresh_sleep = 1;
+static int kill_locker_and_wait = 0;
 //static bool shutting_down = false;
 
 #define FS_SERVER_MAJOR_VERSION 1
-#define FS_SERVER_MID_VERSION 7
-#define FS_SERVER_MINOR_VERSION 6
+#define FS_SERVER_MID_VERSION 8
+#define FS_SERVER_MINOR_VERSION 0
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -1592,6 +1597,27 @@ static void *rp_loop(void *data) {
     return NULL;
 }
 
+static void write_pid(int fd) {
+    char buf[40];
+    int sz = snprintf(buf, sizeof buf, "PID=%lu\n", (unsigned long) getpid());
+    if (sz > 0) {
+        write(fd, buf, sz);
+    }
+}
+
+static unsigned long read_pid(int fd) {
+    char buf[40];
+    ssize_t sz = read(fd, buf, sizeof buf);
+    if (sz > 0) {
+        buf[sz] = 0;
+        if (strncmp("PID=", buf, 4) == 0) {
+            unsigned long pid = atol(buf + 4);
+            return pid;
+        }
+    }
+    return 0;
+}
+
 static void lock_or_unlock(bool lock) {
     if (!persistence) {
         return;
@@ -1599,14 +1625,37 @@ static void lock_or_unlock(bool lock) {
     const char* lock_file_name = "lock";
     static int lock_fd = -1;
     if (lock) {
-        lock_fd = open(lock_file_name, O_WRONLY | O_CREAT, 0600);
+        lock_fd = open(lock_file_name, O_RDWR | O_CREAT, 0600);
         if (lock_fd < 0) {
             report_error("error opening lock file %s/%s: %s\n", dirtab_get_basedir(), lock_file_name, strerror(errno));
             exit(FAILURE_OPENING_LOCK_FILE);
         }
         if(lockf(lock_fd, F_TLOCK, 0)) {
-            report_error("error locking lock file %s/%s: %s\n", dirtab_get_basedir(), lock_file_name, strerror(errno));
+            int lockf_errno = errno;
+            unsigned long pid = read_pid(lock_fd);
+            if (pid != 0) {
+                if (kill_locker_and_wait) {
+                    trace(TRACE_INFO, "Killing pid=%lu...\n", pid);
+                    kill(pid, SIGTERM);
+                    int cnt = MAX(kill_locker_and_wait/10, 1);
+                    for (int i = 0; i < cnt; i++) {
+                        if(lockf(lock_fd, F_TLOCK, 0)) {
+                            lockf_errno = errno;
+                            trace(TRACE_FINE, "waiting for pid=%lu to terminate...\n", pid);
+                            usleep(10000);
+                        } else {
+                            write_pid(lock_fd);
+                            return;
+                        }
+                    }
+                }
+                report_error("lock file already locked by PID=%lu %s/%s: %s\n", pid, dirtab_get_basedir(), lock_file_name, strerror(lockf_errno));
+                exit(FAILURE_LOCKING_LOCK_FILE);
+            }
+            report_error("error locking lock file %s/%s: %s\n", dirtab_get_basedir(), lock_file_name, strerror(lockf_errno));
             exit(FAILURE_LOCKING_LOCK_FILE);
+        } else {
+            write_pid(lock_fd);
         }
     } else {
         if (lockf(lock_fd, F_ULOCK, 0)) {
@@ -1688,6 +1737,9 @@ static void usage(char* argv[]) {
             "   -s statistics: print some statistics output to stderr\n"
             "   -d persistence directory: where to log responses (valid only if -p is set)\n"
             "   -c cleanup persistence upon startup\n"
+            "   -K <msec> kill another fs_server process that locks the cache via sending SIGTERM and\n"
+            "      wait maximum <msec> microseconds until it releases the lock\n"
+            "      <msec> should be less than 1000000"
             , prog_name ? prog_name : argv[0], DEFAULT_THREAD_COUNT);
 }
 
@@ -1695,7 +1747,7 @@ void process_options(int argc, char* argv[]) {
     int opt;
     int new_thread_count, new_refresh_sleep, new_trace_level;
     TraceLevel default_trace_leve = TRACE_INFO;
-    while ((opt = getopt(argc, argv, "r:pv:t:lsd:cR:")) != -1) {
+    while ((opt = getopt(argc, argv, "r:pv:t:lsd:cR:K:")) != -1) {
         switch (opt) {
             case 'R':
                 if (optarg) {
@@ -1760,6 +1812,12 @@ void process_options(int argc, char* argv[]) {
                     } else {
                         rp_thread_count = new_thread_count;
                     }
+                }
+                break;
+            case 'K':
+                kill_locker_and_wait = 5;
+                if (optarg) {
+                    kill_locker_and_wait = atoi(optarg);
                 }
                 break;
             default: /* '?' */
