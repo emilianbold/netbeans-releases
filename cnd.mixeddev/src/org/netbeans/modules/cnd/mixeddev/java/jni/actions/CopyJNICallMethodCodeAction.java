@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.mixeddev.Triple;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaEntityInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaFieldInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaMethodInfo;
+import org.netbeans.modules.cnd.mixeddev.wizard.GenerateProjectAction;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -63,11 +64,13 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-@ActionID(id = "org.netbeans.modules.cnd.mixeddev.java.jni.actions.CopyJNICallMethodCodeAction", category = "MixedDevelopment")
-@ActionRegistration(displayName = "#LBL_Action_CopyJNICallMethodCodeAction", lazy = false)
-@ActionReferences(value = {@ActionReference(path = "Editors/text/x-java/Popup/MixedDevelopment", position=60)})
-@NbBundle.Messages({"LBL_Action_CopyJNICallMethodCodeAction=Get field code"})
 public class CopyJNICallMethodCodeAction extends AbstractCopyJNIAccessCodeAction {
+    
+    public static final CopyJNICallMethodCodeAction INSTANCE = new CopyJNICallMethodCodeAction();
+    
+    private CopyJNICallMethodCodeAction() {
+        super();
+    }
     
     @Override
     protected boolean isEnabledAtPosition(Document doc, int caret) {
