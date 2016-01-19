@@ -335,8 +335,8 @@ public class DefaultVisitor implements Visitor {
     public void visit(FunctionDeclaration node) {
         scan(node.getFunctionName());
         scan(node.getFormalParameters());
-        scan(node.getBody());
         scan(node.getReturnType());
+        scan(node.getBody());
     }
 
     @Override
@@ -608,8 +608,8 @@ public class DefaultVisitor implements Visitor {
     public void visit(LambdaFunctionDeclaration declaration) {
         scan(declaration.getFormalParameters());
         scan(declaration.getLexicalVariables());
-        scan(declaration.getBody());
         scan(declaration.getReturnType());
+        scan(declaration.getBody());
     }
 
     @Override
