@@ -432,4 +432,11 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         // Bug 256739 - IDE cannot find type of (*this) in initializer
         performTest("bug256739.cpp", 15, 25, "bug256739.cpp", 13, 9);
     }
+    
+    public void testBug257616() throws Exception {
+        // Bug 257616 - Lambdas inside if and while statements are not recognized
+        performTest("bug257616.cpp", 9, 46, "bug257616.cpp", 9, 30);
+        performTest("bug257616.cpp", 10, 51, "bug257616.cpp", 10, 34);
+        performTest("bug257616.cpp", 10, 56, "bug257616.cpp", 8, 9);
+    }
 }
