@@ -118,8 +118,23 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     }
     
     @Override
-    public boolean isValid() {
-        return dispatcher.isValid();
+    public boolean isValidFast() {
+        return dispatcher.isValidFast();
+    }
+
+    @Override
+    protected boolean isValidSlow() 
+            throws ConnectException, InterruptedException, CancellationException {
+        if (!dispatcher.isValidFast()) {
+            return false;
+        }
+        try {
+            return dispatcher.isValidSlow();
+        } catch (ConnectionManager.CancellationException ex) {
+            // TODO: refactor callers and change java.util.concurrent.CancellationException
+            // with ConnectionManager.CancellationException
+            throw new CancellationException(ex.getMessage());
+        }
     }
 
     @Override
