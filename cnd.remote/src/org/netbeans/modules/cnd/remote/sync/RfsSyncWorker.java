@@ -266,9 +266,14 @@ import org.openide.util.RequestProcessor;
 
     @Override
     public void shutdown() {
+        RfsLocalController lc;
+        synchronized (this) {
+            lc = localController;
+        }
         remoteControllerCleanup();
         localControllerCleanup();
         refreshRemoteFs();
+        lc.waitShutDownFinished();
     }
 
     @Override

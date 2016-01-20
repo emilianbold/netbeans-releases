@@ -1,7 +1,7 @@
-#changeset:   305242:557e519a2a66
+#changeset:   305587:bf45556b7c3a
 #branch:      release81
-#tag:         tip
+#parent:      305580:9a948a3a89f2
 #user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Mon Dec 28 17:02:59 2015 +0300
-#summary:     additional fix for #256919 - fix issues discovered in rfs_controller and rfs_preload - source changes
-B04B2918B79C287651DDC88A9C3D115C62056F4C fs_server-1.0.zip
+#date:        Tue Jan 19 12:44:59 2016 +0300
+#summary:     fixing #257591 - java.util.concurrent.ExecutionException: fs_server [3770 140022993700672]: error locking lock file:
+AE86A01A66ADBA4126F61A340A97B093FDFC1F47 fs_server-1.0.zip
