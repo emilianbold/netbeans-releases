@@ -229,8 +229,18 @@ public final class Authentication {
 
     public enum Type {
 
-        UNDEFINED,
-        PASSWORD,
-        SSH_KEY
+        UNDEFINED(null),
+        PASSWORD("password"), // NOI18N
+        SSH_KEY("publickey,password"); // NOI18N
+
+        private final String authenticationMethods;
+
+        private Type(String authList) {
+            this.authenticationMethods = authList;
+        }
+
+        public String getAuthenticationMethods() {
+            return authenticationMethods;
+        }
     }
 }
