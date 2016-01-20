@@ -230,8 +230,8 @@ public final class Authentication {
     public enum Type {
 
         UNDEFINED(null),
-        PASSWORD("password"), // NOI18N
-        SSH_KEY("publickey,password"); // NOI18N
+        PASSWORD("keyboard-interactive,password"), // NOI18N
+        SSH_KEY("publickey,keyboard-interactive,password"); // NOI18N
 
         private final String authenticationMethods;
 
