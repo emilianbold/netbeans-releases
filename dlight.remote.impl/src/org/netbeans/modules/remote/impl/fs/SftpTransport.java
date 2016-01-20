@@ -165,10 +165,15 @@ public class SftpTransport extends RemoteFileSystemTransport {
     }
     
     @Override
-    public boolean isValid() {
+    public boolean isValidFast() {
         return true;
     }
-    
+
+    @Override
+    protected boolean isValidSlow() {
+        return true;
+    }
+
     @Override
     protected boolean needsClientSidePollingRefresh() {
         return true;        

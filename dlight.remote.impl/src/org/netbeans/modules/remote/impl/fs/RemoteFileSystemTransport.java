@@ -44,6 +44,7 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.net.ConnectException;
 import java.util.Collection;
 import java.util.concurrent.CancellationException;
@@ -67,27 +68,27 @@ public abstract class RemoteFileSystemTransport {
     }
     
     public static Warmup createWarmup(ExecutionEnvironment execEnv, String path) {
-        return getInstance(execEnv).createWarmup(path);
+        return getInstanceFast(execEnv).createWarmup(path);
     }
 
     public static boolean needsClientSidePollingRefresh(ExecutionEnvironment execEnv) {
-        return getInstance(execEnv).needsClientSidePollingRefresh();
+        return getInstanceFast(execEnv).needsClientSidePollingRefresh();
     }
     
     public static boolean canRefreshFast(ExecutionEnvironment execEnv) {
-        return getInstance(execEnv).canRefreshFast();
+        return getInstanceFast(execEnv).canRefreshFast();
     }
 
     public static boolean canSetAccessCheckType(ExecutionEnvironment execEnv) {
-        return getInstance(execEnv).canSetAccessCheckType();
+        return getInstanceFast(execEnv).canSetAccessCheckType();
     }
 
     public static void setAccessCheckType(ExecutionEnvironment execEnv, FileSystemProvider.AccessCheckType accessCheckType) {
-        getInstance(execEnv).setAccessCheckType(accessCheckType);
+        getInstanceFast(execEnv).setAccessCheckType(accessCheckType);
     }
 
     static FileSystemProvider.AccessCheckType getAccessCheckType(ExecutionEnvironment execEnv) {
-        return getInstance(execEnv).getAccessCheckType();
+        return getInstanceFast(execEnv).getAccessCheckType();
     }
     
     public static void refreshFast(RemoteDirectory directory, boolean expected) 
@@ -108,7 +109,7 @@ public abstract class RemoteFileSystemTransport {
             syncCount = fs.getDirSyncCount();
         }
 
-        getInstance(directory.getExecutionEnvironment()).refreshFast(path,expected);
+        getInstanceSlow(directory.getExecutionEnvironment()).refreshFast(path,expected);
 
         if (RemoteLogger.getInstance().isLoggable(Level.FINE)) {
             final RemoteFileSystem fs = directory.getFileSystem();
@@ -122,23 +123,23 @@ public abstract class RemoteFileSystemTransport {
     }
 
     public static void scheduleRefresh(ExecutionEnvironment env, Collection<String> paths) {
-        getInstance(env).scheduleRefresh(paths);
+        getInstanceFast(env).scheduleRefresh(paths);
     }
 
     static void onFocusGained(ExecutionEnvironment execEnv) {
-        getInstance(execEnv).onFocusGained();
+        getInstanceFast(execEnv).onFocusGained();
     }
 
     static void onConnect(ExecutionEnvironment execEnv) {
-        getInstance(execEnv).onConnect();
+        getInstanceFast(execEnv).onConnect();
     }
         
     public static void registerDirectory(RemoteDirectory directory) {
-        getInstance(directory.getExecutionEnvironment()).registerDirectoryImpl(directory);
+        getInstanceFast(directory.getExecutionEnvironment()).registerDirectoryImpl(directory);
     }
 
     public static void unregisterDirectory(ExecutionEnvironment execEnv, String path) {
-        getInstance(execEnv).unregisterDirectoryImpl(path);
+        getInstanceFast(execEnv).unregisterDirectoryImpl(path);
     }
 
     public static DirEntryList readDirectory(ExecutionEnvironment execEnv, String path) 
@@ -146,7 +147,7 @@ public abstract class RemoteFileSystemTransport {
 
         DirEntryList entries = null;
         RemoteFileSystemTransport transport = FSSTransport.getInstance(execEnv);
-        if (transport != null && transport.isValid()) {
+        if (transport != null && transport.isValidFast()) {
             try {
                 entries = transport.readDirectory(path);
                 // The agreement is as follows: if a fatal error occurs
@@ -157,7 +158,7 @@ public abstract class RemoteFileSystemTransport {
                 // In this case we need to fallback to the default (sftp) implementation
                 // TODO: consider redesign?
             } catch (ExecutionException | IOException ex) {
-                if (transport.isValid()) {
+                if (transport.isValidFast()) {
                     throw ex; // process as usual
                 } // else fall back to sftp implementation
             }
@@ -176,22 +177,28 @@ public abstract class RemoteFileSystemTransport {
     public static DirEntry stat(ExecutionEnvironment execEnv, String path) 
             throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
 
-        return getInstance(execEnv).stat(path);
+        return getInstanceSlow(execEnv).stat(path);
     }
     
     public static DirEntry lstat(ExecutionEnvironment execEnv, String path)
             throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
 
-        return getInstance(execEnv).lstat(path);
+        return getInstanceSlow(execEnv).lstat(path);
      }
 
     public static DirEntryList delete(ExecutionEnvironment execEnv, String path, boolean directory) 
             throws ConnectException, IOException {
-        return getInstance(execEnv).delete(path, directory);
+        try {
+            return getInstanceSlow(execEnv).delete(path, directory);
+        } catch (InterruptedException | CancellationException ex) {
+            InterruptedIOException ioe = new InterruptedIOException(ex.getMessage());
+            ioe.initCause(ex);
+            throw ioe;
+        }
     }
 
     public static boolean canCopy(ExecutionEnvironment execEnv, String from, String to) {
-        return getInstance(execEnv).canCopy(from, to);
+        return getInstanceFast(execEnv).canCopy(from, to);
     }
 
     /**
@@ -210,7 +217,7 @@ public abstract class RemoteFileSystemTransport {
     public static DirEntryList copy(ExecutionEnvironment execEnv, String from, String to, 
             Collection<IOException> subdirectoryExceptions)
             throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
-        return getInstance(execEnv).copy(from, to, subdirectoryExceptions);
+        return getInstanceSlow(execEnv).copy(from, to, subdirectoryExceptions);
     }
 
     public static class MoveInfo {
@@ -223,23 +230,32 @@ public abstract class RemoteFileSystemTransport {
     }
 
     public static boolean canMove(ExecutionEnvironment execEnv, String from, String to) {
-        return getInstance(execEnv).canMove(from, to);
+        return getInstanceFast(execEnv).canMove(from, to);
     }
 
     public static MoveInfo move(ExecutionEnvironment execEnv, String from, String to)
             throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
-        return getInstance(execEnv).move(from, to);
+        return getInstanceSlow(execEnv).move(from, to);
     }
     
     public static DirEntry uploadAndRename(ExecutionEnvironment execEnv, File src, 
             String pathToUpload, String pathToRename) 
             throws ConnectException, IOException, InterruptedException, ExecutionException, InterruptedException {
-        return getInstance(execEnv).uploadAndRename(src, pathToUpload, pathToRename);
+        return getInstanceSlow(execEnv).uploadAndRename(src, pathToUpload, pathToRename);
     }
 
-    private static RemoteFileSystemTransport getInstance(ExecutionEnvironment execEnv) {
+    private static RemoteFileSystemTransport getInstanceFast(ExecutionEnvironment execEnv) {
         RemoteFileSystemTransport transport = FSSTransport.getInstance(execEnv);
-        if (transport == null || ! transport.isValid()) {
+        if (transport == null || ! transport.isValidFast()) {
+            transport = SftpTransport.getInstance(execEnv);
+        }
+        return transport;
+    }
+
+    private static RemoteFileSystemTransport getInstanceSlow(ExecutionEnvironment execEnv)
+            throws ConnectException, InterruptedException, CancellationException {
+        RemoteFileSystemTransport transport = FSSTransport.getInstance(execEnv);
+        if (transport == null || ! transport.isValidSlow()) {
             transport = SftpTransport.getInstance(execEnv);
         }
         return transport;
@@ -265,8 +281,26 @@ public abstract class RemoteFileSystemTransport {
     protected abstract DirEntryList readDirectory(String path) 
             throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
 
-    protected abstract boolean isValid();
-    
+    /**
+     * Fast validity check - returns true if no problem (yet?) occurred
+     * (for example, fs_server might be just not yet started).
+     * For reliable and slow check, call checkValid()
+     */
+    protected abstract boolean isValidFast();
+
+    /**
+     * Slow validity check - includes launching (if needed) of remote tools, etc.
+     * It can be slow on first call within a session or after reconncet.
+     * It should be fast in other cases.
+     *
+     * It should throw one of declared exceptions
+     * if the check is not possible (for example, the connection to host is lost).
+     * Such exception will be rethrown to client.
+     * Otherwise it should just return true or false.
+     */
+    protected abstract boolean isValidSlow()
+            throws ConnectException, InterruptedException, CancellationException;
+
     protected abstract boolean needsClientSidePollingRefresh();
 
     protected abstract boolean canRefreshFast();
