@@ -119,10 +119,10 @@ class ProjectSelector extends LazyComboBox<Lookup.Provider> {
             s.addAll(additionalProjects());
 
             List<Lookup.Provider> l = new ArrayList();
-            Lookup.Provider[] pa = s.toArray(new Lookup.Provider[s.size()]);
+            Lookup.Provider[] pa = s.toArray(new Lookup.Provider[0]);
             l.add(EXTRA_ITEM);
             l.addAll(Arrays.asList(ProjectUtilities.getSortedProjects(pa)));
-            return l.toArray(new Lookup.Provider[l.size()]);
+            return l.toArray(new Lookup.Provider[0]);
         }
     }
     
