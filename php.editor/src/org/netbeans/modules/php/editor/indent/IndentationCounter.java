@@ -46,6 +46,7 @@ import java.util.Collection;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
@@ -185,8 +186,13 @@ public class IndentationCounter {
                 int bracketBalance = 0;
                 int squaredBalance = 0;
                 PHPTokenId previousTokenId = ts.token().id();
+                Boolean caretAfterComma = null;
                 while (!insideString && ts.movePrevious()) {
                     Token token = ts.token();
+                    if (caretAfterComma == null) {
+                        caretAfterComma = token.id() == PHPTokenId.PHP_TOKEN
+                                && TokenUtilities.textEquals(",", token.text()); // NOI18N
+                    }
                     ScopeDelimiter delimiter = getScopeDelimiter(token);
                     int anchor = ts.offset();
                     int shiftAtAncor = 0;
@@ -275,6 +281,9 @@ public class IndentationCounter {
                                         int offsetArrayDeclaration = offsetArrayDeclaration(startExpression, ts);
                                         if (offsetArrayDeclaration > -1) {
                                             newIndent = Utilities.getRowIndent(doc, offsetArrayDeclaration) + itemsArrayDeclararionSize;
+                                        } else if (caretAfterComma
+                                                && inGroupUse(startExpression, ts)) {
+                                            newIndent = Utilities.getRowIndent(doc, startExpression);
                                         } else {
                                             newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize;
                                         }
@@ -433,6 +442,42 @@ public class IndentationCounter {
         if ((token.id() == PHPTokenId.PHP_ARRAY && balance == 1)
                 || (token.id() == PHPTokenId.PHP_TOKEN && squaredBalance == 1)) {
             result = ts.offset();
+        }
+        ts.move(origOffset);
+        ts.moveNext();
+        return result;
+    }
+
+    private boolean inGroupUse(int startExpression, TokenSequence ts) {
+        boolean result = false;
+        int origOffset = ts.offset();
+        ts.move(startExpression);
+        // move to start expression
+        if (ts.moveNext()
+                && ts.movePrevious()) {
+            // try to find '{', namespace and then 'use'
+            boolean openCurlyFound = false;
+            boolean namespaceFound = false;
+            for (;;) {
+                TokenId tokenId = ts.token().id();
+                if (tokenId == PHPTokenId.PHP_USE) {
+                    result = openCurlyFound && namespaceFound;
+                    break;
+                } else if (tokenId == PHPTokenId.PHP_CURLY_OPEN) {
+                    if (openCurlyFound) {
+                        break;
+                    }
+                    openCurlyFound = true;
+                } else if (tokenId == PHPTokenId.PHP_NS_SEPARATOR) {
+                    namespaceFound = true;
+                } else if (tokenId != PHPTokenId.WHITESPACE
+                        && tokenId != PHPTokenId.PHP_STRING) {
+                    break;
+                }
+                if (!ts.movePrevious()) {
+                    break;
+                }
+            }
         }
         ts.move(origOffset);
         ts.moveNext();
