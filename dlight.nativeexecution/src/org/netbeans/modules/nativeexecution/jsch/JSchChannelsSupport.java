@@ -60,6 +60,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.netbeans.modules.nativeexecution.api.util.RemoteStatistics;
+import org.netbeans.modules.nativeexecution.support.Authentication;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.RemoteUserInfo;
 import org.openide.util.Cancellable;
@@ -236,7 +237,14 @@ public final class JSchChannelsSupport {
                     for (Entry<String, String> entry : jschSessionConfig.entrySet()) {
                         newSession.setConfig(entry.getKey(), entry.getValue());
                     }
-
+                    final String preferredAuthKey = "PreferredAuthentications"; // NOI18N
+                    if (!jschSessionConfig.containsKey(preferredAuthKey)) {
+                        Authentication auth = Authentication.getFor(env);
+                        String methods = auth.getType().getAuthenticationMethods();
+                        if (methods != null) {
+                            newSession.setConfig(preferredAuthKey, methods);
+                        }
+                    }
                     if (USE_JZLIB) {
                         newSession.setConfig("compression.s2c", "zlib@openssh.com,zlib,none"); // NOI18N
                         newSession.setConfig("compression.c2s", "zlib@openssh.com,zlib,none"); // NOI18N

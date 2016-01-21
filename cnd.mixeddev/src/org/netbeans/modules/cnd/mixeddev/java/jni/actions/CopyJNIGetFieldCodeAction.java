@@ -65,11 +65,13 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-@ActionID(id = "org.netbeans.modules.cnd.mixeddev.java.jni.actions.CopyJNIGetFieldCodeAction", category = "MixedDevelopment")
-@ActionRegistration(displayName = "#LBL_Action_CopyJNIGetFieldCodeAction", lazy = false)
-@ActionReferences(value = {@ActionReference(path = "Editors/text/x-java/Popup/MixedDevelopment", position=80)})
-@NbBundle.Messages({"LBL_Action_CopyJNIGetFieldCodeAction=Get field code"})
 public class CopyJNIGetFieldCodeAction extends AbstractCopyJNIAccessCodeAction {
+    
+    public static final CopyJNIGetFieldCodeAction INSTANCE = new CopyJNIGetFieldCodeAction();
+    
+    private CopyJNIGetFieldCodeAction() {
+        super();
+    }
     
     @Override
     protected boolean isEnabledAtPosition(Document doc, int caret) {

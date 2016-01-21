@@ -66,11 +66,13 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-@ActionID(id = "org.netbeans.modules.cnd.mixeddev.java.jni.actions.CopyJNISignatureAction", category = "MixedDevelopment")
-@ActionRegistration(displayName = "#LBL_Action_CopyJNISignatureAction", lazy = false)
-@ActionReferences(value = {@ActionReference(path = "Editors/text/x-java/Popup/MixedDevelopment", position=40)})
-@NbBundle.Messages({"LBL_Action_CopyJNISignatureAction=Copy JNI signature"})
 public class CopyJNISignatureAction extends AbstractJNIAction {
+    
+    public static final CopyJNISignatureAction INSTANCE = new CopyJNISignatureAction();
+    
+    private CopyJNISignatureAction() {
+        super();
+    }
 
     @Override
     public String getName() {
