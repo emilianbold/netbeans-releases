@@ -166,7 +166,9 @@ import org.openide.util.RequestProcessor;
     }
 
     public void connected() {
-        if (RemoteFileSystemManager.getInstance().getFileSystem(env).getRoot().getImplementor().hasCache()) {
+        boolean wasValid  = valid;
+        valid = true;
+        if (wasValid && RemoteFileSystemManager.getInstance().getFileSystem(env).getRoot().getImplementor().hasCache()) {
             RP.post(new ConnectTask());
         }
     }
@@ -350,10 +352,10 @@ import org.openide.util.RequestProcessor;
         }
     }
 
-    public boolean isValid() {
+    public boolean isValidFast() {
         return valid;
     }
-    
+
     private void setInvalid(boolean force) {
         if (force) {
             valid = false;
@@ -364,7 +366,35 @@ import org.openide.util.RequestProcessor;
         }
         RemoteLogger.log(Level.WARNING, "fs_server at {0} failed: {1} ", env, lastErrorMessage.get());
     }
-    
+
+    /**
+     * Slow validity check - includes launching (if needed) of remote tools, etc.
+     * It can be slow on first call within a session or after reconncet.
+     * It should be fast in other cases.
+     *
+     * It should throw one of declared exceptions
+     * if the check is not possible (for example, the connection to host is lost).
+     * Such exception will be rethrown to client.
+     * Otherwise it should just return true or false.
+     */
+    public boolean isValidSlow()
+            throws ConnectException, ConnectionManager.CancellationException, InterruptedException {
+        FsServer srv = null;
+        try {
+            srv = getOrCreateServer();
+        } catch (ConnectException ex) {
+            throw ex;
+        } catch (InitializationException | IOException | ExecutionException ex) {
+            ex.printStackTrace(System.err);
+        }
+        if (srv == null) {
+            setInvalid(true);
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     private void checkValid() throws ExecutionException, InterruptedException {
         if (ConnectionManager.getInstance().isConnectedTo(env)) {
             FsServer srv = getServer();
@@ -750,7 +780,7 @@ import org.openide.util.RequestProcessor;
                 argsList.add("-t"); // NOI18N
                 argsList.add(Integer.toString(SERVER_THREADS));
             }
-            int killCacheLocker = Integer.getInteger("remote.fs_server.kill.locker", 0);
+            int killCacheLocker = Integer.getInteger("remote.fs_server.kill.locker", 0); // NOI18N
             if (killCacheLocker > 0) {
                 argsList.add("-K"); // NOI18N
                 argsList.add(Integer.toString(killCacheLocker)); // NOI18N

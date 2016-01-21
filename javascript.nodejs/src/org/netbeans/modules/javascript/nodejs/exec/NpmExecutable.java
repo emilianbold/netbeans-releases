@@ -51,6 +51,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.simple.JSONObject;
@@ -65,6 +66,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.file.PackageJson;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptions;
 import org.netbeans.modules.javascript.nodejs.options.NodeJsOptionsValidator;
+import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
 import org.netbeans.modules.javascript.nodejs.ui.options.NodeJsOptionsPanelController;
 import org.netbeans.modules.javascript.nodejs.util.FileUtils;
 import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
@@ -145,12 +147,18 @@ public class NpmExecutable {
     @CheckForNull
     public Future<Integer> runScript(String... args) {
         assert !EventQueue.isDispatchThread();
+        assert args.length > 0;
         assert project != null;
+        final String script = args[0];
+        stopRunningScript(script);
         String projectName = NodeJsUtils.getProjectDisplayName(project);
+        AtomicReference<Future<Integer>> taskRef = new AtomicReference<>();
         Future<Integer> task = getExecutable(Bundle.NpmExecutable_run_script(projectName))
                 .additionalParameters(getRunScriptParams(args))
-                .run(getDescriptor());
+                .run(getDescriptor(taskRef));
+        taskRef.set(task);
         assert task != null : npmPath;
+        setRunningScript(script, taskRef);
         return task;
     }
 
@@ -257,12 +265,25 @@ public class NpmExecutable {
     }
 
     private ExecutionDescriptor getDescriptor() {
+        return getDescriptor(null);
+    }
+
+    private ExecutionDescriptor getDescriptor(@NullAllowed final AtomicReference<Future<Integer>> taskRef) {
         assert project != null;
-        return ExternalExecutable.DEFAULT_EXECUTION_DESCRIPTOR
+        ExecutionDescriptor descriptor = ExternalExecutable.DEFAULT_EXECUTION_DESCRIPTOR
                 .showSuspended(true)
                 .optionsPath(NodeJsOptionsPanelController.OPTIONS_PATH)
                 .outLineBased(true)
                 .errLineBased(true);
+        if (taskRef != null) {
+            descriptor = descriptor.rerunCallback(new ExecutionDescriptor.RerunCallback() {
+                @Override
+                public void performed(Future<Integer> task) {
+                    taskRef.set(task);
+                }
+            });
+        }
+        return descriptor;
     }
 
     private static ExecutionDescriptor getSilentDescriptor() {
@@ -319,6 +340,21 @@ public class NpmExecutable {
     List<String> getParams(List<String> params) {
         assert params != null;
         return params;
+    }
+
+    private void stopRunningScript(String script) {
+        NodeProcesses.RunInfo npmScript = NodeJsSupport.forProject(project).getNodeProcesses().getNpmScript(script);
+        if (!npmScript.isRunning()) {
+            return;
+        }
+        // node is running
+        assert npmScript.isRunning() : script;
+        // force restart
+        npmScript.stop();
+    }
+
+    private void setRunningScript(String script, AtomicReference<Future<Integer>> taskRef) {
+        NodeJsSupport.forProject(project).getNodeProcesses().setNpmScript(script, NodeProcesses.RunInfo.run(taskRef));
     }
 
     @CheckForNull
