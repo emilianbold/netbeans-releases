@@ -182,15 +182,12 @@ public abstract class ProfilingPointFactory {
             index++;
         }
 
-        ProfilingPoint[] profilingPointsArr = new ProfilingPoint[profilingPoints.size()];
-        profilingPoints.toArray(profilingPointsArr);
-
-        return profilingPointsArr;
+        return profilingPoints.toArray(new ProfilingPoint[0]);
     }
 
     void saveProfilingPoints(Lookup.Provider project) throws IOException {
         List<ProfilingPoint> profilingPoints = ProfilingPointsManager.getDefault().getProfilingPoints(getProfilingPointsClass(), project, false);
-        saveProfilingPoints(profilingPoints.toArray(new ProfilingPoint[profilingPoints.size()]), project);
+        saveProfilingPoints(profilingPoints.toArray(new ProfilingPoint[0]), project);
     }
     
     private void saveProfilingPoints(ProfilingPoint[] profilingPoints, Lookup.Provider project)

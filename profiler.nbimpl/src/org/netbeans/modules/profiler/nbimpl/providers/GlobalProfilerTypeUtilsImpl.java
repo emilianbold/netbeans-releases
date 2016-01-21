@@ -88,9 +88,9 @@ public class GlobalProfilerTypeUtilsImpl extends BaseProfilerTypeUtilsImpl {
         }
         
         ClassPath[] cps = new ClassPath[3];
-        cps[0] = ClassPathSupport.createProxyClassPath(bootPaths.toArray(new ClassPath[bootPaths.size()]));
-        cps[1] = ClassPathSupport.createProxyClassPath(compilePaths.toArray(new ClassPath[compilePaths.size()]));
-        cps[2] = ClassPathSupport.createProxyClassPath(srcPaths.toArray(new ClassPath[srcPaths.size()]));
+        cps[0] = ClassPathSupport.createProxyClassPath(bootPaths.toArray(new ClassPath[0]));
+        cps[1] = ClassPathSupport.createProxyClassPath(compilePaths.toArray(new ClassPath[0]));
+        cps[2] = ClassPathSupport.createProxyClassPath(srcPaths.toArray(new ClassPath[0]));
         
         return cps;
     }

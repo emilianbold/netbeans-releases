@@ -120,7 +120,7 @@ public class ClasspathInfoFactory {
                 if ((roots == null) || (roots.length == 0)) {
                     urlList.add(entry.getURL());
                 }
-                cpCompile = ClassPathSupport.createClassPath(urlList.toArray(new URL[urlList.size()]));
+                cpCompile = ClassPathSupport.createClassPath(urlList.toArray(new URL[0]));
             }
         }
 
