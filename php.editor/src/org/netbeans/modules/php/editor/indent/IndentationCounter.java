@@ -224,7 +224,7 @@ public class IndentationCounter {
                         break;
                     } else {
                         if (ts.token().id() == PHPTokenId.PHP_TOKEN
-                                || (ts.token().id() == PHPTokenId.PHP_OPERATOR && "=".equals(ts.token().text()))) { // NOI18N
+                                || (ts.token().id() == PHPTokenId.PHP_OPERATOR && TokenUtilities.textEquals("=", ts.token().text()))) { // NOI18N
                             char ch = ts.token().text().charAt(0);
                             boolean continualIndent = false;
                             boolean indent = false;
@@ -530,7 +530,7 @@ public class IndentationCounter {
                 return false;
             }
             if (tokenContent != null
-                    && TokenUtilities.equals(token.text(), tokenContent)) {
+                    && TokenUtilities.textEquals(token.text(), tokenContent)) {
                 return false;
             }
             return true;
