@@ -60,6 +60,7 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -68,15 +69,9 @@ import org.openide.util.NbBundle;
  */
 public class CopyJNISignatureAction extends AbstractJNIAction {
     
-    public static final CopyJNISignatureAction INSTANCE = new CopyJNISignatureAction();
-    
-    private CopyJNISignatureAction() {
-        super();
-    }
-
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(MixedDevUtils.class, "cnd.mixeddev.copy_jni_signature"); // NOI18N
+    public CopyJNISignatureAction(Lookup context) {
+        super(context);
+        putValue(NAME, NbBundle.getMessage(MixedDevUtils.class, "cnd.mixeddev.copy_jni_signature"));
     }
 
     @Override
@@ -92,7 +87,7 @@ public class CopyJNISignatureAction extends AbstractJNIAction {
     }
 
     @Override
-    protected void performAction(Node[] activatedNodes) {
+    protected void actionPerformedImpl(Node[] activatedNodes) {
         Triple<DataObject, Document, Integer> context = extractContext(activatedNodes);
         if (context != null) {
             final Document doc = context.second;

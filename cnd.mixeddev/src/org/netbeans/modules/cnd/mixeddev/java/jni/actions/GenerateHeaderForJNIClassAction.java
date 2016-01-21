@@ -45,8 +45,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.List;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -77,6 +79,7 @@ import static org.netbeans.modules.cnd.mixeddev.wizard.Generator.getRootHeader;
 import static org.netbeans.modules.cnd.mixeddev.wizard.Generator.getRootSource;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.utils.MutableObject;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.java.j2seproject.api.J2SEProjectPlatform;
 import org.openide.DialogDisplayer;
@@ -90,8 +93,10 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
+import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
 
 /**
@@ -100,15 +105,9 @@ import org.openide.windows.WindowManager;
  */
 public class GenerateHeaderForJNIClassAction extends AbstractJNIAction {
     
-    public static final GenerateHeaderForJNIClassAction INSTANCE = new GenerateHeaderForJNIClassAction();
-    
-    private GenerateHeaderForJNIClassAction() {
-        super();
-    }
-
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(MixedDevUtils.class, "cnd.mixeddev.generate_header_for_jni_class"); // NOI18N
+    public GenerateHeaderForJNIClassAction(Lookup context) {
+        super(context);
+        putValue(NAME, NbBundle.getMessage(MixedDevUtils.class, "cnd.mixeddev.generate_header_for_jni_class"));
     }
 
     @Override
@@ -117,8 +116,8 @@ public class GenerateHeaderForJNIClassAction extends AbstractJNIAction {
     }
 
     @Override
-    protected void performAction(Node[] activatedNodes) {
-        Triple<DataObject, Document, Integer> context = extractContext(activatedNodes);
+    protected void actionPerformedImpl(Node[] activatedNodes) {
+        final Triple<DataObject, Document, Integer> context = extractContext(activatedNodes);
         if (context != null) {
             final FileObject javaFile = context.first.getPrimaryFile();
             final Document doc = context.second;
@@ -144,18 +143,35 @@ public class GenerateHeaderForJNIClassAction extends AbstractJNIAction {
                             NotifyDescriptor.ERROR_MESSAGE
                         ));
                     }
-                    
+
                 }
             }
             if (toJump == null) {
-                JProjectFileChooser chooser = new JProjectFileChooser(
-                    WindowManager.getDefault().getMainWindow(), 
-                    true, 
-                    nativeProjects
-                );
-                chooser.setVisible(true);
-                Project chosenProject = chooser.getChosenProject();
-                FileObject chosenFolder = chooser.getChosenFile();
+                Project chosenProject = null;
+                FileObject chosenFolder = null;
+                try {
+                    final MutableObject<Project> chosenProjectHolder = new MutableObject<>();
+                    final MutableObject<FileObject> chosenFolderHolder = new MutableObject<>();
+                    SwingUtilities.invokeAndWait(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            JProjectFileChooser chooser = new JProjectFileChooser(
+                                WindowManager.getDefault().getMainWindow(), 
+                                true, 
+                                nativeProjects
+                            );
+                            chooser.setVisible(true);
+                            chosenProjectHolder.value = chooser.getChosenProject();
+                            chosenFolderHolder.value = chooser.getChosenFile();
+                        }
+                        
+                    });
+                    chosenProject = chosenProjectHolder.value;
+                    chosenFolder = chosenFolderHolder.value;
+                } catch (InterruptedException | InvocationTargetException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
                 if (chosenProject != null && chosenFolder != null) {
                     String headerPath = chosenFolder.getPath() + File.separator + headerFileName;
                     FileObject header = generateHeader(javaFile, headerPath);

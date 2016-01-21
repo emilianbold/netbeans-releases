@@ -43,10 +43,10 @@ import org.openide.util.actions.SystemAction;
 })
 public class MixedDevToolsMetaAction extends AbstactDynamicMenuAction implements ContextAwareAction {
     
-    private static final RequestProcessor rp = new RequestProcessor(MixedDevToolsMetaAction.class.getName(), 1);
+    private static final RequestProcessor RP = new RequestProcessor(MixedDevToolsMetaAction.class.getName(), 1);
 
     public MixedDevToolsMetaAction() {
-        super(rp, NbBundle.getMessage(MixedDevUtils.class, "Editors/text/x-java/Popup/MixedDevelopment")); // NOI18N
+        super(RP, NbBundle.getMessage(MixedDevUtils.class, "Editors/text/x-java/Popup/MixedDevelopment")); // NOI18N
     }
 
     @Override

@@ -51,13 +51,18 @@ import org.netbeans.modules.cnd.mixeddev.java.model.JavaFieldInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaMethodInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaParameterInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaTypeInfo;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public abstract class AbstractCopyJNIAccessCodeAction extends AbstractJNIAction {
-    
+
+    public AbstractCopyJNIAccessCodeAction(Lookup context) {
+        super(context);
+    }
+
     @Override
     protected boolean isEnabledAtPosition(Document doc, int caret) {
         JavaEntityInfo entity = resolveJavaEntity(doc, caret);

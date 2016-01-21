@@ -32,20 +32,25 @@ import org.openide.util.RequestProcessor;
 })
 public class MixedDevContextMetaAction extends AbstactDynamicMenuAction implements ContextAwareAction {
     
-    private static final RequestProcessor rp = new RequestProcessor(MixedDevContextMetaAction.class.getName(), 1);
+    private static final RequestProcessor RP = new RequestProcessor(MixedDevContextMetaAction.class.getName(), 1);
 
     public MixedDevContextMetaAction() {
-        super(rp, NbBundle.getMessage(MixedDevUtils.class, "Editors/text/x-java/Popup/MixedDevelopment")); // NOI18N
+        super(RP, NbBundle.getMessage(MixedDevUtils.class, "Editors/text/x-java/Popup/MixedDevelopment")); // NOI18N
     }
 
     @Override
     protected Action[] createActions(Lookup actionContext) {
         return new Action[] {
-            GenerateHeaderForJNIClassAction.INSTANCE,
-            CopyJNISignatureAction.INSTANCE,
-            CopyJNICallMethodCodeAction.INSTANCE,
-            CopyJNIGetFieldCodeAction.INSTANCE,
-            CopyJNISetFieldCodeAction.INSTANCE
+            new GenerateHeaderForJNIClassAction(actionContext),
+            new CopyJNISignatureAction(actionContext),
+            new CopyJNICallMethodCodeAction(actionContext),
+            new CopyJNIGetFieldCodeAction(actionContext),
+            new CopyJNISetFieldCodeAction(actionContext)
+//            GenerateHeaderForJNIClassAction.INSTANCE,
+//            CopyJNISignatureAction.INSTANCE,
+//            CopyJNICallMethodCodeAction.INSTANCE,
+//            CopyJNIGetFieldCodeAction.INSTANCE,
+//            CopyJNISetFieldCodeAction.INSTANCE
         };
     }
 }
