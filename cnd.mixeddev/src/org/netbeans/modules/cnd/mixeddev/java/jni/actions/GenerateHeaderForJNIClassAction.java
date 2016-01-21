@@ -107,7 +107,7 @@ public class GenerateHeaderForJNIClassAction extends AbstractJNIAction {
     
     public GenerateHeaderForJNIClassAction(Lookup context) {
         super(context);
-        putValue(NAME, NbBundle.getMessage(MixedDevUtils.class, "cnd.mixeddev.generate_header_for_jni_class"));
+        putValue(NAME, NbBundle.getMessage(MixedDevUtils.class, "cnd.mixeddev.generate_header_for_jni_class")); // NOI18N
     }
 
     @Override
