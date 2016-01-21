@@ -70,7 +70,7 @@ public class CopyJNIGetFieldCodeAction extends AbstractCopyJNIAccessCodeAction {
     
     public CopyJNIGetFieldCodeAction(Lookup context) {
         super(context);
-        putValue(NAME, NbBundle.getMessage(MixedDevUtils.class, "cnd.mixeddev.copy_get_field_code"));
+        putValue(NAME, NbBundle.getMessage(MixedDevUtils.class, "cnd.mixeddev.copy_get_field_code")); // NOI18N
     }
     
     @Override

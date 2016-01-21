@@ -71,7 +71,7 @@ public class CopyJNISignatureAction extends AbstractJNIAction {
     
     public CopyJNISignatureAction(Lookup context) {
         super(context);
-        putValue(NAME, NbBundle.getMessage(MixedDevUtils.class, "cnd.mixeddev.copy_jni_signature"));
+        putValue(NAME, NbBundle.getMessage(MixedDevUtils.class, "cnd.mixeddev.copy_jni_signature")); // NOI18N
     }
 
     @Override
