@@ -694,7 +694,7 @@ public class Utils {
             }
         }
 
-        return lineProfilingPoints.toArray(new CodeProfilingPoint[lineProfilingPoints.size()]);
+        return lineProfilingPoints.toArray(new CodeProfilingPoint[0]);
     }
 
     // TODO: should be moved to ProjectUtilities

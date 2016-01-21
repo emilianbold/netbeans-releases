@@ -548,7 +548,7 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
             }
         }
 
-        return runtimeProfilingPoints.toArray(new RuntimeProfilingPoint[runtimeProfilingPoints.size()]);
+        return runtimeProfilingPoints.toArray(new RuntimeProfilingPoint[0]);
     }
 
     // TODO: should optionally support also subprojects/project references
@@ -564,7 +564,7 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
             }
         }
 
-        return activeGlobalProfilingPoints.toArray(new GlobalProfilingPoint[activeGlobalProfilingPoints.size()]);
+        return activeGlobalProfilingPoints.toArray(new GlobalProfilingPoint[0]);
     }
 
     public synchronized int createUniqueRuntimeProfilingPointIdentificator() {
@@ -967,19 +967,19 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
     private ProfilingPoint[] getValidProfilingPoints(ProfilingPoint[] profilingPointsArr) {
         ArrayList<ProfilingPoint> validProfilingPoints = new ArrayList<ProfilingPoint>();
         for (ProfilingPoint profilingPoint : profilingPointsArr) if(profilingPoint.isValid()) validProfilingPoints.add(profilingPoint);
-        return validProfilingPoints.toArray(new ProfilingPoint[validProfilingPoints.size()]);
+        return validProfilingPoints.toArray(new ProfilingPoint[0]);
     }
     
     // Returns only invalid profiling points (currently CodeProfilingPoints with any of the locations pointing to an invalid file)
     private ProfilingPoint[] getInvalidProfilingPoints(ProfilingPoint[] profilingPointsArr) {
         ArrayList<ProfilingPoint> invalidProfilingPoints = new ArrayList<ProfilingPoint>();
         for (ProfilingPoint profilingPoint : profilingPointsArr) if(!profilingPoint.isValid()) invalidProfilingPoints.add(profilingPoint);
-        return invalidProfilingPoints.toArray(new ProfilingPoint[invalidProfilingPoints.size()]);
+        return invalidProfilingPoints.toArray(new ProfilingPoint[0]);
     }
     
     // Checks if currently loaded profiling points are valid, invalid profiling points are silently deleted
     private void checkProfilingPoints() {
-        ProfilingPoint[] invalidProfilingPoints = getInvalidProfilingPoints(profilingPoints.toArray(new ProfilingPoint[profilingPoints.size()]));
+        ProfilingPoint[] invalidProfilingPoints = getInvalidProfilingPoints(profilingPoints.toArray(new ProfilingPoint[0]));
         if (invalidProfilingPoints.length > 0) removeProfilingPoints(invalidProfilingPoints);
     }
     
@@ -1050,7 +1050,7 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
             }
         }
         
-        return profilingPointsForFile.toArray(new CodeProfilingPoint[profilingPointsForFile.size()]);
+        return profilingPointsForFile.toArray(new CodeProfilingPoint[0]);
     }
     
     private void deleteProfilingPointsForFile(File file) {
@@ -1221,8 +1221,7 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
                                               WeakListeners.propertyChange(pcl, factory));
         }
 
-        profilingPointFactories = new ProfilingPointFactory[cleansedFactories.size()];
-        cleansedFactories.toArray(profilingPointFactories);
+        profilingPointFactories = cleansedFactories.toArray(new ProfilingPointFactory[0]);
     }
 
     private synchronized void removeProfilingPoints(ProfilingPoint[] profilingPointsArr, boolean internalChange) {
@@ -1247,8 +1246,7 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
 
     private void storeDirtyProfilingPoints() {
         if (dirtyProfilingPoints.isEmpty()) return;
-        ProfilingPoint[] dirtyProfilingPointsArr = new ProfilingPoint[dirtyProfilingPoints.size()];
-        dirtyProfilingPoints.toArray(dirtyProfilingPointsArr);
+        ProfilingPoint[] dirtyProfilingPointsArr = dirtyProfilingPoints.toArray(new ProfilingPoint[0]);
         storeProfilingPoints(dirtyProfilingPointsArr);
     }
 

@@ -589,7 +589,7 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
     private void refreshProfilingPoints() {
         List<ProfilingPoint> sortedProfilingPoints = ProfilingPointsManager.getDefault().getProfilingPoints(
                 getSelectedProject(), ProfilerIDESettings.getInstance().getIncludeProfilingPointsDependencies(), false);
-        profilingPoints = sortedProfilingPoints.toArray(new ProfilingPoint[sortedProfilingPoints.size()]);
+        profilingPoints = sortedProfilingPoints.toArray(new ProfilingPoint[0]);
         profilingPointsTableModel.fireTableDataChanged();
         repaint();
     }

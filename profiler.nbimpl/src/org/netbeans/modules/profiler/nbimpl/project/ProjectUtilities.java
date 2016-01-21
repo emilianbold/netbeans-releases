@@ -205,7 +205,7 @@ public final class ProjectUtilities {
             }
         }
 
-        return projectsArray.toArray(new Project[projectsArray.size()]);
+        return projectsArray.toArray(new Project[0]);
     }
 
     public static FileObject getOrCreateBuildFolder(Project project, String buildDirProp) {
@@ -393,7 +393,7 @@ public final class ProjectUtilities {
             addSubpackages(packages, "", root); //NOI18N
         }
 
-        return packages.toArray(new String[packages.size()]);
+        return packages.toArray(new String[0]);
     }
 
 //    /**
@@ -502,7 +502,7 @@ public final class ProjectUtilities {
         projects.add(project);
         getSourceRoots(project, traverse, projects, set);
 
-        return set.toArray(new FileObject[set.size()]);
+        return set.toArray(new FileObject[0]);
     }
 
 //    public static SimpleFilter computeProjectOnlyInstrumentationFilter(Project project, SimpleFilter predefinedInstrFilter,
@@ -549,7 +549,7 @@ public final class ProjectUtilities {
                 addSubpackages(packages1, "", root); //NOI18N
             }
 
-            storage[0] = packages1.toArray(new String[packages1.size()]);
+            storage[0] = packages1.toArray(new String[0]);
         }
 
         if (subprojects && (storage[1] == null)) {
