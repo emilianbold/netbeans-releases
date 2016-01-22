@@ -1168,6 +1168,14 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug257031.cpp", 15, 52, "bug257031.cpp", 14, 21);
     }
     
+    public void testBug257647() throws Exception {
+        // Bug 257647 - C pointer arithmetic and invalid hints in fprintf
+        performTest("bug257647.cpp", 10, 12, "bug257647.cpp", 5, 5);
+        performTest("bug257647.cpp", 11, 12, "bug257647.cpp", 5, 5);
+        performTest("bug257647.cpp", 12, 12, "bug257647.cpp", 5, 5);
+        performTest("bug257647.cpp", 13, 12, "bug257647.cpp", 3, 5);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
