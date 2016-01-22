@@ -706,6 +706,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
 
     private void autoCompleteGroupUse(UseType useType, PHPCompletionResult completionResult, CompletionRequest request) {
         assert request.extraPrefix != null;
+        request.insertOnlyMethodsName = true;
         // we will "complete" FQN so handle search prefix as well
         if (!request.extraPrefix.startsWith("\\")) { // NOI18N
             request.extraPrefix = "\\" + request.extraPrefix; // NOI18N
@@ -728,13 +729,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                 break;
             case CONST:
                 for (ConstantElement constant : request.index.getConstants(nameQuery)) {
-                    completionResult.add(new PHPCompletionItem.ConstantItem(constant, request));
+                    completionResult.add(new PHPCompletionItem.ConstantItem(constant, request, QualifiedNameKind.FULLYQUALIFIED));
                 }
                 break;
             case FUNCTION:
                 for (FunctionElement function : request.index.getFunctions(nameQuery)) {
-                    List<PHPCompletionItem.FunctionElementItem> items = PHPCompletionItem.FunctionElementItem.getItems(function, request);
-                    for (PHPCompletionItem.FunctionElementItem item : items) {
+                    for (PHPCompletionItem.FunctionElementItem item : PHPCompletionItem.FunctionElementItem.getItems(function, request, QualifiedNameKind.FULLYQUALIFIED)) {
                         completionResult.add(item);
                     }
                 }

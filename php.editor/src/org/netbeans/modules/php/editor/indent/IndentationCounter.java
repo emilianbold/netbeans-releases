@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.indent;
 
@@ -186,13 +186,8 @@ public class IndentationCounter {
                 int bracketBalance = 0;
                 int squaredBalance = 0;
                 PHPTokenId previousTokenId = ts.token().id();
-                Boolean caretAfterComma = null;
                 while (!insideString && ts.movePrevious()) {
                     Token token = ts.token();
-                    if (caretAfterComma == null) {
-                        caretAfterComma = token.id() == PHPTokenId.PHP_TOKEN
-                                && TokenUtilities.textEquals(",", token.text()); // NOI18N
-                    }
                     ScopeDelimiter delimiter = getScopeDelimiter(token);
                     int anchor = ts.offset();
                     int shiftAtAncor = 0;
@@ -281,8 +276,7 @@ public class IndentationCounter {
                                         int offsetArrayDeclaration = offsetArrayDeclaration(startExpression, ts);
                                         if (offsetArrayDeclaration > -1) {
                                             newIndent = Utilities.getRowIndent(doc, offsetArrayDeclaration) + itemsArrayDeclararionSize;
-                                        } else if (caretAfterComma
-                                                && inGroupUse(startExpression, ts)) {
+                                        } else if (inGroupUse(startExpression, ts)) {
                                             newIndent = Utilities.getRowIndent(doc, startExpression);
                                         } else {
                                             newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize;
@@ -455,7 +449,7 @@ public class IndentationCounter {
         // move to start expression
         if (ts.moveNext()
                 && ts.movePrevious()) {
-            // try to find '{', namespace and then 'use'
+            // try to find '{', namespace and then 'use' (possibly with 'const' or 'function')
             boolean openCurlyFound = false;
             boolean namespaceFound = false;
             for (;;) {
@@ -471,7 +465,9 @@ public class IndentationCounter {
                 } else if (tokenId == PHPTokenId.PHP_NS_SEPARATOR) {
                     namespaceFound = true;
                 } else if (tokenId != PHPTokenId.WHITESPACE
-                        && tokenId != PHPTokenId.PHP_STRING) {
+                        && tokenId != PHPTokenId.PHP_STRING
+                        && tokenId != PHPTokenId.PHP_CONST
+                        && tokenId != PHPTokenId.PHP_FUNCTION) {
                     break;
                 }
                 if (!ts.movePrevious()) {
