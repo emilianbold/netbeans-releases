@@ -55,7 +55,13 @@ import org.openide.util.NbPreferences;
  */
 public final class Authentication {
 
+    public static final String PASSWORD_METHODS = "gssapi-with-mic#1,publickey#0,keyboard-interactive#1,password#1"; //NOI18N
+    public static final String SSH_KEY_METHODS  = "gssapi-with-mic#1,publickey#1,keyboard-interactive#1,password#1"; //NOI18N
+    public static final String DEFAULT_METHODS  = PASSWORD_METHODS; 
+    
     private static final Preferences prefs = NbPreferences.forModule(Authentication.class);
+    private static final String METHODS_SUFFIX = ".methods"; // NOI18N
+    private static final String TIMEOUT_SUFFIX = ".timeout"; // NOI18N
     private static final boolean isUnitTest = Boolean.getBoolean("nativeexecution.mode.unittest"); // NOI18N
     private static final String knownHostsFile;
     private static String lastSSHKeyFile;
@@ -63,6 +69,8 @@ public final class Authentication {
     private final String pref_key;
     private String sshKeyFile;
     private Type type = Type.UNDEFINED;
+    private String authenticationMethods = DEFAULT_METHODS;
+    private int timeout = Integer.getInteger("jsch.connection.timeout", 10000)/1000; // NOI18N
 
     static {
         String hosts = System.getProperty("ssh.knonwhosts.file", null); // NOI18N
@@ -111,6 +119,37 @@ public final class Authentication {
         return result;
     }
 
+    public void setTimeout(int timeout) {
+        this.timeout = timeout;
+    }
+    
+    public int getTimeout() {
+        return timeout;
+    }
+    
+    public void setAuthenticationMethods(String methods) {
+        authenticationMethods = methods;
+    }
+
+    public String getAuthenticationMethods() {
+        return authenticationMethods;
+    }
+
+    public String getActiveAuthenticationMethods() {
+        StringBuilder buf = new StringBuilder();
+        String[] methods = authenticationMethods.split(","); // NOI18N
+        for(int i = 0; i < methods.length; i++) {
+            String method = methods[i];
+            if (method.endsWith("#1")) { // NOI18N
+                if (buf.length()>0) {
+                    buf.append(',');
+                }
+                buf.append(method.substring(0, method.length() - 2));
+            }
+        }
+        return buf.toString();
+    }
+    
     public boolean isDefined() {
         return type != Type.UNDEFINED;
     }
@@ -175,6 +214,8 @@ public final class Authentication {
         } else {
             prefs.put(pref_key, type.name());
         }
+        prefs.put(pref_key+METHODS_SUFFIX, authenticationMethods);
+        prefs.putInt(pref_key+TIMEOUT_SUFFIX, timeout);
     }
 
     private void restore() {
@@ -196,7 +237,8 @@ public final class Authentication {
                 type = Type.UNDEFINED;
             }
         }
-
+        authenticationMethods = prefs.get(pref_key+METHODS_SUFFIX, authenticationMethods);
+        timeout = prefs.getInt(pref_key+TIMEOUT_SUFFIX, timeout);
     }
 
     public ExecutionEnvironment getEnv() {
@@ -228,19 +270,8 @@ public final class Authentication {
     }
 
     public enum Type {
-
-        UNDEFINED(null),
-        PASSWORD("keyboard-interactive,password"), // NOI18N
-        SSH_KEY("publickey,keyboard-interactive,password"); // NOI18N
-
-        private final String authenticationMethods;
-
-        private Type(String authList) {
-            this.authenticationMethods = authList;
-        }
-
-        public String getAuthenticationMethods() {
-            return authenticationMethods;
-        }
+        UNDEFINED(),
+        PASSWORD(),
+        SSH_KEY();
     }
 }
