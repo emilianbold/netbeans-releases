@@ -706,6 +706,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
 
     private void autoCompleteGroupUse(UseType useType, PHPCompletionResult completionResult, CompletionRequest request) {
         assert request.extraPrefix != null;
+        request.insertOnlyMethodsName = true;
         // we will "complete" FQN so handle search prefix as well
         if (!request.extraPrefix.startsWith("\\")) { // NOI18N
             request.extraPrefix = "\\" + request.extraPrefix; // NOI18N

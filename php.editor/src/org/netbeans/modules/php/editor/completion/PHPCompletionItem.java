@@ -391,6 +391,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     }
 
     public static boolean insertOnlyMethodsName(CompletionRequest request) {
+        if (request.insertOnlyMethodsName != null) {
+            return request.insertOnlyMethodsName;
+        }
         boolean result = false;
         TokenHierarchy<?> tokenHierarchy = request.result.getSnapshot().getTokenHierarchy();
         TokenSequence<PHPTokenId> tokenSequence = (TokenSequence<PHPTokenId>) tokenHierarchy.tokenSequence();
@@ -1746,6 +1749,8 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         public String prefix;
         // used in special cases (e.g. in group use)
         public String extraPrefix;
+        // whether to complete '()' (default: null == autodetection)
+        public Boolean insertOnlyMethodsName;
         public String currentlyEditedFileURL;
         public CompletionContext context;
         ElementQuery.Index index;
