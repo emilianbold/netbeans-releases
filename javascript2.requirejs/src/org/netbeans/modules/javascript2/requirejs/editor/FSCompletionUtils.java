@@ -53,6 +53,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -74,6 +75,8 @@ public class FSCompletionUtils {
     final static String GO_UP = "../"; //NOI18N
     private static final String SLASH = "/"; //NOI18N
     private static final String FILE = "file"; // URI scheme
+    
+    private static final Logger LOG = Logger.getLogger(FSCompletionUtils.class.getName());
     
     public static List<CompletionProposal> computeRelativeItems(
             Collection<? extends FileObject> relativeTo,
@@ -129,8 +132,12 @@ public class FSCompletionUtils {
                             resolve = null;
                         }
                         if (resolve != null && (resolve.getScheme() == null || FILE.equals(resolve.getScheme()))) {
-                            File normalizedFile = FileUtil.normalizeFile(Utilities.toFile(resolve));
-                            f = FileUtil.toFileObject(normalizedFile);
+                            try {
+                                File normalizedFile = FileUtil.normalizeFile(Utilities.toFile(resolve));
+                                f = FileUtil.toFileObject(normalizedFile);
+                            } catch (IllegalArgumentException e) {
+                                 LOG.log(Level.FINE, "could not convert " + resolve + " to File", resolve);
+                            }
                         }
                     } else {
                         f = f.getFileObject(pathPrefix);

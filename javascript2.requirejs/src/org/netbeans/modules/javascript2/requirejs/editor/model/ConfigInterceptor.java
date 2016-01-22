@@ -224,7 +224,14 @@ public class ConfigInterceptor implements FunctionInterceptor {
                                 && packageLocation != null && !packageLocation.isEmpty()) {
                             packagesMap.put(packageName, packageLocation);
                         }
+                    } else {
+                        if (ts.moveNext()) {
+                            token = ts.token();
+                        } else {
+                            break;
+                        }
                     }
+                    
                 }
             }
         }
