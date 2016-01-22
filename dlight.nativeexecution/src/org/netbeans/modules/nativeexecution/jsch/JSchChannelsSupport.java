@@ -73,7 +73,6 @@ public final class JSchChannelsSupport {
 
     private static final java.util.logging.Logger log = Logger.getInstance();
     private static final int JSCH_CONNECTION_RETRY = Integer.getInteger("jsch.connection.retry", 3); // NOI18N
-    private static final int JSCH_CONNECTION_TIMEOUT = Integer.getInteger("jsch.connection.timeout", 10000); // NOI18N
     private static final int JSCH_SESSIONS_PER_ENV = Integer.getInteger("jsch.sessions.per.env", 10); // NOI18N
     private static final int JSCH_CHANNELS_PER_SESSION = Integer.getInteger("jsch.channels.per.session", 10); // NOI18N
     private static final boolean UNIT_TEST_MODE = Boolean.getBoolean("nativeexecution.mode.unittest"); // NOI18N
@@ -237,10 +236,10 @@ public final class JSchChannelsSupport {
                     for (Entry<String, String> entry : jschSessionConfig.entrySet()) {
                         newSession.setConfig(entry.getKey(), entry.getValue());
                     }
+                    Authentication auth = Authentication.getFor(env);
                     final String preferredAuthKey = "PreferredAuthentications"; // NOI18N
                     if (!jschSessionConfig.containsKey(preferredAuthKey)) {
-                        Authentication auth = Authentication.getFor(env);
-                        String methods = auth.getType().getAuthenticationMethods();
+                        String methods = auth.getActiveAuthenticationMethods();
                         if (methods != null) {
                             newSession.setConfig(preferredAuthKey, methods);
                         }
@@ -255,7 +254,7 @@ public final class JSchChannelsSupport {
                         newSession.setSocketFactory(MeasurableSocketFactory.getInstance());
                     }
 
-                    newSession.connect(JSCH_CONNECTION_TIMEOUT);
+                    newSession.connect(auth.getTimeout()*1000);
                     break;
                 } catch (JSchException ex) {
                     if (!UNIT_TEST_MODE) {
