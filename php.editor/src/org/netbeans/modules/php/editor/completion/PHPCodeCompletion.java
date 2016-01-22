@@ -728,13 +728,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                 break;
             case CONST:
                 for (ConstantElement constant : request.index.getConstants(nameQuery)) {
-                    completionResult.add(new PHPCompletionItem.ConstantItem(constant, request));
+                    completionResult.add(new PHPCompletionItem.ConstantItem(constant, request, QualifiedNameKind.FULLYQUALIFIED));
                 }
                 break;
             case FUNCTION:
                 for (FunctionElement function : request.index.getFunctions(nameQuery)) {
-                    List<PHPCompletionItem.FunctionElementItem> items = PHPCompletionItem.FunctionElementItem.getItems(function, request);
-                    for (PHPCompletionItem.FunctionElementItem item : items) {
+                    for (PHPCompletionItem.FunctionElementItem item : PHPCompletionItem.FunctionElementItem.getItems(function, request, QualifiedNameKind.FULLYQUALIFIED)) {
                         completionResult.add(item);
                     }
                 }

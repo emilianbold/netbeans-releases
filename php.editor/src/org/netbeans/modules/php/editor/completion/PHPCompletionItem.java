@@ -338,12 +338,12 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
             // XXX improve?
             String tpl = template.toString();
-            String searchPrefix = request.extraPrefix;
-            if (StringUtils.hasText(searchPrefix)) {
-                if (tpl.startsWith(searchPrefix)) {
-                    tpl = tpl.substring(searchPrefix.length());
+            String extraPrefix = request.extraPrefix;
+            if (StringUtils.hasText(extraPrefix)) {
+                if (tpl.startsWith(extraPrefix)) {
+                    tpl = tpl.substring(extraPrefix.length());
                 } else {
-                    assert false : "[" + tpl + "] should start with [" + searchPrefix + "]";
+                    assert false : "[" + tpl + "] should start with [" + extraPrefix + "]";
                 }
             }
             return tpl;
@@ -603,29 +603,37 @@ public abstract class PHPCompletionItem implements CompletionProposal {
          * @return more than one instance in case if optional parameters exists
          */
         static List<FunctionElementItem> getItems(final BaseFunctionElement function, CompletionRequest request) {
+            return getItems(function, request, null);
+        }
+
+        static List<FunctionElementItem> getItems(final BaseFunctionElement function, CompletionRequest request, QualifiedNameKind generateAs) {
             final List<FunctionElementItem> retval = new ArrayList<>();
             final List<ParameterElement> parameters = new ArrayList<>();
             for (ParameterElement param : function.getParameters()) {
                 if (!param.isMandatory()) {
                     if (retval.isEmpty()) {
-                        retval.add(new FunctionElementItem(function, request, parameters));
+                        retval.add(new FunctionElementItem(function, request, parameters, generateAs));
                     }
                     parameters.add(param);
-                    retval.add(new FunctionElementItem(function, request, parameters));
+                    retval.add(new FunctionElementItem(function, request, parameters, generateAs));
                 } else {
                     //assert retval.isEmpty():param.asString();
                     parameters.add(param);
                 }
             }
             if (retval.isEmpty()) {
-                retval.add(new FunctionElementItem(function, request, parameters));
+                retval.add(new FunctionElementItem(function, request, parameters, generateAs));
             }
 
             return retval;
         }
 
         FunctionElementItem(BaseFunctionElement function, CompletionRequest request, List<ParameterElement> parameters) {
-            super(function, request);
+            this(function, request, parameters, null);
+        }
+
+        FunctionElementItem(BaseFunctionElement function, CompletionRequest request, List<ParameterElement> parameters, QualifiedNameKind generateAs) {
+            super(function, request, generateAs);
             this.parameters = new ArrayList<>(parameters);
         }
 
@@ -1406,7 +1414,11 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     static class ConstantItem extends PHPCompletionItem {
 
         ConstantItem(ConstantElement constant, CompletionRequest request) {
-            super(constant, request);
+            this(constant, request, null);
+        }
+
+        ConstantItem(ConstantElement constant, CompletionRequest request, QualifiedNameKind generateAs) {
+            super(constant, request, generateAs);
         }
 
         @Override
