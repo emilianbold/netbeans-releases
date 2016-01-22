@@ -5928,4 +5928,30 @@ public class FormatterTestCase extends EditorBase {
                 "    return 0;\n"+
                 "}\n");
     }
+    
+    public void test257662() {
+        setLoadDocumentText(
+                "void renderScene(void)\n" +
+                "{\n" +
+                "    Do(5, [] {\n" +
+                "        clear(100, 100, 100);\n" +
+                "        clear(100, 100, 100);\n" +
+                "        clear(100, 100, 100);\n" +
+                "    });\n" +
+                "}\n"
+                );
+        setDefaultsOptions();
+        reformat();
+        assertDocumentText("after reformat 'operator>' and 'operator<' has not space ",
+                "void renderScene(void)\n" +
+                "{\n" +
+                "    Do(5, [] {\n" +
+                "        clear(100, 100, 100);\n" +
+                "        clear(100, 100, 100);\n" +
+                "        clear(100, 100, 100);\n" +
+                "    });\n" +
+                "}\n"
+                );
+    }
+
 }
