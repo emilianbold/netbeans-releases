@@ -6,6 +6,6 @@ use main\test\{
     Storage,
     StorageLegacy,
     model\Account
-            ^,
+    ^,
     model\Person as MyPerson
 };
