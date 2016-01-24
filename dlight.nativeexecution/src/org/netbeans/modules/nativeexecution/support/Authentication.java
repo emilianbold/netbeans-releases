@@ -43,11 +43,15 @@ package org.netbeans.modules.nativeexecution.support;
 
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.Pair;
 
 /**
  *
@@ -55,9 +59,21 @@ import org.openide.util.NbPreferences;
  */
 public final class Authentication {
 
-    public static final String PASSWORD_METHODS = "gssapi-with-mic#1,publickey#0,keyboard-interactive#1,password#1"; //NOI18N
-    public static final String SSH_KEY_METHODS  = "gssapi-with-mic#1,publickey#1,keyboard-interactive#1,password#1"; //NOI18N
-    public static final String DEFAULT_METHODS  = PASSWORD_METHODS; 
+    public static final MethodList PASSWORD_METHODS =
+            new MethodList(
+                    Pair.of(Method.GssapiWithMic, true),
+                    Pair.of(Method.PublicKey, false),
+                    Pair.of(Method.KeyboardInteractive, true),
+                    Pair.of(Method.Password, true));
+
+    public static final MethodList SSH_KEY_METHODS  =
+            new MethodList(
+                    Pair.of(Method.GssapiWithMic, true),
+                    Pair.of(Method.PublicKey, true),
+                    Pair.of(Method.KeyboardInteractive, true),
+                    Pair.of(Method.Password, true));
+
+    public static final MethodList DEFAULT_METHODS  = PASSWORD_METHODS;
     
     private static final Preferences prefs = NbPreferences.forModule(Authentication.class);
     private static final String METHODS_SUFFIX = ".methods"; // NOI18N
@@ -69,7 +85,7 @@ public final class Authentication {
     private final String pref_key;
     private String sshKeyFile;
     private Type type = Type.UNDEFINED;
-    private String authenticationMethods = DEFAULT_METHODS;
+    private MethodList authenticationMethods = DEFAULT_METHODS;
     private int timeout = Integer.getInteger("jsch.connection.timeout", 10000)/1000; // NOI18N
 
     static {
@@ -127,29 +143,14 @@ public final class Authentication {
         return timeout;
     }
     
-    public void setAuthenticationMethods(String methods) {
+    public void setAuthenticationMethods(MethodList methods) {
         authenticationMethods = methods;
     }
 
-    public String getAuthenticationMethods() {
+    public MethodList getAuthenticationMethods() {
         return authenticationMethods;
     }
 
-    public String getActiveAuthenticationMethods() {
-        StringBuilder buf = new StringBuilder();
-        String[] methods = authenticationMethods.split(","); // NOI18N
-        for(int i = 0; i < methods.length; i++) {
-            String method = methods[i];
-            if (method.endsWith("#1")) { // NOI18N
-                if (buf.length()>0) {
-                    buf.append(',');
-                }
-                buf.append(method.substring(0, method.length() - 2));
-            }
-        }
-        return buf.toString();
-    }
-    
     public boolean isDefined() {
         return type != Type.UNDEFINED;
     }
@@ -214,7 +215,7 @@ public final class Authentication {
         } else {
             prefs.put(pref_key, type.name());
         }
-        prefs.put(pref_key+METHODS_SUFFIX, authenticationMethods);
+        prefs.put(pref_key+METHODS_SUFFIX, authenticationMethods.toStorageString());
         prefs.putInt(pref_key+TIMEOUT_SUFFIX, timeout);
     }
 
@@ -237,7 +238,10 @@ public final class Authentication {
                 type = Type.UNDEFINED;
             }
         }
-        authenticationMethods = prefs.get(pref_key+METHODS_SUFFIX, authenticationMethods);
+        String storedText = prefs.get(pref_key+METHODS_SUFFIX, null);
+        if (storedText != null && ! storedText.isEmpty()) {
+            authenticationMethods = MethodList.fromStorageString(storedText);
+        }
         timeout = prefs.getInt(pref_key+TIMEOUT_SUFFIX, timeout);
     }
 
@@ -269,9 +273,166 @@ public final class Authentication {
         return sshKeyFile;
     }
 
-    public enum Type {
+    public static enum Type {
         UNDEFINED(),
         PASSWORD(),
         SSH_KEY();
     }
+
+    /**
+     * Represents one of authentication methods.
+     * The ID should be exactly the same as used in jsch
+     */
+    public static enum Method {
+
+        GssapiWithMic("gssapi-with-mic", false), // NOI18N
+        PublicKey("publickey", true), // NOI18N
+        KeyboardInteractive("keyboard-interactive", false), // NOI18N
+        Password("password", false); // NOI18N
+
+        private final String id;
+        private final boolean hasKeyFile;
+
+        private Method(String name, boolean hasKeyFile) {
+            this.id = name;
+            this.hasKeyFile = hasKeyFile;
+        }
+
+        public String getID() {
+            return id;
+        }
+
+        public String getDisplayName() {
+            return NbBundle.getMessage(Authentication.class, "Authentication." + id);
+        }
+
+        public boolean hasKeyFile() {
+            return hasKeyFile;
+        }
+
+        private static Method byID(String id) {
+            for (Method m : values()) {
+                if (m.id.equals(id)) {
+                    return m;
+                }
+            }
+            return null;
+        }
+    }
+
+    /**
+     * The immutable list of ssh authentication methods.
+     * Presents enabled/disabled state
+     * and also methods order (which includes even disabled methods)
+     */
+    public static class MethodList {
+
+        private final Method[] methods;
+        private final boolean[] enabled;
+
+        public MethodList(List<Pair<Method, Boolean>> pairs) {
+            this.methods = new Method[pairs.size()];
+            this.enabled = new boolean[pairs.size()];
+            for (int i = 0; i < pairs.size(); i++) {
+                this.methods[i] = pairs.get(i).first();
+                this.enabled[i] = pairs.get(i).second();
+            }
+        }
+
+        public MethodList(Pair<Method, Boolean> ... pairs) {
+            this.methods = new Method[pairs.length];
+            this.enabled = new boolean[pairs.length];
+            for (int i = 0; i < pairs.length; i++) {
+                methods[i] = pairs[i].first();
+                enabled[i] = pairs[i].second();
+            }
+        }
+
+        public String toJschString() {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < methods.length; i++) {
+                if (enabled[i]) {
+                    if (sb.length() > 0) {
+                        sb.append(','); //NOI18N
+                    }
+                    sb.append(methods[i].getID());
+                }
+            }
+            return sb.toString();
+        }
+
+
+        public String toStorageString() {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < methods.length; i++) {
+                if (sb.length() > 0) {
+                    sb.append(','); //NOI18N
+                }
+                sb.append(methods[i].getID());
+                sb.append('#'); //NOI18N
+                sb.append(enabled[i] ? '1' : '0'); //NOI18N
+            }
+            return sb.toString();
+        }
+
+        public boolean isEmpty() {
+            return methods.length == 0;
+        }
+
+        public Method[] getMethods() {
+            return methods.clone();
+        }
+
+        public boolean isEnabled(Method method) {
+            for (int i = 0; i < methods.length; i++) {
+                if (methods[i] == method) {
+                    return enabled[i];
+                }
+            }
+            return false;
+        }
+
+        public boolean hasKeyFile() {
+            for (int i = 0; i < methods.length; i++) {
+                if (enabled[i] && methods[i].hasKeyFile()) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
+        @Override
+        public String toString() {
+            return toStorageString();
+        }
+
+        private static MethodList fromStorageString(String methodsList) {
+            List<Pair<Method, Boolean>> pairs = new ArrayList<>();
+            String[] parts = methodsList.split(","); // NOI18N
+            for(int i = 0; i < parts.length; i++) {
+                String part = parts[i];
+                if (!part.isEmpty()) {
+                    String name;
+                    boolean enabled;
+                    if (part.endsWith("#1")) { // NOI18N
+                        name = part.substring(0, part.length() - 2);
+                        enabled = true;
+                    } else if (part.endsWith("#0")) { // NOI18N
+                        name = part.substring(0, part.length() - 2);
+                        enabled = false;
+                    } else {
+                        name = part;
+                        enabled = true;
+                    }
+                    Method method = Method.byID(name);
+                    if (method != null) {
+                        pairs.add(Pair.of(method, enabled));
+                    }
+                }
+            }
+            return new MethodList(pairs);
+        }
+    }
 }
+
