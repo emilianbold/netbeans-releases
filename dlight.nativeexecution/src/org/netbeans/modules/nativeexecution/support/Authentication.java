@@ -44,6 +44,7 @@ package org.netbeans.modules.nativeexecution.support;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
@@ -406,6 +407,37 @@ public final class Authentication {
         public String toString() {
             return toStorageString();
         }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 89 * hash + Arrays.deepHashCode(this.methods);
+            hash = 89 * hash + Arrays.hashCode(this.enabled);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final MethodList other = (MethodList) obj;
+            if (!Arrays.deepEquals(this.methods, other.methods)) {
+                return false;
+            }
+            if (!Arrays.equals(this.enabled, other.enabled)) {
+                return false;
+            }
+            return true;
+        }
+
+
 
         private static MethodList fromStorageString(String methodsList) {
             List<Pair<Method, Boolean>> pairs = new ArrayList<>();
