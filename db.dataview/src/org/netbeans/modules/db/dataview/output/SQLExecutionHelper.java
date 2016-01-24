@@ -860,24 +860,25 @@ class SQLExecutionHelper {
 
         long startTime = System.currentTimeMillis();
         boolean isResultSet = false;
-        if (stmt instanceof PreparedStatement) {
-            isResultSet = ((PreparedStatement) stmt).execute();
-        } else {
-            try {
+
+        try {
+            if (stmt instanceof PreparedStatement) {
+                isResultSet = ((PreparedStatement) stmt).execute();
+            } else {
                 DataViewPageContext pc = dataView.getPageContexts().size() > 0
                         ? dataView.getPageContext(0) : null;
                 isResultSet = stmt.execute(appendLimitIfRequired(pc, sql));
-            } catch (NullPointerException ex) {
-                LOGGER.log(Level.SEVERE, "Failed to execute SQL Statement [{0}], cause: {1}", new Object[] {sql, ex});
-                throw new SQLException(ex);
-            } catch (SQLException sqlExc) {
-                LOGGER.log(Level.SEVERE, "Failed to execute SQL Statement [{0}], cause: {1}", new Object[]{sql, sqlExc});
-                throw sqlExc;
             }
+        } catch (NullPointerException ex) {
+            LOGGER.log(Level.INFO, "Failed to execute SQL Statement [{0}], cause: {1}", new Object[]{sql, ex});
+            throw new SQLException(ex);
+        } catch (SQLException sqlExc) {
+            LOGGER.log(Level.INFO, "Failed to execute SQL Statement [{0}], cause: {1}", new Object[]{sql, sqlExc});
+            throw sqlExc;
+        } finally {
+            extractWarnings(stmt);
         }
-        
-        extractWarnings(stmt);
-        
+
         long executionTime = System.currentTimeMillis() - startTime;
         synchronized (dataView) {
             dataView.setUpdateCount(stmt.getUpdateCount());
