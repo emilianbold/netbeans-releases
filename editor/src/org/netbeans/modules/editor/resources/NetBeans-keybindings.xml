@@ -144,6 +144,7 @@ made subject to such option by the copyright holder.
     <bind actionName="add-selection-else-caret-up" key="OS-KP_UP"/>
     <bind actionName="add-selection-else-caret-down" key="OS-DOWN"/>
     <bind actionName="add-selection-else-caret-down" key="OS-KP_DOWN"/>
+    <bind actionName="remove-last-caret" key="OS-U"/>
     <bind actionName="move-code-element-up" key="OS-PAGE_UP"/>
     <bind actionName="move-code-element-down" key="OS-PAGE_DOWN"/>
     <bind actionName="copy-selection-else-line-up" key="DS-UP"/>

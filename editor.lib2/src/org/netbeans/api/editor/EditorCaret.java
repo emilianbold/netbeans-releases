@@ -67,6 +67,8 @@ import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -509,8 +511,16 @@ public final class EditorCaret implements Caret {
      * 
      * @return the caret instance that was removed or null if there's just one caret.
      */
-    public @NonNull CaretInfo removeLastCaret() {
-        return new CaretInfo(this); // TBD
+    public @CheckForNull CaretInfo removeLastCaret() {
+        if(carets.size() > 1) {
+            CaretInfo caret = carets.remove(carets.size()-1);
+            boolean removed = sortedCarets.remove(caret);
+            assert removed;
+            fireStateChanged();
+            dispatchUpdate(true);
+            return caret;
+        }
+        return null;
     }
     
     /**
@@ -695,6 +705,7 @@ public final class EditorCaret implements Caret {
         component.addFocusListener(listenerImpl);
         component.addMouseListener(listenerImpl);
         component.addMouseMotionListener(listenerImpl);
+        component.addKeyListener(listenerImpl);
         ViewHierarchy.get(component).addViewHierarchyListener(listenerImpl);
         
         EditorCaretTransferHandler.install(component);
@@ -1772,7 +1783,7 @@ public final class EditorCaret implements Caret {
 
     private final class ListenerImpl extends ComponentAdapter
     implements DocumentListener, AtomicLockListener, MouseListener, MouseMotionListener, FocusListener, ViewHierarchyListener,
-            PropertyChangeListener, ActionListener, PreferenceChangeListener
+            PropertyChangeListener, ActionListener, PreferenceChangeListener, KeyListener
     {
 
         ListenerImpl() {
@@ -2349,6 +2360,21 @@ public final class EditorCaret implements Caret {
         public void viewHierarchyChanged(ViewHierarchyEvent evt) {
             scheduleCaretUpdate();
         }
+        
+        // KeyListener
+        @Override
+        public void keyPressed(KeyEvent e) {
+            if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                if(carets.size() > 1) {
+                    carets.remove(0, carets.size()-1);
+                    sortedCarets.remove(0, sortedCarets.size()-1);
+                    fireStateChanged();
+                    dispatchUpdate(true);
+                }
+            }
+        }
+        @Override public void keyReleased(KeyEvent e) {}
+        @Override public void keyTyped(KeyEvent e) {}
         
     } // End of ListenerImpl class
     

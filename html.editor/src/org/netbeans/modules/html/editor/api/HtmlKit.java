@@ -49,6 +49,7 @@ import javax.swing.text.TextAction;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.csl.api.CslActions;
 import org.netbeans.modules.editor.NbEditorKit;
+import org.netbeans.modules.html.editor.APIAccessor;
 
 /**
  * Editor kit implementation for HTML content type
@@ -57,6 +58,10 @@ import org.netbeans.modules.editor.NbEditorKit;
  *
  */
 public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Provider {
+    
+    static {
+        APIAccessor.DEFAULT = new AccessorImpl();
+    }
 
     public @Override
     org.openide.util.HelpCtx getHelpCtx() {
@@ -65,6 +70,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
     static final long serialVersionUID = -1381945567613910297L;
     
     public static final String HTML_MIME_TYPE = "text/html"; // NOI18N
+    private String contentType;
 
     public HtmlKit() {
         this(HTML_MIME_TYPE);
@@ -72,11 +78,16 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
 
     public HtmlKit(String mimeType) {
         super();
+        contentType = HTML_MIME_TYPE;
     }
 
     @Override
     public String getContentType() {
-        return HTML_MIME_TYPE;
+        return contentType;
+    }
+    
+    void setContentType(String contentType) {
+        this.contentType = contentType;
     }
 
     @Override
@@ -90,7 +101,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
     @Override
     public void install(javax.swing.JEditorPane c) {
         super.install(c);
-        c.setTransferHandler(new HtmlTransferHandler());
+        HtmlTransferHandler.install(c);
     }
 
     @Override

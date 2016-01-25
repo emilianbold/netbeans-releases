@@ -448,7 +448,9 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-                    looseFocus();
+                    if(looseFocus()) {
+                        e.consume();
+                    };
                     ReplaceBar replaceBarInstance = ReplaceBar.getInstance(SearchBar.this);
                     if (replaceBarInstance.isVisible()) {
                         replaceBarInstance.looseFocus();
@@ -825,10 +827,10 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         incSearchTextField.getDocument().addDocumentListener(incSearchTextFieldListener);
     }
 
-    public void looseFocus() {
+    public boolean looseFocus() {
         hadFocusOnIncSearchTextField = false;
         if (!isVisible()) {
-            return;
+            return false;
         }
         EditorFindSupport.getInstance().setBlockSearchHighlight(0, 0);
         EditorFindSupport.getInstance().incSearchReset();
@@ -853,6 +855,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                 searchProps.saveToPrefs();
             }
         });
+        return true;
     }
 
     private void incrementalSearch() {

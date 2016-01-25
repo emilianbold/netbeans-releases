@@ -143,5 +143,11 @@ public final class EditorActionNames {
      * @since 1.31
      */
     public static final String toggleTypingMode = "toggle-typing-mode"; // NOI18N
+    
+    /**
+     * Remove the last added caret.
+     * @since XXX
+     */
+    public static final String removeLastCaret = "remove-last-caret"; // NOI18N
 
 }
