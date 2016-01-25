@@ -279,6 +279,11 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         performTest("bug256700.cpp", 44, 15, "bug256700.cpp", 25, 9);
     }
     
+    public void testBug216095() throws Exception {
+        // Bug 216095 - Not able to resolve some identifiers from heavily templated C++ libraries 
+        performTest("bug216095.cpp", 18, 14, "bug216095.cpp", 13, 9);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
