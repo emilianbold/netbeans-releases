@@ -57,6 +57,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.AbstractListModel;
 import javax.swing.Icon;
 import javax.swing.JCheckBox;
@@ -85,6 +86,7 @@ import org.netbeans.modules.nativeexecution.api.util.ValidateablePanel;
 import org.netbeans.modules.nativeexecution.support.Authentication;
 import org.netbeans.modules.nativeexecution.support.ui.api.FileSelectorField;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
@@ -99,7 +101,7 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
     private final Task validationTask;
     private String problem;
     private final Authentication auth;
-    private final AuthenticationListModel model;
+    private final AuthenticationListModel authListModel;
 
     public AuthenticationSettingsPanel(Authentication auth, boolean showClearPwdButton) {
         this.env = auth.getEnv();
@@ -156,8 +158,8 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
         connectionSettings.setSelected(false);
         connectionSettings.setIcon(getCollapsedIcon());
         
-        model = new AuthenticationListModel(auth.getAuthenticationMethods());
-        authenticationsList.setModel(model);
+        authListModel = new AuthenticationListModel(auth.getAuthenticationMethods());
+        authenticationsList.setModel(authListModel);
         authenticationsList.setCellRenderer(new AuthentificationCheckboxListRenderer());
         authenticationsList.addMouseListener(new MouseAdapter() {
             @Override
@@ -199,12 +201,12 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
                     downButton.setEnabled(false);
                     return;
                 }
-                if (index >= 0 && index < model.getSize() - 1) {
+                if (index >= 0 && index < authListModel.getSize() - 1) {
                     downButton.setEnabled(true);
                 } else {
                     downButton.setEnabled(false);
                 }
-                if (index >= 1 && index < model.getSize()) {
+                if (index >= 1 && index < authListModel.getSize()) {
                     upButton.setEnabled(true);
                 } else {
                     upButton.setEnabled(false);
@@ -227,18 +229,15 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
         super.setEnabled(enabled);
         pwdRadioButton.setEnabled(enabled);
         keyRadioButton.setEnabled(enabled);
-        if (keyRadioButton.isSelected()) {
-            keyFileFld.setEnabled(enabled);
-            keyBrowseButton.setEnabled(enabled);
-        }
+        enableKeyField();
     }
 
-    private void resetAuthentificationListModel(String methods) {
-        model.resetModel(methods);
+    private void resetAuthentificationListModel(Authentication.MethodList methods) {
+        authListModel.resetModel(methods);
         authenticationsList.clearSelection();
         upButton.setEnabled(false);
         downButton.setEnabled(false);
-        authenticationsList.repaint(authenticationsList.getCellBounds(0, model.getSize()-1));
+        authenticationsList.repaint(authenticationsList.getCellBounds(0, authListModel.getSize()-1));
     }
     
     /**
@@ -458,8 +457,8 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void keyRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyRadioButtonActionPerformed
-        enableControls();
         resetAuthentificationListModel(Authentication.SSH_KEY_METHODS);
+        enableControls();
         keyFileFld.requestFocus();
     }//GEN-LAST:event_keyRadioButtonActionPerformed
 
@@ -493,17 +492,17 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
         if (selectedIndex <= 0) {
             return;
         }
-        model.swapElement(selectedIndex, selectedIndex-1);
+        authListModel.swapElement(selectedIndex, selectedIndex-1);
         authenticationsList.repaint(authenticationsList.getCellBounds(selectedIndex-1, selectedIndex));
         authenticationsList.setSelectedIndex(selectedIndex-1);
     }//GEN-LAST:event_upButtonActionPerformed
 
     private void downButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downButtonActionPerformed
         int selectedIndex = authenticationsList.getSelectedIndex();
-        if (selectedIndex < 0 || selectedIndex >= model.getSize() -1 ) {
+        if (selectedIndex < 0 || selectedIndex >= authListModel.getSize() -1 ) {
             return;
         }
-        model.swapElement(selectedIndex, selectedIndex+1);
+        authListModel.swapElement(selectedIndex, selectedIndex+1);
         authenticationsList.repaint(authenticationsList.getCellBounds(selectedIndex, selectedIndex+1));
         authenticationsList.setSelectedIndex(selectedIndex+1);
     }//GEN-LAST:event_downButtonActionPerformed
@@ -531,9 +530,17 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
     // End of variables declaration//GEN-END:variables
 
     private void enableControls() {
-        keyBrowseButton.setEnabled(keyRadioButton.isSelected());
-        keyFileFld.setEnabled(keyRadioButton.isSelected());
+        enableKeyField();
         validationTask.schedule(0);
+    }
+
+    private void enableKeyField() {
+        enableKeyField(authListModel.hasPublicKey());
+    }
+
+    private void enableKeyField(boolean enable) {
+        keyFileFld.setEnabled(enable);
+        keyBrowseButton.setEnabled(enable);
     }
 
     @Override
@@ -554,7 +561,7 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
             ExecutionEnvironment e = (ExecutionEnvironment) customData;
             Authentication a = Authentication.getFor(e);
             a.setTimeout(auth.getTimeout());
-            model.storeAuthenticationMethods(auth);
+            authListModel.storeAuthenticationMethods(auth);
             a.setAuthenticationMethods(auth.getAuthenticationMethods());
             if (auth.getType() == Authentication.Type.SSH_KEY) {
                 a.setSSHKeyFile(auth.getSSHKeyFile());
@@ -564,7 +571,7 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
             a.store();
             access.changeAuth(e, a);
         } else if (env != null) {
-            model.storeAuthenticationMethods(auth);
+            authListModel.storeAuthenticationMethods(auth);
             auth.store();
             access.changeAuth(env, auth);
         }
@@ -584,8 +591,25 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
         }
 
         private boolean validate() {
-            model.storeAuthenticationMethods(auth);
-            if (pwdRadioButton.isSelected()) {
+            authListModel.storeAuthenticationMethods(auth);
+// It would be fine to have 3-rd "Custom" button, then the code below would work as a charm
+//            if (auth.getAuthenticationMethods().equals(Authentication.PASSWORD_METHODS)) {
+//                AuthenticationSettingsPanel.this.pwdRadioButton.setSelected(true);
+//            } else if (auth.getAuthenticationMethods().equals(Authentication.SSH_KEY_METHODS)) {
+//                AuthenticationSettingsPanel.this.keyRadioButton.setSelected(true);
+//            } else
+            if (authListModel.hasPublicKey()) {
+                AuthenticationSettingsPanel.this.keyRadioButton.setSelected(true);
+            } else {
+                AuthenticationSettingsPanel.this.pwdRadioButton.setSelected(true);
+            }
+            if (authListModel.isEmpty()) {
+                problem = NbBundle.getMessage(AuthenticationSettingsPanel.class,
+                        "AuthenticationSettingsPanel.validationError.emptyMethodList.text"); //NOI18N
+                return false;
+            }
+            boolean needskeyFile = authListModel.hasPublicKey();
+            if (!needskeyFile) {
                 problem = null;
                 auth.setPassword();
                 return true;
@@ -640,11 +664,11 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
         return UIManager.getIcon(isGtk ? "Tree.gtk_collapsedIcon" : "Tree.collapsedIcon"); //NOI18N
     }
 
-    private static class AuthenticationCheckboxListItem {
-        private final String method;
+    private class AuthenticationCheckboxListItem {
+        private final Authentication.Method method;
         private boolean isSelected;
 
-        public AuthenticationCheckboxListItem(String method, boolean selected) {
+        public AuthenticationCheckboxListItem(Authentication.Method method, boolean selected) {
             this.method = method;
             this.isSelected = selected;
         }
@@ -655,15 +679,23 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
 
         public void setSelected(boolean isSelected) {
             this.isSelected = isSelected;
+            if (method.hasKeyFile()) {
+                enableKeyField(isSelected);
+            }
+            validationTask.schedule(0);
         }
         
         public String getDisplayName() {
-            return NbBundle.getMessage(AuthenticationSettingsPanel.class, "Authentication."+method);
+            return method.getDisplayName();
         }
 
         @Override
         public String toString() {
-            return method;
+            return method.toString() + ' ' + isSelected; //NOI18N
+        }
+
+        public Pair<Authentication.Method, Boolean> toPair() {
+            return Pair.of(method, isSelected);
         }
     }
 
@@ -718,9 +750,9 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
         }
     }
     
-    private static final class AuthenticationListModel extends AbstractListModel<AuthenticationCheckboxListItem> {
+    private final class AuthenticationListModel extends AbstractListModel<AuthenticationCheckboxListItem> {
         private final ArrayList<AuthenticationCheckboxListItem> list = new ArrayList<>(4);
-        private AuthenticationListModel(String methodsList) {
+        private AuthenticationListModel(Authentication.MethodList methodsList) {
             if (methodsList == null || methodsList.isEmpty()) {
                 resetModel(Authentication.DEFAULT_METHODS);
             } else {
@@ -733,6 +765,15 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
             return list.size();
         }
 
+        public boolean isEmpty() {
+            for (AuthenticationCheckboxListItem item : list) {
+                if (item.isSelected) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         @Override
         public AuthenticationCheckboxListItem getElementAt(int index) {
             return list.get(index);
@@ -743,19 +784,22 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
             list.set(from, list.get(to));
             list.set(to, fromItem);
         }
-        
-        public void resetModel(String methodsList) {
-            String[] methods = methodsList.split(","); // NOI18N
-            for(int i = 0; i < methods.length; i++) {
-                String method = methods[i];
-                final AuthenticationCheckboxListItem authenticationCheckboxListItem;
-                if (method.endsWith("#1")) { // NOI18N
-                    authenticationCheckboxListItem = new AuthenticationCheckboxListItem(method.substring(0, method.length() - 2), true);
-                } else if (method.endsWith("#0")) { // NOI18N
-                    authenticationCheckboxListItem = new AuthenticationCheckboxListItem(method.substring(0, method.length() - 2), false);
-                } else {
-                    authenticationCheckboxListItem = new AuthenticationCheckboxListItem(method, true);
+
+        public boolean hasPublicKey() {
+            for (AuthenticationCheckboxListItem item : list) {
+                if (item.isSelected && item.method.hasKeyFile()) {
+                    return true;
                 }
+            }
+            return false;
+        }
+
+        public void resetModel(Authentication.MethodList methodsList) {
+            Authentication.Method[] methods = methodsList.getMethods();
+            for(int i = 0; i < methods.length; i++) {
+                Authentication.Method method = methods[i];
+                boolean enabled = methodsList.isEnabled(method);
+                AuthenticationCheckboxListItem authenticationCheckboxListItem = new AuthenticationCheckboxListItem(method, enabled);
                 if (i == list.size()) {
                     list.add(authenticationCheckboxListItem);
                 } else {
@@ -763,22 +807,18 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
                 }
             }
         }
-        
-        public void storeAuthenticationMethods(Authentication auth) {
-            StringBuilder buf = new StringBuilder();
+
+        private Authentication.MethodList toMethodList() {
+            List<Pair<Authentication.Method, Boolean>> pairs = new ArrayList<>();
             for (int i = 0; i < list.size(); i++) {
                 AuthenticationCheckboxListItem m = list.get(i);
-                if (buf.length() > 0) {
-                    buf.append(',');
-                }
-                buf.append(m.method).append('#');
-                if (m.isSelected()) {
-                    buf.append('1');
-                } else {
-                    buf.append('0');
-                }
+                pairs.add(Pair.of(m.method, m.isSelected));
             }
-            auth.setAuthenticationMethods(buf.toString());
+            return new Authentication.MethodList(pairs);
+        }
+
+        public void storeAuthenticationMethods(Authentication auth) {
+            auth.setAuthenticationMethods(toMethodList());
         }
     }
 }
