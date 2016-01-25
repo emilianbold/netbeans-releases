@@ -560,4 +560,9 @@ public class FileModel2Test extends TraceModelTestBase {
         // Bug 248661 -  Variable with initializer is parsed as function
         performTest("bug248661_2.cpp");
     }
+    
+    public void testBug257152() throws Exception {
+        // Bug 257152 - was [Bug 256791 - failing SelectModelTestCase.testSelectModelGetFunctions on Ubuntu test machine]
+        performTest("bug257152.cpp");
+    }
 }
