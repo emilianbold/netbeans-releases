@@ -196,9 +196,17 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
                 Token token = ts.nextToken();
                 while (!isLastToken(token) && APTUtils.isMacroExpandedToken(token)) {
                     if (APTUtils.getExpandedTokenMarker((APTToken) token) == macroStartMarker) {
-                        assert token.getType() == getFirstTokenID() : "File (" + file + "), " // NOI18N
-                            + "position (" + ((APTToken) token).getOffset() + ", " + ((APTToken) token).getText() + "), " // NOI18N
-                            + "macro index (" + macroStartMarker + ")"; // NOI18N
+                        if (token.getType() != getFirstTokenID()) {
+                            // Fallback: if body starts with wrong token,
+                            // then report the error and apply old logic.
+                            CndUtils.assertTrueInConsole(
+                                false, 
+                                "File (" + file + "), " // NOI18N
+                                + "position (" + ((APTToken) token).getOffset() + ", " + ((APTToken) token).getText() + "), " // NOI18N
+                                + "macro index (" + macroStartMarker + ")" // NOI18N
+                            );
+                            return file.getTokenStream(getStartOffset(), getEndOffset(), getFirstTokenID(), true);
+                        }
                         break;
                     }
                     token = ts.nextToken();
