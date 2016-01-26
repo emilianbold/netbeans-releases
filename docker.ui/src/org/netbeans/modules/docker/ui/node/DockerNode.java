@@ -70,7 +70,7 @@ public final class DockerNode extends AbstractNode {
     private static final RequestProcessor REFRESH_PROCESSOR =
             new RequestProcessor("Docker node update/refresh", 5);
 
-    private static final String DOCKER_ICON = "org/netbeans/modules/docker/ui/resources/docker_whale.png"; // NOI18N
+    private static final String DOCKER_ICON = "org/netbeans/modules/docker/ui/resources/docker_root.png"; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(DockerNode.class.getName());
 
@@ -89,7 +89,7 @@ public final class DockerNode extends AbstractNode {
         name = "docker",
         displayName = "org.netbeans.modules.docker.ui.node.Bundle#Docker_Root_Node_Name",
         shortDescription = "org.netbeans.modules.docker.ui.node.Bundle#Docker_Root_Node_Short_Description",
-        iconResource = "org/netbeans/modules/docker/ui/resources/docker_whale.png",
+        iconResource = "org/netbeans/modules/docker/ui/resources/docker_root.png",
         position = 500
     )
     public static synchronized DockerNode getInstance() {

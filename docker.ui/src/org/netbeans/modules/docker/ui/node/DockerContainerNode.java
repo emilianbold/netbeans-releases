@@ -63,7 +63,7 @@ import org.openide.util.lookup.Lookups;
 public class DockerContainerNode extends AbstractNode {
 
     private static final String DOCKER_INSTANCE_ICON =
-            "org/netbeans/modules/docker/ui/resources/docker_image_small.png"; // NOI18N
+            "org/netbeans/modules/docker/ui/resources/docker_image.png"; // NOI18N
 
     private static final String PAUSED_ICON =
             "org/netbeans/modules/docker/ui/resources/badge_paused.png"; // NOI18N
