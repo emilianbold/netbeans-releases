@@ -2073,7 +2073,7 @@ unknown_posttype_declaration_specifiers_list
 unknown_postfunction_declarator_specifiers
     {String s;}
     :
-        (((literal_ident)+ is_post_declarator_token) => 
+        (({isCPlusPlus()}? (literal_ident)+ is_post_declarator_token)=> 
             (options {greedy = true;} : s = literal_ident!)+
         | 
             // Empty alternative
