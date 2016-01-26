@@ -53,7 +53,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -109,7 +112,9 @@ public final class ProjectActionEvent {
     private final Project project;
     private final Type type;
     private String executable;
-    private final MakeConfiguration configuration;
+    /** guarded by configurationName */
+    private volatile MakeConfiguration configuration;
+    private final String configurationName;
     private final RunProfile profile;
     private final boolean wait;
     private final Lookup context;
@@ -125,6 +130,7 @@ public final class ProjectActionEvent {
         this.type = type;
 	this.executable = executable;
 	this.configuration = configuration;
+        configurationName = configuration.getName();
 	this.profile = profile;
 	this.wait = wait;
         this.context = context;
@@ -166,7 +172,7 @@ public final class ProjectActionEvent {
 
         // Use absolute path for shell commands. FIXUP: always a shell command here?
         if (!FileSystemProvider.isAbsolute(command) && !command.contains("/")) { // NOI18N
-            ExecutionEnvironment execEnv = configuration.getDevelopmentHost().getExecutionEnvironment();
+            ExecutionEnvironment execEnv = getConfiguration().getDevelopmentHost().getExecutionEnvironment();
             PlatformInfo pi = PlatformInfo.getDefault(execEnv);
             String qualifiedCommand = pi.findCommand(command);
             if (qualifiedCommand != null) {
@@ -182,16 +188,16 @@ public final class ProjectActionEvent {
 	if (type == PredefinedType.RUN || type == PredefinedType.DEBUG || type == PredefinedType.DEBUG_STEPINTO) {
             result = getExecutableFromRunCommand();
             if (result != null && result.length() > 0) {
-                ExecutionEnvironment execEnv = configuration.getDevelopmentHost().getExecutionEnvironment();                                
+                ExecutionEnvironment execEnv = getConfiguration().getDevelopmentHost().getExecutionEnvironment();
                 if (!CndPathUtilities.isPathAbsolute(result)) {
                     CndUtils.assertTrueInConsole(false, "getExecutableFromRunCommand() returned non-absolute path", result); //NOI18N
-                    String baseDir = configuration.getProfile().getRunDirectory();
+                    String baseDir = getConfiguration().getProfile().getRunDirectory();
                     if (execEnv.isRemote()) {
                         PathMap mapper = RemoteSyncSupport.getPathMap(getProject());
                         if (mapper != null) {
                             baseDir = mapper.getRemotePath(baseDir, true);
                             if (baseDir == null) {
-                                baseDir = configuration.getProfile().getRunDirectory();
+                                baseDir = getConfiguration().getProfile().getRunDirectory();
                             }
                         } else {
                             LOGGER.log(Level.SEVERE, "Path Mapper not found for project {0} - using local path {1}", new Object[]{getProject(), baseDir}); //NOI18N
@@ -209,7 +215,7 @@ public final class ProjectActionEvent {
 
     public String getRunCommandAsString() {
         PathMap mapper = RemoteSyncSupport.getPathMap(getProject());
-        return getRunCommandAsString(getProfile().getRunCommand().getValue(), configuration, mapper);
+        return getRunCommandAsString(getProfile().getRunCommand().getValue(), getConfiguration(), mapper);
         
     }
     
@@ -247,7 +253,7 @@ public final class ProjectActionEvent {
             // not clear what is the difference between getPlatformInfo
             // and getDevelopmentHost.
             // TODO: get rid off one of ifs below
-            assert(configuration.getPlatformInfo().isLocalhost() == configuration.getDevelopmentHost().isLocalhost());
+            assert(getConfiguration().getPlatformInfo().isLocalhost() == getConfiguration().getDevelopmentHost().isLocalhost());
 
             runCommandCache = Utilities.parseParameters(getRunCommandAsString());
         }
@@ -273,14 +279,28 @@ public final class ProjectActionEvent {
     }
 
     public MakeConfiguration getConfiguration() {
-	return configuration;
+        synchronized (configurationName) {
+            if (!configuration.isValid()) {
+                ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                if (pdp != null) {
+                    MakeConfigurationDescriptor cd = pdp.getConfigurationDescriptor();
+                    if (cd != null) {
+                        Configuration conf = cd.getConfs().getConf(configurationName);
+                        if (conf != null && conf.isValid()) {
+                            configuration = (MakeConfiguration) conf;
+                        }
+                    }
+                }
+            }
+            return configuration;
+        }
     }
 
     public RunProfile getProfile() {
         if (profile != null) {
             return profile;
         } else {
-            return configuration.getProfile();
+            return getConfiguration().getProfile();
         }
     }
 
