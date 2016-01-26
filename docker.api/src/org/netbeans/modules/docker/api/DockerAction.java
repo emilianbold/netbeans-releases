@@ -79,8 +79,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -633,170 +635,197 @@ public class DockerAction {
        }
     }
 
-    // this call is BLOCKING
-    public DockerImage build(@NonNull File buildContext, @NullAllowed File dockerfile,
+    public FutureTask<DockerImage> createBuildTask(@NonNull File buildContext, @NullAllowed File dockerfile,
             String repository, String tag, boolean pull, boolean noCache,
-            final BuildEvent.Listener buildListener, final StatusEvent.Listener statusListener) throws DockerException {
+            final BuildEvent.Listener buildListener, final StatusEvent.Listener statusListener) {
 
-        assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
+        final CancelHandler handler = new CancelHandler();
+        Callable<DockerImage> callable = new Callable<DockerImage>() {
 
-        if (!buildContext.isDirectory()) {
-            throw new IllegalArgumentException("Build context has to be a directory");
-        }
-        if (dockerfile != null && !dockerfile.isFile()) {
-            throw new IllegalArgumentException("Dockerfile has to be a file");
-        }
-        if (repository == null && tag != null) {
-            throw new IllegalArgumentException("Repository can't be empty when using tag");
-        }
+            @Override
+            public DockerImage call() throws Exception {
+                assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
-        String dockerfileName = null;
-        if (dockerfile != null) {
-            dockerfileName = dockerfile.getName();
-        }
-
-        Socket s = null;
-        try {
-            URL url = createURL(instance.getUrl(), null);
-            s = createSocket(url);
-
-            StringBuilder request = new StringBuilder();
-            request.append("POST /build?");
-            request.append("pull=").append(pull ? 1 : 0);
-            request.append("&nocache=").append(noCache ? 1 : 0);
-            if (dockerfileName != null) {
-                request.append("&dockerfile=").append(HttpUtils.encodeParameter(dockerfileName));
-            }
-            if (repository != null) {
-                request.append("&t=").append(HttpUtils.encodeParameter(repository));
-                if (tag != null) {
-                    request.append(":").append(tag);
+                if (!buildContext.isDirectory()) {
+                    throw new IllegalArgumentException("Build context has to be a directory");
                 }
-            }
-            request.append(" HTTP/1.1\r\n");
-
-            JSONObject registryConfig = new JSONObject();
-            JSONObject configs = new JSONObject();
-            registryConfig.put("configs", configs);
-            for (Credentials c : DockerConfig.getDefault().getAllCredentials()) {
-                configs.put(c.getRegistry(), createAuthObject(c));
-            }
-
-            Pair<String, String> configHeader = null;
-            if (!configs.isEmpty()) {
-                configHeader = Pair.of("X-Registry-Config", HttpUtils.encodeBase64(registryConfig.toJSONString()));
-            }
-            HttpUtils.configureHeaders(request, DockerConfig.getDefault().getHttpHeaders(),
-                    configHeader,
-                    Pair.of("Transfer-Encoding", "chunked"),
-                    Pair.of("Content-Type", "application/tar"),
-                    Pair.of("Content-Encoding", "gzip"));
-            request.append("\r\n");
-
-            OutputStream os = s.getOutputStream();
-            os.write(request.toString().getBytes("ISO-8859-1"));
-            os.flush();
-
-            // FIXME should we allow \ as separator as that would be formally
-            // separator on windows without possibility to escape anything
-            // If we would allow that we have to use File comparison
-            Future<Void> task = new FolderUploader(instance, os).upload(buildContext,
-                    new IgnoreFileFilter(buildContext, dockerfile, '/'), new FolderUploader.Listener() {
-                @Override
-                public void onUpload(String path) {
-                    buildListener.onEvent(new BuildEvent(instance, path, false, null, true));
+                if (dockerfile != null && !dockerfile.isFile()) {
+                    throw new IllegalArgumentException("Dockerfile has to be a file");
                 }
-            });
-
-            InputStream is = s.getInputStream();
-            HttpUtils.Response response = HttpUtils.readResponse(is);
-            int responseCode = response.getCode();
-            if (responseCode != HttpURLConnection.HTTP_OK) {
-                task.cancel(true);
-                String error = HttpUtils.readContent(is, response);
-                throw codeToException(responseCode,
-                        error != null ? error : response.getMessage());
-            }
-
-            try {
-                if (task.isDone()) {
-                    task.get();
-                } else {
-                    LOGGER.log(Level.INFO, "Server responded OK yet upload has not finished");
-                    task.cancel(true);
+                if (repository == null && tag != null) {
+                    throw new IllegalArgumentException("Repository can't be empty when using tag");
                 }
-            } catch (InterruptedException ex) {
-                LOGGER.log(Level.INFO, null, ex);
-                Thread.currentThread().interrupt();
-            } catch (ExecutionException ex) {
-                throw new DockerException(ex.getCause());
-            }
 
-            is = HttpUtils.getResponseStream(is, response);
+                String dockerfileName = null;
+                if (dockerfile != null) {
+                    dockerfileName = dockerfile.getName();
+                }
 
-            JSONParser parser = new JSONParser();
-            try (InputStreamReader r = new InputStreamReader(is, HttpUtils.getCharset(response))) {
-                String line;
-                String stream = null;
-                while ((line = readEventObject(r)) != null) {
-                    JSONObject o = (JSONObject) parser.parse(line);
-                    stream = (String) o.get("stream");
-                    if (stream != null) {
-                        buildListener.onEvent(new BuildEvent(instance, stream.trim(), false, null, false));
-                    } else if (o.containsKey("status")) {
-                        StatusEvent e = parseStatusEvent(o);
-                        if (e != null) {
-                            statusListener.onEvent(e);
+                Socket s = null;
+                try {
+                    URL url = createURL(instance.getUrl(), null);
+                    s = createSocket(url);
+                    synchronized (handler) {
+                        if (handler.isCancelled()) {
+                            return null;
                         }
-                    } else {
-                        String error = (String) o.get("error");
-                        if (error != null) {
-                            BuildEvent.Error detail = null;
-                            JSONObject detailObj = (JSONObject) o.get("errorDetail");
-                            if (detailObj != null) {
-                                long code = ((Number) getOrDefault(detailObj, "code", 0)).longValue();
-                                String mesage = (String) detailObj.get("message");
-                                detail = new BuildEvent.Error(code, mesage);
-                            }
-                            buildListener.onEvent(new BuildEvent(instance, error, true, detail, false));
+                        handler.setSocket(s);
+                    }
+
+                    StringBuilder request = new StringBuilder();
+                    request.append("POST /build?");
+                    request.append("pull=").append(pull ? 1 : 0);
+                    request.append("&nocache=").append(noCache ? 1 : 0);
+                    if (dockerfileName != null) {
+                        request.append("&dockerfile=").append(HttpUtils.encodeParameter(dockerfileName));
+                    }
+                    if (repository != null) {
+                        request.append("&t=").append(HttpUtils.encodeParameter(repository));
+                        if (tag != null) {
+                            request.append(":").append(tag);
+                        }
+                    }
+                    request.append(" HTTP/1.1\r\n");
+
+                    JSONObject registryConfig = new JSONObject();
+                    JSONObject configs = new JSONObject();
+                    registryConfig.put("configs", configs);
+                    for (Credentials c : DockerConfig.getDefault().getAllCredentials()) {
+                        configs.put(c.getRegistry(), createAuthObject(c));
+                    }
+
+                    Pair<String, String> configHeader = null;
+                    if (!configs.isEmpty()) {
+                        configHeader = Pair.of("X-Registry-Config", HttpUtils.encodeBase64(registryConfig.toJSONString()));
+                    }
+                    HttpUtils.configureHeaders(request, DockerConfig.getDefault().getHttpHeaders(),
+                            configHeader,
+                            Pair.of("Transfer-Encoding", "chunked"),
+                            Pair.of("Content-Type", "application/tar"),
+                            Pair.of("Content-Encoding", "gzip"));
+                    request.append("\r\n");
+
+                    OutputStream os = s.getOutputStream();
+                    os.write(request.toString().getBytes("ISO-8859-1"));
+                    os.flush();
+
+                    // FIXME should we allow \ as separator as that would be formally
+                    // separator on windows without possibility to escape anything
+                    // If we would allow that we have to use File comparison
+                    Future<Void> task = new FolderUploader(instance, os).upload(buildContext,
+                            new IgnoreFileFilter(buildContext, dockerfile, '/'), new FolderUploader.Listener() {
+                        @Override
+                        public void onUpload(String path) {
+                            buildListener.onEvent(new BuildEvent(instance, path, false, null, true));
+                        }
+                    });
+
+                    InputStream is = s.getInputStream();
+                    HttpUtils.Response response = HttpUtils.readResponse(is);
+                    int responseCode = response.getCode();
+                    if (responseCode != HttpURLConnection.HTTP_OK) {
+                        task.cancel(true);
+                        String error = HttpUtils.readContent(is, response);
+                        throw codeToException(responseCode,
+                                error != null ? error : response.getMessage());
+                    }
+
+                    try {
+                        if (task.isDone()) {
+                            task.get();
                         } else {
-                            LOGGER.log(Level.INFO, "Unknown event {0}", o);
+                            LOGGER.log(Level.INFO, "Server responded OK yet upload has not finished");
+                            task.cancel(true);
                         }
+                    } catch (InterruptedException ex) {
+                        LOGGER.log(Level.INFO, null, ex);
+                        Thread.currentThread().interrupt();
+                    } catch (ExecutionException ex) {
+                        throw new DockerException(ex.getCause());
                     }
-                    parser.reset();
-                }
 
-                if (stream != null) {
-                    Matcher m = ID_PATTERN.matcher(stream.trim());
-                    if (m.matches()) {
-                        // the docker itself does not emit any event for built image
-                        // we assume the last stream contains the built image id
-                        // FIXME as there is no BUILD event we use PULL event
-                        long time = System.currentTimeMillis() / 1000;
-                        if (emitEvents) {
-                            instance.getEventBus().sendEvent(
-                                    new DockerEvent(instance, DockerEvent.Status.PULL,
-                                            m.group(1), null, time));
+                    is = HttpUtils.getResponseStream(is, response);
+
+                    JSONParser parser = new JSONParser();
+                    try (InputStreamReader r = new InputStreamReader(is, HttpUtils.getCharset(response))) {
+                        String line;
+                        String stream = null;
+                        while ((line = readEventObject(r)) != null) {
+                            JSONObject o = (JSONObject) parser.parse(line);
+                            stream = (String) o.get("stream");
+                            if (stream != null) {
+                                buildListener.onEvent(new BuildEvent(instance, stream.trim(), false, null, false));
+                            } else if (o.containsKey("status")) {
+                                StatusEvent e = parseStatusEvent(o);
+                                if (e != null) {
+                                    statusListener.onEvent(e);
+                                }
+                            } else {
+                                String error = (String) o.get("error");
+                                if (error != null) {
+                                    BuildEvent.Error detail = null;
+                                    JSONObject detailObj = (JSONObject) o.get("errorDetail");
+                                    if (detailObj != null) {
+                                        long code = ((Number) getOrDefault(detailObj, "code", 0)).longValue();
+                                        String mesage = (String) detailObj.get("message");
+                                        detail = new BuildEvent.Error(code, mesage);
+                                    }
+                                    buildListener.onEvent(new BuildEvent(instance, error, true, detail, false));
+                                } else {
+                                    LOGGER.log(Level.INFO, "Unknown event {0}", o);
+                                }
+                            }
+                            parser.reset();
                         }
-                        // FIXME image size and time parameters
-                        return new DockerImage(instance, Collections.singletonList(DockerUtils.getTag(repository, tag)),
-                                m.group(1), time, 0, 0);
+
+                        if (stream != null) {
+                            Matcher m = ID_PATTERN.matcher(stream.trim());
+                            if (m.matches()) {
+                                // the docker itself does not emit any event for built image
+                                // we assume the last stream contains the built image id
+                                // FIXME as there is no BUILD event we use PULL event
+                                long time = System.currentTimeMillis() / 1000;
+                                if (emitEvents) {
+                                    instance.getEventBus().sendEvent(
+                                            new DockerEvent(instance, DockerEvent.Status.PULL,
+                                                    m.group(1), null, time));
+                                }
+                                // FIXME image size and time parameters
+                                return new DockerImage(instance, Collections.singletonList(DockerUtils.getTag(repository, tag)),
+                                        m.group(1), time, 0, 0);
+                            }
+                        }
+                    } catch (ParseException ex) {
+                        throw new DockerException(ex);
                     }
+                    return null;
+                } catch (MalformedURLException e) {
+                    closeSocket(s);
+                    throw new DockerException(e);
+                } catch (IOException e) {
+                    closeSocket(s);
+                    if (!handler.isCancelled()) {
+                        throw new DockerException(e);
+                    }
+                    return null;
+                } catch (DockerException e) {
+                    closeSocket(s);
+                    throw e;
                 }
-            } catch (ParseException ex) {
-                throw new DockerException(ex);
             }
-            return null;
-        } catch (MalformedURLException e) {
-            closeSocket(s);
-            throw new DockerException(e);
-        } catch (IOException e) {
-            closeSocket(s);
-            throw new DockerException(e);
-        } catch (DockerException e) {
-            closeSocket(s);
-            throw e;
-        }
+        };
+
+        return new FutureTask<DockerImage>(callable) {
+
+            @Override
+            public boolean cancel(boolean mayInterruptIfRunning) {
+                super.cancel(false);
+                if (mayInterruptIfRunning) {
+                    handler.cancel();
+                }
+                return true;
+            }
+        };
     }
 
     public ActionChunkedResult logs(DockerContainer container) throws DockerException {
@@ -1358,6 +1387,30 @@ public class DockerAction {
         public void close() throws IOException {
             // noop
         }
+    }
+
+    private static class CancelHandler {
+
+        private Socket socket;
+
+        private boolean cancelled;
+
+        public synchronized void setSocket(Socket socket) {
+            this.socket = socket;
+        }
+
+        public synchronized void cancel() {
+            if (socket != null) {
+                closeSocket(socket);
+                socket = null;
+                cancelled = true;
+            }
+        }
+
+        public synchronized boolean isCancelled() {
+            return cancelled;
+        }
+
     }
 
 }
