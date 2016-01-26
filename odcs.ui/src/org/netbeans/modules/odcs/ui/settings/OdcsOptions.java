@@ -78,7 +78,6 @@ public class OdcsOptions extends javax.swing.JPanel implements DocumentListener 
         jSeparator1 = new javax.swing.JSeparator();
         cbSync = new javax.swing.JCheckBox();
         txtSync = new javax.swing.JTextField();
-        jLabel2 = new javax.swing.JLabel();
         lblError = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(OdcsOptions.class, "OdcsOptions.jLabel1.text")); // NOI18N
@@ -92,8 +91,6 @@ public class OdcsOptions extends javax.swing.JPanel implements DocumentListener 
 
         txtSync.setMinimumSize(new java.awt.Dimension(30, 20));
         txtSync.setPreferredSize(new java.awt.Dimension(40, 20));
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(OdcsOptions.class, "OdcsOptions.jLabel2.text")); // NOI18N
 
         lblError.setForeground(new java.awt.Color(255, 0, 0));
         lblError.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/odcs/ui/resources/error.png"))); // NOI18N
@@ -110,9 +107,7 @@ public class OdcsOptions extends javax.swing.JPanel implements DocumentListener 
                         .addComponent(cbSync)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(txtSync, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel2)
-                        .addContainerGap(150, Short.MAX_VALUE))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -132,8 +127,7 @@ public class OdcsOptions extends javax.swing.JPanel implements DocumentListener 
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cbSync)
-                    .addComponent(txtSync, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2))
+                    .addComponent(txtSync, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(lblError)
                 .addContainerGap())
@@ -147,7 +141,6 @@ public class OdcsOptions extends javax.swing.JPanel implements DocumentListener 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cbSync;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel lblError;
     private javax.swing.JTextField txtSync;

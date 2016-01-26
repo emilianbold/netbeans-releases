@@ -63,7 +63,7 @@ public class IssueField {
     public static final IssueField DESCRIPTION = new IssueField(TaskAttribute.DESCRIPTION, "CTL_Issue_Description_Title", "CTL_Issue_Description_Desc"); // NOI18N
     public static final IssueField DUEDATE = new IssueField(TaskAttribute.DATE_DUE, "CTL_Issue_DueDate_Title", "CTL_Issue_DueDate_Desc"); // NOI18N
     public static final IssueField ESTIMATE = new IssueField(CloudDevAttribute.ESTIMATED_TIME.getTaskName(), "CTL_Issue_Estimate_Title", "CTL_Issue_Estimate_Desc"); //NOI18N
-    public static final IssueField FOUNDIN = new IssueField(CloudDevAttribute.FOUND_IN_RELEASE.getTaskName(), "CTL_Issue_FoundIn_Title", "CTL_Issue_FoundIn_Title"); //NOI18N
+    public static final IssueField FOUNDIN = new IssueField(CloudDevAttribute.FOUND_IN_RELEASE.getTaskName(), "CTL_Issue_FoundIn_Title", "CTL_Issue_FoundIn_Desc"); //NOI18N
     public static final IssueField ITERATION = new IssueField(CloudDevAttribute.ITERATION.getTaskName(), "CTL_Issue_Iteration_Title", "CTL_Issue_Iteration_Desc"); // NOI18N
     public static final IssueField MILESTONE = new IssueField(CloudDevAttribute.MILESTONE.getTaskName(), "CTL_Issue_Milestone_Title", "CTL_Issue_Milestone_Desc"); // NOI18N
     public static final IssueField PRIORITY = new IssueField(TaskAttribute.PRIORITY, "CTL_Issue_Priority_Title", "CTL_Issue_Priority_Desc"); // NOI18N
