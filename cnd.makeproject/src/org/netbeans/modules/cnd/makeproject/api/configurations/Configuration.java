@@ -88,7 +88,7 @@ public abstract class Configuration implements ProjectConfiguration {
     // MUST be called by descendant classes
     protected final void initAuxObjects() {
         // Create and initialize auxiliary objects
-        ConfigurationAuxObjectProvider[] auxObjectProviders = ConfigurationDescriptorProvider.getAuxObjectProviders();
+        ConfigurationAuxObjectProvider[] auxObjectProviders = ConfigurationDescriptorProvider.getAuxObjectProviders();        
         for (int i = 0; i < auxObjectProviders.length; i++) {
             ConfigurationAuxObject pao = auxObjectProviders[i].factoryCreate(fsPath.getPath(), pcs, this); //XXX:fullRemote:fileSystem
             pao.initialize();
@@ -155,11 +155,12 @@ public abstract class Configuration implements ProjectConfiguration {
 
     @Override
     public String toString() {
+        StringBuilder sb = new StringBuilder(getDisplayName());
         if (isDefault()) {
-            return getDisplayName() + " " + getString("ActiveTxt"); // NOI18N
-        } else {
-            return getDisplayName();
+            sb.append(' ').append(getString("ActiveTxt"));
         }
+        sb.append(isValid() ? " [valid] @" : " [invalid] @").append(System.identityHashCode(this)); // NOI18N
+        return sb.toString();
     }
 
     public void addAuxObject(ConfigurationAuxObject pao) {
@@ -190,6 +191,22 @@ public abstract class Configuration implements ProjectConfiguration {
             list = new ArrayList<>(auxObjectsMap.values());
         }
         return list.toArray(new ConfigurationAuxObject[list.size()]);
+    }
+
+    /** guarded by auxObjectsMap */
+    private boolean valid = true;
+
+    public void clear() {
+        synchronized (auxObjectsMap) {
+            auxObjectsMap.clear();
+            valid = false;
+        }
+    }
+
+    public boolean isValid() {
+        synchronized (auxObjectsMap) {
+            return valid;
+        }
     }
 
     public void setAuxObjects(List<ConfigurationAuxObject> v) {

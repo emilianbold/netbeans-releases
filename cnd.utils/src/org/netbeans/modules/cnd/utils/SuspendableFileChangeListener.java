@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -64,6 +65,7 @@ import org.openide.util.RequestProcessor;
 public final class SuspendableFileChangeListener implements FileChangeListener {
     private static final RequestProcessor RP = new RequestProcessor("CND FileEvents redispatcher"); // NOI18N
 
+    private final boolean remoteOnly;
     private final RequestProcessor.Task task;
     private final FileChangeListener external;
     private int suspendCount = 0;
@@ -137,9 +139,10 @@ public final class SuspendableFileChangeListener implements FileChangeListener {
         }
     }
 
-    public SuspendableFileChangeListener(FileChangeListener external) {
+    public SuspendableFileChangeListener(FileChangeListener external, boolean remoteOnly) {
         this.task = RP.create(new Worker(), true);
         this.external = external;
+        this.remoteOnly = remoteOnly;
     }
     
     public void suspendRemoves() {
@@ -163,48 +166,70 @@ public final class SuspendableFileChangeListener implements FileChangeListener {
             taskScheduler.run();
         }
     }
-    
+
+    private boolean accept(FileEvent fe) {
+        if (remoteOnly) {
+            FileObject fo = fe.getFile();
+            if (fo != null) { // that's a real paranoia
+                return CndFileUtils.isRemoteFileSystem(fo);
+            }
+        }
+        return true;
+    }
+
     @Override
     public void fileChanged(FileEvent fe) {
-        register(EventKind.FILE_CHANGED, fe);
+        if (accept(fe)) {
+            register(EventKind.FILE_CHANGED, fe);
+        }
     }
 
     @Override
     public void fileDataCreated(FileEvent fe) {
-        register(EventKind.FILE_CREATED, fe);
+        if (accept(fe)) {
+            register(EventKind.FILE_CREATED, fe);
+        }
     }
 
     @Override
     public void fileDeleted(FileEvent fe) {
-        register(EventKind.FILE_DELETED, fe);
+        if (accept(fe)) {
+            register(EventKind.FILE_DELETED, fe);
+        }
     }
 
     @Override
     public void fileFolderCreated(FileEvent fe) {
-        register(EventKind.FOLDER_CREATED, fe);
+        if (accept(fe)) {
+            register(EventKind.FOLDER_CREATED, fe);
+        }
     }
 
     @Override
     public void fileAttributeChanged(FileAttributeEvent fe) {
+//        if (accept(fe)) {
 //        register(EventKind.FILE_ATTRIBUTE_CHANGED, fe);
+//        }
     }
 
     @Override
     public void fileRenamed(FileRenameEvent fe) {
-        FSPath newPath = FSPath.toFSPath(fe.getFile());
-        String strPrevExt = (fe.getExt() == null || fe.getExt().isEmpty()) ? "" : "." + fe.getExt(); // NOI18N
-        String strPrevPath = CndPathUtilities.getDirName(newPath.getPath()) + '/' + fe.getName() + strPrevExt; // NOI18N
-        FSPath prevPath = new FSPath(newPath.getFileSystem(), strPrevPath);
-        synchronized (eventsLock) {
-            EventWrapper prevPathEvent = events.get(prevPath);
-            FileObject removedFO = InvalidFileObjectSupport.getInvalidFileObject(prevPath.getFileSystem(), prevPath.getPath());
-            FileEvent deleteFE = new FileEvent((FileObject)fe.getSource(), removedFO, fe.isExpected(), fe.getTime());
-            events.put(prevPath, convert(prevPathEvent, EventKind.FILE_DELETED, deleteFE));
-            
-            EventWrapper prevNewEvent = events.get(newPath);
-            events.put(newPath, convert(prevNewEvent, EventKind.FILE_CREATED, fe));
+        if (accept(fe)) {
+            FSPath newPath = FSPath.toFSPath(fe.getFile());
+            String strPrevExt = (fe.getExt() == null || fe.getExt().isEmpty()) ? "" : "." + fe.getExt(); // NOI18N
+            String strPrevPath = CndPathUtilities.getDirName(newPath.getPath()) + '/' + fe.getName() + strPrevExt; // NOI18N
+            FSPath prevPath = new FSPath(newPath.getFileSystem(), strPrevPath);
+            synchronized (eventsLock) {
+                EventWrapper prevPathEvent = events.get(prevPath);
+                FileObject removedFO = InvalidFileObjectSupport.getInvalidFileObject(prevPath.getFileSystem(), prevPath.getPath());
+                FileEvent deleteFE = new FileEvent((FileObject)fe.getSource(), removedFO, fe.isExpected(), fe.getTime());
+                events.put(prevPath, convert(prevPathEvent, EventKind.FILE_DELETED, deleteFE));
+
+                EventWrapper prevNewEvent = events.get(newPath);
+                events.put(newPath, convert(prevNewEvent, EventKind.FILE_CREATED, fe));
+            }
+            fe.runWhenDeliveryOver(taskScheduler);
         }
-        fe.runWhenDeliveryOver(taskScheduler);
     }
 
     private void register(EventKind kind, FileEvent fe) {
