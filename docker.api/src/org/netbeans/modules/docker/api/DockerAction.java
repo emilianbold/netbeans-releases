@@ -568,6 +568,7 @@ public class DockerAction {
        }
     }
 
+    // this call is BLOCKING
     public void push(DockerTag tag, StatusEvent.Listener listener) throws DockerException {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
