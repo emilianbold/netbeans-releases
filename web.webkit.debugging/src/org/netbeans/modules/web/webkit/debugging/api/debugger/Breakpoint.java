@@ -94,6 +94,23 @@ public class Breakpoint extends AbstractObject {
             return -1l;
         }
     }
+    
+    /**
+     * Get the breakpoint's column number
+     * @return The column number, or <code>0</code> when not defined.
+     */
+    public long getColumnNumber() {
+        JSONObject location = getBreakpointLocation();
+        Long col = null;
+        if (location != null) {
+            col = (Long) location.get("columnNumber");
+        }
+        if (col == null) {
+            return 0l;
+        } else {
+            return col;
+        }
+    }
 
     void notifyResolved(JSONObject location) {
         JSONObject oldLocation;

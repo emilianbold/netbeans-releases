@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.web.common.sourcemap;
 
+import java.util.Comparator;
+
 /**
  * Mapping of a source map.
  *
@@ -129,6 +131,28 @@ public class Mapping {
      */
     public int getOriginalColumn() {
         return originalColumn;
+    }
+
+    @Override
+    public String toString() {
+        return Mapping.class.getName()+"[column="+column+", orig:<"+originalLine+","+originalColumn+">]";
+    }
+    
+    static class ColumnComparator implements Comparator<Mapping> {
+        
+        private static ColumnComparator INSTANCE = new ColumnComparator();
+        
+        private ColumnComparator() {}
+        
+        ColumnComparator getInstance() {
+            return INSTANCE;
+        }
+
+        @Override
+        public int compare(Mapping m1, Mapping m2) {
+            return m1.getColumn() - m2.getColumn();
+        }
+        
     }
 
 }

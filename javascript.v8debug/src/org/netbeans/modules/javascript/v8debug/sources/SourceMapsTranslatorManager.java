@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,33 +37,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.webkit.debugging.api.debugger;
+package org.netbeans.modules.javascript.v8debug.sources;
 
-import org.json.simple.JSONObject;
-import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
-
+import java.util.Map;
+import java.util.WeakHashMap;
+import org.netbeans.modules.web.common.sourcemap.SourceMapsTranslator;
 
 /**
- * Wrapper for Debugger.scriptParsed event.
+ *
+ * @author martin
  */
-public class Script extends AbstractObject {
+public final class SourceMapsTranslatorManager {
     
-
-    Script(JSONObject script, WebKitDebugging webKit) {
-        super(script, webKit);
+    private static final boolean USE_SOURCE_MAPS =
+            Boolean.parseBoolean(System.getProperty("javascript.debugger.useSourceMaps", "true"));
+    
+    private static final Map<Object, SourceMapsTranslator> TRANSLATORS = new WeakHashMap<>();
+    
+    private SourceMapsTranslatorManager() {}
+    
+    public static synchronized SourceMapsTranslator get(Object debugger) {
+        if (!USE_SOURCE_MAPS) {
+            return null;
+        }
+        SourceMapsTranslator smt = TRANSLATORS.get(debugger);
+        if (smt == null) {
+            smt = new SourceMapsTranslator();
+            TRANSLATORS.put(debugger, smt);
+        }
+        return smt;
     }
     
-    public String getID() {
-        return (String)getObject().get("scriptId");
-    }
-    
-    public String getURL() {
-        return (String)getObject().get("url");
-    }
-    
-    public String getSourceMapURL() {
-        return (String)getObject().get("sourceMapURL");
-    }
 }

@@ -90,7 +90,7 @@ public class BreakpointsReader implements Properties.Reader {
     public Object read( String typeID, Properties properties ) {
         if (typeID.equals(OLD_LINE_BP_CLASS_NAME)) {
             Line line = MiscEditorUtil.getLine(properties.getString(URL, null), properties
-                    .getInt(LINE_NUMBER, 1));
+                    .getInt(LINE_NUMBER, 1), 0);
 
             if (line == null) {
                 return null;

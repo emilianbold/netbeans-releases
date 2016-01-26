@@ -61,6 +61,8 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointStatus;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
+import org.netbeans.modules.web.common.sourcemap.SourceMapsTranslator;
+import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.DOMNode.PathNotFoundException;
 import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
 import org.netbeans.modules.web.webkit.debugging.api.BreakpointException;
@@ -79,7 +81,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Martin
+ * @author Martin Entlicher, Antoine Vandecreme
  */
 abstract class WebKitBreakpointManager implements PropertyChangeListener {
     
@@ -118,6 +120,10 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
     public abstract void add();
 
     public abstract void remove();
+    
+    public void notifySourceMap() {
+        // Override to know that this BP's file has a source map
+    }
 
     public void destroy() {
         remove();
@@ -155,6 +161,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
         
         private final JSLineBreakpoint lb;
         private org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b;
+        private SourceMapsTranslator.Location bCompiledLocation;
         private final Object brkptLock = new Object();
         private final AtomicBoolean lineChanged = new AtomicBoolean(false);
         private final AtomicBoolean resubmitting = new AtomicBoolean(false);
@@ -175,47 +182,53 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                     return ;
                 }
             }
-            URL curl = d.getConnectionURL();
-            if (curl != null && lb.getFileObject() != null) {
-                String url = LineBreakpointUtils.getURLString(lb, pc.getProject(), curl);
-                url = reformatFileURL(url);
-                org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint br = null;
-                try {
-                    br = d.addLineBreakpoint(url, lb.getLine().getLineNumber(), null, lb.getCondition());
-                } catch (BreakpointException bex) {
-                    JSBreakpointStatus.setInvalid(lb, bex.getLocalizedMessage());
+            SourceMapsTranslator.Location[] compiledLocPtr = new SourceMapsTranslator.Location[] { null };
+            org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint br = doAdd(compiledLocPtr);
+            if (br != null) {
+                br.addPropertyChangeListener(this);
+                checkBPValidity(br, compiledLocPtr[0]);
+                synchronized (brkptLock) {
+                    b = br;
+                    bCompiledLocation = compiledLocPtr[0];
                 }
-                if (br != null) {
-                    br.addPropertyChangeListener(this);
-                    long brLine = br.getLineNumber();
-                    if (brLine >= 0) {
-                        List<Breakpoint> duplicateBreakpoints = checkDuplicateBreakpoints(lb, brLine);
-                        if (duplicateBreakpoints != null) {
-                            // Leave just the first one there:
-                            for (int i = 1; i < duplicateBreakpoints.size(); i++) {
-                                DebuggerManager.getDebuggerManager().removeBreakpoint(duplicateBreakpoints.get(i));
-                            }
-                            synchronized (brkptLock) {
-                                b = br;
-                            }
-                            DebuggerManager.getDebuggerManager().removeBreakpoint(lb);
-                            return ;
-                        }
-                        ignoreLineUpdate.set(Boolean.TRUE);
-                        try {
-                            lb.setLine((int) brLine + 1);
-                        } finally {
-                            ignoreLineUpdate.remove();
-                        }
-                        JSBreakpointStatus.setValid(lb, Bundle.MSG_BRKP_Resolved());
-                    } else {
-                        JSBreakpointStatus.setInvalid(lb, Bundle.MSG_BRKP_Unresolved());
+                d.addListener(this);
+            }
+        }
+        
+        private void checkBPValidity(org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint br,
+                                     SourceMapsTranslator.Location compiledLocation) {
+            long brLine = br.getLineNumber();
+            if (brLine >= 0) {
+                if (compiledLocation != null) {
+                    SourceMapsTranslator.Location cLoc = new SourceMapsTranslator.Location(
+                            compiledLocation.getFile(),
+                            (int) brLine, (int) br.getColumnNumber());
+                    SourceMapsTranslator smt = MiscEditorUtil.getSourceMapsTranslator(d);
+                    SourceMapsTranslator.Location sLoc = smt.getSourceLocation(cLoc);
+                    brLine = sLoc.getLine();
+                }
+                List<Breakpoint> duplicateBreakpoints = checkDuplicateBreakpoints(lb, brLine);
+                if (duplicateBreakpoints != null) {
+                    // Leave just the first one there:
+                    for (int i = 1; i < duplicateBreakpoints.size(); i++) {
+                        DebuggerManager.getDebuggerManager().removeBreakpoint(duplicateBreakpoints.get(i));
                     }
                     synchronized (brkptLock) {
                         b = br;
+                        bCompiledLocation = compiledLocation;
                     }
-                    d.addListener(this);
+                    DebuggerManager.getDebuggerManager().removeBreakpoint(lb);
+                    return ;
                 }
+                ignoreLineUpdate.set(Boolean.TRUE);
+                try {
+                    lb.setLine((int) brLine + 1);
+                } finally {
+                    ignoreLineUpdate.remove();
+                }
+                JSBreakpointStatus.setValid(lb, Bundle.MSG_BRKP_Resolved());
+            } else {
+                JSBreakpointStatus.setInvalid(lb, Bundle.MSG_BRKP_Unresolved());
             }
         }
 
@@ -235,6 +248,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
             }
             synchronized (brkptLock) {
                 b = null;
+                bCompiledLocation = null;
             }
             JSBreakpointStatus.resetValidity(lb);
         }
@@ -254,23 +268,71 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                 brkpt = b;
             }
             if (brkpt != null) {
+                brkpt.removePropertyChangeListener(this);
                 d.removeLineBreakpoint(brkpt);
-                URL curl = d.getConnectionURL();
-                if (curl != null) {
-                    String url = LineBreakpointUtils.getURLString(lb, pc.getProject(), curl);
-                    url = reformatFileURL(url);
-                    resubmitting.set(false);
-                    try {
-                        brkpt = d.addLineBreakpoint(url, lb.getLine().getLineNumber(), null, lb.getCondition());
-                    } catch (BreakpointException bex) {
-                        brkpt = null;
-                        JSBreakpointStatus.setInvalid(lb, bex.getLocalizedMessage());
-                    }
-                    synchronized (brkptLock) {
-                        b = brkpt;
-                    }
+                resubmitting.set(false);
+                SourceMapsTranslator.Location[] compiledLocPtr = new SourceMapsTranslator.Location[] { null };
+                brkpt = doAdd(compiledLocPtr);
+                if (brkpt != null) {
+                    brkpt.addPropertyChangeListener(this);
+                    checkBPValidity(brkpt, compiledLocPtr[0]);
+                }
+                synchronized (brkptLock) {
+                    b = brkpt;
+                    bCompiledLocation = compiledLocPtr[0];
                 }
             }
+        }
+
+        @Override
+        public void notifySourceMap() {
+            boolean hasCompiledLocation = false;
+            synchronized (brkptLock) {
+                hasCompiledLocation = bCompiledLocation != null;
+            }
+            if (!hasCompiledLocation) {
+                // Have to resubmit lazily, do not run blocking commands in the websocket read thread,
+                // the browser might not be able to respond to remove/add of breakpoints right away.
+                rp.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        resubmit();
+                    }
+                });
+            }
+        }
+        
+        private org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint doAdd(SourceMapsTranslator.Location[] compiledLocPtr) {
+            URL curl = d.getConnectionURL();
+            if (curl != null && lb.getFileObject() != null) {
+                SourceMapsTranslator smt = MiscEditorUtil.getSourceMapsTranslator(d);
+                if (smt != null) {
+                    SourceMapsTranslator.Location loc = new SourceMapsTranslator.Location(lb.getFileObject(), lb.getLineNumber() - 1, 0);
+                    SourceMapsTranslator.Location cloc = smt.getCompiledLocation(loc);
+                    if (cloc != loc) {
+                        if (compiledLocPtr != null) {
+                            compiledLocPtr[0] = cloc;
+                        }
+                        String url = LineBreakpointUtils.getURLString(cloc.getFile(), pc.getProject(), curl);
+                        url = reformatFileURL(url);
+                        try {
+                            return d.addLineBreakpoint(url, cloc.getLine(), cloc.getColumn(), lb.getCondition());
+                        } catch (BreakpointException bex) {
+                            JSBreakpointStatus.setInvalid(lb, bex.getLocalizedMessage());
+                            return null;
+                        }
+                    }
+                }
+                String url = LineBreakpointUtils.getURLString(lb, pc.getProject(), curl);
+                url = reformatFileURL(url);
+                org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint br = null;
+                try {
+                    return d.addLineBreakpoint(url, lb.getLine().getLineNumber(), null, lb.getCondition());
+                } catch (BreakpointException bex) {
+                    JSBreakpointStatus.setInvalid(lb, bex.getLocalizedMessage());
+                }
+            }
+            return null;
         }
         
         // changes "file:/some" to "file:///some"
@@ -325,13 +387,23 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                 lineChanged.set(true);
             } else if (org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint.PROP_LOCATION.equals(propertyName)) {
                 org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint brkpt;
+                SourceMapsTranslator.Location compiledLocation;
                 synchronized (brkptLock) {
                     brkpt = b;
+                    compiledLocation = bCompiledLocation;
                 }
                 if (brkpt == null) {
                     return ;
                 }
                 int lineNumber = (int) brkpt.getLineNumber();
+                SourceMapsTranslator smt = MiscEditorUtil.getSourceMapsTranslator(d);
+                if (smt != null && compiledLocation != null) {
+                    SourceMapsTranslator.Location sLoc = smt.getSourceLocation(
+                            new SourceMapsTranslator.Location(compiledLocation.getFile(),
+                                                              lineNumber,
+                                                              (int) brkpt.getColumnNumber()));
+                    lineNumber = sLoc.getLine();
+                }
                 List<Breakpoint> duplicateBreakpoints = checkDuplicateBreakpoints(lb, lineNumber);
                 if (duplicateBreakpoints != null) {
                     // Leave just the first one there:

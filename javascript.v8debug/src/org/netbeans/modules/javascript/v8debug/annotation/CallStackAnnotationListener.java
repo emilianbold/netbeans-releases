@@ -146,7 +146,7 @@ public final class CallStackAnnotationListener extends DebuggerManagerAdapter
                     continue;
                 }
                 FileObject fo = scriptsHandler.getFile(script);
-                Line line = EditorUtils.getLine(fo, (int) f.getLine());
+                Line line = EditorUtils.getLine(dbg, fo, (int) f.getLine());
                 if (line == null) {
                     first = false;
                     continue;
