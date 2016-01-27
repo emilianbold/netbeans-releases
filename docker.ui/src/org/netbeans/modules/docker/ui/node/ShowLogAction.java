@@ -68,7 +68,7 @@ public class ShowLogAction extends AbstractContainerAction {
 
     @Override
     protected void performAction(DockerContainer container) throws DockerException {
-        OutputUtils.openLog(container);
+        OutputUtils.openLog(container, this);
     }
 
 }

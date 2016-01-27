@@ -887,6 +887,7 @@ public class DockerAction {
         }
     }
 
+    // this call is BLOCKING
     public Pair<DockerContainer, ActionStreamResult> run(String name, JSONObject configuration) throws DockerException {
         Socket s = null;
         try {
