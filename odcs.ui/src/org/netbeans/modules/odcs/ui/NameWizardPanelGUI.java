@@ -208,7 +208,7 @@ public class NameWizardPanelGUI extends JPanel {
         GridBagConstraints gridBagConstraints;
 
         btnGrpPrivacy = new ButtonGroup();
-        loggedInLabel = new JLabel();
+        developerServerLabel = new JLabel();
         usernameLabel = new JLabel();
         loginButton = new JButton();
         projectNameLabel = new JLabel();
@@ -226,14 +226,15 @@ public class NameWizardPanelGUI extends JPanel {
 
         setLayout(new GridBagLayout());
 
-        Mnemonics.setLocalizedText(loggedInLabel, NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.loggedInLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(developerServerLabel, NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.developerServerLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new Insets(0, 0, 0, 6);
-        add(loggedInLabel, gridBagConstraints);
-        loggedInLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.loggedInLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        add(developerServerLabel, gridBagConstraints);
+        developerServerLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.developerServerLabel.AccessibleContext.accessibleName")); // NOI18N
+        developerServerLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.developerServerLabel.AccessibleContext.accessibleDescription")); // NOI18N
 
         Mnemonics.setLocalizedText(usernameLabel, NbBundle.getMessage(NameWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.notLoggedIn")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
@@ -466,8 +467,8 @@ public class NameWizardPanelGUI extends JPanel {
     private ButtonGroup btnGrpPrivacy;
     private JRadioButton btnPrivacyOrganizationPrivate;
     private JRadioButton btnPrivacyPrivate;
+    private JLabel developerServerLabel;
     private JScrollPane jScrollPane1;
-    private JLabel loggedInLabel;
     private JButton loginButton;
     private JLabel projectDescLabel;
     private JTextArea projectDescTextField;

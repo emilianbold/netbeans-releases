@@ -53,15 +53,20 @@ import org.openide.util.NbBundle;
  * Instances of this class are immutable. If status of a build changes, the
  * parent job is notified and its list of builds is updated. Use
  * {@link JobHandle#addPropertyChangeListener(PropertyChangeListener)} to listen
- * for chages.
+ * for changes.
  *
  * @author S. Aubrecht
  */
 @NbBundle.Messages({
+    "# builder job status is 'running'",
     "LBL_Running=running",
+    "# builder job status is 'failed'",
     "LBL_Failed=failed",
+    "# builder job status is 'stable'",
     "LBL_Stable=stable",
+    "# builder job status is 'unstable'",
     "LBL_Unstable=unstable",
+    "# builder job status is 'unknown'",
     "LBL_Unknown=unknown"
 })
 public abstract class BuildHandle {

@@ -98,13 +98,8 @@ autostore = false)
 iconBase = "org/netbeans/modules/odcs/ui/resources/odcs.png",
 persistenceType = TopComponent.PERSISTENCE_NEVER)
 @TopComponent.Registration(mode = "editor", openAtStartup = false)
-@TopComponent.OpenActionRegistration(
-    displayName = "#CTL_ProjectDetailsAction",
-preferredID = "ProjectDetailsTopComponent")
 @Messages({
     "CTL_ProjectDetailsAction=ProjectDetails",
-    "CTL_ProjectDetailsTopComponent=ProjectDetails Window",
-    "HINT_ProjectDetailsTopComponent=This is a ProjectDetails window"
 })
 public final class ProjectDetailsTopComponent extends TopComponent implements Expandable, PropertyChangeListener {
 
