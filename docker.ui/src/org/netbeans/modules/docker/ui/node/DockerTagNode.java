@@ -56,7 +56,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class DockerTagNode extends AbstractNode {
 
-    private static final String DOCKER_INSTANCE_ICON = "org/netbeans/modules/docker/ui/resources/docker_image_small.png"; // NOI18N
+    private static final String DOCKER_INSTANCE_ICON = "org/netbeans/modules/docker/ui/resources/docker_image.png"; // NOI18N
 
     private final DockerTag tag;
 

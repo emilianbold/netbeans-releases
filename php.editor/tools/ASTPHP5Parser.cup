@@ -390,6 +390,7 @@ non terminal VariableBase function_call_with_array;
 non terminal Expression expression_array_access;
 non terminal Expression array_creation;
 non terminal Expression array_creation_with_access;
+non terminal ClassInstanceCreation anonymous_class;
 
 non terminal VariableBase w_variable;
 non terminal Expression class_name;
@@ -2298,6 +2299,11 @@ expr_without_variable_and_class_instance:ex
     RESULT = ex;
 :}
 
+| anonymous_class:ex
+{:
+	RESULT = ex;
+:}
+
 | T_NEW:start class_name_reference:className ctor_arguments:ctor
 {:
 	ClassInstanceCreation classInstanceCreation = new ClassInstanceCreation(startleft, ctorright, className, ctor);
@@ -3696,6 +3702,11 @@ reference_variable:var
 	RESULT = var;
 :}
 
+| T_OPEN_PARENTHESE:start anonymous_class:cls T_CLOSE_PARENTHESE:end
+{:
+    RESULT = new AnonymousObjectVariable(startleft, endright, cls);
+:}
+
 | T_OPEN_PARENTHESE:start T_NEW:n class_name_reference:className ctor_arguments:ctor T_CLOSE_PARENTHESE:end
 {:
     ClassInstanceCreation classInstanceCreation = new ClassInstanceCreation(nleft, ctorright, className, ctor);
@@ -4113,4 +4124,15 @@ T_STRING:value
 
 | T_DEFINE:value
 {: RESULT = value; :}
+;
+
+anonymous_class ::=
+T_NEW:start T_CLASS:c ctor_arguments:ctor
+extends_from:superClass implements_list:interfaces
+T_CURLY_OPEN:blockStart class_statement_list:statementList T_CURLY_CLOSE:blockEnd
+{:
+	Block block = new Block(blockStartleft, blockEndright, statementList);
+	ClassInstanceCreation classInstance = ClassInstanceCreation.anonymous(startleft, blockEndright, cleft, ctor, superClass, interfaces, block);
+	RESULT = classInstance;
+:}
 ;
