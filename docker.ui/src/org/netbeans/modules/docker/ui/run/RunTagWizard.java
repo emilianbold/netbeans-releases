@@ -200,7 +200,7 @@ public class RunTagWizard {
                     }
                     Pair<DockerContainer, ActionStreamResult> result = remote.run(name, config);
 
-                    OutputUtils.openTerminal(result.first(), result.second(), interactive, true);
+                    OutputUtils.openTerminal(result.first(), result.second(), interactive, true, null);
                 } catch (Exception ex) {
                     // FIXME display exception
                     Exceptions.printStackTrace(ex);

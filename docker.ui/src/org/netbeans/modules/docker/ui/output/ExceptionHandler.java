@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,46 +37,16 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.node;
-
-import org.netbeans.modules.docker.api.DockerContainer;
-import org.netbeans.modules.docker.api.DockerContainerDetail;
-import org.netbeans.modules.docker.api.DockerException;
-import org.netbeans.modules.docker.api.DockerAction;
-import org.netbeans.modules.docker.ui.output.OutputUtils;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.docker.ui.output;
 
 /**
  *
  * @author Petr Hejl
  */
-public class AttachContainerAction extends AbstractContainerAction {
+public interface ExceptionHandler {
 
-    @NbBundle.Messages("LBL_AttachContainerAction=Attach")
-    public AttachContainerAction() {
-        super(Bundle.LBL_AttachContainerAction());
-    }
+    void handleException(Exception ex);
 
-    @NbBundle.Messages({
-        "# {0} - container id",
-        "MSG_AttachingContainer=Attaching to container {0}"
-    })
-    @Override
-    protected String getProgressMessage(DockerContainer container) {
-        return Bundle.MSG_AttachingContainer(container.getShortId());
-    }
-
-    @Override
-    protected void performAction(DockerContainer container) throws DockerException {
-        DockerAction facade = new DockerAction(container.getInstance());
-        DockerContainerDetail info = facade.getDetail(container);
-        OutputUtils.openTerminal(container, null, info.isStdin(), false, this);
-    }
-
-    @Override
-    protected boolean isEnabled(DockerContainerDetail detail) {
-        return detail.getStatus() == DockerContainer.Status.RUNNING;
-    }
 }
