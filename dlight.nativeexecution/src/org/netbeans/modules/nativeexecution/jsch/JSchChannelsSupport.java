@@ -231,10 +231,10 @@ public final class JSchChannelsSupport {
             while (!cancelled.get()) {
                 try {
                     newSession = jsch.getSession(env.getUser(), env.getHostAddress(), env.getSSHPort());
-                    int serverAliveInterval = Integer.getInteger("jsch.server.alive.interval", 0);
+                    int serverAliveInterval = Integer.getInteger("jsch.server.alive.interval", 0); // NOI18N
                     if (serverAliveInterval > 0) {
                         newSession.setServerAliveInterval(serverAliveInterval);
-                        int serverAliveCount = Integer.getInteger("jsch.server.alive.count", 5);
+                        int serverAliveCount = Integer.getInteger("jsch.server.alive.count", 5); // NOI18N
                         newSession.setServerAliveCountMax(serverAliveCount);
                     }
                     newSession.setUserInfo(userInfo);
