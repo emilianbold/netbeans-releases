@@ -39,6 +39,7 @@ package org.netbeans.modules.javascript2.editor;
 
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.api.StructureScanner;
@@ -137,11 +138,11 @@ public class JsonLanguage extends DefaultLanguageConfig {
 //        return new OccurrencesFinderImpl();
 //    }
 
-//    @Override
-//    public CodeCompletionHandler getCompletionHandler() {
-//        return new JsCodeCompletion();
-//    }
-//
+    @Override
+    public CodeCompletionHandler getCompletionHandler() {
+        return new JsonCodeCompletion();
+    }
+
 //    @Override
 //    public EmbeddingIndexerFactory getIndexerFactory() {
 //        return new JsIndexer.Factory();
