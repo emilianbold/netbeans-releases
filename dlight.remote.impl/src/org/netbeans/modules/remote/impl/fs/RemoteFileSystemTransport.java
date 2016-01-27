@@ -49,6 +49,7 @@ import java.net.ConnectException;
 import java.util.Collection;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.impl.RemoteLogger;
@@ -174,16 +175,28 @@ public abstract class RemoteFileSystemTransport {
         return entries;
     }
     
-    public static DirEntry stat(ExecutionEnvironment execEnv, String path) 
+    public static DirEntry stat(ExecutionEnvironment execEnv, String path)
             throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
 
         return getInstanceSlow(execEnv).stat(path);
     }
-    
+
+    public static DirEntry stat(ExecutionEnvironment execEnv, String path, int timeoutMillis)
+            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+
+        return getInstanceSlow(execEnv).stat(path, timeoutMillis);
+    }
+
     public static DirEntry lstat(ExecutionEnvironment execEnv, String path)
             throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
 
         return getInstanceSlow(execEnv).lstat(path);
+     }
+
+    public static DirEntry lstat(ExecutionEnvironment execEnv, String path, int timeoutMillis)
+            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+
+        return getInstanceSlow(execEnv).lstat(path, timeoutMillis);
      }
 
     public static DirEntryList delete(ExecutionEnvironment execEnv, String path, boolean directory) 
@@ -272,11 +285,21 @@ public abstract class RemoteFileSystemTransport {
     protected abstract MoveInfo move(String from, String to)
             throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
 
-    protected abstract DirEntry stat(String path) 
+    protected abstract DirEntry stat(String path)
             throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
-    
-    protected abstract DirEntry lstat(String path) 
+
+    // TODO: should only versions with timeout be kept?
+    // Should other methods have a timeout parameter? (or probably there should be a static default?)
+    // It seems to be right idea, but it needs to many changes and we are too close to thr release
+
+    protected abstract DirEntry stat(String path, int timeoutMillis)
+            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
+
+    protected abstract DirEntry lstat(String path)
             throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
+
+    protected abstract DirEntry lstat(String path, int timeoutMillis)
+            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
 
     protected abstract DirEntryList readDirectory(String path) 
             throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
