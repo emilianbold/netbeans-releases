@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -379,6 +380,14 @@ public class RemoteFileSystemUtils {
                 }
             }
         }
+    }
+
+    public static void reportUnexpectedTimeout(TimeoutException ex, RemoteFileObjectBase fo) {
+        RemoteLogger.getInstance().log(Level.FINE, "Unexpected TimeoutException with zero timeout " + fo, ex);
+    }
+
+    public static void reportUnexpectedTimeout(TimeoutException ex, String path) {
+        RemoteLogger.getInstance().log(Level.FINE, "Unexpected TimeoutException with zero timeout " + path, ex);
     }
 
     // <editor-fold desc="Copy-pastes from FileObject and/or FileUtil" defaultstate="collapsed">
