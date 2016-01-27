@@ -231,6 +231,9 @@ public class DefaultVisitor implements Visitor {
     public void visit(ClassInstanceCreation node) {
         scan(node.getClassName());
         scan(node.ctorParams());
+        scan(node.getSuperClass());
+        scan(node.getInterfaces());
+        scan(node.getBody());
     }
 
     @Override

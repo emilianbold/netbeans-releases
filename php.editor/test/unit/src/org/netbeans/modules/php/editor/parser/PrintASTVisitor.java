@@ -300,9 +300,16 @@ public class PrintASTVisitor implements Visitor {
 
     @Override
     public void visit(ClassInstanceCreation node) {
-        XMLPrintNode printNode = new XMLPrintNode(node, "ClassInstanceCreation");
-        printNode.addChild(node.getClassName());
-        printNode.addChildrenGroup("Parameters", node.ctorParams());
+        XMLPrintNode printNode = new XMLPrintNode(node, "ClassInstanceCreation", new String[] {"anonymous", String.valueOf(node.isAnonymous())});
+        if (!node.isAnonymous()) {
+            printNode.addChild(node.getClassName());
+            printNode.addChildrenGroup("Parameters", node.ctorParams());
+        } else {
+            printNode.addChildrenGroup("Parameters", node.ctorParams());
+            printNode.addChild("Superclass", node.getSuperClass());
+            printNode.addChildrenGroup("Interfaces", node.getInterfaces());
+            printNode.addChild(node.getBody());
+        }
         printNode.print(this);
     }
 
