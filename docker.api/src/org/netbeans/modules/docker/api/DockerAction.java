@@ -454,6 +454,7 @@ public class DockerAction {
                 null, false, Collections.singleton(HttpURLConnection.HTTP_OK));
     }
 
+    // this call is BLOCKING
     public ActionStreamResult attach(DockerContainer container, boolean stdin, boolean logs) throws DockerException {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
@@ -829,6 +830,7 @@ public class DockerAction {
         };
     }
 
+    // this call is BLOCKING
     public ActionChunkedResult logs(DockerContainer container) throws DockerException {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
