@@ -239,8 +239,9 @@ public final class JSchChannelsSupport {
                     Authentication auth = Authentication.getFor(env);
                     final String preferredAuthKey = "PreferredAuthentications"; // NOI18N
                     if (!jschSessionConfig.containsKey(preferredAuthKey)) {
-                        String methods = auth.getActiveAuthenticationMethods();
+                        String methods = auth.getAuthenticationMethods().toJschString();
                         if (methods != null) {
+                            log.finest("Setting auth method list to " + methods); //NOI18N
                             newSession.setConfig(preferredAuthKey, methods);
                         }
                     }
