@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -394,7 +395,9 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 cldec.getBody().accept(this);
 
                 // find all usages in the method bodies
-                for (Block block : needToScan) {
+                while (!needToScan.isEmpty()) {
+                    Block block = needToScan.get(0);
+                    needToScan.remove(0);
                     block.accept(this);
                 }
                 addColoringForUnusedPrivateFields();
