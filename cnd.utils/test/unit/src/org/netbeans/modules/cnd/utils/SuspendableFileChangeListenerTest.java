@@ -125,7 +125,7 @@ public class SuspendableFileChangeListenerTest extends NativeExecutionBaseTestCa
             File referenceLog = new File(workDir, "reference.dat");
             FCL golden = new FCL(getName(), "", new PrintStream(referenceLog), true);
             FCL delegate = new FCL(getName(), "", new PrintStream(testLog), true);
-            SuspendableFileChangeListener suspendableListener = new SuspendableFileChangeListener(delegate);
+            SuspendableFileChangeListener suspendableListener = new SuspendableFileChangeListener(delegate, false);
 
             FileSystemProvider.addRecursiveListener(golden, tempFO.getFileSystem(), tempFO.getPath());
             FileSystemProvider.addRecursiveListener(suspendableListener, tempFO.getFileSystem(), tempFO.getPath());
@@ -173,7 +173,7 @@ public class SuspendableFileChangeListenerTest extends NativeExecutionBaseTestCa
             File referenceLog = new File(workDir, "reference.dat");
             FCL golden = new FCL(getName(), "", new PrintStream(referenceLog), true);
             FCL delegate = new FCL(getName(), "", new PrintStream(testLog), true);
-            SuspendableFileChangeListener suspendableListener = new SuspendableFileChangeListener(delegate);
+            SuspendableFileChangeListener suspendableListener = new SuspendableFileChangeListener(delegate, false);
             
             FileObject fo = tempFO.createData("toMove", "txt");
             String oldPath = fo.getPath();
@@ -270,7 +270,7 @@ public class SuspendableFileChangeListenerTest extends NativeExecutionBaseTestCa
             File testLog = new File(workDir, "test.dat");
             File referenceLog = new File(workDir, "reference.dat");
             FileChangeListener golden = new DumpingFileChangeListener(getName(), "", new PrintStream(referenceLog), true);
-            SuspendableFileChangeListener suspendableListener = new SuspendableFileChangeListener(new DumpingFileChangeListener(getName(), "", new PrintStream(testLog), true));
+            SuspendableFileChangeListener suspendableListener = new SuspendableFileChangeListener(new DumpingFileChangeListener(getName(), "", new PrintStream(testLog), true), false);
             if (suspend) {
                 suspendableListener.suspendRemoves();
             }
