@@ -59,6 +59,7 @@ import org.openide.awt.ActionRegistration;
 import org.openide.awt.StatusDisplayer;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -67,10 +68,9 @@ import org.openide.util.NbBundle;
  */
 public class CopyJNIGetFieldCodeAction extends AbstractCopyJNIAccessCodeAction {
     
-    public static final CopyJNIGetFieldCodeAction INSTANCE = new CopyJNIGetFieldCodeAction();
-    
-    private CopyJNIGetFieldCodeAction() {
-        super();
+    public CopyJNIGetFieldCodeAction(Lookup context) {
+        super(context);
+        putValue(NAME, NbBundle.getMessage(MixedDevUtils.class, "cnd.mixeddev.copy_get_field_code")); // NOI18N
     }
     
     @Override
@@ -80,12 +80,7 @@ public class CopyJNIGetFieldCodeAction extends AbstractCopyJNIAccessCodeAction {
     }
     
     @Override
-    public String getName() {
-        return NbBundle.getMessage(MixedDevUtils.class, "cnd.mixeddev.copy_get_field_code"); // NOI18N
-    }
-    
-    @Override
-    protected void performAction(Node[] activatedNodes) {
+    protected void actionPerformedImpl(Node[] activatedNodes) {
         Triple<DataObject, Document, Integer> context = extractContext(activatedNodes);
         if (context != null) {
             final Document doc = context.second;

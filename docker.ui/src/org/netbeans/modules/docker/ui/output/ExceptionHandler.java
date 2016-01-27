@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,16 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.ui.node;
-
-import org.netbeans.modules.docker.ui.run.RunTagAction;
-import javax.swing.Action;
-import org.netbeans.modules.docker.api.DockerTag;
-import org.netbeans.modules.docker.ui.tag.TagTagAction;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
+package org.netbeans.modules.docker.ui.output;
 
 /**
  *
  * @author Petr Hejl
  */
-public class DockerTagNode extends AbstractNode {
+public interface ExceptionHandler {
 
-    private static final String DOCKER_INSTANCE_ICON = "org/netbeans/modules/docker/ui/resources/docker_image.png"; // NOI18N
+    void handleException(Exception ex);
 
-    private final DockerTag tag;
-
-    public DockerTagNode(DockerTag tag) {
-        super(Children.LEAF, Lookups.fixed(tag));
-        this.tag = tag;
-        setDisplayName(tag.getTag() + " [" + tag.getShortId() + "]");
-        setShortDescription(tag.getShortId());
-        setIconBaseWithExtension(DOCKER_INSTANCE_ICON);
-    }
-
-    @Override
-    public Action[] getActions(boolean context) {
-        return new Action[] {
-            SystemAction.get(RunTagAction.class),
-            null,
-            SystemAction.get(TagTagAction.class),
-            null,
-            SystemAction.get(PushTagAction.class),
-            null,
-            SystemAction.get(CopyIdAction.class),
-            null,
-            SystemAction.get(RemoveTagAction.class)
-        };
-    }
 }

@@ -473,4 +473,8 @@ public class PhpParserErrorTest extends PHPTestBase {
         checkErrors("testfiles/parser/yieldFrom_06.php");
     }
 
+    public void testAnonymousClass01() throws Exception {
+        checkErrors("testfiles/parser/anonymousClass_01.php");
+    }
+
 }

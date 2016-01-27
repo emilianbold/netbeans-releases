@@ -48,8 +48,8 @@ made subject to such option by the copyright holder.
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-dockerfile">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/docker/editor/resources/docker.png"/>
-                <attr name="iconBase" stringvalue="org/netbeans/modules/docker/editor/resources/docker.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/docker/editor/resources/docker_file.png"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/docker/editor/resources/docker_file.png"/>
                 <folder name="Actions">
                     <file name="OpenAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-OpenAction.instance"/>

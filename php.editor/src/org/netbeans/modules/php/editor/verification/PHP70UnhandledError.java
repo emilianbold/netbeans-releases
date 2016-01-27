@@ -51,6 +51,7 @@ import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.model.impl.Type;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.ConditionalExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
@@ -163,6 +164,14 @@ public class PHP70UnhandledError extends UnhandledErrorRule {
         @Override
         public void visit(YieldFromExpression node) {
             createError(node);
+            super.visit(node);
+        }
+
+        @Override
+        public void visit(ClassInstanceCreation node) {
+            if (node.isAnonymous()) {
+                createError(node);
+            }
             super.visit(node);
         }
 

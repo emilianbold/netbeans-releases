@@ -127,7 +127,7 @@
                     <Variable start='177' end='179' isDollared='true'>
                         <Identifier start='178' end='179' name='e'/>
                     </Variable>
-                    <ClassInstanceCreation start='182' end='189'>
+                    <ClassInstanceCreation start='182' end='189' anonymous='false'>
                         <ClassName start='186' end='187'>
                             <NamespaceName start='186' end='187' isCurrent='false' isGlobal='false'>
                                 <Identifier start='186' end='187' name='e'/>

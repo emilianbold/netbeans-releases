@@ -43,47 +43,110 @@ package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.php.api.util.StringUtils;
 
 /**
- * Represents a class instanciation.
+ * Represents a class creation. It can be just calling ctor
+ * of existing class or creating new anonymous class.
  * This class holds the class name as an expression and
  * array of constructor parameters
- * <pre>e.g.<pre> new MyClass(),
+ * <pre>e.g.
+ * new MyClass(),
  * new $a('start'),
- * new foo()(1, $a)
+ * new foo()(1, $a),
+ * new class {...},
+ * new class(10) extends SomeClass implements SomeInterface {...}
+ * </pre>
  */
 public class ClassInstanceCreation extends Expression {
 
+    // common
+    private List<Expression> ctorParams = new ArrayList<>();
+    // ctor
     private ClassName className;
-    private ArrayList<Expression> ctorParams = new ArrayList<>();
+    // anonymous
+    private final int classStartOffset;
+    private Expression superClass;
+    private List<Expression> interfaces = new ArrayList<>();
+    private Block body;
 
-    public ClassInstanceCreation(int start, int end, ClassName className, Expression[] ctorParams) {
+
+    // ctor
+    public ClassInstanceCreation(int start, int end, @NonNull ClassName className, @NullAllowed List<Expression> ctorParams) {
         super(start, end);
+        assert className != null;
         this.className = className;
-        this.ctorParams.addAll(Arrays.asList(ctorParams));
+        if (ctorParams != null) {
+            this.ctorParams.addAll(ctorParams);
+        }
+        classStartOffset = -1;
     }
 
-    public ClassInstanceCreation(int start, int end, ClassName className, List<Expression> ctorParams) {
-		this(start, end, className, ctorParams == null ? new Expression[0] : (Expression[]) ctorParams.toArray(new Expression[ctorParams.size()]));
-	}
+    // anonymous
+    private ClassInstanceCreation(int start, int end, int classStartOffset, @NullAllowed List<Expression> ctorParams, @NullAllowed Expression superClass,
+            @NullAllowed List<Expression> interfaces, @NonNull Block body) {
+        super(start, end);
+        assert classStartOffset > -1 : classStartOffset;
+        this.classStartOffset = classStartOffset;
+        if (ctorParams != null) {
+            this.ctorParams.addAll(ctorParams);
+        }
+        this.superClass = superClass;
+        if (interfaces != null) {
+            this.interfaces.addAll(interfaces);
+        }
+        this.body = body;
+    }
+
+    public static ClassInstanceCreation anonymous(int start, int end, int classStartOffset, List<Expression> ctorParams, Expression superClass,
+            List<Expression> interfaces, Block body) {
+        return new ClassInstanceCreation(start, end, classStartOffset, ctorParams, superClass, interfaces, body);
+    }
+
+    public boolean isAnonymous() {
+        return classStartOffset != -1;
+    }
 
     /**
-     * Class name of this instance creation node
+     * Class name of this instance creation node.
      *
      * @return class name
      */
+    @CheckForNull
     public ClassName getClassName() {
+        // XXX
+        if (isAnonymous()) {
+            return new ClassName(0, 0, new Identifier(0, 0, "???"));
+        }
         return className;
     }
 
     /**
-     * List of expressions that were given to the the constructor
+     * List of expressions that were given to the the constructor.
      *
      * @return list of expressions that were given to the the constructor
      */
     public List<Expression> ctorParams() {
-        return this.ctorParams;
+        return Collections.unmodifiableList(ctorParams);
+    }
+
+    @CheckForNull
+    public Expression getSuperClass() {
+        return superClass;
+    }
+
+    public List<Expression> getInterfaces() {
+        return Collections.unmodifiableList(interfaces);
+    }
+
+    @CheckForNull
+    public Block getBody() {
+        return body;
     }
 
     @Override
@@ -94,10 +157,48 @@ public class ClassInstanceCreation extends Expression {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (Expression expression : ctorParams()) {
-            sb.append(expression).append(","); //NOI18N
+        sb.append("new "); // NOI18N
+        boolean anonymous = isAnonymous();
+        if (anonymous) {
+            sb.append("class"); // NOI18N
+        } else {
+            sb.append(className);
         }
-        return "new " + getClassName() + "(" + sb + ")"; //NOI18N
+        if (!ctorParams.isEmpty()) {
+            sb.append('('); // NOI18N
+            joinExpressions(sb, ctorParams);
+            sb.append(')'); // NOI18N
+        }
+        if (superClass != null) {
+            assert className == null : className;
+            assert anonymous;
+            sb.append(" extends "); // NOI18N
+            sb.append(superClass);
+        }
+        if (!interfaces.isEmpty()) {
+            assert className == null : className;
+            assert anonymous;
+            sb.append(" implements "); // NOI18N
+            joinExpressions(sb, interfaces);
+        }
+        if (body != null) {
+            assert className == null : className;
+            assert anonymous;
+            sb.append(body);
+        }
+        return sb.toString();
+    }
+
+    private void joinExpressions(StringBuilder sb, List<Expression> expressions) {
+        boolean first = true;
+        for (Expression expression : expressions) {
+            if (first) {
+                first = false;
+            } else {
+                sb.append(", "); // NOI18N
+            }
+            sb.append(expression);
+        }
     }
 
 }

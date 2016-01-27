@@ -64,6 +64,8 @@ import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.netbeans.modules.docker.api.ActionChunkedResult;
 import org.netbeans.modules.docker.api.ActionStreamResult;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -77,56 +79,97 @@ public final class OutputUtils {
 
     private static final Map<DockerContainer, InputOutput> TERMS = new WeakHashMap<>();
 
+    private static final RequestProcessor RP = new RequestProcessor(OutputUtils.class.getName(), Integer.MAX_VALUE);
+
     private OutputUtils() {
         super();
     }
 
-    public static void openLog(DockerContainer container) throws DockerException {
-        LogConnect logIO = getLogInputOutput(container);
+    public static void openLog(final DockerContainer container, final ExceptionHandler handler) {
+        final LogConnect logIO = getLogInputOutput(container);
         if (logIO.isConnected()) {
             logIO.getInputOutput().select();
             return;
         }
 
-        DockerAction facade = new DockerAction(container.getInstance());
-        ActionChunkedResult result = facade.logs(container);
-        try {
-            logIO.getInputOutput().getOut().reset();
-        } catch (IOException ex) {
-            LOGGER.log(Level.FINE, null, ex);
-        }
-        logIO.connect(result);
-        logIO.getInputOutput().select();
+        // we run in separate thread as logs action may block even before returning
+        // the result (in cases when there is no log output)
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    DockerAction facade = new DockerAction(container.getInstance());
+                    ActionChunkedResult result = facade.logs(container);
+                    try {
+                        logIO.getInputOutput().getOut().reset();
+                    } catch (IOException ex) {
+                        LOGGER.log(Level.FINE, null, ex);
+                    }
+                    logIO.connect(result);
+                    logIO.getInputOutput().select();
+                } catch (DockerException ex) {
+                    if (handler != null) {
+                        handler.handleException(ex);
+                    } else {
+                        LOGGER.log(Level.WARNING, null, ex);
+                    }
+                }
+            }
+        });
     }
 
-    public static void openTerminal(DockerContainer container, ActionStreamResult r, boolean stdin, boolean logs) throws DockerException {
+    public static void openTerminal(final DockerContainer container, final ActionStreamResult r,
+            final boolean stdin, final boolean logs, final ExceptionHandler handler) {
+
         Pair<InputOutput, Boolean> termIO = getTerminalInputOutput(container);
-        InputOutput io = termIO.first();
+        final InputOutput io = termIO.first();
         if (IOTerm.isSupported(io)) {
             if (termIO.second()) {
                 focusTerminal(io);
             } else {
-                DockerAction facade = new DockerAction(container.getInstance());
-                ActionStreamResult result = r != null ? r : facade.attach(container, stdin, logs);
+                // we run in separate thread as logs action may block even before returning
+                // the result (in cases when there is no log output)
+                Runnable task = new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            DockerAction facade = new DockerAction(container.getInstance());
+                            ActionStreamResult result = r != null ? r : facade.attach(container, stdin, logs);
 
-                try {
-                    io.getOut().reset();
-                } catch (IOException ex) {
-                    LOGGER.log(Level.FINE, null, ex);
-                }
-                if (!result.hasTty() && IOEmulation.isSupported(io)) {
-                    IOEmulation.setDisciplined(io);
-                }
+                            try {
+                                io.getOut().reset();
+                            } catch (IOException ex) {
+                                LOGGER.log(Level.FINE, null, ex);
+                            }
+                            if (!result.hasTty() && IOEmulation.isSupported(io)) {
+                                IOEmulation.setDisciplined(io);
+                            }
 
-                TerminalResizeListener l = null;
-                if (result.hasTty() && IOResizable.isSupported(io)) {
-                    l = new TerminalResizeListener(io, container);
-                    IONotifier.addPropertyChangeListener(io, l);
-                }
+                            TerminalResizeListener l = null;
+                            if (result.hasTty() && IOResizable.isSupported(io)) {
+                                l = new TerminalResizeListener(io, container);
+                                IONotifier.addPropertyChangeListener(io, l);
+                            }
 
-                IOTerm.connect(io, stdin ? result.getStdIn() : null,
-                        new TerminalInputStream(io, result.getStdOut(), result, l), result.getStdErr(), result.getCharset().name());
-                focusTerminal(io);
+                            IOTerm.connect(io, stdin ? result.getStdIn() : null,
+                                    new TerminalInputStream(io, result.getStdOut(), result, l),
+                                    result.getStdErr(), result.getCharset().name());
+                            focusTerminal(io);
+                        } catch (DockerException ex) {
+                            if (handler != null) {
+                                handler.handleException(ex);
+                            } else {
+                                LOGGER.log(Level.WARNING, null, ex);
+                            }
+                        }
+                    }
+                };
+
+                if (r != null) {
+                    task.run();
+                } else {
+                    RP.post(task);
+                }
             }
         } else {
             io.select();
@@ -176,8 +219,6 @@ public final class OutputUtils {
             });
         }
     }
-
-
 
     private static class LogConnect {
 

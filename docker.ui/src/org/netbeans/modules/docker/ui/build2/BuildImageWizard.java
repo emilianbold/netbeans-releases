@@ -47,6 +47,8 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -55,12 +57,12 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.api.BuildEvent;
-import org.netbeans.modules.docker.api.DockerException;
 import org.netbeans.modules.docker.api.DockerAction;
-import org.netbeans.modules.docker.api.StatusEvent;
+import org.netbeans.modules.docker.api.DockerImage;
 import org.netbeans.modules.docker.ui.output.StatusOutputListener;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
@@ -132,7 +134,8 @@ public class BuildImageWizard {
         "# {0} - context",
         "MSG_Building=Building {0}",
         "# {0} - file",
-        "MSG_Uploading=Sending file {0}"
+        "MSG_Uploading=Sending file {0}",
+        "MSG_BuildCancelled=Build cancelled"
     })
     private void build(final DockerInstance instance, final String buildContext,
             final String dockerfile, final String repository, final String tag,
@@ -142,7 +145,37 @@ public class BuildImageWizard {
             @Override
             public void run() {
                 final InputOutput io = IOProvider.getDefault().getIO(Bundle.MSG_Building(buildContext), false);
-                ProgressHandle handle = ProgressHandleFactory.createHandle(Bundle.MSG_Building(buildContext), new AbstractAction() {
+
+                DockerAction facade = new DockerAction(instance);
+                File file = null;
+                if (dockerfile != null) {
+                    file = new File(dockerfile);
+                    if (!file.isAbsolute()) {
+                        file = new File(buildContext, dockerfile);
+                    }
+                }
+
+                final FutureTask<DockerImage> task = facade.createBuildTask(new File(buildContext), file, repository, tag, pull, noCache,
+                        new BuildEvent.Listener() {
+                    @Override
+                    public void onEvent(BuildEvent event) {
+                        if (event.isUpload()) {
+                            io.getOut().println(Bundle.MSG_Uploading(event.getMessage()));
+                        } else if (event.isError()) {
+                            // FIXME should we display more details ?
+                            io.getErr().println(event.getMessage());
+                        } else {
+                            io.getOut().println(event.getMessage());
+                        }
+                    }
+                }, new StatusOutputListener(io));
+
+                ProgressHandle handle = ProgressHandleFactory.createHandle(Bundle.MSG_Building(buildContext), new Cancellable() {
+                    @Override
+                    public boolean cancel() {
+                        return task.cancel(true);
+                    }
+                }, new AbstractAction() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         io.select();
@@ -153,33 +186,24 @@ public class BuildImageWizard {
                     io.getOut().reset();
                     io.select();
 
-                    File file = null;
-                    if (dockerfile != null) {
-                        file = new File(dockerfile);
-                        if (!file.isAbsolute()) {
-                            file = new File(buildContext, dockerfile);
-                        }
+                    task.run();
+                    if (!task.isCancelled()) {
+                        task.get();
+                    } else {
+                        io.getErr().println(Bundle.MSG_BuildCancelled());
                     }
-                    DockerAction facade = new DockerAction(instance);
-                    facade.build(new File(buildContext), file, repository, tag, pull, noCache,
-                            new BuildEvent.Listener() {
-                        @Override
-                        public void onEvent(BuildEvent event) {
-                            if (event.isUpload()) {
-                                io.getOut().println(Bundle.MSG_Uploading(event.getMessage()));
-                            } else if (event.isError()) {
-                                // FIXME should we display more details ?
-                                io.getErr().println(event.getMessage());
-                            } else {
-                                io.getOut().println(event.getMessage());
-                            }
-                        }
-                    }, new StatusOutputListener(io));
-                } catch (DockerException ex) {
-                    LOGGER.log(Level.INFO, null, ex);
-                    io.getErr().println(ex.getMessage());
+                } catch (ExecutionException ex) {
+                    Throwable cause = ex.getCause();
+                    if (cause == null) {
+                        cause = ex;
+                    }
+                    LOGGER.log(Level.INFO, null, cause);
+                    io.getErr().println(cause.getMessage());
                 } catch (IOException ex) {
                     LOGGER.log(Level.INFO, null, ex);
+                } catch (InterruptedException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                    Thread.currentThread().interrupt();
                 } finally {
                     io.getOut().close();
                     handle.finish();

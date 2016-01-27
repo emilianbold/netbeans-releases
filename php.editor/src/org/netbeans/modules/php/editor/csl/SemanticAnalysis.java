@@ -394,7 +394,8 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 cldec.getBody().accept(this);
 
                 // find all usages in the method bodies
-                for (Block block : needToScan) {
+                while (!needToScan.isEmpty()) {
+                    Block block = needToScan.remove(0);
                     block.accept(this);
                 }
                 addColoringForUnusedPrivateFields();

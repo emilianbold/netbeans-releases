@@ -190,6 +190,8 @@ public class ReformatterImpl {
                         } else if (entry.isLikeToFunction()) {
                             // add new lines before method declaration
                             newLinesBeforeDeclaration(codeStyle.blankLinesBeforeMethods(), start);
+                        } else if (entry.getImportantKind() == ARROW){
+                            // lamda no action
                         } else if (entry.isLikeToArrayInitialization()) {
                             // no action
                         } else {
@@ -337,6 +339,12 @@ public class ReformatterImpl {
                     }
                     if (braces.parenDepth == 0) {
                         braces.setStatementContinuation(BracesStack.StatementContinuation.STOP);
+                    } else {
+                        if (entry != null) {
+                            if (entry.getLambdaParen() == braces.parenDepth) {
+                                braces.setStatementContinuation(BracesStack.StatementContinuation.STOP);
+                            }
+                        }
                     }
                     break;
                 }

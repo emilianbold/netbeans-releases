@@ -2070,6 +2070,16 @@ unknown_posttype_declaration_specifiers_list
     ((literal_ident literal_ident) => s=literal_ident! unknown_posttype_declaration_specifiers_list)?
     ;
 
+unknown_postfunction_declarator_specifiers
+    {String s;}
+    :
+        (({isCPlusPlus()}? (literal_ident)+ is_post_declarator_token)=> 
+            (options {greedy = true;} : s = literal_ident!)+
+        | 
+            // Empty alternative
+        )
+    ;
+
 decl_specifiers_before_type
     {StorageClass sc; TypeQualifier tq;}
     :
@@ -2892,6 +2902,7 @@ function_like_var_declarator
         (asm_block!)?
         (options {greedy=true;} :function_attribute_specification)?
         (options {greedy=true;} : LITERAL_override | LITERAL_final | LITERAL_new)*                
+        unknown_postfunction_declarator_specifiers
     ;
 
 declarator_suffixes
@@ -2948,6 +2959,8 @@ function_direct_declarator [boolean definition, boolean symTabCheck]
         (options {greedy=true;} :function_attribute_specification)?
         (options {greedy=true;} :asm_block!)?
         (options {greedy=true;} :function_attribute_specification)?
+
+        unknown_postfunction_declarator_specifiers
     ;
  
 protected

@@ -51,6 +51,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.support.Authentication;
 import org.netbeans.modules.nativeexecution.support.Logger;
 
 /**
@@ -59,7 +60,6 @@ import org.netbeans.modules.nativeexecution.support.Logger;
  */
 public final class JschSupport {
 
-    private static final int JSCH_CONNECTION_TIMEOUT = Integer.getInteger("jsch.connection.timeout", 10000); // NOI18N
     private final static java.util.logging.Logger log = Logger.getInstance();
 
     private JschSupport() {
@@ -94,7 +94,8 @@ public final class JschSupport {
                 InputStream is = echannel.getInputStream();
                 InputStream es = echannel.getErrStream();
                 OutputStream os = new ProtectedOutputStream(echannel, echannel.getOutputStream());
-                echannel.connect(JSCH_CONNECTION_TIMEOUT);
+                Authentication auth = Authentication.getFor(env);
+                echannel.connect(auth.getTimeout() * 1000);
                 return new ChannelStreams(echannel, is, es, os);
             }
 
@@ -122,7 +123,8 @@ public final class JschSupport {
                 InputStream is = shell.getInputStream();
                 InputStream es = new ByteArrayInputStream(new byte[0]);
                 OutputStream os = shell.getOutputStream();
-                shell.connect(JSCH_CONNECTION_TIMEOUT);
+                Authentication auth = Authentication.getFor(env);
+                shell.connect(auth.getTimeout() * 1000);
                 return new ChannelStreams(shell, is, es, os);
             }
 
