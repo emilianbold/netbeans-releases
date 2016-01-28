@@ -44,12 +44,8 @@ package org.netbeans.modules.docker.ui.build2;
 import java.io.File;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.docker.api.DockerAction;
-import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.ui.Validations;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -93,29 +89,8 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
 
     @Override
     public boolean isFinishPanel() {
-        String buildContext = component.getBuildContext();
-        if (buildContext == null) {
-            return false;
-        }
-        String dockerfile = (String) wizard.getProperty(BuildImageWizard.DOCKERFILE_PROPERTY);
-        if (dockerfile == null) {
-            dockerfile = DockerAction.DOCKER_FILE;
-        }
-        File file = new File(dockerfile);
-        if (!file.isAbsolute()) {
-            file = new File(buildContext, dockerfile);
-        }
-
-        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
-        // the last check avoids entires like Dockerfile/ to be considered valid files
-        if (fo == null || !fo.isData() || !dockerfile.endsWith(fo.getNameExt())) {
-            return false;
-        }
-        FileObject build = FileUtil.toFileObject(FileUtil.normalizeFile(new File(buildContext)));
-        if (build == null) {
-            return false;
-        }
-        return FileUtil.isParentOf(build, fo);
+        return BuildImageWizard.isFinishable(component.getBuildContext(),
+                (String) wizard.getProperty(BuildImageWizard.DOCKERFILE_PROPERTY));
     }
 
     @NbBundle.Messages({

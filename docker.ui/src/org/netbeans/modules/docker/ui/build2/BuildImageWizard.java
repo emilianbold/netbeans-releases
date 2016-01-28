@@ -63,6 +63,8 @@ import org.netbeans.modules.docker.api.DockerImage;
 import org.netbeans.modules.docker.ui.output.StatusOutputListener;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -75,7 +77,7 @@ import org.openide.windows.InputOutput;
  */
 public class BuildImageWizard {
 
-    public static final String BUILD_INSTANCE_PROPERTY = "buildInstance";
+    public static final String INSTANCE_PROPERTY = "instance";
 
     public static final String BUILD_CONTEXT_PROPERTY = "buildContext";
 
@@ -94,10 +96,6 @@ public class BuildImageWizard {
     public static final boolean NO_CACHE_DEFAULT = false;
 
     private static final Logger LOGGER = Logger.getLogger(BuildImageAction.class.getName());
-
-    public BuildImageWizard() {
-        
-    }
 
     @NbBundle.Messages("LBL_BuildImage=Build Image")
     public void show(@NullAllowed DockerInstance instance, @NullAllowed File dockerfile) {
@@ -123,8 +121,9 @@ public class BuildImageWizard {
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wiz.setTitleFormat(new MessageFormat("{0}"));
         wiz.setTitle(Bundle.LBL_BuildImage());
+
         if (instance != null) {
-            wiz.putProperty(BUILD_INSTANCE_PROPERTY, instance);
+            wiz.putProperty(INSTANCE_PROPERTY, instance);
         }
         if (dockerfile != null && dockerfile.isFile()) {
             wiz.putProperty(BUILD_CONTEXT_PROPERTY, dockerfile.getParentFile().getAbsolutePath());
@@ -134,7 +133,7 @@ public class BuildImageWizard {
         if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
             Boolean pull = (Boolean) wiz.getProperty(PULL_PROPERTY);
             Boolean noCache = (Boolean) wiz.getProperty(NO_CACHE_PROPERTY);
-            build((DockerInstance) wiz.getProperty(BUILD_INSTANCE_PROPERTY),
+            build((DockerInstance) wiz.getProperty(INSTANCE_PROPERTY),
                     (String) wiz.getProperty(BUILD_CONTEXT_PROPERTY),
                     (String) wiz.getProperty(DOCKERFILE_PROPERTY),
                     (String) wiz.getProperty(REPOSITORY_PROPERTY),
@@ -142,6 +141,31 @@ public class BuildImageWizard {
                     pull != null ? pull : PULL_DEFAULT,
                     noCache != null ? noCache : NO_CACHE_DEFAULT);
         }
+    }
+
+    static boolean isFinishable(String buildContext, String dockerfile) {
+        if (buildContext == null) {
+            return false;
+        }
+        String realDockerfile = dockerfile;
+        if (realDockerfile == null) {
+            realDockerfile = DockerAction.DOCKER_FILE;
+        }
+        File file = new File(realDockerfile);
+        if (!file.isAbsolute()) {
+            file = new File(buildContext, realDockerfile);
+        }
+
+        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        // the last check avoids entires like Dockerfile/ to be considered valid files
+        if (fo == null || !fo.isData() || !realDockerfile.endsWith(fo.getNameExt())) {
+            return false;
+        }
+        FileObject build = FileUtil.toFileObject(FileUtil.normalizeFile(new File(buildContext)));
+        if (build == null) {
+            return false;
+        }
+        return FileUtil.isParentOf(build, fo);
     }
 
     @NbBundle.Messages({

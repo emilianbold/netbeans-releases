@@ -44,7 +44,6 @@ package org.netbeans.modules.docker.ui.build2;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListModel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.api.DockerIntegration;
@@ -60,8 +59,8 @@ public class BuildInstanceVisual extends javax.swing.JPanel {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    DefaultComboBoxModel<DockerInstanceWrapper> model = new DefaultComboBoxModel<>();
-    
+    private final DefaultComboBoxModel<DockerInstanceWrapper> model = new DefaultComboBoxModel<>();
+
     /**
      * Creates new form BuildInstance
      */
@@ -72,7 +71,7 @@ public class BuildInstanceVisual extends javax.swing.JPanel {
             model.addElement(new DockerInstanceWrapper(i));
         }
         instanceComboBox.setModel(model);
-        
+
         instanceComboBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -89,7 +88,7 @@ public class BuildInstanceVisual extends javax.swing.JPanel {
         changeSupport.removeChangeListener(l);
     }
 
-    public DockerInstance getBuildInstance() {
+    public DockerInstance getInstance() {
         Object item = instanceComboBox.getSelectedItem();
         if (item == null) {
             return null;
@@ -97,7 +96,7 @@ public class BuildInstanceVisual extends javax.swing.JPanel {
         return ((DockerInstanceWrapper) item).getInstance();
     }
 
-    public void setBuildInstance(DockerInstance instance) {
+    public void setInstance(DockerInstance instance) {
         if (instance == null) {
             return;
         }
