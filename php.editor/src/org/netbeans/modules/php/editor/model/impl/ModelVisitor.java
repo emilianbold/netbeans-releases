@@ -302,16 +302,21 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             } else if (expression instanceof VariableBase) {
                 typeName = VariousUtils.extractTypeFroVariableBase((VariableBase) expression);
                 if (typeName != null) {
-                    Collection<? extends VariableName> allVariables = VariousUtils.getAllVariables(functionScope, typeName);
-                    Map<String, String> var2Type = new HashMap<>();
-                    for (VariableName variable : allVariables) {
-                        String name = variable.getName();
-                        String type = resolveVariableType(name, functionScope, node);
-                        String qualifiedType = VariousUtils.qualifyTypeNames(type, node.getStartOffset(), currentScope);
-                        var2Type.put(name, qualifiedType);
-                    }
-                    if (!var2Type.isEmpty()) {
-                        typeName = VariousUtils.replaceVarNames(typeName, var2Type);
+                    if (typeName.equals(VariousUtils.PRE_OPERATION_TYPE_DELIMITER + VariousUtils.VAR_TYPE_PREFIX + "$this")) { //NO18N
+                        // #239987 just "return $this;"
+                        typeName = "\\this"; //NOI18N
+                    } else {
+                        Collection<? extends VariableName> allVariables = VariousUtils.getAllVariables(functionScope, typeName);
+                        Map<String, String> var2Type = new HashMap<>();
+                        for (VariableName variable : allVariables) {
+                            String name = variable.getName();
+                            String type = resolveVariableType(name, functionScope, node);
+                            String qualifiedType = VariousUtils.qualifyTypeNames(type, node.getStartOffset(), currentScope);
+                            var2Type.put(name, qualifiedType);
+                        }
+                        if (!var2Type.isEmpty()) {
+                            typeName = VariousUtils.replaceVarNames(typeName, var2Type);
+                        }
                     }
                 }
             } else if (expression instanceof Scalar) {

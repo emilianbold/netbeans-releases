@@ -207,36 +207,41 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     private ReturnTypesDescriptor getReturnTypesDescriptor(String types, boolean resolveSemiTypes) {
         ReturnTypesDescriptor result = ReturnTypesDescriptor.NONE;
         if (StringUtils.hasText(types)) {
-            String[] typeNames = types.split(TYPE_SEPARATOR_REGEXP);
-            if (containsCallerDependentType(typeNames)) {
-                result = new CallerDependentTypesDescriptor();
-            } else if (getInScope() instanceof ClassScope && containsSelfDependentType(typeNames)) {
-                result = new CommonTypesDescriptor(Collections.singleton((TypeScope) getInScope()));
-            } else {
-                Collection<TypeScope> retval = new HashSet<>();
-                for (String typeName : typeNames) {
-                    if (typeName.trim().length() > 0) {
-                        boolean added = false;
-                        try {
-                            added = recursionDetection.add(typeName);
-                            if (added && recursionDetection.size() < 15) {
-                                if (resolveSemiTypes && VariousUtils.isSemiType(typeName)) {
-                                    retval.addAll(VariousUtils.getType(this, typeName, getLastValidMethodOffset(), false));
-                                } else {
-                                    String modifiedTypeName = typeName;
-                                    if (typeName.indexOf("[") != -1) { //NOI18N
-                                        modifiedTypeName = typeName.replaceAll("\\[.*\\]", ""); //NOI18N
-                                    }
-                                    retval.addAll(IndexScopeImpl.getTypes(QualifiedName.create(modifiedTypeName), this));
+            final String[] typeNames = types.split(TYPE_SEPARATOR_REGEXP);
+            Collection<TypeScope> retval = new HashSet<>();
+            for (String typeName : typeNames) {
+                if (isSpecialTypeName(typeName)) {
+                    continue;
+                }
+                if (typeName.trim().length() > 0) {
+                    boolean added = false;
+                    try {
+                        added = recursionDetection.add(typeName);
+                        if (added && recursionDetection.size() < 15) {
+                            if (resolveSemiTypes && VariousUtils.isSemiType(typeName)) {
+                                retval.addAll(VariousUtils.getType(this, typeName, getLastValidMethodOffset(), false));
+                            } else {
+                                String modifiedTypeName = typeName;
+                                if (typeName.indexOf("[") != -1) { //NOI18N
+                                    modifiedTypeName = typeName.replaceAll("\\[.*\\]", ""); //NOI18N
                                 }
+                                retval.addAll(IndexScopeImpl.getTypes(QualifiedName.create(modifiedTypeName), this));
                             }
-                        } finally {
-                            if (added) {
-                                recursionDetection.remove(typeName);
-                            }
+                        }
+                    } finally {
+                        if (added) {
+                            recursionDetection.remove(typeName);
                         }
                     }
                 }
+            }
+            if (getInScope() instanceof ClassScope && containsSelfDependentType(typeNames)) {
+                retval.add(((TypeScope) getInScope()));
+            }
+
+            if (containsCallerDependentType(typeNames)) {
+                result = new CallerDependentTypesDescriptor(retval);
+            } else {
                 result = new CommonTypesDescriptor(retval);
             }
         }
@@ -277,6 +282,13 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
 
     private static boolean containsSelfDependentType(String[] typeNames) {
         return (Arrays.binarySearch(typeNames, "\\self") >= 0) || (Arrays.binarySearch(typeNames, Type.OBJECT) >= 0); //NOI18N
+    }
+
+    private static boolean isSpecialTypeName(String typeName) {
+        return typeName.equals("\\this") //NOI18N
+                || typeName.equals("\\static") //NOI18N
+                || typeName.equals("\\self") //NOI18N
+                || typeName.equals(Type.OBJECT);
     }
 
     private void updateReturnTypes(String oldTypes, Collection<? extends TypeScope> resolvedReturnTypes) {
@@ -443,10 +455,19 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
 
     private static final class CallerDependentTypesDescriptor implements ReturnTypesDescriptor {
 
+        private final Collection<? extends TypeScope> rawTypes;
+
+        public CallerDependentTypesDescriptor(Collection<? extends TypeScope> rawTypes) {
+            assert rawTypes != null;
+            this.rawTypes = rawTypes;
+        }
+
         @Override
         public Collection<? extends TypeScope> getModifiedResult(Collection<? extends TypeScope> callerTypes) {
             assert callerTypes != null;
-            return callerTypes;
+            HashSet<TypeScope> types = new HashSet<>(rawTypes);
+            types.addAll(callerTypes);
+            return types;
         }
 
     }
