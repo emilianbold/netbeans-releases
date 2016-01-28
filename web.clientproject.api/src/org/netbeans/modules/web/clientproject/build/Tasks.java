@@ -72,6 +72,9 @@ public final class Tasks {
 
     @CheckForNull
     public List<String> getSimpleTasks() {
+        if (simpleTasks == null) {
+            return null;
+        }
         return Collections.unmodifiableList(simpleTasks);
     }
 
