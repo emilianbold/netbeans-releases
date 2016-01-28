@@ -25,11 +25,11 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <Component id="buildContextTextField" max="32767" attributes="0"/>
+                      <Component id="buildContextTextField" pref="221" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="buildContextButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="repositoryComboBox" pref="329" max="32767" attributes="0"/>
+                  <Component id="repositoryComboBox" max="32767" attributes="0"/>
                   <Component id="tagTextField" alignment="0" max="32767" attributes="0"/>
               </Group>
           </Group>
@@ -69,6 +69,9 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="buildContextTextField">
+      <Properties>
+        <Property name="columns" type="int" value="10"/>
+      </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="buildContextButton">
       <Properties>

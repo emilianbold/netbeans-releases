@@ -57,8 +57,6 @@ public class BuildOptionsPanel implements WizardDescriptor.Panel<WizardDescripto
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    private final DockerInstance instance;
-
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
@@ -67,8 +65,8 @@ public class BuildOptionsPanel implements WizardDescriptor.Panel<WizardDescripto
 
     private WizardDescriptor wizard;
 
-    public BuildOptionsPanel(DockerInstance instance) {
-        this.instance = instance;
+    public BuildOptionsPanel() {
+        super();
     }
 
     // Get the visual component for the panel. In this template, the component
