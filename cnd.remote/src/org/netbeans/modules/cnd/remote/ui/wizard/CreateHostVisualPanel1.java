@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import javax.swing.Icon;
@@ -54,7 +55,7 @@ import org.openide.util.NbBundle;
 
 /*
  * package
- */ final class CreateHostVisualPanel1 extends JPanel {
+ */ final class CreateHostVisualPanel1 extends CreateHostVisualPanelBase {
 
     private final NetworkNeighbourhoodList networkNeighbourhoodList;
     private final ChangeListener listener;
@@ -91,6 +92,7 @@ import org.openide.util.NbBundle;
                 });
             }
         });
+        adjustPreferredSize(); // otherwise GUI editor spoils the form
     }
 
     private void fireChange() {
