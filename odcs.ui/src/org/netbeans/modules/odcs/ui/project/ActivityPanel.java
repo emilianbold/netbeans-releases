@@ -45,6 +45,7 @@ import org.netbeans.modules.odcs.ui.utils.Utils;
 import java.awt.Cursor;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -109,7 +110,8 @@ public class ActivityPanel extends javax.swing.JPanel implements Expandable, Act
         initComponents();
         lblIcon.setIcon(activityAccessor.getActivityIcon());
         SimpleDateFormat dateFormat = new SimpleDateFormat("hh:mm a");
-        lblTime.setText(dateFormat.format(activityAccessor.getActivityDate()));
+        lblTime.setText(dateFormat.format(activityAccessor.getActivityDate()));        
+        lblTime.setToolTipText(DateFormat.getDateTimeInstance().format(activityAccessor.getActivityDate()));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(0, 5, 0, 3);
