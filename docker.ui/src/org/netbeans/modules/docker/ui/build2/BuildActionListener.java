@@ -56,7 +56,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Petr Hejl
  */
-@ActionID(category = "File", id = "org.netbeans.modules.docker.editor.BuildActionListener")
+@ActionID(category = "File", id = "org.netbeans.modules.docker.ui.build2.BuildActionListener")
 @ActionRegistration(displayName = "#LBL_Build")
 @ActionReference(path = "Loaders/text/x-dockerfile/Actions", position = 150)
 @Messages("LBL_Build=Build...")
