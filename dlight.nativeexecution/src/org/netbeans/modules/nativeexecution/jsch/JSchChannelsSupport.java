@@ -231,6 +231,12 @@ public final class JSchChannelsSupport {
             while (!cancelled.get()) {
                 try {
                     newSession = jsch.getSession(env.getUser(), env.getHostAddress(), env.getSSHPort());
+                    int serverAliveInterval = Integer.getInteger("jsch.server.alive.interval", 0); // NOI18N
+                    if (serverAliveInterval > 0) {
+                        newSession.setServerAliveInterval(serverAliveInterval);
+                        int serverAliveCount = Integer.getInteger("jsch.server.alive.count", 5); // NOI18N
+                        newSession.setServerAliveCountMax(serverAliveCount);
+                    }
                     newSession.setUserInfo(userInfo);
 
                     for (Entry<String, String> entry : jschSessionConfig.entrySet()) {
@@ -239,8 +245,9 @@ public final class JSchChannelsSupport {
                     Authentication auth = Authentication.getFor(env);
                     final String preferredAuthKey = "PreferredAuthentications"; // NOI18N
                     if (!jschSessionConfig.containsKey(preferredAuthKey)) {
-                        String methods = auth.getActiveAuthenticationMethods();
+                        String methods = auth.getAuthenticationMethods().toJschString();
                         if (methods != null) {
+                            log.finest("Setting auth method list to " + methods); //NOI18N
                             newSession.setConfig(preferredAuthKey, methods);
                         }
                     }

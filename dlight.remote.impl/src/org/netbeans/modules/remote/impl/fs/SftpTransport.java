@@ -53,6 +53,8 @@ import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -84,17 +86,39 @@ public class SftpTransport extends RemoteFileSystemTransport {
     @Override
     protected DirEntry stat(String path) 
             throws ConnectException, InterruptedException, ExecutionException {
-        return stat_or_lstat(path, false);
+        try {
+            return stat_or_lstat(path, false, 0);
+        } catch (TimeoutException ex) {
+            RemoteFileSystemUtils.reportUnexpectedTimeout(ex, path);
+            return null;
+        }
+    }
+
+    @Override
+    protected DirEntry stat(String path, int timeoutMillis)
+            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+        return stat_or_lstat(path, false, timeoutMillis);
     }
 
     @Override
     protected DirEntry lstat(String path) 
             throws ConnectException, InterruptedException, ExecutionException {
-        return stat_or_lstat(path, true);
+        try {
+            return stat_or_lstat(path, true, 0);
+        } catch (TimeoutException ex) {
+            RemoteFileSystemUtils.reportUnexpectedTimeout(ex, path);
+            return null;
+        }
     }
 
-    private DirEntry stat_or_lstat(String path, boolean lstat) 
-            throws ConnectException, InterruptedException, ExecutionException {
+    @Override
+    protected DirEntry lstat(String path, int timeoutMillis)
+            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+        return stat_or_lstat(path, true, timeoutMillis);
+    }
+
+    private DirEntry stat_or_lstat(String path, boolean lstat, int timeoutMillis)
+            throws TimeoutException, ConnectException, InterruptedException, ExecutionException {
         
         Future<FileInfoProvider.StatInfo> stat = lstat ?
                 FileInfoProvider.lstat(execEnv, path) :
@@ -103,7 +127,11 @@ public class SftpTransport extends RemoteFileSystemTransport {
         if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
             throw RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(execEnv));
         }        
-        return DirEntryImpl.create(stat.get(), execEnv);
+        if (timeoutMillis == 0) {
+            return DirEntryImpl.create(stat.get(), execEnv);
+        } else {
+            return DirEntryImpl.create(stat.get(timeoutMillis, TimeUnit.MILLISECONDS), execEnv);
+        }
     }
 
     @Override

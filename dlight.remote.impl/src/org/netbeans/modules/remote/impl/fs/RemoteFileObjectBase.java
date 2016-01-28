@@ -61,6 +61,7 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -540,8 +541,8 @@ public abstract class RemoteFileObjectBase {
     }
 
     protected void refreshThisFileMetadataImpl(boolean recursive, Set<String> antiLoop, 
-            boolean expected, RefreshMode refreshMode)
-            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            boolean expected, RefreshMode refreshMode, int timeoutMillis)
+            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
     }
 
     public static enum RefreshMode {
@@ -553,6 +554,16 @@ public abstract class RemoteFileObjectBase {
     }
 
     public void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+        try {
+            refreshImpl(recursive, antiLoop, expected, refreshMode, 0);
+        } catch (TimeoutException ex) {
+            RemoteFileSystemUtils.reportUnexpectedTimeout(ex, this);
+        }
+    }
+
+    public void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, 
+            RefreshMode refreshMode, int timeout)
+            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
     }
 
     /*package*/ void nonRecursiveRefresh() {

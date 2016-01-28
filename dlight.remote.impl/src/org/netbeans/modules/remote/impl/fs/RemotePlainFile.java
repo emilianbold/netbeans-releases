@@ -57,6 +57,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
@@ -80,6 +81,7 @@ import org.openide.util.NbBundle;
 public final class RemotePlainFile extends RemoteFileObjectBase {
 
     private static final int LOCK_TIMEOUT = Integer.getInteger("remote.rwlock.timeout", 4); // NOI18N
+    private static final int REFRESH_TIMEOUT = Integer.getInteger("remote.plain.file.refresh.timeout", 5000); // NOI18N
     
     private final char fileTypeChar;
 //    private SoftReference<CachedRemoteInputStream> fileContentCache = new SoftReference<CachedRemoteInputStream>(null);
@@ -464,9 +466,18 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     }
 
     @Override
+    public void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+        try {
+            refreshImpl(recursive, antiLoop, expected, refreshMode, REFRESH_TIMEOUT);
+        } catch (TimeoutException ex) {
+            RemoteLogger.info("Timeout {0} ms when refreshing {0}", REFRESH_TIMEOUT, this);
+        }
+    }
+
+    @Override
     public void refreshImpl(boolean recursive, Set<String> antiLoop, 
-            boolean expected, RefreshMode refreshMode)
-            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+            boolean expected, RefreshMode refreshMode, int timeoutMillis)
+            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         if (refreshMode != RefreshMode.FROM_PARENT && Boolean.valueOf(System.getProperty("cnd.remote.refresh.plain.file", "true"))) { //NOI18N
             long time = System.currentTimeMillis();
             final DirEntry oldEntry = getParent().getDirEntry(getNameExt());
@@ -476,7 +487,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
             boolean removeCache = false;
             DirEntry newEntry = null;
             try {
-                newEntry = RemoteFileSystemTransport.lstat(getExecutionEnvironment(), getPath());
+                newEntry = RemoteFileSystemTransport.lstat(getExecutionEnvironment(), getPath(), timeoutMillis);
             } catch (ExecutionException ex) {
                 if (!RemoteFileSystemUtils.isFileNotFoundException(ex)) {
                     throw ex;

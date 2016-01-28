@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -110,16 +111,17 @@ public final class CsmEventDispatcher {
 
     private CsmEventDispatcher() {
         itemListener = new ItemListener();
-        fileListener = new FileListener();
+        boolean listenOnlyRemoteFiles = CndTraceFlags.USE_INDEXING_API;
+        fileListener = new FileListener(listenOnlyRemoteFiles);
         indexListener = new IndexListener();
     }
 
     /*package*/ void startup() {
         if (CndTraceFlags.USE_INDEXING_API) {
             CndIndexer.setDelegate(indexListener);
-        } else {
-            CndFileSystemProvider.addFileChangeListener(fileListener);
-        }        
+        }
+        // in USE_INDEXING_API mode we still need listener for remote
+        CndFileSystemProvider.addFileChangeListener(fileListener);
     }
 
     /*package*/ void shutdown() {
@@ -473,50 +475,78 @@ public final class CsmEventDispatcher {
     
     private class FileListener implements FileChangeListener {
 
+        private final boolean remoteOnly;
+
+        public FileListener(boolean remoteOnly) {
+            this.remoteOnly = remoteOnly;
+        }
+
+        private boolean accept(FileEvent fe) {
+            if (remoteOnly) {
+                FileObject fo = fe.getFile();
+                if (fo != null) { // that's a real paranoia
+                    return CndFileUtils.isRemoteFileSystem(fo);
+                }
+            }
+            return true;
+        }
+
         @Override
         public void fileFolderCreated(FileEvent fe) {
             // ignore
+            //if (accept(fe)) {
+            //}
         }
 
         @Override
         public void fileDataCreated(FileEvent fe) {
-            if (isCOrCppOrInvalid(fe.getFile())) {
-                registerEvent(CsmEvent.Kind.FILE_CREATED, fe.getFile());
+            if (accept(fe)) {
+                if (isCOrCppOrInvalid(fe.getFile())) {
+                    registerEvent(CsmEvent.Kind.FILE_CREATED, fe.getFile());
+                }
             }
         }
 
         @Override
         public void fileChanged(FileEvent fe) {
-            if (isCOrCppOrInvalid(fe.getFile())) {
-                registerEvent(CsmEvent.Kind.FILE_CHANGED, fe.getFile());
+            if (accept(fe)) {
+                if (isCOrCppOrInvalid(fe.getFile())) {
+                    registerEvent(CsmEvent.Kind.FILE_CHANGED, fe.getFile());
+                }
             }
         }
 
         @Override
         public void fileDeleted(FileEvent fe) {
-            if (isCOrCppOrInvalid(fe.getFile())) {
-                registerEvent(CsmEvent.Kind.FILE_DELETED, fe.getFile());
+            if (accept(fe)) {
+                if (isCOrCppOrInvalid(fe.getFile())) {
+                    registerEvent(CsmEvent.Kind.FILE_DELETED, fe.getFile());
+                }
             }
         }
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
-            FileObject fo = fe.getFile();
-            if (isCOrCppOrInvalid(fo)) {
-                FSPath newPath = FSPath.toFSPath(fo);
-                String strPrevExt = (fe.getExt() == null || fe.getExt().isEmpty()) ? "" : "." + fe.getExt(); // NOI18N
-                String strPrevPath = CndPathUtilities.getDirName(newPath.getPath()) + '/' + fe.getName() + strPrevExt; // NOI18N
-                FSPath prevPath = new FSPath(newPath.getFileSystem(), strPrevPath);        
-                FileObject removedFO = InvalidFileObjectSupport.getInvalidFileObject(prevPath.getFileSystem(), prevPath.getPath());
-                registerEvents(
-                        CsmEvent.createFileEvent(CsmEvent.Kind.FILE_RENAMED_DELETED, removedFO),
-                        CsmEvent.createFileEvent(CsmEvent.Kind.FILE_RENAMED_CREATED, fo));
+            if (accept(fe)) {
+                FileObject fo = fe.getFile();
+                if (isCOrCppOrInvalid(fo)) {
+                    FSPath newPath = FSPath.toFSPath(fo);
+                    String strPrevExt = (fe.getExt() == null || fe.getExt().isEmpty()) ? "" : "." + fe.getExt(); // NOI18N
+                    String strPrevPath = CndPathUtilities.getDirName(newPath.getPath()) + '/' + fe.getName() + strPrevExt; // NOI18N
+                    FSPath prevPath = new FSPath(newPath.getFileSystem(), strPrevPath);
+                    FileObject removedFO = InvalidFileObjectSupport.getInvalidFileObject(prevPath.getFileSystem(), prevPath.getPath());
+                    registerEvents(
+                            CsmEvent.createFileEvent(CsmEvent.Kind.FILE_RENAMED_DELETED, removedFO),
+                            CsmEvent.createFileEvent(CsmEvent.Kind.FILE_RENAMED_CREATED, fo));
+                }
             }
         }
 
         @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
             // nothing
+            //if (accept(fe)) {
+            //}
         }        
     }
     

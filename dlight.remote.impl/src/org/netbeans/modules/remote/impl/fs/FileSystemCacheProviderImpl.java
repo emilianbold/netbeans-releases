@@ -59,6 +59,8 @@ public class FileSystemCacheProviderImpl extends FileSystemCacheProvider {
     protected String getCacheImpl(ExecutionEnvironment executionEnvironment) {
         String hostId = EnvUtils.toHostID(executionEnvironment);
         String userId = executionEnvironment.getUser();
-        return Places.getCacheSubdirectory("remote-files").getAbsolutePath().replace('\\', '/') + '/' + hostId + '_' + userId + '/'; // NOI18N
+        String path = Places.getCacheSubdirectory("remote-files").getAbsolutePath().replace('\\', '/') + '/' + hostId + '_' + userId + '/'; // NOI18N
+        path = path.replace(':', '_'); // paranoia? see iz #256627
+        return path;
     }
 }

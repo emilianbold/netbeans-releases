@@ -198,6 +198,7 @@ public class TemplateUtils {
         List<CsmTemplateParameter> res = new ArrayList<>();
         AST parameterStart = null;
         boolean variadic = false;
+        boolean inDefaultValue = false;
         
         int unnamedCount = 0; // number of unnamed parameters
         
@@ -205,8 +206,10 @@ public class TemplateUtils {
             switch (child.getType()) {
                 case CPPTokenTypes.LITERAL_class:
                 case CPPTokenTypes.LITERAL_typename:
-                    parameterStart = child;
-                    variadic = false;
+                    if (!inDefaultValue) {
+                        parameterStart = child;
+                        variadic = false;
+                    }
                     break;
                 case CPPTokenTypes.ELLIPSIS:
                     variadic = true;
@@ -317,6 +320,7 @@ public class TemplateUtils {
                         res.add(new TemplateParameterImpl(parameterStart, UNNAMED_TEMPLATE_PARAMETER + unnamedCount, file, scope, variadic, global)); 
                         unnamedCount++;
                     }
+                    inDefaultValue = (child.getType() == CPPTokenTypes.ASSIGNEQUAL); // parsing " = <type or expr>" part
                     parameterStart = null;
                     break;
             }

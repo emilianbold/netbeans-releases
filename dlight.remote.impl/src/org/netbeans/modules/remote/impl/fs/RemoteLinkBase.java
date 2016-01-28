@@ -56,6 +56,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -246,16 +247,17 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
   
     @Override
     protected final void refreshThisFileMetadataImpl(boolean recursive, Set<String> antiLoop, 
-        boolean expected, RefreshMode refreshMode)
-            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+        boolean expected, RefreshMode refreshMode, int timeoutMillis)
+            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         // TODO: this dummy implementation is far from optimal in terms of performance. It needs to be improved.
         if (getParent() != null) {
-            getParent().refreshImpl(false, antiLoop, expected, refreshMode);
+            getParent().refreshImpl(false, antiLoop, expected, refreshMode, timeoutMillis);
         }
     }    
     
     @Override
-    public final void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+    public final void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode, int timeoutMillis)
+            throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         if (antiLoop == null) {
             antiLoop = new HashSet<>();
         }
@@ -266,9 +268,9 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
         }
         RemoteFileObjectBase delegate = getCanonicalDelegate();
         // For link we need to refresh both delegate and link metadata itself
-        refreshThisFileMetadataImpl(recursive, antiLoop, expected, refreshMode);
+        refreshThisFileMetadataImpl(recursive, antiLoop, expected, refreshMode, timeoutMillis);
         if (delegate != null) {
-            delegate.refreshImpl(recursive, antiLoop, expected, refreshMode);
+            delegate.refreshImpl(recursive, antiLoop, expected, refreshMode, timeoutMillis);
         } else {
             RemoteLogger.log(Level.FINEST, "Null delegate for link {0}", this); //NOI18N
         }
