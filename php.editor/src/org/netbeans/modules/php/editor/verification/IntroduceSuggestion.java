@@ -752,6 +752,9 @@ public class IntroduceSuggestion extends SuggestionRule {
                     elements.addAll(clz.getDeclaredFields());
                 }
                 break;
+            case TYPE_CONSTANT:
+                // no-op
+                break;
             default:
                 assert false;
         }
