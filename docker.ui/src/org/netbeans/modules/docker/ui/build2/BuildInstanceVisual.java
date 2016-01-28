@@ -46,7 +46,10 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.api.DockerIntegration;
@@ -54,6 +57,7 @@ import org.netbeans.modules.docker.ui.UiUtils;
 import org.netbeans.modules.docker.ui.wizard.AddDockerInstanceWizard;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -65,25 +69,40 @@ public class BuildInstanceVisual extends javax.swing.JPanel {
 
     private final DefaultComboBoxModel<DockerInstanceWrapper> model = new DefaultComboBoxModel<>();
 
+    private final ChangeListener instancesListener = new ChangeListener() {
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            if (SwingUtilities.isEventDispatchThread()) {
+                refresh();
+            } else {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        refresh();
+                    }
+                });
+            }
+        }
+    };
+
     /**
      * Creates new form BuildInstance
      */
     public BuildInstanceVisual() {
         initComponents();
 
-        List<DockerInstance> instances = new ArrayList<>(DockerIntegration.getDefault().getInstances());
-        Collections.sort(instances, UiUtils.getInstanceComparator());
-        for (DockerInstance i : instances) {
-            model.addElement(new DockerInstanceWrapper(i));
-        }
-        instanceComboBox.setModel(model);
+        DockerIntegration integration = DockerIntegration.getDefault();
+        integration.addChangeListener(WeakListeners.change(instancesListener, integration));
 
+        instanceComboBox.setModel(model);
         instanceComboBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 changeSupport.fireChange();
             }
         });
+
+        refresh();
     }
 
     public void addChangeListener(ChangeListener l) {
@@ -121,6 +140,20 @@ public class BuildInstanceVisual extends javax.swing.JPanel {
         return Bundle.LBL_BuildInstance();
     }
 
+    private void refresh() {
+        assert SwingUtilities.isEventDispatchThread();
+        DockerInstanceWrapper wrapper = (DockerInstanceWrapper) model.getSelectedItem();
+        model.removeAllElements();
+        List<DockerInstance> instances = new ArrayList<>(DockerIntegration.getDefault().getInstances());
+        Collections.sort(instances, UiUtils.getInstanceComparator());
+        for (DockerInstance i : instances) {
+            model.addElement(new DockerInstanceWrapper(i));
+        }
+        if (wrapper != null) {
+            model.setSelectedItem(wrapper);
+        }
+    }
+
     private static class DockerInstanceWrapper {
 
         private final DockerInstance instance;
@@ -136,6 +169,31 @@ public class BuildInstanceVisual extends javax.swing.JPanel {
         @Override
         public String toString() {
             return instance.getDisplayName();
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 31 * hash + Objects.hashCode(this.instance);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final DockerInstanceWrapper other = (DockerInstanceWrapper) obj;
+            if (!Objects.equals(this.instance, other.instance)) {
+                return false;
+            }
+            return true;
         }
     }
 
@@ -185,10 +243,7 @@ public class BuildInstanceVisual extends javax.swing.JPanel {
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         AddDockerInstanceWizard wizard = new AddDockerInstanceWizard();
         DockerInstance instance = wizard.show();
-        if (instance != null) {
-            model.addElement(new DockerInstanceWrapper(instance));
-            setInstance(instance);
-        }
+        setInstance(instance);
     }//GEN-LAST:event_addButtonActionPerformed
 
 
