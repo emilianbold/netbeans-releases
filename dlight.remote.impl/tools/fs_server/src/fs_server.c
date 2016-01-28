@@ -91,10 +91,11 @@ static bool refresh_explicit = false;
 static bool statistics = false;
 static int refresh_sleep = 1;
 static int kill_locker_and_wait = 0;
+static unsigned long locker_pid_to_kill = 0;
 //static bool shutting_down = false;
 
 #define FS_SERVER_MAJOR_VERSION 1
-#define FS_SERVER_MID_VERSION 8
+#define FS_SERVER_MID_VERSION 9
 #define FS_SERVER_MINOR_VERSION 0
 
 typedef struct fs_entry {
@@ -1634,18 +1635,22 @@ static void lock_or_unlock(bool lock) {
             int lockf_errno = errno;
             unsigned long pid = read_pid(lock_fd);
             if (pid != 0) {
-                if (kill_locker_and_wait) {
-                    trace(TRACE_INFO, "Killing pid=%lu...\n", pid);
-                    kill(pid, SIGTERM);
-                    int cnt = MAX(kill_locker_and_wait/10, 1);
-                    for (int i = 0; i < cnt; i++) {
-                        if(lockf(lock_fd, F_TLOCK, 0)) {
-                            lockf_errno = errno;
-                            trace(TRACE_FINE, "waiting for pid=%lu to terminate...\n", pid);
-                            usleep(10000);
-                        } else {
-                            write_pid(lock_fd);
-                            return;
+                if (kill_locker_and_wait && (locker_pid_to_kill == 0 || locker_pid_to_kill == pid)) {
+                    // first try SIGTERM, then SIGKILL
+                    for (int round = 0; round < 2; round++) {
+                        int signal = (round == 0) ? SIGTERM : SIGKILL;
+                        trace(TRACE_INFO, "Killing pid=%lu via sending signal %i...\n", pid, signal);
+                        kill(pid, signal);
+                        int cnt = MAX(kill_locker_and_wait / 10, 1);
+                        for (int i = 0; i < cnt; i++) {
+                            if (lockf(lock_fd, F_TLOCK, 0)) {
+                                lockf_errno = errno;
+                                trace(TRACE_FINE, "waiting for pid=%lu to terminate...\n", pid);
+                                usleep(10000);
+                            } else {
+                                write_pid(lock_fd);
+                                return;
+                            }
                         }
                     }
                 }
@@ -1737,9 +1742,10 @@ static void usage(char* argv[]) {
             "   -s statistics: print some statistics output to stderr\n"
             "   -d persistence directory: where to log responses (valid only if -p is set)\n"
             "   -c cleanup persistence upon startup\n"
-            "   -K <msec> kill another fs_server process that locks the cache via sending SIGTERM and\n"
+            "   -K <PID>:<msec>|<msec> kill another fs_server process that locks the cache via sending SIGTERM and\n"
             "      wait maximum <msec> microseconds until it releases the lock\n"
-            "      <msec> should be less than 1000000"
+            "      <msec> should be less than 1000000\n"
+            "      if <PID> is specified then only the process with this PID can be killed\n"
             , prog_name ? prog_name : argv[0], DEFAULT_THREAD_COUNT);
 }
 
@@ -1817,7 +1823,22 @@ void process_options(int argc, char* argv[]) {
             case 'K':
                 kill_locker_and_wait = 5;
                 if (optarg) {
-                    kill_locker_and_wait = atoi(optarg);
+                    // can be in the form <msec> or <PID>:<msec>
+                    char* p = optarg;
+                    // try finding ':'
+                    while (*p && *p != ':') {
+                        p++;
+                    }
+                    // *p is either ':' or '\0'
+                    if (p) {
+                        // *p is ':'
+                        *p++ = 0;
+                        locker_pid_to_kill = atol(optarg);
+                        kill_locker_and_wait = atoi(p);
+                    } else {
+                        locker_pid_to_kill = 0;
+                        kill_locker_and_wait = atoi(optarg);
+                    }
                 }
                 break;
             default: /* '?' */

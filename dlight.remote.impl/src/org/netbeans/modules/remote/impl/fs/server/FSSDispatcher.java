@@ -69,6 +69,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -738,7 +739,19 @@ import org.openide.util.RequestProcessor;
         }
         
     }
-    
+
+    private String lastPIDKey() {
+        return "last_fs_server_pid:" + ExecutionEnvironmentFactory.toUniqueID(env); //NOI18N
+    }
+
+    private void setLastPID(int pid) {
+        NbPreferences.forModule(FSSDispatcher.class).putInt(lastPIDKey(), pid);
+    }
+
+    private int getLastPID() {
+        return NbPreferences.forModule(FSSDispatcher.class).getInt(lastPIDKey(), 0);
+    }
+
     private class FsServer {
 
         private final PrintWriter writer;
@@ -780,14 +793,22 @@ import org.openide.util.RequestProcessor;
                 argsList.add("-t"); // NOI18N
                 argsList.add(Integer.toString(SERVER_THREADS));
             }
-            int killCacheLocker = Integer.getInteger("remote.fs_server.kill.locker", 0); // NOI18N
-            if (killCacheLocker > 0) {
+            boolean killAllLockers = Boolean.getBoolean("remote.fs_server.kill.all"); // NOI18N
+            int killTimeout = Integer.getInteger("remote.fs_server.kill.timeout", 3000); // NOI18N
+            if (killAllLockers) {
                 argsList.add("-K"); // NOI18N
-                argsList.add(Integer.toString(killCacheLocker)); // NOI18N
+                argsList.add(Integer.toString(killTimeout));
+            } else {
+                int lastPID = getLastPID();
+                if (lastPID != 0) {
+                    argsList.add("-K"); // NOI18N
+                    argsList.add(Integer.toString(lastPID) + ':' + Integer.toString(killTimeout)); // NOI18N
+                }
             }
             this.args = argsList.toArray(new String[argsList.size()]);
             processBuilder.setArguments(this.args);
             process = processBuilder.call();
+            setLastPID(process.getPID());
             Charset charset = Charset.isSupported("UTF-8") // NOI18N
                     ? Charset.forName("UTF-8") // NOI18N
                     : Charset.defaultCharset();
