@@ -2076,6 +2076,12 @@ unknown_postfunction_declarator_specifiers
         (({isCPlusPlus()}? (literal_ident)+ is_post_declarator_token)=> 
             (options {greedy = true;} : s = literal_ident!)+
         | 
+         // For C we should eliminate specifiers if only one ident is found.
+         // This is because of K&R style where two (and more if macroses are involved) 
+         // idents in a row could be declaration of parameter
+         ({isC()}? literal_ident is_post_declarator_token)=> 
+            s = literal_ident!
+        |
             // Empty alternative
         )
     ;
