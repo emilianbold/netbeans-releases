@@ -177,7 +177,8 @@ public class TasksMenu extends JMenu {
 
     void addMenuItems() {
         assert EventQueue.isDispatchThread();
-        if (tasks == null) {
+        if (tasks == null
+                || tasks.getSimpleTasks() == null) {
             // build tool cli error?
             addConfigureToolMenuItem();
             return;
@@ -186,7 +187,9 @@ public class TasksMenu extends JMenu {
         VerticalGridLayout vgl = new VerticalGridLayout();
         getPopupMenu().setLayout(vgl);
         // items
-        Set<String> allTasks = new LinkedHashSet<>(tasks.getSimpleTasks());
+        List<String> simpleTasks = tasks.getSimpleTasks();
+        assert simpleTasks != null;
+        Set<String> allTasks = new LinkedHashSet<>(simpleTasks);
         // default task
         final String defaultTaskName = support.getDefaultTaskName();
         if (defaultTaskName != null) {

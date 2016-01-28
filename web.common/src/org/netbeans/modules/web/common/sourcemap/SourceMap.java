@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -167,7 +166,7 @@ public class SourceMap {
         int origColumn = mapping.getOriginalColumn();
         List<Mapping> ims = imm.get(origLine);
         if (ims == null) {
-            ims = new LinkedList<>();   // Typically, there's less columns in the inverse mapping
+            ims = new ArrayList<>(6);   // Typically, there's less columns in the inverse mapping
             imm.put(origLine, ims);
         }
         // Is the mapping there already?

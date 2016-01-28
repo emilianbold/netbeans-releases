@@ -491,7 +491,7 @@ public final class VariousUtils {
                         for (TypeScope tScope : oldRecentTypes) {
                             Collection<? extends MethodScope> inheritedMethods = IndexScopeImpl.getMethods(tScope, frag, varScope, PhpModifiers.ALL_FLAGS);
                             for (MethodScope meth : inheritedMethods) {
-                                newRecentTypes.addAll(meth.getReturnTypes(true, recentTypes));
+                                newRecentTypes.addAll(meth.getReturnTypes(true, Collections.singleton(tScope)));
                             }
                         }
                         recentTypes = filterSuperTypes(newRecentTypes);
@@ -1644,17 +1644,20 @@ public final class VariousUtils {
             if (!typeNames.matches(SPACES_AND_TYPE_DELIMITERS)) { //NOI18N
                 for (String typeName : typeNames.split("\\" + typeSeparator)) { //NOI18N
                     String typeRawPart = typeName;
-                    String typeArrayPart = "";
+                    String typeArrayPart = ""; //NOI18N
                     int indexOfArrayDelim = typeName.indexOf('[');
                     if (indexOfArrayDelim != -1) {
                         typeRawPart = typeName.substring(0, indexOfArrayDelim);
                         typeArrayPart = typeName.substring(indexOfArrayDelim, typeName.length());
                     }
-                    if (!typeRawPart.startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR) && !Type.isPrimitive(typeRawPart)) {
+                    if ("$this".equals(typeName)) { //NOI18N
+                        // #239987
+                        retval.append("\\this").append(typeSeparator); //NOI18N
+                    } else if (!typeRawPart.startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR) && !Type.isPrimitive(typeRawPart)) {
                         QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(typeRawPart), offset, inScope);
                         retval.append(fullyQualifiedName.toString().startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR)
-                                ? ""
-                                : NamespaceDeclarationInfo.NAMESPACE_SEPARATOR); //NOI18N
+                                ? "" //NOI18N
+                                : NamespaceDeclarationInfo.NAMESPACE_SEPARATOR);
                         retval.append(fullyQualifiedName.toString()).append(typeArrayPart).append(typeSeparator);
                     } else {
                         retval.append(typeRawPart).append(typeArrayPart).append(typeSeparator);

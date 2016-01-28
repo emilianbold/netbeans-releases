@@ -91,6 +91,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
+import org.netbeans.modules.php.editor.parser.astnodes.Variadic;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
@@ -258,6 +259,9 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
             if (expression instanceof Reference) {
                 Reference reference = (Reference) expression;
                 expression = reference.getExpression();
+            } else if (expression instanceof Variadic) {
+                Variadic variadic = (Variadic) expression;
+                expression = variadic.getExpression();
             }
             initializeExpression(expression);
         }
@@ -420,10 +424,16 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
                 initializeVariable((Variable) expression);
             } else if (expression instanceof Reference) {
                 initializeReference((Reference) expression);
+            } else if (expression instanceof Variadic) {
+                initializeVariadic((Variadic) expression);
             }
         }
 
         private void initializeReference(Reference node) {
+            initializeExpression(node.getExpression());
+        }
+
+        private void initializeVariadic(Variadic node) {
             initializeExpression(node.getExpression());
         }
 

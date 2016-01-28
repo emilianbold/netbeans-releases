@@ -203,7 +203,7 @@ public class PhpCommentGeneratorTest extends PHPNavTestBase {
                             "class Prdel {\n" +
                             "    /**\n" +
                             "     * \n" +
-                            "     * @return \\Prdel^\n" +
+                            "     * @return $this^\n" +
                             "     */\n" +
                             "    function functionName() {\n" +
                             "        return $this;\n" +

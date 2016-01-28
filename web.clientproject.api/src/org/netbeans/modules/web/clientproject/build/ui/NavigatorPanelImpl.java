@@ -228,13 +228,16 @@ public final class NavigatorPanelImpl implements NavigatorPanel, LookupListener,
         @Override
         protected boolean createKeys(List<Object> toPopulate) {
             Tasks tasks = getTasks();
-            if (tasks == null) {
+            if (tasks == null
+                    || tasks.getSimpleTasks() == null) {
                 // some error
                 return true;
             }
             toPopulate.addAll(tasks.getAdvancedTasks());
             if (tasks.isShowSimpleTasks()) {
-                toPopulate.addAll(tasks.getSimpleTasks());
+                List<String> simpleTasks = tasks.getSimpleTasks();
+                assert simpleTasks != null;
+                toPopulate.addAll(simpleTasks);
             }
             return true;
         }

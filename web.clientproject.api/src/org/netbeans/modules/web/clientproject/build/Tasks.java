@@ -44,20 +44,22 @@ package org.netbeans.modules.web.clientproject.build;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 
 public final class Tasks {
 
     private final List<AdvancedTask> advancedTasks;
     private final boolean showSimpleTasks;
+    @NullAllowed
     private final List<String> simpleTasks;
 
 
-    public Tasks(List<AdvancedTask> advancedTasks, boolean showSimpleTasks, List<String> simpleTasks) {
+    public Tasks(List<AdvancedTask> advancedTasks, boolean showSimpleTasks, @NullAllowed List<String> simpleTasks) {
         assert advancedTasks != null;
-        assert simpleTasks != null;
         this.advancedTasks = new CopyOnWriteArrayList<>(advancedTasks);
         this.showSimpleTasks = showSimpleTasks;
-        this.simpleTasks = new CopyOnWriteArrayList<>(simpleTasks);
+        this.simpleTasks = simpleTasks == null ? null : new CopyOnWriteArrayList<>(simpleTasks);
     }
 
     public List<AdvancedTask> getAdvancedTasks() {
@@ -68,7 +70,11 @@ public final class Tasks {
         return showSimpleTasks;
     }
 
+    @CheckForNull
     public List<String> getSimpleTasks() {
+        if (simpleTasks == null) {
+            return null;
+        }
         return Collections.unmodifiableList(simpleTasks);
     }
 
