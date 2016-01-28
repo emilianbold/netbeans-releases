@@ -53,7 +53,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.docker.api.DockerInstance;
@@ -97,8 +96,28 @@ public class BuildImageWizard {
 
     private static final Logger LOGGER = Logger.getLogger(BuildImageAction.class.getName());
 
+    private DockerInstance instance;
+
+    private File dockerfile;
+
+    public DockerInstance getInstance() {
+        return instance;
+    }
+
+    public void setInstance(DockerInstance instance) {
+        this.instance = instance;
+    }
+
+    public File getDockerfile() {
+        return dockerfile;
+    }
+
+    public void setDockerfile(File dockerfile) {
+        this.dockerfile = dockerfile;
+    }
+
     @NbBundle.Messages("LBL_BuildImage=Build Image")
-    public void show(@NullAllowed DockerInstance instance, @NullAllowed File dockerfile) {
+    public void show() {
         List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<>();
         if (instance == null) {
             panels.add(new BuildInstancePanel());

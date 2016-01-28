@@ -72,7 +72,8 @@ public class BuildActionListener implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         Logger.getLogger(BuildActionListener.class.getName()).log(Level.INFO, "Building {0}", fo.getPath());
         BuildImageWizard wizard = new BuildImageWizard();
-        wizard.show(null, FileUtil.toFile(fo));
+        wizard.setDockerfile(FileUtil.toFile(fo));
+        wizard.show();
     }
 
 }
