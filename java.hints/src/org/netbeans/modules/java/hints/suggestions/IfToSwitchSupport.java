@@ -266,7 +266,7 @@ public class IfToSwitchSupport {
      */
     protected Object evalConstant(TreePath path) {
         TypeMirror m = ci.getTrees().getTypeMirror(path);
-        if (m.getKind() != TypeKind.DECLARED) {
+        if (m != null && m.getKind() != TypeKind.DECLARED) {
             return ArithmeticUtilities.compute(ci, path, true, true);
         }
         Element e = ci.getTrees().getElement(path);
