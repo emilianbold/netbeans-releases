@@ -565,4 +565,9 @@ public class FileModel2Test extends TraceModelTestBase {
         // Bug 257152 - was [Bug 256791 - failing SelectModelTestCase.testSelectModelGetFunctions on Ubuntu test machine]
         performTest("bug257152.cpp");
     }
+    
+    public void testBug257152c() throws Exception {
+        // Bug 257152 - was [Bug 256791 - failing SelectModelTestCase.testSelectModelGetFunctions on Ubuntu test machine]
+        performTest("bug257152c.c");
+    }
 }
