@@ -330,8 +330,7 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
         return displayName;
     }
 
-    @Messages({"LBL_SUMMARY_CHANGED_STATUS=Summary changed",
-        "# CC is the ODCS task trackers attributes name, do not translate",
+    @Messages({"LBL_SUMMARY_CHANGED_STATUS=Summary changed",        
         "LBL_CC_FIELD_CHANGED_STATUS=CC field changed",
         "LBL_TAGS_CHANGED_STATUS=Tags changed",
         "LBL_DEPENDENCE_CHANGED_STATUS=Associations changed",
