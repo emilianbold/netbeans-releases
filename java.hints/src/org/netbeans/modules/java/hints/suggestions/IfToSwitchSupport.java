@@ -127,7 +127,12 @@ public class IfToSwitchSupport {
      */
     private List literals;
     List<BranchDescription> literal2Statement = new ArrayList<>();
-
+    
+    /**
+     * Non-null, if a branch contains a null-check.
+     */
+    private TreePath nullBranch;
+    
     public IfToSwitchSupport(HintContext ctx) {
         this.ctx = ctx;
         this.ci = ctx.getInfo();
@@ -248,7 +253,7 @@ public class IfToSwitchSupport {
     }
 
     private boolean isRealValue(Object o) {
-        return o instanceof EnumConst || ArithmeticUtilities.isRealValue(o);
+        return ArithmeticUtilities.isNull(o) || o instanceof EnumConst || ArithmeticUtilities.isRealValue(o);
     }
 
     /**
@@ -300,14 +305,16 @@ public class IfToSwitchSupport {
     }
     TreePath c1;
     TreePath c2;
-
+    
     public boolean process(TreePath initCond) {
         Iterable<? extends TreePath> split = linearizeOrs(initCond);
-        if (!start(split)) {
+        TreePath body = ctx.getVariables().get("$body"); // NOI18N
+        if (body == null) {
             return false;
         }
-        // assume match() did the binding
-        TreePath body = ctx.getVariables().get("$body"); // NOI18N
+        if (!start(split, body)) {
+            return false;
+        }
         literal2Statement.add(new BranchDescription(literals, TreePathHandle.create(body, ctx.getInfo())));
         TreePath ifPath = body.getParentPath();
         Tree e = ((IfTree) ifPath.getLeaf()).getElseStatement();
@@ -324,7 +331,11 @@ public class IfToSwitchSupport {
                 }
                 Object o = evalConstant(constPath);
                 TypeMirror constType = ctx.getInfo().getTrees().getTypeMirror(constPath);
-                TypeMirror common = acceptArgType(controlTypeMirror, constType);
+                boolean isNull = (constType != null && constType.getKind() == TypeKind.NULL);
+                TypeMirror common = isNull ? controlTypeMirror : acceptArgType(controlTypeMirror, constType);
+                if (isNull) {
+                    nullBranch = new TreePath(ifPath, it.getThenStatement());
+                }
                 if (!isRealValue(o) || common == null) {
                     return false;
                 }
@@ -342,7 +353,7 @@ public class IfToSwitchSupport {
         return true;
     }
 
-    boolean start(Iterable<? extends TreePath> conds) {
+    boolean start(Iterable<? extends TreePath> conds, TreePath ifBody) {
         Iterator<? extends TreePath> iter = conds.iterator();
         TreePath first = iter.next();
         TreePath constPath = matches(first, true);
@@ -379,6 +390,9 @@ public class IfToSwitchSupport {
             // next pattern, no common type
             return false;
         }
+        if (ArithmeticUtilities.isNull(c)) {
+            nullBranch = ifBody;
+        }
         if (!addLiteral(convert(c, constType), common, constPath)) {
             return false;
         }
@@ -387,7 +401,7 @@ public class IfToSwitchSupport {
             if (lt == null) {
                 return false;
             }
-            Object o = ArithmeticUtilities.compute(ctx.getInfo(), lt, true, true);
+            Object o = evalConstant(lt);
             if (!ArithmeticUtilities.isRealValue(o)) {
                 return false;
             }
@@ -398,6 +412,9 @@ public class IfToSwitchSupport {
             }
             if (!addLiteral(convert(o, constType), common, lt)) {
                 return false;
+            }
+            if (ArithmeticUtilities.isNull(o)) {
+                nullBranch = ifBody;
             }
         }
         return true;
@@ -445,9 +462,11 @@ public class IfToSwitchSupport {
     }
     
     public JavaFix createFix(String fixLabel, boolean alwaysDefault) {
+        TreePathHandle nHandle = nullBranch == null ? null : TreePathHandle.create(nullBranch, ctx.getInfo());
         ConvertToSwitch fix = new ConvertToSwitch(ctx.getInfo(),
                                  ctx.getPath(),
                                  TreePathHandle.create(variable, ctx.getInfo()),
+                                 nHandle,
                                  literal2Statement,
                                  isControlNotNull(), fixLabel);
         if (alwaysDefault) {
@@ -465,14 +484,17 @@ public class IfToSwitchSupport {
         private boolean varNotNull;
         private Set<Tree> ifSeen = new HashSet<Tree>();
         private boolean enumType;
+        private final TreePathHandle nullBranch;
 
-        public ConvertToSwitch(CompilationInfo info, TreePath create, TreePathHandle value, List<BranchDescription> literal2Statement, 
+        public ConvertToSwitch(CompilationInfo info, TreePath create, TreePathHandle value, TreePathHandle nullBranch, 
+                List<BranchDescription> literal2Statement, 
                 boolean varNotNull, String label) {
             super(info, create);
             this.value = value;
             this.literal2Statement = literal2Statement;
             this.varNotNull = varNotNull;
             this.label = label;
+            this.nullBranch = nullBranch;
         }
         
         public void addDefaultAlways() {
@@ -495,6 +517,7 @@ public class IfToSwitchSupport {
             Map<BreakTree, StatementTree> break2Target = new IdentityHashMap<BreakTree, StatementTree>();
             
             TreePath value = this.value.resolve(copy);
+            TreePath nullBranchResolved = null;
             if (value == null) {
                 // FIXME - report an error
                 return;
@@ -504,13 +527,19 @@ public class IfToSwitchSupport {
                 // FIXME - report an error
                 return;
             }
+            if (nullBranch != null) {
+                nullBranchResolved = this.nullBranch.resolve(copy);
+                if (nullBranchResolved == null || !(nullBranchResolved.getLeaf() instanceof StatementTree)) {
+                    return;
+                }
+            }
             enumType = valType.getKind() == TypeKind.DECLARED && 
                     ((DeclaredType)valType).asElement().getKind() == ElementKind.ENUM;
 
             boolean defaultPresent = false;
             for (BranchDescription d : this.literal2Statement) {
                 TreePath s = d.path.resolve(copy);
-
+                
                 if (s == null) {
                     // FIXME - report an error
                     return ;
@@ -533,22 +562,39 @@ public class IfToSwitchSupport {
                 addCase(copy, new BranchDescription(null, null), null, cases, catch2Declared, catch2Used);
             }
 
-            if (!varNotNull) {
-                varNotNull = NPECheck.isSafeToDereference(copy, value);
-            }
-            
+            varNotNull |= NPECheck.isSafeToDereference(copy, value);
             
             SwitchTree s = make.Switch((ExpressionTree) value.getLeaf(), cases);
 
             Utilities.copyComments(copy, it.getLeaf(), s, true);
             
-            Tree nue = s;            
+            Tree nue = s;  
             if (!varNotNull) {
+                // if the control variable is not null, AND there's a null-check branch, make
+                // the null-branch first, it's easier to read.
+                if (nullBranchResolved == null) {
+                    nue = make.If(
+                            make.Parenthesized(
+                                make.Binary(Tree.Kind.NOT_EQUAL_TO, make.Literal(null), (ExpressionTree)value.getLeaf())
+                            ),
+                        s, null
+                    );
+                } else {
+                    nue = make.If(
+                        make.Parenthesized(make.Binary(Tree.Kind.EQUAL_TO, 
+                                make.Literal(null), 
+                                (ExpressionTree)value.getLeaf()
+                        )), (StatementTree)nullBranchResolved.getLeaf(), s
+                    );
+                }
+            } else if (nullBranchResolved != null) {
                 nue = make.If(
-                        make.Parenthesized(
-                            make.Binary(Tree.Kind.NOT_EQUAL_TO, make.Literal(null), (ExpressionTree)value.getLeaf())
-                        ),
-                    s, null
+                    make.Parenthesized(
+                        make.Binary(Tree.Kind.EQUAL_TO, 
+                                make.Literal(null), 
+                                (ExpressionTree)value.getLeaf()
+                        )
+                    ), (StatementTree)nullBranchResolved.getLeaf(), s
                 );
             }
             copy.rewrite(it.getLeaf(), nue); //XXX
@@ -686,6 +732,11 @@ public class IfToSwitchSupport {
                 List<StatementTree> body = it.hasNext() ? Collections.<StatementTree>emptyList() : statements;
                 // special case: if the literal is an enum-type, use only the simple name.
                 ExpressionTree litTree = (ExpressionTree)lit.getLeaf();
+                TypeMirror m = copy.getTrees().getTypeMirror(lit);
+                if (m == null || m.getKind() == TypeKind.NULL) {
+                    // do not add case
+                    continue;
+                }
                 if (enumType) {
                     Element c = copy.getTrees().getElement(lit);
                     if (c != null && c.getKind() == ElementKind.ENUM_CONSTANT) {
