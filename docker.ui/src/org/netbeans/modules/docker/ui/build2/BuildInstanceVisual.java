@@ -43,10 +43,14 @@ package org.netbeans.modules.docker.ui.build2;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.api.DockerIntegration;
+import org.netbeans.modules.docker.ui.UiUtils;
 import org.netbeans.modules.docker.ui.wizard.AddDockerInstanceWizard;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -67,7 +71,9 @@ public class BuildInstanceVisual extends javax.swing.JPanel {
     public BuildInstanceVisual() {
         initComponents();
 
-        for (DockerInstance i : DockerIntegration.getDefault().getInstances()) {
+        List<DockerInstance> instances = new ArrayList<>(DockerIntegration.getDefault().getInstances());
+        Collections.sort(instances, UiUtils.getInstanceComparator());
+        for (DockerInstance i : instances) {
             model.addElement(new DockerInstanceWrapper(i));
         }
         instanceComboBox.setModel(model);
@@ -178,7 +184,11 @@ public class BuildInstanceVisual extends javax.swing.JPanel {
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         AddDockerInstanceWizard wizard = new AddDockerInstanceWizard();
-        wizard.show();
+        DockerInstance instance = wizard.show();
+        if (instance != null) {
+            model.addElement(new DockerInstanceWrapper(instance));
+            setInstance(instance);
+        }
     }//GEN-LAST:event_addButtonActionPerformed
 
 
