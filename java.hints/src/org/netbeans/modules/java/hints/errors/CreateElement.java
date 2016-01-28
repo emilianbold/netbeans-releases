@@ -54,6 +54,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -180,6 +181,7 @@ public final class CreateElement implements ErrorRule<Void> {
         TreePath parent = null;
         TreePath firstClass = null;
         TreePath firstMethod = null;
+        TreePath firstVar = null;
         TreePath firstInitializer = null;
         TreePath methodInvocation = null;
         TreePath newClass = null;
@@ -212,6 +214,10 @@ public final class CreateElement implements ErrorRule<Void> {
                 methodInvocation = path;
             }
 
+            if (leafKind == Kind.VARIABLE) {
+                firstVar = path;
+            }
+            
             if (lookupNCT && leafKind == Kind.NEW_CLASS) {
                 newClass = path;
             }
@@ -293,14 +299,12 @@ public final class CreateElement implements ErrorRule<Void> {
                     if (((MethodTree)firstMethod.getLeaf()).getModifiers().getFlags().contains(Modifier.STATIC)) {
                         modifiers.add(Modifier.STATIC);
                     }
-                } else {
-                    if (firstInitializer != null) {
-                        if (((BlockTree) firstInitializer.getLeaf()).isStatic()) {
-                            modifiers.add(Modifier.STATIC);
-                        }
-                    } else {
-                        //TODO: otherwise.
+                } else if (firstInitializer != null) {
+                    if (((BlockTree) firstInitializer.getLeaf()).isStatic()) {
+                        modifiers.add(Modifier.STATIC);
                     }
+                } else if (firstVar != null && ((VariableTree)firstVar.getLeaf()).getModifiers().getFlags().contains(Modifier.STATIC)) {
+                    modifiers.add(Modifier.STATIC);
                 }
             }
         }
