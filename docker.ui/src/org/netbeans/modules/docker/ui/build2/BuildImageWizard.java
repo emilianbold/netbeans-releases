@@ -53,6 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.docker.api.DockerInstance;
@@ -74,6 +75,8 @@ import org.openide.windows.InputOutput;
  */
 public class BuildImageWizard {
 
+    public static final String BUILD_INSTANCE_PROPERTY = "buildInstance";
+
     public static final String BUILD_CONTEXT_PROPERTY = "buildContext";
 
     public static final String REPOSITORY_PROPERTY = "repository";
@@ -92,17 +95,18 @@ public class BuildImageWizard {
 
     private static final Logger LOGGER = Logger.getLogger(BuildImageAction.class.getName());
 
-    private final DockerInstance instance;
-
-    public BuildImageWizard(DockerInstance instance) {
-        this.instance = instance;
+    public BuildImageWizard() {
+        
     }
 
     @NbBundle.Messages("LBL_BuildImage=Build Image")
-    public void show() {
+    public void show(@NullAllowed DockerInstance instance, @NullAllowed File dockerfile) {
         List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<>();
-        panels.add(new BuildContextPanel(instance));
-        panels.add(new BuildOptionsPanel(instance));
+        if (instance == null) {
+            panels.add(new BuildInstancePanel());
+        }
+        panels.add(new BuildContextPanel());
+        panels.add(new BuildOptionsPanel());
         String[] steps = new String[panels.size()];
         for (int i = 0; i < panels.size(); i++) {
             JComponent c = (JComponent) panels.get(i).getComponent();
@@ -114,14 +118,24 @@ public class BuildImageWizard {
             c.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, true);
             c.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, true);
         }
+
         WizardDescriptor wiz = new WizardDescriptor(new WizardDescriptor.ArrayIterator<>(panels));
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wiz.setTitleFormat(new MessageFormat("{0}"));
         wiz.setTitle(Bundle.LBL_BuildImage());
+        if (instance != null) {
+            wiz.putProperty(BUILD_INSTANCE_PROPERTY, instance);
+        }
+        if (dockerfile != null && dockerfile.isFile()) {
+            wiz.putProperty(BUILD_CONTEXT_PROPERTY, dockerfile.getParentFile().getAbsolutePath());
+            wiz.putProperty(DOCKERFILE_PROPERTY, dockerfile.getName());
+        }
+
         if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
             Boolean pull = (Boolean) wiz.getProperty(PULL_PROPERTY);
             Boolean noCache = (Boolean) wiz.getProperty(NO_CACHE_PROPERTY);
-            build(instance, (String) wiz.getProperty(BUILD_CONTEXT_PROPERTY),
+            build((DockerInstance) wiz.getProperty(BUILD_INSTANCE_PROPERTY),
+                    (String) wiz.getProperty(BUILD_CONTEXT_PROPERTY),
                     (String) wiz.getProperty(DOCKERFILE_PROPERTY),
                     (String) wiz.getProperty(REPOSITORY_PROPERTY),
                     (String) wiz.getProperty(TAG_PROPERTY),

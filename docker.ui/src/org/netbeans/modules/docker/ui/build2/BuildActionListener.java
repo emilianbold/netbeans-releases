@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,62 +37,42 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.docker.ui.build2;
 
-import org.netbeans.modules.docker.api.DockerInstance;
-import org.netbeans.modules.docker.ui.node.EnhancedDockerInstance;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle.Messages;
 
+/**
+ *
+ * @author Petr Hejl
+ */
+@ActionID(category = "File", id = "org.netbeans.modules.docker.editor.BuildActionListener")
+@ActionRegistration(displayName = "#LBL_Build")
+@ActionReference(path = "Loaders/text/x-dockerfile/Actions", position = 150)
+@Messages("LBL_Build=Build...")
+public class BuildActionListener implements ActionListener {
 
-public final class BuildImageAction extends NodeAction {
+    private final FileObject fo;
 
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        for (Node node : activatedNodes) {
-            DockerInstance instance = node.getLookup().lookup(DockerInstance.class);
-            if (instance != null) {
-                perform(instance);
-            }
-        }
+    public BuildActionListener(FileObject fo) {
+        this.fo = fo;
     }
 
     @Override
-    protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes.length != 1) {
-            return false;
-        }
-        EnhancedDockerInstance checked = activatedNodes[0].getLookup().lookup(EnhancedDockerInstance.class);
-        if (checked == null || !checked.isAvailable()) {
-            return false;
-        }
-
-        return activatedNodes[0].getLookup().lookup(DockerInstance.class) != null;
-    }
-
-    @NbBundle.Messages("LBL_BuildImageAction=Build...")
-    @Override
-    public String getName() {
-        return Bundle.LBL_BuildImageAction();
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-
-    private void perform(DockerInstance instance) {
+    public void actionPerformed(ActionEvent e) {
+        Logger.getLogger(BuildActionListener.class.getName()).log(Level.INFO, "Building {0}", fo.getPath());
         BuildImageWizard wizard = new BuildImageWizard();
-        wizard.show(instance, null);
+        wizard.show(null, FileUtil.toFile(fo));
     }
 
 }
