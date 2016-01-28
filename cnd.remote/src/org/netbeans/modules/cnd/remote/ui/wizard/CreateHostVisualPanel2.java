@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -69,7 +70,7 @@ import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
-/*package*/ final class CreateHostVisualPanel2 extends JPanel {
+/*package*/ final class CreateHostVisualPanel2 extends CreateHostVisualPanelBase {
 
     private final ChangeListener wizardListener;
     private final CreateHostData data;
@@ -112,6 +113,7 @@ import org.openide.util.RequestProcessor;
 
         textLoginName.getDocument().addDocumentListener(dl);
 //        textPassword.getDocument().addDocumentListener(dl);
+        adjustPreferredSize(); // otherwise GUI editor spoils the form
     }
 
     private void fireChange() {

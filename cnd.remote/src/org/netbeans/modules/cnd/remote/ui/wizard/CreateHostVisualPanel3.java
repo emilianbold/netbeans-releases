@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.List;
@@ -62,11 +63,12 @@ import org.netbeans.modules.cnd.remote.sync.SyncUtils;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.openide.util.NbBundle;
 
-/*package*/ final class CreateHostVisualPanel3 extends JPanel {
+/*package*/ final class CreateHostVisualPanel3 extends CreateHostVisualPanelBase {
 
     public CreateHostVisualPanel3(CreateHostData data) {
         this.data = data;
         initComponents();
+        adjustPreferredSize(); // otherwise GUI editor spoils the form
     }
 
     @Override
