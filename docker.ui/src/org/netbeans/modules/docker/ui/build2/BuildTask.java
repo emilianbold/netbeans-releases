@@ -87,7 +87,8 @@ public class BuildTask implements Runnable {
 
     private final boolean noCache;
 
-    public BuildTask(DockerInstance instance, InputOutput inputOutput, Hook hook, File buildContext, File dockerfile, String repository, String tag, boolean pull, boolean noCache) {
+    public BuildTask(DockerInstance instance, InputOutput inputOutput, Hook hook, File buildContext,
+            File dockerfile, String repository, String tag, boolean pull, boolean noCache) {
         this.instance = new WeakReference<>(instance);
         this.inputOutput = new WeakReference<>(inputOutput);
         this.hook = hook;

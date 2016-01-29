@@ -43,33 +43,23 @@ package org.netbeans.modules.docker.ui.build2;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.docker.api.DockerInstance;
-import org.netbeans.modules.docker.api.BuildEvent;
 import org.netbeans.modules.docker.api.DockerAction;
 import org.netbeans.modules.docker.api.DockerImage;
-import org.netbeans.modules.docker.ui.output.StatusOutputListener;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Cancellable;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
@@ -100,8 +90,6 @@ public class BuildImageWizard {
     public static final boolean PULL_DEFAULT = false;
 
     public static final boolean NO_CACHE_DEFAULT = false;
-
-    private static final Logger LOGGER = Logger.getLogger(BuildImageAction.class.getName());
 
     private static final Map<InputOutput, Pair<RerunAction, StopAction>> IO_CACHE = new WeakHashMap<>();
 
