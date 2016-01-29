@@ -47,6 +47,7 @@ import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -69,12 +70,14 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ui.TypeElementFinder;
 import org.netbeans.api.java.source.ui.TypeElementFinder.Customizer;
+import org.netbeans.modules.java.source.parsing.ClasspathInfoTask;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -511,9 +514,15 @@ public class ClassNameList extends javax.swing.JPanel implements Runnable {
     
     private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
         if (classpathInfo == null) {
-            Set<ClassPath> cpPaths = GlobalPathRegistry.getDefault().getPaths(ClassPath.COMPILE);
-            Set<ClassPath> bootPaths = GlobalPathRegistry.getDefault().getPaths(ClassPath.BOOT);
+            Set<ClassPath> cpPaths = new HashSet<>(GlobalPathRegistry.getDefault().getPaths(ClassPath.COMPILE));
+            Set<ClassPath> bootPaths = new HashSet<>(GlobalPathRegistry.getDefault().getPaths(ClassPath.BOOT));
             Set<ClassPath> sourcePaths = GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE);
+
+            JavaPlatform p = JavaPlatform.getDefault();
+            if (p != null) {
+                bootPaths.add(p.getBootstrapLibraries());
+                cpPaths.add(p.getStandardLibraries());
+            }
 
             ClassPath compPath = ClassPathSupport.createProxyClassPath(cpPaths.toArray(new ClassPath[cpPaths.size()]));
             ClassPath bootPath = ClassPathSupport.createProxyClassPath(bootPaths.toArray(new ClassPath[bootPaths.size()]));
@@ -522,9 +531,10 @@ public class ClassNameList extends javax.swing.JPanel implements Runnable {
             classpathInfo = ClasspathInfo.create(bootPath, compPath, sourcePath);
         }
         ElementHandle<TypeElement> handle;
+        
         try {
             try {
-                ParserManager.parse("text/x-java", new UserTask() { // NOI18N
+                ParserManager.parse("text/x-java", new ClasspathInfoTask(classpathInfo) { // NOI18N
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {
                         if (controller != null) {
