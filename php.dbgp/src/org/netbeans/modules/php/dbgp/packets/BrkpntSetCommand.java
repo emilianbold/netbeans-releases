@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
+import java.util.Locale;
 import org.netbeans.modules.php.dbgp.breakpoints.AbstractBreakpoint;
 
 /**
@@ -81,7 +82,7 @@ public class BrkpntSetCommand extends DbgpCommand {
 
         @Override
         public String toString() {
-            return super.toString().toLowerCase();
+            return super.toString().toLowerCase(Locale.US);
         }
 
     }
@@ -92,7 +93,7 @@ public class BrkpntSetCommand extends DbgpCommand {
 
         @Override
         public String toString() {
-            return super.toString().toLowerCase();
+            return super.toString().toLowerCase(Locale.US);
         }
 
         public static State forString(String str) {
