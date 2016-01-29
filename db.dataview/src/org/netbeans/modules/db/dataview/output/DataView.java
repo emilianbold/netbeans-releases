@@ -83,9 +83,11 @@ import org.openide.xml.XMLUtil;
 public class DataView {
     private static final Logger LOG = Logger.getLogger(DataView.class.getName());
     private static final int MAX_TAB_LENGTH = 25;
-    private DatabaseConnection dbConn;
     private final List<Throwable> errMessages = new ArrayList<>();
     private final List<SQLWarning> warningMessages = new ArrayList<>();
+    private final List<Integer> updateCount = new ArrayList<>();
+    private final List<Long> fetchTimes = new ArrayList<>();
+    private DatabaseConnection dbConn;
     private String sqlString; // Once Set, Data View assumes it will never change
     private SQLStatementGenerator stmtGenerator;
     private SQLExecutionHelper execHelper;
@@ -94,7 +96,6 @@ public class DataView {
     private JComponent container;
     private int initialPageSize = org.netbeans.modules.db.dataview.api.DataViewPageContext.getStoredPageSize();
     private boolean nbOutputComponent = false;
-    private int updateCount;
     private long executionTime;
     private int errorPosition = -1;
 
@@ -242,9 +243,27 @@ public class DataView {
      * @return number of rows updated in last execution, -1 if no rows updated
      */
     public int getUpdateCount() {
-        return updateCount;
+        int result = 0;
+        for(Integer uc: updateCount) {
+            if(uc != null && uc > 0) {
+                result += uc;
+            }
+        }
+        if(result > 0) {
+            return result;
+        } else {
+            return -1;
+        }
     }
 
+    public List<Integer> getUpdateCounts() {
+        return new ArrayList<>(this.updateCount);
+    }
+    
+    public List<Long> getFetchTimes() {
+        return new ArrayList<>(this.fetchTimes);
+    }
+    
     /**
      * Get execution time for the last executed sql statement
      * 
@@ -356,6 +375,8 @@ public class DataView {
         });
         errMessages.clear();
         warningMessages.clear();
+        updateCount.clear();
+        fetchTimes.clear();
     }
 
     synchronized void removeComponents() {
@@ -421,10 +442,20 @@ public class DataView {
         });
     }
 
-    void setUpdateCount(int updateCount) {
-        this.updateCount = updateCount;
+    void addUpdateCount(int updateCount) {
+        synchronized (this.updateCount) {
+            this.updateCount.add(updateCount);
+            this.fetchTimes.add(null);
+        }
     }
 
+    void addFetchTime(long fetchTime) {
+        synchronized (this.updateCount) {
+            this.updateCount.add(null);
+            this.fetchTimes.add(fetchTime);
+        }
+    }
+    
     void setExecutionTime(long executionTime) {
         this.executionTime = executionTime;
     }
