@@ -43,9 +43,11 @@
 package org.netbeans.modules.java.hints;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.ParenthesizedTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.Collections;
@@ -111,6 +113,34 @@ public class StringBuilderAppend {
         public String getText() {
             return NbBundle.getMessage(StringBuilderAppend.class, "FIX_StringBuilderAppend");
         }
+        
+        private ExpressionTree merge(TreeMaker make, ExpressionTree arg1, ExpressionTree arg2) {
+            if (arg1 == null) {
+                return arg2;
+            } else if (arg2 == null) {
+                return arg1;
+            } else if (arg1 == arg2) {
+                return arg1;
+            }
+            return make.Binary(Kind.PLUS, arg1, arg2);
+        } 
+        
+        private ExpressionTree merge(TreeMaker make, ExpressionTree arg, ExpressionTree singleLeaf, 
+                StringBuilder literal, ExpressionTree l) {
+            ExpressionTree n;
+            if (singleLeaf != null) {
+                n = singleLeaf;
+                literal.delete(0, literal.length());
+                n = merge(make, n, l);
+            } else if (literal.length() > 0) {
+                n = make.Literal(literal.toString());
+                literal.delete(0, literal.length());
+                n = merge(make, n, l);
+            } else {
+                n = l;
+            }
+            return merge(make, arg, n);
+        }
 
         @Override
         protected void performRewrite(TransformationContext ctx) {
@@ -121,18 +151,35 @@ public class StringBuilderAppend {
             List<List<TreePath>> sorted = Utilities.splitStringConcatenationToElements(copy, new TreePath(tp, param));
             ExpressionTree site = ((MemberSelectTree) mit.getMethodSelect()).getExpression();
             TreeMaker make = copy.getTreeMaker();
-
+            
             for (List<TreePath> cluster : sorted) {
-                ExpressionTree arg = (ExpressionTree) cluster.remove(0).getLeaf();
-
-                while (!cluster.isEmpty()) {
-                    arg = make.Binary(Kind.PLUS, arg, (ExpressionTree) cluster.remove(0).getLeaf());
+                StringBuilder literal = new StringBuilder();
+                ExpressionTree singleLeaf = null;
+                ExpressionTree arg = null;
+                
+                if (cluster.size() == 1 && 
+                    !Utilities.isConstantString(copy, cluster.get(0), true)) {
+                    arg = (ExpressionTree)cluster.get(0).getLeaf();
+                } else {
+                    for (TreePath p : cluster) {
+                        ExpressionTree l = (ExpressionTree)p.getLeaf();
+                        if (Utilities.isStringOrCharLiteral(l)) {
+                            if (literal.length() == 0) {
+                                singleLeaf = l;
+                            } else {
+                                singleLeaf = null;
+                            }
+                            literal.append(
+                                ((LiteralTree)l).getValue().toString()
+                            );
+                        } else {
+                            ExpressionTree n;
+                            arg = merge(make, arg, singleLeaf, literal, l);
+                            singleLeaf = null;
+                        }
+                    }
                 }
-
-                while (arg.getKind() == Kind.PARENTHESIZED) {
-                    arg = ((ParenthesizedTree) arg).getExpression();
-                }
-
+                arg = merge(make, arg, singleLeaf, literal, null);
                 site = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(site, "append"), Collections.singletonList(arg));
             }
 
