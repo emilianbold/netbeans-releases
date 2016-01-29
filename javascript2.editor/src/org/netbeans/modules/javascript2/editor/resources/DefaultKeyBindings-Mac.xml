@@ -54,6 +54,4 @@ made subject to such option by the copyright holder.
 <bindings>
     <bind actionName="complete-line" key="D-SEMICOLON"/>
     <bind actionName="complete-line-newline" key="DS-SEMICOLON"/>
-    <bind actionName="csl-next-marked-occurrence" key="O-DOWN"/>
-    <bind actionName="csl-prev-marked-occurrence" key="O-UP"/>
 </bindings>

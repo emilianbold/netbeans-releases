@@ -107,6 +107,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="occurrences-names">
+            <summary>Added IDs for goto prev/next occurrence actions</summary>
+            <version major="2" minor="6"/>
+            <date day="30" month="1" year="2016"/>
+            <author login="sdedic"/>
+           <compatibility binary="compatible" semantic="compatible" source="compatible" addition="yes"/>
+            <description>
+                <p>
+                    Many languages define their own actions and support for navigating between symbol occurrences.
+                    Common action name allows them to be presented and configured as one action in IDE configuration.
+                </p>
+           </description>
+            <class name="EditorActionNames" package="org.netbeans.api.editor"/>
+            <issue number="194356"/>
+        </change>
         <change id="releasable-highlights-container">
             <summary>ReleasableHighlightsContainer added</summary>
             <version major="2" minor="4"/>
