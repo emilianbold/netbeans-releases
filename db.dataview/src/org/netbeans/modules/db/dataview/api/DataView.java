@@ -161,6 +161,24 @@ public class DataView {
     }
 
     /**
+     * Get modified row counts for the last executed sql statement.
+     * 
+     * @return number of rows updated in last execution, index is the xth result for this statement
+     */
+    public List<Integer> getUpdateCounts() {
+        return delegate.getUpdateCounts();
+    }
+    
+    /**
+     * Get fetchtimes for the resultsets of the last executed sql statement.
+     * 
+     * @return fetchtime in ms, index is the xth result for this statement
+     */
+    public List<Long> getFetchTimes() {
+        return delegate.getFetchTimes();
+    }
+    
+    /**
      * Get execution time for the last executed sql statement
      * 
      * @return execution time for last executed sql statement in milliseconds

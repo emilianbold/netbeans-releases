@@ -46,6 +46,7 @@ package org.netbeans.modules.db.sql.execute;
 
 import java.sql.SQLWarning;
 import java.util.Collection;
+import java.util.List;
 import org.netbeans.modules.db.dataview.api.DataView;
 
 /**
@@ -89,6 +90,14 @@ public class SQLExecutionResult {
     
     public int getUpdateCount() {
         return dataView.getUpdateCount();
+    }
+
+    public List<Integer> getUpdateCounts() {
+        return dataView.getUpdateCounts();
+    }
+
+    public List<Long> getFetchTimes() {
+        return dataView.getFetchTimes();
     }
     
     public Collection<Throwable> getExceptions() {

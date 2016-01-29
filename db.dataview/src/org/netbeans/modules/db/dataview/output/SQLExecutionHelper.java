@@ -142,9 +142,14 @@ class SQLExecutionHelper {
                     if (Thread.interrupted()) {
                         return;
                     }
-                    // Read multiple Resultsets
-                    boolean isResultSet = executeSQLStatement(stmt, sql);
+                    
+                    boolean isResultSet = executeSQLStatementForExtraction(stmt, sql);
 
+                    int updateCount = -1;
+                    if(! isResultSet) {
+                        updateCount = stmt.getUpdateCount();
+                    }
+                    
                     if (Thread.interrupted()) {
                         return;
                     }
@@ -162,20 +167,23 @@ class SQLExecutionHelper {
                             loadDataFrom(pageContext, rs, useScrollableCursors);
 
                             DataViewUtils.closeResources(rs);
-                            
+
                             dbMeta.postprocessTables(tables);
-                            }
-                            if (supportesMultipleResultSets) {
-                                isResultSet = stmt.getMoreResults();
-                                // @todo: Do somethink intelligent with the updatecounts
-                                int updateCount = stmt.getUpdateCount();
-                                if (isResultSet == false && updateCount == -1) {
-                                    break;
-                                }
-                            } else {
-                                break;
+                        } else {
+                            synchronized (dataView) {
+                                dataView.addUpdateCount(updateCount);
                             }
                         }
+                        if (supportesMultipleResultSets) {
+                            isResultSet = stmt.getMoreResults();
+                            updateCount = stmt.getUpdateCount();
+                            if (isResultSet == false && updateCount == -1) {
+                                break;
+                            }
+                        } else {
+                            break;
+                        }
+                    }
 
                     // If total count was not retrieved using scrollable cursors,
                     // compute it now.
@@ -416,8 +424,7 @@ class SQLExecutionHelper {
                         pos++;
                     }
 
-                    executePreparedStatement(pstmt);
-                    int rows = dataView.getUpdateCount();
+                    int rows = executePreparedStatement(pstmt);
                     if (rows == 0) {
                         error = true;
                         errorMsg += NbBundle.getMessage(SQLExecutionHelper.class, "MSG_no_match_to_delete");
@@ -511,8 +518,7 @@ class SQLExecutionHelper {
                 }
 
                 try {
-                    executePreparedStatement(pstmt);
-                    int rows = dataView.getUpdateCount();
+                    int rows = executePreparedStatement(pstmt);
                     if (rows == 0) {
                         error = true;
                         errorMsg += NbBundle.getMessage(SQLExecutionHelper.class, "MSG_no_match_to_update");
@@ -635,24 +641,32 @@ class SQLExecutionHelper {
                     if (Thread.interrupted()) {
                         return;
                     }
-                    boolean resultSet = executeSQLStatement(stmt, sql);
+                    boolean isResultSet = executeSQLStatementForExtraction(stmt, sql);
 
+                    int updateCount = -1;
+                    if(! isResultSet) {
+                        updateCount = stmt.getUpdateCount();
+                    }
+                    
                     ResultSet rs = null;
                     int res = -1;
 
                     while (true) {
-                        if (resultSet) {
+                        if (isResultSet) {
                             res++;
-                            DataViewPageContext pageContext = dataView.getPageContext(
-                                    res);
+                            DataViewPageContext pageContext = dataView.getPageContext(res);
                             rs = stmt.getResultSet();
                             loadDataFrom(pageContext, rs, getTotal && useScrollableCursors);
+                            DataViewUtils.closeResources(rs);
+                        } else {
+                            synchronized (dataView) {
+                                dataView.addUpdateCount(updateCount);
+                            }
                         }
                         if (supportesMultipleResultSets) {
-                            resultSet = stmt.getMoreResults();
-                            // @todo: Do somethink intelligent with the updatecounts
-                            int updateCount = stmt.getUpdateCount();
-                            if (resultSet == false && updateCount == -1) {
+                            isResultSet = stmt.getMoreResults();
+                            updateCount = stmt.getUpdateCount();
+                            if (isResultSet == false && updateCount == -1) {
                                 break;
                             }
                         } else {
@@ -664,7 +678,6 @@ class SQLExecutionHelper {
                     if (!useScrollableCursors && getTotal && dataView.getPageContexts().size() > 0) {
                         getTotalCount(isSelectStatement(sql), sql, stmt, dataView.getPageContext(0));
                     }
-                    DataViewUtils.closeResources(rs);
                 } catch (SQLException sqlEx) {
                     LOGGER.log(Level.INFO, "Failed to retrieve resultset", sqlEx);
                     String title = NbBundle.getMessage(SQLExecutionHelper.class, "MSG_error");
@@ -727,6 +740,7 @@ class SQLExecutionHelper {
         final List<Object[]> rows = new ArrayList<>();
         int colCnt = pageContext.getTableMetaData().getColumnCount();
         try {
+            long start = System.currentTimeMillis();
             boolean hasNext = false;
             boolean needSlowSkip = true;
 
@@ -794,6 +808,10 @@ class SQLExecutionHelper {
 
                 pageContext.setTotalRows(result);
             }
+            
+            long end = System.currentTimeMillis();
+            
+            dataView.addFetchTime(end - start);
         } catch (SQLException e) {
             LOGGER.log(Level.INFO, "Failed to set up table model.", e); // NOI18N
             throw e;
@@ -854,7 +872,7 @@ class SQLExecutionHelper {
         return stmt;
     }
 
-    private boolean executeSQLStatement(Statement stmt, String sql) throws SQLException {
+    private boolean executeSQLStatementForExtraction(Statement stmt, String sql) throws SQLException {
         LOGGER.log(Level.FINE, "Statement: {0}", sql); // NOI18N
         dataView.setInfoStatusText(NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_executestmt") + sql);
 
@@ -881,25 +899,21 @@ class SQLExecutionHelper {
 
         long executionTime = System.currentTimeMillis() - startTime;
         synchronized (dataView) {
-            dataView.setUpdateCount(stmt.getUpdateCount());
             dataView.setExecutionTime(executionTime);
         }
         return isResultSet;
     }
 
-    private boolean executePreparedStatement(PreparedStatement stmt) throws SQLException {
+    private int executePreparedStatement(PreparedStatement stmt) throws SQLException {
         long startTime = System.currentTimeMillis();
-        boolean isResultSet = stmt.execute();
+        
+        stmt.execute();
 
         long executionTime = System.currentTimeMillis() - startTime;
         String execTimeStr = SQLExecutionHelper.millisecondsToSeconds(executionTime);
         dataView.setInfoStatusText(NbBundle.getMessage(SQLExecutionHelper.class, "MSG_execution_success", execTimeStr));
-
-        synchronized (dataView) {
-            dataView.setUpdateCount(stmt.getUpdateCount());
-            dataView.setExecutionTime(executionTime);
-        }
-        return isResultSet;
+        
+        return stmt.getUpdateCount();
     }
 
     private void getTotalCount(boolean isSelect, String sql, Statement stmt,
