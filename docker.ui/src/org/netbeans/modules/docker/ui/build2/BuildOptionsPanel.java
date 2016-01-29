@@ -45,7 +45,6 @@ import java.io.File;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.api.DockerAction;
-import org.netbeans.modules.docker.api.DockerInstance;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -57,8 +56,6 @@ public class BuildOptionsPanel implements WizardDescriptor.Panel<WizardDescripto
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    private final DockerInstance instance;
-
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
@@ -67,8 +64,8 @@ public class BuildOptionsPanel implements WizardDescriptor.Panel<WizardDescripto
 
     private WizardDescriptor wizard;
 
-    public BuildOptionsPanel(DockerInstance instance) {
-        this.instance = instance;
+    public BuildOptionsPanel() {
+        super();
     }
 
     // Get the visual component for the panel. In this template, the component

@@ -57,6 +57,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.api.DockerIntegration;
+import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -71,8 +72,6 @@ public final class DockerNode extends AbstractNode {
             new RequestProcessor("Docker node update/refresh", 5);
 
     private static final String DOCKER_ICON = "org/netbeans/modules/docker/ui/resources/docker_root.png"; // NOI18N
-
-    private static final Logger LOGGER = Logger.getLogger(DockerNode.class.getName());
 
     private static DockerNode node;
 
@@ -116,8 +115,6 @@ public final class DockerNode extends AbstractNode {
 
     private static class ChildFactory extends org.openide.nodes.ChildFactory<EnhancedDockerInstance>
             implements ChangeListener {
-
-        private static final Comparator<DockerInstance> COMPARATOR = new InstanceComparator();
 
         private final DockerIntegration registry;
 
@@ -164,7 +161,7 @@ public final class DockerNode extends AbstractNode {
         @Override
         protected boolean createKeys(List<EnhancedDockerInstance> toPopulate) {
             List<DockerInstance> fresh = new ArrayList<>(registry.getInstances());
-            Collections.sort(fresh, COMPARATOR);
+            Collections.sort(fresh, UiUtils.getInstanceComparator());
             for (DockerInstance i : fresh) {
                 toPopulate.add(new EnhancedDockerInstance(i));
             }
@@ -172,32 +169,4 @@ public final class DockerNode extends AbstractNode {
         }
 
     } // end of ChildFactory
-
-    private static class InstanceComparator implements Comparator<DockerInstance>, Serializable {
-
-        public int compare(DockerInstance o1, DockerInstance o2) {
-            boolean firstNull = false;
-            boolean secondNull = false;
-
-            if (o1.getDisplayName() == null) {
-                LOGGER.log(Level.INFO, "Instance display name is null for {0}", o1);
-                firstNull = true;
-            }
-            if (o2.getDisplayName() == null) {
-                LOGGER.log(Level.INFO, "Instance display name is null for {0}", o2);
-                secondNull = true;
-            }
-
-            if (firstNull && secondNull) {
-                return 0;
-            } else if (firstNull && !secondNull) {
-                return -1;
-            } else if (!firstNull && secondNull) {
-                return 1;
-            }
-
-            return o1.getDisplayName().compareTo(o2.getDisplayName());
-        }
-
-    }
 }

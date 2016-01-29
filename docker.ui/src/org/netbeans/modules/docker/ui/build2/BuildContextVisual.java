@@ -63,7 +63,7 @@ public final class BuildContextVisual extends JPanel {
     /**
      * Creates new form BuildVisualPanel1
      */
-    public BuildContextVisual(DockerInstance instance) {
+    public BuildContextVisual() {
         initComponents();
 
         DefaultDocumentListener listener = new DefaultDocumentListener();
@@ -78,7 +78,7 @@ public final class BuildContextVisual extends JPanel {
             }
         });
         
-        UiUtils.loadRepositories(instance, repositoryComboBox);
+        //UiUtils.loadRepositories(instance, repositoryComboBox);
     }
 
     public void addChangeListener(ChangeListener l) {
@@ -156,6 +156,8 @@ public final class BuildContextVisual extends JPanel {
         buldContextLabel.setLabelFor(buildContextTextField);
         org.openide.awt.Mnemonics.setLocalizedText(buldContextLabel, org.openide.util.NbBundle.getMessage(BuildContextVisual.class, "BuildContextVisual.buldContextLabel.text")); // NOI18N
 
+        buildContextTextField.setColumns(10);
+
         org.openide.awt.Mnemonics.setLocalizedText(buildContextButton, org.openide.util.NbBundle.getMessage(BuildContextVisual.class, "BuildContextVisual.buildContextButton.text")); // NOI18N
         buildContextButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -183,10 +185,10 @@ public final class BuildContextVisual extends JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(buildContextTextField)
+                        .addComponent(buildContextTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(buildContextButton))
-                    .addComponent(repositoryComboBox, 0, 329, Short.MAX_VALUE)
+                    .addComponent(repositoryComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(tagTextField)))
         );
         layout.setVerticalGroup(
