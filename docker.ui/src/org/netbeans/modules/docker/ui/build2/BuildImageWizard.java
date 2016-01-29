@@ -42,7 +42,9 @@
 package org.netbeans.modules.docker.ui.build2;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
+import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,12 +55,19 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.api.DockerAction;
 import org.netbeans.modules.docker.api.DockerImage;
+import org.netbeans.modules.docker.api.DockerIntegration;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -227,7 +236,7 @@ public class BuildImageWizard {
                 BuildTask.Hook hook = new BuildTask.Hook() {
                     @Override
                     public void onStart(FutureTask<DockerImage> task) {
-                        stop.setTask(task);
+                        stop.configure(task);
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
                             public void run() {
@@ -242,15 +251,17 @@ public class BuildImageWizard {
                             @Override
                             public void run() {
                                 stop.setEnabled(false);
-                                rerun.setEnabled(true);
+                                if (rerun.isAvailable()) {
+                                    rerun.setEnabled(true);
+                                }
                             }
                         });
                     }
                 };
 
-                BuildTask task = new BuildTask(instance, io, hook, new File(buildContext),
-                        file, repository, tag, pull, noCache);
-                rerun.setBuildTask(task);
+                BuildTask task = new BuildTask(instance, io, hook, FileUtil.normalizeFile(new File(buildContext)),
+                        FileUtil.normalizeFile(file), repository, tag, pull, noCache);
+                rerun.configure(task);
                 task.run();
             }
         });
@@ -267,7 +278,7 @@ public class BuildImageWizard {
             putValue(Action.SHORT_DESCRIPTION, Bundle.LBL_Stop());
         }
 
-        public synchronized void setTask(FutureTask<DockerImage> task) {
+        public synchronized void configure(FutureTask<DockerImage> task) {
             this.task = task;
         }
 
@@ -292,6 +303,10 @@ public class BuildImageWizard {
 
         private BuildTask buildTask;
 
+        private ActionStateListener listener;
+
+        private boolean available = true;
+
         @NbBundle.Messages("LBL_Rerun=Rerun")
         public RerunAction(RequestProcessor requestProcessor) {
             this.requestProcessor = requestProcessor;
@@ -301,8 +316,15 @@ public class BuildImageWizard {
             putValue(Action.SHORT_DESCRIPTION, Bundle.LBL_Rerun());
         }
 
-        public synchronized void setBuildTask(BuildTask buildTask) {
+        public synchronized boolean isAvailable() {
+            return available;
+        }
+
+        public synchronized void configure(BuildTask buildTask) {
+            detach();
             this.buildTask = buildTask;
+            this.available = true;
+            attach(buildTask);
         }
 
         @Override
@@ -311,5 +333,105 @@ public class BuildImageWizard {
 
             requestProcessor.post(buildTask);
         }
+
+        public synchronized void attach(BuildTask buildTask) {
+            FileObject fo = FileUtil.toFileObject(buildTask.getDockerfile());
+
+            this.buildTask = buildTask;
+            this.listener = new ActionStateListener(this, buildTask.getInstance(), fo);
+
+            fo.addFileChangeListener(listener);
+            DockerIntegration.getDefault().addChangeListener(listener);
+
+            listener.refresh();
+        }
+
+        public synchronized void detach() {
+            if (buildTask == null) {
+                return;
+            }
+
+            FileObject fo = listener.getFileObject();
+
+            fo.removeFileChangeListener(listener);
+            DockerIntegration.getDefault().removeChangeListener(listener);
+
+            buildTask = null;
+            listener = null;
+            available = false;
+
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    setEnabled(false);
+                }
+            });
+        }
+    }
+
+    private static class ActionStateListener implements ChangeListener, FileChangeListener {
+
+        private final RerunAction action;
+
+        private final WeakReference<DockerInstance> instance;
+
+        private final FileObject fo;
+
+        public ActionStateListener(RerunAction action, WeakReference<DockerInstance> instance, FileObject fo) {
+            this.action = action;
+            this.instance = instance;
+            this.fo = fo;
+        }
+
+        public FileObject getFileObject() {
+            return fo;
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            refresh();
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            refresh();
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            refresh();
+        }
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+            // noop
+        }
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            // noop
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            // noop
+        }
+
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            // noop
+        }
+
+        private void refresh() {
+            if (fo == null || !fo.isValid()) {
+                action.detach();
+            }
+            DockerInstance inst = this.instance.get();
+            DockerIntegration integration = DockerIntegration.getDefault();
+            if (inst == null || !integration.getInstances().contains(inst)) {
+                action.detach();
+            }
+        }
+
     }
 }

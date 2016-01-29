@@ -100,6 +100,34 @@ public class BuildTask implements Runnable {
         this.noCache = noCache;
     }
 
+    public WeakReference<DockerInstance> getInstance() {
+        return instance;
+    }
+
+    public File getBuildContext() {
+        return buildContext;
+    }
+
+    public File getDockerfile() {
+        return dockerfile;
+    }
+
+    public String getRepository() {
+        return repository;
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public boolean isPull() {
+        return pull;
+    }
+
+    public boolean isNoCache() {
+        return noCache;
+    }
+
     @NbBundle.Messages({
         "# {0} - context",
         "MSG_Building=Building {0}",
