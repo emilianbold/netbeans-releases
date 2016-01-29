@@ -91,7 +91,6 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     private List<String> steps = Collections.emptyList();
     private List<String> stepNames = Collections.emptyList();
     private String current;
-    private List<WizardDescriptor.Panel<WizardDescriptor>> panels;
     private Object data;
     private JFXPanel p;
     private /* final */ WebView v;
@@ -145,7 +144,7 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
 
     
     private List<? extends WizardDescriptor.Panel<WizardDescriptor>> getPanels() {
-        panels = new ArrayList<>();
+        List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<>();
         fillPanels((TemplateWizard)wizard, this, panels, steps);
         return Collections.unmodifiableList(panels);
     }
