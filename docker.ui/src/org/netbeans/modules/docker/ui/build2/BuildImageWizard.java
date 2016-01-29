@@ -42,7 +42,6 @@
 package org.netbeans.modules.docker.ui.build2;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
