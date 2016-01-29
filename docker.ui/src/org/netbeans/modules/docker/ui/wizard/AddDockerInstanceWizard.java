@@ -46,6 +46,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
+import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.api.DockerIntegration;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -70,7 +71,7 @@ public class AddDockerInstanceWizard {
     public static final String DEFAULT_KEY_FILE = "key.pem";
 
     @NbBundle.Messages("LBL_AddDockerInstance=Add Docker Instance")
-    public void show() {
+    public DockerInstance show() {
         List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<>();
         panels.add(new DockerConnectionPanel());
         String[] steps = new String[panels.size()];
@@ -102,9 +103,9 @@ public class AddDockerInstanceWizard {
                 keyFile = new File(file, DEFAULT_KEY_FILE);
             }
 
-            DockerIntegration.getDefault().createInstance((String) wiz.getProperty(DISPLAY_NAME_PROPERTY),
+            return DockerIntegration.getDefault().createInstance((String) wiz.getProperty(DISPLAY_NAME_PROPERTY),
                     (String) wiz.getProperty(URL_PROPERTY), caFile, certFile, keyFile);
-
         }
+        return null;
     }
 }
