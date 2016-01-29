@@ -196,13 +196,6 @@ public class BuildImageWizard {
         return FileUtil.isParentOf(build, fo);
     }
 
-    @NbBundle.Messages({
-        "# {0} - context",
-        "MSG_Building=Building {0}",
-        "# {0} - file",
-        "MSG_Uploading=Sending file {0}",
-        "MSG_BuildCancelled=Build cancelled"
-    })
     private void build(final DockerInstance instance, final String buildContext,
             final String dockerfile, final String repository, final String tag,
             final boolean pull, final boolean noCache) {
@@ -241,7 +234,7 @@ public class BuildImageWizard {
                     }
                 }
 
-                BuildTaskHook hook = new BuildTaskHook() {
+                BuildTask.Hook hook = new BuildTask.Hook() {
                     @Override
                     public void onStart(FutureTask<DockerImage> task) {
                         stop.setTask(task);
@@ -324,117 +317,5 @@ public class BuildImageWizard {
 
             RequestProcessor.getDefault().post(buildTask);
         }
-    }
-
-    private static class BuildTask implements Runnable {
-
-        private final WeakReference<DockerInstance> instance;
-
-        private final WeakReference<InputOutput> inputOutput;
-
-        private final BuildTaskHook hook;
-
-        private final File buildContext;
-
-        private final File dockerfile;
-
-        private final String repository;
-
-        private final String tag;
-
-        private final boolean pull;
-
-        private final boolean noCache;
-
-        public BuildTask(DockerInstance instance, InputOutput inputOutput, BuildTaskHook hook, File buildContext,
-                File dockerfile, String repository, String tag, boolean pull, boolean noCache) {
-            this.instance = new WeakReference<>(instance);
-            this.inputOutput = new WeakReference<>(inputOutput);
-            this.hook = hook;
-            this.buildContext = buildContext;
-            this.dockerfile = dockerfile;
-            this.repository = repository;
-            this.tag = tag;
-            this.pull = pull;
-            this.noCache = noCache;
-        }
-
-        @Override
-        public void run() {
-            final InputOutput io = inputOutput.get();
-            if (io == null) {
-                return;
-            }
-            final DockerInstance inst = instance.get();
-            if (inst == null) {
-                return;
-            }
-
-            DockerAction facade = new DockerAction(inst);
-            final FutureTask<DockerImage> task = facade.createBuildTask(buildContext, dockerfile,
-                    repository, tag, pull, noCache,
-                    new BuildEvent.Listener() {
-                @Override
-                public void onEvent(BuildEvent event) {
-                    if (event.isUpload()) {
-                        io.getOut().println(Bundle.MSG_Uploading(event.getMessage()));
-                    } else if (event.isError()) {
-                        // FIXME should we display more details ?
-                        io.getErr().println(event.getMessage());
-                    } else {
-                        io.getOut().println(event.getMessage());
-                    }
-                }
-            }, new StatusOutputListener(io));
-            hook.onStart(task);
-
-            ProgressHandle handle = ProgressHandleFactory.createHandle(Bundle.MSG_Building(buildContext), new Cancellable() {
-                @Override
-                public boolean cancel() {
-                    return task.cancel(true);
-                }
-            }, new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    io.select();
-                }
-            });
-            handle.start();
-            try {
-                io.getOut().reset();
-                io.select();
-
-                task.run();
-                if (!task.isCancelled()) {
-                    task.get();
-                } else {
-                    io.getErr().println(Bundle.MSG_BuildCancelled());
-                }
-            } catch (ExecutionException ex) {
-                Throwable cause = ex.getCause();
-                if (cause == null) {
-                    cause = ex;
-                }
-                LOGGER.log(Level.INFO, null, cause);
-                io.getErr().println(cause.getMessage());
-            } catch (IOException ex) {
-                LOGGER.log(Level.INFO, null, ex);
-            } catch (InterruptedException ex) {
-                LOGGER.log(Level.INFO, null, ex);
-                Thread.currentThread().interrupt();
-            } finally {
-                io.getOut().close();
-                handle.finish();
-                hook.onFinish();
-            }
-
-        }
-    }
-
-    private static interface BuildTaskHook {
-
-        void onStart(FutureTask<DockerImage> task);
-
-        void onFinish();
     }
 }
