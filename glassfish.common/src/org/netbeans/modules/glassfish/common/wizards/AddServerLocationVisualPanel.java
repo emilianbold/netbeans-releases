@@ -400,10 +400,6 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(hk2HomeTextField)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(browseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(downloadStatusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -418,7 +414,11 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
                             .addComponent(remoteDomainRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(hk2HomeLabel)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(hk2HomeTextField)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(browseButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
