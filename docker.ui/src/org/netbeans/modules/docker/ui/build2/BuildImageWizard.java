@@ -44,15 +44,20 @@ package org.netbeans.modules.docker.ui.build2;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.docker.api.DockerInstance;
@@ -65,7 +70,9 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -95,6 +102,8 @@ public class BuildImageWizard {
     public static final boolean NO_CACHE_DEFAULT = false;
 
     private static final Logger LOGGER = Logger.getLogger(BuildImageAction.class.getName());
+
+    private static final Map<InputOutput, Pair<RerunAction, StopAction>> IO_CACHE = new WeakHashMap<>();
 
     private DockerInstance instance;
 
@@ -198,12 +207,32 @@ public class BuildImageWizard {
             final String dockerfile, final String repository, final String tag,
             final boolean pull, final boolean noCache) {
 
+        RerunAction r = new RerunAction();
+        StopAction s = new StopAction();
+
+        final InputOutput io;
+        synchronized (BuildImageWizard.class) {
+            io = IOProvider.getDefault().getIO(Bundle.MSG_Building(buildContext),
+                    false, new Action[]{r, s}, null);
+
+            Pair<RerunAction, StopAction> actions = IO_CACHE.get(io);
+            if (actions == null) {
+                IO_CACHE.put(io, Pair.of(r, s));
+            } else {
+                r = actions.first();
+                s = actions.second();
+            }
+        }
+
+        final RerunAction rerun = r;
+        final StopAction stop = s;
+
+        stop.setEnabled(false);
+        rerun.setEnabled(false);
+
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
-                final InputOutput io = IOProvider.getDefault().getIO(Bundle.MSG_Building(buildContext), false);
-
-                DockerAction facade = new DockerAction(instance);
                 File file = null;
                 if (dockerfile != null) {
                     file = new File(dockerfile);
@@ -212,60 +241,200 @@ public class BuildImageWizard {
                     }
                 }
 
-                final FutureTask<DockerImage> task = facade.createBuildTask(new File(buildContext), file, repository, tag, pull, noCache,
-                        new BuildEvent.Listener() {
+                BuildTaskHook hook = new BuildTaskHook() {
                     @Override
-                    public void onEvent(BuildEvent event) {
-                        if (event.isUpload()) {
-                            io.getOut().println(Bundle.MSG_Uploading(event.getMessage()));
-                        } else if (event.isError()) {
-                            // FIXME should we display more details ?
-                            io.getErr().println(event.getMessage());
-                        } else {
-                            io.getOut().println(event.getMessage());
-                        }
+                    public void onStart(FutureTask<DockerImage> task) {
+                        stop.setTask(task);
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                stop.setEnabled(true);
+                            }
+                        });
                     }
-                }, new StatusOutputListener(io));
 
-                ProgressHandle handle = ProgressHandleFactory.createHandle(Bundle.MSG_Building(buildContext), new Cancellable() {
                     @Override
-                    public boolean cancel() {
-                        return task.cancel(true);
+                    public void onFinish() {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                stop.setEnabled(false);
+                                rerun.setEnabled(true);
+                            }
+                        });
                     }
-                }, new AbstractAction() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        io.select();
-                    }
-                });
-                handle.start();
-                try {
-                    io.getOut().reset();
-                    io.select();
+                };
 
-                    task.run();
-                    if (!task.isCancelled()) {
-                        task.get();
-                    } else {
-                        io.getErr().println(Bundle.MSG_BuildCancelled());
-                    }
-                } catch (ExecutionException ex) {
-                    Throwable cause = ex.getCause();
-                    if (cause == null) {
-                        cause = ex;
-                    }
-                    LOGGER.log(Level.INFO, null, cause);
-                    io.getErr().println(cause.getMessage());
-                } catch (IOException ex) {
-                    LOGGER.log(Level.INFO, null, ex);
-                } catch (InterruptedException ex) {
-                    LOGGER.log(Level.INFO, null, ex);
-                    Thread.currentThread().interrupt();
-                } finally {
-                    io.getOut().close();
-                    handle.finish();
-                }
+                BuildTask task = new BuildTask(instance, io, hook, new File(buildContext),
+                        file, repository, tag, pull, noCache);
+                rerun.setBuildTask(task);
+                task.run();
             }
         });
+    }
+
+    private static class StopAction extends AbstractAction {
+
+        private FutureTask<DockerImage> task;
+
+        @NbBundle.Messages("LBL_Stop=Stop")
+        public StopAction() {
+            setEnabled(false); // initially, until ready
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/docker/ui/resources/action_stop.png", false)); // NOI18N
+            putValue(Action.SHORT_DESCRIPTION, Bundle.LBL_Stop());
+        }
+
+        public synchronized void setTask(FutureTask<DockerImage> task) {
+            this.task = task;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            setEnabled(false); // discourage repeated clicking
+
+            FutureTask<DockerImage> actionTask;
+            synchronized (this) {
+                actionTask = task;
+            }
+
+            if (actionTask != null) {
+                actionTask.cancel(true);
+            }
+        }
+    }
+
+    private static class RerunAction extends AbstractAction {
+
+        private BuildTask buildTask;
+
+        @NbBundle.Messages("LBL_Rerun=Rerun")
+        public RerunAction() {
+            setEnabled(false); // initially, until ready
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/docker/ui/resources/action_rerun.png", false)); // NOI18N
+            putValue(Action.SHORT_DESCRIPTION, Bundle.LBL_Rerun());
+        }
+
+        public synchronized void setBuildTask(BuildTask buildTask) {
+            this.buildTask = buildTask;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            setEnabled(false); // discourage repeated clicking
+
+            RequestProcessor.getDefault().post(buildTask);
+        }
+    }
+
+    private static class BuildTask implements Runnable {
+
+        private final WeakReference<DockerInstance> instance;
+
+        private final WeakReference<InputOutput> inputOutput;
+
+        private final BuildTaskHook hook;
+
+        private final File buildContext;
+
+        private final File dockerfile;
+
+        private final String repository;
+
+        private final String tag;
+
+        private final boolean pull;
+
+        private final boolean noCache;
+
+        public BuildTask(DockerInstance instance, InputOutput inputOutput, BuildTaskHook hook, File buildContext,
+                File dockerfile, String repository, String tag, boolean pull, boolean noCache) {
+            this.instance = new WeakReference<>(instance);
+            this.inputOutput = new WeakReference<>(inputOutput);
+            this.hook = hook;
+            this.buildContext = buildContext;
+            this.dockerfile = dockerfile;
+            this.repository = repository;
+            this.tag = tag;
+            this.pull = pull;
+            this.noCache = noCache;
+        }
+
+        @Override
+        public void run() {
+            final InputOutput io = inputOutput.get();
+            if (io == null) {
+                return;
+            }
+            final DockerInstance inst = instance.get();
+            if (inst == null) {
+                return;
+            }
+
+            DockerAction facade = new DockerAction(inst);
+            final FutureTask<DockerImage> task = facade.createBuildTask(buildContext, dockerfile,
+                    repository, tag, pull, noCache,
+                    new BuildEvent.Listener() {
+                @Override
+                public void onEvent(BuildEvent event) {
+                    if (event.isUpload()) {
+                        io.getOut().println(Bundle.MSG_Uploading(event.getMessage()));
+                    } else if (event.isError()) {
+                        // FIXME should we display more details ?
+                        io.getErr().println(event.getMessage());
+                    } else {
+                        io.getOut().println(event.getMessage());
+                    }
+                }
+            }, new StatusOutputListener(io));
+            hook.onStart(task);
+
+            ProgressHandle handle = ProgressHandleFactory.createHandle(Bundle.MSG_Building(buildContext), new Cancellable() {
+                @Override
+                public boolean cancel() {
+                    return task.cancel(true);
+                }
+            }, new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    io.select();
+                }
+            });
+            handle.start();
+            try {
+                io.getOut().reset();
+                io.select();
+
+                task.run();
+                if (!task.isCancelled()) {
+                    task.get();
+                } else {
+                    io.getErr().println(Bundle.MSG_BuildCancelled());
+                }
+            } catch (ExecutionException ex) {
+                Throwable cause = ex.getCause();
+                if (cause == null) {
+                    cause = ex;
+                }
+                LOGGER.log(Level.INFO, null, cause);
+                io.getErr().println(cause.getMessage());
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            } catch (InterruptedException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+                Thread.currentThread().interrupt();
+            } finally {
+                io.getOut().close();
+                handle.finish();
+                hook.onFinish();
+            }
+
+        }
+    }
+
+    private static interface BuildTaskHook {
+
+        void onStart(FutureTask<DockerImage> task);
+
+        void onFinish();
     }
 }
