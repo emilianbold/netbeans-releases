@@ -41,16 +41,15 @@
  */
 package org.netbeans.modules.docker.ui.build2;
 
-import java.io.File;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.docker.ui.Validations;
+import org.netbeans.modules.docker.api.DockerInstance;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor>, ChangeListener {
+public class BuildInstancePanel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor>, ChangeListener {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -58,11 +57,11 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
-    private BuildContextVisual component;
+    private BuildInstanceVisual component;
 
     private WizardDescriptor wizard;
 
-    public BuildContextPanel() {
+    public BuildInstancePanel() {
         super();
     }
 
@@ -71,9 +70,9 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
     // but never displayed, or not all panels are displayed, it is better to
     // create only those which really need to be visible.
     @Override
-    public BuildContextVisual getComponent() {
+    public BuildInstanceVisual getComponent() {
         if (component == null) {
-            component = new BuildContextVisual();
+            component = new BuildInstanceVisual();
             component.addChangeListener(this);
         }
         return component;
@@ -89,13 +88,12 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
 
     @Override
     public boolean isFinishPanel() {
-        return BuildImageWizard.isFinishable(component.getBuildContext(),
+        return BuildImageWizard.isFinishable((String) wizard.getProperty(BuildImageWizard.BUILD_CONTEXT_PROPERTY),
                 (String) wizard.getProperty(BuildImageWizard.DOCKERFILE_PROPERTY));
     }
 
     @NbBundle.Messages({
-        "MSG_NonExistingBuildContext=The build context does not exist.",
-        "MSG_EmptyRepository=The repository must not be empty when using tag."
+        "MSG_NoInstance=No build instance specified."
     })
     @Override
     public boolean isValid() {
@@ -104,30 +102,10 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
         wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
         wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, null);
 
-        String buildContext = component.getBuildContext();
-        if (buildContext == null || !new File(buildContext).isDirectory()) {
-            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_NonExistingBuildContext());
+        DockerInstance buildInstance = component.getInstance();
+        if (buildInstance == null) {
+            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_NoInstance());
             return false;
-        }
-        if (component.getRepository() == null && component.getTag() != null) {
-            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_EmptyRepository());
-            return false;
-        }
-        String repository = component.getRepository();
-        if (repository != null) {
-            String message = Validations.validateRepository(repository);
-            if (message != null) {
-                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
-                return false;
-            }
-        }
-        String tag = component.getTag();
-        if (tag != null) {
-            String message = Validations.validateTag(tag);
-            if (message != null) {
-                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
-                return false;
-            }
         }
         return true;
     }
@@ -148,9 +126,7 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
             wizard = wiz;
         }
 
-        component.setBuildContext((String) wiz.getProperty(BuildImageWizard.BUILD_CONTEXT_PROPERTY));
-        component.setRepository((String) wiz.getProperty(BuildImageWizard.REPOSITORY_PROPERTY));
-        component.setTag((String) wiz.getProperty(BuildImageWizard.TAG_PROPERTY));
+        component.setInstance((DockerInstance) wiz.getProperty(BuildImageWizard.INSTANCE_PROPERTY));
 
         // XXX revalidate; is this bug?
         changeSupport.fireChange();
@@ -158,9 +134,7 @@ public class BuildContextPanel implements WizardDescriptor.Panel<WizardDescripto
 
     @Override
     public void storeSettings(WizardDescriptor wiz) {
-        wiz.putProperty(BuildImageWizard.BUILD_CONTEXT_PROPERTY, component.getBuildContext());
-        wiz.putProperty(BuildImageWizard.REPOSITORY_PROPERTY, component.getRepository());
-        wiz.putProperty(BuildImageWizard.TAG_PROPERTY, component.getTag());
+        wiz.putProperty(BuildImageWizard.INSTANCE_PROPERTY, component.getInstance());
     }
 
     @Override

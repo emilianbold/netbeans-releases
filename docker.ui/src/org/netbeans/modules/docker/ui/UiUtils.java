@@ -49,6 +49,7 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
@@ -74,6 +75,34 @@ import org.openide.util.RequestProcessor;
 public final class UiUtils {
 
     private static final Logger LOGGER = Logger.getLogger(UiUtils.class.getName());
+
+    private static final Comparator<DockerInstance> INSTANCE_COMPARATOR = new Comparator<DockerInstance>() {
+
+        @Override
+        public int compare(DockerInstance o1, DockerInstance o2) {
+            boolean firstNull = false;
+            boolean secondNull = false;
+
+            if (o1.getDisplayName() == null) {
+                LOGGER.log(Level.INFO, "Instance display name is null for {0}", o1);
+                firstNull = true;
+            }
+            if (o2.getDisplayName() == null) {
+                LOGGER.log(Level.INFO, "Instance display name is null for {0}", o2);
+                secondNull = true;
+            }
+
+            if (firstNull && secondNull) {
+                return 0;
+            } else if (firstNull && !secondNull) {
+                return -1;
+            } else if (!firstNull && secondNull) {
+                return 1;
+            }
+
+            return o1.getDisplayName().compareTo(o2.getDisplayName());
+        }
+    };
 
     private UiUtils() {
         super();
@@ -151,6 +180,10 @@ public final class UiUtils {
         return ret;
     }
 
+    public static Comparator<DockerInstance> getInstanceComparator() {
+        return INSTANCE_COMPARATOR;
+    }
+
     public static void loadRepositories(final DockerInstance instance, final JComboBox<String> combo) {
         assert SwingUtilities.isEventDispatchThread();
 
@@ -186,6 +219,5 @@ public final class UiUtils {
                 });
             }
         });
-
     }
 }
