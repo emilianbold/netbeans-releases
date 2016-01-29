@@ -93,6 +93,8 @@ public class BuildImageWizard {
 
     private static final Map<InputOutput, Pair<RerunAction, StopAction>> IO_CACHE = new WeakHashMap<>();
 
+    private final RequestProcessor requestProcessor = new RequestProcessor(BuildImageWizard.class);
+
     private DockerInstance instance;
 
     private File dockerfile;
@@ -188,7 +190,7 @@ public class BuildImageWizard {
             final String dockerfile, final String repository, final String tag,
             final boolean pull, final boolean noCache) {
 
-        RerunAction r = new RerunAction();
+        RerunAction r = new RerunAction(requestProcessor);
         StopAction s = new StopAction();
 
         final InputOutput io;
@@ -211,7 +213,7 @@ public class BuildImageWizard {
         stop.setEnabled(false);
         rerun.setEnabled(false);
 
-        RequestProcessor.getDefault().post(new Runnable() {
+        requestProcessor.post(new Runnable() {
             @Override
             public void run() {
                 File file = null;
@@ -286,10 +288,14 @@ public class BuildImageWizard {
 
     private static class RerunAction extends AbstractAction {
 
+        private final RequestProcessor requestProcessor;
+
         private BuildTask buildTask;
 
         @NbBundle.Messages("LBL_Rerun=Rerun")
-        public RerunAction() {
+        public RerunAction(RequestProcessor requestProcessor) {
+            this.requestProcessor = requestProcessor;
+
             setEnabled(false); // initially, until ready
             putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/docker/ui/resources/action_rerun.png", false)); // NOI18N
             putValue(Action.SHORT_DESCRIPTION, Bundle.LBL_Rerun());
@@ -303,7 +309,7 @@ public class BuildImageWizard {
         public void actionPerformed(ActionEvent e) {
             setEnabled(false); // discourage repeated clicking
 
-            RequestProcessor.getDefault().post(buildTask);
+            requestProcessor.post(buildTask);
         }
     }
 }
