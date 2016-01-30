@@ -203,6 +203,39 @@ public class BranchTest extends AbstractGitTestCase {
         assertTrue(branches.get("master").isActive());
         assertEquals(commitId, read(new File(workDir, ".git/refs/heads/" + BRANCH_NAME)));
     }
+
+    public void testCreateBranchWithRebase () throws Exception {
+        final File otherWT = new File(workDir.getParentFile(), "repo2");
+        GitClient client = getClient(otherWT);
+        client.init(NULL_PROGRESS_MONITOR);
+        File f = new File(otherWT, "f");
+        write(f, "init");
+        client.add(new File[] { f }, NULL_PROGRESS_MONITOR);
+        client.commit(new File[] { f }, "init commit", null, null, NULL_PROGRESS_MONITOR);
+
+        client = getClient(workDir);
+        client.setRemote(new GitRemoteConfig("origin",
+                Arrays.asList(new String[] { otherWT.getAbsolutePath() }),
+                Arrays.asList(new String[] { otherWT.getAbsolutePath() }),
+                Arrays.asList(new String[] { "refs/heads/*:refs/remotes/origin/*" }),
+                Arrays.asList(new String[] { "refs/remotes/origin/*:refs/heads/*" })), NULL_PROGRESS_MONITOR);
+        client.fetch("origin", NULL_PROGRESS_MONITOR);
+
+        StoredConfig config = repository.getConfig();
+        config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOSETUPREBASE, ConfigConstants.CONFIG_KEY_NEVER);
+        config.save();
+
+        GitBranch b = client.createBranch(BRANCH_NAME, "origin/master", NULL_PROGRESS_MONITOR);
+        assertFalse(repository.getConfig().getBoolean(ConfigConstants.CONFIG_BRANCH_SECTION, BRANCH_NAME, ConfigConstants.CONFIG_KEY_REBASE, false));
+        client.deleteBranch(BRANCH_NAME, true, NULL_PROGRESS_MONITOR);
+
+        config = repository.getConfig();
+        config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOSETUPREBASE, ConfigConstants.CONFIG_KEY_REMOTE);
+        config.save();
+
+        b = client.createBranch(BRANCH_NAME, "origin/master", NULL_PROGRESS_MONITOR);
+        assertTrue(repository.getConfig().getBoolean(ConfigConstants.CONFIG_BRANCH_SECTION, BRANCH_NAME, ConfigConstants.CONFIG_KEY_REBASE, false));
+    }
     
     public void testFileProtocolFails () throws Exception {
         try {
