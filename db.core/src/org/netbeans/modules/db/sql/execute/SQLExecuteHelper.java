@@ -95,7 +95,7 @@ public final class SQLExecuteHelper {
                                                        getCompatibility(conn));
         
         List<SQLExecutionResult> results = new ArrayList<>();
-        long totalExecutionTime = 0;
+        long start = System.currentTimeMillis();
         String url = conn.getDatabaseURL();
 
         for (StatementInfo info : statements) {
@@ -131,13 +131,13 @@ public final class SQLExecuteHelper {
 
             executionLogger.log(result);
 
-            totalExecutionTime += result.getExecutionTime();
-
             results.add(result);
         }
 
+        long end = System.currentTimeMillis();
+        
         if (!cancelled) {
-            executionLogger.finish(totalExecutionTime);
+            executionLogger.finish(end - start);
         } else {
             LOGGER.log(Level.FINE, "Execution cancelled"); // NOI18N
             executionLogger.cancel();
