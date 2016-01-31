@@ -80,6 +80,7 @@ import org.netbeans.modules.db.dataview.meta.DBException;
 import org.netbeans.modules.db.dataview.meta.DBTable;
 import org.netbeans.modules.db.dataview.table.ResultSetCellRenderer;
 import org.netbeans.modules.db.dataview.table.ResultSetJXTable;
+import org.netbeans.modules.db.dataview.util.ColorHelper;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
@@ -177,16 +178,8 @@ final class DataViewTableUI extends ResultSetJXTable {
         private final JComponent holder = new JComponent() {};
 
         static {
-            Color selectedFgFromMngr = UIManager.getColor(
-                    "nb.dataview.tablecell.edited.selected.foreground"); //NOI18N
-            selectedForeground = selectedFgFromMngr != null
-                    ? selectedFgFromMngr
-                    : new Color(229, 148, 0);
-            Color unselectedFgFromMngr = UIManager.getColor(
-                    "nb.dataview.tablecell.edited.unselected.foreground"); //NOI18N
-            unselectedForeground = unselectedFgFromMngr != null
-                    ? unselectedFgFromMngr
-                    : new Color(0, 128, 0); // green color
+            selectedForeground = ColorHelper.getTablecellEditedSelectedForeground();
+            unselectedForeground = ColorHelper.getTablecellEditedUnselectedForeground();
         }
 
         public UpdatedResultSetCellRenderer() {
