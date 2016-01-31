@@ -54,6 +54,7 @@ import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
 import org.jdesktop.swingx.renderer.*;
+import org.netbeans.modules.db.dataview.util.ColorHelper;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 import org.netbeans.modules.db.dataview.util.LobHelper;
 import org.netbeans.modules.db.dataview.util.TimeType;
@@ -208,15 +209,7 @@ class NullObjectCellRenderer extends SQLConstantsCellRenderer {
 
 class SQLConstantsCellRenderer extends CellFocusCustomRenderer {
 
-    private static final Color foregroundColor;
-
-    static {
-        Color foregroundColorFromMngr = UIManager.getColor(
-                "nb.dataview.table.sqlconstant.foreground"); //NOI18N
-        foregroundColor = foregroundColorFromMngr != null
-                ? foregroundColorFromMngr
-                : Color.DARK_GRAY;
-    }
+    private static final Color foregroundColor = ColorHelper.getTableSqlconstantForeground();
 
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
