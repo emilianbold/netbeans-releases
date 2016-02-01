@@ -43,6 +43,7 @@ package org.netbeans.modules.docker;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -122,11 +123,45 @@ public final class HttpUtils {
         return bos.toString(encoding.name());
     }
 
-    public static InputStream getResponseStream(InputStream is, Response response) {
+    public static InputStream getResponseStream(InputStream is, Response response, boolean allowSocketStream) throws IOException {
         if (isChunked(response.getHeaders())) {
             return new ChunkedInputStream(new BufferedInputStream(is));
         } else {
-            return new BufferedInputStream(is);
+            Integer l = getLength(response.getHeaders());
+            if (l != null) {
+                return new BufferedInputStream(new FilterInputStream(is) {
+                    private int available = l;
+
+                    @Override
+                    public int available() throws IOException {
+                        return available;
+                    }
+
+                    @Override
+                    public int read(byte[] b, int off, int len) throws IOException {
+                        if (available <= 0) {
+                            return -1;
+                        }
+                        int real = Math.min(available, len);
+                        int count = super.read(b, off, real);
+                        available -= count;
+                        return count;
+                    }
+
+                    @Override
+                    public int read() throws IOException {
+                        if (available <= 0) {
+                            return -1;
+                        }
+                        available--;
+                        return super.read();
+                    }
+                });
+            } else if (allowSocketStream) {
+                return new BufferedInputStream(is);
+            } else {
+                throw new IllegalStateException("Undefined content length");
+            }
         }
     }
 

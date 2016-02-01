@@ -495,7 +495,7 @@ public class DockerAction {
                 closeSocket(s);
                 return new ActionStreamResult(new EmptyStreamResult(info.isTty()));
             }
-            is = HttpUtils.getResponseStream(is, response);
+            is = HttpUtils.getResponseStream(is, response, true);
 
             if (info.isTty()) {
                 return new ActionStreamResult(new DirectStreamResult(s, ch, is));
@@ -746,7 +746,7 @@ public class DockerAction {
                         throw new DockerException(ex.getCause());
                     }
 
-                    is = HttpUtils.getResponseStream(is, response);
+                    is = HttpUtils.getResponseStream(is, response, false);
 
                     JSONParser parser = new JSONParser();
                     try (InputStreamReader r = new InputStreamReader(is, HttpUtils.getCharset(response))) {
@@ -855,7 +855,7 @@ public class DockerAction {
                         error != null ? error : response.getMessage());
             }
 
-            is = HttpUtils.getResponseStream(is, response);
+            is = HttpUtils.getResponseStream(is, response, true);
 
             StreamItem.Fetcher fetcher;
             Integer length = HttpUtils.getLength(response.getHeaders());
@@ -914,12 +914,13 @@ public class DockerAction {
                         error != null ? error : response.getMessage());
             }
 
-            is = HttpUtils.getResponseStream(is, response);
+            // we send a second request to the stream later
+            InputStream nis = HttpUtils.getResponseStream(is, response, false);
 
             JSONObject value;
             try {
                 JSONParser parser = new JSONParser();
-                value = (JSONObject) parser.parse(HttpUtils.readContent(is, response));
+                value = (JSONObject) parser.parse(HttpUtils.readContent(nis, response));
             } catch (ParseException ex) {
                 throw new DockerException(ex);
             }
@@ -1001,7 +1002,7 @@ public class DockerAction {
                             error != null ? error : response.getMessage());
                 }
 
-                is = HttpUtils.getResponseStream(is, response);
+                is = HttpUtils.getResponseStream(is, response, false);
 
                 if (connectionListener != null) {
                     connectionListener.onConnect(s);
