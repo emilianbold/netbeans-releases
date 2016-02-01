@@ -147,6 +147,24 @@ public class SourceAccessorImpl extends VCSAccessor {
 
     @Override
     public Action getOpenHistoryAction (ProjectHandle<ODCSProject> prjHandle, String repositoryName, final String commitId) {
+        return openHistory(prjHandle, repositoryName, (File workdir, VCSProvider p) -> { p.openHistory(workdir, commitId); });
+    }
+    
+    @Override
+    public Action getOpenHistoryAction (ProjectHandle<ODCSProject> prjHandle, String repositoryName, final String commitIdFrom, final String commitIdTo) {
+        return openHistory(prjHandle, repositoryName, (File workdir, VCSProvider p) -> { p.openHistory(workdir, commitIdFrom, commitIdTo); });
+    }
+
+    @Override
+    public Action getOpenHistoryBranchAction(ProjectHandle<ODCSProject> prjHandle, String repositoryName, String branch) {
+        return openHistory(prjHandle, repositoryName, (File workdir, VCSProvider p) -> { p.openHistoryBranch(workdir, branch); });
+    }
+
+    private abstract interface OpenHistoryAction {
+        public void perform(File workdir, VCSProvider p);
+    }
+    
+    private Action openHistory(ProjectHandle<ODCSProject> prjHandle, String repositoryName, final OpenHistoryAction a) {
         assert !EventQueue.isDispatchThread();
         List<SourceHandle> sources = getSources(prjHandle, repositoryName, true);
         Action action = null;
@@ -160,7 +178,7 @@ public class SourceAccessorImpl extends VCSAccessor {
                         action = new AbstractAction() {
                             @Override
                             public void actionPerformed(ActionEvent e) {
-                                p.openHistory(workdir, commitId);
+                                a.perform(workdir, p);
                             }
                         };
                     }

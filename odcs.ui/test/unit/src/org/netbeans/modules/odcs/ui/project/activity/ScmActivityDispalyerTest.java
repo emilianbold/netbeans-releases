@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,19 +37,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.odcs.ui.project.activity;
 
-public interface ActivityTypes {
-    
-    public static final String SCM_PUSH = "SCM_PUSH"; // NOI18N
-    public static final String SCM_REPO = "SCM_REPO"; // NOI18N
-    public static final String REVIEW = "REVIEW"; // NOI18N
-    public static final String TASK = "TASK"; // NOI18N
-    public static final String WIKI = "WIKI"; // NOI18N
-    public static final String BUILD = "BUILD"; // NOI18N
-    public static final String DEPLOYMENT = "DEPLOYMENT"; // NOI18N
-    public static final String RSS = "RSS"; // NOI18N
+import org.netbeans.junit.NbTestCase;
 
+/**
+ *
+ * @author tomas
+ */
+public class ScmActivityDispalyerTest extends NbTestCase {
+    
+    public ScmActivityDispalyerTest(String name) {
+        super(name);
+    }
+    
+    public void testSkipLineBreaks() {
+        assertEquals("", ScmActivityDisplayer.skipLineBreaks(""));
+        assertEquals("a", ScmActivityDisplayer.skipLineBreaks("a"));
+        assertEquals("aa", ScmActivityDisplayer.skipLineBreaks("aa"));
+        assertEquals("aaa", ScmActivityDisplayer.skipLineBreaks("aaa"));
+        
+        assertEquals("a ...", ScmActivityDisplayer.skipLineBreaks("a\naaa"));
+        assertEquals("aa ...", ScmActivityDisplayer.skipLineBreaks("aa\n\naaa"));
+        
+        assertEquals("", ScmActivityDisplayer.skipLineBreaks("\n"));
+        assertEquals("", ScmActivityDisplayer.skipLineBreaks("\n\n"));
+        assertEquals("a", ScmActivityDisplayer.skipLineBreaks("\n\na"));        
+        
+        assertEquals("aa", ScmActivityDisplayer.skipLineBreaks("\n\naa"));
+        
+        assertEquals("a ...", ScmActivityDisplayer.skipLineBreaks("\n\na\naaa"));
+        assertEquals("aa ...", ScmActivityDisplayer.skipLineBreaks("\n\naa\n\naaa"));
+        
+        assertEquals("a", ScmActivityDisplayer.skipLineBreaks("\n\na\n"));        
+        assertEquals("a", ScmActivityDisplayer.skipLineBreaks("\n\na\n\n"));
+        assertEquals("aa", ScmActivityDisplayer.skipLineBreaks("\n\naa\n"));
+        assertEquals("aa", ScmActivityDisplayer.skipLineBreaks("\n\naa\n\n"));
+        assertEquals("a ...", ScmActivityDisplayer.skipLineBreaks("\n\na\n\na\n"));
+        assertEquals("a ...", ScmActivityDisplayer.skipLineBreaks("\n\na\n\na\n\n"));
+    }
 }

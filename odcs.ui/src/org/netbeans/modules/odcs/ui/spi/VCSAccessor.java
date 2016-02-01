@@ -64,11 +64,43 @@ public abstract class VCSAccessor extends SourceAccessor<ODCSProject> {
     /**
      * Returns an action opening the search history for local sources associated 
      * with a given project and its repository.
+     * 
+     * @param projectHandle
+     * @param commitId
+     * @param repositoryName
+     * @return 
      */
     public abstract Action getOpenHistoryAction (ProjectHandle<ODCSProject> projectHandle, 
             String repositoryName,
             String commitId);
     
+    /**
+     * Returns an action opening the search history for local sources associated 
+     * with a given project and its repository.
+     * 
+     * @param projectHandle
+     * @param commitIdTo
+     * @param repositoryName
+     * @param commitIdFrom
+     * @return 
+     */
+    public abstract Action getOpenHistoryAction (ProjectHandle<ODCSProject> projectHandle, 
+            String repositoryName,
+            String commitIdFrom,
+            String commitIdTo);
+    
+    /**
+     * Returns an action opening the search history for local sources associated 
+     * with a given project and its repository.
+     * 
+     * @param projectHandle
+     * @param repositoryName
+     * @param branch
+     * @return 
+     */
+    public abstract Action getOpenHistoryBranchAction (ProjectHandle<ODCSProject> projectHandle, 
+            String repositoryName,
+            String branch);
     
     public abstract Action getOpenSourcesAction(ODCSUiServer server);
     

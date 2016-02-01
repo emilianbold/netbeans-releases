@@ -97,6 +97,16 @@ public class SvnApiProviderImpl implements VCSProvider {
     }
 
     @Override
+    public boolean openHistory(File workdir, String commitIdFrom, String commitIdTo) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean openHistoryBranch(File workdir, String branch) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    @Override
     public boolean providesLocalInit(String repositoryUrl) {
         return false;
     }
@@ -105,5 +115,4 @@ public class SvnApiProviderImpl implements VCSProvider {
     public boolean localInit(File localFolder, String repositoryUrl, PasswordAuthentication credentials) throws MalformedURLException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
 }

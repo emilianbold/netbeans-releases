@@ -273,7 +273,7 @@ public class RecentActivitiesPanel extends javax.swing.JPanel implements Activit
         String type = activity.getType();
         return (TASK.equals(type) && chbTask.isSelected())
                 || (REVIEW.equals(type) && chbReviews.isSelected())
-                || ((SCM_COMMIT.equals(type) || SCM_REPO.equals(type)) && chbScm.isSelected())
+                || ((SCM_PUSH.equals(type) || SCM_REPO.equals(type)) && chbScm.isSelected())
                 || (WIKI.equals(type) && chbWiki.isSelected())
                 || (RSS.equals(type) && chbRss.isSelected())
                 || (BUILD.equals(type) && chbBuilds.isSelected())
@@ -287,7 +287,7 @@ public class RecentActivitiesPanel extends javax.swing.JPanel implements Activit
 
         chbScm = new JCheckBox(NbBundle.getMessage(RecentActivitiesPanel.class, "LBL_Commits"), Utils.Settings.isShowScm()); // NOI18N
         chbScm.setOpaque(false);
-        chbScm.addActionListener(new ShowActionListener(SCM_COMMIT, SCM_REPO));
+        chbScm.addActionListener(new ShowActionListener(SCM_PUSH, SCM_REPO));
         pnlShow.add(chbScm, gbc);
         
         chbReviews = new JCheckBox(NbBundle.getMessage(RecentActivitiesPanel.class, "LBL_Reviews"), Utils.Settings.isShowReviews()); // NOI18N

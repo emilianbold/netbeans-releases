@@ -84,7 +84,7 @@ public class ActivityPanel extends javax.swing.JPanel implements Expandable, Act
             case TASK:
                 activityAccessor = new TaskActivityDisplayer(activity, projectHandle, maxWidth);
                 break;
-            case SCM_COMMIT:
+            case SCM_PUSH:
             case SCM_REPO:
                 activityAccessor = new ScmActivityDisplayer(activity, projectHandle, projectHandle.getTeamProject().getScmUrl(), maxWidth);
                 break;

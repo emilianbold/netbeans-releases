@@ -94,6 +94,15 @@ public final class Git {
         SearchHistoryAction.openSearch(org.netbeans.modules.git.Git.getInstance().getRepositoryRoot(file), 
                 file, file.getName(), commitId, commitId);
     }
+    
+    public static void openSearchHistoryBranch (File file, String branch) {
+        SearchHistoryAction.openSearch(org.netbeans.modules.git.Git.getInstance().getRepositoryRoot(file), new File[] {file}, branch, file.getName(), true);
+    }
+    
+    public static void openSearchHistory (File file, String commitIdFrom, String commitIdTo) {
+        SearchHistoryAction.openSearch(org.netbeans.modules.git.Git.getInstance().getRepositoryRoot(file), 
+                file, file.getName(), commitIdFrom, commitIdTo);
+    }
 
     public static void initializeRepository (File localFolder, String repositoryUrl, PasswordAuthentication credentials) throws URISyntaxException {
         GitClient client = null;
