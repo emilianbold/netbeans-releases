@@ -51,6 +51,7 @@ import org.netbeans.modules.docker.api.DockerException;
 import org.netbeans.modules.docker.api.DockerAction;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -117,8 +118,10 @@ public class TagTagAction extends NodeAction {
                     DockerAction facade = new DockerAction(source.getImage().getInstance());
                     facade.tag(source, repository, tag, force);
                 } catch (DockerException ex) {
-                    // FIXME inform user
                     LOGGER.log(Level.INFO, null, ex);
+                    String msg = ex.getLocalizedMessage();
+                    NotifyDescriptor desc = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(desc);
                 } finally {
                     handle.finish();
                 }
