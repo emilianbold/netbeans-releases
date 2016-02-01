@@ -41,14 +41,8 @@
  */
 package org.netbeans.modules.docker;
 
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.docker.api.DockerContainer;
 import org.netbeans.modules.docker.api.DockerEntity;
-import org.netbeans.modules.docker.api.DockerEvent;
-import static org.netbeans.modules.docker.api.DockerEvent.Status.DIE;
-import static org.netbeans.modules.docker.api.DockerEvent.Status.PAUSE;
-import static org.netbeans.modules.docker.api.DockerEvent.Status.START;
-import static org.netbeans.modules.docker.api.DockerEvent.Status.UNPAUSE;
 import org.netbeans.modules.docker.api.DockerTag;
 
 /**
