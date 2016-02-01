@@ -66,6 +66,8 @@ import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.View;
+import org.netbeans.api.editor.CaretInfo;
+import org.netbeans.api.editor.EditorCaret;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
@@ -159,7 +161,16 @@ public class HighlightsViewUtils {
             return 0d;
         }
         Caret caret = textComponent.getCaret();
-        Point magicCaretPoint = (caret != null) ? caret.getMagicCaretPosition() : null;
+        Point magicCaretPoint = null;
+        if(caret != null) {
+            if(caret instanceof EditorCaret) {
+                EditorCaret editorCaret = (EditorCaret) caret;
+                CaretInfo info = editorCaret.getCaretAt(offset);
+                magicCaretPoint = (info != null) ? info.getMagicCaretPosition() : null;
+            } else {
+                magicCaretPoint = caret.getMagicCaretPosition();
+            }
+        }
         double x;
         if (magicCaretPoint == null) {
             Shape offsetBounds = view.modelToViewChecked(offset, alloc, bias);

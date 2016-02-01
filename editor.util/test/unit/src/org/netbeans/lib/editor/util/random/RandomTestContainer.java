@@ -400,7 +400,7 @@ public final class RandomTestContainer extends PropertyProvider {
                     }
                     context.incrementOpCount();
                 }
-                container.dumpString(container.name() + " finished successfully."); // NOI18N
+                container.dumpString(container.name() + " finished successfully.\n"); // NOI18N
                 ok = true;
             } finally {
                 if (!ok) {
@@ -486,7 +486,7 @@ public final class RandomTestContainer extends PropertyProvider {
         
         private StringBuilder logOpBuilder = new StringBuilder(256);
 
-        private int maxOpsLogged = 10;
+        private int maxOpsLogged = 4; // By default log only last 4 operations
 
         private final Map<Object,Object> properties;
 
@@ -600,11 +600,12 @@ public final class RandomTestContainer extends PropertyProvider {
                 logOpBuilder.setLength(0);
                 addOpLog(opLog);
             }
-            if (!opSuccess) { // Dump the logs
+            if (true) { // Dump the op logs always (not only after failure) - might want to examine something
                 StringBuilder sb = new StringBuilder(1024);
-                while (!opLogs.isEmpty()) {
-                    sb.append(opLogs.removeFirst());
+                for (String opLog : opLogs) {
+                    sb.append(opLog);
                 }
+                opLogs.clear();
                 container.dumpString(sb.toString());
             }
         }

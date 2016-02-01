@@ -122,6 +122,12 @@ implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
         this.gapLength = elementData.length - size;
     }
     
+    private GapList(E[] data, int gapStart, int gapLength) {
+        this.elementData = data;
+        this.gapStart = gapStart;
+        this.gapLength = gapLength;
+    }
+    
     /**
      * Trims the capacity of this <tt>GapList</tt> instance to be the
      * list's current size.  An application can use this operation to minimize
@@ -313,6 +319,18 @@ implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
             // this shouldn't happen, since we are Cloneable
             throw new InternalError();
         }
+    }
+    
+    /**
+     * Create shallow copy of this gap list.
+     * @return copy of this gap list. 
+     * @since 1.63
+     */
+    public GapList<E> copy() {
+        int size = size();
+        E[] data = allocateElementsArray(size);
+        copyAllData(data);
+        return new GapList<E>(data, size, 0);
     }
 
     /**

@@ -44,12 +44,18 @@
 
 package org.netbeans.modules.editor.errorstripe.caret;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
+import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.CaretInfo;
+import org.netbeans.api.editor.EditorCaret;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 import org.openide.text.NbDocument;
@@ -64,42 +70,55 @@ public class CaretMarkProvider extends MarkProvider implements CaretListener {
     
     private static final RequestProcessor RP = new RequestProcessor("CaretMarkProvider");
     
-    private Mark mark;
+    private List<Mark> marks;
     private JTextComponent component;
     
     /** Creates a new instance of AnnotationMarkProvider */
     public CaretMarkProvider(JTextComponent component) {
         this.component = component;
         component.addCaretListener(this);
-        mark = createMark();
+        marks = createMarks();
     }
 
-    private Mark createMark() {
-        int offset = component.getCaretPosition(); //TODO: AWT?
+    private List<Mark> createMarks() {
         Document doc = component.getDocument();
-        int line = 0;
-        
-        if (doc instanceof StyledDocument) {
-            line = NbDocument.findLineNumber((StyledDocument) doc, offset);
+        if(!(doc instanceof StyledDocument)) {
+            return Collections.singletonList((Mark)new CaretMark(0));
         }
-        
-        return new CaretMark(line);
+        List<Mark> lines = new LinkedList<>();
+        Caret caret = component.getCaret();
+        if(caret instanceof EditorCaret) {
+            EditorCaret editorCaret = (EditorCaret) caret;
+            for (CaretInfo c : editorCaret.getCarets()) {
+                int offset = c.getDot();
+                int line = NbDocument.findLineNumber((StyledDocument) doc, offset);
+                lines.add(new CaretMark(line));
+            }
+        } else {
+            int offset = component.getCaretPosition(); //TODO: AWT?
+            int line = NbDocument.findLineNumber((StyledDocument) doc, offset);
+            lines.add(new CaretMark(line));
+        }
+        return lines;
     }
     
+    @Override
     public synchronized List<Mark> getMarks() {
-        return Collections.singletonList(mark);
+        return Collections.unmodifiableList(marks);
     }
 
+    @Override
     public void caretUpdate(CaretEvent e) {
         final List<Mark> old = getMarks();
         
-        mark = createMark();
+        marks = createMarks();
         
         final List<Mark> nue = getMarks();
         
         //Do not fire this event under the document's write lock
         //may deadlock with other providers:
         RP.post(new Runnable() {
+            @Override
             public void run() {
                 firePropertyChange(PROP_MARKS, old, nue);
             }

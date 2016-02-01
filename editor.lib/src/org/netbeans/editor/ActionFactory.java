@@ -46,6 +46,7 @@ package org.netbeans.editor;
 
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -87,9 +88,12 @@ import javax.swing.undo.UndoableEdit;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.View;
 import javax.swing.undo.UndoManager;
+import org.netbeans.api.editor.CaretInfo;
 import org.netbeans.api.editor.EditorActionNames;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
+import org.netbeans.api.editor.EditorUtilities;
+import org.netbeans.api.editor.EditorCaret;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.progress.ProgressUtils;
@@ -105,6 +109,7 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.actions.Presenter;
 
 /**
@@ -601,6 +606,112 @@ public class ActionFactory {
         }
     }
     
+    
+    @EditorActionRegistration(name = BaseKit.addSelectionElseCaretUpAction)
+    public static class AddSelectionElseCaretUpAction extends LocalBaseAction {
+
+        static final long serialVersionUID = 1L;
+
+        public AddSelectionElseCaretUpAction() {
+            super(MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
+        }
+
+        @Override
+        public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
+            if (target != null) {
+                Caret caret = target.getCaret();
+                if (caret != null && caret instanceof EditorCaret) {
+                    final EditorCaret editorCaret = (EditorCaret) caret;
+                    final BaseDocument doc = (BaseDocument) target.getDocument();
+                    doc.runAtomicAsUser(new Runnable() {
+                        @Override
+                        public void run() {
+                            List<Pair<Position, Position>> dots = new LinkedList<>();
+                            for (CaretInfo caret : editorCaret.getCarets()) {
+                                try {
+                                    int dot = caret.getDot();
+                                    Point p = caret.getMagicCaretPosition();
+                                    if (p == null) {
+                                        Rectangle r = target.modelToView(dot);
+                                        if (r != null) {
+                                            p = new Point(r.x, r.y);
+                                            caret.setMagicCaretPosition(p);
+                                        } else {
+                                            return; // model to view failed
+                                        }
+                                    }
+                                    try {
+                                        dot = Utilities.getPositionAbove(target, dot, p.x);
+                                        Position dotPos = doc.createPosition(dot);
+                                        dots.add(Pair.of(dotPos, dotPos));
+                                    } catch (BadLocationException e) {
+                                        // the position stays the same
+                                    }
+                                } catch (BadLocationException ex) {
+                                    target.getToolkit().beep();
+                                }
+                            }
+                            editorCaret.addCarets(dots);
+                        }
+                    });
+                }
+            }
+        }
+    }
+    
+    @EditorActionRegistration(name = BaseKit.addSelectionElseCaretDownAction)
+    public static class AddSelectionElseCaretDownAction extends LocalBaseAction {
+
+        static final long serialVersionUID = 1L;
+
+        public AddSelectionElseCaretDownAction() {
+            super(MAGIC_POSITION_RESET | ABBREV_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
+        }
+
+        @Override
+        public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
+            if (target != null) {
+                Caret caret = target.getCaret();
+                if(caret != null && caret instanceof EditorCaret) {
+                    final EditorCaret editorCaret = (EditorCaret) caret;
+
+                    final BaseDocument doc = (BaseDocument) target.getDocument();
+                    doc.runAtomicAsUser(new Runnable() {
+                        @Override
+                        public void run() {
+                            List<Pair<Position, Position>> dots = new LinkedList<>();
+                            for (CaretInfo caret : editorCaret.getCarets()) {
+                                try {
+                                    int dot = caret.getDot();
+                                    Point p = caret.getMagicCaretPosition();
+                                    if (p == null) {
+                                        Rectangle r = target.modelToView(dot);
+                                        if (r != null) {
+                                            p = new Point(r.x, r.y);
+                                            caret.setMagicCaretPosition(p);
+                                        } else {
+                                            return; // model to view failed
+                                        }
+                                    }
+                                    try {
+                                        dot = Utilities.getPositionBelow(target, dot, p.x);
+                                        Position dotPos = doc.createPosition(dot);
+                                        dots.add(Pair.of(dotPos, dotPos));
+                                    } catch (BadLocationException e) {
+                                        // position stays the same
+                                    }
+                                } catch (BadLocationException ex) {
+                                    target.getToolkit().beep();
+                                }
+                            }
+                            editorCaret.addCarets(dots);
+                        }
+                    });
+                }
+            }
+        }
+    }
+    
     static void removeLineByLine(Document doc, int startPosition, int length) throws BadLocationException {
         String text = doc.getText(startPosition, length);
         BadLocationException ble = null;
@@ -854,7 +965,9 @@ public class ActionFactory {
         }
     }
 
-    /** Switch to overwrite mode or back to insert mode */
+    /** Switch to overwrite mode or back to insert mode
+     * @deprecated Replaced by ToggleTypingModeAction in editor.actions module
+     */
     @EditorActionRegistration(name = BaseKit.toggleTypingModeAction)
     public static class ToggleTypingModeAction extends LocalBaseAction {
 
@@ -866,12 +979,11 @@ public class ActionFactory {
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
-                EditorUI editorUI = Utilities.getEditorUI(target);
-                Boolean overwriteMode = (Boolean)editorUI.getProperty(EditorUI.OVERWRITE_MODE_PROPERTY);
+                Boolean overwriteMode = (Boolean) target.getClientProperty(EditorUtilities.CARET_OVERWRITE_MODE_PROPERTY);
                 // Now toggle
                 overwriteMode = (overwriteMode == null || !overwriteMode.booleanValue())
                                 ? Boolean.TRUE : Boolean.FALSE;
-                editorUI.putProperty(EditorUI.OVERWRITE_MODE_PROPERTY, overwriteMode);
+                target.putClientProperty(EditorUtilities.CARET_OVERWRITE_MODE_PROPERTY, overwriteMode);
             }
         }
     }
