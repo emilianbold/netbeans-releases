@@ -2073,14 +2073,12 @@ unknown_posttype_declaration_specifiers_list
 unknown_postfunction_declarator_specifiers
     {String s;}
     :
-        (({isCPlusPlus()}? (literal_ident)+ is_post_declarator_token)=> 
-            (options {greedy = true;} : s = literal_ident!)+
-        | 
-         // For C we should eliminate specifiers if only one ident is found.
-         // This is because of K&R style where two (and more if macroses are involved) 
-         // idents in a row could be declaration of parameter
-         ({isC()}? literal_ident is_post_declarator_token)=> 
-            s = literal_ident!
+        (   
+            (function_K_R_parameter_list LCURLY)=>
+                // Do not consume K&R params.
+        |
+            ((literal_ident)+ is_post_declarator_token)=> 
+                (options {greedy = true;} : s = literal_ident!)+
         |
             // Empty alternative
         )
@@ -3117,6 +3115,8 @@ ctor_direct_declarator[boolean definition] returns [boolean isCtor = false]
         ((ASSIGNEQUAL OCTALINT) => ASSIGNEQUAL OCTALINT)?
         // IZ 136239 : C++ grammar does not allow attributes after constructor
         (function_attribute_specification)?
+
+        unknown_postfunction_declarator_specifiers
     ;
 
 qualified_ctor_id returns [String q = ""]
@@ -3209,7 +3209,7 @@ dtor_declarator[boolean definition]
 	LPAREN (LITERAL_void)? RPAREN
         //{declaratorEndParameterList(definition);}
         (ASSIGNEQUAL OCTALINT)?	
-	(exception_specification)?        
+	(exception_specification)?      
 	;
 
 protected
@@ -3261,7 +3261,9 @@ dtor_direct_declarator[boolean definition]
 
         ((ASSIGNEQUAL OCTALINT) => ASSIGNEQUAL OCTALINT)?
 
-        (options {greedy=true;} :function_attribute_specification)?
+        (options {greedy=true;} : function_attribute_specification)?
+
+        unknown_postfunction_declarator_specifiers
 	;
 
 qualified_dtor_id returns [String q = ""]
