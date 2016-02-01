@@ -325,6 +325,7 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(connectionSettings, org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.connectionSettings.text")); // NOI18N
+        connectionSettings.setToolTipText(org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.connectionSettings.toolTipText")); // NOI18N
         connectionSettings.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 connectionSettingsActionPerformed(evt);
@@ -332,6 +333,7 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
         });
 
         authenticationsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        authenticationsList.setToolTipText(org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.authenticationsList.toolTipText")); // NOI18N
         jScrollPane1.setViewportView(authenticationsList);
 
         org.openide.awt.Mnemonics.setLocalizedText(downButton, org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.downButton.text")); // NOI18N
@@ -344,8 +346,10 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
 
         preferredAuthenticationsLabel.setLabelFor(authenticationsList);
         org.openide.awt.Mnemonics.setLocalizedText(preferredAuthenticationsLabel, org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.preferredAuthenticationsLabel.text")); // NOI18N
+        preferredAuthenticationsLabel.setToolTipText(org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.preferredAuthenticationsLabel.toolTipText")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(upButton, org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.upButton.text")); // NOI18N
+        upButton.setToolTipText(org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.upButton.toolTipText")); // NOI18N
         upButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 upButtonActionPerformed(evt);
@@ -354,6 +358,9 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
 
         timeoutLabel.setLabelFor(timeoutSpinner);
         org.openide.awt.Mnemonics.setLocalizedText(timeoutLabel, org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.timeoutLabel.text")); // NOI18N
+        timeoutLabel.setToolTipText(org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.timeoutLabel.toolTipText")); // NOI18N
+
+        timeoutSpinner.setToolTipText(org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.timeoutSpinner.toolTipText")); // NOI18N
 
         javax.swing.GroupLayout connectionSettingsPanelLayout = new javax.swing.GroupLayout(connectionSettingsPanel);
         connectionSettingsPanel.setLayout(connectionSettingsPanelLayout);
