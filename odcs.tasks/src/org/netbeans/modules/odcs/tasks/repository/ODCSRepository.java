@@ -388,7 +388,7 @@ public class ODCSRepository implements PropertyChangeListener {
                         CloudDevConstants.QUERY_CRITERIA, 
                         new ColumnCriteria(
                             QueryParameters.Column.SUMMARY.getColumnName(), 
-                            Criteria.Operator.EQUALS, 
+                            Criteria.Operator.STRING_CONTAINS, 
                             criteria).toQueryString()); 
             SimpleQueryCommand cmd = MylynSupport.getInstance().getCommandFactory().createSimpleQueryCommand(taskRepository, iquery);
             getExecutor().execute(cmd, true, false);
