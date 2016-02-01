@@ -155,12 +155,13 @@ public abstract class Configuration implements ProjectConfiguration {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(getDisplayName());
+        // Please note that toString() is used in some UIs
+        // And I can not be sure I know all the places it is used in a UI :(
         if (isDefault()) {
-            sb.append(' ').append(getString("ActiveTxt"));
+            return getDisplayName() + " " + getString("ActiveTxt"); // NOI18N
+        } else {
+            return getDisplayName();
         }
-        sb.append(isValid() ? " [valid] @" : " [invalid] @").append(System.identityHashCode(this)); // NOI18N
-        return sb.toString();
     }
 
     public void addAuxObject(ConfigurationAuxObject pao) {
