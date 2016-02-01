@@ -104,6 +104,10 @@ public class BuildTask implements Runnable {
         return instance;
     }
 
+    public WeakReference<InputOutput> getInputOutput() {
+        return inputOutput;
+    }
+
     public File getBuildContext() {
         return buildContext;
     }
@@ -146,7 +150,8 @@ public class BuildTask implements Runnable {
             return;
         }
         DockerAction facade = new DockerAction(inst);
-        final FutureTask<DockerImage> task = facade.createBuildTask(buildContext, dockerfile, repository, tag, pull, noCache, new BuildEvent.Listener() {
+        final FutureTask<DockerImage> task = facade.createBuildTask(buildContext,
+                dockerfile, repository, tag, pull, noCache, new BuildEvent.Listener() {
             @Override
             public void onEvent(BuildEvent event) {
                 if (event.isUpload()) {

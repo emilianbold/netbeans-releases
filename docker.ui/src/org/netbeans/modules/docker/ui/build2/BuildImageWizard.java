@@ -46,9 +46,8 @@ import java.io.File;
 import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.concurrent.FutureTask;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -60,6 +59,7 @@ import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.api.DockerAction;
 import org.netbeans.modules.docker.api.DockerImage;
 import org.netbeans.modules.docker.api.DockerIntegration;
+import org.netbeans.modules.docker.ui.build2.InputOutputCache.CachedInputOutput;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileAttributeEvent;
@@ -70,9 +70,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
 /**
@@ -98,8 +96,6 @@ public class BuildImageWizard {
     public static final boolean PULL_DEFAULT = false;
 
     public static final boolean NO_CACHE_DEFAULT = false;
-
-    private static final Map<InputOutput, Pair<RerunAction, StopAction>> IO_CACHE = new WeakHashMap<>();
 
     private final RequestProcessor requestProcessor = new RequestProcessor(BuildImageWizard.class);
 
@@ -198,23 +194,18 @@ public class BuildImageWizard {
             final String dockerfile, final String repository, final String tag,
             final boolean pull, final boolean noCache) {
 
+        assert SwingUtilities.isEventDispatchThread();
+
         RerunAction r = new RerunAction(requestProcessor);
         StopAction s = new StopAction();
 
-        final InputOutput io;
-        synchronized (BuildImageWizard.class) {
-            io = IOProvider.getDefault().getIO(Bundle.MSG_Building(buildContext),
-                    false, new Action[]{r, s}, null);
+        List<Action> actions = new ArrayList<>(2);
+        Collections.addAll(actions, r, s);
+        final CachedInputOutput ioData = InputOutputCache.get(Bundle.MSG_Building(buildContext), actions);
+        r = (RerunAction) ioData.getActions().get(0);
+        s = (StopAction) ioData.getActions().get(1);
 
-            Pair<RerunAction, StopAction> actions = IO_CACHE.get(io);
-            if (actions == null) {
-                IO_CACHE.put(io, Pair.of(r, s));
-            } else {
-                r = actions.first();
-                s = actions.second();
-            }
-        }
-
+        final InputOutput io = ioData.getInputOutput();
         final RerunAction rerun = r;
         final StopAction stop = s;
 
@@ -224,12 +215,14 @@ public class BuildImageWizard {
         requestProcessor.post(new Runnable() {
             @Override
             public void run() {
-                File file = null;
+                File file;
                 if (dockerfile != null) {
                     file = new File(dockerfile);
                     if (!file.isAbsolute()) {
                         file = new File(buildContext, dockerfile);
                     }
+                } else {
+                    file = new File(buildContext, DockerAction.DOCKER_FILE);
                 }
 
                 BuildTask.Hook hook = new BuildTask.Hook() {
@@ -246,6 +239,7 @@ public class BuildImageWizard {
 
                     @Override
                     public void onFinish() {
+                        InputOutputCache.release(ioData);
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
                             public void run() {
@@ -264,36 +258,6 @@ public class BuildImageWizard {
                 task.run();
             }
         });
-    }
-
-    private static class StopAction extends AbstractAction {
-
-        private FutureTask<DockerImage> task;
-
-        @NbBundle.Messages("LBL_Stop=Stop")
-        public StopAction() {
-            setEnabled(false); // initially, until ready
-            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/docker/ui/resources/action_stop.png", false)); // NOI18N
-            putValue(Action.SHORT_DESCRIPTION, Bundle.LBL_Stop());
-        }
-
-        public synchronized void configure(FutureTask<DockerImage> task) {
-            this.task = task;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            setEnabled(false); // discourage repeated clicking
-
-            FutureTask<DockerImage> actionTask;
-            synchronized (this) {
-                actionTask = task;
-            }
-
-            if (actionTask != null) {
-                actionTask.cancel(true);
-            }
-        }
     }
 
     private static class RerunAction extends AbstractAction {
@@ -330,7 +294,15 @@ public class BuildImageWizard {
         public void actionPerformed(ActionEvent e) {
             setEnabled(false); // discourage repeated clicking
 
-            requestProcessor.post(buildTask);
+            InputOutput io = buildTask.getInputOutput().get();
+            if (io != null) {
+                CachedInputOutput ioData = InputOutputCache.get(io);
+                if (ioData != null) {
+                    // should be always non null as the other allocation happens
+                    // from EDT as well and thus one allocation only happens
+                    requestProcessor.post(buildTask);
+                }
+            }
         }
 
         public synchronized void attach(BuildTask buildTask) {
@@ -365,6 +337,36 @@ public class BuildImageWizard {
                     setEnabled(false);
                 }
             });
+        }
+    }
+
+    private static class StopAction extends AbstractAction {
+
+        private FutureTask<DockerImage> task;
+
+        @NbBundle.Messages("LBL_Stop=Stop")
+        public StopAction() {
+            setEnabled(false); // initially, until ready
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/docker/ui/resources/action_stop.png", false)); // NOI18N
+            putValue(Action.SHORT_DESCRIPTION, Bundle.LBL_Stop());
+        }
+
+        public synchronized void configure(FutureTask<DockerImage> task) {
+            this.task = task;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            setEnabled(false); // discourage repeated clicking
+
+            FutureTask<DockerImage> actionTask;
+            synchronized (this) {
+                actionTask = task;
+            }
+
+            if (actionTask != null) {
+                actionTask.cancel(true);
+            }
         }
     }
 
