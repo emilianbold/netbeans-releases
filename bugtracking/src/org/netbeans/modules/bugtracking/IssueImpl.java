@@ -61,7 +61,7 @@ import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
  *
  * @author Tomas Stupka
  */
-public final class IssueImpl<R, I> {
+public final class IssueImpl<R, I> implements Comparable<IssueImpl> {
     /** 
      * public for testing purposes
      */
@@ -310,6 +310,15 @@ public final class IssueImpl<R, I> {
     
     private void issueDeleted () {
         TaskSchedulingManager.getInstance().taskDeleted(IssueImpl.this);
+    }
+
+    @Override
+    public int compareTo(IssueImpl i) {
+        if(data instanceof Comparable) {
+            return ((Comparable)data).compareTo(i.data);
+        } else {
+            return getID().compareTo(i.getID());
+        }
     }
 
 }

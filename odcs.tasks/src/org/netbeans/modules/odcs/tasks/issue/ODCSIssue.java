@@ -98,7 +98,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Tomas Stupka
  */
-public class ODCSIssue extends AbstractNbTaskWrapper {
+public class ODCSIssue extends AbstractNbTaskWrapper implements Comparable<ODCSIssue> {
 
     private final ODCSRepository repository;
 
@@ -997,6 +997,17 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     public String getPriorityID() {
         final Priority priority = getPriority();
         return priority != null ? priority.getId().toString() : ""; // NOI18N
+    }
+
+    @Override
+    public int compareTo(ODCSIssue o) {
+        if(getID() == null) {
+            return -1;
+        }
+        if(o.getID() == null) {
+            return 1;
+        }
+        return Long.compare(Long.parseLong(getID()), Long.parseLong(o.getID()));
     }
 
     private static class IssueFieldColumnDescriptor extends ColumnDescriptor<String> {

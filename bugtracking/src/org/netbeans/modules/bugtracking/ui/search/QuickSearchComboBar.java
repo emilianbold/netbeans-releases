@@ -47,7 +47,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.util.Collection;
 import java.util.ResourceBundle;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -68,14 +67,14 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import org.netbeans.modules.bugtracking.APIAccessor;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.ui.search.PopupItem.IssueItem;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -109,8 +108,20 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
                 return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             }
         });
-        command.setEditor(new ComboEditor(command.getEditor()));
+        ComboEditor comboEditor = new ComboEditor(command.getEditor());
+        command.setEditor(comboEditor);
         displayer = new QuickSearchPopup(this);
+        
+        JTextField editor = comboEditor.editor;
+        command.addPopupMenuListener(new PopupMenuListener() {
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                displayer.maybeEvaluate(editor.getText());
+                command.getUI().setPopupVisible(command, false);
+            }
+            @Override public void popupMenuWillBecomeInvisible(PopupMenuEvent e) { }
+            @Override public void popupMenuCanceled(PopupMenuEvent e) { }
+        });        
     }
 
     public static Issue selectIssue(String message, Repository repository, JPanel caller, HelpCtx helpCtx) {
@@ -185,8 +196,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
     
     public void setRepository(RepositoryImpl repositoryImpl) {
         displayer.setRepository(repositoryImpl);
-        Collection<IssueImpl> issues = BugtrackingManager.getInstance().getRecentIssues(repositoryImpl);
-        command.setModel(new DefaultComboBoxModel(issues.toArray(new IssueImpl[issues.size()])));
+        command.setModel(new DefaultComboBoxModel());
         command.setSelectedItem(null);
     }
     
@@ -291,7 +301,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
 
     @Override
     public void requestFocus() {
-        super.requestFocus();
+        super.requestFocus();        
         command.requestFocus();
     }
 
@@ -437,11 +447,12 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
                     invokeSelectedItem();
                 }
             } else if ((evt.getKeyCode()) == KeyEvent.VK_ESCAPE) {
-                if(displayer.isVisible()) {
-                    returnFocus();
-                    displayer.clearModel();
-                    evt.consume();
-                }
+                    if(displayer.isVisible()) {
+                        returnFocus();
+                        displayer.clearModel();
+                        requestFocus();
+                        evt.consume();
+                    }
             }
         }
     }
