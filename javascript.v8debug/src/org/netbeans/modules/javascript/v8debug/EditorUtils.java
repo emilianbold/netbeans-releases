@@ -65,7 +65,7 @@ public final class EditorUtils {
     private EditorUtils() {}
     
     public static Line getLine(V8Debugger dbg, FileObject fo, int line) {
-        SourceMapsTranslator smtr = SourceMapsTranslatorManager.get(fo);
+        SourceMapsTranslator smtr = SourceMapsTranslatorManager.get(dbg);
         if (smtr != null) {
             SourceMapsTranslator.Location loc = new SourceMapsTranslator.Location(fo, line, 0);
             loc = smtr.getSourceLocation(loc);

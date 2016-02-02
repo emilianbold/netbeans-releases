@@ -77,7 +77,7 @@ public class TomcatModuleConfigurationFactory implements ModuleConfigurationFact
     public ModuleConfiguration create(J2eeModule j2eeModule) throws ConfigurationException {
         // XXX is there a better value for unknown tomcat ?
         return new TomcatModuleConfiguration(j2eeModule,
-                version != null ? version : TomcatVersion.TOMCAT_80, null);
+                version != null ? version : TomcatVersion.TOMCAT_90, null);
     }
 
     @Override

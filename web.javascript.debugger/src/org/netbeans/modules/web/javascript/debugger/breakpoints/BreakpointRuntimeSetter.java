@@ -64,6 +64,8 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.common.api.RemoteFileCache;
+import org.netbeans.modules.web.common.sourcemap.SourceMapsScanner;
+import org.netbeans.modules.web.common.sourcemap.SourceMapsTranslator;
 import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
@@ -106,10 +108,10 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
         }
         DebuggerManager.getDebuggerManager().addDebuggerListener(this);
         d.addScriptsListener(this);
-        createBreakpointImpls();
+        createBreakpointImpls(pc.getProject());
     }
     
-    private void createBreakpointImpls() {
+    private void createBreakpointImpls(Project p) {
         Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
         List<WebKitBreakpointManager> toAdd = new ArrayList<>();
         synchronized (breakpointImpls) {
@@ -132,9 +134,13 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
                 }
             }
         }
-        for (WebKitBreakpointManager bm : toAdd) {
-            if (bm.canAdd()) {
-                bm.add();
+        if (!toAdd.isEmpty()) {
+            SourceMapsTranslator scannedSMT = SourceMapsScanner.getInstance().scan(p);
+            MiscEditorUtil.registerProjectsSourceMapTranslator(d, scannedSMT);
+            for (WebKitBreakpointManager bm : toAdd) {
+                if (bm.canAdd()) {
+                    bm.add();
+                }
             }
         }
     }
@@ -187,6 +193,8 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
                 return ;
             }
         }
+        SourceMapsTranslator scannedSMT = SourceMapsScanner.getInstance().scan(pc.getProject());
+        MiscEditorUtil.registerProjectsSourceMapTranslator(d, scannedSMT);
         final WebKitBreakpointManager bm = (lb != null) ?
                                             createWebKitBreakpointManager(lb) :
                                             createWebKitBreakpointManager(ab);

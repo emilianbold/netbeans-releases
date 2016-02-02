@@ -64,7 +64,7 @@ public final class SourceMapsTranslatorManager {
         }
         SourceMapsTranslator smt = TRANSLATORS.get(debugger);
         if (smt == null) {
-            smt = new SourceMapsTranslator();
+            smt = SourceMapsTranslator.create();
             TRANSLATORS.put(debugger, smt);
         }
         return smt;

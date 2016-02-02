@@ -267,7 +267,9 @@ public final class ExternalProcessBuilder implements Callable<Process> {
         org.netbeans.api.extexecution.base.ProcessBuilder builder =
                 org.netbeans.api.extexecution.base.ProcessBuilder.getLocal();
         builder.setExecutable(executable);
-        builder.setWorkingDirectory(workingDirectory.getPath());
+        if (workingDirectory != null) {
+            builder.setWorkingDirectory(workingDirectory.getPath());
+        }
         builder.setArguments(arguments);
         builder.setRedirectErrorStream(redirectErrorStream);
         Environment env  = builder.getEnvironment();

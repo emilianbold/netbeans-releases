@@ -43,101 +43,51 @@
 package org.netbeans.modules.web.common.sourcemap;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
  * Translator of code locations, based on source maps.
- * An instance of this class caches all registered source maps translations in
- * both ways. Do not hold a strong reference to an instance of this class after
- * it's translations are not needed any more.
  * 
  * @author Antoine Vandecreme, Martin Entlicher
  */
-public final class SourceMapsTranslator {
+public interface SourceMapsTranslator {
     
-    private static final Logger LOG = Logger.getLogger(SourceMapsTranslator.class.getName());
-    
-    private static final String SOURCE_MAPPING_URL = "//# sourceMappingURL=";   // NOI18N
-    
-    private static final DirectMapping NO_MAPPING = new DirectMapping();
-    private final Map<FileObject, DirectMapping> directMappings = new HashMap<>();
-    private final Map<FileObject, InverseMapping> inverseMappings = new HashMap<>();
-    
-    public SourceMapsTranslator() {
+    /**
+     * Create a default implementation of source maps translator.
+     * It caches all registered source maps translations in both ways.
+     * Do not hold a strong reference to to this translator after
+     * it's translations are not needed any more.
+     * @return A new default implementation of source maps translator.
+     */
+    public static SourceMapsTranslator create() {
+        return new SourceMapsTranslatorImpl();
     }
     
-    public boolean registerTranslation(FileObject source, String sourceMapFileName) {
-        DirectMapping dm = getMapping(source, sourceMapFileName);
-        return dm != NO_MAPPING;
-    }
+    /**
+     * Register a new source map.
+     * @param source the generated file source
+     * @param sourceMapFileName file name of the associated source map file
+     * @return <code>true</code> when the mapping was successfully parsed and registered,
+     *         <code>false</code> otherwise.
+     */
+    public boolean registerTranslation(FileObject source, String sourceMapFileName);
     
-    private DirectMapping getMapping(FileObject source, String sourceMapFileName) {
-        DirectMapping dm;
-        synchronized (directMappings) {
-            dm = directMappings.get(source);
-            if (dm != null) {
-                if (sourceMapFileName == null) {
-                    // return the cached one
-                    return dm;
-                } else {
-                    // load the source map
-                    dm = null;
-                }
-            }
-            if (sourceMapFileName == null) {
-                String lastLine = null;
-                try {
-                    for (String line : source.asLines()) {
-                        lastLine = line;
-                    }
-                    if (lastLine != null && lastLine.startsWith(SOURCE_MAPPING_URL)) {
-                        sourceMapFileName = lastLine.substring(SOURCE_MAPPING_URL.length()).trim();
-                    } else {
-                        dm = NO_MAPPING;
-                    }
-                } catch (IOException ioex) {
-                    dm = NO_MAPPING;
-                }
-            }
-            if (dm == null) {
-                File sourceMapFile = new File(sourceMapFileName);
-                FileObject fo;
-                if (sourceMapFile.isAbsolute()) {
-                    fo = FileUtil.toFileObject(FileUtil.normalizeFile(sourceMapFile));
-                } else {
-                    fo = source.getParent().getFileObject(sourceMapFileName);
-                }
-                if (fo == null) {
-                    dm = NO_MAPPING;
-                } else {
-                    try {
-                        dm = new DirectMapping(source.getParent(), SourceMap.parse(fo.asText()));
-                    } catch (IOException | IllegalArgumentException ex) {
-                        LOG.log(Level.INFO, "Could not read source map "+fo, ex);
-                        dm = NO_MAPPING;
-                    }
-                }
-            }
-            directMappings.put(source, dm);
-        }
-        if (dm != NO_MAPPING) { // we created new mapping, register the inverse
-            synchronized (inverseMappings) {
-                for (String src : dm.sourceMap.getSources()) {
-                    FileObject fo = dm.parentFolder.getFileObject(src);
-                    inverseMappings.put(fo, new InverseMapping(src, source, dm.sourceMap));
-                }
-            }
-        }
-        return dm;
-    }
+    /**
+     * Register a new source map.
+     * @param source the generated file source
+     * @param sourceMap the associated source map
+     * @return <code>true</code> when the mapping was successfully registered,
+     *         <code>false</code> otherwise.
+     */
+    public boolean registerTranslation(FileObject source, SourceMap sourceMap);
+    
+    /**
+     * Unregister a translation for the given file.
+     * @param source the generated file source for which the translation is to be removed.
+     */
+    public void unregisterTranslation(FileObject source);
     
     /**
      * Translate a location in the compiled file to the location in the source file.
@@ -146,9 +96,7 @@ public final class SourceMapsTranslator {
      * @return corresponding location in the source file, or the original passed
      *         location if the source map is not found, or does not provide the translation.
      */
-    public Location getSourceLocation(Location loc) {
-        return getSourceLocation(loc, null);
-    }
+    public Location getSourceLocation(Location loc);
     
     /**
      * Translate a location in the compiled file to the location in the source file.
@@ -158,15 +106,7 @@ public final class SourceMapsTranslator {
      * @return corresponding location in the source file, or the original passed
      *         location if the source map does not provide the translation.
      */
-    public Location getSourceLocation(Location loc, String sourceMapFileName) {
-        DirectMapping dm = getMapping(loc.getFile(), sourceMapFileName);
-        Location mloc = dm.getMappedLocation(loc.getLine(), loc.getColumn());
-        if (mloc != null) {
-            return mloc;
-        } else {
-            return loc;
-        }
-    }
+    public Location getSourceLocation(Location loc, String sourceMapFileName);
     
     /**
      * Translate a location in the source file to the location in the compiled file.
@@ -175,86 +115,14 @@ public final class SourceMapsTranslator {
      * @return corresponding location in the compiled file, or the original passed
      *         location if no registered source map provides the appropriate translation.
      */
-    public Location getCompiledLocation(Location loc) {
-        InverseMapping im;
-        synchronized (inverseMappings) {
-            im = inverseMappings.get(loc.getFile());
-        }
-        if (im == null) {
-            return loc;
-        }
-        Location mloc = im.getMappedLocation(loc.getLine(), loc.getColumn());
-        if (mloc != null) {
-            return mloc;
-        } else {
-            return loc;
-        }
-    }
+    public Location getCompiledLocation(Location loc);
     
-    public List<FileObject> getSourceFiles(FileObject compiledFile) {
-        DirectMapping dm = getMapping(compiledFile, null);
-        List<String> sourcePaths = dm.sourceMap.getSources();
-        List<FileObject> sourceFiles = new ArrayList<>(sourcePaths.size());
-        for (String sp : sourcePaths) {
-            FileObject sourceFile = Location.getSourceFile(sp, dm.parentFolder);
-            if (sourceFile != null) {
-                sourceFiles.add(sourceFile);
-            }
-        }
-        return sourceFiles;
-    }
-    
-    
-    private static class DirectMapping {
-
-        private final FileObject parentFolder;
-        private final SourceMap sourceMap;
-        
-        DirectMapping() {
-            this.parentFolder = null;
-            this.sourceMap = null;
-        }
-
-        DirectMapping(FileObject parentFolder, SourceMap sourceMap) {
-            this.parentFolder = parentFolder;
-            this.sourceMap = sourceMap;
-        }
-        
-        Location getMappedLocation(int line, int column) {
-            if (sourceMap == null) {
-                return null;
-            }
-            Mapping mapping = sourceMap.findMapping(line, column);
-            if (mapping == null) {
-                return null;
-            } else {
-                return new Location(sourceMap, mapping, parentFolder);
-            }
-        }
-    }
-    
-    private static class InverseMapping {
-        
-        private final String sourceName;
-        private final FileObject source;
-        private final SourceMap sourceMap;
-
-        private InverseMapping(String sourceName, FileObject source, SourceMap sourceMap) {
-            this.sourceName = sourceName;
-            this.source = source;
-            this.sourceMap = sourceMap;
-        }
-
-        private Location getMappedLocation(int line, int column) {
-            Mapping mapping = sourceMap.findInverseMapping(sourceName, line, column);
-            if (mapping == null) {
-                return null;
-            } else {
-                return new Location(source, mapping.getOriginalLine(), mapping.getOriginalColumn());
-            }
-        }
-        
-    }
+    /**
+     * Get a list of source files that were compiled into the given file.
+     * @param compiledFile The compiled (generated) file
+     * @return a list of source files, or <code>null</code> when no mapping was found.
+     */
+    public List<FileObject> getSourceFiles(FileObject compiledFile);
     
     public static final class Location {
         
