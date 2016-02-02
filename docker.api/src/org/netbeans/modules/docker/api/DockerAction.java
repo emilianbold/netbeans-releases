@@ -962,15 +962,20 @@ public class DockerAction {
     boolean ping() {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
         try {
-            URL httpUrl = createURL(instance.getUrl(), "/_ping");
-            HttpURLConnection conn = createConnection(httpUrl);
+            URL realUrl = createURL(instance.getUrl(), null);
+            Socket s = createSocket(realUrl);
             try {
-                conn.setRequestMethod("GET");
-                return conn.getResponseCode() == HttpURLConnection.HTTP_OK;
-            } finally {
-                conn.disconnect();
-            }
+                OutputStream os = s.getOutputStream();
+                // FIXME should we use default headers ?
+                os.write(("GET /_ping HTTP/1.1\r\n\r\n").getBytes("ISO-8859-1"));
+                os.flush();
 
+                InputStream is = s.getInputStream();
+                HttpUtils.Response response = HttpUtils.readResponse(is);
+                return response.getCode() == HttpURLConnection.HTTP_OK;
+            } finally {
+                closeSocket(s);
+            }
         } catch (MalformedURLException ex) {
             LOGGER.log(Level.INFO, null, ex);
         } catch (IOException ex) {
