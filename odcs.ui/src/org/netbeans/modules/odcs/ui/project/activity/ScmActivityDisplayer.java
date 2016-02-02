@@ -67,6 +67,7 @@ import oracle.clouddev.server.profile.activity.client.api.Activity;
 import org.netbeans.modules.bugtracking.commons.TextUtils;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.odcs.api.ODCSProject;
+import org.netbeans.modules.odcs.client.api.ActivityTypes;
 import org.netbeans.modules.odcs.ui.project.LinkLabel;
 import org.netbeans.modules.odcs.ui.spi.VCSAccessor;
 import org.netbeans.modules.odcs.ui.utils.Utils;
@@ -106,7 +107,7 @@ public final class ScmActivityDisplayer extends ActivityDisplayer implements Act
     }
 
     private boolean isRepoActivity() {
-        return activity.getType().equals(SCM_REPO);
+        return activity.getType().equals(ActivityTypes.SCM_REPO);
     }
 
     @Override

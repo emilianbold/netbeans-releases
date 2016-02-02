@@ -521,7 +521,7 @@ public class ODCSBuilderAccessorTest {
 
                 @Override
                 public List<Activity> getRecentActivities(
-                        String projectId) throws ODCSException {
+                        String projectId, int offset, int count) throws ODCSException {
                     throw unsupportedByMock();
                 }
 

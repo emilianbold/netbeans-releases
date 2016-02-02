@@ -39,7 +39,11 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.odcs.ui.project.activity;
+package org.netbeans.modules.odcs.client.api;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public interface ActivityTypes {
     
@@ -52,4 +56,5 @@ public interface ActivityTypes {
     public static final String DEPLOYMENT = "DEPLOYMENT"; // NOI18N
     public static final String RSS = "RSS"; // NOI18N
 
+    public static final List<String> NAMES = Arrays.asList(SCM_PUSH, SCM_REPO, REVIEW, TASK, WIKI, BUILD, DEPLOYMENT, RSS);
 }

@@ -62,7 +62,7 @@ public class OdcsSettings {
      * default values in fields
      */
     private static final boolean DEFAULT_AUTO_SYNC = Boolean.parseBoolean(System.getProperty("odcs.autosync", "true"));
-    private static final int DEFAULT_AUTO_SYNC_VALUE = Integer.parseInt(System.getProperty("odcs.autosync.interval", "15"));
+    private static final int DEFAULT_AUTO_SYNC_VALUE = Integer.parseInt(System.getProperty("odcs.autosync.interval", "5"));
 
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
 

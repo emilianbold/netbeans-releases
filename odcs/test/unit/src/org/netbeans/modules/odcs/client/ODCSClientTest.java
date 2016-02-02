@@ -237,7 +237,7 @@ public class ODCSClientTest extends NbTestCase  {
         ODCSClient client = getClient();
         Project project = client.getProjectById(MY_PROJECT);
         
-        List<Activity> activities = client.getRecentActivities(project.getIdentifier());
+        List<Activity> activities = client.getRecentActivities(project.getIdentifier(), 0, 100);
         assertNotNull(activities);
         assertTrue(activities.size() > 0);
         
