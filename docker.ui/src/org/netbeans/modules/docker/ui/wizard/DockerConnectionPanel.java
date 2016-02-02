@@ -130,7 +130,9 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
         boolean urlWrong = false;
         try {
             realUrl = new URL(url);
-            if (!"http".equals(realUrl.getProtocol()) && !"https".equals(realUrl.getProtocol())) { // NOI18N
+            if (!"http".equals(realUrl.getProtocol())  // NOI18N
+                    && !"https".equals(realUrl.getProtocol()) // NOI18N
+                    && !"file".equals(realUrl.getProtocol())) { // NOI18N
                 urlWrong = true;
             }
         } catch (MalformedURLException ex) {

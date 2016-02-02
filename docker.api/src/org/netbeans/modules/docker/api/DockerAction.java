@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.docker.api;
 
+import com.etsy.net.JUDS;
+import com.etsy.net.UnixDomainSocketClient;
 import org.netbeans.modules.docker.StreamItem;
 import org.netbeans.modules.docker.ConnectionListener;
 import org.netbeans.modules.docker.DockerRemoteException;
@@ -97,6 +99,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.docker.DockerActionAccessor;
 import org.netbeans.modules.docker.DockerConfig;
 import org.netbeans.modules.docker.DockerUtils;
+import org.netbeans.modules.docker.Endpoint;
 import org.netbeans.modules.docker.StreamResult;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
@@ -127,6 +130,11 @@ public class DockerAction {
     private static final Pair<String, String> ACCEPT_JSON_HEADER = Pair.of("Accept", "application/json");
 
     static {
+        if (System.getProperty("juds.folder.preferred") == null) {
+            String userhome = System.getProperty("netbeans.user");
+            System.setProperty("juds.folder.preferred", userhome);
+        }
+        
         DockerActionAccessor.setDefault(new DockerActionAccessor() {
             @Override
             public void events(DockerAction action, Long since, DockerEvent.Listener listener, ConnectionListener connectionListener) throws DockerException {
@@ -456,10 +464,9 @@ public class DockerAction {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
         DockerContainerDetail info = DockerAction.this.getDetail(container);
-        Socket s = null;
+        Endpoint s = null;
         try {
-            URL url = createURL(instance.getUrl());
-            s = createSocket(url);
+            s = createEndpoint();
 
             OutputStream os = s.getOutputStream();
             os.write(("POST /containers/" + container.getId()
@@ -489,7 +496,7 @@ public class DockerAction {
             Charset ch = HttpUtils.getCharset(response);
             Integer length = HttpUtils.getLength(response.getHeaders());
             if (length != null && length <= 0) {
-                closeSocket(s);
+                closeEndpoint(s);
                 return new ActionStreamResult(new EmptyStreamResult(info.isTty()));
             }
             is = HttpUtils.getResponseStream(is, response, true);
@@ -500,13 +507,13 @@ public class DockerAction {
                 return new ActionStreamResult(new MuxedStreamResult(s, ch, is));
             }
         } catch (MalformedURLException e) {
-            closeSocket(s);
+            closeEndpoint(s);
             throw new DockerException(e);
         } catch (IOException e) {
-            closeSocket(s);
+            closeEndpoint(s);
             throw new DockerException(e);
         } catch (DockerException e) {
-            closeSocket(s);
+            closeEndpoint(s);
             throw e;
         }
     }
@@ -517,8 +524,7 @@ public class DockerAction {
 
         try {
             DockerName parsed = DockerName.parse(imageName);
-            URL realUrl = createURL(instance.getUrl());
-            Socket s = createSocket(realUrl);
+            Endpoint s = createEndpoint();
             try {
                 OutputStream os = s.getOutputStream();
                 os.write(("POST /images/create?fromImage="
@@ -566,7 +572,7 @@ public class DockerAction {
                     throw new DockerAuthenticationException(authFailure);
                 }
             } finally {
-                closeSocket(s);
+                closeEndpoint(s);
             }
         } catch (MalformedURLException e) {
             throw new DockerException(e);
@@ -595,8 +601,7 @@ public class DockerAction {
                 action.append("?tag=").append(HttpUtils.encodeParameter(tagString));
             }
 
-            URL realUrl = createURL(instance.getUrl());
-            Socket s = createSocket(realUrl);
+            Endpoint s = createEndpoint();
             try {
                 OutputStream os = s.getOutputStream();
                 os.write(("POST " + action.toString() + " HTTP/1.1\r\n").getBytes("ISO-8859-1"));
@@ -643,7 +648,7 @@ public class DockerAction {
                     throw new DockerAuthenticationException(authFailure);
                 }
             } finally {
-                closeSocket(s);
+                closeEndpoint(s);
             }
         } catch (MalformedURLException e) {
             throw new DockerException(e);
@@ -678,15 +683,14 @@ public class DockerAction {
                     dockerfileName = dockerfile.getName();
                 }
 
-                Socket s = null;
+                Endpoint s = null;
                 try {
-                    URL url = createURL(instance.getUrl());
-                    s = createSocket(url);
+                    s = createEndpoint();
                     synchronized (handler) {
                         if (handler.isCancelled()) {
                             return null;
                         }
-                        handler.setSocket(s);
+                        handler.setEndpoint(s);
                     }
 
                     StringBuilder request = new StringBuilder();
@@ -817,16 +821,16 @@ public class DockerAction {
                     }
                     return null;
                 } catch (MalformedURLException e) {
-                    closeSocket(s);
+                    closeEndpoint(s);
                     throw new DockerException(e);
                 } catch (IOException e) {
-                    closeSocket(s);
+                    closeEndpoint(s);
                     if (!handler.isCancelled()) {
                         throw new DockerException(e);
                     }
                     return null;
                 } catch (DockerException e) {
-                    closeSocket(s);
+                    closeEndpoint(s);
                     throw e;
                 }
             }
@@ -850,10 +854,9 @@ public class DockerAction {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
         DockerContainerDetail info = getDetail(container);
-        Socket s = null;
+        Endpoint s = null;
         try {
-            URL url = createURL(instance.getUrl());
-            s = createSocket(url);
+            s = createEndpoint();
 
             OutputStream os = s.getOutputStream();
             os.write(("GET /containers/" + container.getId() + "/logs?stderr=1&stdout=1&timestamps=1&follow=1 HTTP/1.1\r\n").getBytes("ISO-8859-1"));
@@ -891,23 +894,22 @@ public class DockerAction {
             }
             return new ActionChunkedResult(s, fetcher, HttpUtils.getCharset(response));
         } catch (MalformedURLException e) {
-            closeSocket(s);
+            closeEndpoint(s);
             throw new DockerException(e);
         } catch (IOException e) {
-            closeSocket(s);
+            closeEndpoint(s);
             throw new DockerException(e);
         } catch (DockerException e) {
-            closeSocket(s);
+            closeEndpoint(s);
             throw e;
         }
     }
 
     // this call is BLOCKING
     public Pair<DockerContainer, ActionStreamResult> run(String name, JSONObject configuration) throws DockerException {
-        Socket s = null;
+        Endpoint s = null;
         try {
-            URL url = createURL(instance.getUrl());
-            s = createSocket(url);
+            s = createEndpoint();
 
             byte[] data = configuration.toJSONString().getBytes("UTF-8");
             Map<String, String> defaultHeaders = DockerConfig.getDefault().getHttpHeaders();
@@ -963,13 +965,13 @@ public class DockerAction {
 
             return Pair.of(container, r);
         } catch (MalformedURLException e) {
-            closeSocket(s);
+            closeEndpoint(s);
             throw new DockerException(e);
         } catch (IOException e) {
-            closeSocket(s);
+            closeEndpoint(s);
             throw new DockerException(e);
         } catch (DockerException e) {
-            closeSocket(s);
+            closeEndpoint(s);
             throw e;
         }
     }
@@ -977,8 +979,7 @@ public class DockerAction {
     boolean ping() {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
         try {
-            URL realUrl = createURL(instance.getUrl());
-            Socket s = createSocket(realUrl);
+            Endpoint s = createEndpoint();
             try {
                 OutputStream os = s.getOutputStream();
                 // FIXME should we use default headers ?
@@ -989,7 +990,7 @@ public class DockerAction {
                 HttpUtils.Response response = HttpUtils.readResponse(is);
                 return response.getCode() == HttpURLConnection.HTTP_OK;
             } finally {
-                closeSocket(s);
+                closeEndpoint(s);
             }
         } catch (MalformedURLException ex) {
             LOGGER.log(Level.INFO, null, ex);
@@ -1004,8 +1005,7 @@ public class DockerAction {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
         try {
-            URL url = createURL(instance.getUrl());
-            Socket s = createSocket(url);
+            Endpoint s = createEndpoint();
             try {
                 OutputStream os = s.getOutputStream();
                 os.write(("GET " + (since != null ? "/events?since=" + since : "/events") + " HTTP/1.1\r\n"
@@ -1052,7 +1052,7 @@ public class DockerAction {
                     }
                 }
             } finally {
-                closeSocket(s);
+                closeEndpoint(s);
             }
         } catch (MalformedURLException e) {
             throw new DockerException(e);
@@ -1065,8 +1065,7 @@ public class DockerAction {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
         try {
-            URL realUrl = createURL(instance.getUrl());
-            Socket s = createSocket(realUrl);
+            Endpoint s = createEndpoint();
             try {
                 OutputStream os = s.getOutputStream();
                 os.write(("GET " + action + " HTTP/1.1\r\n").getBytes("ISO-8859-1"));
@@ -1094,7 +1093,7 @@ public class DockerAction {
                     throw new DockerException(ex);
                 }
             } finally {
-                closeSocket(s);
+                closeEndpoint(s);
             }
         } catch (MalformedURLException e) {
             throw new DockerException(e);
@@ -1107,8 +1106,7 @@ public class DockerAction {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
         try {
-            URL realUrl = createURL(instance.getUrl());
-            Socket s = createSocket(realUrl);
+            Endpoint s = createEndpoint();
             try {
                 OutputStream os = s.getOutputStream();
                 os.write(("POST " + action + " HTTP/1.1\r\n").getBytes("ISO-8859-1"));
@@ -1140,7 +1138,7 @@ public class DockerAction {
                     return null;
                 }
             } finally {
-                closeSocket(s);
+                closeEndpoint(s);
             }
         } catch (MalformedURLException e) {
             throw new DockerException(e);
@@ -1153,8 +1151,7 @@ public class DockerAction {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
         try {
-            URL realUrl = createURL(instance.getUrl());
-            Socket s = createSocket(realUrl);
+            Endpoint s = createEndpoint();
             try {
                 OutputStream os = s.getOutputStream();
                 os.write(("DELETE " + action + " HTTP/1.1\r\n").getBytes("ISO-8859-1"));
@@ -1185,7 +1182,7 @@ public class DockerAction {
                     return null;
                 }
             } finally {
-                closeSocket(s);
+                closeEndpoint(s);
             }
         } catch (MalformedURLException e) {
             throw new DockerException(e);
@@ -1218,39 +1215,35 @@ public class DockerAction {
         return new StatusEvent(instance, id, status, progress, error, detail);
     }
 
-    private Socket createSocket(URL url) throws IOException {
-        assert "http".equals(url.getProtocol()) || "https".equals(url.getProtocol()); // NOI18N
+    private Endpoint createEndpoint() throws IOException {
+        String url = instance.getUrl();
+        if (url.startsWith("tcp://")) { // NOI18N
+            url = "http://" + url.substring(6); // NOI18N
+        } else if (url.startsWith("unix://")) { // NOI18N
+            url = "file://" + url.substring(7); // NOI18N
+        }
+        URL realUrl = new URL(url);
         try {
-            if ("https".equals(url.getProtocol())) { // NOI18N
+            if ("https".equals(realUrl.getProtocol())) { // NOI18N
                 SSLContext context = ContextProvider.getInstance().getSSLContext(instance);
-                return context.getSocketFactory().createSocket(url.getHost(), url.getPort());
-            } else {
-                Socket s = new Socket(ProxySelector.getDefault().select(url.toURI()).get(0));
-                int port = url.getPort();
+                return Endpoint.forSocket(context.getSocketFactory().createSocket(realUrl.getHost(), realUrl.getPort()));
+            } else if ("http".equals(realUrl.getProtocol())) { // NOI18N
+                Socket s = new Socket(ProxySelector.getDefault().select(realUrl.toURI()).get(0));
+                int port = realUrl.getPort();
                 if (port < 0) {
-                    port = url.getDefaultPort();
+                    port = realUrl.getDefaultPort();
                 }
-                s.connect(new InetSocketAddress(url.getHost(), port));
-                return s;
+                s.connect(new InetSocketAddress(realUrl.getHost(), port));
+                return Endpoint.forSocket(s);
+            } else {
+                UnixDomainSocketClient s = new UnixDomainSocketClient(
+                        new File(realUrl.toURI()).getAbsolutePath(), JUDS.SOCK_STREAM);
+                s.setTimeout(0);
+                return Endpoint.forDomainSocket(s);
             }
         } catch (URISyntaxException ex) {
             throw new IOException(ex);
         }
-    }
-
-    private static URL createURL(@NonNull String url) throws MalformedURLException {
-        // FIXME optimize
-        String realUrl;
-        if (url.startsWith("tcp://")) {
-            realUrl = "http://" + url.substring(6);
-        } else {
-            realUrl = url;
-        }
-        if (realUrl.endsWith("/")) {
-            realUrl = realUrl.substring(0, realUrl.length() - 1);
-        }
-
-        return new URL(realUrl);
     }
 
     private static JSONObject createAuthObject(Credentials credentials) {
@@ -1317,7 +1310,7 @@ public class DockerAction {
         return null;
     }
 
-    private static void closeSocket(Socket s) {
+    private static void closeEndpoint(Endpoint s) {
         if (s != null) {
             try {
                 s.close();
@@ -1414,18 +1407,18 @@ public class DockerAction {
 
     private static class CancelHandler {
 
-        private Socket socket;
+        private Endpoint endpoint;
 
         private boolean cancelled;
 
-        public synchronized void setSocket(Socket socket) {
-            this.socket = socket;
+        public synchronized void setEndpoint(Endpoint endpoint) {
+            this.endpoint = endpoint;
         }
 
         public synchronized void cancel() {
-            if (socket != null) {
-                closeSocket(socket);
-                socket = null;
+            if (endpoint != null) {
+                closeEndpoint(endpoint);
+                endpoint = null;
                 cancelled = true;
             }
         }
