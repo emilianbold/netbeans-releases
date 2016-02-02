@@ -76,6 +76,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.modules.web.common.api.RemoteFileCache;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
+import org.netbeans.modules.web.common.sourcemap.SourceMap;
 import org.netbeans.modules.web.common.sourcemap.SourceMapsTranslator;
 import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
@@ -156,11 +157,37 @@ public final class MiscEditorUtil {
         synchronized (TRANSLATORS) {
             smt = TRANSLATORS.get(debugger);
             if (smt == null) {
-                smt = new SourceMapsTranslator();
+                smt = SourceMapsTranslator.create();
                 TRANSLATORS.put(debugger, smt);
             }
         }
         return smt;
+    }
+    
+    public static void registerProjectsSourceMapTranslator(Debugger debugger, SourceMapsTranslator psmt) {
+        if (!USE_SOURCE_MAPS) {
+            return ;
+        }
+        synchronized (TRANSLATORS) {
+            SourceMapsTranslator smt = TRANSLATORS.get(debugger);
+            if (smt instanceof SourceMapsTranslatorDelegate) {
+                return ;
+            }
+            if (smt == null) {
+                smt = SourceMapsTranslator.create();
+            }
+            smt = new SourceMapsTranslatorDelegate(smt, psmt);
+            TRANSLATORS.put(debugger, smt);
+        }
+    }
+    
+    public static void unregisterSourceMapsTranslator(Debugger debugger) {
+        if (!USE_SOURCE_MAPS) {
+            return ;
+        }
+        synchronized (TRANSLATORS) {
+            TRANSLATORS.remove(debugger);
+        }
     }
 
     /**
@@ -664,6 +691,69 @@ public final class MiscEditorUtil {
         public String url;
         public int line;
         public Debugger debugger;
+    }
+    
+    private static class SourceMapsTranslatorDelegate implements SourceMapsTranslator {
+        
+        private final SourceMapsTranslator smt1;    // primary
+        private final SourceMapsTranslator smt2;    // secondary
+        
+        public SourceMapsTranslatorDelegate(SourceMapsTranslator smt1, SourceMapsTranslator smt2) {
+            this.smt1 = smt1;
+            this.smt2 = smt2;
+        }
+
+        @Override
+        public boolean registerTranslation(FileObject source, String sourceMapFileName) {
+            return smt1.registerTranslation(source, sourceMapFileName);
+        }
+
+        @Override
+        public boolean registerTranslation(FileObject source, SourceMap sourceMap) {
+            return smt1.registerTranslation(source, sourceMap);
+        }
+
+        @Override
+        public void unregisterTranslation(FileObject source) {
+            smt1.unregisterTranslation(source);
+        }
+        
+        @Override
+        public Location getSourceLocation(Location loc) {
+            Location l = smt1.getSourceLocation(loc);
+            if (l == loc) {
+                l = smt2.getSourceLocation(loc);
+            }
+            return l;
+        }
+
+        @Override
+        public Location getSourceLocation(Location loc, String sourceMapFileName) {
+            Location l = smt1.getSourceLocation(loc, sourceMapFileName);
+            if (l == loc) {
+                l = smt2.getSourceLocation(loc, sourceMapFileName);
+            }
+            return l;
+        }
+
+        @Override
+        public Location getCompiledLocation(Location loc) {
+            Location l = smt1.getCompiledLocation(loc);
+            if (l == loc) {
+                l = smt2.getCompiledLocation(loc);
+            }
+            return l;
+        }
+
+        @Override
+        public List<FileObject> getSourceFiles(FileObject compiledFile) {
+            List<FileObject> sourceFiles = smt1.getSourceFiles(compiledFile);
+            if (sourceFiles == null) {
+                sourceFiles = smt2.getSourceFiles(compiledFile);
+            }
+            return sourceFiles;
+        }
+        
     }
 
 }

@@ -185,6 +185,18 @@ public class SourceMap {
         ims.add(index, im);
     }
     
+    /**
+     * A name of the generated file, that this source map is associated with. Can return <code>null</code>.
+     * @return a name of the generated file, or <code>null</code>.
+     */
+    public String getFile() {
+        return (String) sourceMap.get("file");
+    }
+    
+    /**
+     * A list of original source file names used by this map.
+     * @return A list of original source file names.
+     */
     public List<String> getSources() {
         JSONArray sources = (JSONArray)sourceMap.get("sources"); // NOI18N
         return Collections.unmodifiableList(sources);

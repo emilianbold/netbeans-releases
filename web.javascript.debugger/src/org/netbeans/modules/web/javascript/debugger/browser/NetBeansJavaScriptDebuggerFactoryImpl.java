@@ -47,6 +47,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.web.javascript.debugger.DebuggerConstants;
 import org.netbeans.modules.web.javascript.debugger.EngineDestructorProvider;
+import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.spi.JavaScriptDebuggerFactory;
@@ -81,6 +82,7 @@ public class NetBeansJavaScriptDebuggerFactoryImpl implements JavaScriptDebugger
         }
         session.kill();
         engine.lookupFirst(null, EngineDestructorProvider.class).getDestructor().killEngine();
+        MiscEditorUtil.unregisterSourceMapsTranslator(debugger);
     }
 
 }

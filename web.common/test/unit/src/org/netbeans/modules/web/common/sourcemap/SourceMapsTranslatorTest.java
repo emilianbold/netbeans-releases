@@ -64,7 +64,7 @@ public class SourceMapsTranslatorTest extends CslTestBase {
     public void testGetLocations() throws IOException, ParseException {
         FileObject grsm = getTestFile("sourcemaps/greeter.js.map");
         SourceMap sm = SourceMap.parse(grsm.asText());
-        SourceMapsTranslator smt = new SourceMapsTranslator();
+        SourceMapsTranslator smt = SourceMapsTranslator.create();
         FileObject sourceFile = getTestFile("sourcemaps/greeter.ts");
         FileObject compiledFile = getTestFile("sourcemaps/greeter.js");
         smt.registerTranslation(sourceFile, grsm.getNameExt());
