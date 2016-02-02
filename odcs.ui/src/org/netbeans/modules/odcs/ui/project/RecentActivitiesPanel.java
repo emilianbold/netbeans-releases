@@ -49,6 +49,7 @@ import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -56,10 +57,12 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import javax.swing.AbstractAction;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.RootPaneContainer;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import oracle.clouddev.server.profile.activity.client.api.Activity;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
@@ -69,6 +72,7 @@ import org.netbeans.modules.odcs.client.api.ODCSException;
 import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.odcs.client.api.ActivityTypes;
 import org.netbeans.modules.odcs.ui.utils.Utils;
+import org.netbeans.modules.team.server.ui.common.LinkButton;
 import org.netbeans.modules.team.server.ui.spi.BuilderAccessor;
 import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 import org.openide.util.NbBundle;
@@ -91,7 +95,10 @@ public class RecentActivitiesPanel extends javax.swing.JPanel implements Activit
     private JCheckBox chbScm;
     private JCheckBox chbRss;
     private JCheckBox chbDeploy;
-    private List<Activity> activities = Collections.emptyList();
+    
+    private static final int COUNT = 100;
+    
+    private final List<Activity> activities = Collections.synchronizedList(new ArrayList<>(COUNT));
     private final Map<Activity, ActivityPanel> activity2Panel = new HashMap<>();
     private int maxWidth = -1;
     private final BuilderAccessor<ODCSProject> buildAccessor;
@@ -106,12 +113,14 @@ public class RecentActivitiesPanel extends javax.swing.JPanel implements Activit
         buildAccessor = ODCSUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getBuildAccessor(ODCSProject.class);
         initComponents();
         createShowButtons();
-        loadRecentActivities();
+        loadRecentActivities(activities.size(), COUNT);
     }
 
     void update() {
         activity2Panel.clear();
-        loadRecentActivities();
+        int count = activities.size();
+        RecentActivitiesPanel.this.activities.clear();
+        loadRecentActivities(0, count);
     }
 
     /**
@@ -219,14 +228,15 @@ public class RecentActivitiesPanel extends javax.swing.JPanel implements Activit
     private javax.swing.JPanel pnlTitle;
     // End of variables declaration//GEN-END:variables
 
-    private void loadRecentActivities() {
+    private void loadRecentActivities(int offset, int count) {
         RP.post(new Runnable() {
             @Override
             public void run() {
                 showWaitCursor(true);
                 try {
-                    List<Activity> activities = client.getRecentActivities(projectHandle.getTeamProject().getId());
-                    RecentActivitiesPanel.this.activities = activities != null ? activities : Collections.EMPTY_LIST;
+                    List<Activity> activities = client.getRecentActivities(projectHandle.getTeamProject().getId(), offset, count);
+                    activities = activities != null ? activities : Collections.EMPTY_LIST;
+                    RecentActivitiesPanel.this.activities.addAll(activities);
                     showSelectedActivities();
                 } catch (ODCSException ex) {
                     Utils.logException(ex, true);
@@ -244,7 +254,15 @@ public class RecentActivitiesPanel extends javax.swing.JPanel implements Activit
     }
 
     private void showSelectedActivities() {
-        final Collection<Activity> selectedActivities = getShowableActivities(activities);
+        List<Activity> selectedActivities = new LinkedList<>();
+        synchronized (activities) {
+            for (Activity a : activities) {
+                if (isActivityShowable(a)) {
+                    selectedActivities.add(a);
+                }
+            }
+        }
+        
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -255,18 +273,6 @@ public class RecentActivitiesPanel extends javax.swing.JPanel implements Activit
                 }
             }
         });
-    }
-
-    private Collection<Activity> getShowableActivities(List<Activity> activities) {
-        List<Activity> ret = new LinkedList<>();
-        if (activities != null) {
-            for (Activity a : activities) {
-                if (isActivityShowable(a)) {
-                    ret.add(a);
-                }
-            }
-        }
-        return ret;
     }
 
     private boolean isActivityShowable(Activity activity) {
@@ -376,6 +382,20 @@ public class RecentActivitiesPanel extends javax.swing.JPanel implements Activit
             showEmptyContent();
         } else {
             GridBagConstraints gbc1 = new GridBagConstraints();
+            
+            LinkButton showMore = new LinkButton(org.openide.util.NbBundle.getMessage(RecentActivitiesPanel.class, "RecentActivitiesPanel.lblShowMore.text"), new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    activity2Panel.clear();
+                    loadRecentActivities(activities.size(), COUNT);
+                }
+            });
+            gbc1.fill = GridBagConstraints.HORIZONTAL;
+            gbc1.anchor = GridBagConstraints.NORTH;
+            gbc1.insets = new Insets(5, 5, 0, 0);
+            showMore.setAlignmentX(SwingConstants.LEFT);
+            pnlContent.add(showMore, gbc1);
+
             gbc1.weighty = 1.0;
             gbc1.fill = GridBagConstraints.VERTICAL;
             pnlContent.add(new JLabel(), gbc1);
@@ -477,10 +497,12 @@ public class RecentActivitiesPanel extends javax.swing.JPanel implements Activit
     }
 
     private boolean containsActivity(String[] types) {
-        for (Activity activity : activities) {
-            for (String type : types) {
-                if (type.equalsIgnoreCase(activity.getType())) {
-                    return true;
+        synchronized(activities) {
+            for (Activity activity : activities) {
+                for (String type : types) {
+                    if (type.equalsIgnoreCase(activity.getType())) {
+                        return true;
+                    }
                 }
             }
         }

@@ -110,15 +110,15 @@ public class ODCSClientImpl implements ODCSClient {
     }
 
     @Override
-    public List<Activity> getRecentActivities(String projectId) throws ODCSException {
+    public List<Activity> getRecentActivities(String projectId, int offset, int count) throws ODCSException {
         ClassLoader originalContextCL = null;
         try {
             if (mockDelegate != null) {
-                return mockDelegate.getRecentActivities(projectId);
+                return mockDelegate.getRecentActivities(projectId, offset, count);
             }
             originalContextCL = setupContextClassLoader();
 
-            ListRequestParams params = new ListRequestParams(ActivityTypes.NAMES, 0, 100);
+            ListRequestParams params = new ListRequestParams(ActivityTypes.NAMES, offset, count);
             oracle.clouddev.server.profile.activity.client.api.QueryResult r = getActivityClient().list(projectId, params);
             return r.getActivities();
         } catch (WrappedCheckedException e) {
