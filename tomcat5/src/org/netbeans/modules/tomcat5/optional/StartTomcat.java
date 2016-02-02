@@ -407,7 +407,7 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                                     } else {
                                         value = "\"" + value + "\""; // NOI18N
                                     }
-                                } else if (tm.isTomcat70() || tm.isTomcat80()) {
+                                } else if (tm.isAboveTomcat70()) {
                                     value = "\"" + value + "\""; // NOI18N
                                 }
                             }

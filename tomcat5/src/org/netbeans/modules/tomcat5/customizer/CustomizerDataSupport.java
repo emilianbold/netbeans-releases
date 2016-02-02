@@ -344,7 +344,7 @@ public class CustomizerDataSupport {
     
 
     public boolean useManagerScript() {
-        return tm.isTomcat70() || tm.isTomcat80();
+        return tm.isAboveTomcat70();
     }
 
     /** Update the jvm model */

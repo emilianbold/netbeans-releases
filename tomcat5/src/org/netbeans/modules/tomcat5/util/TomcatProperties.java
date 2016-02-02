@@ -293,6 +293,10 @@ public class TomcatProperties {
         String prefix;
         String serverID;
         switch (tm.getTomcatVersion()) {
+            case TOMCAT_90:
+                prefix = "tomcat90"; // NIO18N
+                serverID = TomcatFactory.SERVER_ID_90;
+                break;
             case TOMCAT_80:
                 prefix = "tomcat80"; // NIO18N
                 serverID = TomcatFactory.SERVER_ID_80;

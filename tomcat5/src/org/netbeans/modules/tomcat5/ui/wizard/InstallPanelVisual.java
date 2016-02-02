@@ -380,6 +380,9 @@ class InstallPanelVisual extends javax.swing.JPanel {
     public String getUrl() {
         String url;
         switch (getTomcatVersion()) {
+            case TOMCAT_90:
+                url = TomcatFactory.TOMCAT_URI_PREFIX_90;
+                break;
             case TOMCAT_80:
                 url = TomcatFactory.TOMCAT_URI_PREFIX_80;
                 break;
@@ -608,7 +611,9 @@ class InstallPanelVisual extends javax.swing.JPanel {
                     infoMessage = true;
                 } else if (!TomcatUsers.hasManagerRole(getTomcatVersion(), tomcatUsersXml, jTextFieldUsername.getText())) {
                     errorMessage = NbBundle.getMessage(InstallPanelVisual.class, "MSG_UserHasNotManagerRole",
-                            TomcatVersion.TOMCAT_70.equals(getTomcatVersion()) || TomcatVersion.TOMCAT_80.equals(getTomcatVersion())
+                            TomcatVersion.TOMCAT_70.equals(getTomcatVersion())
+                                    || TomcatVersion.TOMCAT_80.equals(getTomcatVersion())
+                                    || TomcatVersion.TOMCAT_90.equals(getTomcatVersion())
                                 ? "manager-script"
                                 : "manager");
                     infoMessage = true;
