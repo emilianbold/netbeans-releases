@@ -70,6 +70,7 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.Position;
+import org.netbeans.api.editor.EditorCaret;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -81,6 +82,7 @@ import org.netbeans.modules.editor.lib2.DocUtils;
 import org.netbeans.modules.editor.lib2.highlighting.BlockHighlighting;
 import org.netbeans.modules.editor.lib2.highlighting.Factory;
 import org.netbeans.modules.editor.search.DocumentFinder.FindReplaceResult;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -131,6 +133,7 @@ public final class EditorFindSupport {
     public static final String FIND_BLOCK_SEARCH = "find-block-search"; //NOI18N
     public static final String FIND_BLOCK_SEARCH_START = "find-block-search-start"; //NOI18N
     public static final String FIND_BLOCK_SEARCH_END = "find-block-search-end"; //NOI18N
+    public static final String ADD_MULTICARET = "add-multi-caret"; //NOI18N
 
     private static final String FOUND_LOCALE = "find-found"; // NOI18N
     private static final String NOT_FOUND_LOCALE = "find-not-found"; // NOI18N
@@ -203,6 +206,7 @@ public final class EditorFindSupport {
         props.put(FIND_REG_EXP, Boolean.FALSE);
         props.put(FIND_HISTORY, Integer.valueOf(30));
         props.put(FIND_PRESERVE_CASE, Boolean.FALSE);
+        props.put(ADD_MULTICARET, Boolean.FALSE);
 
         return props;
     }
@@ -440,6 +444,19 @@ public final class EditorFindSupport {
         }
         return back;
     }
+    
+    private void addCaretSelectText(JTextComponent c, int start, int end, boolean back) {
+        Caret eCaret = c.getCaret();
+        ensureVisible(c, start, end);
+        if (eCaret instanceof EditorCaret) {
+            EditorCaret caret = (EditorCaret) eCaret;
+            try {
+                caret.addCaret(c.getDocument().createPosition(end), c.getDocument().createPosition(start));
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
 
     private void selectText(JTextComponent c, int start, int end, boolean back){
         Caret caret = c.getCaret();
@@ -585,7 +602,11 @@ public final class EditorFindSupport {
                     blk = result.getFoundPositions();
                 }
                 if (blk != null) {
-                    selectText(c, blk[0], blk[1], back);
+                    if (Boolean.TRUE.equals(props.get(EditorFindSupport.ADD_MULTICARET))) {
+                        addCaretSelectText(c, blk[0], blk[1], back);
+                    } else {
+                        selectText(c, blk[0], blk[1], back);
+                    }
                     String msg = NbBundle.getMessage(EditorFindSupport.class, FOUND_LOCALE, findWhat, DocUtils.debugPosition(c.getDocument(), Integer.valueOf(blk[0])));
 //                    String msg = exp + NbBundle.getMessage(EditorFindSupport.class, FOUND_LOCALE)
 //                                 + ' ' + DocUtils.debugPosition(c.getDocument(), blk[0]);
@@ -609,7 +630,7 @@ public final class EditorFindSupport {
                                                     EditorFindSupport.class, NOT_FOUND_LOCALE, findWhat), IMPORTANCE_FIND_OR_REPLACE);
                     // issue 14189 - selection was not removed
                     c.getCaret().setDot(c.getCaret().getDot());
-                }
+                    }
             } catch (BadLocationException e) {
                 LOG.log(Level.WARNING, e.getMessage(), e);
             }

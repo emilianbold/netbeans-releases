@@ -129,6 +129,8 @@ made subject to such option by the copyright holder.
     <bind actionName="paste-from-clipboard" key="D-V"/>
     <bind actionName="paste-from-clipboard" key="S-INSERT"/>
     <bind actionName="clipboard-history" key="DS-D"/>
+    <bind actionName="addCaretSelectNext" key="D-D"/>
+    <bind actionName="addCaretSelectAll" key="O-F3"/>
     <bind actionName="redo" key="D-Y"/>
     <bind actionName="redo" key="DS-Z"/>
     <bind actionName="remove-line" key="D-E"/>
