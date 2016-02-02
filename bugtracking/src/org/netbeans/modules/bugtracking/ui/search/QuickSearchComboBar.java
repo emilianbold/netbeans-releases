@@ -301,7 +301,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
 
     @Override
     public void requestFocus() {
-        super.requestFocus();
+        super.requestFocus();        
         command.requestFocus();
     }
 
@@ -448,10 +448,11 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
                 }
             } else if ((evt.getKeyCode()) == KeyEvent.VK_ESCAPE) {
                     if(displayer.isVisible()) {
-                    returnFocus();
-                    displayer.clearModel();
-                    evt.consume();
-                }
+                        returnFocus();
+                        displayer.clearModel();
+                        requestFocus();
+                        evt.consume();
+                    }
             }
         }
     }

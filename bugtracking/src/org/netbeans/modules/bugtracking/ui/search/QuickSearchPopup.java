@@ -158,6 +158,10 @@ class QuickSearchPopup extends javax.swing.JPanel
     }
 
     void selectNext() {
+        if(noResultsLabel.isVisible()) {
+            runSearchLocalTask();
+            return;
+        }        
         int oldSel = jList1.getSelectedIndex();
         if (oldSel >= 0 && oldSel < jList1.getModel().getSize() - 1) {
             int idx = oldSel + 1;
@@ -169,12 +173,15 @@ class QuickSearchPopup extends javax.swing.JPanel
     }
 
     void selectPrev() {
+        if(noResultsLabel.isVisible()) {
+            return;
+        }
         int oldSel = jList1.getSelectedIndex();
         if (oldSel > 0) {
             int idx = oldSel - 1;
             jList1.setSelectedIndex(idx);
             jList1.scrollRectToVisible(jList1.getCellBounds(idx, idx));
-        } 
+        }
     }
 
     public JList getList() {
@@ -222,14 +229,18 @@ class QuickSearchPopup extends javax.swing.JPanel
         updateTimer.stop();
         // search only if we are not cancelled already
         if (comboBar.isTextFieldFocusOwner()) {
-            // start waiting on all providers execution
-            runTask(new Runnable() {
-                @Override
-                public void run() {
-                    searchLocalIssues();
-                }
-            });
+            runSearchLocalTask();
         }
+    }
+
+    private void runSearchLocalTask() {
+        // start waiting on all providers execution
+        runTask(new Runnable() {
+            @Override
+            public void run() {
+                searchLocalIssues();
+            }
+        });
     }
 
     void setRepository(RepositoryImpl repo) {
