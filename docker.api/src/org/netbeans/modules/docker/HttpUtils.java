@@ -48,7 +48,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
@@ -107,21 +106,6 @@ public final class HttpUtils {
              count += current;
         } while (count < length);
         return new String(content, encoding);
-    }
-
-    public static String readError(HttpURLConnection conn) throws IOException {
-        InputStream err = conn.getErrorStream();
-        if (err == null || err.available() <= 0) {
-            return null;
-        }
-        Charset encoding = getCharset(conn.getContentType());
-        ByteArrayOutputStream bos = new ByteArrayOutputStream(200);
-        byte[] content = new byte[200];
-        int length;
-        while((length = err.read(content)) != -1) {
-            bos.write(content, 0, length);
-        }
-        return bos.toString(encoding.name());
     }
 
     public static InputStream getResponseStream(InputStream is, Response response, boolean allowSocketStream) throws IOException {
@@ -183,10 +167,6 @@ public final class HttpUtils {
         return getCharset(response.getHeaders().get("CONTENT-TYPE")); // NOI18N
     }
 
-    public static Charset getCharset(HttpURLConnection connection) {
-        return getCharset(connection.getContentType());
-    }
-
     public static String encodeParameter(String value) throws UnsupportedEncodingException {
         return URLEncoder.encode(value, "UTF-8");
     }
@@ -215,20 +195,6 @@ public final class HttpUtils {
         for (Map.Entry<String, String> e : toUse.entrySet()) {
             sb.append(e.getKey()).append(":").append(" "); // NOI18N
             sb.append(e.getValue()).append("\r\n"); // NOI18N
-        }
-    }
-
-    public static void configureHeaders(HttpURLConnection conn, Map<String, String> defaultHeaders,
-            Pair<String, String>... headers) {
-
-        for (Map.Entry<String, String> e : defaultHeaders.entrySet()) {
-            conn.setRequestProperty(e.getKey(), e.getValue());
-        }
-        for (Pair<String, String> h : headers) {
-            if (h == null) {
-                continue;
-            }
-            conn.setRequestProperty(h.first(), h.second());
         }
     }
 

@@ -52,7 +52,6 @@ import org.netbeans.modules.docker.IgnoreFileFilter;
 import org.netbeans.modules.docker.HttpUtils;
 import org.netbeans.modules.docker.DirectStreamResult;
 import org.netbeans.modules.docker.Demuxer;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -87,7 +86,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.swing.SwingUtilities;
 import org.json.simple.JSONArray;
@@ -100,7 +98,6 @@ import org.netbeans.modules.docker.DockerActionAccessor;
 import org.netbeans.modules.docker.DockerConfig;
 import org.netbeans.modules.docker.DockerUtils;
 import org.netbeans.modules.docker.StreamResult;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
@@ -461,7 +458,7 @@ public class DockerAction {
         DockerContainerDetail info = DockerAction.this.getDetail(container);
         Socket s = null;
         try {
-            URL url = createURL(instance.getUrl(), null);
+            URL url = createURL(instance.getUrl());
             s = createSocket(url);
 
             OutputStream os = s.getOutputStream();
@@ -520,26 +517,35 @@ public class DockerAction {
 
         try {
             DockerName parsed = DockerName.parse(imageName);
-            URL httpUrl = createURL(instance.getUrl(), "/images/create?fromImage="
-                    + HttpUtils.encodeParameter(imageName));
-            HttpURLConnection conn = createConnection(httpUrl);
+            URL realUrl = createURL(instance.getUrl());
+            Socket s = createSocket(realUrl);
             try {
-                conn.setRequestMethod("POST");
+                OutputStream os = s.getOutputStream();
+                os.write(("POST /images/create?fromImage="
+                    + HttpUtils.encodeParameter(imageName) + " HTTP/1.1\r\n").getBytes("ISO-8859-1"));
                 Pair<String, String> authHeader = null;
                 JSONObject auth = createAuthObject(CredentialsManager.getDefault().getCredentials(parsed.getRegistry()));
                 authHeader = Pair.of("X-Registry-Auth", HttpUtils.encodeBase64(auth.toJSONString()));
-                HttpUtils.configureHeaders(conn, DockerConfig.getDefault().getHttpHeaders(),
+                HttpUtils.configureHeaders(os, DockerConfig.getDefault().getHttpHeaders(),
                         ACCEPT_JSON_HEADER, authHeader);
+                os.write(("\r\n").getBytes("ISO-8859-1"));
+                os.flush();
 
-                if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                    String error = HttpUtils.readError(conn);
-                    throw codeToException(conn.getResponseCode(),
-                            error != null ? error : conn.getResponseMessage());
+                InputStream is = s.getInputStream();
+                HttpUtils.Response response = HttpUtils.readResponse(is);
+                int responseCode = response.getCode();
+
+                is = HttpUtils.getResponseStream(is, response, false);
+
+                if (responseCode != HttpURLConnection.HTTP_OK) {
+                    String error = HttpUtils.readContent(is, response);
+                    throw codeToException(responseCode,
+                            error != null ? error : response.getMessage());
                 }
 
                 String authFailure = null;
                 JSONParser parser = new JSONParser();
-                try (InputStreamReader r = new InputStreamReader(conn.getInputStream(), HttpUtils.getCharset(conn))) {
+                try (InputStreamReader r = new InputStreamReader(is, HttpUtils.getCharset(response))) {
                     String line;
                     while ((line = readEventObject(r)) != null) {
                         JSONObject o = (JSONObject) parser.parse(line);
@@ -560,7 +566,7 @@ public class DockerAction {
                     throw new DockerAuthenticationException(authFailure);
                 }
             } finally {
-                conn.disconnect();
+                closeSocket(s);
             }
         } catch (MalformedURLException e) {
             throw new DockerException(e);
@@ -589,25 +595,34 @@ public class DockerAction {
                 action.append("?tag=").append(HttpUtils.encodeParameter(tagString));
             }
 
-            URL httpUrl = createURL(instance.getUrl(), action.toString());
-            HttpURLConnection conn = createConnection(httpUrl);
+            URL realUrl = createURL(instance.getUrl());
+            Socket s = createSocket(realUrl);
             try {
-                conn.setRequestMethod("POST");
+                OutputStream os = s.getOutputStream();
+                os.write(("POST " + action.toString() + " HTTP/1.1\r\n").getBytes("ISO-8859-1"));
                 Pair<String, String> authHeader = null;
                 JSONObject auth = createAuthObject(CredentialsManager.getDefault().getCredentials(parsed.getRegistry()));
                 authHeader = Pair.of("X-Registry-Auth", HttpUtils.encodeBase64(auth.toJSONString()));
-                HttpUtils.configureHeaders(conn, DockerConfig.getDefault().getHttpHeaders(),
+                HttpUtils.configureHeaders(os, DockerConfig.getDefault().getHttpHeaders(),
                         ACCEPT_JSON_HEADER, authHeader);
+                os.write(("\r\n").getBytes("ISO-8859-1"));
+                os.flush();
 
-                if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                    String error = HttpUtils.readError(conn);
-                    throw codeToException(conn.getResponseCode(),
-                            error != null ? error : conn.getResponseMessage());
+                InputStream is = s.getInputStream();
+                HttpUtils.Response response = HttpUtils.readResponse(is);
+                int responseCode = response.getCode();
+
+                is = HttpUtils.getResponseStream(is, response, false);
+
+                if (responseCode != HttpURLConnection.HTTP_OK) {
+                    String error = HttpUtils.readContent(is, response);
+                    throw codeToException(responseCode,
+                            error != null ? error : response.getMessage());
                 }
 
                 String authFailure = null;
                 JSONParser parser = new JSONParser();
-                try (InputStreamReader r = new InputStreamReader(conn.getInputStream(), HttpUtils.getCharset(conn))) {
+                try (InputStreamReader r = new InputStreamReader(is, HttpUtils.getCharset(response))) {
                     String line;
                     while ((line = readEventObject(r)) != null) {
                         JSONObject o = (JSONObject) parser.parse(line);
@@ -628,7 +643,7 @@ public class DockerAction {
                     throw new DockerAuthenticationException(authFailure);
                 }
             } finally {
-                conn.disconnect();
+                closeSocket(s);
             }
         } catch (MalformedURLException e) {
             throw new DockerException(e);
@@ -665,7 +680,7 @@ public class DockerAction {
 
                 Socket s = null;
                 try {
-                    URL url = createURL(instance.getUrl(), null);
+                    URL url = createURL(instance.getUrl());
                     s = createSocket(url);
                     synchronized (handler) {
                         if (handler.isCancelled()) {
@@ -837,7 +852,7 @@ public class DockerAction {
         DockerContainerDetail info = getDetail(container);
         Socket s = null;
         try {
-            URL url = createURL(instance.getUrl(), null);
+            URL url = createURL(instance.getUrl());
             s = createSocket(url);
 
             OutputStream os = s.getOutputStream();
@@ -891,7 +906,7 @@ public class DockerAction {
     public Pair<DockerContainer, ActionStreamResult> run(String name, JSONObject configuration) throws DockerException {
         Socket s = null;
         try {
-            URL url = createURL(instance.getUrl(), null);
+            URL url = createURL(instance.getUrl());
             s = createSocket(url);
 
             byte[] data = configuration.toJSONString().getBytes("UTF-8");
@@ -962,7 +977,7 @@ public class DockerAction {
     boolean ping() {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
         try {
-            URL realUrl = createURL(instance.getUrl(), null);
+            URL realUrl = createURL(instance.getUrl());
             Socket s = createSocket(realUrl);
             try {
                 OutputStream os = s.getOutputStream();
@@ -989,7 +1004,7 @@ public class DockerAction {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
         try {
-            URL url = createURL(instance.getUrl(), null);
+            URL url = createURL(instance.getUrl());
             Socket s = createSocket(url);
             try {
                 OutputStream os = s.getOutputStream();
@@ -1050,7 +1065,7 @@ public class DockerAction {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
         try {
-            URL realUrl = createURL(instance.getUrl(), null);
+            URL realUrl = createURL(instance.getUrl());
             Socket s = createSocket(realUrl);
             try {
                 OutputStream os = s.getOutputStream();
@@ -1092,7 +1107,7 @@ public class DockerAction {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
         try {
-            URL realUrl = createURL(instance.getUrl(), null);
+            URL realUrl = createURL(instance.getUrl());
             Socket s = createSocket(realUrl);
             try {
                 OutputStream os = s.getOutputStream();
@@ -1138,7 +1153,7 @@ public class DockerAction {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
         try {
-            URL realUrl = createURL(instance.getUrl(), null);
+            URL realUrl = createURL(instance.getUrl());
             Socket s = createSocket(realUrl);
             try {
                 OutputStream os = s.getOutputStream();
@@ -1223,20 +1238,7 @@ public class DockerAction {
         }
     }
 
-    private HttpURLConnection createConnection(URL url) throws IOException {
-        assert "http".equals(url.getProtocol()) || "https".equals(url.getProtocol()); // NOI18N
-        try {
-            HttpURLConnection ret = (HttpURLConnection) url.openConnection(ProxySelector.getDefault().select(url.toURI()).get(0));
-            if (ret instanceof HttpsURLConnection) {
-                ((HttpsURLConnection) ret).setSSLSocketFactory(ContextProvider.getInstance().getSSLContext(instance).getSocketFactory());
-            }
-            return ret;
-        } catch (URISyntaxException ex) {
-            throw new IOException(ex);
-        }
-    }
-
-    private static URL createURL(@NonNull String url, @NullAllowed String action) throws MalformedURLException, UnsupportedEncodingException {
+    private static URL createURL(@NonNull String url) throws MalformedURLException {
         // FIXME optimize
         String realUrl;
         if (url.startsWith("tcp://")) {
@@ -1246,9 +1248,6 @@ public class DockerAction {
         }
         if (realUrl.endsWith("/")) {
             realUrl = realUrl.substring(0, realUrl.length() - 1);
-        }
-        if (action != null) {
-            realUrl += action;
         }
 
         return new URL(realUrl);
