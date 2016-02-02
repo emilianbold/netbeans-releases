@@ -59,6 +59,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.Pair;
 
 /**
@@ -134,7 +135,7 @@ public final class HttpUtils {
 
                     @Override
                     public int available() throws IOException {
-                        return available;
+                        return Math.min(super.available(), available);
                     }
 
                     @Override
@@ -160,7 +161,7 @@ public final class HttpUtils {
             } else if (allowSocketStream) {
                 return new BufferedInputStream(is);
             } else {
-                throw new IllegalStateException("Undefined content length");
+                throw new IOException("Undefined content length");
             }
         }
     }
@@ -177,6 +178,7 @@ public final class HttpUtils {
         }
     }
 
+    @NonNull
     public static Charset getCharset(Response response) {
         return getCharset(response.getHeaders().get("CONTENT-TYPE")); // NOI18N
     }
