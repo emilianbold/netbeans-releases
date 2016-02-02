@@ -333,7 +333,7 @@ public class EditorOptions {
     private static final String DEFAULT_PROFILE = "Default"; // NOI18N
     private static final String GNU_PROFILE = "GNU"; // NOI18N
     private static final String LUNIX_PROFILE = "Linux"; // NOI18N
-    private static final String ANSI_PROFILE = "ANSI"; // NOI18N
+    public static final String ANSI_PROFILE = "ANSI"; // NOI18N
     private static final String OPEN_SOLARIS_PROFILE = "OpenSolaris"; // NOI18N
     private static final String K_AND_R_PROFILE = "KandR"; // NOI18N
     private static final String MYSQL_PROFILE = "MySQL"; // NOI18N

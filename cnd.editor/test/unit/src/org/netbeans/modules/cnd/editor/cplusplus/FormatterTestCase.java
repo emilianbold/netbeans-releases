@@ -5942,7 +5942,7 @@ public class FormatterTestCase extends EditorBase {
                 );
         setDefaultsOptions();
         reformat();
-        assertDocumentText("after reformat 'operator>' and 'operator<' has not space ",
+        assertDocumentText("after reformat lamda does not work",
                 "void renderScene(void)\n" +
                 "{\n" +
                 "    Do(5, [] {\n" +
@@ -5954,4 +5954,40 @@ public class FormatterTestCase extends EditorBase {
                 );
     }
 
+    public void test257662_2() {
+        setLoadDocumentText(
+                "void\n" +
+                "renderScene(void)\n" +
+                "{\n" +
+                "    using namespace D2D::draw;\n" +
+                "    Do(5, []\n" +
+                "    {\n" +
+                "        clear(100, 100, 100);\n" +
+                "       clear(100, 100, 100);\n" +
+                "       clear(100, 100, 100);\n" +
+                "       clear(100, 100, 100);\n" +
+                "    });\n" +
+                "\n" +
+                "}\n"
+                );
+        setDefaultsOptions();
+        CodeStyle codeStyle = CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument());
+        EditorOptions.resetToDefault(codeStyle, EditorOptions.ANSI_PROFILE);
+        reformat();
+        assertDocumentText("after reformat lamda does not work",
+                "void\n" +
+                "renderScene(void)\n" +
+                "{\n" +
+                "    using namespace D2D::draw;\n" +
+                "    Do(5, []\n" +
+                "    {\n" +
+                "        clear(100, 100, 100);\n" +
+                "        clear(100, 100, 100);\n" +
+                "        clear(100, 100, 100);\n" +
+                "        clear(100, 100, 100);\n" +
+                "    });\n" +
+                "\n" +
+                "}\n"
+                );
+    }
 }
