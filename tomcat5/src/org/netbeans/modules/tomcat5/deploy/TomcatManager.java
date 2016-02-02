@@ -93,7 +93,7 @@ import org.openide.util.NbBundle;
  */
 public class TomcatManager implements DeploymentManager {
 
-    public enum TomcatVersion {TOMCAT_50, TOMCAT_55, TOMCAT_60, TOMCAT_70, TOMCAT_80};
+    public enum TomcatVersion {TOMCAT_50, TOMCAT_55, TOMCAT_60, TOMCAT_70, TOMCAT_80, TOMCAT_90};
 
     public enum TomEEVersion {TOMEE_15, TOMEE_16, TOMEE_17};
 
@@ -249,6 +249,8 @@ public class TomcatManager implements DeploymentManager {
      */
     public String getUri () {
         switch (tomcatVersion) {
+            case TOMCAT_90:
+                return TomcatFactory.TOMCAT_URI_PREFIX_90 + uri;
             case TOMCAT_80:
                 return TomcatFactory.TOMCAT_URI_PREFIX_80 + uri;
             case TOMCAT_70:
@@ -267,7 +269,7 @@ public class TomcatManager implements DeploymentManager {
      * @return URI without home and base specification
      */
     public String getPlainUri () {
-        if (isTomcat70() || isTomcat80()) {
+        if (isAboveTomcat70()) {
             return "http://" + tp.getHost() + ":" + getCurrentServerPort() + "/manager/text/"; //NOI18N
         }
         return "http://" + tp.getHost() + ":" + getCurrentServerPort() + "/manager/"; //NOI18N
@@ -416,6 +418,16 @@ public class TomcatManager implements DeploymentManager {
         }
 
         return false;
+    }
+
+    public boolean isAboveTomcat70() {
+        return tomcatVersion == TomcatVersion.TOMCAT_70
+                || tomcatVersion == TomcatVersion.TOMCAT_80
+                || tomcatVersion == TomcatVersion.TOMCAT_90;
+    }
+    
+    public boolean isTomcat90() {
+        return tomcatVersion == TomcatVersion.TOMCAT_90;
     }
 
     public boolean isTomcat80() {
@@ -921,7 +933,7 @@ public class TomcatManager implements DeploymentManager {
 
             String usersString = null;
             if (passwd != null) {
-                if (isTomcat70() || isTomcat80()) {
+                if (isAboveTomcat70()) {
                     usersString = "<user username=\"ide\" password=\"" + passwd + "\" roles=\"manager-script,admin\"/>\n</tomcat-users>";
                 } else {
                     usersString = "<user username=\"ide\" password=\"" + passwd + "\" roles=\"manager,admin\"/>\n</tomcat-users>";

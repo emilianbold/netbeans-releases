@@ -487,14 +487,14 @@ public class TomcatPlatformImpl extends J2eePlatformImpl2 {
             // we will see if that's a problem for anybody
             profiles.add(Profile.J2EE_13);
             profiles.add(Profile.J2EE_14);
-            if (manager.isTomcat60() || manager.isTomcat70() || manager.isTomcat80()) {
+            if (manager.isTomcat60() || manager.isAboveTomcat70()) {
                 profiles.add(Profile.JAVA_EE_5);
             }
         //}
-        if (manager.isTomcat70() || manager.isTomcat80()) {
+        if (manager.isAboveTomcat70()) {
             profiles.add(Profile.JAVA_EE_6_WEB);
         }
-        if (manager.isTomcat80()) {
+        if (manager.isTomcat80() || manager.isTomcat90()) {
             profiles.add(Profile.JAVA_EE_7_WEB);
         }
         return profiles;
@@ -502,13 +502,22 @@ public class TomcatPlatformImpl extends J2eePlatformImpl2 {
     
     @Override
     public Set<String> getSupportedJavaPlatformVersions() {
-        Set<String> versions = new HashSet<String>(4);
-        if (!manager.isTomEE()) {
-            versions.add("1.4"); // NOI18N
-            versions.add("1.5"); // NOI18N
+        Set<String> versions = new HashSet<String>(6);
+
+        if (!manager.isTomcat90()) {
+            if (!manager.isTomcat80()) {
+                if (!manager.isTomcat70()) {
+                    if (!manager.isTomcat60()) {
+                        versions.add("1.4"); // NOI18N
+                        versions.add("1.5"); // NOI18N
+                    }
+                    versions.add("1.5"); // NOI18N
+                }
+                versions.add("1.6"); // NOI18N
+            }
+            versions.add("1.7"); // NOI18N
         }
-        versions.add("1.6"); // NOI18N
-        versions.add("1.7"); // NOI18N
+        versions.add("1.8"); // NOI18N
         return versions;
     }
     

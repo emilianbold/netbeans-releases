@@ -166,6 +166,8 @@ public class AutomaticRegistration {
             urlTmp = new StringBuilder(TomcatFactory.TOMCAT_URI_PREFIX_70);
         } else if (version.startsWith("8.")) { // NOI18N
             urlTmp = new StringBuilder(TomcatFactory.TOMCAT_URI_PREFIX_80);
+        } else if (version.startsWith("9.")) { // NOI18N
+            urlTmp = new StringBuilder(TomcatFactory.TOMCAT_URI_PREFIX_90);
         } else {
             LOGGER.log(Level.INFO, "Cannot register the default Tomcat server. " + " The version " + version + " is not supported."); // NOI18N
             return 5;
@@ -214,6 +216,7 @@ public class AutomaticRegistration {
                 + "|" + Pattern.quote(TomcatFactory.TOMCAT_URI_PREFIX_60) // NOI18N
                 + "|" + Pattern.quote(TomcatFactory.TOMCAT_URI_PREFIX_70) // NOI18N
                 + "|" + Pattern.quote(TomcatFactory.TOMCAT_URI_PREFIX_80) // NOI18N
+                + "|" + Pattern.quote(TomcatFactory.TOMCAT_URI_PREFIX_90) // NOI18N
                 + ")" + Pattern.quote(TomcatFactory.TOMCAT_URI_HOME_PREFIX) // NOI18N
                 + Pattern.quote(catalinaHomeValue)
                 + "(" + Pattern.quote(TomcatFactory.TOMCAT_URI_BASE_PREFIX) + ".+)?$"); // NOI18N
@@ -254,6 +257,7 @@ public class AutomaticRegistration {
                 + "|" + Pattern.quote(TomcatFactory.TOMCAT_URI_PREFIX_60)  // NOI18N
                 + "|" + Pattern.quote(TomcatFactory.TOMCAT_URI_PREFIX_70)  // NOI18N
                 + "|" + Pattern.quote(TomcatFactory.TOMCAT_URI_PREFIX_80)  // NOI18N
+                + "|" + Pattern.quote(TomcatFactory.TOMCAT_URI_PREFIX_90)  // NOI18N
                 + ")" + Pattern.quote(TomcatFactory.TOMCAT_URI_HOME_PREFIX)  // NOI18N
                 + "(.+)$"); // NOI18N
 
