@@ -54,7 +54,7 @@ import javax.swing.border.Border;
 import oracle.clouddev.server.profile.activity.client.api.Activity;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.ui.project.activity.ActivityDisplayer;
-import org.netbeans.modules.odcs.ui.project.activity.ActivityTypes;
+import org.netbeans.modules.odcs.client.api.ActivityTypes;
 import org.netbeans.modules.odcs.ui.project.activity.BuildActivityDisplayer;
 import org.netbeans.modules.odcs.ui.project.activity.DeploymentActivityDisplayer;
 import org.netbeans.modules.odcs.ui.project.activity.GenericActivityDisplayer;

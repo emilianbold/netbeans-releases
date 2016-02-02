@@ -19,13 +19,14 @@ import oracle.clouddev.server.profile.activity.client.api.ActivityApi;
 import oracle.clouddev.server.profile.activity.client.api.ListRequestParams;
 import oracle.clouddev.server.profile.activity.client.rest.ActivityApiClient;
 import java.net.PasswordAuthentication;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import oracle.clouddev.server.profile.activity.client.api.Activity;
+import oracle.clouddev.server.profile.activity.client.api.ActivityType;
 import org.apache.commons.httpclient.HttpClient;
 import org.eclipse.mylyn.commons.net.WebUtil;
+import org.netbeans.modules.odcs.client.api.ActivityTypes;
 import org.netbeans.modules.odcs.client.api.ODCSClient;
 import org.netbeans.modules.odcs.client.api.ODCSException;
 import org.netbeans.modules.team.commons.LogUtils;
@@ -117,7 +118,7 @@ public class ODCSClientImpl implements ODCSClient {
             }
             originalContextCL = setupContextClassLoader();
 
-            ListRequestParams params = new ListRequestParams(Collections.EMPTY_LIST, 0, 100);
+            ListRequestParams params = new ListRequestParams(ActivityTypes.NAMES, 0, 100);
             oracle.clouddev.server.profile.activity.client.api.QueryResult r = getActivityClient().list(projectId, params);
             return r.getActivities();
         } catch (WrappedCheckedException e) {

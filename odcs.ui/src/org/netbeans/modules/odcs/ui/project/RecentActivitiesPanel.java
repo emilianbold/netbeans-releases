@@ -67,7 +67,7 @@ import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.client.api.ODCSClient;
 import org.netbeans.modules.odcs.client.api.ODCSException;
 import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
-import org.netbeans.modules.odcs.ui.project.activity.ActivityTypes;
+import org.netbeans.modules.odcs.client.api.ActivityTypes;
 import org.netbeans.modules.odcs.ui.utils.Utils;
 import org.netbeans.modules.team.server.ui.spi.BuilderAccessor;
 import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
