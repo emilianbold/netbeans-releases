@@ -42,19 +42,13 @@
 package org.netbeans.modules.odcs.ui.project.activity;
 
 import java.awt.Component;
-import java.awt.Desktop;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -64,7 +58,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import oracle.clouddev.server.profile.activity.client.api.Activity;
-import org.netbeans.modules.bugtracking.commons.TextUtils;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.client.api.ActivityTypes;
@@ -165,28 +158,16 @@ public final class ScmActivityDisplayer extends ActivityDisplayer implements Act
         if(author == null) {
             return new JLabel();
         }
-        if(EMAIL_PATTERN.matcher(author).matches()) { 
-            return new LinkLabel(author) {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    try {
-                        
-                        String comment = TextUtils.encodeURL(
-                                            NbBundle.getMessage(ScmActivityDisplayer.class, "FMT_MailToSubject", // NOI18N
-                                                activity.getProperty(String.format(PROP_COMMITS_HASH, idx)),
-                                                skipLineBreaks(activity.getProperty(String.format(PROP_COMMITS_COMMENT, idx)))));
-                        Desktop.getDesktop().mail(new URI("mailto:" + author + "?subject=" + comment)); // NOI18N
-                    } catch (IOException | URISyntaxException ex) {
-                        Logger.getLogger(ActivityDisplayer.class.getName()).log(Level.WARNING, null, ex);
-                    }
-                }
-            };
+        if(EMAIL_PATTERN.matcher(author).matches()) {
+            String subject = NbBundle.getMessage(ScmActivityDisplayer.class, "FMT_MailToSubject", // NOI18N
+                                    activity.getProperty(String.format(PROP_COMMITS_HASH, idx)),
+                                    skipLineBreaks(activity.getProperty(String.format(PROP_COMMITS_COMMENT, idx))));
+            return createMailtoButton(author, author, subject, null);
         } else {
             return new JLabel(author);            
         }
     }
     
-
     protected LinkLabel getBranchLink() {
         final String branch = activity.getProperty(PROP_BRANCH);
         final String branchUrl = getBranchUrl(branch);
