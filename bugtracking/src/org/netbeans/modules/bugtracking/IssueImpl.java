@@ -317,7 +317,7 @@ public final class IssueImpl<R, I> implements Comparable<IssueImpl> {
         if(data instanceof Comparable) {
             return ((Comparable)data).compareTo(i.data);
         } else {
-            return getID().compareTo(i.getID());
+            return repo.compareID(getID(), i.getID());
         }
     }
 

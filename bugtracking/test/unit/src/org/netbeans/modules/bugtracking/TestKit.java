@@ -45,6 +45,7 @@ import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.spi.QueryController;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 
 /**
@@ -54,7 +55,7 @@ import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 public class TestKit {
     public static RepositoryImpl getRepository(TestRepository repo) {
         return new RepositoryImpl(
-                repo, 
+                repo != null ? repo : new DefaultTestRepository("defaulttestrepository"), 
                 new TestRepositoryProvider(), 
                 new TestQueryProvider(),
                 new TestIssueProvider(),
@@ -76,5 +77,26 @@ public class TestKit {
 
     public static void openQuery(Query query) {
         QueryAction.openQuery(APIAccessor.IMPL.getImpl(query), null, QueryController.QueryMode.EDIT);
+    }
+    
+    private static class DefaultTestRepository extends TestRepository {
+        private RepositoryInfo info;
+
+        public DefaultTestRepository(RepositoryInfo info) {
+            this.info = info;
+        }
+
+        public DefaultTestRepository(String id) {
+            this(id, "dafaultestconnector");
+        }
+        
+        public DefaultTestRepository(String id, String cid) {
+            this.info = new RepositoryInfo(id, cid, "http://test", null, null, null, null, null, null);
+        }
+        
+        @Override
+        public RepositoryInfo getInfo() {
+            return info;
+        }
     }
 }
