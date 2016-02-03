@@ -167,6 +167,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         incSearchTextField.getDocument().addDocumentListener(incSearchTextFieldListener);
         addEnterKeystrokeFindNextTo(incSearchTextField);
         addShiftEnterKeystrokeFindPreviousTo(incSearchTextField);
+        addAltEnterKeystrokeSelect(incSearchTextField);
         if (getCurrentKeyMapProfile().startsWith("Emacs")) { // NOI18N
             emacsProfileFix(incSearchTextField);
         }
@@ -556,6 +557,20 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         return pcl;
     }
 
+     private void addAltEnterKeystrokeSelect(JTextComponent incSearchTextField) {
+        incSearchTextField.getInputMap().put(KeyStroke.getKeyStroke(
+                KeyEvent.VK_ENTER, InputEvent.ALT_MASK, true),
+                "select-all"); // NOI18N
+        incSearchTextField.getActionMap().put("select-all", // NOI18N
+                new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                selectAll();
+            }
+        });
+    }
+     
     private void addShiftEnterKeystrokeFindPreviousTo(JTextComponent incSearchTextField) {
         incSearchTextField.getInputMap().put(KeyStroke.getKeyStroke(
                 KeyEvent.VK_ENTER, InputEvent.SHIFT_MASK, true),
@@ -929,7 +944,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                         }
                         Position startPos = doc.createPosition(start);
                         Position endPos = doc.createPosition(end);
-                        newCarets.add(Pair.of(startPos, endPos));
+                        newCarets.add(Pair.of(endPos, startPos));
                     }
                     
                     editorCaret.replaceCarets(newCarets);
