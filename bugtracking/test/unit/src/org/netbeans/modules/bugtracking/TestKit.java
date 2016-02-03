@@ -53,9 +53,19 @@ import org.netbeans.modules.bugtracking.ui.query.QueryAction;
  * @author tomas
  */
 public class TestKit {
+    public static RepositoryImpl getRepository(String repoId) {
+        return new RepositoryImpl(
+                new DefaultTestRepository(repoId), 
+                new TestRepositoryProvider(), 
+                new TestQueryProvider(),
+                new TestIssueProvider(),
+                new TestStatusProvider(),
+                null, null, null);
+    }
+    
     public static RepositoryImpl getRepository(TestRepository repo) {
         return new RepositoryImpl(
-                repo != null ? repo : new DefaultTestRepository("defaulttestrepository"), 
+                repo, 
                 new TestRepositoryProvider(), 
                 new TestQueryProvider(),
                 new TestIssueProvider(),

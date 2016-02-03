@@ -66,7 +66,7 @@ public class RepositoryImplTest extends NbTestCase {
     }
 
     public void testcompareID() {
-        RepositoryImpl r = TestKit.getRepository(null);
+        RepositoryImpl r = TestKit.getRepository("defaulttestrepository");
         assertTrue(r.compareID("1", "1") == 0);
         assertTrue(r.compareID("123", "123") == 0);
         assertTrue(r.compareID("1", "2") < 0);
