@@ -53,6 +53,7 @@ import com.sun.source.doctree.EndElementTree;
 import com.sun.source.doctree.EntityTree;
 import com.sun.source.doctree.ErroneousTree;
 import com.sun.source.doctree.IdentifierTree;
+import com.sun.source.doctree.IndexTree;
 import com.sun.source.doctree.InheritDocTree;
 import com.sun.source.doctree.LinkTree;
 import com.sun.source.doctree.LiteralTree;
@@ -188,6 +189,16 @@ public class ImmutableDocTreeTranslator extends ImmutableTreeTranslator implemen
 
     protected final IdentifierTree rewriteChildren(IdentifierTree tree) {
         return tree; // Nothing to do for a string
+    }
+
+    protected final IndexTree rewriteChildren(IndexTree tree) {
+        IndexTree value = tree;
+        List<? extends DocTree> desc = translateDoc(tree.getDescription());
+        DocTree term = translate(tree.getSearchTerm());
+        if (desc != tree.getDescription() || term != tree.getSearchTerm()) {
+            value = make.Index(term, desc);
+        }
+        return value;
     }
 
     protected final InheritDocTree rewriteChildren(InheritDocTree tree) {
@@ -402,6 +413,11 @@ public class ImmutableDocTreeTranslator extends ImmutableTreeTranslator implemen
 
     @Override
     public DocTree visitIdentifier(IdentifierTree tree, Object p) {
+        return rewriteChildren(tree);
+    }
+
+    @Override
+    public DocTree visitIndex(IndexTree tree, Object p) {
         return rewriteChildren(tree);
     }
 

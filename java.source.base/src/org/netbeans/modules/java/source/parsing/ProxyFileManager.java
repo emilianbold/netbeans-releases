@@ -769,7 +769,7 @@ public final class ProxyFileManager implements JavaFileManager {
                         EMPTY:
                         new JavaFileManager[] {src};
             }));
-            m.put(StandardLocation.SYSTEM_MODULE_PATH, new Entry(() -> new JavaFileManager[] {createSystemModuleFileManager()}));
+            m.put(StandardLocation.SYSTEM_MODULES, new Entry(() -> new JavaFileManager[] {createSystemModuleFileManager()}));
             m.put(StandardLocation.MODULE_PATH, new Entry(() -> new JavaFileManager[] {createModuleFileManager()}));
             return m;
         }

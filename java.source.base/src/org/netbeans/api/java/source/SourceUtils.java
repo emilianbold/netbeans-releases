@@ -1231,7 +1231,7 @@ public class SourceUtils {
                 if (s.isDependencies()) {
                     toSearch.add(StandardLocation.MODULE_PATH);
                     toSearch.add(StandardLocation.UPGRADE_MODULE_PATH);
-                    toSearch.add(StandardLocation.SYSTEM_MODULE_PATH);
+                    toSearch.add(StandardLocation.SYSTEM_MODULES);
                 }
             }
             try {

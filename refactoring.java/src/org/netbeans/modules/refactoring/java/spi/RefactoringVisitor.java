@@ -56,6 +56,7 @@ import com.sun.source.doctree.EndElementTree;
 import com.sun.source.doctree.EntityTree;
 import com.sun.source.doctree.ErroneousTree;
 import com.sun.source.doctree.IdentifierTree;
+import com.sun.source.doctree.IndexTree;
 import com.sun.source.doctree.InheritDocTree;
 import com.sun.source.doctree.LinkTree;
 import com.sun.source.doctree.LiteralTree;
@@ -306,6 +307,11 @@ public class RefactoringVisitor extends TreePathScanner<Tree, Element> implement
         return docScanner.visitIdentifier(node, p, null);
     }
 
+    @Override
+    public DocTree visitIndex(IndexTree node, Element p) {
+        return docScanner.visitIndex(node, p, null);
+    }
+
     /**
      * @since 1.47
      */
@@ -525,6 +531,11 @@ public class RefactoringVisitor extends TreePathScanner<Tree, Element> implement
         }
 
         @Override
+        public DocTree visitIndex(IndexTree node, Element p) {
+            return instance.visitIndex(node, p);
+        }
+
+        @Override
         public DocTree visitInheritDoc(InheritDocTree node, Element p) {
             return instance.visitInheritDoc(node, p);
         }
@@ -657,6 +668,10 @@ public class RefactoringVisitor extends TreePathScanner<Tree, Element> implement
 
         public DocTree visitIdentifier(IdentifierTree node, Element p, Void ignore) {
             return super.visitIdentifier(node, p);
+        }
+
+        public DocTree visitIndex(IndexTree node, Element p, Void ignore) {
+            return super.visitIndex(node, p);
         }
 
         public DocTree visitInheritDoc(InheritDocTree node, Element p, Void ignore) {
