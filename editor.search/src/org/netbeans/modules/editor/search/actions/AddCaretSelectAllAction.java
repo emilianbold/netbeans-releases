@@ -97,44 +97,46 @@ public class AddCaretSelectAllAction extends AbstractEditorAction {
             EditorFindSupport findSupport = EditorFindSupport.getInstance();
             HashMap<String, Object> props = new HashMap<>(findSupport.createDefaultFindProperties());
             String searchWord = target.getSelectedText();
-            int n = searchWord.indexOf('\n');
-            if (n >= 0) {
-                searchWord = searchWord.substring(0, n);
-            }
-            props.put(EditorFindSupport.FIND_WHAT, searchWord);
-            Document doc = target.getDocument();
-            EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
-            if (eui.getComponent().getClientProperty("AsTextField") == null) { //NOI18N
-                findSupport.setFocusedTextComponent(eui.getComponent());
-            }
-            findSupport.putFindProperties(props);
-            findSupport.find(null, false);
-
-            if (caret instanceof EditorCaret) {
-                EditorCaret editorCaret = (EditorCaret) caret;
-                try {
-                    int[] blocks = findSupport.getBlocks(new int[]{-1, -1}, doc, 0, doc.getLength());
-                    if (blocks[0] >= 0 && blocks.length % 2 == 0) {
-                        List<Pair<Position, Position>> newCarets = new LinkedList<>();
-
-                        for (int i = 0; i < blocks.length; i += 2) {
-                            int start = blocks[i];
-                            int end = blocks[i + 1];
-                            if (start == -1 || end == -1) {
-                                break;
-                            }
-                            Position startPos = doc.createPosition(start);
-                            Position endPos = doc.createPosition(end);
-                            newCarets.add(Pair.of(endPos, startPos));
-                        }
-
-                        editorCaret.replaceCarets(newCarets);
-                    }
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
+            if (searchWord != null) {                
+                int n = searchWord.indexOf('\n');
+                if (n >= 0) {
+                    searchWord = searchWord.substring(0, n);
                 }
-            }
+                props.put(EditorFindSupport.FIND_WHAT, searchWord);
+                Document doc = target.getDocument();
+                EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
+                if (eui.getComponent().getClientProperty("AsTextField") == null) { //NOI18N
+                    findSupport.setFocusedTextComponent(eui.getComponent());
+                }
+                findSupport.putFindProperties(props);
+                findSupport.find(null, false);
 
+                if (caret instanceof EditorCaret) {
+                    EditorCaret editorCaret = (EditorCaret) caret;
+                    try {
+                        int[] blocks = findSupport.getBlocks(new int[]{-1, -1}, doc, 0, doc.getLength());
+                        if (blocks[0] >= 0 && blocks.length % 2 == 0) {
+                            List<Pair<Position, Position>> newCarets = new LinkedList<>();
+
+                            for (int i = 0; i < blocks.length; i += 2) {
+                                int start = blocks[i];
+                                int end = blocks[i + 1];
+                                if (start == -1 || end == -1) {
+                                    break;
+                                }
+                                Position startPos = doc.createPosition(start);
+                                Position endPos = doc.createPosition(end);
+                                newCarets.add(Pair.of(endPos, startPos));
+                            }
+
+                            editorCaret.replaceCarets(newCarets);
+                        }
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+
+            }
         }
     }
 }
