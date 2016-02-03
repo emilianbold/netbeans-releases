@@ -57,7 +57,9 @@ import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript2.debug.models.ViewModelSupport;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
+import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
+import org.netbeans.modules.web.javascript.debugger.eval.VarNamesTranslatorFactory;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -194,6 +196,11 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
             String frameName = frame.getFunctionName();
             if (frameName.isEmpty()) {
                 frameName = Bundle.LBL_AnonymousFunction();
+            } else {
+                MiscEditorUtil.NamesTranslator namesTranslator = VarNamesTranslatorFactory.get(frame, debugger, pc.getProject()).getNamesTranslator();
+                if (namesTranslator != null) {
+                    frameName = namesTranslator.translateDeclarationNodeName(frameName);
+                }
             }
             if (frame == debugger.getCurrentCallFrame()) {
                 return toHTML(frameName, true, false, null);

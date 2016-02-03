@@ -80,6 +80,8 @@ class MappingTokenizer implements Iterable<Mapping> {
         private int lastOriginalLine = 0;
         /** Original column of the last mapping. */
         private int lastOriginalColumn = 0;
+        /** Name index of the last mapping. */
+        private int lastNameIndex = 0;
 
         /**
          * Creates a new {@code MappingIterator}.
@@ -117,6 +119,10 @@ class MappingTokenizer implements Iterable<Mapping> {
                     mapping.setOriginalLine(lastOriginalLine);
                     lastOriginalColumn += parser.next();
                     mapping.setOriginalColumn(lastOriginalColumn);
+                    if (parser.hasNext()) {
+                        lastNameIndex += parser.next();
+                        mapping.setNameIndex(lastNameIndex);
+                    }
                 }
             }
             return mapping;
