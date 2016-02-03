@@ -564,6 +564,16 @@ public final class Model {
         }
         return null;
     }
+    
+    /**
+     * Get the declaration object of the given offset position.
+     * @param offset the offset position
+     * @return an object that declares code at the offset
+     */
+    public JsObject getDeclarationObject(int offset) {
+        DeclarationScope scope = ModelUtils.getDeclarationScope(this, offset);
+        return (JsObject) scope;
+    }
    
     private void resolveLocalTypes(JsObject object, JsDocumentationHolder docHolder) {
         Set<String> alreadyResolved = new HashSet<String>();

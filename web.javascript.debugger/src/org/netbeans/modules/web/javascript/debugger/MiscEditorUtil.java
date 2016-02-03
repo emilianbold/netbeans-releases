@@ -52,7 +52,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -74,6 +76,16 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.Project;
 import org.netbeans.editor.EditorUI;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.Model;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.web.common.api.RemoteFileCache;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.common.sourcemap.SourceMap;
@@ -188,6 +200,13 @@ public final class MiscEditorUtil {
         synchronized (TRANSLATORS) {
             TRANSLATORS.remove(debugger);
         }
+    }
+    
+    public static NamesTranslator createNamesTranslator(Debugger debugger, Project project, String scriptURL, int lineNumber, int columnNumber) {
+        if (!USE_SOURCE_MAPS) {
+            return null;
+        }
+        return NamesTranslator.create(debugger, project, scriptURL, lineNumber, columnNumber);
     }
 
     /**
@@ -754,6 +773,136 @@ public final class MiscEditorUtil {
             return sourceFiles;
         }
         
+    }
+
+    public static class NamesTranslator {
+
+        private final FileObject fileObject;
+        private final Source source;
+        private final int offset;
+        private final SourceMapsTranslator smt;
+        
+        private String declarationNodeName;
+        private final Map<String, String> directMap = new HashMap<>();
+        private final Map<String, String> reverseMap = new HashMap<>();
+        private boolean varTranslationsRegistered;
+
+        private static NamesTranslator create(Debugger debugger, Project project, String scriptURL, int lineNumber, int columnNumber) {
+            if (!USE_SOURCE_MAPS || debugger == null) {
+                return null;
+            }
+            FileObject fileObject = getFile(project, scriptURL);
+            if (fileObject == null) {
+                return null;
+            }
+            
+            Source source = Source.create(fileObject);
+            if (source == null) {
+                return null;
+            }
+            Document doc = source.getDocument(true);
+            if (doc == null) {
+                return null;
+            }
+            int offset = NbDocument.findLineOffset((StyledDocument) doc, lineNumber) + columnNumber;
+
+            SourceMapsTranslator smt = getSourceMapsTranslator(debugger);
+            return new NamesTranslator(fileObject, source, offset, smt);
+        }
+        
+        NamesTranslator(FileObject fileObject, Source source,
+                        int offset, SourceMapsTranslator smt) {
+            this.fileObject = fileObject;
+            this.source = source;
+            this.offset = offset;
+            this.smt = smt;
+        }
+        
+        public synchronized String translate(final String name) {
+            registerVarTranslations();
+            String tname = directMap.get(name);
+            if (tname != null) {
+                return tname;
+            } else {
+                return name;
+            }
+        }
+        
+        private void registerVarTranslations() {
+            assert Thread.holdsLock(this);
+            if (varTranslationsRegistered) {
+                return ;
+            }
+            varTranslationsRegistered = true;
+            try {
+                ParserManager.parse(Collections.singleton(source), new UserTask() {
+                    public @Override void run(ResultIterator resultIterator) throws Exception {
+                        Parser.Result r = resultIterator.getParserResult();
+                        ParserResult pr = (ParserResult) r;
+                        Model model = Model.getModel(pr);
+                        Collection<? extends JsObject> variables = model.getVariables(offset);
+                        for (JsObject var : variables) {
+                            int voffset = var.getOffset();
+                            Document doc = source.getDocument(true);
+                            int line = NbDocument.findLineNumber((StyledDocument) doc, voffset);
+                            int column = NbDocument.findLineColumn((StyledDocument) doc, voffset);
+                            SourceMapsTranslator.Location loc = new SourceMapsTranslator.Location(fileObject, line, column);
+                            loc = smt.getSourceLocation(loc);
+                            String tname = loc.getName();
+                            if (tname != null) {
+                                String name = var.getName();
+                                directMap.put(name, tname);
+                                reverseMap.put(tname, name);
+                            }
+                        }
+                    }
+                });
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
+        public synchronized String reverseTranslate(String name) {
+            registerVarTranslations();
+            String tname = reverseMap.get(name);
+            if (tname != null) {
+                return tname;
+            } else {
+                return name;
+            }
+        }
+        
+        public synchronized String translateDeclarationNodeName(String defaultName) {
+            if (declarationNodeName == null) {
+                final String[] namePtr = { null };
+                try {
+                    ParserManager.parse(Collections.singleton(source), new UserTask() {
+                        public @Override void run(ResultIterator resultIterator) throws Exception {
+                            Parser.Result r = resultIterator.getParserResult();
+                            ParserResult pr = (ParserResult) r;
+                            Model model = Model.getModel(pr);
+                            JsObject declarationObject = model.getDeclarationObject(offset);
+                            Identifier declarationName = declarationObject.getDeclarationName();
+                            int doffset = declarationName.getOffsetRange().getStart();
+                            Document doc = source.getDocument(true);
+                            int line = NbDocument.findLineNumber((StyledDocument) doc, doffset);
+                            int column = NbDocument.findLineColumn((StyledDocument) doc, doffset);
+                            SourceMapsTranslator.Location loc = new SourceMapsTranslator.Location(fileObject, line, column);
+                            loc = smt.getSourceLocation(loc);
+                            namePtr[0] = loc.getName();
+                        }
+                    });
+                } catch (ParseException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                if (namePtr[0] != null) {
+                    declarationNodeName = namePtr[0];
+                } else {
+                    declarationNodeName = defaultName;
+                }
+            }
+            return declarationNodeName;
+        }
     }
 
 }

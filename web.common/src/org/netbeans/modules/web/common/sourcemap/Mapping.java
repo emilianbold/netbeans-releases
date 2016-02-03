@@ -60,6 +60,8 @@ public class Mapping {
     private int originalLine = -1;
     /** Column in the source file. */
     private int originalColumn = -1;
+    /** Index into the names array. */
+    private int nameIndex = -1;
 
     /**
      * Sets the column in the compiled source.
@@ -97,6 +99,10 @@ public class Mapping {
         this.originalColumn = originalColumn;
     }
 
+    void setNameIndex(int nameIndex) {
+        this.nameIndex = nameIndex;
+    }
+    
     /**
      * Returns the column in the compiled source.
      * 
@@ -132,12 +138,20 @@ public class Mapping {
     public int getOriginalColumn() {
         return originalColumn;
     }
+    
+    /**
+     * Returns an index of the name at this location.
+     * @return An index, or <code>-1</code> when no name is available.
+     */
+    public int getNameIndex() {
+        return nameIndex;
+    }
 
     @Override
     public String toString() {
         return Mapping.class.getName()+"[column="+column+", orig:<"+originalLine+","+originalColumn+">]";
     }
-    
+
     static class ColumnComparator implements Comparator<Mapping> {
         
         private static ColumnComparator INSTANCE = new ColumnComparator();
