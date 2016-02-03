@@ -481,6 +481,54 @@ public final class RepositoryImpl<R, Q, I> {
         return getConnectorId() + "<=>" + getId() + "<=>" + (--fakeIdCounter);
     }
 
+    private boolean hasNumericIDs = true;
+    private boolean hasNumericPrefix = true;
+    private boolean hasNumericSufix = true;
+    int compareID(String id1, String id2) {
+        if(hasNumericIDs) {
+            try {
+                return compare(id1, id2);
+            } catch (NumberFormatException e) {
+                hasNumericIDs = false;
+            }
+        }        
+        int idx1 = id1.lastIndexOf("-");
+        int idx2 = id2.lastIndexOf("-");
+        
+        if(idx1 > -1 && idx2 > -1) {            
+            if(hasNumericPrefix) {
+                try {
+                    int i = compare(getPrefix(id1, idx1), getPrefix(id2, idx2));
+                    return i != 0 ? i : getSufix(id1, idx1).compareTo(getSufix(id2, idx2));
+                } catch (NumberFormatException e) { 
+                    hasNumericPrefix = false; 
+                }
+            } else if(hasNumericSufix) {
+                try {
+                    int i = getPrefix(id1, idx1).compareTo(getPrefix(id2, idx2));
+                    return i != 0 ? i : compare(getSufix(id1, idx1), getSufix(id2, idx2));                        
+                } catch (NumberFormatException e) { 
+                    hasNumericSufix = false; 
+                }
+            }
+        }
+        return id1.compareTo(id2);
+    }
+
+    protected String getSufix(String id1, int idx1) {
+        return id1.substring(idx1 + 1);
+    }
+
+    private String getPrefix(String id1, int idx1) {
+        return id1.substring(0, idx1);
+    }
+
+    protected int compare(String id1, String id2) throws NumberFormatException {
+        long l1 = Long.parseLong(id1);
+        long l2 = Long.parseLong(id2);
+        return Long.compare(l1, l2);
+    }
+
     private abstract class WrapperMap<DATA, WRAPPER> extends HashMap<DATA, WeakReference<WRAPPER>> {
 
         public synchronized WRAPPER getWrapper(DATA d) {

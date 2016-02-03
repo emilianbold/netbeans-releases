@@ -41,22 +41,16 @@
  */
 package org.netbeans.modules.odcs.ui.project.activity;
 
+import java.awt.Color;
 import java.awt.Component;
-import java.awt.Desktop;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.MouseEvent;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -65,7 +59,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import oracle.clouddev.server.profile.activity.client.api.Activity;
 import oracle.clouddev.server.profile.activity.client.api.Author;
-import org.netbeans.modules.odcs.ui.project.LinkLabel;
+import org.netbeans.modules.bugtracking.commons.LinkButton;
 import org.netbeans.modules.odcs.ui.utils.Utils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -114,16 +108,7 @@ public abstract class ActivityDisplayer {
         Icon userIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/ui/resources/user.png", true); // NOI18N
         final String mail = getUserMail();
         if(mail != null) {
-            LinkLabel mailLink = new LinkLabel(getUserName()) {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    try {
-                        Desktop.getDesktop().mail(new URI("mailto:" + mail)); // NOI18N
-                    } catch (IOException | URISyntaxException ex) {
-                        Logger.getLogger(ActivityDisplayer.class.getName()).log(Level.WARNING, null, ex);
-                    }
-                }
-            };
+            LinkButton.MailtoButton mailLink = createMailtoButton(getUserName(), mail, null, null);                
             panel.add(new JLabel("", userIcon, SwingConstants.LEFT), new GridBagConstraints());
             panel.add(mailLink, new GridBagConstraints());            
         } else {
@@ -132,6 +117,13 @@ public abstract class ActivityDisplayer {
         return panel;
     }
 
+    protected LinkButton.MailtoButton createMailtoButton(String text, String mail, String subject, String body) {
+        LinkButton.MailtoButton b = new LinkButton.MailtoButton(text, null, mail, subject, body);
+        b.setColors(Color.BLUE, new Color(0, 150, 255), new Color(0, 150, 255), Color.BLUE);
+        b.setFocusable(false);
+        return b;
+    }
+    
     /**
      * Override this default implementation to display activity specific icon
      */
