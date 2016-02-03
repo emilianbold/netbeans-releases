@@ -112,6 +112,7 @@ public final class Debugger {
     private final Callback callback;
     private boolean initDOMLister = true;
     private final List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
+    private final List<ScriptsListener> scriptsListeners = new CopyOnWriteArrayList<ScriptsListener>();
     private final PropertyChangeSupport pchs = new PropertyChangeSupport(this);
     private final Map<String, Script> scripts = new HashMap<String, Script>();
     private final WebKitDebugging webkit;
@@ -255,6 +256,22 @@ public final class Debugger {
         listeners.remove(l);
     }
     
+    /**
+     * Add a listener for debugger state changes.
+     * @param l a state change listener
+     */
+    public void addScriptsListener(ScriptsListener l) {
+        scriptsListeners.add(l);
+    }
+    
+    /**
+     * Remove a listener for debugger state changes.
+     * @param l a state change listener
+     */
+    public void removeScriptsListener(ScriptsListener l) {
+        scriptsListeners.remove(l);
+    }
+    
     public void addPropertyChangeListener(PropertyChangeListener l) {
         pchs.addPropertyChangeListener(l);
     }
@@ -327,9 +344,14 @@ public final class Debugger {
         return res;
     }
 
-    private synchronized void addScript(JSONObject data) {
+    private void addScript(JSONObject data) {
         Script script = APIFactory.createScript(data, webkit);
-        scripts.put(script.getID(), script);
+        synchronized (this) {
+            scripts.put(script.getID(), script);
+        }
+        for (ScriptsListener sl : scriptsListeners) {
+            sl.scriptParsed(script);
+        }
     }
     
     public synchronized Script getScript(String scriptID) {
@@ -733,6 +755,15 @@ public final class Debugger {
          *                <code>false</code> when disabled.
          */
         void enabled(boolean enabled);
+    }
+    
+    /**
+     * Notifies when a new script is parsed.
+     */
+    public interface ScriptsListener extends EventListener {
+        
+        void scriptParsed(Script script);
+        
     }
     
 }

@@ -106,7 +106,7 @@ public class ConvertToLambdaPreconditionChecker {
         this.types = info.getTypes();
 
         Element el = info.getTrees().getElement(pathToNewClassTree);
-        if (el.getKind() == ElementKind.CONSTRUCTOR) {
+        if (el != null && el.getKind() == ElementKind.CONSTRUCTOR) {
             createdClass = el.getEnclosingElement();
         } else {
             createdClass = null;

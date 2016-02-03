@@ -246,7 +246,7 @@ else    assertEqualsID(branch.getId(), remoteBranches.get(BRANCH_NAME).getId());
         assertNotNull(branches.get(BRANCH_NAME));
 if (false)
         assertEquals(0, repository.getConfig().getSubsections(JGitConfig.CONFIG_BRANCH_SECTION).size());
-else    assertEquals(2, repository.getConfig().getSubsections(JGitConfig.CONFIG_BRANCH_SECTION).size());
+else    assertEquals(1, repository.getConfig().getSubsections(JGitConfig.CONFIG_BRANCH_SECTION).size());
         
         // delete branch
         client.deleteBranch(BRANCH_NAME, false, NULL_PROGRESS_MONITOR);

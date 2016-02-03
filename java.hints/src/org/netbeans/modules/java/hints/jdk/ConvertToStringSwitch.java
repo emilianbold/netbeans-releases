@@ -56,6 +56,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.java.hints.ArithmeticUtilities;
 import org.netbeans.modules.java.hints.errors.Utilities;
@@ -107,10 +108,7 @@ public class ConvertToStringSwitch {
     
     private static final String[] INIT_PATTERNS = {
         "$c1.equals($c2)",
-        "$c1.contentEquals($c2)"
-    };
-
-    private static final String[] INIT_PATTERNS_EQ = {
+        "$c1.contentEquals($c2)",
         "$c1 == $c2"
     };
 
@@ -118,14 +116,11 @@ public class ConvertToStringSwitch {
         "$var.equals($constant)",
         "$constant.equals($var)",
         "$var.contentEquals($constant)",
-        "$constant.contentEquals($var)"
+        "$constant.contentEquals($var)",
+        "$var == $constant",
+        "$constant == $var"
     };
     
-    private static final String[] PATTERNS_EQ = {
-        "$var == $constant",
-        "$constant == $var",
-    };
-
     @TriggerPattern(value="if ($cond) $body; else $else;")
     public static List<ErrorDescription> hint(final HintContext ctx) {
         if (   ctx.getPath().getParentPath().getLeaf().getKind() == Kind.IF
@@ -138,23 +133,19 @@ public class ConvertToStringSwitch {
         if (jlString == null) {
             return null;
         }
-        final Collection<String> initPatterns = new ArrayList<String>(INIT_PATTERNS.length + INIT_PATTERNS_EQ.length);
+        final Collection<String> initPatterns = new ArrayList<String>(INIT_PATTERNS.length);
 
         initPatterns.addAll(Arrays.asList(INIT_PATTERNS));
         
-        if (ctx.getPreferences().getBoolean(KEY_ALSO_EQ, DEF_ALSO_EQ)) {
-            initPatterns.addAll(Arrays.asList(INIT_PATTERNS_EQ));
-        }
-        
         IfToSwitchSupport eval = new IfToSwitchSupport(ctx) {
             private boolean [] varConst = new boolean[1];
-
+            
             @Override
             protected Object evalConstant(TreePath path) {
                 TypeMirror m = ci.getTrees().getTypeMirror(path);
-                if (ci.getTypes().asElement(m) == jlString) {
+                if (m.getKind() == TypeKind.NULL || ci.getTypes().asElement(m) == jlString) {
                     Object o = ArithmeticUtilities.compute(ci, path, true, true);
-                    if (ArithmeticUtilities.isRealValue(o)) {
+                    if (ArithmeticUtilities.isNull(o) || ArithmeticUtilities.isRealValue(o)) {
                         return o;
                     }
                 }
@@ -177,18 +168,28 @@ public class ConvertToStringSwitch {
 
             @Override
             protected TreePath matches(TreePath test, boolean initial) {
+                int cnt =  -1;
                 for (String pat : initPatterns) {
+                    cnt++;
                     if (MatcherUtilities.matches(ctx, test, pat, true)) {
                         TreePath c1 = ctx.getVariables().get("$c1");
                         TypeMirror m = ctx.getInfo().getTrees().getTypeMirror(c1);
+                        boolean n = false;
                         if (!Utilities.isValidType(m) ||
-                             ctx.getInfo().getTypes().asElement(m) != jlString) {
+                             (m.getKind() != TypeKind.NULL  &&
+                             ctx.getInfo().getTypes().asElement(m) != jlString)) {
                             continue;
                         }
+                        n |= m.getKind() == TypeKind.NULL;
                         TreePath c2 = ctx.getVariables().get("$c2");
                         m = ctx.getInfo().getTrees().getTypeMirror(c2);
                         if (!Utilities.isValidType(m) ||
-                             ctx.getInfo().getTypes().asElement(m) != jlString) {
+                             (m.getKind() != TypeKind.NULL  &&
+                             ctx.getInfo().getTypes().asElement(m) != jlString)) {
+                            continue;
+                        }
+                        n |= m.getKind() == TypeKind.NULL;
+                        if (cnt == 2 && !n) {
                             continue;
                         }
                         reportConstantAndLiteral(c1, c2);
@@ -240,26 +241,38 @@ public class ConvertToStringSwitch {
             leaf = tp.getLeaf();
         }
 
-        Collection<String> patterns = new ArrayList<String>(PATTERNS.length + PATTERNS_EQ.length);
+        Collection<String> patterns = new ArrayList<String>(PATTERNS.length);
 
         patterns.addAll(Arrays.asList(PATTERNS));
 
         ctx.getVariables().put("$var", var);
-        if (ctx.getPreferences().getBoolean(KEY_ALSO_EQ, DEF_ALSO_EQ)) {
-            patterns.addAll(Arrays.asList(PATTERNS_EQ));
-        }
+        
+        boolean acceptEquals = ctx.getPreferences().getBoolean(KEY_ALSO_EQ, DEF_ALSO_EQ);
         int i = -1;
-        assert PATTERNS.length == 4; // the cycle counts with specific positions
+        assert PATTERNS.length == 6; // the cycle counts with specific positions
         for (String patt : patterns) {
             ++i;
             ctx.getVariables().remove("$constant"); // NOI18N
 
             if (!MatcherUtilities.matches(ctx, tp, patt, true))
                 continue;
+            if (ctx.getVariables().get("$constant") == null ||
+                ctx.getVariables().get("$var") == null) {
+                continue;
+            }
             if (i % 2 == 0 && i < 4) {
                 varConst[0] = true;
             }
-            return ctx.getVariables().get("$constant"); // NOI18N
+            TreePath constPath = ctx.getVariables().get("$constant"); // NOI18N
+            if (i < 4 || acceptEquals) {
+                return constPath;
+            }
+
+            // equals is permitted when comparing with null, or option is set
+            TypeMirror constType = ctx.getInfo().getTrees().getTypeMirror(constPath);
+            if (constType != null && constType.getKind() == TypeKind.NULL) {
+                return constPath;
+            } 
         }
 
         return null;

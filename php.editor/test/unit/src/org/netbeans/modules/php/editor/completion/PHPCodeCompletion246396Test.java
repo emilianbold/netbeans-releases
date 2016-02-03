@@ -67,19 +67,19 @@ public class PHPCodeCompletion246396Test extends PHPCodeCompletionTestBase {
     }
 
     public void testUseSelf() throws Exception {
-        checkCompletion("testfiles/completion/lib/tests246396/issue246396.php", "self::^publicStaticMethod();", false);
+        checkCompletion("testfiles/completion/lib/tests246396/issue246396.php", "        self::^publicStaticMethod();", false);
     }
 
     public void testUseStatic() throws Exception {
-        checkCompletion("testfiles/completion/lib/tests246396/issue246396.php", "static::^privateStaticMethod();", false);
+        checkCompletion("testfiles/completion/lib/tests246396/issue246396.php", "        static::^privateStaticMethod();", false);
     }
 
     public void testUseTraitedSelf() throws Exception {
-        checkCompletion("testfiles/completion/lib/tests246396/issue246396.php", "self::^publicStaticTraitedMethod();", false);
+        checkCompletion("testfiles/completion/lib/tests246396/issue246396.php", "        self::^publicStaticTraitedMethod();", false);
     }
 
     public void testUseTraitedStatic() throws Exception {
-        checkCompletion("testfiles/completion/lib/tests246396/issue246396.php", "static::^privateStaticTraitedMethod();", false);
+        checkCompletion("testfiles/completion/lib/tests246396/issue246396.php", "        static::^privateStaticTraitedMethod();", false);
     }
 
 }

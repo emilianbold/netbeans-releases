@@ -1343,7 +1343,7 @@ public class ModelUtils {
         Collection<String> result = new ArrayList<String>();
         if (!alreadyCheck.contains(fqn)) {
             alreadyCheck.add(fqn);
-            Collection<IndexedElement> properties = jsIndex.getProperties(fqn);
+            Collection<IndexedElement> properties = jsIndex.getPropertiesWithPrefix(fqn, ModelUtils.PROTOTYPE);
             for (IndexedElement property : properties) {
                 if(ModelUtils.PROTOTYPE.equals(property.getName())) {  //NOI18N
                     Collection<? extends IndexResult> indexResults = jsIndex.findByFqn(property.getFQN(), JsIndex.FIELD_ASSIGNMENTS);

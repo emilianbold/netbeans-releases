@@ -49,7 +49,6 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -60,16 +59,14 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.web.clientproject.api.build.BuildTools.TasksMenuSupport;
 import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.netbeans.modules.web.clientproject.build.AdvancedTask;
 import org.netbeans.modules.web.clientproject.build.AdvancedTasksStorage;
+import org.netbeans.modules.web.clientproject.build.Tasks;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -86,23 +83,13 @@ public class TasksMenu extends JMenu {
 
     // @GuardedBy("EDT")
     private boolean menuBuilt = false;
-    volatile List<AdvancedTask> advancedTasks = null;
-    volatile boolean showSimpleTasks = true;
+    private volatile Tasks tasks = null;
 
 
     public TasksMenu(TasksMenuSupport support) {
         super(support.getTitle(TasksMenuSupport.Title.MENU));
         this.support = support;
-        advancedTasksStorage = new AdvancedTasksStorage(support.getProject(), support.getIdentifier(), getWorkDir(support));
-    }
-
-    private String getWorkDir(TasksMenuSupport support) {
-        FileObject workDir = support.getWorkDir();
-        String relativePath = FileUtil.getRelativePath(support.getProject().getProjectDirectory(), workDir);
-        if (relativePath != null) {
-            return relativePath;
-        }
-        return FileUtil.getFileDisplayName(workDir);
+        advancedTasksStorage = AdvancedTasksStorage.forBuildToolSupport(support);
     }
 
     boolean isMenuBuilt() {
@@ -135,30 +122,16 @@ public class TasksMenu extends JMenu {
     })
     private void buildMenu() {
         assert EventQueue.isDispatchThread();
-        final Future<List<String>> tasks = support.getTasks();
-        if (advancedTasks != null
-                && tasks.isDone()) {
-            try {
-                addMenuItems(tasks.get());
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-            } catch (ExecutionException ex) {
-                LOGGER.log(Level.WARNING, null, ex);
-            }
-            return;
-        }
+        assert tasks == null : tasks;
         // load tasks
         addLoadingMenuItem();
         RP.post(new Runnable() {
             @Override
             public void run() {
+                AdvancedTasksStorage.Data data = advancedTasksStorage.loadTasks();
+                Future<List<String>> simpleTasks = support.getTasks();
                 try {
-                    if (advancedTasks == null) {
-                        AdvancedTasksStorage.Data data = advancedTasksStorage.loadTasks();
-                        advancedTasks = data.getTasks();
-                        showSimpleTasks = data.isShowSimpleTasks();
-                    }
-                    rebuildMenu(tasks.get(1, TimeUnit.MINUTES));
+                    tasks = new Tasks(data.getTasks(), data.isShowSimpleTasks(), simpleTasks.get(1, TimeUnit.MINUTES));
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
                 } catch (ExecutionException ex) {
@@ -166,25 +139,23 @@ public class TasksMenu extends JMenu {
                     errorOccured(Bundle.TasksMenu_error_execution(
                             support.getTitle(TasksMenuSupport.Title.MENU),
                             ProjectUtils.getInformation(support.getProject()).getDisplayName()));
-                    rebuildMenu(null);
                 } catch (TimeoutException ex) {
                     LOGGER.log(Level.INFO, null, ex);
                     errorOccured(Bundle.TasksMenu_error_timeout(
                             support.getTitle(TasksMenuSupport.Title.MENU),
                             ProjectUtils.getInformation(support.getProject()).getDisplayName()));
-                    rebuildMenu(null);
                 }
+                rebuildMenu();
             }
         });
     }
 
-    void rebuildMenu(@NullAllowed List<String> tasks) {
-        final List<String> tasksRef = tasks == null ? null : new CopyOnWriteArrayList<>(tasks);
+    void rebuildMenu() {
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
                 removeAll();
-                addMenuItems(tasksRef);
+                addMenuItems();
                 refreshMenu();
             }
         });
@@ -204,9 +175,10 @@ public class TasksMenu extends JMenu {
         popupMenu.repaint();
     }
 
-    void addMenuItems(@NullAllowed List<String> tasks) {
+    void addMenuItems() {
         assert EventQueue.isDispatchThread();
-        if (tasks == null) {
+        if (tasks == null
+                || tasks.getSimpleTasks() == null) {
             // build tool cli error?
             addConfigureToolMenuItem();
             return;
@@ -215,7 +187,9 @@ public class TasksMenu extends JMenu {
         VerticalGridLayout vgl = new VerticalGridLayout();
         getPopupMenu().setLayout(vgl);
         // items
-        Set<String> allTasks = new LinkedHashSet<>(tasks);
+        List<String> simpleTasks = tasks.getSimpleTasks();
+        assert simpleTasks != null;
+        Set<String> allTasks = new LinkedHashSet<>(simpleTasks);
         // default task
         final String defaultTaskName = support.getDefaultTaskName();
         if (defaultTaskName != null) {
@@ -225,10 +199,15 @@ public class TasksMenu extends JMenu {
         }
         // other tasks
         addAdvancedTasksMenuItems();
-        addManageMenuItems(allTasks);
-        if (showSimpleTasks) {
+        if (tasks.isShowSimpleTasks()) {
             addTasksMenuItems(allTasks);
         }
+        if (!tasks.getAdvancedTasks().isEmpty()
+                || (tasks.isShowSimpleTasks() && !allTasks.isEmpty())) {
+            addSeparator();
+        }
+        // config
+        addManageMenuItems(allTasks);
         addReloadTasksMenuItem();
     }
 
@@ -239,15 +218,12 @@ public class TasksMenu extends JMenu {
         for (String task : tasks) {
             addTaskMenuItem(false, task);
         }
-        if (!tasks.isEmpty()) {
-            addSeparator();
-        }
     }
 
     private void addAdvancedTasksMenuItems() {
         assert EventQueue.isDispatchThread();
-        assert advancedTasks != null;
-        for (AdvancedTask task : advancedTasks) {
+        assert tasks != null;
+        for (AdvancedTask task : tasks.getAdvancedTasks()) {
             addTaskMenuItem(task);
         }
     }
@@ -268,16 +244,15 @@ public class TasksMenu extends JMenu {
                 simpleTasksWithDefaultTask.addAll(simpleTasks);
                 AdvancedTasksPanel panel = AdvancedTasksPanel.open(support.getTitle(TasksMenuSupport.Title.MANAGE_ADVANCED),
                         support.getTitle(TasksMenuSupport.Title.TASKS_LABEL),
-                        support.getTitle(TasksMenuSupport.Title.BUILD_TOOL_EXEC),
+                        support.getBuildToolExecName(),
                         simpleTasksWithDefaultTask,
-                        advancedTasks,
-                        showSimpleTasks);
+                        tasks.getAdvancedTasks(),
+                        tasks.isShowSimpleTasks());
                 if (panel != null) {
-                    advancedTasks = panel.getTasks();
                     final AdvancedTasksStorage.Data data;
                     synchronized (lock) {
                         data = new AdvancedTasksStorage.Data()
-                                .setTasks(advancedTasks)
+                                .setTasks(panel.getTasks())
                                 .setShowSimpleTasks(panel.isShowSimpleTasks());
                     }
                     RP.post(new Runnable() {
@@ -286,15 +261,6 @@ public class TasksMenu extends JMenu {
                             assert !EventQueue.isDispatchThread();
                             synchronized (lock) {
                                 advancedTasksStorage.storeTasks(data);
-                                if (showSimpleTasks != data.isShowSimpleTasks()) {
-                                    showSimpleTasks = data.isShowSimpleTasks();
-                                    EventQueue.invokeLater(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            setMenuBuilt(false);
-                                        }
-                                    });
-                                }
                             }
                         }
                     });
@@ -302,7 +268,6 @@ public class TasksMenu extends JMenu {
             }
         });
         add(menuItem);
-        addSeparator();
     }
 
     private void addTaskMenuItem(final boolean isDefault, final String task) {
@@ -364,8 +329,9 @@ public class TasksMenu extends JMenu {
         add(menuItem);
     }
 
+    @NbBundle.Messages("TasksMenu.menu.reload=Reload")
     private void addReloadTasksMenuItem() {
-        JMenuItem menuItem = new JMenuItem(support.getTitle(TasksMenuSupport.Title.RELOAD_TASKS));
+        JMenuItem menuItem = new JMenuItem(Bundle.TasksMenu_menu_reload());
         menuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

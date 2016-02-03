@@ -412,10 +412,10 @@ public class ElementUtilitiesEx {
         
         if (roots == null || roots.length == 0) {
             Set<ClassPath> paths = GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE);
-            srcPath = ClassPathSupport.createProxyClassPath(paths.toArray(new ClassPath[paths.size()]));
+            srcPath = ClassPathSupport.createProxyClassPath(paths.toArray(new ClassPath[0]));
             bootPath = JavaPlatform.getDefault().getBootstrapLibraries();
             paths = GlobalPathRegistry.getDefault().getPaths(ClassPath.COMPILE);
-            compilePath = ClassPathSupport.createProxyClassPath(paths.toArray(new ClassPath[paths.size()]));
+            compilePath = ClassPathSupport.createProxyClassPath(paths.toArray(new ClassPath[0]));
         } else {
             srcPath = ClassPathSupport.createClassPath(roots);
             bootPath =

@@ -42,7 +42,7 @@
 package org.netbeans.modules.maven.indexer.spi.impl;
 
 /**
- *
+ * used internally.
  * @author Tomas Stupka
  */
 public interface IndexingNotificationProvider {

@@ -335,7 +335,7 @@ public final class DoubleFileStorage implements FileStorage {
     private boolean _defragment(final long timeout) throws IOException {
 
         boolean needMoreTime = false;
-        final long time = ((timeout > 0) || Stats.traceDefragmentation) ? System.currentTimeMillis() : 0;
+        //final long time = ((timeout > 0) || Stats.traceDefragmentation) ? System.currentTimeMillis() : 0;
 
         int cnt = 0;
         boolean activeFlag = getFlag();
@@ -346,7 +346,6 @@ public final class DoubleFileStorage implements FileStorage {
         while (it.hasNext()) {
             LayerKey key = it.next();
             ChunkInfo chunk = passiveFile.getChunkInfo(key);
-            CndUtils.assertNotNull(chunk, "Null chunk when defragmenting " + passiveFile.getTraceString()); //NOI18N
             if (chunk != null) {
                 move(passiveFile, activeFile, key);
                 cnt++;
@@ -357,6 +356,8 @@ public final class DoubleFileStorage implements FileStorage {
 //                        break;
 //                    }
 //                }
+            } else {
+                CndUtils.assertNotNull(chunk, "Null chunk when defragmenting " + passiveFile.getTraceString()); //NOI18N
             }
         }
         if (Stats.traceDefragmentation) {

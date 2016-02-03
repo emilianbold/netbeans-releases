@@ -1011,6 +1011,50 @@ public class PHPNewLineIndenterTest extends PHPTestBase {
         testIndentInFile("testfiles/indent/issue222980_09.php");
     }
 
+    public void testGroupUse_01() throws Exception {
+        testIndentInFile("testfiles/indent/groupUse_01.php");
+    }
+
+    public void testGroupUse_02() throws Exception {
+        testIndentInFile("testfiles/indent/groupUse_02.php");
+    }
+
+    public void testGroupUse_03() throws Exception {
+        testIndentInFile("testfiles/indent/groupUse_03.php");
+    }
+
+    public void testGroupUse_04() throws Exception {
+        testIndentInFile("testfiles/indent/groupUse_04.php");
+    }
+
+    public void testGroupUse_05() throws Exception {
+        testIndentInFile("testfiles/indent/groupUse_05.php");
+    }
+
+    public void testGroupUseConst_01() throws Exception {
+        testIndentInFile("testfiles/indent/groupUseConst_01.php");
+    }
+
+    public void testGroupUseConst_02() throws Exception {
+        testIndentInFile("testfiles/indent/groupUseConst_02.php");
+    }
+
+    public void testGroupUseConst_03() throws Exception {
+        testIndentInFile("testfiles/indent/groupUseConst_03.php");
+    }
+
+    public void testGroupUseFunction_01() throws Exception {
+        testIndentInFile("testfiles/indent/groupUseFunction_01.php");
+    }
+
+    public void testGroupUseFunction_02() throws Exception {
+        testIndentInFile("testfiles/indent/groupUseFunction_02.php");
+    }
+
+    public void testGroupUseFunction_03() throws Exception {
+        testIndentInFile("testfiles/indent/groupUseFunction_03.php");
+    }
+
     @Override
     protected boolean runInEQ() {
         return true;

@@ -41,12 +41,15 @@
  */
 package org.netbeans.modules.docker.ui.node;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.docker.api.DockerContainer;
@@ -61,7 +64,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Petr Hejl
  */
-public class DockerContainersChildFactory extends ChildFactory<DockerContainer> implements Refreshable {
+public class DockerContainersChildFactory extends ChildFactory<EnhancedDockerContainer> implements Refreshable {
 
     private static final Logger LOGGER = Logger.getLogger(DockerContainersChildFactory.class.getName());
 
@@ -78,6 +81,8 @@ public class DockerContainersChildFactory extends ChildFactory<DockerContainer> 
     static {
         Collections.addAll(CHANGE_EVENTS, DockerEvent.Status.COPY, DockerEvent.Status.CREATE, DockerEvent.Status.DESTROY);
     }
+
+    private final Map<DockerContainer, WeakReference<EnhancedDockerContainer>> cache = new WeakHashMap<>();
 
     private final RequestProcessor requestProcessor = new RequestProcessor(DockerContainersChildFactory.class);
 
@@ -105,19 +110,35 @@ public class DockerContainersChildFactory extends ChildFactory<DockerContainer> 
     }
 
     @Override
-    protected Node createNodeForKey(DockerContainer key) {
-        return new DockerContainerNode(new CachedDockerContainer(key));
+    protected Node createNodeForKey(EnhancedDockerContainer key) {
+        return new DockerContainerNode(key);
     }
 
     @Override
-    protected boolean createKeys(List<DockerContainer> toPopulate) {
+    protected boolean createKeys(List<EnhancedDockerContainer> toPopulate) {
         DockerAction facade = new DockerAction(instance);
         List<DockerContainer> containers = new ArrayList<>(facade.getContainers());
         Collections.sort(containers, COMPARATOR);
-        toPopulate.addAll(containers);
+        synchronized (cache) {
+            for (DockerContainer c : containers) {
+                EnhancedDockerContainer cached = null;
+                WeakReference<EnhancedDockerContainer> ref = cache.get(c);
+                if (ref != null) {
+                    cached = ref.get();
+                }
+                if (cached == null) {
+                    cached = new EnhancedDockerContainer(c);
+                    cache.put(c, new WeakReference<>(cached));
+                } else {
+                    cached.refresh();
+                }
+                toPopulate.add(cached);
+            }
+        }
         return true;
     }
 
+    @Override
     public final void refresh() {
         refresh(false);
     }

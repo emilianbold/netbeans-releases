@@ -93,6 +93,7 @@ public class SetUpstreamBranchCommand extends GitCommand {
                 remote = elements[2];
                 if (config.getSubsections(ConfigConstants.CONFIG_REMOTE_SECTION).contains(remote)) {
                     branchName = Constants.R_HEADS + elements[3];
+                    setupRebaseFlag(repository);
                 } else {
                     // remote not yet set
                     remote = null;
@@ -113,6 +114,18 @@ public class SetUpstreamBranchCommand extends GitCommand {
         branchCmd.run();
         Map<String, GitBranch> branches = branchCmd.getBranches();
         branch = branches.get(localBranchName);
+    }
+
+    private void setupRebaseFlag (Repository repository) throws IOException {
+        StoredConfig config = repository.getConfig();
+        String autosetupRebase = config.getString(ConfigConstants.CONFIG_BRANCH_SECTION,
+                null, ConfigConstants.CONFIG_KEY_AUTOSETUPREBASE);
+        boolean rebase = ConfigConstants.CONFIG_KEY_ALWAYS.equals(autosetupRebase)
+                || ConfigConstants.CONFIG_KEY_REMOTE.equals(autosetupRebase);
+        if (rebase) {
+            config.setBoolean(ConfigConstants.CONFIG_BRANCH_SECTION, localBranchName,
+                    ConfigConstants.CONFIG_KEY_REBASE, rebase);
+        }
     }
 
     @Override

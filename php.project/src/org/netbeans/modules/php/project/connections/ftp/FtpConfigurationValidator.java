@@ -43,6 +43,7 @@ package org.netbeans.modules.php.project.connections.ftp;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.progress.BaseProgressUtils;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.netbeans.modules.php.project.connections.common.RemoteValidator;
@@ -72,11 +73,15 @@ public class FtpConfigurationValidator {
                 configuration.getInitialDirectory(),
                 String.valueOf(configuration.getTimeout()),
                 String.valueOf(configuration.getKeepAliveInterval()),
-                configuration.isPassiveMode());
+                configuration.isPassiveMode(),
+                configuration.getActiveExternalIp(),
+                String.valueOf(configuration.getActivePortMin()),
+                String.valueOf(configuration.getActivePortMax()));
     }
 
+    @NbBundle.Messages("FtpConfigurationValidator.port.range.invalid=Min port must be lower than max port")
     public FtpConfigurationValidator validate(String host, String port, boolean isAnonymousLogin, String user, String initialDirectory,
-            String timeout, String keepAliveInterval, boolean passiveMode) {
+            String timeout, String keepAliveInterval, boolean passiveMode, String externalIp, String minPort, String maxPort) {
         String err = RemoteValidator.validateHost(host);
         if (err != null) {
             result.addError(new ValidationResult.Message("host", err)); // NOI18N
@@ -102,6 +107,36 @@ public class FtpConfigurationValidator {
         err = RemoteValidator.validateKeepAliveInterval(keepAliveInterval);
         if (err != null) {
             result.addError(new ValidationResult.Message("keepAliveInterval", err)); // NOI18N
+        }
+
+        if (!passiveMode) {
+            if (StringUtils.hasText(externalIp)) {
+                err = RemoteValidator.validateIp(externalIp);
+                if (err != null) {
+                    result.addError(new ValidationResult.Message("external.ip", err)); // NOI18N
+                }
+            }
+
+            if (StringUtils.hasText(minPort)
+                    || StringUtils.hasText(maxPort)) {
+                err = RemoteValidator.validatePort(minPort);
+                if (err != null) {
+                    result.addError(new ValidationResult.Message("port.min", err)); // NOI18N
+                }
+
+                err = RemoteValidator.validatePort(maxPort);
+                if (err != null) {
+                    result.addError(new ValidationResult.Message("port.max", err)); // NOI18N
+                }
+
+                try {
+                    if (Integer.parseInt(minPort) > Integer.parseInt(maxPort)) {
+                        result.addError(new ValidationResult.Message("port.min", Bundle.FtpConfigurationValidator_port_range_invalid())); // NOI18N
+                    }
+                } catch (NumberFormatException nfe) {
+                    // ignore, already handled above
+                }
+            }
         }
 
         if (result.isFaultless()) {

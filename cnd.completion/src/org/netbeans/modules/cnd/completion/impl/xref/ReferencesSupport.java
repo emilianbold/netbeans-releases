@@ -269,12 +269,13 @@ public final class ReferencesSupport {
     private static CsmObject findDeclaration(final CsmFile csmFile, final Document doc,
             TokenItem<TokenId> tokenUnderOffset, final int offset, FileReferencesContext fileReferencesContext) {
         final String oldName = Thread.currentThread().getName();
+        boolean restoreThreadName = false;
         try {
             // Add resolve position to the thread name for logging purposes
-            if (csmFile != null) {
+            if (csmFile != null && CndUtils.isDebugMode()) {
                 try {
                     String position = "[" + offset + "]"; // NOI18N
-                    if (CndUtils.isDebugMode() && doc instanceof LineDocument) {
+                    if (doc instanceof LineDocument) {
                         LineDocument lineDoc = (LineDocument) doc;
                         position = "[" + (LineDocumentUtils.getLineIndex(lineDoc, offset) + 1) + "," // NOI18N
                                    + (offset - LineDocumentUtils.getLineStart(lineDoc, offset) + 1) + "]"; // NOI18N
@@ -284,6 +285,7 @@ public final class ReferencesSupport {
                         + csmFile.getAbsolutePath() + position
                         + ", token \"" + (tokenUnderOffset != null ? tokenUnderOffset.text() : "<unknown>") + "\")" // NOI18N
                     );
+                    restoreThreadName = true;
                 } catch (BadLocationException ex) {
                     // Just ignore it
                 }
@@ -437,7 +439,9 @@ public final class ReferencesSupport {
             }
             return csmItem;
         } finally {
-            Thread.currentThread().setName(oldName);
+            if (restoreThreadName) {
+                Thread.currentThread().setName(oldName);
+            }
         }
     }
 

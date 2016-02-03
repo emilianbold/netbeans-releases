@@ -51,6 +51,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.GroupLayout;
@@ -189,7 +190,7 @@ public final class NodeJsPathPanel extends JPanel {
         versionTask.schedule(100);
     }
 
-    @NbBundle.Messages("NodeJsPathPanel.version.detecting=detecting...")
+    @NbBundle.Messages("NodeJsPathPanel.version.detecting=Detecting...")
     void setVersion() {
         assert EventQueue.isDispatchThread();
         downloadSourcesButton.setEnabled(false);
@@ -200,23 +201,25 @@ public final class NodeJsPathPanel extends JPanel {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                String version = null;
+                final Version version;
+                final Version realVersion;
                 NodeExecutable node = NodeExecutable.forPath(nodePath);
                 if (node != null) {
-                    Version nodeVersion = node.getVersion();
-                    if (nodeVersion != null) {
-                        version = nodeVersion.toString();
-                    }
+                    version = node.getVersion();
+                    realVersion = node.getRealVersion();
+                } else {
+                    version = null;
+                    realVersion = null;
                 }
-                final String versionRef = version;
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        if (versionRef != null) {
+                        assert EventQueue.isDispatchThread();
+                        if (version != null) {
                             downloadSourcesButton.setEnabled(true);
                         }
                         if (nodeSources == null) {
-                            setNodeSourcesDescription(versionRef);
+                            setNodeSourcesDescription(version, realVersion);
                         }
                     }
                 });
@@ -241,9 +244,11 @@ public final class NodeJsPathPanel extends JPanel {
         assert node != null : nodePath;
         final Version version = node.getVersion();
         assert version != null : nodePath;
+        final Version realVersion = node.getRealVersion();
+        assert realVersion != null : version;
         if (NodeJsUtils.hasNodeSources(version)) {
             nodeSources = null;
-            setNodeSourcesDescription(version.toString());
+            setNodeSourcesDescription(version, realVersion);
             NotifyDescriptor.Confirmation confirmation = new NotifyDescriptor.Confirmation(
                     Bundle.NodeJsPathPanel_sources_exists(version.toString()),
                     NotifyDescriptor.YES_NO_OPTION);
@@ -271,7 +276,7 @@ public final class NodeJsPathPanel extends JPanel {
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        setNodeSourcesDescription(version.toString());
+                        setNodeSourcesDescription(version, realVersion);
                         downloadSourcesButton.setEnabled(true);
                     }
                 });
@@ -288,26 +293,47 @@ public final class NodeJsPathPanel extends JPanel {
         assert EventQueue.isDispatchThread();
         File nodeSourcesRef = nodeSources;
         assert nodeSourcesRef != null;
-        sourcesTextField.setText(nodeSourcesRef.getAbsolutePath());
+        setNodeSourcesDescription(nodeSourcesRef.getAbsolutePath());
     }
 
     @NbBundle.Messages({
         "# {0} - node.js version",
         "NodeJsPathPanel.sources.downloaded=Downloaded (version {0})",
+        "# {0} - real node.js version",
+        "# {1} - node.js version",
+        "NodeJsPathPanel.sources.es5.downloaded=Downloaded (version {0} -> {1})",
         "# {0} - node.js version",
         "NodeJsPathPanel.sources.not.downloaded=Not downloaded (version {0})",
+        "# {0} - real node.js version",
+        "# {1} - node.js version",
+        "NodeJsPathPanel.sources.es5.not.downloaded=Not downloaded (version {0} -> {1})",
         "NodeJsPathPanel.sources.na=Not available",
     })
-    private void setNodeSourcesDescription(@NullAllowed String version) {
+    private void setNodeSourcesDescription(@NullAllowed Version version, @NullAllowed Version realVersion) {
         assert EventQueue.isDispatchThread();
         String text;
         if (version == null) {
             text = Bundle.NodeJsPathPanel_sources_na();
         } else if (NodeJsUtils.hasNodeSources(version)) {
-            text = Bundle.NodeJsPathPanel_sources_downloaded(version);
+            if (Objects.equals(version, realVersion)) {
+                text = Bundle.NodeJsPathPanel_sources_downloaded(version);
+            } else {
+                assert realVersion != null : version;
+                text = Bundle.NodeJsPathPanel_sources_es5_downloaded(realVersion, version);
+            }
         } else {
-            text = Bundle.NodeJsPathPanel_sources_not_downloaded(version);
+            if (Objects.equals(version, realVersion)) {
+                text = Bundle.NodeJsPathPanel_sources_not_downloaded(version);
+            } else {
+                assert realVersion != null : version;
+                text = Bundle.NodeJsPathPanel_sources_es5_not_downloaded(realVersion, version);
+            }
         }
+        setNodeSourcesDescription(text);
+    }
+
+    private void setNodeSourcesDescription(String text) {
+        assert EventQueue.isDispatchThread();
         sourcesTextField.setText(text);
     }
 

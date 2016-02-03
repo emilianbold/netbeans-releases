@@ -70,8 +70,9 @@ public interface NativeProjectItemsListener {
      /**
       * Called when include paths or macro definitions have changed (and
       * files needs to be re-parsed) for all files in project.
+      * @param nativeProject project whose properties have changed
       */
-     public void filesPropertiesChanged();
+     public void filesPropertiesChanged(NativeProject nativeProject);
 
      /**
       * Called when item name is changed.

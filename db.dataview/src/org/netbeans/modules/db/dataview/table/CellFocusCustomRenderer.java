@@ -47,6 +47,7 @@ import java.awt.Component;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
+import org.netbeans.modules.db.dataview.util.ColorHelper;
 
 /**
  *
@@ -54,11 +55,7 @@ import javax.swing.table.DefaultTableCellRenderer;
  */
 public class CellFocusCustomRenderer extends DefaultTableCellRenderer {
 
-    private final static Color selectedCellBackgroundMgr = UIManager.getColor(
-            "nb.dataview.tablecell.focused"); //NOI18N
-    private final static Color selectedCellBackground = selectedCellBackgroundMgr != null
-            ? selectedCellBackgroundMgr
-            : new Color(204,204,255);
+    private final static Color selectedCellBackground = ColorHelper.getTablecellFocused();
 
     public CellFocusCustomRenderer() {       
         setOpaque(true);

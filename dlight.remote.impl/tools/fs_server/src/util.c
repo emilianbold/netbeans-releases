@@ -147,6 +147,24 @@ void soft_assert(int condition, char* format, ...) {
     }
 }
 
+void *malloc_wrapper(size_t size) {
+    void *p = malloc(size);
+    if (!p) {
+        report_error("out of memory\n");
+        exit(FAILURE_ALLOCATE_MEMORY);
+    }
+    return p;
+}
+
+void *realloc_wrapper(void *ptr, size_t size) {
+    void *p = realloc(ptr, size);
+    if (!p) {
+        report_error("can not reallocate memory\n");
+        exit(FAILURE_REALLOCATE_MEMORY);
+    }
+    return p;
+}
+
 void mutex_lock_wrapper(pthread_mutex_t *mutex) {
     if (pthread_mutex_lock(mutex)) {
         report_error("error locking mutex: %s\n", strerror(errno));
@@ -420,7 +438,7 @@ bool clean_dir(const char* path) {
 }
 
 buffer buffer_alloc(int size) {
-    buffer result = { size, malloc(size) };
+    buffer result = { size, malloc_wrapper(size) };
     return result;
 }
 
@@ -449,16 +467,16 @@ int visit_dir_entries(const char* path,
     if (!error_handler) {
         error_handler = default_error_handler;
     }
-    DIR *d = d = opendir(path);
+    DIR *d = opendir(path);
     if (d) {
-        union {
+        struct {
             struct dirent d;
-            char b[MAXNAMLEN];
+            char b[MAXNAMLEN + 1];
         } entry_buf;
         entry_buf.d.d_reclen = MAXNAMLEN + sizeof (struct dirent);
         int buf_size = PATH_MAX;
-        char *abspath = malloc(buf_size);
-        char *link = malloc(buf_size);
+        char *abspath = malloc_wrapper(buf_size);
+        char *link = malloc_wrapper(buf_size);
         // TODO: error processing (malloc() can return null)
         int base_len = strlen(path);
         strcpy(abspath, path);

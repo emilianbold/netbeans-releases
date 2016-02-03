@@ -10,12 +10,13 @@ METHOD     asType(Class)                              Object
 METHOD     bitwiseNegate()                            Pattern
 METHOD     capitalize()                               String
 METHOD     center(Number)                             String
-METHOD     center(Number, CharSequence)               CharSequence
-METHOD     center(Number, String)                     String
+METHOD     center(Number, CharSequence)               String
 METHOD     charAt(int)                     [PUBLIC]   char
+METHOD     chars()                         [PUBLIC]   IntStream
 METHOD     codePointAt(int)                [PUBLIC]   int
 METHOD     codePointBefore(int)            [PUBLIC]   int
 METHOD     codePointCount(int, int)        [PUBLIC]   int
+METHOD     codePoints()                    [PUBLIC]   IntStream
 METHOD     collect()                                  Collection
 METHOD     collect(Closure)                           List
 METHOD     collect(Collection, Closure)               Collection
@@ -25,13 +26,11 @@ METHOD     compareTo(T)                    [PUBLIC]   int
 METHOD     compareToIgnoreCase(String)     [PUBLIC]   int
 METHOD     concat(String)                  [PUBLIC]   String
 METHOD     contains(CharSequence)          [PUBLIC]   boolean
-METHOD     contains(String)                           boolean
 METHOD     contentEquals(CharSequence)     [PUBLIC]   boolean
 METHOD     contentEquals(StringBuffer)     [PUBLIC]   boolean
 METHOD     copyValueOf(char[])             [STATIC,   String
 METHOD     copyValueOf(char[], int, int)   [STATIC,   String
 METHOD     count(CharSequence)                        int
-METHOD     count(String)                              int
 METHOD     decodeBase64()                             byte[]
 METHOD     decodeHex()                                byte[]
 METHOD     denormalize()                              String
@@ -41,7 +40,7 @@ METHOD     dump()                                     String
 METHOD     each(Closure)                              Object
 METHOD     eachLine(Closure)                          Object
 METHOD     eachLine(int, Closure)                     Object
-METHOD     eachMatch(CharSequence, Closur             String
+METHOD     eachMatch(CharSequence, Closur             CharSequence
 METHOD     eachMatch(Pattern, Closure)                String
 METHOD     eachMatch(String, Closure)                 String
 METHOD     eachWithIndex(Closure)                     Object
@@ -57,21 +56,17 @@ METHOD     expand()                                   String
 METHOD     expand(int)                                String
 METHOD     expandLine(int)                            String
 METHOD     find()                                     Object
-METHOD     find(CharSequence)                         CharSequence
-METHOD     find(CharSequence, Closure)                CharSequence
+METHOD     find(CharSequence)                         String
+METHOD     find(CharSequence, Closure)                String
 METHOD     find(Closure)                              Object
 METHOD     find(Pattern)                              String
 METHOD     find(Pattern, Closure)                     String
-METHOD     find(String)                               String
-METHOD     find(String, Closure)                      String
 METHOD     findAll()                                  Collection
 METHOD     findAll(CharSequence)                      List
 METHOD     findAll(CharSequence, Closure)             List
 METHOD     findAll(Closure)                           Collection
 METHOD     findAll(Pattern)                           List
 METHOD     findAll(Pattern, Closure)                  List
-METHOD     findAll(String)                            List
-METHOD     findAll(String, Closure)                   List
 METHOD     findIndexOf(Closure)                       int
 METHOD     findIndexOf(int, Closure)                  int
 METHOD     findIndexValues(Closure)                   List
@@ -124,6 +119,8 @@ METHOD     isInteger()                                boolean
 METHOD     isLong()                                   boolean
 METHOD     isNumber()                                 boolean
 METHOD     iterator()                                 Iterator
+METHOD     join(CharSequence, CharSequenc  [STATIC,   String
+METHOD     join(CharSequence, CharSequenc  [STATIC,   String
 METHOD     lastIndexOf(String)             [PUBLIC]   int
 METHOD     lastIndexOf(String, int)        [PUBLIC]   int
 METHOD     lastIndexOf(int)                [PUBLIC]   int
@@ -134,6 +131,7 @@ METHOD     matches(Pattern)                           boolean
 METHOD     matches(String)                 [PUBLIC]   boolean
 METHOD     metaClass(Closure)                         MetaClass
 METHOD     minus(Object)                              String
+METHOD     minus(Pattern)                             String
 METHOD     multiply(Number)                           String
 METHOD     next()                                     String
 METHOD     normalize()                                String
@@ -142,11 +140,10 @@ METHOD     notifyAll()                     [PUBLIC]   void
 METHOD     numberAwareCompareTo(Comparabl             int
 METHOD     offsetByCodePoints(int, int)    [PUBLIC]   int
 METHOD     padLeft(Number)                            String
-METHOD     padLeft(Number, CharSequence)              CharSequence
-METHOD     padLeft(Number, String)                    String
+METHOD     padLeft(Number, CharSequence)              String
 METHOD     padRight(Number)                           String
-METHOD     padRight(Number, CharSequence)             CharSequence
-METHOD     padRight(Number, String)                   String
+METHOD     padRight(Number, CharSequence)             String
+METHOD     plus(CharSequence)                         String
 METHOD     plus(Object)                               String
 METHOD     previous()                                 String
 METHOD     print(Object)                              void
@@ -162,19 +159,15 @@ METHOD     regionMatches(boolean, int, St  [PUBLIC]   boolean
 METHOD     regionMatches(int, String, int  [PUBLIC]   boolean
 METHOD     replace(CharSequence, CharSequ  [PUBLIC]   String
 METHOD     replace(char, char)             [PUBLIC]   String
-METHOD     replaceAll(CharSequence, CharS             CharSequence
-METHOD     replaceAll(CharSequence, Closu             CharSequence
-METHOD     replaceAll(Pattern, CharSequen             CharSequence
+METHOD     replaceAll(CharSequence, CharS             String
+METHOD     replaceAll(CharSequence, Closu             String
+METHOD     replaceAll(Pattern, CharSequen             String
 METHOD     replaceAll(Pattern, Closure)               String
-METHOD     replaceAll(Pattern, String)                String
-METHOD     replaceAll(String, Closure)                String
 METHOD     replaceAll(String, String)      [PUBLIC]   String
 METHOD     replaceFirst(CharSequence, Cha             String
 METHOD     replaceFirst(CharSequence, Clo             String
-METHOD     replaceFirst(Pattern, CharSequ             CharSequence
+METHOD     replaceFirst(Pattern, CharSequ             String
 METHOD     replaceFirst(Pattern, Closure)             String
-METHOD     replaceFirst(Pattern, String)              String
-METHOD     replaceFirst(String, Closure)              String
 METHOD     replaceFirst(String, String)    [PUBLIC]   String
 METHOD     respondsTo(String)                         List
 METHOD     respondsTo(String, Object)                 List
@@ -189,7 +182,6 @@ METHOD     split(String)                   [PUBLIC]   String[]
 METHOD     split(String, int)              [PUBLIC]   String[]
 METHOD     splitEachLine(CharSequence, Cl             Object
 METHOD     splitEachLine(Pattern, Closure             Object
-METHOD     splitEachLine(String, Closure)             Object
 METHOD     sprintf(String, Object)                    String
 METHOD     sprintf(String, Object)                    String
 METHOD     startsWith(String)              [PUBLIC]   boolean
@@ -198,7 +190,6 @@ METHOD     stripIndent()                              String
 METHOD     stripIndent(int)                           String
 METHOD     stripMargin()                              String
 METHOD     stripMargin(CharSequence)                  String
-METHOD     stripMargin(String)                        String
 METHOD     stripMargin(char)                          String
 METHOD     subSequence(int, int)           [PUBLIC]   CharSequence
 METHOD     substring(int)                  [PUBLIC]   String
@@ -227,9 +218,7 @@ METHOD     toUpperCase(Locale)             [PUBLIC]   String
 METHOD     tokenize()                                 List
 METHOD     tokenize(CharSequence)                     List
 METHOD     tokenize(Character)                        List
-METHOD     tokenize(String)                           List
-METHOD     tr(CharSequence, CharSequence)             CharSequence
-METHOD     tr(String, String)                         String
+METHOD     tr(CharSequence, CharSequence)             String
 METHOD     trim()                          [PUBLIC]   String
 METHOD     unexpand()                                 String
 METHOD     unexpand(int)                              String
@@ -250,6 +239,7 @@ METHOD     wait()                          [PUBLIC]   void
 METHOD     wait(long)                      [PUBLIC]   void
 METHOD     wait(long, int)                 [PUBLIC]   void
 METHOD     with(Closure)                              Object
+METHOD     withTraits(Class[])                        Object
 FIELD      CASE_INSENSITIVE_ORDER          [STATIC,   Comparator<String>
 FIELD      bytes                           [PUBLIC]   byte[]
 FIELD      class                           [PUBLIC]   Class

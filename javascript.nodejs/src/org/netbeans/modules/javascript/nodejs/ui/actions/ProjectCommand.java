@@ -43,8 +43,8 @@ package org.netbeans.modules.javascript.nodejs.ui.actions;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
+import org.netbeans.modules.javascript.nodejs.exec.NodeProcesses;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
-import org.netbeans.modules.javascript.nodejs.util.NodeInfo;
 import org.netbeans.modules.javascript.nodejs.util.RunInfo;
 import org.openide.util.Lookup;
 
@@ -59,7 +59,7 @@ abstract class ProjectCommand extends Command {
     }
 
     protected abstract boolean isEnabledInternal(Lookup context);
-    protected abstract NodeInfo runNodeInternal(NodeExecutable node, RunInfo runInfo);
+    protected abstract NodeProcesses.RunInfo runNodeInternal(NodeExecutable node, RunInfo runInfo);
 
     @Override
     public final boolean isEnabled(Lookup context) {
@@ -72,10 +72,10 @@ abstract class ProjectCommand extends Command {
     @Override
     final void runInternal(Lookup context) {
         NodeJsSupport nodeJsSupport = NodeJsSupport.forProject(project);
-        NodeInfo currentNodeInfo = nodeJsSupport.getCurrentNodeInfo();
+        NodeProcesses.RunInfo currentNodeInfo = nodeJsSupport.getNodeProcesses().getProjectRun();
         if (!currentNodeInfo.isRunning()) {
             // run it
-            nodeJsSupport.setCurrentNodeInfo(runNode());
+            nodeJsSupport.getNodeProcesses().setProjectRun(runNode());
             return;
         }
         // node is running
@@ -85,18 +85,18 @@ abstract class ProjectCommand extends Command {
                 || nodeJsSupport.getPreferences().isRunRestart()) {
             // force restart
             currentNodeInfo.stop();
-            nodeJsSupport.setCurrentNodeInfo(runNode());
+            nodeJsSupport.getNodeProcesses().setProjectRun(runNode());
         }
     }
 
-    private NodeInfo runNode() {
+    private NodeProcesses.RunInfo runNode() {
         NodeExecutable node = getNode();
         if (node == null) {
-            return NodeInfo.none();
+            return NodeProcesses.RunInfo.none();
         }
         RunInfo runInfo = getRunInfo();
         if (runInfo == null) {
-            return NodeInfo.none();
+            return NodeProcesses.RunInfo.none();
         }
         return runNodeInternal(node, runInfo);
     }

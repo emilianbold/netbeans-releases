@@ -76,6 +76,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * CsmNamespace implementation
@@ -415,7 +416,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private void removeNestedNamespace(NamespaceImpl nsp) {
         assert nsp != null;
         CsmUID<CsmNamespace> nestedNsUid = nestedNamespaces.remove(nsp.getQualifiedName());
-        assert nestedNsUid != null;
+        if (nestedNsUid == null) {
+            CndUtils.assertTrueInConsole(false, "can not remove " + nsp.getQualifiedName() + " from " + this.getQualifiedName(), " see https://netbeans.org/bugzilla/show_bug.cgi?id=257674"); // NOI18N
+        }
         // handle unnamed namespace index
         if (nsp.getName().length() == 0) {
             String fqn = nsp.getQualifiedName().toString();
@@ -597,14 +600,16 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
     
     private void addRemoveInParentNamespace(boolean add){
-        assert ((ProjectBase) getProject()).holdsNamespaceLock() : "Logical namespace can be modified only via ProjectBase!";
+        ProjectBase proj = _getProject();
+        assert proj.holdsNamespaceLock() : "Logical namespace can be modified only via ProjectBase!" + //NOI18N
+                " project=" + proj + " (platform=" + proj.getPlatformProject() + "); namespace=" + this; //NOI18N
         if (add){
             // add this namespace in the parent namespace
             NamespaceImpl parent = (NamespaceImpl) _getParentNamespace();
             if (parent != null) {
                 parent.addNestedNamespace(this);
             }
-            _getProject().registerNamespace(this);
+            proj.registerNamespace(this);
         } else {
             // remove this namespace from the parent namespace
             try {
@@ -621,7 +626,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             if (parent != null) {
                 parent.removeNestedNamespace(this);
             }
-            projectRef = _getProject();
+            projectRef = proj;
             ((ProjectBase)projectRef).unregisterNamesace(this);
             dispose();            
         }

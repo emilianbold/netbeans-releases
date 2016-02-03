@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.netbeans.modules.remotefs.versioning.api.RootsToFile;
@@ -156,6 +157,7 @@ public class Mercurial {
         private boolean gotVersion;
     }
     private final Map<FileSystem, Version> versions = new HashMap<>();
+    private final Object versionsLock = new Object();
 
     private Result<? extends VCSHyperlinkProvider> hpResult;
     private RequestProcessor parallelRP;
@@ -228,7 +230,7 @@ public class Mercurial {
     private Version getV(final VCSFileProxy root) {
         FileSystem fileSystem = VCSFileProxySupport.getFileSystem(root);
         Version v;
-        synchronized(this) {
+        synchronized(versionsLock) {
             v = versions.get(fileSystem);
             if (v == null) {
                 v = new Version();

@@ -96,11 +96,12 @@ public class CreateBranchCommand extends GitCommand {
         try {
             Ref ref = cmd.call();
             createdBranchName = ref.getName().substring(Constants.R_HEADS.length());
+            setupRebaseFlag(repository);
         } catch (RefNotFoundException ex) {
             if (!createBranchInEmptyRepository(repository)) {
                 throw new GitException(ex);
             }
-        } catch (JGitInternalException | GitAPIException ex) {
+        } catch (JGitInternalException | GitAPIException | IOException ex) {
             throw new GitException(ex);
         }
         ListBranchCommand branchCmd = new ListBranchCommand(repository, getClassFactory(), false, new DelegatingGitProgressMonitor(monitor));
@@ -110,6 +111,22 @@ public class CreateBranchCommand extends GitCommand {
         if (branch == null) {
             LOG.log(Level.WARNING, "Branch {0}/{1} probably created but not in the branch list: {2}",
                     new Object[] { branchName, createdBranchName, branches.keySet() });
+        }
+    }
+
+    private void setupRebaseFlag (Repository repository) throws IOException {
+        Ref baseRef = repository.getRef(revision);
+        if (baseRef != null && baseRef.getName().startsWith(Constants.R_REMOTES)) {
+            StoredConfig config = repository.getConfig();
+            String autosetupRebase = config.getString(ConfigConstants.CONFIG_BRANCH_SECTION,
+                    null, ConfigConstants.CONFIG_KEY_AUTOSETUPREBASE);
+            boolean rebase = ConfigConstants.CONFIG_KEY_ALWAYS.equals(autosetupRebase)
+                    || ConfigConstants.CONFIG_KEY_REMOTE.equals(autosetupRebase);
+            if (rebase && !config.getNames(ConfigConstants.CONFIG_BRANCH_SECTION, branchName).isEmpty()) {
+                config.setBoolean(ConfigConstants.CONFIG_BRANCH_SECTION, branchName,
+                        ConfigConstants.CONFIG_KEY_REBASE, rebase);
+                config.save();
+            }
         }
     }
 

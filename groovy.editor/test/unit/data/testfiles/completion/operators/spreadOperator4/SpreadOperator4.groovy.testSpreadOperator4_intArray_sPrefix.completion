@@ -12,3 +12,4 @@ METHOD     sprintf(String, Object)                    String
 METHOD     sprintf(String, Object)                    String
 METHOD     step(Number, Number, Closure)              void
 METHOD     stringSize(int)                 [STATIC]   int
+METHOD     sum(int, int)                   [STATIC,   int

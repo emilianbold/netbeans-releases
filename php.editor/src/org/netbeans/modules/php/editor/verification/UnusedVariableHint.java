@@ -80,6 +80,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
 import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.GroupUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
@@ -107,7 +108,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.SwitchStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ThrowStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
@@ -664,7 +665,12 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
         }
 
         @Override
-        public void visit(UseStatementPart node) {
+        public void visit(SingleUseStatementPart node) {
+            // intentionally
+        }
+
+        @Override
+        public void visit(GroupUseStatementPart node) {
             // intentionally
         }
 

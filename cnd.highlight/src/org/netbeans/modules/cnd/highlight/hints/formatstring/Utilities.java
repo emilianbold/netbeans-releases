@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.NbBundle;
 
 /**
@@ -61,17 +62,10 @@ class Utilities {
     // return the position of format string in list of arguments
     // returns -1 if function does not accepts format string
     static int checkFormattedPrintFunction(CsmObject object) {
-        int position = -1;
         if (CsmKindUtilities.isFunction(object)) {
             CsmFunction function = (CsmFunction) object;
             String functionName = function.getName().toString();
-            if (functionName.equals("printf") || functionName.equals("vprintf")) {  // NOI18N
-                position = 0;
-            } else if (functionName.equals("snprintf") || functionName.equals("vsnprintf")) {  // NOI18N
-                position = 2;
-            } else if (functionName.endsWith("printf")) {  // NOI18N
-                position = 1;
-            }
+            int position = checkPrintf(functionName);
             if (position != -1) {
                 CsmFile srcFile = function.getContainingFile();
                 for (CsmInclude include : CsmFileInfoQuery.getDefault().getIncludeStack(srcFile)) {
@@ -82,6 +76,18 @@ class Utilities {
             }
         }
         return -1;
+    }
+
+    static int checkPrintf(CharSequence functionName) {
+        int position = -1;
+        if (CharSequenceUtils.contentEquals(functionName, "printf") || CharSequenceUtils.contentEquals(functionName, "vprintf")) {  // NOI18N
+            position = 0;
+        } else if (CharSequenceUtils.contentEquals(functionName, "snprintf") || CharSequenceUtils.contentEquals(functionName, "vsnprintf")) {  // NOI18N
+            position = 2;
+        } else if (CharSequenceUtils.endsWith(functionName, "printf")) {  // NOI18N
+            position = 1;
+        }
+        return position;
     }
     
     // take const modifier into account

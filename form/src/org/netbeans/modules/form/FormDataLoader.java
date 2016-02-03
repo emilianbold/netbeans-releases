@@ -45,6 +45,7 @@
 
 package org.netbeans.modules.form;
 
+import java.io.IOException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MIMEResolver;
@@ -127,20 +128,6 @@ public class FormDataLoader extends MultiFileLoader {
                                   this);
     }
 
-    // from JavaDataLoader
-    // [?] Probably needed in case FormDataObject is deserialized, then the
-    // secondary entry is created additionally.
-    @Override
-    protected MultiDataObject.Entry createSecondaryEntry(MultiDataObject obj,
-                                                         FileObject secondaryFile)
-    {
-        assert FORM_EXTENSION.equals(secondaryFile.getExt());
-        
-        FileEntry formEntry = new FileEntry(obj, secondaryFile);
-        ((FormDataObject)obj).formEntry = formEntry;
-        return formEntry;
-    }
-
     @Override
     protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
         FormServices services = Lookup.getDefault().lookup(FormServices.class);
@@ -152,5 +139,27 @@ public class FormDataLoader extends MultiFileLoader {
         if (fo.getExt().equals(JAVA_EXTENSION))
             return fo;
         return null;
+    }
+
+    @Override
+    protected MultiDataObject.Entry createSecondaryEntry(MultiDataObject obj,
+                                                         FileObject secondaryFile)
+    {
+        assert FORM_EXTENSION.equals(secondaryFile.getExt());
+        
+        FileEntry formEntry = new FormEntry(obj, secondaryFile);
+        ((FormDataObject)obj).formEntry = formEntry;
+        return formEntry;
+    }
+
+    private static class FormEntry extends FileEntry {
+        public FormEntry(MultiDataObject mdo, FileObject fo) {
+            super(mdo, fo);
+        }
+
+        @Override
+        public FileObject createFromTemplate(FileObject folder, String name) throws IOException {
+            return FileUtil.copyFile(getFile(), folder, name);
+        }
     }
 }

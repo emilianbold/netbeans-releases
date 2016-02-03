@@ -54,6 +54,7 @@ import org.apache.tools.ant.taskdefs.Delete;
 import org.apache.tools.ant.taskdefs.Javac;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Path;
+import org.apache.tools.ant.types.selectors.SelectorUtils;
 import org.apache.tools.ant.util.JavaEnvUtils;
 
 /**
@@ -215,7 +216,13 @@ public class CustomJavac extends Javac {
         FileSet classes = new FileSet();
         classes.setDir(d);
         classes.setIncludes("**/*$*.class");
+        final String whiteListRaw = getProject().getProperty("nbjavac.ignore.missing.enclosing"); //NOI18N
+        final String[] whiteList = whiteListRaw == null ? new String[0] : whiteListRaw.split("\\s*,\\s*");  //NOI18N
         for (String clazz : classes.getDirectoryScanner(getProject()).getIncludedFiles()) {
+            if (isIgnored(whiteList, clazz)) {
+                log(clazz + " ignored from the enclosing check due to ignore list", Project.MSG_VERBOSE);
+                continue;
+            }
             int i = clazz.indexOf('$');
             File enclosing = new File(d, clazz.substring(0, i) + ".class");
             if (!enclosing.isFile()) {
@@ -226,6 +233,17 @@ public class CustomJavac extends Javac {
                 }
             }
         }
+    }
+
+    private static boolean isIgnored(
+            final String[] patterns,
+            final String resource) {
+        for (String pattern : patterns) {
+            if (SelectorUtils.match(pattern, resource)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

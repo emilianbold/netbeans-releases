@@ -219,17 +219,20 @@ public final class ParserProviderImpl extends CsmParserProvider {
             try {
                 CsmCacheManager.enter();
                 long start = System.currentTimeMillis();
+                boolean incFileParseCounter = true;
                 switch (kind) {
                     case TRY_BLOCK:
                     case COMPOUND_STATEMENT: {
                         @SuppressWarnings("unchecked")
                         List<CsmStatement> list = (List<CsmStatement>) context[0];
                         ((LazyStatementImpl)parserContainer).renderStatements(ast, list, objects);
+                        incFileParseCounter = false;
                         break;
                     }
                     case INITIALIZER: {
                         List<CsmStatement> list = (List<CsmStatement>) context[0];
                         ((ExpressionBase)parserContainer).renderStatements(ast, list, objects);
+                        incFileParseCounter = false;
                         break;
                     }
                     case TRANSLATION_UNIT_WITH_COMPOUND:
@@ -278,7 +281,9 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     default:
                         assert false : "unexpected parse kind " + kind;
                 }
-                file.incParseCount();
+                if (incFileParseCounter) {
+                    file.incParseCount();
+                }
                 renderTime = System.currentTimeMillis() - start;
                 dumpParseStatistics();
             } finally {

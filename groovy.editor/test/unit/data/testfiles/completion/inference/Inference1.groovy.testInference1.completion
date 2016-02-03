@@ -4,11 +4,14 @@ set.a|
 ------------------------------------
 METHOD     add(E)                          [PUBLIC]   boolean
 METHOD     addAll(Collection<? extends E>  [PUBLIC]   boolean
+METHOD     addAll(Iterable)                           boolean
+METHOD     addAll(Iterator)                           boolean
 METHOD     addAll(Object[])                           boolean
 METHOD     addShutdownHook(Closure)                   void
 METHOD     any()                                      boolean
 METHOD     any(Closure)                               boolean
 METHOD     asBoolean()                                boolean
+METHOD     asCollection()                             Collection
 METHOD     asImmutable()                              Set
 METHOD     asList()                                   List
 METHOD     asSynchronized()                           Set

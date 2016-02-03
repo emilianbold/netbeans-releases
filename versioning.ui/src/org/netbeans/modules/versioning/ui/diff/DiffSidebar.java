@@ -722,6 +722,9 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
 
                 for (int i = startViewIndex; i < rootViewCount; i++){
                     view = rootView.getView(i);
+                    if (view == null) {
+                        LOG.log(Level.WARNING, "View {0} null? View count = {1}/{2}. Root view: {3}, root elem: {4}", new Object[] { i, rootView.getViewCount(), rootViewCount, rootView, rootElem });
+                    }
                     line = rootElem.getElementIndex(view.getStartOffset());
                     line++; // make it 1-based
                     Difference ad = getDifference(line, paintDiff);

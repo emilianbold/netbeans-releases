@@ -78,6 +78,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.GroupUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.IgnoreError;
@@ -119,7 +120,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.TraitMethodAliasDeclarati
 import org.netbeans.modules.php.editor.parser.astnodes.TryStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
@@ -162,7 +163,14 @@ public class DefaultTreePathVisitor extends DefaultVisitor {
     }
 
     @Override
-    public void visit(UseStatementPart node) {
+    public void visit(SingleUseStatementPart node) {
+        addToPath(node);
+        super.visit(node);
+        removeFromPath();
+    }
+
+    @Override
+    public void visit(GroupUseStatementPart node) {
         addToPath(node);
         super.visit(node);
         removeFromPath();

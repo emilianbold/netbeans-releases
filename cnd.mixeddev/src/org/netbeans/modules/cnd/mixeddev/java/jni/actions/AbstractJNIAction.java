@@ -41,8 +41,15 @@
  */
 package org.netbeans.modules.cnd.mixeddev.java.jni.actions;
 
+import java.awt.event.ActionEvent;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import static javax.swing.Action.MNEMONIC_KEY;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
+import org.netbeans.api.progress.BaseProgressUtils;
 import org.netbeans.modules.cnd.mixeddev.Triple;
 import org.netbeans.modules.cnd.mixeddev.java.JNISupport;
 import org.netbeans.modules.cnd.mixeddev.java.JavaContextSupport;
@@ -53,32 +60,46 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Pair;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
 /**
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-public abstract class AbstractJNIAction extends NodeAction {
+public abstract class AbstractJNIAction extends AbstractAction {
     
-    public AbstractJNIAction() {
-        putValue("noIconInMenu", Boolean.TRUE);                         //NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(AbstractJNIAction.class.getName(), 1);
+    
+    private final Node[] activatedNodes;
+    
+    public AbstractJNIAction(Lookup context) {
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+        Object lookupResult = context.lookup(Node.class);
+        if (lookupResult instanceof Node[]) {
+            this.activatedNodes = (Node[]) lookupResult;
+        } else if (lookupResult instanceof Node) {
+            this.activatedNodes = new Node[]{(Node) lookupResult};
+        } else {
+            this.activatedNodes = null;
+        }
     }
 
     @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
-    @Override
-    public boolean asynchronous() {
-        return false;
+    public void actionPerformed(ActionEvent e) {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                actionPerformedImpl(activatedNodes);
+            }
+        });
     }
 
     @Override
-    protected boolean enable(Node[] activatedNodes) {
+    public boolean isEnabled() {
         Triple<DataObject, Document, Integer> context = extractContext(activatedNodes);
         if (context != null) {
             return isEnabledAtPosition(context.second, context.third);
@@ -113,4 +134,6 @@ public abstract class AbstractJNIAction extends NodeAction {
     }
     
     protected abstract boolean isEnabledAtPosition(Document doc, int caret);
+    
+    protected abstract void actionPerformedImpl(Node[] activatedNodes);
 }

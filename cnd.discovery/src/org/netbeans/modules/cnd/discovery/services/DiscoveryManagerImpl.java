@@ -57,7 +57,7 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardAction;
-import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
+import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -134,10 +134,10 @@ public final class DiscoveryManagerImpl {
             String artifact = (String) artifacts.get(BUILD_EXEC_KEY);
             if (artifact != null) {
                 final Map<String, Object> map = new HashMap<>();
-                DiscoveryWizardDescriptor.ROOT_FOLDER.toMap(map, findRoot());
-                DiscoveryWizardDescriptor.EXEC_LOG_FILE.toMap(map, artifact);
-                DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, resolveSymbolicLinks());
-                DiscoveryWizardDescriptor.INCREMENTAL.toMap(map, isIncremental);
+                DiscoveryDescriptor.ROOT_FOLDER.toMap(map, findRoot());
+                DiscoveryDescriptor.EXEC_LOG_FILE.toMap(map, artifact);
+                DiscoveryDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, resolveSymbolicLinks());
+                DiscoveryDescriptor.INCREMENTAL.toMap(map, isIncremental);
                 if (extension.canApply(map, project, null)) {
                     try {
                         postModelTask();
@@ -156,10 +156,10 @@ public final class DiscoveryManagerImpl {
             artifact = (String) artifacts.get(BUILD_LOG_KEY);
             if (artifact != null) {
                 final Map<String, Object> map = new HashMap<>();
-                DiscoveryWizardDescriptor.ROOT_FOLDER.toMap(map, findRoot());
-                DiscoveryWizardDescriptor.LOG_FILE.toMap(map, artifact);
-                DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, resolveSymbolicLinks());
-                DiscoveryWizardDescriptor.INCREMENTAL.toMap(map, isIncremental);
+                DiscoveryDescriptor.ROOT_FOLDER.toMap(map, findRoot());
+                DiscoveryDescriptor.LOG_FILE.toMap(map, artifact);
+                DiscoveryDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, resolveSymbolicLinks());
+                DiscoveryDescriptor.INCREMENTAL.toMap(map, isIncremental);
                 if (extension.canApply(map, project, null)) {
                     try {
                         postModelTask();

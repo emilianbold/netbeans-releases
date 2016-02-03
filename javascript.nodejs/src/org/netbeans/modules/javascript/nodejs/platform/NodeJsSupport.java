@@ -63,7 +63,7 @@ import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferences;
 import org.netbeans.modules.javascript.nodejs.ui.Notifications;
 import org.netbeans.modules.javascript.nodejs.ui.actions.NodeJsActionProvider;
 import org.netbeans.modules.javascript.nodejs.ui.customizer.NodeJsRunPanel;
-import org.netbeans.modules.javascript.nodejs.util.NodeInfo;
+import org.netbeans.modules.javascript.nodejs.exec.NodeProcesses;
 import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
 import org.netbeans.modules.javascript.nodejs.util.StringUtils;
 import org.netbeans.modules.web.common.api.Version;
@@ -95,8 +95,7 @@ public final class NodeJsSupport {
     private final ActionProvider actionProvider;
     final NodeJsSourceRoots sourceRoots;
     final PackageJson packageJson;
-
-    private volatile NodeInfo currentNodeInfo = NodeInfo.none();
+    private final NodeProcesses nodeProcesses;
 
 
     private NodeJsSupport(Project project) {
@@ -106,6 +105,7 @@ public final class NodeJsSupport {
         sourceRoots = new NodeJsSourceRoots(project);
         preferences = new NodeJsPreferences(project);
         packageJson = new PackageJson(project.getProjectDirectory());
+        nodeProcesses = new NodeProcesses();
     }
 
     @ProjectServiceProvider(service = NodeJsSupport.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
@@ -137,6 +137,10 @@ public final class NodeJsSupport {
 
     public PackageJson getPackageJson() {
         return packageJson;
+    }
+
+    public NodeProcesses getNodeProcesses() {
+        return nodeProcesses;
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -173,19 +177,7 @@ public final class NodeJsSupport {
         packageJson.removePropertyChangeListener(packageJsonListener);
         // cleanup
         packageJson.cleanup();
-        if (currentNodeInfo.isRunning()) {
-            currentNodeInfo.stop();
-        }
-    }
-
-    public NodeInfo getCurrentNodeInfo() {
-        assert currentNodeInfo != null;
-        return currentNodeInfo;
-    }
-
-    public void setCurrentNodeInfo(NodeInfo currentNodeInfo) {
-        assert currentNodeInfo != null;
-        this.currentNodeInfo = currentNodeInfo;
+        nodeProcesses.stop();
     }
 
     //~ Inner classes

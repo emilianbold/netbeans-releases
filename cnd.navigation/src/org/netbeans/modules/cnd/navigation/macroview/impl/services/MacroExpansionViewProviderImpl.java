@@ -144,7 +144,7 @@ public class MacroExpansionViewProviderImpl implements CsmMacroExpansionViewProv
                                 int length = comp.getDocument().getLength();
                                 if (offset2 > 0 && offset2 < length) {
                                     comp.setCaretPosition(offset2);
-                                } else if (offset2 >= length) {
+                                } else if (offset2 >= length && length > 0) {
                                     comp.setCaretPosition(length - 1);
                                 } else {
                                     comp.setCaretPosition(0);

@@ -112,7 +112,7 @@ public class ProjectUtilities {
         for (Project project : OpenProjects.getDefault().getOpenProjects()) // #256930
             if (!project.getClass().getName().equals("org.netbeans.modules.project.ui.LazyProject")) // NOI18N
                 projects.add(project);
-        return projects.toArray(new Project[projects.size()]);
+        return projects.toArray(new Project[0]);
 //        return OpenProjects.getDefault().getOpenProjects();
     }
 
@@ -322,7 +322,7 @@ public class ProjectUtilities {
         projects.add(project);
         getSourceRoots(project, traverse, projects, set);
 
-        return set.toArray(new FileObject[set.size()]);
+        return set.toArray(new FileObject[0]);
     }
 
     public static void fetchSubprojects(final Project project, final Set<Project> projects) {

@@ -145,6 +145,11 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     
     
     @Override public ClassPath findClassPath(FileObject file, String type) {
+        assert file != null;
+        if(file == null) {            
+            Logger.getLogger(ClassPathProviderImpl.class.getName()).log(Level.WARNING, " passed null fileobject fo ClassPathProviderImpl.findClassPath."); //NOI18N
+            return null;
+        }
         int fileType = getType(file);
         if (fileType != TYPE_SRC &&  fileType != TYPE_TESTSRC && fileType != TYPE_WEB) {
             Logger.getLogger(ClassPathProviderImpl.class.getName()).log(Level.FINEST, " bad type={0} for {1}", new Object[] {type, file}); //NOI18N
@@ -192,6 +197,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     
     
     private int getType(FileObject file) {
+        if(file == null) {
+            return TYPE_UNKNOWN;
+        }
         NbMavenProjectImpl project = proj.getLookup().lookup(NbMavenProjectImpl.class);
         if (isChildOf(file, project.getSourceRoots(false)) ||
             isChildOf(file, project.getGeneratedSourceRoots(false))) {

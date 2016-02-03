@@ -213,6 +213,8 @@ public class LogCommand extends GitCommand {
                     for (String msg : error.split("\n")) { //NOI18N
                         if (msg.startsWith("fatal: Invalid object")) {
                             throw new GitException.MissingObjectException(GitConstants.HEAD ,GitObjectType.COMMIT);
+                        } else if (msg.startsWith("fatal: ambiguous argument")) {
+                            throw new GitException.MissingObjectException(revision ,GitObjectType.COMMIT);
                         }
                     }
                     super.errorParser(error);

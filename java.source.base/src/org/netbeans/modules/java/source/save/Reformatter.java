@@ -4357,11 +4357,6 @@ public class Reformatter implements ReformatTask {
             String indentString = getIndent();
             String lineStartString = cs.addLeadingStarInComment() ? indentString + SPACE + LEADING_STAR + SPACE : indentString + SPACE;
             String blankLineString;
-            if (javadocTokens != null && cs.generateParagraphTagOnBlankLines()) {
-                blankLineString = cs.addLeadingStarInComment() ? indentString + SPACE + LEADING_STAR + SPACE + P_TAG : indentString + SPACE + P_TAG;
-            } else {
-                blankLineString = cs.addLeadingStarInComment() ? indentString + SPACE + LEADING_STAR : EMPTY;
-            }
             int currNWSPos = -1;
             int lastNWSPos = -1;
             int currWSPos = -1;
@@ -4378,6 +4373,10 @@ public class Reformatter implements ReformatTask {
             int align = -1;
             for (int i = start; i < text.length(); i++) {
                 if (i >= initTextEndOffset) {
+                    blankLineString = cs.addLeadingStarInComment() ? indentString + SPACE + LEADING_STAR : EMPTY;
+                } else if (javadocTokens != null && !noFormat && cs.generateParagraphTagOnBlankLines()) {
+                    blankLineString = cs.addLeadingStarInComment() ? indentString + SPACE + LEADING_STAR + SPACE + P_TAG : indentString + SPACE + P_TAG;
+                } else {
                     blankLineString = cs.addLeadingStarInComment() ? indentString + SPACE + LEADING_STAR : EMPTY;
                 }
                 char c = text.charAt(i);
@@ -4598,8 +4597,8 @@ public class Reformatter implements ReformatTask {
                                                         addDiff(pendingDiff);
                                                     }
                                                 }
-                                                pendingDiff = new Diff(offset + currWSPos, offset + i, javadocTokens != null && lastNWSPos >= 0 && i < initTextEndOffset && cs.generateParagraphTagOnBlankLines() ? SPACE + P_TAG : EMPTY);
-                                            } else if (javadocTokens != null && lastNWSPos >= 0 && i < initTextEndOffset && cs.generateParagraphTagOnBlankLines()) {
+                                                pendingDiff = new Diff(offset + currWSPos, offset + i, javadocTokens != null && lastNWSPos >= 0 && i < initTextEndOffset && !noFormat && cs.generateParagraphTagOnBlankLines() ? SPACE + P_TAG : EMPTY);
+                                            } else if (javadocTokens != null && lastNWSPos >= 0 && i < initTextEndOffset && !noFormat && cs.generateParagraphTagOnBlankLines()) {
                                                 if (pendingDiff != null) {
                                                     String sub = text.substring(pendingDiff.start - offset, pendingDiff.end - offset);
                                                     if (!sub.equals(pendingDiff.text)) {

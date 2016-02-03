@@ -44,6 +44,7 @@ package org.netbeans.modules.docker;
 import java.io.Closeable;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 
 /**
  *
@@ -58,5 +59,7 @@ public interface StreamResult extends Closeable {
     InputStream getStdErr();
 
     boolean hasTty();
+
+    Charset getCharset();
 
 }

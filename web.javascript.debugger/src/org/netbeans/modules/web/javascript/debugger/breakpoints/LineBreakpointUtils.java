@@ -51,7 +51,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Martin
+ * @author Martin Entlicher, Antoine Vandecreme
  */
 class LineBreakpointUtils {
     
@@ -73,8 +73,16 @@ class LineBreakpointUtils {
         return getURLStringImpl(lb, p, urlConnectionBeingDebugged, true);
     }
     
+    static String getURLString(FileObject fo, Project p, URL urlConnectionBeingDebugged) {
+        return getURLStringImpl(fo, p, urlConnectionBeingDebugged, true);
+    }
+    
     private static String getURLStringImpl(JSLineBreakpoint lb, Project p, URL urlConnectionBeingDebugged, boolean applyInternalServerMapping) {
         FileObject fo = lb.getLine().getLookup().lookup(FileObject.class);
+        return getURLStringImpl(fo, p, urlConnectionBeingDebugged, applyInternalServerMapping);
+    }
+    
+    private static String getURLStringImpl(FileObject fo, Project p, URL urlConnectionBeingDebugged, boolean applyInternalServerMapping) {
         String url;
         URL remoteURL = RemoteFileCache.isRemoteFile(fo);
         if (remoteURL == null) {

@@ -88,9 +88,9 @@ public class OpenNetBeansIDEProjects extends LeafNode {
         if (null == panel) {
             panel = new JPanel(new GridBagLayout());
             panel.setOpaque(false);
-            btn = new LinkButton(NbBundle.getMessage(QueryListNode.class, "LBL_OpenNetBeansIDEProject1"), getDefaultAction()); //NOI18N
+            btn = new LinkButton(NbBundle.getMessage(OpenNetBeansIDEProjects.class, "LBL_OpenNetBeansIDEProject1"), getDefaultAction()); //NOI18N
             panel.add(btn, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-            panel.add(new JLabel(" " + NbBundle.getMessage(QueryListNode.class, "LBL_OpenNetBeansIDEProject2")), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+            panel.add(new JLabel(" " + NbBundle.getMessage(OpenNetBeansIDEProjects.class, "LBL_OpenNetBeansIDEProject2")), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
         }
         btn.setForeground(foreground, isSelected);
         return panel;

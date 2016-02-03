@@ -5,6 +5,8 @@ Code completion result for source line:
 METHOD     add(E)                          [PUBLIC]   boolean
 METHOD     add(int, E)                     [PUBLIC]   void
 METHOD     addAll(Collection<? extends E>  [PUBLIC]   boolean
+METHOD     addAll(Iterable)                           boolean
+METHOD     addAll(Iterator)                           boolean
 METHOD     addAll(Object[])                           boolean
 METHOD     addAll(int, Collection<? exten  [PUBLIC]   boolean
 METHOD     addAll(int, Object)                        boolean
@@ -12,6 +14,7 @@ METHOD     addShutdownHook(Closure)                   void
 METHOD     any()                                      boolean
 METHOD     any(Closure)                               boolean
 METHOD     asBoolean()                                boolean
+METHOD     asCollection()                             Collection
 METHOD     asImmutable()                              List
 METHOD     asList()                                   List
 METHOD     asSynchronized()                           List
@@ -24,8 +27,6 @@ METHOD     collate(int,  int,  boolean)               List
 METHOD     collect()                                  List
 METHOD     collect(Closure)                           List
 METHOD     collect(Collection, Closure)               Collection
-METHOD     collectAll(Closure)                        List
-METHOD     collectAll(Collection, Closure             Collection
 METHOD     collectEntries()                           Map
 METHOD     collectEntries(Closure)                    Map
 METHOD     collectEntries(Map)                        Map
@@ -35,20 +36,23 @@ METHOD     collectMany(Collection, Closur             Collection
 METHOD     collectNested(Closure)                     List
 METHOD     collectNested(Collection, Clos             Collection
 METHOD     combinations()                             List
-METHOD     contains(Object)                [PUBLIC]   boolean
+METHOD     combinations(Closure)                      List
+METHOD     contains(Object)                           boolean
 METHOD     containsAll(Collection<?>)      [PUBLIC]   boolean
 METHOD     containsAll(Object[])                      boolean
 METHOD     containsWithinBounds(Object)    [PUBLIC]   boolean
 METHOD     count(Closure)                             Number
 METHOD     count(Object)                              Number
 METHOD     countBy(Closure)                           Map
-METHOD     disjoint(Collection)                       boolean
-METHOD     drop(int)                                  List
+METHOD     disjoint(Iterable)                         boolean
+METHOD     drop(int)                                  Collection
+METHOD     dropRight(int)                             List
 METHOD     dropWhile(Closure)                         List
 METHOD     dump()                                     String
-METHOD     each(Closure)                              Object
+METHOD     each(Closure)                              List
+METHOD     eachCombination(Closure)                   void
 METHOD     eachPermutation(Closure)                   Iterator
-METHOD     eachWithIndex(Closure)                     Object
+METHOD     eachWithIndex(Closure)                     List
 METHOD     equals(List)                               boolean
 METHOD     equals(Object)                  [PUBLIC]   boolean
 METHOD     equals(Object[])                           boolean
@@ -59,8 +63,8 @@ METHOD     execute(List, File)                        Process
 METHOD     execute(String[], File)                    Process
 METHOD     find()                                     Object
 METHOD     find(Closure)                              Object
-METHOD     findAll()                                  Collection
-METHOD     findAll(Closure)                           Collection
+METHOD     findAll()                                  List
+METHOD     findAll(Closure)                           List
 METHOD     findIndexOf(Closure)                       int
 METHOD     findIndexOf(int, Closure)                  int
 METHOD     findIndexValues(Closure)                   List
@@ -71,8 +75,9 @@ METHOD     findResult(Closure)                        Object
 METHOD     findResult(Object, Closure)                Object
 METHOD     findResults(Closure)                       Collection
 METHOD     first()                                    Object
-METHOD     flatten()                                  Collection
+METHOD     flatten()                                  List
 METHOD     flatten(Closure)                           Collection
+METHOD     forEach(Consumer<? super T>)    [PUBLIC]   void
 METHOD     get(int)                        [PUBLIC]   E
 METHOD     getAt(Collection)                          List
 METHOD     getAt(EmptyRange)                          List
@@ -80,13 +85,14 @@ METHOD     getAt(Range)                               List
 METHOD     getAt(String)                              List
 METHOD     getAt(int)                                 Object
 METHOD     getClass()                      [PUBLIC]   Class<?>
-METHOD     getFrom()                       [PUBLIC]   Comparable
+METHOD     getFrom()                       [PUBLIC]   T
+METHOD     getIndices()                               IntRange
 METHOD     getMetaClass()                             MetaClass
 METHOD     getMetaPropertyValues()                    List
 METHOD     getProperties()                            Map
-METHOD     getTo()                         [PUBLIC]   Comparable
-METHOD     grep()                                     Collection
-METHOD     grep(Object)                               Collection
+METHOD     getTo()                         [PUBLIC]   T
+METHOD     grep()                                     List
+METHOD     grep(Object)                               List
 METHOD     groupBy(Closure)                           Map
 METHOD     groupBy(List)                              Map
 METHOD     groupBy(Object[])                          Map
@@ -95,10 +101,14 @@ METHOD     hashCode()                      [PUBLIC]   int
 METHOD     head()                                     Object
 METHOD     identity(Closure)                          Object
 METHOD     indexOf(Object)                 [PUBLIC]   int
+METHOD     indexed()                                  Map
+METHOD     indexed(int)                               Map
+METHOD     init()                                     List
 METHOD     inject(Closure)                            Object
 METHOD     inject(Object, Closure)                    Object
 METHOD     inspect()                       [PUBLIC]   String
 METHOD     intersect(Collection)                      Collection
+METHOD     intersect(Iterable)                        Collection
 METHOD     invokeMethod(String, Object)               Object
 METHOD     is(Object)                                 boolean
 METHOD     isCase(Object)                             boolean
@@ -108,7 +118,7 @@ METHOD     iterator()                                 Iterator
 METHOD     join(String)                               String
 METHOD     last()                                     Object
 METHOD     lastIndexOf(Object)             [PUBLIC]   int
-METHOD     leftShift(Object)                          Collection
+METHOD     leftShift(Object)                          List
 METHOD     listIterator()                  [PUBLIC]   ListIterator<E>
 METHOD     listIterator(int)               [PUBLIC]   ListIterator<E>
 METHOD     max()                                      Object
@@ -119,15 +129,17 @@ METHOD     min()                                      Object
 METHOD     min(Closure)                               Object
 METHOD     min(Comparator)                            Object
 METHOD     minus(Collection)                          List
-METHOD     minus(Iterable)                            List
+METHOD     minus(Iterable)                            Collection
 METHOD     minus(Object)                              List
-METHOD     multiply(Number)                           List
+METHOD     multiply(Number)                           Collection
 METHOD     notify()                        [PUBLIC]   void
 METHOD     notifyAll()                     [PUBLIC]   void
+METHOD     parallelStream()                [PUBLIC]   Stream<E>
 METHOD     permutations()                             Set
-METHOD     plus(Collection)                           Collection
-METHOD     plus(Iterable)                             Collection
-METHOD     plus(Object)                               Collection
+METHOD     permutations(Closure)                      List
+METHOD     plus(Collection)                           List
+METHOD     plus(Iterable)                             List
+METHOD     plus(Object)                               List
 METHOD     plus(int, Iterable)                        List
 METHOD     plus(int, List)                            List
 METHOD     plus(int, Object)                          List
@@ -153,6 +165,10 @@ METHOD     remove(int)                     [PUBLIC]   E
 METHOD     removeAll(Closure)                         boolean
 METHOD     removeAll(Collection<?>)        [PUBLIC]   boolean
 METHOD     removeAll(Object[])                        boolean
+METHOD     removeAt(int)                              Object
+METHOD     removeElement(Object)                      boolean
+METHOD     removeIf(Predicate<? super E>)  [PUBLIC]   boolean
+METHOD     replaceAll(UnaryOperator<E>)    [PUBLIC]   void
 METHOD     respondsTo(String)                         List
 METHOD     respondsTo(String, Object)                 List
 METHOD     retainAll(Closure)                         boolean
@@ -163,28 +179,32 @@ METHOD     reverse(boolean)                           List
 METHOD     reverseEach(Closure)                       List
 METHOD     set(int, E)                     [PUBLIC]   E
 METHOD     setMetaClass(MetaClass)                    void
-METHOD     size()                          [PUBLIC]   int
+METHOD     size()                                     int
 METHOD     sleep(long)                                void
 METHOD     sleep(long, Closure)                       void
 METHOD     sort()                                     List
 METHOD     sort(Closure)                              List
-METHOD     sort(Comparator)                           List
+METHOD     sort(Comparator<? super E>)     [PUBLIC]   void
 METHOD     sort(boolean)                              List
 METHOD     sort(boolean, Closure)                     List
 METHOD     sort(boolean, Comparator)                  List
-METHOD     split(Closure)                             Collection
+METHOD     split(Closure)                             List
+METHOD     spliterator()                   [PUBLIC]   Spliterator<E>
 METHOD     sprintf(String, Object)                    String
 METHOD     sprintf(String, Object)                    String
 METHOD     step(int)                       [PUBLIC]   List<T>
 METHOD     step(int, Closure)              [PUBLIC]   void
+METHOD     stream()                        [PUBLIC]   Stream<E>
 METHOD     subList(int, int)               [PUBLIC]   List<E>
 METHOD     subsequences()                             Set
 METHOD     sum()                                      Object
 METHOD     sum(Closure)                               Object
 METHOD     sum(Object)                                Object
 METHOD     sum(Object, Closure)                       Object
-METHOD     tail()                                     List
+METHOD     swap(int,  int)                            List
+METHOD     tail()                                     Collection
 METHOD     take(int)                                  List
+METHOD     takeRight(int)                             Collection
 METHOD     takeWhile(Closure)                         List
 METHOD     toArray()                       [PUBLIC]   Object[]
 METHOD     toArray(T[])                    [PUBLIC]   T[]
@@ -192,15 +212,21 @@ METHOD     toList()                                   List
 METHOD     toListString()                             String
 METHOD     toListString(int)                          String
 METHOD     toSet()                                    Set
+METHOD     toSorted()                                 List
+METHOD     toSorted(Closure)                          List
+METHOD     toSorted(Comparator)                       List
 METHOD     toSpreadMap()                              SpreadMap
 METHOD     toString()                                 String
+METHOD     toUnique()                                 List
+METHOD     toUnique(Closure)                          Collection
+METHOD     toUnique(Comparator)                       List
 METHOD     transpose()                                List
-METHOD     unique()                                   Collection
-METHOD     unique(Closure)                            Collection
-METHOD     unique(Comparator)                         Collection
-METHOD     unique(boolean)                            Collection
-METHOD     unique(boolean, Closure)                   Collection
-METHOD     unique(boolean, Comparator)                Collection
+METHOD     unique()                                   List
+METHOD     unique(Closure)                            List
+METHOD     unique(Comparator)                         List
+METHOD     unique(boolean)                            List
+METHOD     unique(boolean, Closure)                   List
+METHOD     unique(boolean, Comparator)                List
 METHOD     use(Class, Closure)                        Object
 METHOD     use(List, Closure)                         Object
 METHOD     use(Object[])                              Object
@@ -210,7 +236,10 @@ METHOD     wait(long, int)                 [PUBLIC]   void
 METHOD     with(Closure)                              Object
 METHOD     withDefault(Closure)                       List
 METHOD     withEagerDefault(Closure)                  List
+METHOD     withIndex()                                List
+METHOD     withIndex(int)                             List
 METHOD     withLazyDefault(Closure)                   List
+METHOD     withTraits(Class[])                        Object
 FIELD      empty                           [PUBLIC]   boolean
 FIELD      from                            [PUBLIC]   Comparable
 FIELD      reverse                         [PUBLIC]   boolean

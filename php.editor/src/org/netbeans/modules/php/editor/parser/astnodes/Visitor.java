@@ -162,7 +162,9 @@ public interface Visitor {
 
     public void visit(UseStatement statement);
 
-    public void visit(UseStatementPart statementPart);
+    public void visit(SingleUseStatementPart statementPart);
+
+    public void visit(GroupUseStatementPart statementPart);
 
     public void visit(IfStatement ifStatement);
 

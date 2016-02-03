@@ -132,7 +132,8 @@ public final class PhingBuildTool implements BuildToolImplementation {
     }
 
     public PhingTargets getPhingTargets(@NullAllowed FileObject buildXml) {
-        if (buildXml == null) {
+        if (buildXml == null
+                || buildXml.getParent().equals(project.getProjectDirectory())) {
             return getProjectPhingTargets();
         }
         PhingTargets targets = phingTargets.get(buildXml);

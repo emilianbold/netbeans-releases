@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.completion;
 
@@ -245,5 +245,55 @@ public class PHP70CodeCompletionTest extends PHPCodeCompletionTestBase {
     public void testReturnTypesTyping12b() throws Exception {
         checkCompletion("testfiles/completion/lib/php70/returnTypesTyping12.php", "    function current(): ^{", false);
     }
+
+    public void testGroupUse01a() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUse01.php", "use A\\{^", false);
+    }
+
+    public void testGroupUse01b() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUse01.php", "    ClsA,^", false);
+    }
+
+    public void testGroupUse01c() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUse01.php", "    B\\Cls^AB,", false);
+    }
+
+    public void testGroupUse01d() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUse01.php", "    B\\^ClsAB,", false);
+    }
+
+    public void testGroupUse02a() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUse02.php", "use \\A\\{^", false);
+    }
+
+    public void testGroupUse02b() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUse02.php", "    ClsA,^", false);
+    }
+
+    public void testGroupUse02c() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUse02.php", "    B\\Cls^AB,", false);
+    }
+
+    public void testGroupUse02d() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUse02.php", "    B\\^ClsAB,", false);
+    }
+
+    public void testGroupUse03a() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUse03.php", "use A\\ {^", false);
+    }
+
+    public void testGroupUse03b() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUse03.php", "    ClsA,^", false);
+    }
+
+    public void testGroupUse03c() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUse03.php", "    B\\Cls^AB,", false);
+    }
+
+    public void testGroupUse03d() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUse03.php", "    B\\^ClsAB,", false);
+    }
+
+    // XXX add tests for CC after NS aliases!
 
 }

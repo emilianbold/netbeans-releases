@@ -1,5 +1,5 @@
 Name: Validator.nu
-Version: 20130529
+Version: 20150629
 License: MIT-validator
 OSR: -
 Files: validator.jar

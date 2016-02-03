@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.csl;
 
@@ -80,6 +80,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
+import org.netbeans.modules.php.editor.parser.astnodes.GroupUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
@@ -95,6 +96,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.TraitMethodAliasDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
@@ -392,7 +394,8 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 cldec.getBody().accept(this);
 
                 // find all usages in the method bodies
-                for (Block block : needToScan) {
+                while (!needToScan.isEmpty()) {
+                    Block block = needToScan.remove(0);
                     block.accept(this);
                 }
                 addColoringForUnusedPrivateFields();
@@ -795,9 +798,20 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             List<UseStatementPart> parts = node.getParts();
             for (int i = 0; i < parts.size(); i++) {
                 UseStatementPart useStatementPart = parts.get(i);
-                boolean isDeprecated = isDeprecatedNamespaceName(useStatementPart.getName());
-                if (isDeprecated) {
-                    addColoringForNode(useStatementPart.getName(), DEPRECATED_SET);
+                if (useStatementPart instanceof SingleUseStatementPart) {
+                    SingleUseStatementPart singleUseStatementPart = (SingleUseStatementPart) useStatementPart;
+                    if (isDeprecatedNamespaceName(singleUseStatementPart.getName())) {
+                        addColoringForNode(singleUseStatementPart.getName(), DEPRECATED_SET);
+                    }
+                } else if (useStatementPart instanceof GroupUseStatementPart) {
+                    GroupUseStatementPart groupUseStatementPart = (GroupUseStatementPart) useStatementPart;
+                    for (SingleUseStatementPart item : groupUseStatementPart.getItems()) {
+                        if (isDeprecatedNamespaceName(CodeUtils.compoundName(groupUseStatementPart, item, true))) {
+                            addColoringForNode(item.getName(), DEPRECATED_SET);
+                        }
+                    }
+                } else {
+                    assert false : "Unexpected class type: " + useStatementPart.getClass().getName(); // NOI18N
                 }
             }
         }

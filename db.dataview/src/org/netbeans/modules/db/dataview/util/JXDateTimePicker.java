@@ -359,30 +359,15 @@ public class JXDateTimePicker extends JComponent {
 //        _monthView.setSelectionModel(new SingleDaySelectionModel());
         _monthView.setTraversable(true);
 
-        if (UIManager.getColor("nb.dataview.jxdatetimepicker.background") != null) { //NOI18N
-            _monthView.setBackground(UIManager.getColor("nb.dataview.jxdatetimepicker.background")); //NOI18N
-        }
-        if (UIManager.getColor("nb.dataview.jxdatetimepicker.foreground") != null) { //NOI18N
-            _monthView.setForeground(UIManager.getColor("nb.dataview.jxdatetimepicker.foreground")); //NOI18N
-        }
-        if (UIManager.getColor("nb.dataview.jxdatetimepicker.selectedBackground") != null) { //NOI18N
-            _monthView.setSelectionBackground(UIManager.getColor("nb.dataview.jxdatetimepicker.selectedBackground")); //NOI18N
-        }
-        if (UIManager.getColor("nb.dataview.jxdatetimepicker.selectedForeground") != null) { //NOI18N
-            _monthView.setSelectionForeground(UIManager.getColor("nb.dataview.jxdatetimepicker.selectedForeground")); //NOI18N
-        }
-        if (UIManager.getColor("nb.dataview.jxdatetimepicker.monthStringBackground") != null) {
-            _monthView.setMonthStringBackground(UIManager.getColor("nb.dataview.jxdatetimepicker.monthStringBackground")); //NOI18N
-        }
-        if (UIManager.getColor("nb.dataview.jxdatetimepicker.monthStringForeground") != null) { //NOI18N
-            _monthView.setMonthStringForeground(UIManager.getColor("nb.dataview.jxdatetimepicker.monthStringForeground")); //NOI18N
-        }
-        if (UIManager.getColor("nb.dataview.jxdatetimepicker.daysOfTheWeekForeground") != null) { //NOI18N
-            _monthView.setDaysOfTheWeekForeground(UIManager.getColor("nb.dataview.jxdatetimepicker.daysOfTheWeekForeground")); //NOI18N
-        }
-        if (UIManager.getColor("nb.dataview.jxdatetimepicker.todayBackground") != null) { //NOI18N
-            _monthView.setTodayBackground(UIManager.getColor("nb.dataview.jxdatetimepicker.todayBackground")); //NOI18N
-        }
+        _monthView.setBackground(ColorHelper.getJxdatetimepickerBackground());
+        _monthView.setForeground(ColorHelper.getJxdatetimepickerForeground());
+        _monthView.setSelectionBackground(ColorHelper.getJxdatetimepickerSelectedBackground()); //NOI18N
+        _monthView.setSelectionForeground(ColorHelper.getJxdatetimepickerSelectedForeground()); //NOI18N
+        _monthView.setMonthStringBackground(ColorHelper.getJxdatetimepickerMonthStringBackground()); //NOI18N
+        _monthView.setMonthStringForeground(ColorHelper.getJxdatetimepickerMonthStringForeground()); //NOI18N
+        _monthView.setDaysOfTheWeekForeground(ColorHelper.getJxdatetimepickerDaysOfTheWeekForeground()); //NOI18N
+        _monthView.setTodayBackground(ColorHelper.getJxdatetimepickerTodayBackground()); //NOI18N
+
         _monthView.addPropertyChangeListener(getMonthViewListener());
     }
 
@@ -943,19 +928,13 @@ public class JXDateTimePicker extends JComponent {
         @SuppressWarnings("rawtypes")
         TodayPanel() {
             super(new FlowLayout());
-            Color gradientStart = UIManager.getColor("nb.dataview.jxdatetimepicker.todayPanel.background.gradient.start") != null //NOI18N
-                    ? UIManager.getColor("nb.dataview.jxdatetimepicker.todayPanel.background.gradient.start") //NOI18N
-                    : new Color(238, 238, 238);
-            Color gradientEnd = UIManager.getColor("nb.dataview.jxdatetimepicker.todayPanel.background.gradient.end") != null //NOI18N
-                    ? UIManager.getColor("nb.dataview.jxdatetimepicker.todayPanel.background.gradient.end") //NOI18N
-                    : Color.WHITE;
+            Color gradientStart = ColorHelper.getJxdatetimepickerTodayPanelBackgroundGradientStart();
+            Color gradientEnd = ColorHelper.getJxdatetimepickerTodayPanelBackgroundGradientEnd();
             setBackgroundPainter(new MattePainter(new GradientPaint(0, 0, gradientStart, 0, 1, gradientEnd)));
             todayAction = new TodayAction();
             todayLink = new JXHyperlink(todayAction);
             todayLink.addMouseListener(createDoubleClickListener());
-            Color textColor = UIManager.getColor("nb.dataview.jxdatetimepicker.todayPanel.linkForeground") != null //NOI18N
-                    ? UIManager.getColor("nb.dataview.jxdatetimepicker.todayPanel.linkForeground") //NOI18N
-                    : new Color(16, 66, 104);
+            Color textColor = ColorHelper.getJxdatetimepickerTodayPanelLinkForeground();
             todayLink.setUnclickedColor(textColor);
             todayLink.setClickedColor(textColor);
             add(todayLink);

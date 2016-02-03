@@ -42,6 +42,7 @@
 package org.netbeans.modules.cordova.platforms.ios;
  
 import java.util.logging.Logger;
+import org.openide.modules.InstalledFileLocator;
 
 
 public class WebInspectorJNIBinding {
@@ -64,10 +65,17 @@ public class WebInspectorJNIBinding {
     
     private static WebInspectorJNIBinding instance;
 
+    private static final String CODE_BASE = "org.netbeans.modules.cordova.platforms.ios";
+    
     private WebInspectorJNIBinding() {
         this.writeLock = new Object();
         this.readLock = new Object();
-        System.loadLibrary("iDeviceNativeBinding"); // NOI18N
+        
+        final InstalledFileLocator locator = InstalledFileLocator.getDefault();
+        System.load(locator.locate("bin/libplist.1.dylib", CODE_BASE, false).getPath());
+        System.load(locator.locate("bin/libimobiledevice.4.dylib", CODE_BASE, false).getPath());
+        System.load(locator.locate("bin/libusbmuxd.2.dylib", CODE_BASE, false).getPath());
+        System.load(locator.locate("bin/libiDeviceNativeBinding.dylib", CODE_BASE, false).getPath());
     }
     
     public static synchronized WebInspectorJNIBinding getDefault() {

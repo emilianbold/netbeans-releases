@@ -148,3 +148,13 @@ void _dbg_sleep(int time) {
         trace("Awoke\n");
     }
 }
+
+// NB: don't use malloc_wrapper in preload!!!
+void *malloc_wrapper(size_t size) {
+    void *p = malloc(size);
+    if (!p) {
+        report_error("Not enough of memory for auto-copy harness\n");
+        exit(12);
+    }
+    return p;
+}

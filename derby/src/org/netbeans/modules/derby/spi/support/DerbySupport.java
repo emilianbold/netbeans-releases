@@ -128,6 +128,11 @@ public class DerbySupport {
             // from environment - if that fails the dbDir is create relative to the
             // user home
             String appdataDir = System.getenv("AppData");
+            
+            // Allow override of environment detection of AppData
+            // usecase: allow testing
+            appdataDir = System.getProperty("org.netbeans.modules.derby.spi.support.DerbySupport.overrideAppData", appdataDir);
+            
             if (appdataDir != null) {
                 dbFileWindows = FileUtil
                         .normalizeFile(new File(appdataDir, dbDirWindows));

@@ -175,7 +175,7 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
             }
 
             ex = new DBException(errorMsg, ex);
-            dataView.setErrorStatusText(ex);
+            dataView.setErrorStatusText(conn, null, ex);
 
             NotifyDescriptor nd = new NotifyDescriptor.Message(ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
@@ -204,7 +204,7 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
             }
         } catch (SQLException sqlEx) {
             String msg = NbBundle.getMessage(SQLStatementExecutor.class, "MSG_failure_to_commit");
-            dataView.setErrorStatusText(msg, sqlEx);
+            dataView.setErrorStatusText(conn, null, msg, sqlEx);
             ex = sqlEx;
             return false;
         }
@@ -214,7 +214,7 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
     private void rollback(Connection conn) {
         if(! runInTransaction) {
             String msg = NbBundle.getMessage(SQLStatementExecutor.class, "MSG_failure_rollback");
-            dataView.setErrorStatusText(msg, null);
+            dataView.setErrorStatusText(conn, null, msg, null);
         }
         try {
             if (conn != null && !conn.getAutoCommit()) {
@@ -222,7 +222,7 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
             }
         } catch (SQLException e) {
             String msg = NbBundle.getMessage(SQLStatementExecutor.class, "MSG_failure_rollback");
-            dataView.setErrorStatusText(msg, e);
+            dataView.setErrorStatusText(conn, null, msg, e);
         }
     }
 }

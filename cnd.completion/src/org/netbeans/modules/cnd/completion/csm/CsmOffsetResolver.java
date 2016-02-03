@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import static org.netbeans.modules.cnd.completion.csm.CsmStatementResolver.findInnerExpression;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.MutableObject;
@@ -160,9 +161,8 @@ public class CsmOffsetResolver {
                     context.setLastObject(type);
                     return type;
                 }
-                MutableObject<CsmObject> innerObj = new MutableObject<CsmObject>();
-                if (findInExpression(param.getInitialValue(), param, offset, context, innerObj)) {
-                    return innerObj.value;
+                if (findInnerExpression(param.getInitialValue(), offset, context)) {
+                    return context.getLastObject();
                 }
                 context.setLastObject(param);
                 return param;
@@ -229,9 +229,8 @@ public class CsmOffsetResolver {
                     last = type;
                 }
             }
-            MutableObject<CsmObject> innerObj = new MutableObject<CsmObject>();
-            if (findInExpression(((CsmVariable)lastObj).getInitialValue(), lastObj, offset, context, innerObj)) {
-                lastObj = last = innerObj.value;
+            if (findInnerExpression(((CsmVariable)lastObj).getInitialValue(), offset, context)) {
+                lastObj = last = context.getLastObject();
             }
         } else if (CsmKindUtilities.isClassForwardDeclaration(lastObj) || CsmKindUtilities.isEnumForwardDeclaration(lastObj)) {
             // check template parameters
@@ -270,29 +269,6 @@ public class CsmOffsetResolver {
             }
         }
         return last;
-    }
-    
-    private static boolean findInExpression(CsmExpression initialValue, CsmObject lastObj, int offset, CsmContext context, MutableObject<CsmObject> result) {
-        if(initialValue != null) {
-            for (CsmStatement csmStatement : initialValue.getLambdas()) {
-                CsmDeclarationStatement lambda = (CsmDeclarationStatement)csmStatement;
-                if ((!CsmOffsetUtilities.sameOffsets(lastObj, lambda) || lambda.getStartOffset() != lambda.getEndOffset()) && CsmOffsetUtilities.isInObject(lambda, offset)) {
-                    result.value = null;
-                    
-                    // offset is in body, try to find inners statement
-                    if (CsmStatementResolver.findInnerObject(lambda, offset, context)) {
-                        // if found exact object => return it, otherwise return last found scope
-                        CsmObject found = context.getLastObject();
-                        if (!CsmOffsetUtilities.sameOffsets(lambda, found)) {
-                            result.value = found;
-                        }
-                    }
-                    
-                    return true;
-                }
-            }
-        }
-        return false;
     }
     
     // Function updates context and last object if current last has type or is even type and this type is scope itself

@@ -42,9 +42,14 @@
 
 package org.netbeans.modules.debugger.jpda.ui.actions;
 
+import org.netbeans.api.debugger.ActionsManager;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.modules.debugger.jpda.DebuggerConsoleIO;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.actions.ActionErrorMessageCallback;
 import org.netbeans.modules.debugger.jpda.actions.ActionMessageCallback;
 import org.netbeans.modules.debugger.jpda.actions.ActionStatusDisplayCallback;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -60,17 +65,34 @@ import org.openide.awt.StatusDisplayer;
 public class ActionMessageCallbackUIImpl implements ActionMessageCallback,
                                                     ActionErrorMessageCallback,
                                                     ActionStatusDisplayCallback {
+    
+    private final DebuggerConsoleIO consoleIO;
+    
+    public ActionMessageCallbackUIImpl(ContextProvider lookupProvider) {
+        JPDADebuggerImpl dbg = (JPDADebuggerImpl) lookupProvider.lookupFirst(null, JPDADebugger.class);
+        this.consoleIO = dbg.getConsoleIO();
+    }
 
     @Override
     public void messageCallback(Object action, String message) {
-        NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(message);
-        DialogDisplayer.getDefault().notify(descriptor);
+        if (action == ActionsManager.ACTION_FIX) {
+            // Special handling of messages coming from apply code changes - print into debug output.
+            consoleIO.println(message, null, false);
+        } else {
+            NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(message);
+            DialogDisplayer.getDefault().notify(descriptor);
+        }
     }
 
     @Override
     public void errorMessageCallback(Object action, String message) {
-        NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(message, NotifyDescriptor.Message.ERROR_MESSAGE);
-        DialogDisplayer.getDefault().notifyLater(descriptor);
+        if (action == ActionsManager.ACTION_FIX) {
+            // Special handling of failures of apply code changes - print into debug output.
+            consoleIO.println(message, null, true);
+        } else {
+            NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(message, NotifyDescriptor.Message.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notifyLater(descriptor);
+        }
     }
 
     @Override

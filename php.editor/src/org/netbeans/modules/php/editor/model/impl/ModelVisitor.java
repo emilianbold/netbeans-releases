@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.api.editor.PhpBaseElement;
@@ -85,8 +86,9 @@ import org.netbeans.modules.php.editor.model.VariableScopeFinder;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.model.nodes.ConstantDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.GroupUseStatementPartInfo;
 import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
-import org.netbeans.modules.php.editor.model.nodes.UseStatementPartInfo;
+import org.netbeans.modules.php.editor.model.nodes.SingleUseStatementPartInfo;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -94,6 +96,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayElement;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
@@ -113,6 +116,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
 import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.GroupUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.InstanceOfExpression;
@@ -144,7 +148,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.TraitMethodAliasDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.TryStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
@@ -298,16 +302,21 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             } else if (expression instanceof VariableBase) {
                 typeName = VariousUtils.extractTypeFroVariableBase((VariableBase) expression);
                 if (typeName != null) {
-                    Collection<? extends VariableName> allVariables = VariousUtils.getAllVariables(functionScope, typeName);
-                    Map<String, String> var2Type = new HashMap<>();
-                    for (VariableName variable : allVariables) {
-                        String name = variable.getName();
-                        String type = resolveVariableType(name, functionScope, node);
-                        String qualifiedType = VariousUtils.qualifyTypeNames(type, node.getStartOffset(), currentScope);
-                        var2Type.put(name, qualifiedType);
-                    }
-                    if (!var2Type.isEmpty()) {
-                        typeName = VariousUtils.replaceVarNames(typeName, var2Type);
+                    if (typeName.equals(VariousUtils.PRE_OPERATION_TYPE_DELIMITER + VariousUtils.VAR_TYPE_PREFIX + "$this")) { //NO18N
+                        // #239987 just "return $this;"
+                        typeName = "\\this"; //NOI18N
+                    } else {
+                        Collection<? extends VariableName> allVariables = VariousUtils.getAllVariables(functionScope, typeName);
+                        Map<String, String> var2Type = new HashMap<>();
+                        for (VariableName variable : allVariables) {
+                            String name = variable.getName();
+                            String type = resolveVariableType(name, functionScope, node);
+                            String qualifiedType = VariousUtils.qualifyTypeNames(type, node.getStartOffset(), currentScope);
+                            var2Type.put(name, qualifiedType);
+                        }
+                        if (!var2Type.isEmpty()) {
+                            typeName = VariousUtils.replaceVarNames(typeName, var2Type);
+                        }
                     }
                 }
             } else if (expression instanceof Scalar) {
@@ -421,9 +430,14 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     @Override
     public void visit(NamespaceName namespaceName) {
         super.visit(namespaceName);
-        ASTNode parent = getPath().get(0);
+        ASTNode parent = getPath().get(0); // replace/combine with modelBuilder.getCurrentScope()?
         if (parent instanceof FunctionName) {
             occurencesBuilder.prepare(Kind.FUNCTION, namespaceName, fileScope);
+        } else if (parent instanceof Program
+                || parent instanceof Block) {
+            // return type
+            Kind[] kinds = {Kind.CLASS, Kind.IFACE}; // also TRAIT?
+            occurencesBuilder.prepare(kinds, namespaceName, fileScope);
         } else if (!(parent instanceof ClassDeclaration) && !(parent instanceof InterfaceDeclaration)
                 && !(parent instanceof FormalParameter) && !(parent instanceof InstanceOfExpression)
                 && !(parent instanceof UseTraitStatementPart) && !(parent instanceof TraitConflictResolutionDeclaration)
@@ -434,24 +448,25 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     }
 
     @Override
-    public void visit(UseStatementPart statementPart) {
-        UseStatement.Type type = ((UseStatement) getPath().get(0)).getType();
-        UseStatementPartInfo useStatementPartInfo = UseStatementPartInfo.create(statementPart, type);
-        modelBuilder.getCurrentNameSpace().createUseStatementPart(useStatementPartInfo);
-        ScopeImpl currentScope = modelBuilder.getCurrentScope();
-        switch (type) {
-            case CONST:
-                occurencesBuilder.prepare(Kind.CONSTANT, statementPart.getName(), currentScope);
-                break;
-            case FUNCTION:
-                occurencesBuilder.prepare(Kind.FUNCTION, statementPart.getName(), currentScope);
-                break;
-            case TYPE:
-                occurencesBuilder.prepare(Kind.CLASS, statementPart.getName(), currentScope);
-                break;
+    public void visit(SingleUseStatementPart statementPart) {
+        ASTNode parent = getPath().get(0);
+        if (!(parent instanceof UseStatement)) {
+            // group use, already processed
+            return;
         }
-        if (statementPart.getAlias() != null) {
-            occurencesBuilder.prepare(Kind.USE_ALIAS, statementPart.getAlias(), currentScope);
+        UseStatement.Type type = ((UseStatement) parent).getType();
+        SingleUseStatementPartInfo useStatementPartInfo = SingleUseStatementPartInfo.create(statementPart, type);
+        modelBuilder.getCurrentNameSpace().createUseStatementPart(useStatementPartInfo);
+        processSingleUseStatement(type, null, statementPart);
+    }
+
+    @Override
+    public void visit(GroupUseStatementPart statementPart) {
+        UseStatement.Type type = ((UseStatement) getPath().get(0)).getType();
+        GroupUseStatementPartInfo useStatementPartInfo = GroupUseStatementPartInfo.create(statementPart, type);
+        modelBuilder.getCurrentNameSpace().createUseStatementPart(useStatementPartInfo);
+        for (SingleUseStatementPart part : statementPart.getItems()) {
+            processSingleUseStatement(type, statementPart, part);
         }
     }
 
@@ -522,6 +537,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         if (lazyScan) {
             modelBuilder.build(node, occurencesBuilder, this);
             markerBuilder.prepare(node, modelBuilder.getCurrentScope());
+            scan(node.getFunction().getReturnType());
             checkComments(node);
         }
         try {
@@ -998,6 +1014,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         scan(lexicalVariables);
         modelBuilder.setCurrentScope(fncScope);
         scan(node.getFormalParameters());
+        scan(node.getReturnType());
         previousScope = scope;
         scan(node.getBody());
         previousScope = null;
@@ -1018,6 +1035,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         markerBuilder.prepare(node, fncScope);
         checkComments(node);
         scan(node.getFormalParameters());
+        scan(node.getReturnType());
         scan(node.getBody());
         modelBuilder.reset();
     }
@@ -1418,6 +1436,33 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         scan(node);
         // set the original scope back.
         modelBuilder.prepareForScope(originalScope);
+    }
+
+    private void processSingleUseStatement(UseStatement.Type type, @NullAllowed GroupUseStatementPart groupUseStatementPart,
+            SingleUseStatementPart singleUseStatementPart) {
+        NamespaceName name;
+        if (groupUseStatementPart == null) {
+            name = singleUseStatementPart.getName();
+        } else {
+            name = CodeUtils.compoundName(groupUseStatementPart, singleUseStatementPart, false);
+        }
+        ScopeImpl currentScope = modelBuilder.getCurrentScope();
+        switch (type) {
+            case CONST:
+                occurencesBuilder.prepare(Kind.CONSTANT, name, currentScope);
+                break;
+            case FUNCTION:
+                occurencesBuilder.prepare(Kind.FUNCTION, name, currentScope);
+                break;
+            case TYPE:
+                occurencesBuilder.prepare(Kind.CLASS, name, currentScope);
+                break;
+            default:
+                assert false : "Unknown type: " + type;
+        }
+        if (singleUseStatementPart.getAlias() != null) {
+            occurencesBuilder.prepare(Kind.USE_ALIAS, singleUseStatementPart.getAlias(), currentScope);
+        }
     }
 
 }

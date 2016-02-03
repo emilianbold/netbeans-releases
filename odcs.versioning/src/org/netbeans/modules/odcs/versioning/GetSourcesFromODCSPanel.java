@@ -185,8 +185,7 @@ public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new JLabel();
-        loggedInLabel = new JLabel();
+        developerServerLabel = new JLabel();
         usernameLabel = new JLabel();
         loginButton = new JButton();
         odcsRepoLabel = new JLabel();
@@ -196,13 +195,11 @@ public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
         lblError = new JLabel();
         serverLabel = new JLabel();
 
-        Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.jLabel1.text")); // NOI18N
-
         setBorder(BorderFactory.createEmptyBorder(10, 12, 0, 12));
         setMinimumSize(new Dimension(600, 100));
         setRequestFocusEnabled(false);
 
-        Mnemonics.setLocalizedText(loggedInLabel, NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.loggedInLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(developerServerLabel, NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.developerServerLabel.text")); // NOI18N
 
         Mnemonics.setLocalizedText(usernameLabel, NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetFromODCSPanel.notLoggedIn")); // NOI18N
 
@@ -229,8 +226,7 @@ public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
 
         GroupLayout panelProviderLayout = new GroupLayout(panelProvider);
         panelProvider.setLayout(panelProviderLayout);
-        panelProviderLayout.setHorizontalGroup(
-            panelProviderLayout.createParallelGroup(Alignment.LEADING)
+        panelProviderLayout.setHorizontalGroup(panelProviderLayout.createParallelGroup(Alignment.LEADING)
             .addGroup(panelProviderLayout.createSequentialGroup()
                 .addGap(0, 0, 0)
                 .addComponent(jLabel2)
@@ -238,8 +234,7 @@ public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
                 .addComponent(cmbProvider, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, Short.MAX_VALUE))
         );
-        panelProviderLayout.setVerticalGroup(
-            panelProviderLayout.createParallelGroup(Alignment.LEADING)
+        panelProviderLayout.setVerticalGroup(panelProviderLayout.createParallelGroup(Alignment.LEADING)
             .addGroup(panelProviderLayout.createSequentialGroup()
                 .addGap(0, 0, 0)
                 .addGroup(panelProviderLayout.createParallelGroup(Alignment.BASELINE)
@@ -251,16 +246,15 @@ public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
         lblError.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/odcs/versioning/resources/error.png"))); // NOI18N
         Mnemonics.setLocalizedText(lblError, NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.lblError.text")); // NOI18N
 
-        Mnemonics.setLocalizedText(serverLabel, NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.serverLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(serverLabel, "jLabel3");
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
+        layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(odcsRepoLabel)
-                    .addComponent(loggedInLabel))
+                    .addComponent(developerServerLabel))
                 .addGap(4, 4, 4)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -279,15 +273,14 @@ public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
                             .addComponent(lblError))
                         .addGap(0, 181, Short.MAX_VALUE))))
         );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
+        layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(loginButton)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(6, 6, 6)
                         .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(loggedInLabel)
+                            .addComponent(developerServerLabel)
                             .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                                 .addComponent(usernameLabel)
                                 .addComponent(serverLabel)))))
@@ -307,7 +300,7 @@ public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        loggedInLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.loggedInLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        developerServerLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.developerServerLabel.AccessibleContext.accessibleDescription")); // NOI18N
         usernameLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.usernameLabel.AccessibleContext.accessibleName")); // NOI18N
         usernameLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.usernameLabel.AccessibleContext.accessibleDescription")); // NOI18N
         loginButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.loginButton.AccessibleContext.accessibleDescription")); // NOI18N
@@ -536,10 +529,9 @@ public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final JComboBox cmbProvider = new JComboBox();
-    private JLabel jLabel1;
+    private JLabel developerServerLabel;
     private JLabel jLabel2;
     private JLabel lblError;
-    private JLabel loggedInLabel;
     private JButton loginButton;
     private JComboBox odcsRepoComboBox;
     private JLabel odcsRepoLabel;

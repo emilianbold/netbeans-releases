@@ -45,6 +45,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import org.netbeans.modules.docker.StreamResult;
 
 /**
@@ -73,6 +74,10 @@ public final class ActionStreamResult implements Closeable {
 
     public boolean hasTty() {
         return result.hasTty();
+    }
+
+    public Charset getCharset() {
+        return result.getCharset();
     }
 
     @Override

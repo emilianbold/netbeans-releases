@@ -46,10 +46,10 @@ package org.netbeans.modules.db.sql.loader;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.text.NumberFormat;
+import java.sql.SQLWarning;
+import java.util.List;
 import org.netbeans.modules.db.sql.execute.SQLExecutionLogger;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResult;
-import org.netbeans.modules.db.sql.execute.StatementInfo;
 import org.openide.cookies.LineCookie;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
@@ -59,11 +59,8 @@ import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
+import static org.netbeans.modules.db.sql.loader.Bundle.*;
 
-/**
- *
- * @author Andrei Badea
- */
 public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
 
     private final LineCookie lineCookie;
@@ -72,10 +69,13 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
     private boolean inputOutputSelected = false;
     private int errorCount;
 
+    @NbBundle.Messages({
+        "# {0} - the name of the executed SQL file", 
+        "LBL_SQLFileExecution={0} execution"})
     public SQLExecutionLoggerImpl(String displayName, LineCookie lineCookie) {
         this.lineCookie = lineCookie;
 
-        String ioName = NbBundle.getMessage(SQLEditorSupport.class, "LBL_SQLFileExecution", displayName);
+        String ioName = LBL_SQLFileExecution(displayName);
         inputOutput = IOProvider.getDefault().getIO(ioName, true);
     }
 
@@ -85,6 +85,7 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
 
     @Override
     public void log(SQLExecutionResult result) {
+        logWarnings(result);
         if (result.hasExceptions()) {
             logException(result);
         } else {
@@ -93,28 +94,43 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
     }
 
     @Override
+    @NbBundle.Messages({
+        "# {0} - execution time", 
+        "# {1} - total number of errors", 
+        "LBL_ExecutionFinished=Execution finished after {0,number,0.###} s, {1,choice,0#no errors|1#1 error|1.0<{1,number,integer} errors} occurred."})
     public void finish(long executionTime) {
-        OutputWriter writer = inputOutput.getOut();
-        writer.println(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutionFinished",
-                String.valueOf(millisecondsToSeconds(executionTime)),
-                String.valueOf(errorCount)));
-        writer.println(""); // NOI18N
-        writer.close();
+        try (OutputWriter writer = inputOutput.getOut()) {
+            writer.println(LBL_ExecutionFinished(
+                    executionTime / 1000d,
+                    errorCount));
+            writer.println(""); // NOI18N
+        }
         inputOutput.select();
     }
 
     @Override
+    @NbBundle.Messages("LBL_ExecutionCancelled=Execution canceled.")
     public void cancel() {
-        OutputWriter writer = inputOutput.getErr();
-        writer.println(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutionCancelled"));
-        writer.println(""); // NOI18N
-        writer.close();
+        try (OutputWriter writer = inputOutput.getErr()) {
+            writer.println(LBL_ExecutionCancelled());
+            writer.println(""); // NOI18N
+        }
     }
 
     public void close() {
         inputOutput.closeInputOutput();
     }
 
+    private void logWarnings(SQLExecutionResult result) {
+        try (OutputWriter writer = inputOutput.getOut()) {
+            for(SQLWarning s: result.getWarnings()) {
+                writeSQLWarning(s, writer);
+            }
+            
+            writer.println(""); // NOI18N
+        }
+    }
+    
     private void logException(SQLExecutionResult result) {
         errorCount++;
 
@@ -123,25 +139,41 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
             inputOutput.select();
         }
 
-        OutputWriter writer = inputOutput.getErr();
-
-        for(Throwable e: result.getExceptions()) {
-            if (e instanceof SQLException) {
-                writeSQLException((SQLException)e, writer);
-            } else {
-                Exceptions.printStackTrace(e);
+        try (OutputWriter writer = inputOutput.getErr()) {
+            for(Throwable e: result.getExceptions()) {
+                if (e instanceof SQLException) {
+                    writeSQLException((SQLException)e, writer);
+                } else {
+                    Exceptions.printStackTrace(e);
+                }
             }
+            
+            printLineColumn(writer, result, true);
+            writer.println(""); // NOI18N
         }
-        
-        printLineColumn(writer, result.getStatementInfo(), true);
-        writer.println(""); // NOI18N
-        writer.close();
     }
 
+    @NbBundle.Messages({
+        "# {0} - error code", 
+        "# {1} - error sql state", 
+        "# {2} - error message", 
+        "LBL_WarningCodeStateMessage=[Warning, Error code {0}, SQLState {1}] {2}"})
+    private void writeSQLWarning(SQLWarning e, OutputWriter writer) {
+        writer.println(LBL_WarningCodeStateMessage(
+                e.getErrorCode(),
+                e.getSQLState(),
+                e.getMessage()));
+    }
+            
+    @NbBundle.Messages({
+        "# {0} - error code", 
+        "# {1} - error sql state", 
+        "# {2} - error message", 
+        "LBL_ErrorCodeStateMessage=[Exception, Error code {0}, SQLState {1}] {2}"})
     private void writeSQLException(SQLException e, OutputWriter writer) {
         while (e != null) {
-            writer.println(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ErrorCodeStateMessage",
-                    String.valueOf(e.getErrorCode()),
+            writer.println(LBL_ErrorCodeStateMessage(
+                    e.getErrorCode(),
                     e.getSQLState(),
                     e.getMessage()));
 
@@ -149,32 +181,50 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
         }
     }
 
+    @NbBundle.Messages({
+        "# {0} - fetchtime in seconds", 
+        "LBL_ExecutedFetchTime=Fetching resultset took {0,number,0.###} s.",
+        "# {0} - number of affected rows", 
+        "LBL_ExecutedRowsAffected={0,choice,0#no rows|1#1 row|1.0<{0,number,integer} rows} affected.",
+        "# {0} - execution time",
+        "LBL_ExecutedSuccessfullyTime=Executed successfully in {0,number,0.###} s."})
     private void logSuccess(SQLExecutionResult result) {
-        OutputWriter writer = inputOutput.getOut();
-
-        String executionTimeStr = millisecondsToSeconds(result.getExecutionTime());
-        String successLine = null;
-        if (result.getUpdateCount() >= 0) {
-            successLine = NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutedSuccessfullyTimeRows",
-                    String.valueOf(executionTimeStr),
-                    String.valueOf(result.getUpdateCount()));
-        } else {
-            successLine = NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutedSuccessfullyTime",
-                    String.valueOf(executionTimeStr));
+        try (OutputWriter writer = inputOutput.getOut()) {
+            writer.println(LBL_ExecutedSuccessfullyTime(result.getExecutionTime() / 1000d));
+            
+            List<Integer> updateCounts = result.getUpdateCounts();
+            List<Long> fetchTimes = result.getFetchTimes();
+            
+            for (int i = 0; i < Math.max(updateCounts.size(), fetchTimes.size()); i++) {
+                Integer updateCount = updateCounts.size() > i ? updateCounts.get(i) : null;
+                Long fetchTime = fetchTimes.size() > i ? fetchTimes.get(i) : null;
+                if (updateCount != null && updateCount >= 0) {
+                    writer.println(LBL_ExecutedRowsAffected(updateCount));
+                }
+                if (fetchTime != null) {
+                    writer.println(LBL_ExecutedFetchTime(fetchTime / 1000d));
+                }
+            }
+            printLineColumn(writer, result, false);
+            writer.println(""); // NOI18N
         }
-        writer.println(successLine);
-        printLineColumn(writer, result.getStatementInfo(), false);
-        writer.println(""); // NOI18N
-        writer.close();
     }
 
-    private void printLineColumn(OutputWriter writer, StatementInfo statementInfo, boolean hyperlink) {
-        String lineColumn = NbBundle.getMessage(SQLEditorSupport.class, "LBL_LineColumn",
-                String.valueOf(statementInfo.getStartLine() + 1),
-                String.valueOf(statementInfo.getStartColumn() + 1));
+    @NbBundle.Messages({
+        "# {0} - line number", 
+        "# {1} - column number", 
+        "LBL_LineColumn=Line {0}, column {1}"})
+    private void printLineColumn(OutputWriter writer, SQLExecutionResult result, boolean hyperlink) {
+        int[] errorCoords = result.getRawErrorLocation();
+        int errLine = errorCoords[0];
+        int errCol = errorCoords[1];
+        
+        String lineColumn = LBL_LineColumn(errLine + 1, errCol + 1);
+
         try {
             if (hyperlink) {
-                writer.println(lineColumn, new Hyperlink(statementInfo.getStartLine(), statementInfo.getStartColumn()));
+                Hyperlink errLink = new Hyperlink(errLine, errCol);
+                writer.println(lineColumn, errLink);
             } else {
                 writer.println(lineColumn);
             }
@@ -183,22 +233,16 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
         }
     }
 
-    private String millisecondsToSeconds(long ms) {
-        NumberFormat fmt = NumberFormat.getInstance();
-        fmt.setMaximumFractionDigits(3);
-        return fmt.format(ms / 1000.0);
-    }
-
     /**
      * Represents a hyperlinked line in an InputOutput.
      */
     private final class Hyperlink implements OutputListener {
 
-        private final int line;
+        private final Line line;
         private final int column;
 
         public Hyperlink(int line, int column) {
-            this.line = line;
+            this.line = lineCookie.getLineSet().getCurrent(line);
             this.column = column;
         }
 
@@ -218,9 +262,8 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
 
         @SuppressWarnings("deprecation")
         private void goToLine(boolean focus) {
-            Line l = lineCookie.getLineSet().getOriginal(line);
-            if (!l.isDeleted()) {
-                l.show(focus ? Line.SHOW_GOTO : Line.SHOW_TRY_SHOW, column);
+            if (!line.isDeleted()) {
+                line.show(focus ? Line.SHOW_GOTO : Line.SHOW_TRY_SHOW, column);
             }
         }
     }

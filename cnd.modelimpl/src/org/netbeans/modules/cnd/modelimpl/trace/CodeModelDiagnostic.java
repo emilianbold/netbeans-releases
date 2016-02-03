@@ -356,7 +356,7 @@ public final class CodeModelDiagnostic {
         @NbBundle.Messages({"ModelFileIndex.displayName=File References Index"})
         @Override
         public String getDisplayName() {
-            return ModelTrace_displayName();
+            return ModelFileIndex_displayName();
         }
 
         @Override
@@ -425,7 +425,7 @@ public final class CodeModelDiagnostic {
         @NbBundle.Messages({"ProjectDeclarationsTrace.displayName=Project Declaration Containers (Huge size)"})
         @Override
         public String getDisplayName() {
-            return ProjectReferencesTrace_displayName();
+            return ProjectDeclarationsTrace_displayName();
         }
 
         @Override

@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteException;
+import org.netbeans.modules.cnd.remote.support.RemoteLogger;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -92,6 +93,7 @@ import org.openide.util.RequestProcessor;
     private RemoteProcessController remoteController;
     private String remoteDir;
     private ErrorReader errorReader;
+    private static final String exitFlagFile = System.getProperty("cnd.rfs.controller.exit.flag.file");
 
     public RfsSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err,
             FileObject privProjectStorageDir, List<FSPath> paths, List<FSPath> buildResults) {
@@ -182,6 +184,11 @@ import org.openide.util.RequestProcessor;
         String rfsTrace = System.getProperty("cnd.rfs.controller.trace");
         if (rfsTrace != null) {
             pb.getEnvironment().put("RFS_CONTROLLER_TRACE", rfsTrace); // NOI18N
+        }        
+        // For the purpose of dynamic testing with discover;
+        // Usually we stop controller via sending SIGTERM, but discover doesn't flush its output in this case
+        if (exitFlagFile != null) {
+            pb.getEnvironment().put("RFS_CONTROLLER_EXIT_FLAG_FILE", exitFlagFile); // NOI18N
         }
         NativeProcess remoteControllerProcess = pb.call();
         remoteController = new RemoteProcessController(remoteControllerProcess);
@@ -220,14 +227,14 @@ import org.openide.util.RequestProcessor;
         RP.post(localController);
 
         String preload = RfsSetupProvider.getPreloadName(executionEnvironment);
-        CndUtils.assertTrue(preload != null);
-        // to be able to trace what we're doing, first put it all to a map
-
-        //Alas, this won't work
-        //MacroMap mm = MacroMap.forExecEnv(executionEnvironment);
-        //mm.prependPathVariable("LD_LIBRARY_PATH", ldLibraryPath);
-        //mm.prependPathVariable("LD_PRELOAD", preload); // NOI18N
-
+        CndUtils.assertTrue(preload != null);        
+        if (Boolean.getBoolean("cnd.rfs.discover")) {
+            preload = "libdiscover.so:" + preload; // NOI18N
+            String studioPath = System.getProperty("cnd.rfs.discover.studio.path", "/opt/solarisstudio12.5"); //NOI18N
+            ldLibraryPath = studioPath + "/lib/compilers:" + studioPath + "/lib/compilers/amd64:" + ldLibraryPath; // NOI18N
+            String discoverFile = System.getProperty("cnd.rfs.discover.file", "/tmp/rfs_preload.%p.log"); //NOI18N
+            env2add.put("SUNW_DISCOVER_OPTIONS", "-w " + discoverFile); // NOI18N
+        }
         env2add.put("LD_PRELOAD", preload); // NOI18N
         String ldLibPathVar = "LD_LIBRARY_PATH"; // NOI18N
         String oldLdLibPath = MacroMap.forExecEnv(executionEnvironment).get(ldLibPathVar);
@@ -259,9 +266,14 @@ import org.openide.util.RequestProcessor;
 
     @Override
     public void shutdown() {
+        RfsLocalController lc;
+        synchronized (this) {
+            lc = localController;
+        }
         remoteControllerCleanup();
         localControllerCleanup();
         refreshRemoteFs();
+        lc.waitShutDownFinished();
     }
 
     @Override
@@ -369,8 +381,30 @@ import org.openide.util.RequestProcessor;
             return stopped.get();
         }
 
+        private void stopViaFlag() {
+            try {
+                ExecutionEnvironment env = this.remoteControllerProcess.getExecutionEnvironment();
+                RemoteLogger.info("Stopping remote controller via flag: {0}", exitFlagFile);
+                CommonTasksSupport.mkDir(env, exitFlagFile, null).get();
+                RemoteLogger.info("Waiting for remote controller to finish... ");
+                remoteControllerProcess.waitFor();
+                RemoteLogger.info("Remote controller has finished");
+                RemoteLogger.info("Remvoing flag file: {0}", exitFlagFile);
+                CommonTasksSupport.rmDir(env, exitFlagFile, true, null);
+                RemoteLogger.info("Stopping remote controller via flag: {0}", exitFlagFile);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace(System.err);
+            } catch (ExecutionException ex) {
+                ex.printStackTrace(System.err);
+            }
+        }
+
         void stop() {
             stopped.set(true);
+            if (exitFlagFile != null) {
+                stopViaFlag();
+                return;
+            }
             remoteControllerProcess.destroy();
         }
     }

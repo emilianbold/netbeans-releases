@@ -277,8 +277,8 @@ public final class JXTableRowHeader extends JComponent {
                 Border origBorder = ((JComponent) comp).getBorder();
                 Border border = new CompoundBorder(origBorder, iconBorder);
                 ((JComponent) comp).setBorder(border);
-                comp.setBackground(UIManager.getColor("Table.selectionBackground"));
-                comp.setForeground(UIManager.getColor("Table.selectionForeground"));
+                comp.setBackground(table.getSelectionBackground());
+                comp.setForeground(table.getSelectionForeground());
             }
             return comp;
         }

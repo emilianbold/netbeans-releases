@@ -193,7 +193,7 @@
             <NamespaceDeclaration start='99' end='206' isBracketed='true'>
                 <Block start='109' end='206' isCurly='true'>
                     <UseStatement start='115' end='140' type='CONST'>
-                        <UseStatementPart start='125' end='139'>
+                        <SingleUseStatementPart start='125' end='139'>
                             <Name>
                                 <NamespaceName start='125' end='139' isCurrent='false' isGlobal='false'>
                                     <Identifier start='125' end='129' name='Name'/>
@@ -203,10 +203,10 @@
                             </Name>
                             <Alias>
                             </Alias>
-                        </UseStatementPart>
+                        </SingleUseStatementPart>
                     </UseStatement>
                     <UseStatement start='145' end='173' type='FUNCTION'>
-                        <UseStatementPart start='158' end='172'>
+                        <SingleUseStatementPart start='158' end='172'>
                             <Name>
                                 <NamespaceName start='158' end='172' isCurrent='false' isGlobal='false'>
                                     <Identifier start='158' end='162' name='Name'/>
@@ -216,7 +216,7 @@
                             </Name>
                             <Alias>
                             </Alias>
-                        </UseStatementPart>
+                        </SingleUseStatementPart>
                     </UseStatement>
                     <EchoStatement start='179' end='193'>
                         <InfixExpression start='184' end='192' operator='CONCAT'>

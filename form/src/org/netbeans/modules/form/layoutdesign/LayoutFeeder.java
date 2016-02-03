@@ -2304,6 +2304,9 @@ class LayoutFeeder implements LayoutConstants {
                         && interval.getCurrentSpace().positions[dimension][alignment] != groupPos[alignment]
                         && groupGrowingVisibly(interval, prev, alignment)) {
                         // par. group in par. group that is bigger, move the sticking out interval up
+                        if (prev.getParent().isSequential()) {
+                            prev = prev.getParent();
+                        }
                         int align = prev.getAlignment();
                         layoutModel.removeInterval(prev);
                         layoutModel.addInterval(prev, parent, -1);
