@@ -46,6 +46,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
+import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
 import org.netbeans.modules.web.javascript.debugger.locals.VariablesModel.ViewScope;
 import org.netbeans.modules.web.javascript.debugger.locals.VariablesModel.ScopedRemoteObject;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
@@ -64,12 +66,14 @@ public class EvaluatorServiceImpl implements EvaluatorService, Debugger.Listener
             new ScopedRemoteObject(null, null, ViewScope.DEFAULT);
     private static final Logger LOG = Logger.getLogger(EvaluatorServiceImpl.class.getName());
     
-    private Debugger debugger;
+    private final Debugger debugger;
+    private final ProjectContext pc;
     private final Map<String, ScopedRemoteObject> expressionsCache = 
             new HashMap<String, ScopedRemoteObject>();
     
     public EvaluatorServiceImpl(ContextProvider contextProvider) {
         debugger = contextProvider.lookupFirst(null, Debugger.class);
+        pc = contextProvider.lookupFirst(null, ProjectContext.class);
         debugger.addListener(this);
     }
 
@@ -92,7 +96,13 @@ public class EvaluatorServiceImpl implements EvaluatorService, Debugger.Listener
                 }
             }
         }
-        RemoteObject prop = frame.evaluate(expression);
+        String rtExpression = expression;
+        VarNamesTranslatorFactory vtf = VarNamesTranslatorFactory.get(frame, debugger, pc.getProject());
+        MiscEditorUtil.NamesTranslator namesTranslator = vtf.getNamesTranslator();
+        if (namesTranslator != null) {
+            rtExpression = namesTranslator.reverseTranslate(expression);
+        }
+        RemoteObject prop = frame.evaluate(rtExpression);
         ScopedRemoteObject var;
         if (prop != null) {
             var = new ScopedRemoteObject(prop, expression, ViewScope.LOCAL);

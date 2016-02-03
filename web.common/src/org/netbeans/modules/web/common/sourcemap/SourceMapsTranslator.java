@@ -181,6 +181,18 @@ public interface SourceMapsTranslator {
             }
             return column;
         }
+        
+        /**
+         * Get the name at this location.
+         * @return The name or <code>null</code> when no name is available.
+         */
+        public String getName() {
+            if (sourceMap != null && mapping != null && mapping.getNameIndex() >= 0) {
+                return sourceMap.getName(mapping.getNameIndex());
+            } else {
+                return null;
+            }
+        }
     }
     
 }

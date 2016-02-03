@@ -62,7 +62,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.javascript2.debug.models.ViewModelSupport;
+import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
+import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
 import org.netbeans.modules.web.javascript.debugger.eval.EvaluatorService;
+import org.netbeans.modules.web.javascript.debugger.eval.VarNamesTranslatorFactory;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.PropertyDescriptor;
@@ -99,6 +102,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
     
     protected final Debugger debugger;
     protected final EvaluatorService evaluator;
+    protected final ProjectContext pc;
     private final Map<String, ScopedRemoteObject> scopeVars = new HashMap<String, ScopedRemoteObject>();
     
     protected final List<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
@@ -109,6 +113,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
     public VariablesModel(ContextProvider contextProvider) {
         debugger = contextProvider.lookupFirst(null, Debugger.class);
         evaluator = contextProvider.lookupFirst(null, EvaluatorService.class);
+        pc = contextProvider.lookupFirst(null, ProjectContext.class);
         debugger.addListener(this);
         debugger.addPropertyChangeListener(this);
         // update now:
@@ -155,6 +160,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
                 vars.add(getScopeVariable(obj, scope));
             }
         }
+        translate(vars, frame);
         return sortVariables(vars);
     }
 
@@ -221,7 +227,20 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         }
         return sortVariables(res);
     }
-
+    
+    private void translate(List<ScopedRemoteObject> vars, CallFrame frame) {
+        VarNamesTranslatorFactory vtf = VarNamesTranslatorFactory.get(frame, debugger, pc.getProject());
+        MiscEditorUtil.NamesTranslator namesTranslator = vtf.getNamesTranslator();
+        if (namesTranslator == null) {
+            return ;
+        }
+        for (ScopedRemoteObject sro : vars) {
+            String name = sro.getObjectName();
+            String tname = namesTranslator.translate(name);
+            sro.setObjectDisplayName(tname);
+        }
+    }
+    
     @Override
     public boolean isLeaf(Object node) throws UnknownTypeException {
         if (node == ROOT) {
@@ -280,7 +299,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         if (node == ROOT) {
             return Bundle.VariablesModel_Name();
         } else if (node instanceof ScopedRemoteObject) {
-            return ((ScopedRemoteObject) node).getObjectName();
+            return ((ScopedRemoteObject) node).getObjectDisplayName();
         } else {
             throw new UnknownTypeException(node);
         }
@@ -471,6 +490,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         private RemoteObject var;
         private ViewScope scope;
         private String objectName;
+        private String objectDisplayName;
         private String parentNameID;
         private long arrayElementIndex; // an array index, or -1 when not an array element.
 
@@ -499,6 +519,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
                 }
                 this.objectName = type;
             }
+            this.objectDisplayName = this.objectName;
         }
 
         public ScopedRemoteObject(RemoteObject var, String name, ViewScope scope) {
@@ -509,6 +530,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
             this.var = var;
             this.scope = scope;
             this.objectName = name;
+            this.objectDisplayName = name;
             this.parentNameID = parentNameID;
             this.arrayElementIndex = arrayElementIndex;
         }
@@ -526,6 +548,14 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
 
         public String getObjectName() {
             return objectName;
+        }
+
+        public String getObjectDisplayName() {
+            return objectDisplayName;
+        }
+        
+        public void setObjectDisplayName(String objectDisplayName) {
+            this.objectDisplayName = objectDisplayName;
         }
 
         boolean isArrayElement() {
