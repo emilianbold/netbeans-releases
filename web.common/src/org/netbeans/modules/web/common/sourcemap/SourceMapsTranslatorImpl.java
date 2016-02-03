@@ -50,6 +50,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -65,7 +67,7 @@ final class SourceMapsTranslatorImpl implements SourceMapsTranslator {
     
     private static final Logger LOG = Logger.getLogger(SourceMapsTranslatorImpl.class.getName());
     
-    private static final String SOURCE_MAPPING_URL = "//# sourceMappingURL=";   // NOI18N
+    private static final Pattern SOURCE_MAPPING_URL_PATTERN = Pattern.compile("^//[#@]\\s*sourceMappingURL\\s*=\\s*(\\S+)\\s*$");   // NOI18N
     
     private static final DirectMapping NO_MAPPING = new DirectMapping();
     private final Map<FileObject, DirectMapping> directMappings = new HashMap<>();
@@ -121,11 +123,13 @@ final class SourceMapsTranslatorImpl implements SourceMapsTranslator {
             if (sourceMapFileName == null && sm == null) {
                 String lastLine = null;
                 try {
-                    for (String line : source.asLines()) {
-                        lastLine = line;
+                    List<String> lines = source.asLines();
+                    if (!lines.isEmpty()) {
+                        lastLine = lines.get(lines.size() - 1);
                     }
-                    if (lastLine != null && lastLine.startsWith(SOURCE_MAPPING_URL)) {
-                        sourceMapFileName = lastLine.substring(SOURCE_MAPPING_URL.length()).trim();
+                    Matcher matcher;
+                    if (lastLine != null && (matcher = SOURCE_MAPPING_URL_PATTERN.matcher(lastLine)).matches()) {
+                        sourceMapFileName = matcher.group(1);
                     } else {
                         dm = NO_MAPPING;
                     }
