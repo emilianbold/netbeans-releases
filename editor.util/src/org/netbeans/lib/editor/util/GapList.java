@@ -122,19 +122,6 @@ implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
         this.gapLength = elementData.length - size;
     }
     
-    /**
-     * Construct new gap list by copying the contents of the given array into the list.
-     *
-     * @param data non-null data to be copied into the new list.
-     * @since 1.63
-     */
-    public GapList(E[] data) {
-        this.elementData = allocateElementsArray(data.length);
-        System.arraycopy(data, 0, this.elementData, 0, data.length);
-        this.gapStart = data.length;
-        this.gapLength = 0;
-    }
-    
     private GapList(E[] data, int gapStart, int gapLength) {
         this.elementData = data;
         this.gapStart = gapStart;
@@ -346,21 +333,6 @@ implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
         return new GapList<E>(data, size, 0);
     }
     
-    /**
-     * Create shallow copy of a portion of this gap list.
-     * @param startIndex start index of the region of this list to be copied.
-     * @param endIndex end index of the region of this list to be copied.
-     * @param extraCapacity extra capacity to allocate at the end of the list.
-     * @return copy of a portion of this gap list. 
-     * @since 1.63
-     */
-    public GapList<E> copy(int startIndex, int endIndex, int extraCapacity) {
-        int size = endIndex - startIndex;
-        E[] data = allocateElementsArray(size + extraCapacity);
-        copyElements(startIndex, endIndex, data, 0);
-        return new GapList<E>(data, size, extraCapacity);
-    }
-
     /**
      * @deprecated use {@link #copyElements(int, int, Object[], int)} which performs the same operation
      */
@@ -617,7 +589,7 @@ implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
      * @throws    IndexOutOfBoundsException if index out of range <tt>(index
      *		  &lt; 0 || index &gt; size())</tt>.
      * @throws    NullPointerException if the specified Collection is null.
-     * @since 1.63
+     * @since 1.64
      */
     public boolean addAll(Collection<? extends E> c, int off, int len) {
         return addArray(size(), c.toArray(), off, len);
@@ -660,7 +632,7 @@ implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
      * @throws    IndexOutOfBoundsException if index out of range <tt>(index
      *		  &lt; 0 || index &gt; size())</tt>.
      * @throws    NullPointerException if the specified Collection is null.
-     * @since 1.63
+     * @since 1.64
      */
     public boolean addAll(int index, Collection<? extends E> c, int off, int len) {
         return addArray(index, c.toArray(), off, len);
@@ -670,7 +642,7 @@ implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
      * Inserts all elements of the given array at the end of this list.
      *
      * @param elements array of elements to insert.
-     * @sin
+     * @since 1.64
      */
     public boolean addArray(Object[] elements) {
         return addArray(size(), elements, 0, elements.length);
@@ -748,17 +720,6 @@ implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
         return oldValue;
     }
     
-    /**
-     * Removes last element of this list.
-     *
-     * @return the element that was removed from the list.
-     * @throws IndexOutOfBoundsException for empty list
-     * @since 1.63
-     */
-    public E removeLast() {
-        return remove(size() - 1);
-    }
-
     /**
      * Removes elements at the given index.
      *

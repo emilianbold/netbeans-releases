@@ -65,6 +65,7 @@ public class GapListRandomTest extends TestCase {
     private static final int REMOVE_RANGE_RATIO_1 = 10;
     private static final int CLEAR_RATIO_1 = 5;
     private static final int SET_RATIO_1 = 50;
+    private static final int COPY_RATIO_1 = 50;
     
     private static final int OP_COUNT_2 = 10000;
     private static final int ADD_RATIO_2 = 50;
@@ -74,6 +75,7 @@ public class GapListRandomTest extends TestCase {
     private static final int REMOVE_RANGE_RATIO_2 = 10;
     private static final int CLEAR_RATIO_2 = 3;
     private static final int SET_RATIO_2 = 50;
+    private static final int COPY_RATIO_2 = 50;
     
     private ArrayList<Object> al;
     
@@ -99,14 +101,14 @@ public class GapListRandomTest extends TestCase {
         
         
         testRound(random, OP_COUNT_1, ADD_RATIO_1, ADD_ALL_RATIO_1, ADD_ALL_MAX_COUNT_1,
-            REMOVE_RATIO_1, REMOVE_RANGE_RATIO_1, CLEAR_RATIO_1, SET_RATIO_1);
+            REMOVE_RATIO_1, REMOVE_RANGE_RATIO_1, CLEAR_RATIO_1, SET_RATIO_1, COPY_RATIO_1);
         testRound(random, OP_COUNT_2, ADD_RATIO_2, ADD_ALL_RATIO_2, ADD_ALL_MAX_COUNT_2,
-            REMOVE_RATIO_2, REMOVE_RANGE_RATIO_2, CLEAR_RATIO_2, SET_RATIO_2);
+            REMOVE_RATIO_2, REMOVE_RANGE_RATIO_2, CLEAR_RATIO_2, SET_RATIO_2, COPY_RATIO_2);
     }
     
     private void testRound(Random random, int opCount,
     int addRatio, int addAllRatio, int addAllMaxCount,
-    int removeRatio, int removeRangeRatio, int clearRatio, int setRatio) {
+    int removeRatio, int removeRangeRatio, int clearRatio, int setRatio, int copyRatio) {
         
         int ratioSum = addRatio + addAllRatio + removeRatio + removeRangeRatio
             + clearRatio + setRatio;
@@ -125,18 +127,55 @@ public class GapListRandomTest extends TestCase {
 
             } else if ((r -= addAllRatio) < 0) {
                 int count = (int)(random.nextDouble() * addAllMaxCount);
+                int index = (int)(random.nextDouble() * (al.size() + 1));
+                int off = (int)(random.nextDouble() * count);
+                int len = (int)(random.nextDouble() * (count + 1 - off));
                 ArrayList<Object> l = new ArrayList<Object>();
                 for (int i = count; i > 0; i--) {
                     l.add(new Object());
                 }
-
-                Object o = new Object();
-                int index = (int)(al.size() * random.nextDouble());
-                al.addAll(index, l);
-                if (debug) {
-                    debugOp(op, "addAll() at index=" + index); // NOI18N
+                int methodType = (int)(random.nextDouble() * 5);
+                switch (methodType) {
+                    case 0: // addAll(Collection<? extends E> c)
+                        al.addAll(l);
+                        if (debug) {
+                            debugOp(op, "addAll(index, collection)"); // NOI18N
+                        }
+                        gl.addAll(l);
+                        break;
+                    case 1: // addAll(Collection<? extends E> c, int off, int len)
+                        al.addAll(l.subList(off, off + len));
+                        if (debug) {
+                            debugOp(op, "addAll(collection, off, len)"); // NOI18N
+                        }
+                        gl.addAll(l, off, len);
+                        break;
+                    case 2: // addAll(int index, Collection<? extends E> c)
+                        al.addAll(index, l);
+                        if (debug) {
+                            debugOp(op, "addAll(index, collection)"); // NOI18N
+                        }
+                        gl.addAll(index, l);
+                        break;
+                    case 3: // addAll(int index, Collection<? extends E> c, int off, int len)
+                        al.addAll(index, l.subList(off, off + len));
+                        if (debug) {
+                            debugOp(op, "addAll(index, collection, off, len)"); // NOI18N
+                        }
+                        gl.addAll(index, l, off, len);
+                        break;
+                    case 4: // addArray(Object[] elements)
+                        al.addAll(l);
+                        if (debug) {
+                            debugOp(op, "addArray(array)"); // NOI18N
+                        }
+                        gl.addArray(l.toArray());
+                        break;
+                        
+                    default:
+                        throw new AssertionError();
                 }
-                gl.addAll(index, l);
+
 
             } else if ((r -= removeRatio) < 0) {
                 if (al.size() > 0) { // is anything to remove
@@ -178,6 +217,8 @@ public class GapListRandomTest extends TestCase {
                     }
                     gl.set(index, o);
                 }
+            } else if ((r -= copyRatio) < 0) {
+                
             }
 
             checkConsistency();
