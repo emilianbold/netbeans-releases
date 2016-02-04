@@ -50,7 +50,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayDeque;
@@ -83,15 +83,12 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.RootsEvent;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TypesEvent;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import static org.netbeans.spi.java.classpath.ClassPathImplementation.PROP_RESOURCES;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
-import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileAttributeEvent;
@@ -256,13 +253,13 @@ final class ModuleClassPaths {
                             Arrays.stream(PropertyUtils.tokenizePath(path));
                     })
                     .map((part)->PropertyUtils.resolveFile(projectDir, part))
-                    .flatMap((modulesFolder) -> {
-                        Stream<File> jars = findProjectModules(modulesFolder);
-                        if (jars == null) {
-                            jars = findModules(modulesFolder);
-                            modulePathRoots.add(modulesFolder);
+                    .flatMap((modulePathEntry) -> {
+                        if (isArchiveFile(modulePathEntry)) {
+                            return Stream.of(modulePathEntry);
+                        } else {
+                            modulePathRoots.add(modulePathEntry);
+                            return findModules(modulePathEntry);
                         }
-                        return jars;
                     })
                     .forEach((file)->{
                         URL url = FileUtil.urlForArchiveOrDir(file);
@@ -356,25 +353,16 @@ final class ModuleClassPaths {
             resetCache(true);
         }
 
-        @CheckForNull
-        private static Stream<File> findProjectModules(@NonNull final File modulesFolder) {
-            //Todo: when jar files will be allowed on module path, use jar as a project
-            //artefact and remove and update this.
-            final Optional<Stream<File>> mayBeRes = Optional.ofNullable(FileOwnerQuery.getOwner(BaseUtilities.toURI(modulesFolder)))
-                    .map((p)->p.getLookup().lookup(AntArtifactProvider.class))
-                    .map((aap)-> {
-                        for (AntArtifact aa : aap.getBuildArtifacts()) {
-                            final URI buildScript = BaseUtilities.toURI(aa.getScriptLocation());
-                            for (URI relPath : aa.getArtifactLocations()) {
-                                final File artifact = BaseUtilities.toFile(buildScript.resolve(relPath));
-                                if (modulesFolder.equals(artifact.getParentFile())) {
-                                    return Stream.of(artifact);
-                                }
-                            }
-                        }
-                        return null;
-                    });
-            return mayBeRes.orElse(null);
+        private static boolean isArchiveFile(@NonNull final File file) {
+            try {
+                return FileUtil.isArchiveFile(BaseUtilities.toURI(file).toURL());
+            } catch (MalformedURLException mue) {
+                LOG.log(
+                        Level.WARNING,
+                        "Invalid URL for: {0}",
+                        file);
+                return false;
+            }
         }
 
         @NonNull
