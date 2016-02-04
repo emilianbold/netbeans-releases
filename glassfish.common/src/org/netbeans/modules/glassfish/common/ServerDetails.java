@@ -49,6 +49,19 @@ import org.netbeans.modules.glassfish.common.parser.TreeParser;
 import org.netbeans.modules.glassfish.common.wizards.ServerWizardIterator;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.glassfish.spi.Utils;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishVersion;
+import static org.netbeans.modules.glassfish.tooling.data.GlassFishVersion.GF_3;
+import static org.netbeans.modules.glassfish.tooling.data.GlassFishVersion.GF_3_0_1;
+import static org.netbeans.modules.glassfish.tooling.data.GlassFishVersion.GF_3_1;
+import static org.netbeans.modules.glassfish.tooling.data.GlassFishVersion.GF_3_1_1;
+import static org.netbeans.modules.glassfish.tooling.data.GlassFishVersion.GF_3_1_2;
+import static org.netbeans.modules.glassfish.tooling.data.GlassFishVersion.GF_3_1_2_2;
+import static org.netbeans.modules.glassfish.tooling.data.GlassFishVersion.GF_3_1_2_3;
+import static org.netbeans.modules.glassfish.tooling.data.GlassFishVersion.GF_3_1_2_4;
+import static org.netbeans.modules.glassfish.tooling.data.GlassFishVersion.GF_3_1_2_5;
+import static org.netbeans.modules.glassfish.tooling.data.GlassFishVersion.GF_4;
+import static org.netbeans.modules.glassfish.tooling.data.GlassFishVersion.GF_4_0_1;
+import org.netbeans.modules.glassfish.tooling.utils.ServerUtils;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
@@ -65,8 +78,6 @@ public enum ServerDetails {
      */
     GLASSFISH_SERVER_3(NbBundle.getMessage(ServerDetails.class,"STR_3_SERVER_NAME", new Object[]{}), // NOI18N
         "deployer:gfv3ee6", // NOI18N
-        new String[]{"lib/install/applications/__admingui/WEB-INF/lib/console-core-3.0-b74b"}, // NOI18N
-        new String[0], // NOI18N
         300,
         "http://download.java.net/glassfish/v3/release/glassfish-v3.zip?nbretriever=fallback", // NOI18N
         "http://serverplugins.netbeans.org/glassfishv3/post701v3.txt" // NOI18N
@@ -76,8 +87,6 @@ public enum ServerDetails {
      */
     GLASSFISH_SERVER_3_0_1(NbBundle.getMessage(ServerDetails.class,"STR_301_SERVER_NAME", new Object[]{}), // NOI18N
         "deployer:gfv3ee6", // NOI18N
-        new String[]{"lib/install/applications/__admingui/WEB-INF/lib/console-core-3.0.1"}, // NOI18N
-        new String[0], // NOI18N
         301,
         "http://download.java.net/glassfish/3.0.1/release/glassfish-3.0.1-ml.zip?nbretriever=fallback", // NOI18N
         "http://serverplugins.netbeans.org/glassfishv3/post701v3-0-1.txt" // NOI18N
@@ -87,8 +96,6 @@ public enum ServerDetails {
      */
     GLASSFISH_SERVER_3_1(NbBundle.getMessage(ServerDetails.class, "STR_31_SERVER_NAME", new Object[]{}), // NOI18N
         "deployer:gfv3ee6wc", // NOI18N
-        new String[]{"lib/install/applications/__admingui/WEB-INF/lib/console-core-3.1"}, // NOI18N
-        new String[0],
         310,
         "http://download.java.net/glassfish/3.1/release/glassfish-3.1-ml.zip?nbretriever=fallback", // NOI18N
         "http://serverplugins.netbeans.org/glassfishv3/post701v3-1.txt" // NOI18N
@@ -98,8 +105,6 @@ public enum ServerDetails {
      */
     GLASSFISH_SERVER_3_1_1(NbBundle.getMessage(ServerDetails.class, "STR_311_SERVER_NAME", new Object[]{}), // NOI18N
         "deployer:gfv3ee6wc", // NOI18N
-        new String[]{"lib/install/applications/__admingui/WEB-INF/lib/console-core-3.1.1",}, // NOI18N
-        new String[0],
         311,
         "http://download.java.net/glassfish/3.1.1/release/glassfish-3.1.1-ml.zip?nbretriever=fallback", // NOI18N
         "http://serverplugins.netbeans.org/glassfishv3/post701v3-1-1.txt" // NOI18N
@@ -109,8 +114,6 @@ public enum ServerDetails {
      */
     GLASSFISH_SERVER_3_1_2(NbBundle.getMessage(ServerDetails.class, "STR_312_SERVER_NAME", new Object[]{}), // NOI18N
         "deployer:gfv3ee6wc", // NOI18N
-        new String[]{"lib/install/applications/__admingui/WEB-INF/lib/console-core-3.1.2"}, // NOI18N
-        new String[0],
         312,
         "http://download.java.net/glassfish/3.1.2/release/glassfish-3.1.2-ml.zip?nbretriever=fallback", // NOI18N
         "http://serverplugins.netbeans.org/glassfishv3/post71v3-1-2.txt" // NOI18N
@@ -121,8 +124,6 @@ public enum ServerDetails {
      */
     GLASSFISH_SERVER_3_1_2_2(NbBundle.getMessage(ServerDetails.class, "STR_3122_SERVER_NAME", new Object[]{}), // NOI18N
         "deployer:gfv3ee6wc", // NOI18N
-        new String[]{"lib/install/applications/__admingui/WEB-INF/lib/console-core-3.1.2.[0-9]{1,2}"}, // NOI18N
-        new String[0],
         312,
         "http://download.java.net/glassfish/3.1.2.2/release/glassfish-3.1.2.2-ml.zip?nbretriever=fallback", // NOI18N
         "http://serverplugins.netbeans.org/glassfishv3/post71v3-1-2.txt" // NOI18N
@@ -133,8 +134,6 @@ public enum ServerDetails {
      */
     GLASSFISH_SERVER_4_0(NbBundle.getMessage(ServerDetails.class, "STR_40_SERVER_NAME", new Object[]{}), // NOI18N
         "deployer:gfv3ee6wc", // NOI18N
-        new String[]{"lib/install/applications/__admingui/WEB-INF/lib/console-core-4.0"}, // NOI18N
-        new String[0],
         400,
         "http://download.java.net/glassfish/4.0/release/glassfish-4.0-ml.zip?nbretriever=fallback", // NOI18N
         "http://serverplugins.netbeans.org/glassfishv3/post71v4-0.txt" // NOI18N
@@ -145,8 +144,6 @@ public enum ServerDetails {
      */
     GLASSFISH_SERVER_4_0_1(NbBundle.getMessage(ServerDetails.class, "STR_401_SERVER_NAME", new Object[]{}), // NOI18N
         "deployer:gfv3ee6wc", // NOI18N
-        new String[]{"lib/install/applications/__admingui/WEB-INF/lib/console-core-4.0.1"}, // NOI18N
-        new String[0],
         401,
         "http://download.java.net/glassfish/4.0.1/release/glassfish-4.0.1-ml.zip?nbretriever=fallback", // NOI18N
         "http://serverplugins.netbeans.org/glassfishv3/post71v4-0-1.txt" // NOI18N
@@ -157,8 +154,6 @@ public enum ServerDetails {
      */
     GLASSFISH_SERVER_4_1(NbBundle.getMessage(ServerDetails.class, "STR_41_SERVER_NAME", new Object[]{}), // NOI18N
         "deployer:gfv3ee6wc", // NOI18N
-        new String[]{"lib/install/applications/__admingui/WEB-INF/lib/console-core-4.1"}, // NOI18N
-        new String[0],
         410,
         "http://download.java.net/glassfish/4.1/release/glassfish-4.1.zip?nbretriever=fallback", // NOI18N
         "http://serverplugins.netbeans.org/glassfishv3/post71v4-1.txt" // NOI18N
@@ -169,11 +164,19 @@ public enum ServerDetails {
      */
     GLASSFISH_SERVER_4_1_1(NbBundle.getMessage(ServerDetails.class, "STR_411_SERVER_NAME", new Object[]{}), // NOI18N
         "deployer:gfv3ee6wc", // NOI18N
-        new String[]{"lib/install/applications/__admingui/WEB-INF/lib/console-core-4.((1.1)|([2-9]))"}, // NOI18N
-        new String[0],
         411,
         "http://download.java.net/glassfish/4.1.1/release/glassfish-4.1.1.zip?nbretriever=fallback", // NOI18N
         "http://serverplugins.netbeans.org/glassfishv3/post71v4-1-1.txt" // NOI18N
+    ),
+    
+    /**
+     * details for an instance of GlassFish Server 5
+     */
+    GLASSFISH_SERVER_5_0(NbBundle.getMessage(ServerDetails.class, "STR_50_SERVER_NAME", new Object[]{}), // NOI18N
+        "deployer:gfv3ee6wc", // NOI18N
+        500,
+        "http://download.java.net/glassfish/5.0/release/glassfish-5.0.zip?nbretriever=fallback", // NOI18N
+        "http://serverplugins.netbeans.org/glassfishv3/post71v5-0.txt" // NOI18N
     );
 
     /**
@@ -185,6 +188,7 @@ public enum ServerDetails {
     public static WizardDescriptor.InstantiatingIterator
             getInstantiatingIterator() {
         return new ServerWizardIterator(new ServerDetails[]{
+                    GLASSFISH_SERVER_5_0,
                     GLASSFISH_SERVER_4_1_1,
                     GLASSFISH_SERVER_4_1,
                     GLASSFISH_SERVER_4_0_1,
@@ -196,6 +200,8 @@ public enum ServerDetails {
                     GLASSFISH_SERVER_3_0_1,
                     GLASSFISH_SERVER_3,},
                 new ServerDetails[]{
+                    // not yet
+                    //GLASSFISH_SERVER_5_0, 
                     GLASSFISH_SERVER_4_1_1,
                     GLASSFISH_SERVER_4_1,
                     GLASSFISH_SERVER_4_0,
@@ -208,45 +214,27 @@ public enum ServerDetails {
      * @return -1 if the directory is not a GlassFish server install
      */
     public static int getVersionFromInstallDirectory(File glassfishDir)  {
-// This commented out code shall be activated in next release to replace current
-// trials and errors, it's faster.
-//        GlassFishVersion version
-//                = ServerUtils.getServerVersion(glassfishDir.getAbsolutePath());
+        GlassFishVersion version
+                = ServerUtils.getServerVersion(glassfishDir.getAbsolutePath());
         ServerDetails sd = null;
-//        if (version != null) {
-//            switch(version) {
-//                case GF_3:       return GLASSFISH_SERVER_3.getVersion();
-//                case GF_3_0_1:   return GLASSFISH_SERVER_3_0_1.getVersion();
-//                case GF_3_1:     return GLASSFISH_SERVER_3_1.getVersion();
-//                case GF_3_1_1:   return GLASSFISH_SERVER_3_1_1.getVersion();
-//                case GF_3_1_2:   return GLASSFISH_SERVER_3_1_2.getVersion();
-//                case GF_3_1_2_2:
-//                case GF_3_1_2_3:
-//                case GF_3_1_2_4:
-//                case GF_3_1_2_5: return GLASSFISH_SERVER_3_1_2_2.getVersion();
-//                case GF_4:       return GLASSFISH_SERVER_4_0.getVersion();
-//                case GF_4_0_1:   return GLASSFISH_SERVER_4_0_1.getVersion();
-//                default:         return -1;
-//            }
-//        }
-        if (GLASSFISH_SERVER_4_1_1.isInstalledInDirectory(glassfishDir)) {
-            sd = GLASSFISH_SERVER_4_1_1;
-        } else if (GLASSFISH_SERVER_4_1.isInstalledInDirectory(glassfishDir)) {
-            sd = GLASSFISH_SERVER_4_1;
-        } else if (GLASSFISH_SERVER_4_0_1.isInstalledInDirectory(glassfishDir)) {
-            sd = GLASSFISH_SERVER_4_0_1;
-        } else if (GLASSFISH_SERVER_4_0.isInstalledInDirectory(glassfishDir)) {
-            sd = GLASSFISH_SERVER_4_0;
-        } else if (GLASSFISH_SERVER_3_1_2_2.isInstalledInDirectory(glassfishDir)) {
-            sd = GLASSFISH_SERVER_3_1_2_2;
-        } else if (GLASSFISH_SERVER_3_1_2.isInstalledInDirectory(glassfishDir)) {
-            sd = GLASSFISH_SERVER_3_1_2;
-        } else if (GLASSFISH_SERVER_3_1_1.isInstalledInDirectory(glassfishDir)){
-            sd = GLASSFISH_SERVER_3_1_1;
-        } else if (GLASSFISH_SERVER_3_1.isInstalledInDirectory(glassfishDir)) {
-            sd = GLASSFISH_SERVER_3_1;
-        } else if (GLASSFISH_SERVER_3.isInstalledInDirectory(glassfishDir)){
-            sd = GLASSFISH_SERVER_3;
+        if (version != null) {
+            switch(version) {
+                case GF_3:       return GLASSFISH_SERVER_3.getVersion();
+                case GF_3_0_1:   return GLASSFISH_SERVER_3_0_1.getVersion();
+                case GF_3_1:     return GLASSFISH_SERVER_3_1.getVersion();
+                case GF_3_1_1:   return GLASSFISH_SERVER_3_1_1.getVersion();
+                case GF_3_1_2:   return GLASSFISH_SERVER_3_1_2.getVersion();
+                case GF_3_1_2_2:
+                case GF_3_1_2_3:
+                case GF_3_1_2_4:
+                case GF_3_1_2_5: return GLASSFISH_SERVER_3_1_2_2.getVersion();
+                case GF_4:       return GLASSFISH_SERVER_4_0.getVersion();
+                case GF_4_0_1:   return GLASSFISH_SERVER_4_0_1.getVersion();
+                case GF_4_1:     return GLASSFISH_SERVER_4_1.getVersion();
+                case GF_4_1_1:   return GLASSFISH_SERVER_4_1_1.getVersion();
+                case GF_5:       return GLASSFISH_SERVER_5_0.getVersion();
+                default:         return -1;
+            }
         }
         return  null==sd?-1:sd.getVersion();
     }
@@ -278,20 +266,15 @@ public enum ServerDetails {
     private String uriFragment;
     private String indirectUrl;
     private String directUrl;
-    private String[] requiredFiles;
-    private String[] excludedFiles;
     private int versionInt;
     
 
-    ServerDetails(String displayName, String uriFragment, 
-            String[] requiredFiles, String[] excludedFiles, int versionInt,
+    ServerDetails(String displayName, String uriFragment, int versionInt,
             String directUrl, String indirectUrl) {
             this.displayName = displayName;
             this.uriFragment = uriFragment;
             this.indirectUrl = indirectUrl;
             this.directUrl = directUrl;
-            this.requiredFiles = requiredFiles;
-            this.excludedFiles = excludedFiles;
             this.versionInt = versionInt;
     }
     
@@ -315,25 +298,7 @@ public enum ServerDetails {
      * @return true if the glassfishDir holds this particular server version.
      */
     public boolean isInstalledInDirectory(File glassfishDir) {
-        File descriminatorFile;
-        boolean badFile = false;
-        if (glassfishDir != null && glassfishDir.canRead() && glassfishDir.isDirectory()) {
-            for (String s : requiredFiles) {
-                descriminatorFile = Utils.getFileFromPattern(s+ServerUtilities.GFV3_VERSION_MATCHER, glassfishDir);
-                if (null == descriminatorFile) {
-                    badFile = true;
-                }
-            }
-            for (String s : excludedFiles) {
-                descriminatorFile = Utils.getFileFromPattern(s+ServerUtilities.GFV3_JAR_MATCHER, glassfishDir);
-                if (null != descriminatorFile) {
-                    badFile = true;
-                }
-            }
-        } else {
-            badFile = true;
-        }
-        return !badFile;
+        return getVersionFromInstallDirectory(glassfishDir) == this.getVersion();
     }
 
     static class DomainParser extends TreeParser.NodeReader {

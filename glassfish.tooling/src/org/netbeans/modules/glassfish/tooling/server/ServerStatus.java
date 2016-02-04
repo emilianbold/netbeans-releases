@@ -1124,27 +1124,6 @@ public class ServerStatus implements Closeable {
         return locationsTask.result;
     }
 
-    /**
-     * Retrieve GlassFish version from version string retrieved from
-     * <code>version</code> command.
-     * <p/>
-     * @return Version string retrieved from <code>version</code> command.
-     */
-    public GlassFishVersion getVersion() {
-        String versionStr = versionTask.result != null
-                && versionTask.result.result !=  null
-                ? versionTask.result.result.getValue() : null;
-        if (versionStr != null) {
-            Pattern p = Pattern.compile("[0-9]+(\\.[0-9]+){1,3}");
-            Matcher m = p.matcher(versionStr);
-            if (m.find()) {
-                String versionToken = versionStr.substring(m.start(), m.end());
-                return GlassFishVersion.toValue(versionToken);
-            }
-        }
-        return null;
-    }
-
     ////////////////////////////////////////////////////////////////////////////
     // Methods                                                                //
     ////////////////////////////////////////////////////////////////////////////
