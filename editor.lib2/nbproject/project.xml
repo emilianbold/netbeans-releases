@@ -209,7 +209,7 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <public-packages>
                 <package>org.netbeans.api.editor</package>
-                <package>org.netbeans.api.editor.document</package>
+                <package>org.netbeans.api.editor.caret</package>
                 <package>org.netbeans.spi.editor</package>
                 <package>org.netbeans.spi.editor.codegen</package>
                 <package>org.netbeans.spi.editor.document</package>

@@ -91,7 +91,41 @@ public final class ShiftPositions {
      * @return >=0 shift or zero for regular positions.
      */
     public static int getShift(@NonNull Position pos) {
-        Parameters.notNull("pos", pos);   //NOI18N
+        return getShiftImpl(pos);
+    }
+
+    /**
+     * Compare positions.
+     * @param pos1 non-null position.
+     * @param pos2 non-null position.
+     * @return offset of pos1 minus offset of pos2 or diff of their shifts in case
+     *  both positions have the same offset.
+     * @NullPointerException if any passed position is null unless both positions are null
+     *  in which case the method would return 0.
+     */
+    public static int compare(@NonNull Position pos1, @NonNull Position pos2) {
+        if (pos1 == pos2) {
+            return 0;
+        }
+        int offsetDiff = pos1.getOffset() - pos2.getOffset();
+        return (offsetDiff != 0) ? offsetDiff : getShiftImpl(pos1) - getShiftImpl(pos2);
+    }
+    
+    /**
+     * Compare positions by providing their offsets and shifts obtained earlier.
+     * @param offset1 offset of first position.
+     * @param shift1 shift of first position.
+     * @param offset2 offset of second position.
+     * @param shift2 shift of second position.
+     * @return offset1 minus offset2 or shift1 minus shift2 in case
+     *  offset1 and offset2 are equal.
+     */
+    public static int compare(int offset1, int shift1, int offset2, int shift2) {
+        int offsetDiff = offset1 - offset2;
+        return (offsetDiff != 0) ? offsetDiff : shift1 - shift2;
+    }
+    
+    private static int getShiftImpl(Position pos) {
         return (pos.getClass() == ShiftPos.class)
                 ? ((ShiftPos)pos).getShift()
                 : 0;

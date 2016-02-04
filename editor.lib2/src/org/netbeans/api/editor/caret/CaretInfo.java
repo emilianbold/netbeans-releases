@@ -39,50 +39,43 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.api.editor;
+package org.netbeans.api.editor.caret;
 
 import java.awt.Point;
-import java.awt.Rectangle;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import javax.swing.text.Position;
 import org.netbeans.api.annotations.common.CheckForNull;
 
 /**
- * Info about a single caret - see {@link EditorCaret}.
+ * Immutable info about a single caret used in caret API - see {@link EditorCaret}.
+ * <br/>
+ * There is one-to-one reference between immutable caret info and mutable {@link CaretItem}.
+ * CaretItem is not accessible through the caret API and it's managed privately by EditorCaret.
+ * Once the caret item gets mutated its corresponding caret info becomes obsolete
+ * and new caret info instance gets created lazily.
  *
  * @author Miloslav Metelka
  * @author Ralph Ruijs
+ * @see EditorCaret
  */
 public final class CaretInfo {
     
     // -J-Dorg.netbeans.api.editor.CaretInfo.level=FINEST
     private static final Logger LOG = Logger.getLogger(CaretInfo.class.getName());
     
-    // -J-Dorg.netbeans.api.editor.CaretInfo.EDT.level=FINE - check that setDot() and other operations in EDT only
-    private static final Logger LOG_EDT = Logger.getLogger(CaretInfo.class.getName() + ".EDT");
+    private final CaretItem caretItem;
 
-    private final EditorCaret parent;
+    private final Position dotPos;
 
-    private Position dotPos;
+    private final Position markPos;
 
-    private Position markPos;
+    private final Point magicCaretPosition;
 
-    private Point magicCaretPosition;
-
-    private char dotChar; // Used internally by EditorCaret
-
-    private Rectangle caretBounds; // Used internally by EditorCaret
-
-    public CaretInfo(EditorCaret parent) {
-        this.parent = parent;
-    }
-
-    public CaretInfo(EditorCaret parent, Position dotPos, Position markPos) {
-        this(parent);
-        this.dotPos = dotPos;
-        this.markPos = markPos;
+    public CaretInfo(CaretItem caretItem) {
+        this.caretItem = caretItem;
+        this.dotPos = caretItem.getDotPosition();
+        this.markPos = caretItem.getMarkPosition();
+        this.magicCaretPosition = caretItem.getMagicCaretPosition();
     }
 
     /**
@@ -115,96 +108,41 @@ public final class CaretInfo {
         return (markPos != null) ? markPos.getOffset() : 0;
     }
     
-    public void setDot(int offset) { // TODO move to transaction context
-        if (LOG_EDT.isLoggable(Level.FINE)) { // Only permit operations in EDT
-            if (!SwingUtilities.isEventDispatchThread()) {
-                throw new IllegalStateException("CaretInfo.setDot() not in EDT: offset=" + offset); // NOI18N
-            }
-        }
-
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("setDot: offset=" + offset); //NOI18N
-            if (LOG.isLoggable(Level.FINEST)) {
-                LOG.log(Level.INFO, "setDot call stack", new Exception());
-            }
-        }
-
-        parent.setDotCaret(offset, this, true);
-    }
-
-    public void moveDot(int offset) { // TODO move to transaction context
-        if (LOG_EDT.isLoggable(Level.FINE)) { // Only permit operations in EDT
-            if (!SwingUtilities.isEventDispatchThread()) {
-                throw new IllegalStateException("CaretInfo.moveDot() not in EDT: offset=" + offset); // NOI18N
-            }
-        }
-
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("moveDot: offset=" + offset); //NOI18N
-        }
-
-        parent.moveDotCaret(offset, this);
-    }
-
     /**
      * @return true if there's a selection or false if there's no selection for this caret.
      */
     public boolean isSelection() {
-        return dotPos != markPos && dotPos.getOffset() != markPos.getOffset();
+        return (dotPos != null && markPos != null &&
+                markPos != dotPos && dotPos.getOffset() != markPos.getOffset());
+    }
+    
+    /**
+     * @return true if both {@link #isSelection() } and {@link EditorCaret#isSelectionVisible() } are true.
+     */
+    public boolean isSelectionShowing() {
+        return caretItem.editorCaret().isSelectionVisible() && isSelection();
     }
 
-    public Position getSelectionStart() {
-        if(dotPos.getOffset() < markPos.getOffset()) {
-            return dotPos;
-        } else {
-            return markPos;
-        }
+    public int getSelectionStart() {
+        return Math.min(getDot(), getMark());
     }
 
-    public Position getSelectionEnd() {
-        if(dotPos.getOffset() > markPos.getOffset()) {
-            return dotPos;
-        } else {
-            return markPos;
-        }
+    public int getSelectionEnd() {
+        return Math.max(getDot(), getMark());
     }
     
     public Point getMagicCaretPosition() {
         return magicCaretPosition;
     }
     
-    void setDotPos(Position dotPos) {
-        this.dotPos = dotPos;
+    CaretItem getCaretItem() {
+        return caretItem;
     }
-
-    void setMarkPos(Position markPos) {
-        this.markPos = markPos;
-    }
-
-    public void setMagicCaretPosition(Point newMagicCaretPosition) { // [TODO] move to transaction context
-        this.magicCaretPosition = newMagicCaretPosition;
-    }
-
     
-    void setDotChar(char dotChar) {
-        this.dotChar = dotChar;
-    }
-
-    char getDotChar() {
-        return this.dotChar;
-    }
-
-    void setCaretBounds(Rectangle newCaretBounds) {
-        this.caretBounds = newCaretBounds;
-    }
-
-    Rectangle getCaretBounds() {
-        return this.caretBounds;
-    }
-
     @Override
     public String toString() {
-        return "dotPos=" + dotPos + ", markPos=" + markPos + ", magicCaretPosition=" + magicCaretPosition; // NOI18N
+        return "dotPos=" + dotPos + ", markPos=" + markPos + ", magicCaretPosition=" + magicCaretPosition + // NOI18N
+                "\n  caretItem=" + caretItem; // NOI18N
     }
     
 }

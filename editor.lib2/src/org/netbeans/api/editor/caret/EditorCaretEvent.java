@@ -39,22 +39,65 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.api.editor;
+package org.netbeans.api.editor.caret;
 
+import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
 
 /**
- * Listener for changes in editor caret.
+ * Notification event about changes in editor caret.
  *
  * @author Miloslav Metelka
  */
-public interface EditorCaretListener extends java.util.EventListener {
+public final class EditorCaretEvent extends java.util.EventObject {
+    
+    private final int affectedStartOffset;
+    
+    private final int affectedEndOffset;
+    
+    EditorCaretEvent(EditorCaret source, int affectedStartOffset, int affectedEndOffset) {
+        super(source);
+        this.affectedStartOffset = affectedStartOffset;
+        this.affectedEndOffset = affectedEndOffset;
+    }
+    
+    /**
+     * Get caret instance to which this event relates.
+     *
+     * @return caret instance.
+     */
+    public @NonNull EditorCaret getCaret() {
+        return (EditorCaret) getSource();
+    }
 
     /**
-     * Notification about change in terms of caret addition/removal or movement.
+     * Get start of the region that was affected by caret change.
+     * <br/>
+     * This offset region will be repainted automatically by the editor infrastructure.
      *
-     * @param evt caret event describing the change.
+     * @return &gt;= 0 offset.
      */
-    void caretChanged(@NonNull EditorCaretEvent evt);
+    public int getAffectedStartOffset() {
+        return affectedStartOffset;
+    }
+    
+    /**
+     * Get end of the region that was affected by caret change.
+     * <br/>
+     * This offset region will be repainted automatically by the editor infrastructure.
+     *
+     * @return &gt;= 0 offset.
+     */
+    public int getAffectedEndOffset() {
+        return affectedEndOffset;
+    }
+    
+    public List<CaretInfo> getAddedCarets() {
+        return null;
+    }
+
+    public List<CaretInfo> getRemovedCarets() {
+        return null;
+    }
 
 }

@@ -57,6 +57,7 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
@@ -88,12 +89,12 @@ import javax.swing.undo.UndoableEdit;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.View;
 import javax.swing.undo.UndoManager;
-import org.netbeans.api.editor.CaretInfo;
+import org.netbeans.api.editor.caret.CaretInfo;
 import org.netbeans.api.editor.EditorActionNames;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
 import org.netbeans.api.editor.EditorUtilities;
-import org.netbeans.api.editor.EditorCaret;
+import org.netbeans.api.editor.caret.EditorCaret;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.progress.ProgressUtils;
@@ -102,6 +103,8 @@ import org.netbeans.lib.editor.util.swing.PositionRegion;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.api.editor.NavigationHistory;
+import org.netbeans.api.editor.caret.CaretMoveContext;
+import org.netbeans.api.editor.caret.CaretMoveHandler;
 import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
 import org.netbeans.modules.editor.lib2.view.DocumentView;
 import org.netbeans.spi.editor.typinghooks.CamelCaseInterceptor;
@@ -626,31 +629,38 @@ public class ActionFactory {
                     doc.runAtomicAsUser(new Runnable() {
                         @Override
                         public void run() {
-                            List<Pair<Position, Position>> dots = new LinkedList<>();
-                            for (CaretInfo caret : editorCaret.getCarets()) {
-                                try {
-                                    int dot = caret.getDot();
-                                    Point p = caret.getMagicCaretPosition();
-                                    if (p == null) {
-                                        Rectangle r = target.modelToView(dot);
-                                        if (r != null) {
-                                            p = new Point(r.x, r.y);
-                                            caret.setMagicCaretPosition(p);
-                                        } else {
-                                            return; // model to view failed
+                            final List<Position> dots = new ArrayList<>(editorCaret.getCarets().size() << 1);
+                            editorCaret.moveCarets(new CaretMoveHandler() {
+                                @Override
+                                public void moveCarets(CaretMoveContext context) {
+                                    for (CaretInfo caretInfo : context.getOriginalCarets()) {
+                                        try {
+                                            int dot = caretInfo.getDot();
+                                            Point p = caretInfo.getMagicCaretPosition();
+                                            if (p == null) {
+                                                Rectangle r = target.modelToView(dot);
+                                                if (r != null) {
+                                                    p = new Point(r.x, r.y);
+                                                    context.setMagicCaretPosition(caretInfo, p);
+                                                } else {
+                                                    return; // model to view failed
+                                                }
+                                            }
+                                            try {
+                                                dot = Utilities.getPositionAbove(target, dot, p.x);
+                                                Position dotPos = doc.createPosition(dot);
+                                                dots.add(dotPos);
+                                                dots.add(dotPos);
+                                            } catch (BadLocationException e) {
+                                                // the position stays the same
+                                            }
+                                        } catch (BadLocationException ex) {
+                                            target.getToolkit().beep();
                                         }
                                     }
-                                    try {
-                                        dot = Utilities.getPositionAbove(target, dot, p.x);
-                                        Position dotPos = doc.createPosition(dot);
-                                        dots.add(Pair.of(dotPos, dotPos));
-                                    } catch (BadLocationException e) {
-                                        // the position stays the same
-                                    }
-                                } catch (BadLocationException ex) {
-                                    target.getToolkit().beep();
                                 }
-                            }
+                            });
+
                             editorCaret.addCarets(dots);
                         }
                     });
@@ -679,31 +689,37 @@ public class ActionFactory {
                     doc.runAtomicAsUser(new Runnable() {
                         @Override
                         public void run() {
-                            List<Pair<Position, Position>> dots = new LinkedList<>();
-                            for (CaretInfo caret : editorCaret.getCarets()) {
-                                try {
-                                    int dot = caret.getDot();
-                                    Point p = caret.getMagicCaretPosition();
-                                    if (p == null) {
-                                        Rectangle r = target.modelToView(dot);
-                                        if (r != null) {
-                                            p = new Point(r.x, r.y);
-                                            caret.setMagicCaretPosition(p);
-                                        } else {
-                                            return; // model to view failed
+                            final List<Position> dots = new ArrayList<>(editorCaret.getCarets().size() << 1);
+                            editorCaret.moveCarets(new CaretMoveHandler() {
+                                @Override
+                                public void moveCarets(CaretMoveContext context) {
+                                    for (CaretInfo caretInfo : context.getOriginalCarets()) {
+                                        try {
+                                            int dot = caretInfo.getDot();
+                                            Point p = caretInfo.getMagicCaretPosition();
+                                            if (p == null) {
+                                                Rectangle r = target.modelToView(dot);
+                                                if (r != null) {
+                                                    p = new Point(r.x, r.y);
+                                                    context.setMagicCaretPosition(caretInfo, p);
+                                                } else {
+                                                    return; // model to view failed
+                                                }
+                                            }
+                                            try {
+                                                dot = Utilities.getPositionBelow(target, dot, p.x);
+                                                Position dotPos = doc.createPosition(dot);
+                                                dots.add(dotPos);
+                                                dots.add(dotPos);
+                                            } catch (BadLocationException e) {
+                                                // position stays the same
+                                            }
+                                        } catch (BadLocationException ex) {
+                                            target.getToolkit().beep();
                                         }
                                     }
-                                    try {
-                                        dot = Utilities.getPositionBelow(target, dot, p.x);
-                                        Position dotPos = doc.createPosition(dot);
-                                        dots.add(Pair.of(dotPos, dotPos));
-                                    } catch (BadLocationException e) {
-                                        // position stays the same
-                                    }
-                                } catch (BadLocationException ex) {
-                                    target.getToolkit().beep();
                                 }
-                            }
+                            });
                             editorCaret.addCarets(dots);
                         }
                     });

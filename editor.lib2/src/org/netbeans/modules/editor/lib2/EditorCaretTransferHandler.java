@@ -60,8 +60,8 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
-import org.netbeans.api.editor.CaretInfo;
-import org.netbeans.api.editor.EditorCaret;
+import org.netbeans.api.editor.caret.CaretInfo;
+import org.netbeans.api.editor.caret.EditorCaret;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -233,9 +233,9 @@ public class EditorCaretTransferHandler extends TransferHandler {
                 for (int i = 0; i < carets.size(); i++) {
                     CaretInfo caret = carets.get(i);
                     if(!caret.isSelection()) continue;
-                    Position startPos = caret.getSelectionStart();
-                    Position endPos = caret.getSelectionEnd();
-                    CharSequence lineSel = docText.subSequence(startPos.getOffset(), endPos.getOffset());
+                    int startOffset = caret.getSelectionStart();
+                    int endOffset = caret.getSelectionEnd();
+                    CharSequence lineSel = docText.subSequence(startOffset, endOffset);
                     if (newline) {
                         stringSelectionBuffer.append('\n');
                     } else {
@@ -267,7 +267,6 @@ public class EditorCaretTransferHandler extends TransferHandler {
                                 editorCaret.setRectangularSelectionToDotAndMark();
                             } else {
                                 doc.remove(Math.min(dot, mark), Math.abs(dot - mark));
-                                caret.setDot(Math.min(dot, mark));
                             }
                         } catch (BadLocationException ble) {
                             LOG.log(Level.FINE, null, ble);
@@ -404,13 +403,13 @@ public class EditorCaretTransferHandler extends TransferHandler {
                                 for (int i = 0; i < editorCaret.getSortedCarets().size(); i++) {
                                     CaretInfo ci = editorCaret.getSortedCarets().get(i);
                                     try {
-                                        Position startPos = ci.getSelectionStart();
-                                        Position endPos = ci.getSelectionEnd();
-                                        if (startPos != endPos) {
-                                            doc.remove(startPos.getOffset(), endPos.getOffset() - startPos.getOffset());
+                                        int startOffset = ci.getSelectionStart();
+                                        int endOffset = ci.getSelectionEnd();
+                                        if (startOffset != endOffset) {
+                                            doc.remove(startOffset, endOffset - startOffset);
                                         }
                                         if (content.strings()[i] != null && content.strings()[i].length() > 0) {
-                                            doc.insertString(startPos.getOffset(), content.strings()[i], null);
+                                            doc.insertString(startOffset, content.strings()[i], null);
                                         }
                                     } catch (BadLocationException ex) {
                                         //ignore ?
@@ -427,13 +426,13 @@ public class EditorCaretTransferHandler extends TransferHandler {
                                 public void run() {
                                     for (CaretInfo ci : editorCaret.getSortedCarets()) {
                                         try {
-                                            Position startPos = ci.getSelectionStart();
-                                            Position endPos = ci.getSelectionEnd();
-                                            if (startPos != endPos) {
-                                                doc.remove(startPos.getOffset(), endPos.getOffset() - startPos.getOffset());
+                                            int startOffset = ci.getSelectionStart();
+                                            int endOffset = ci.getSelectionEnd();
+                                            if (startOffset != endOffset) {
+                                                doc.remove(startOffset, endOffset - startOffset);
                                             }
                                             if (content != null && content.length() > 0) {
-                                                doc.insertString(startPos.getOffset(), content, null);
+                                                doc.insertString(startOffset, content, null);
                                             }
                                         } catch (BadLocationException ex) {
                                             //ignore ?

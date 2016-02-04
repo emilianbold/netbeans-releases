@@ -61,11 +61,11 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.text.*;
-import org.netbeans.api.editor.EditorCaret;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.api.editor.caret.EditorCaret;
 import org.netbeans.api.search.ReplacePattern;
 import org.netbeans.api.search.SearchHistory;
 import org.netbeans.api.search.SearchPattern;
@@ -934,8 +934,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
             try {
                 int[] blocks = findSupport.getBlocks(new int[]{-1, -1}, doc, 0, doc.getLength());
                 if(blocks[0] >= 0 && blocks.length % 2 == 0) {
-                    List<Pair<Position, Position>> newCarets = new LinkedList<>();
-                    
+                    List<Position> newCarets = new ArrayList<>(editorCaret.getCarets().size() << 1);
                     for (int i = 0; i < blocks.length; i += 2) {
                         int start = blocks[i];
                         int end = blocks[i+1];
@@ -944,7 +943,8 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                         }
                         Position startPos = doc.createPosition(start);
                         Position endPos = doc.createPosition(end);
-                        newCarets.add(Pair.of(endPos, startPos));
+                        newCarets.add(endPos);
+                        newCarets.add(startPos);
                     }
                     
                     editorCaret.replaceCarets(newCarets);

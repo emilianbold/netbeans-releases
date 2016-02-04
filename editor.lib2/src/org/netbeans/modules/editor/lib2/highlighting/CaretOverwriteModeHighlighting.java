@@ -48,18 +48,21 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Caret;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyleConstants;
-import org.netbeans.api.editor.CaretInfo;
-import org.netbeans.api.editor.EditorCaret;
-import org.netbeans.api.editor.EditorCaretEvent;
-import org.netbeans.api.editor.EditorCaretListener;
+import org.netbeans.api.editor.caret.CaretInfo;
+import org.netbeans.api.editor.caret.EditorCaret;
+import org.netbeans.api.editor.caret.EditorCaretEvent;
+import org.netbeans.api.editor.caret.EditorCaretListener;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.lib.editor.util.ListenerList;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.ReleasableHighlightsContainer;
+import org.netbeans.spi.editor.highlighting.ShiftHighlightsSequence;
 import org.openide.util.WeakListeners;
 
 /**
@@ -76,7 +79,7 @@ public final class CaretOverwriteModeHighlighting implements ReleasableHighlight
     private static final Logger LOG = Logger.getLogger(CaretOverwriteModeHighlighting.class.getName());
     
     private final JTextComponent component;
-
+    
     private boolean inited;
     
     private boolean visible;
@@ -88,6 +91,8 @@ public final class CaretOverwriteModeHighlighting implements ReleasableHighlight
     private ListenerList<HighlightsChangeListener> listenerList = new ListenerList<>();
     
     private AttributeSet coloringAttrs;
+    
+    private CharSequence docText;
     
     private List<CaretInfo> sortedCarets;
     
@@ -183,8 +188,10 @@ public final class CaretOverwriteModeHighlighting implements ReleasableHighlight
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String propName = evt.getPropertyName();
-        if (propName == null || "caret".equals(evt.getPropertyName())) { //NOI18N
+        if (propName == null || "caret".equals(propName)) { //NOI18N
             updateActiveCaret();
+        } else if ("document".equals(propName)) {
+            updateDocText();
         } else if ("caretColor".equals(propName) || "background".equals(propName)) {
             updateColoring();
         }
@@ -215,6 +222,7 @@ public final class CaretOverwriteModeHighlighting implements ReleasableHighlight
             editorCaret.removeEditorCaretListener(weakEditorCaretListener);
             weakEditorCaretListener = null;
             editorCaret = null;
+            docText = null;
         }
 
         Caret caret = component.getCaret();
@@ -223,6 +231,7 @@ public final class CaretOverwriteModeHighlighting implements ReleasableHighlight
         }
 
         if (editorCaret != null) {
+            updateDocText();
             weakEditorCaretListener = WeakListeners.create(EditorCaretListener.class, this, editorCaret);
             editorCaret.addEditorCaretListener(weakEditorCaretListener);
         }
@@ -234,7 +243,19 @@ public final class CaretOverwriteModeHighlighting implements ReleasableHighlight
                 StyleConstants.Foreground, component.getBackground());
     }
     
-    private final class HS implements HighlightsSequence {
+    private void updateDocText() {
+        JTextComponent c = component;
+        CharSequence text = null;
+        if (c != null) {
+            Document doc = c.getDocument();
+            if (doc != null) {
+                text = DocumentUtilities.getText(doc);
+            }
+        }
+        docText = text;
+    }
+    
+    private final class HS implements ShiftHighlightsSequence {
         
         private final List<CaretInfo> sortedCarets;
         
@@ -243,6 +264,8 @@ public final class CaretOverwriteModeHighlighting implements ReleasableHighlight
         private final int endOffset;
 
         private int caretOffset = -1;
+        
+        private int caretOffsetEndShift;
 
         private int caretIndex;
         
@@ -254,16 +277,14 @@ public final class CaretOverwriteModeHighlighting implements ReleasableHighlight
 
         @Override
         public boolean moveNext() {
+            boolean ret = false;
             if (caretOffset == -1) { // Return first highlight
                 while (caretOffset < startOffset && caretIndex < sortedCarets.size()) {
                     CaretInfo caret = sortedCarets.get(caretIndex++);
                     caretOffset = caret.getDot();
                 }
                 if (caretOffset != -1) {
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.fine("  CaretOverwriteModeHighlighting.Highlight <" + caretOffset + "," + (caretOffset+1) + ">\n");
-                    }
-                    return true;
+                    ret = true;
                 }
             } else {
                 while (caretIndex < sortedCarets.size()) {
@@ -282,6 +303,21 @@ public final class CaretOverwriteModeHighlighting implements ReleasableHighlight
                     }
                 }
             }
+            if (ret) {
+                caretOffsetEndShift = 0;
+                CharSequence text = docText;
+                if (text != null) {
+                    char ch = text.charAt(caretOffset);
+                    if (ch == '\t' || ch == '\n') {
+                        caretOffsetEndShift = 1;
+                    }
+                }
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("  CaretOverwriteModeHighlighting.Highlight <" + caretOffset + "(sh=0)," +
+                            (caretOffset + 1) + "(sh=" + caretOffsetEndShift + ")>\n");
+                }
+                return true;
+            }
             return false;
         }
 
@@ -298,6 +334,16 @@ public final class CaretOverwriteModeHighlighting implements ReleasableHighlight
         @Override
         public AttributeSet getAttributes() {
             return coloringAttrs;
+        }
+
+        @Override
+        public int getStartShift() {
+            return 0;
+        }
+
+        @Override
+        public int getEndShift() {
+            return caretOffsetEndShift;
         }
         
         

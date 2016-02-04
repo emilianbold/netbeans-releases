@@ -39,36 +39,22 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.editor.actions;
+package org.netbeans.api.editor.caret;
 
-import java.awt.event.ActionEvent;
-import javax.swing.text.Caret;
-import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.EditorActionNames;
-import org.netbeans.api.editor.EditorActionRegistration;
-import org.netbeans.api.editor.EditorActionRegistrations;
-import org.netbeans.api.editor.caret.EditorCaret;
-import org.netbeans.spi.editor.AbstractEditorAction;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
+ * Handle possible moving of individual carets or creation or modification of selection.
  *
- * @author Ralph Ruijs <ralphbenjamin@netbeans.org>
+ * @author Miloslav Metelka
  */
-@EditorActionRegistrations({
-    @EditorActionRegistration(name = EditorActionNames.removeLastCaret,
-                              menuPath = "Edit",
-                              menuPosition = 840,
-                              menuText = "#" + EditorActionNames.removeLastCaret + "_menu_text")
-})
-public class RemoveLastCaretAction extends AbstractEditorAction {
-
-    @Override
-    protected void actionPerformed(ActionEvent evt, JTextComponent component) {
-        Caret caret = component.getCaret();
-        if(caret instanceof EditorCaret) {
-            EditorCaret editorCaret = (EditorCaret) caret;
-            editorCaret.removeLastCaret();
-        }
-    }
+public interface CaretMoveHandler {
+    
+    /**
+     * Possibly move one or more carets to new position by using the given context.
+     *
+     * @param context non-null context containing the manipulation methods.
+     */
+    void moveCarets(@NonNull CaretMoveContext context);
     
 }

@@ -44,18 +44,16 @@
 
 package org.netbeans.modules.editor.errorstripe.caret;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.editor.CaretInfo;
-import org.netbeans.api.editor.EditorCaret;
+import org.netbeans.api.editor.caret.CaretInfo;
+import org.netbeans.api.editor.caret.EditorCaret;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 import org.openide.text.NbDocument;
@@ -89,8 +87,8 @@ public class CaretMarkProvider extends MarkProvider implements CaretListener {
         Caret caret = component.getCaret();
         if(caret instanceof EditorCaret) {
             EditorCaret editorCaret = (EditorCaret) caret;
-            for (CaretInfo c : editorCaret.getCarets()) {
-                int offset = c.getDot();
+            for (CaretInfo caretInfo : editorCaret.getCarets()) {
+                int offset = caretInfo.getDot();
                 int line = NbDocument.findLineNumber((StyledDocument) doc, offset);
                 lines.add(new CaretMark(line));
             }

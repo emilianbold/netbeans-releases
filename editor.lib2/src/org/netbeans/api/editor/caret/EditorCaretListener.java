@@ -39,65 +39,22 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.api.editor;
+package org.netbeans.api.editor.caret;
 
-import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
 
 /**
- * Notification event about changes in editor caret.
+ * Listener for changes in editor caret.
  *
  * @author Miloslav Metelka
  */
-public final class EditorCaretEvent extends java.util.EventObject {
-    
-    private final int affectedStartOffset;
-    
-    private final int affectedEndOffset;
-    
-    EditorCaretEvent(EditorCaret source, int affectedStartOffset, int affectedEndOffset) {
-        super(source);
-        this.affectedStartOffset = affectedStartOffset;
-        this.affectedEndOffset = affectedEndOffset;
-    }
-    
-    /**
-     * Get caret instance to which this event relates.
-     *
-     * @return caret instance.
-     */
-    public @NonNull EditorCaret getCaret() {
-        return (EditorCaret) getSource();
-    }
+public interface EditorCaretListener extends java.util.EventListener {
 
     /**
-     * Get start of the region that was affected by caret change.
-     * <br/>
-     * This offset region will be repainted automatically by the editor infrastructure.
+     * Notification about change in terms of caret addition/removal or movement.
      *
-     * @return &gt;= 0 offset.
+     * @param evt caret event describing the change.
      */
-    public int getAffectedStartOffset() {
-        return affectedStartOffset;
-    }
-    
-    /**
-     * Get end of the region that was affected by caret change.
-     * <br/>
-     * This offset region will be repainted automatically by the editor infrastructure.
-     *
-     * @return &gt;= 0 offset.
-     */
-    public int getAffectedEndOffset() {
-        return affectedEndOffset;
-    }
-    
-    public List<CaretInfo> getAddedCarets() {
-        return null;
-    }
-
-    public List<CaretInfo> getRemovedCarets() {
-        return null;
-    }
+    void caretChanged(@NonNull EditorCaretEvent evt);
 
 }
