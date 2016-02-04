@@ -47,18 +47,18 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.nio.file.spi.FileSystemProvider;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,8 +67,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.AbstractFileSystem;
 import org.openide.filesystems.DefaultAttributes;
 import org.openide.util.BaseUtilities;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -82,6 +80,7 @@ public class NBJRTFileSystem extends AbstractFileSystem implements AbstractFileS
 
     private static final Logger LOG = Logger.getLogger(NBJRTFileSystem.class.getName());
     private static final String PROTOCOL = "jrt";   //NOI18N
+    private static final String PROP_JAVA_HOME = "java.home";   //NOI18N
 
     @CheckForNull
     public static NBJRTFileSystem create(File jdkHome) {
@@ -90,26 +89,21 @@ public class NBJRTFileSystem extends AbstractFileSystem implements AbstractFileS
             return null;
         }
         try {
-            URLClassLoader jrtFsLoader = new URLClassLoader(
-                new URL[] {BaseUtilities.toURI(jrtFsJar).toURL()},
-                ClassLoader.getSystemClassLoader());
-            Lookup jrtFsLookup = Lookups.metaInfServices(jrtFsLoader);
-            FileSystem fs = null;
-            for (FileSystemProvider p : jrtFsLookup.lookupAll(FileSystemProvider.class)) {
-                if (PROTOCOL.equals(p.getScheme())) {
-                    fs = p.getFileSystem(URI.create(String.format(
-                        "%s:/", //NOI18N
-                        PROTOCOL)));
-                }
-            }
+            final URLClassLoader jrtFsLoader = new URLClassLoader(
+                    new URL[] {BaseUtilities.toURI(jrtFsJar).toURL()},
+                    ClassLoader.getSystemClassLoader());
+            final FileSystem fs = FileSystems.newFileSystem(
+                    URI.create(String.format("%s:/", //NOI18N
+                            PROTOCOL)),
+                    Collections.singletonMap(PROP_JAVA_HOME, jdkHome.getAbsolutePath()),
+                    jrtFsLoader);
             if (fs == null) {
-                //XXX: factory
                 throw new IllegalStateException(String.format(
                     "No %s provider.",  //NOI18N
                     PROTOCOL));
             }
             return new NBJRTFileSystem(jdkHome, fs);
-        } catch (MalformedURLException ex) {
+        } catch (IOException ex) {
             throw new IllegalStateException(
                 String.format(
                     "Cannot create %s NIO FS for: %s",  //NOI18N
