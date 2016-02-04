@@ -654,18 +654,16 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         }
         ClassPath cp = cache[2+type];
         if (cp == null) {
-            final ClassPath filteredModulePath = ClassPathFactory.createClassPath(
+            final ClassPath modules = ClassPathFactory.createClassPath(
                 ModuleClassPaths.createModuleInfoBasedPath(
                     getModuleCompilePath(type),
                     type == 0 ? sourceRoots : testSourceRoots,
-                    getModuleBootPath()));
-            final ClassPath filteredModulePathWithLegacyClassPath = org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath(
-                filteredModulePath,
-                getJava8ClassPath(type));
+                    getModuleBootPath(),
+                    getJava8ClassPath(type)));
             cp = ClassPathFactory.createClassPath(new MuxClassPathImplementation(
                 new ClassPath[]{
                     getJava8ClassPath(type),
-                    filteredModulePathWithLegacyClassPath
+                    modules
                 },
                 getSourceLevelSelector()));
             cache[2+type] = cp;
@@ -798,8 +796,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                         platform.first()));
                 final ClassPath moduleSytemPath = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
                     getModuleBootPath(),
-                    sourceRoots,
-                    null));
+                    sourceRoots));
                 cp = ClassPathFactory.createClassPath(new MuxClassPathImplementation(
                     new ClassPath[] {
                         cp,

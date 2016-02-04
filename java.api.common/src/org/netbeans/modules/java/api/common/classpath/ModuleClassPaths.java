@@ -115,10 +115,28 @@ final class ModuleClassPaths {
 
     @NonNull
     static ClassPathImplementation createModuleInfoBasedPath(
-            @NonNull final ClassPath base,
+            @NonNull final ClassPath systemModules,
+            @NonNull final SourceRoots sourceRoots) {
+        return new ModuleInfoClassPathImplementation(
+                systemModules,
+                sourceRoots,
+                null,
+                null);
+    }
+
+    @NonNull
+    static ClassPathImplementation createModuleInfoBasedPath(
+            @NonNull final ClassPath modulePath,
             @NonNull final SourceRoots sourceRoots,
-            @NullAllowed final ClassPath systemModules) {
-        return new ModuleInfoClassPathImplementation(base, sourceRoots, systemModules);
+            @NonNull final ClassPath systemModules,
+            @NonNull final ClassPath legacyClassPath) {
+        Parameters.notNull("systemModules", systemModules); //NOI18N
+        Parameters.notNull("legacyClassPath", legacyClassPath); //NOI18N
+        return new ModuleInfoClassPathImplementation(
+                modulePath,
+                sourceRoots,
+                systemModules,
+                legacyClassPath);
     }
 
     @NonNull
@@ -383,6 +401,7 @@ final class ModuleClassPaths {
         private final ClassPath base;
         private final SourceRoots sources;
         private final ClassPath systemModules;
+        private final ClassPath legacyClassPath;
         private final ThreadLocal<Object[]> selfRes;
 
         //@GuardedBy("this")
@@ -393,17 +412,22 @@ final class ModuleClassPaths {
         ModuleInfoClassPathImplementation(
                 @NonNull final ClassPath base,
                 @NonNull final SourceRoots sources,
-                @NullAllowed final ClassPath systemModules) {
+                @NullAllowed final ClassPath systemModules,
+                @NullAllowed final ClassPath legacyClassPath) {
             super(null);
             Parameters.notNull("base", base);       //NOI18N
             Parameters.notNull("sources", sources); //NOI18N
             this.base = base;
             this.sources = sources;
             this.systemModules = systemModules;
+            this.legacyClassPath = legacyClassPath;
             this.selfRes = new ThreadLocal<>();
             this.moduleInfos = Collections.emptyList();
             this.base.addPropertyChangeListener(WeakListeners.propertyChange(this, this.base));
             this.sources.addPropertyChangeListener(WeakListeners.propertyChange(this, this.sources));
+            if (this.legacyClassPath != null) {
+                this.legacyClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this, this.legacyClassPath));
+            }
         }
 
         @Override
@@ -534,6 +558,15 @@ final class ModuleClassPaths {
                                 e.getMessage()
                             });
                     }
+                }
+                if (!found && legacyClassPath != null) {
+                    final List<ClassPath.Entry> legacyEntires = legacyClassPath.entries();
+                    final List<PathResourceImplementation> tmp = new ArrayList<>(res.size() + legacyEntires.size());
+                    legacyEntires.stream()
+                            .map((e)->org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(e.getURL()))
+                            .forEach(tmp::add);
+                    tmp.addAll(res);
+                    res = tmp;
                 }
             } finally {
                 needToFire = selfRes.get()[1] == Boolean.TRUE;
