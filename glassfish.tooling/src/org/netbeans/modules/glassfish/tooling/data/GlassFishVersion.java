@@ -40,9 +40,13 @@
 package org.netbeans.modules.glassfish.tooling.data;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.glassfish.tooling.logging.Logger;
 import org.netbeans.modules.glassfish.tooling.utils.EnumUtils;
+import org.openide.util.Parameters;
 
 /**
  * GlassFish server version.
@@ -56,49 +60,45 @@ public enum GlassFishVersion {
     ////////////////////////////////////////////////////////////////////////////
 
     /** GlassFish v1. */
-    GF_1        ((short) 1, (short) 0, (short) 0, (short) 0),
+    GF_1        ((short) 1, (short) 0, (short) 0, (short) 0, GlassFishVersion.GF_1_STR),
     /**  GlassFish v2. */
-    GF_2        ((short) 2, (short) 0, (short) 0, (short) 0),
+    GF_2        ((short) 2, (short) 0, (short) 0, (short) 0, GlassFishVersion.GF_2_STR),
     /** GlassFish v2.1. */
-    GF_2_1      ((short) 2, (short) 1, (short) 0, (short) 0),
+    GF_2_1      ((short) 2, (short) 1, (short) 0, (short) 0, GlassFishVersion.GF_2_1_STR),
     /** GlassFish v2.1.1. */
-    GF_2_1_1    ((short) 2, (short) 1, (short) 1, (short) 0),
+    GF_2_1_1    ((short) 2, (short) 1, (short) 1, (short) 0, GlassFishVersion.GF_2_1_1_STR),
     /** GlassFish v3. */
-    GF_3        ((short) 3, (short) 0, (short) 0, (short) 0),
+    GF_3        ((short) 3, (short) 0, (short) 0, (short) 0, GlassFishVersion.GF_3_STR),
     /** GlassFish 3.0.1. */
-    GF_3_0_1    ((short) 3, (short) 0, (short) 1, (short) 0),
+    GF_3_0_1    ((short) 3, (short) 0, (short) 1, (short) 0, GlassFishVersion.GF_3_0_1_STR),
     /** GlassFish 3.1. */
-    GF_3_1      ((short) 3, (short) 1, (short) 0, (short) 0),
+    GF_3_1      ((short) 3, (short) 1, (short) 0, (short) 0, GlassFishVersion.GF_3_1_STR),
     /** GlassFish 3.1.1. */
-    GF_3_1_1    ((short) 3, (short) 1, (short) 1, (short) 0),
+    GF_3_1_1    ((short) 3, (short) 1, (short) 1, (short) 0, GlassFishVersion.GF_3_1_1_STR),
     /** GlassFish 3.1.2. */
-    GF_3_1_2    ((short) 3, (short) 1, (short) 2, (short) 0),
+    GF_3_1_2    ((short) 3, (short) 1, (short) 2, (short) 0, GlassFishVersion.GF_3_1_2_STR),
     /** GlassFish 3.1.2.2. */
-    GF_3_1_2_2  ((short) 3, (short) 1, (short) 2, (short) 2),
+    GF_3_1_2_2  ((short) 3, (short) 1, (short) 2, (short) 2, GlassFishVersion.GF_3_1_2_2_STR),
     /** GlassFish 3.1.2.3. */
-    GF_3_1_2_3  ((short) 3, (short) 1, (short) 2, (short) 3),
+    GF_3_1_2_3  ((short) 3, (short) 1, (short) 2, (short) 3, GlassFishVersion.GF_3_1_2_3_STR),
     /** GlassFish 3.1.2.4. */
-    GF_3_1_2_4  ((short) 3, (short) 1, (short) 2, (short) 4),
+    GF_3_1_2_4  ((short) 3, (short) 1, (short) 2, (short) 4, GlassFishVersion.GF_3_1_2_4_STR),
     /** GlassFish 3.1.2.4. */
-    GF_3_1_2_5  ((short) 3, (short) 1, (short) 2, (short) 5),
+    GF_3_1_2_5  ((short) 3, (short) 1, (short) 2, (short) 5, GlassFishVersion.GF_3_1_2_5_STR),
     /** GlassFish 4. */
-    GF_4        ((short) 4, (short) 0, (short) 0, (short) 0),
+    GF_4        ((short) 4, (short) 0, (short) 0, (short) 0, GlassFishVersion.GF_4_STR),
     /** GlassFish 4.0.1. */
-    GF_4_0_1    ((short) 4, (short) 0, (short) 1, (short) 0),
+    GF_4_0_1    ((short) 4, (short) 0, (short) 1, (short) 0, GlassFishVersion.GF_4_0_1_STR),
     /** GlassFish 4.1. */
-    GF_4_1      ((short) 4, (short) 1, (short) 0, (short) 0),
+    GF_4_1      ((short) 4, (short) 1, (short) 0, (short) 0, GlassFishVersion.GF_4_1_STR),
     /** GlassFish 4.1.1. */
-    GF_4_1_1      ((short) 4, (short) 1, (short) 1, (short) 0),
-    /** GlassFish development version.
-        Hope user knows what he is doing. */
-    GF_DEVEL    ((short) 0, (short) 0, (short) 0, (short) 0);
+    GF_4_1_1    ((short) 4, (short) 1, (short) 1, (short) 0, GlassFishVersion.GF_4_1_1_STR),
+    /** GlassFish 5. */
+    GF_5        ((short) 5, (short) 0, (short) 0, (short) 0, GlassFishVersion.GF_5_STR);
 
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
     ////////////////////////////////////////////////////////////////////////////
-
-    /** Logger instance for this class. */
-    private static final Logger LOGGER = new Logger(GlassFishVersion.class);
 
     /** GlassFish version enumeration length. */
     public static final int length = GlassFishVersion.values().length;
@@ -186,10 +186,10 @@ public enum GlassFishVersion {
     /** Additional <code>String</code> representations of GF_4_1 value. */
     static final String GF_4_1_1_STR_NEXT[] = {"4.1.1.0"};
 
-    /**  A <code>String</code> representation of GF_DEVEL value. */
-    static final String GF_DEVEL_STR = "DEVELOPMENT";
-    /** Additional <code>String</code> representations of GF_DEVEL value. */
-    static final String GF_DEVEL_STR_NEXT[] = {"0", "0.0", "0.0.0", "0.0.0.0"};
+    /**  A <code>String</code> representation of GF_5 value. */
+    static final String GF_5_STR = "5";
+    /** Additional <code>String</code> representations of GF_5 value. */
+    static final String GF_5_STR_NEXT[] = {"5.0", "5.0.0", "5.0.0.0"};
 
     /** 
      * Stored <code>String</code> values for backward <code>String</code>
@@ -216,7 +216,7 @@ public enum GlassFishVersion {
         initStringValuesMapFromArray(GF_4_0_1, GF_4_0_1_STR_NEXT);
         initStringValuesMapFromArray(GF_4_1, GF_4_1_STR_NEXT);
         initStringValuesMapFromArray(GF_4_1_1, GF_4_1_1_STR_NEXT);
-        initStringValuesMapFromArray(GF_DEVEL, GF_DEVEL_STR_NEXT);
+        initStringValuesMapFromArray(GF_5, GF_5_STR_NEXT);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -250,33 +250,55 @@ public enum GlassFishVersion {
      *         <code>String</code> or <code>null</code> if value was
      *         not recognized.
      */
-    public static GlassFishVersion toValue(final String versionStr) {
-        if (versionStr != null) {
-            GlassFishVersion version
-                    = stringValuesMap.get(versionStr.toUpperCase());
-            if (version == null) {
-                String[] versionNumbers
-                        = versionStr.split("\\"+SEPARATOR);
-                for (int i = versionNumbers.length - 1;
-                        version == null && i > 0; i--) {
-                    int versionStrLen = i - 1;
-                    for (int j = 0; j < i; j++) {
-                        versionStrLen += versionNumbers[j].length();
+    @CheckForNull
+    public static GlassFishVersion toValue(@NonNull final String versionStr) {
+        Parameters.notNull("versionStr", versionStr);
+
+        GlassFishVersion version
+                = stringValuesMap.get(versionStr.toUpperCase(Locale.ENGLISH));
+        if (version == null) {
+            String[] versionNumbers = versionStr.split("\\"+SEPARATOR);
+            for (int i = versionNumbers.length - 1;
+                    version == null && i > 0; i--) {
+                int versionStrLen = i - 1;
+                for (int j = 0; j < i; j++) {
+                    versionStrLen += versionNumbers[j].length();
+                }
+                StringBuilder sb = new StringBuilder(versionStrLen);
+                for (int j = 0; j < i; j++) {
+                    if (j > 0) {
+                        sb.append(SEPARATOR);
                     }
-                    StringBuilder sb = new StringBuilder(versionStrLen);
-                    for (int j = 0; j < i; j++) {
-                        if (j > 0) {
-                            sb.append(SEPARATOR);
-                        }
+                    try {
+                        Integer.parseInt(versionNumbers[j]);
                         sb.append(versionNumbers[j]);
+                    } catch (NumberFormatException ex) {
+                        break;
                     }
-                    version = stringValuesMap.get(sb.toString().toUpperCase());
+                }
+                version = stringValuesMap.get(sb.toString().toUpperCase(Locale.ENGLISH));
+            }
+            if (version == null) {
+                // fallback attempt
+                int dot = versionStr.indexOf('.');
+                if (dot > 0) {
+                    try {
+                        int major = Integer.parseInt(versionStr.substring(0, dot));
+                        // this needs enum to be properly ordered latest versions last
+                        for (GlassFishVersion v : values()) {
+                            if (v.major <= major) {
+                                version = v;
+                            } else if (v.major > major) {
+                                break;
+                            }
+                        }
+                    } catch (NumberFormatException ex) {
+                        // noop
+                    }
                 }
             }
-            return version;
-        } else {
-            return null;
         }
+        return version;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -295,6 +317,8 @@ public enum GlassFishVersion {
     /** Build version number. */
     private final short build;
 
+    private final String value;
+
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
@@ -308,11 +332,12 @@ public enum GlassFishVersion {
      * @param build  Build version number.
      */
     private GlassFishVersion(final short major, final short minor,
-            final short update, final short build) {
+            final short update, final short build, final String value) {
         this.major = major;
         this.minor = minor;
         this.update = update;
         this.build = build;
+        this.value = value;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -430,31 +455,7 @@ public enum GlassFishVersion {
      */
     @Override
     public String toString() {
-        final String METHOD = "toString";
-        switch (this) {
-            case GF_1:       return GF_1_STR;
-            case GF_2:       return GF_2_STR;
-            case GF_2_1:     return GF_2_1_STR;
-            case GF_2_1_1:   return GF_2_1_1_STR;
-            case GF_3:       return GF_3_STR;
-            case GF_3_0_1:   return GF_3_0_1_STR;
-            case GF_3_1:     return GF_3_1_STR;
-            case GF_3_1_1:   return GF_3_1_1_STR;
-            case GF_3_1_2:   return GF_3_1_2_STR;
-            case GF_3_1_2_2: return GF_3_1_2_2_STR;
-            case GF_3_1_2_3: return GF_3_1_2_3_STR;
-            case GF_3_1_2_4: return GF_3_1_2_4_STR;
-            case GF_3_1_2_5: return GF_3_1_2_5_STR;
-            case GF_4:       return GF_4_STR;
-            case GF_4_0_1:   return GF_4_0_1_STR;
-            case GF_4_1:     return GF_4_1_STR;
-            case GF_4_1_1:   return GF_4_1_1_STR;
-            case GF_DEVEL:   return GF_DEVEL_STR;
-            // This is unrecheable. Being here means this class does not handle
-            // all possible values correctly.
-            default:   throw new DataException(
-                        LOGGER.excMsg(METHOD, "invalidVersion"));
-        }
+        return value;
     }
 
     /**

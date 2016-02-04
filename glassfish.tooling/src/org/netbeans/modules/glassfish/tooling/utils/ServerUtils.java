@@ -596,7 +596,9 @@ public class ServerUtils {
                     System.getProperties().remove(GF_HOME_PROPERTY);
                     String versionString
                             = getVersionString(fullVersionString);
-                    version = GlassFishVersion.toValue(versionString);
+                    if (versionString != null) {
+                        version = GlassFishVersion.toValue(versionString);
+                    }
                 } catch (IllegalAccessException | IllegalArgumentException
                         | InvocationTargetException | NoSuchMethodException
                         | SecurityException | NoClassDefFoundError ex) {
@@ -604,7 +606,7 @@ public class ServerUtils {
                             + commonUtilJar.getAbsolutePath() + ": ", ex);
                 }
                 // Use Manifest Bundle-Version as fallback option.
-                if (version == null || version == GlassFishVersion.GF_DEVEL) {
+                if (version == null) {
                     try {
                         JarFile jar = new JarFile(commonUtilJar);
                         Manifest manifest = jar.getManifest();
