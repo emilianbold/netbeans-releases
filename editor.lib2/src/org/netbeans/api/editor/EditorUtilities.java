@@ -57,6 +57,14 @@ import org.netbeans.modules.editor.lib2.actions.EditorActionUtilities;
  */
 
 public final class EditorUtilities {
+    
+    /**
+     * Client property of editor component which determines
+     * whether caret is currently in overwrite mode (Boolean.TRUE) or insert mode (Boolean.FALSE or null).
+     * <br/>
+     * It's modified by appropriate editor actions.
+     */
+    public static final String CARET_OVERWRITE_MODE_PROPERTY = "caret-overwrite-mode";
 
     private EditorUtilities() {
         // No instances

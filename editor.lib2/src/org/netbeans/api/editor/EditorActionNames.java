@@ -136,4 +136,18 @@ public final class EditorActionNames {
      * @since 1.64
      */
     public static final String organizeMembers = "organize-members"; // NOI18N
+
+
+    /**
+     * Toggle caret between regular insert mode and overwrite mode.
+     * @since 1.31
+     */
+    public static final String toggleTypingMode = "toggle-typing-mode"; // NOI18N
+    
+    /**
+     * Remove the last added caret.
+     * @since XXX
+     */
+    public static final String removeLastCaret = "remove-last-caret"; // NOI18N
+
 }

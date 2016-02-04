@@ -114,6 +114,13 @@ public class Factory implements HighlightsLayerFactory {
             true, // fixed size
             new WhitespaceHighlighting(context.getComponent()))
         );
+        
+        layers.add(HighlightsLayer.create(
+            CaretOverwriteModeHighlighting.LAYER_TYPE_ID,
+            ZOrder.TOP_RACK.forPosition(100),
+            true, // fixed size
+            new CaretOverwriteModeHighlighting(context.getComponent()))
+        );
 
         return layers.toArray(new HighlightsLayer [layers.size()]);
     }

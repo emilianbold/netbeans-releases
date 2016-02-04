@@ -82,6 +82,12 @@ public class HighlightsMergeTesting {
 
     private static final int DOCUMENT_LENGTH = 1000; // Fixed document length
     private static final int MAX_LAYER_HIGHLIGHT_COUNT = 20;
+    
+    private static boolean logChecks;
+    
+    public static void setLogChecks(boolean logChecks) {
+        HighlightsMergeTesting.logChecks = logChecks;
+    }
 
     public static RandomTestContainer createContainer() {
         RandomTestContainer container = new RandomTestContainer();
@@ -147,21 +153,6 @@ public class HighlightsMergeTesting {
             Highlight highlight = new Highlight(offset0, offset1, (AttributeSet)highlights[i+2]);
             highlightList.add(highlight);
         }
-        // Possibly do logging
-        if (context.isLogOp()) {
-            StringBuilder sb = context.logOpBuilder();
-            sb.append(" ADD_LAYER(").append(zIndex).append("): ");
-            sb.append('\n');
-            int digitCount = ArrayUtilities.digitCount(highlightList.size());
-            for (int i = 0; i < highlightList.size(); i++) {
-                Highlight hi = highlightList.get(i);
-                ArrayUtilities.appendBracketedIndex(sb, i, digitCount);
-                sb.append(hi);
-                sb.append('\n');
-            }
-            context.logOp(sb);
-        }
-        
         HighlightsContainer[] layers = compoundHighlightsContainer.getLayers();
         HighlightsContainer[] newLayers = new HighlightsContainer[layers.length + 1];
         zIndex = Math.min(zIndex, layers.length);
@@ -172,6 +163,33 @@ public class HighlightsMergeTesting {
             highlight.addTo(bag);
         }
         newLayers[zIndex] = bag;
+        
+        // Possibly do logging
+        if (context.isLogOp()) {
+            StringBuilder sb = context.logOpBuilder();
+            sb.append(" ADD_LAYER(").append(zIndex).append("): ");
+            sb.append('\n');
+            int digitCount = ArrayUtilities.digitCount(highlightList.size());
+            for (int i = 0; i < highlightList.size(); i++) {
+                Highlight hi = highlightList.get(i);
+                sb.append("Parameter highlight");
+                ArrayUtilities.appendBracketedIndex(sb, i, digitCount);
+                sb.append(hi);
+                sb.append('\n');
+            }
+            HighlightsSequence hs = bag.getHighlights(0, Integer.MAX_VALUE);
+            int i = 0;
+            while (hs.moveNext()) {
+                int startOffset = hs.getStartOffset();
+                int endOffset = hs.getEndOffset();
+                AttributeSet attrs = hs.getAttributes();
+                sb.append("Bag highlight");
+                ArrayUtilities.appendBracketedIndex(sb, i, digitCount); // May be actually more/less digits due to splitting/merging
+                sb.append(new Highlight(startOffset, endOffset, attrs));
+                sb.append('\n');
+            }
+            context.logOp(sb);
+        }
         compoundHighlightsContainer.setLayers(doc, newLayers);
         DirectMergeContainer directMergeContainer = directMergeContainer(context);
         directMergeContainer = new DirectMergeContainer(newLayers);
@@ -210,6 +228,7 @@ public class HighlightsMergeTesting {
         int startOffset = 0;
         int endOffset = 0;
         AttributeSet attrs = null;
+        int i = 0;
         while (expectedSeq.moveNext()) {
             startOffset = expectedSeq.getStartOffset();
             endOffset = expectedSeq.getEndOffset();
@@ -226,9 +245,14 @@ public class HighlightsMergeTesting {
             assert (attrs.equals(testAttrs)) : "attrs=" + attrs + " != testAttrs=" + testAttrs
                     + ", startOffset=" + startOffset + ", endOffset=" + endOffset + " seq: " + testSeq;
             if (logChecks) {
-                StringBuilder sb = context.logOpBuilder().append("Passed: ").append(new Highlight(startOffset, endOffset, attrs));
+                StringBuilder sb = context.logOpBuilder();
+                sb.append("DMContainer passed highlight");
+                ArrayUtilities.appendBracketedIndex(sb, i, 1); // Unknown digit count
+                sb.append(new Highlight(startOffset, endOffset, attrs));
+                sb.append('\n');
                 context.logOp(sb);
             }
+            i++;
         }
     }
 
@@ -286,7 +310,7 @@ public class HighlightsMergeTesting {
 
         @Override
         protected void check(Context context) throws Exception {
-            checkMerge(context, false);
+            checkMerge(context, HighlightsMergeTesting.logChecks);
         }
         
     }

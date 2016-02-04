@@ -82,6 +82,7 @@ import javax.swing.text.View;
 import javax.swing.plaf.TextUI;
 import javax.swing.text.*;
 import javax.swing.undo.UndoManager;
+import org.netbeans.api.editor.EditorUtilities;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
@@ -655,7 +656,10 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
             if (!component.isEnabled()) {
                 component.getCaret().setVisible(false);
             }
-        } 
+        } else if (EditorUtilities.CARET_OVERWRITE_MODE_PROPERTY.equals(propName)) {
+            // Mirror the property into EditorUI
+            putProperty(OVERWRITE_MODE_PROPERTY, component.getClientProperty(EditorUtilities.CARET_OVERWRITE_MODE_PROPERTY));
+        }
         
         if (propName == null || ColoringMap.PROP_COLORING_MAP.equals(propName)) {
             listener.preferenceChange(null);
