@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectSupport;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
@@ -89,7 +90,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     public boolean isCpp98OrLater(CsmFile csmFile) {
         if (csmFile != null) {
             Pair<NativeFileItem.Language, NativeFileItem.LanguageFlavor> languageFlavor = getFileLanguageFlavor(csmFile);
-            if (NativeFileItem.Language.CPP == languageFlavor.first()) {
+            if (NativeFileItem.Language.CPP == languageFlavor.first() || NativeFileItem.Language.C_HEADER == languageFlavor.first()) {
                 return true;
             }
         }
@@ -100,7 +101,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     public boolean isCpp11OrLater(CsmFile csmFile) {
         if (csmFile != null) {
             Pair<NativeFileItem.Language, NativeFileItem.LanguageFlavor> languageFlavor = getFileLanguageFlavor(csmFile);
-            if (NativeFileItem.Language.CPP == languageFlavor.first()) {
+            if (NativeFileItem.Language.CPP == languageFlavor.first() || NativeFileItem.Language.C_HEADER == languageFlavor.first()) {
                 switch (languageFlavor.second()) {
                     case CPP11:
                     case CPP14:
@@ -115,7 +116,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     public boolean isCpp14OrLater(CsmFile csmFile) {
         if (csmFile != null) {
             Pair<NativeFileItem.Language, NativeFileItem.LanguageFlavor> languageFlavor = getFileLanguageFlavor(csmFile);
-            if (NativeFileItem.Language.CPP == languageFlavor.first()) {
+            if (NativeFileItem.Language.CPP == languageFlavor.first() || NativeFileItem.Language.C_HEADER == languageFlavor.first()) {
                 switch (languageFlavor.second()) {
                     case CPP14:
                         return true;
@@ -412,18 +413,21 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                     }
                 }
                 if (bestLanguage != null && bestFlavor != null) {
+                    if (bestFlavor == NativeFileItem.LanguageFlavor.UNKNOWN) {
+                        bestFlavor = NativeProjectSupport.getDefaultLanguageFlavor(bestLanguage);
+                    }
                     return Pair.of(bestLanguage, bestFlavor);
                 }
             }
             if (csmFile.isHeaderFile()) {
-                return Pair.of(NativeFileItem.Language.C_HEADER, NativeFileItem.LanguageFlavor.UNKNOWN);
+                return Pair.of(NativeFileItem.Language.C_HEADER,  NativeProjectSupport.getDefaultHeaderStandard());
             } else if (csmFile.isSourceFile()) {
-                return Pair.of(NativeFileItem.Language.CPP, NativeFileItem.LanguageFlavor.UNKNOWN);
+                return Pair.of(NativeFileItem.Language.CPP,  NativeProjectSupport.getDefaultCppStandard());
             } 
         }
         return Pair.of(NativeFileItem.Language.OTHER, NativeFileItem.LanguageFlavor.UNKNOWN);
     }
-    
+
     private int getLangPriority(NativeFileItem.Language lang) {
         if (lang == null) {
             return -1;

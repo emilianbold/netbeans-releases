@@ -60,6 +60,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.netbeans.modules.nativeexecution.api.util.RemoteStatistics;
+import org.netbeans.modules.nativeexecution.support.Authentication;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.RemoteUserInfo;
 import org.openide.util.Cancellable;
@@ -72,7 +73,6 @@ public final class JSchChannelsSupport {
 
     private static final java.util.logging.Logger log = Logger.getInstance();
     private static final int JSCH_CONNECTION_RETRY = Integer.getInteger("jsch.connection.retry", 3); // NOI18N
-    private static final int JSCH_CONNECTION_TIMEOUT = Integer.getInteger("jsch.connection.timeout", 10000); // NOI18N
     private static final int JSCH_SESSIONS_PER_ENV = Integer.getInteger("jsch.sessions.per.env", 10); // NOI18N
     private static final int JSCH_CHANNELS_PER_SESSION = Integer.getInteger("jsch.channels.per.session", 10); // NOI18N
     private static final boolean UNIT_TEST_MODE = Boolean.getBoolean("nativeexecution.mode.unittest"); // NOI18N
@@ -231,16 +231,26 @@ public final class JSchChannelsSupport {
             while (!cancelled.get()) {
                 try {
                     newSession = jsch.getSession(env.getUser(), env.getHostAddress(), env.getSSHPort());
+                    int serverAliveInterval = Integer.getInteger("jsch.server.alive.interval", 0); // NOI18N
+                    if (serverAliveInterval > 0) {
+                        newSession.setServerAliveInterval(serverAliveInterval);
+                        int serverAliveCount = Integer.getInteger("jsch.server.alive.count", 5); // NOI18N
+                        newSession.setServerAliveCountMax(serverAliveCount);
+                    }
                     newSession.setUserInfo(userInfo);
-                    newSession.setConfig(
-                            "kex", //NOI18N
-                            "diffie-hellman-group1-sha1,diffie-hellman-group14-sha1,diffie-hellman-group-exchange-sha1,diffie-hellman-group-exchange-sha256" //NOI18N
-                    );
 
                     for (Entry<String, String> entry : jschSessionConfig.entrySet()) {
                         newSession.setConfig(entry.getKey(), entry.getValue());
                     }
-
+                    Authentication auth = Authentication.getFor(env);
+                    final String preferredAuthKey = "PreferredAuthentications"; // NOI18N
+                    if (!jschSessionConfig.containsKey(preferredAuthKey)) {
+                        String methods = auth.getAuthenticationMethods().toJschString();
+                        if (methods != null) {
+                            log.finest("Setting auth method list to " + methods); //NOI18N
+                            newSession.setConfig(preferredAuthKey, methods);
+                        }
+                    }
                     if (USE_JZLIB) {
                         newSession.setConfig("compression.s2c", "zlib@openssh.com,zlib,none"); // NOI18N
                         newSession.setConfig("compression.c2s", "zlib@openssh.com,zlib,none"); // NOI18N
@@ -251,7 +261,7 @@ public final class JSchChannelsSupport {
                         newSession.setSocketFactory(MeasurableSocketFactory.getInstance());
                     }
 
-                    newSession.connect(JSCH_CONNECTION_TIMEOUT);
+                    newSession.connect(auth.getTimeout()*1000);
                     break;
                 } catch (JSchException ex) {
                     if (!UNIT_TEST_MODE) {

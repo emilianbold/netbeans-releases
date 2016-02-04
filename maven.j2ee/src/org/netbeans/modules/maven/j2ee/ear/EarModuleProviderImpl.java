@@ -318,7 +318,7 @@ public class EarModuleProviderImpl extends J2eeApplicationProvider implements Ea
             if (register) {
                 for (J2eeModuleProvider provider : getChildModuleProviders()) {
                     DeployOnSaveSupport support = provider.getDeployOnSaveSupport();
-                    if (support != null) {
+                    if (support != null && support != this) { // how comes? issue #257106
                         support.addArtifactListener(this);
                     }
                 }
@@ -336,7 +336,7 @@ public class EarModuleProviderImpl extends J2eeApplicationProvider implements Ea
             if (listeners.isEmpty()) {
                 for (J2eeModuleProvider provider : getChildModuleProviders()) {
                     DeployOnSaveSupport support = provider.getDeployOnSaveSupport();
-                    if (support != null) {
+                    if (support != null && support != this) { // how comes? issue #257106
                         support.removeArtifactListener(this);
                     }
                 }
@@ -347,7 +347,7 @@ public class EarModuleProviderImpl extends J2eeApplicationProvider implements Ea
         public boolean containsIdeArtifacts() {
             for (J2eeModuleProvider provider : getChildModuleProviders()) {
                 DeployOnSaveSupport support = provider.getDeployOnSaveSupport();
-                if (support != null) {
+                if (support != null && support != this) { // how comes? issue #257106
                     if (support.containsIdeArtifacts()) {
                         return true;
                     }

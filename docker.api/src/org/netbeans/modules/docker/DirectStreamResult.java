@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.charset.Charset;
 
 /**
  *
@@ -54,14 +55,17 @@ public class DirectStreamResult implements StreamResult {
 
     private final Socket s;
 
+    private final Charset charset;
+
     private final OutputStream stdIn;
 
     private final InputStream stdOut;
 
     private final InputStream stdErr;
 
-    public DirectStreamResult(Socket s, InputStream is) throws IOException {
+    public DirectStreamResult(Socket s, Charset charset, InputStream is) throws IOException {
         this.s = s;
+        this.charset = charset;
         this.stdIn = s.getOutputStream();
         this.stdOut = is == null ? s.getInputStream() : is;
         this.stdErr = null;
@@ -85,6 +89,11 @@ public class DirectStreamResult implements StreamResult {
     @Override
     public boolean hasTty() {
         return true;
+    }
+
+    @Override
+    public Charset getCharset() {
+        return charset;
     }
 
     @Override

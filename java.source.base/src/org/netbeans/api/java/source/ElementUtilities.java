@@ -765,6 +765,24 @@ public final class ElementUtilities {
         return null;
     }
     
+    /**
+     * Find the element of the method descriptor associated to the functional interface.
+     * 
+     * @param origin functional interface element
+     * @return associated method descriptor element or <code>null</code> if the <code>origin</code> is not a functional interface.
+     * @since 2.14
+     */
+    public ExecutableElement getDescriptorElement(TypeElement origin) {
+        com.sun.tools.javac.code.Types types = com.sun.tools.javac.code.Types.instance(info.impl.getJavacTask().getContext());
+        if (types.isFunctionalInterface((TypeSymbol)origin)) {
+            Symbol sym = types.findDescriptorSymbol((TypeSymbol)origin);
+            if (sym != null && sym.getKind() == ElementKind.METHOD) {
+                return (ExecutableElement)sym;
+            }
+        }
+        return null;
+    }
+    
     // private implementation --------------------------------------------------
 
     private static final Set<Modifier> NOT_OVERRIDABLE = EnumSet.of(Modifier.STATIC, Modifier.FINAL, Modifier.PRIVATE);

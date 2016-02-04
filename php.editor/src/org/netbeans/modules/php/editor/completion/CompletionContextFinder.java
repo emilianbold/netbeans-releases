@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.completion;
 
@@ -77,6 +77,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 final class CompletionContextFinder {
 
     private static final String NAMESPACE_FALSE_TOKEN = "NAMESPACE_FALSE_TOKEN"; //NOI18N
+    private static final String GROUP_USE_STATEMENT_TOKENS = "GROUP_USE_STATEMENT_TOKENS"; //NOI18N
     private static final String COMBINED_USE_STATEMENT_TOKENS = "COMBINED_USE_STATEMENT_TOKENS"; //NOI18N
     private static final String TYPE_KEYWORD = "TYPE_KEYWORD"; //NOI18N
     private static final PHPTokenId[] COMMENT_TOKENS = new PHPTokenId[]{
@@ -100,6 +101,13 @@ final class CompletionContextFinder {
             new Object[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE},
             new Object[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN},
             new Object[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING});
+    private static final List<Object[]> GROUP_USE_KEYWORD_TOKENS = Arrays.asList(
+            new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN, GROUP_USE_STATEMENT_TOKENS},
+            new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN, PHPTokenId.WHITESPACE, GROUP_USE_STATEMENT_TOKENS});
+    private static final List<Object[]> GROUP_USE_CONST_KEYWORD_TOKENS = Arrays.<Object[]>asList(
+            new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_CONST, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN, GROUP_USE_STATEMENT_TOKENS});
+    private static final List<Object[]> GROUP_USE_FUNCTION_KEYWORD_TOKENS = Arrays.<Object[]>asList(
+            new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN, GROUP_USE_STATEMENT_TOKENS});
     private static final List<Object[]> USE_KEYWORD_TOKENS = Arrays.asList(
             new Object[]{PHPTokenId.PHP_USE},
             new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE},
@@ -218,6 +226,7 @@ final class CompletionContextFinder {
         EXPRESSION, HTML, CLASS_NAME, INTERFACE_NAME, TYPE_NAME, STRING,
         CLASS_MEMBER, STATIC_CLASS_MEMBER, PHPDOC, INHERITANCE, EXTENDS, IMPLEMENTS, METHOD_NAME,
         CLASS_CONTEXT_KEYWORDS, SERVER_ENTRY_CONSTANTS, NONE, NEW_CLASS, GLOBAL, NAMESPACE_KEYWORD,
+        GROUP_USE_KEYWORD, GROUP_USE_CONST_KEYWORD, GROUP_USE_FUNCTION_KEYWORD,
         USE_KEYWORD, USE_CONST_KEYWORD, USE_FUNCTION_KEYWORD, DEFAULT_PARAMETER_VALUE, OPEN_TAG, THROW, CATCH, CLASS_MEMBER_IN_STRING,
         INTERFACE_CONTEXT_KEYWORDS, USE_TRAITS
     };
@@ -286,6 +295,12 @@ final class CompletionContextFinder {
             return CompletionContext.CATCH;
         } else if (acceptTokenChains(tokenSequence, USE_TRAIT_KEYWORD_TOKENS, moveNextSucces)) {
             return CompletionContext.USE_TRAITS;
+        } else if (acceptTokenChains(tokenSequence, GROUP_USE_KEYWORD_TOKENS, moveNextSucces)) {
+            return CompletionContext.GROUP_USE_KEYWORD;
+        } else if (acceptTokenChains(tokenSequence, GROUP_USE_CONST_KEYWORD_TOKENS, moveNextSucces)) {
+            return CompletionContext.GROUP_USE_CONST_KEYWORD;
+        } else if (acceptTokenChains(tokenSequence, GROUP_USE_FUNCTION_KEYWORD_TOKENS, moveNextSucces)) {
+            return CompletionContext.GROUP_USE_FUNCTION_KEYWORD;
         } else if (acceptTokenChains(tokenSequence, USE_KEYWORD_TOKENS, moveNextSucces)) {
             return CompletionContext.USE_KEYWORD;
         } else if (acceptTokenChains(tokenSequence, USE_CONST_KEYWORD_TOKENS, moveNextSucces)) {
@@ -470,6 +485,11 @@ final class CompletionContextFinder {
                     accept = false;
                     break;
                 }
+            } else if (tokenID == GROUP_USE_STATEMENT_TOKENS) {
+                if (!consumeClassesInGroupUse(tokenSequence)) {
+                    accept = false;
+                    break;
+                }
             } else if (tokenID == COMBINED_USE_STATEMENT_TOKENS) {
                 if (!consumeClassesInCombinedUse(tokenSequence)) {
                     accept = false;
@@ -490,6 +510,7 @@ final class CompletionContextFinder {
         return accept;
     }
 
+    // XXX consume aliases!
     private static boolean consumeNameSpace(TokenSequence tokenSequence) {
         boolean hadNSSeparator = false;
         if (tokenSequence.token().id() != PHPTokenId.PHP_NS_SEPARATOR
@@ -512,6 +533,36 @@ final class CompletionContextFinder {
                 || tokenSequence.token().id() == PHPTokenId.PHP_STRING);
 
         return hadNSSeparator;
+    }
+
+    private static boolean consumeClassesInGroupUse(TokenSequence tokenSequence) {
+        if (tokenSequence.token().id() != PHPTokenId.PHP_CURLY_OPEN
+                && tokenSequence.token().id() != PHPTokenId.PHP_TOKEN
+                && tokenSequence.token().id() != PHPTokenId.WHITESPACE
+                && !consumeNameSpace(tokenSequence)) {
+            return false;
+        }
+
+        boolean hasCurlyOpen = false;
+        do {
+            if (tokenSequence.token().id() == PHPTokenId.PHP_CURLY_OPEN) {
+                hasCurlyOpen = true;
+            }
+
+            if (!tokenSequence.movePrevious()) {
+                return false;
+            }
+
+            if (hasCurlyOpen) {
+                break;
+            }
+
+        } while (tokenSequence.token().id() == PHPTokenId.PHP_CURLY_OPEN
+                || tokenSequence.token().id() == PHPTokenId.PHP_TOKEN
+                || tokenSequence.token().id() == PHPTokenId.WHITESPACE
+                || consumeNameSpace(tokenSequence));
+
+        return hasCurlyOpen;
     }
 
     private static boolean consumeClassesInCombinedUse(TokenSequence tokenSequence) {

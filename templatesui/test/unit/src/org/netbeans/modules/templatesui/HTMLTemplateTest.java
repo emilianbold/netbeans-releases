@@ -103,7 +103,7 @@ public class HTMLTemplateTest {
         WizardDescriptor.Panel<?> p1 = master.current();
         assertNotNull("Panel found", p1);
         assertTrue("It is HTML wizard: " + p1, p1 instanceof HTMLPanel);
-        HTMLPanel h1 = (HTMLPanel) p1;
+        final HTMLPanel h1 = (HTMLPanel) p1;
         HTMLWizard it = (HTMLWizard) h1.getWizard();
         
         final CountDownLatch cdl = it.initializationDone;
@@ -129,19 +129,34 @@ public class HTMLTemplateTest {
         h1.getWizard().setProp("errorCode", 0);
         assertTrue("Now we are valid", h1.getWizard().isValid());
         
-        h1.getWizard().nextPanel();
-        assertCurrentStep(h1, "Two");
-        
-        h1.getWizard().nextPanel();
-        assertCurrentStep(h1, "Three");
-        
-        Set res = h1.getWizard().instantiate();
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    h1.getWizard().nextPanel();
+                    assertCurrentStep(h1, "Two");
+
+                    h1.getWizard().nextPanel();
+                    assertCurrentStep(h1, "Three");
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        });
+        final Set res = h1.getWizard().instantiate();
         assertEquals("One file created: " + res, res.size(), 1);
         
-        Object dObj = res.iterator().next();
-        assertTrue("It is data object: " + dObj, dObj instanceof DataObject);
+        final DataObject[] dobjPtr = new DataObject[] { null };
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                Object dObj = res.iterator().next();
+                assertTrue("It is data object: " + dObj, dObj instanceof DataObject);
+                dobjPtr[0] = (DataObject) dObj;
+            }
+        });
         
-        FileObject created = ((DataObject)dObj).getPrimaryFile();
+        FileObject created = dobjPtr[0].getPrimaryFile();
         
         assertTrue("Error: " + created.asText(), created.asText().contains("Hello from Finished"));
     }

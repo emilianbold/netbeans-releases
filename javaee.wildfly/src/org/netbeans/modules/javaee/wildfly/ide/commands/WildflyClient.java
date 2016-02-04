@@ -78,8 +78,6 @@ import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.SHOW_RE
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.STEPS;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.SUBSYSTEM;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.SUCCESS;
-import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.VALUE;
-import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -1063,6 +1061,33 @@ public class WildflyClient {
         }
     }
 
+    public Collection listEJBForDeployment(Lookup lookup, String applicationName) throws IOException {
+        try {
+            WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+            List modules = new ArrayList();
+            Object deploymentAddressModelNode = createDeploymentPathAddressAsModelNode(cl, applicationName);
+            Object readDeployments = createReadResourceOperation(cl, deploymentAddressModelNode, true);
+            Object response = executeOnModelNode(cl, readDeployments);
+            if (isSuccessfulOutcome(cl, response)) {
+                Object result = readResult(cl, response);
+                Object deployment = getModelNodeChild(cl, getModelNodeChild(cl, result, SUBSYSTEM), EJB3_SUBSYSTEM);
+                if (modelNodeIsDefined(cl, deployment)) {
+                    List<WildflyEjbComponentNode> ejbs = new ArrayList<>();
+                    ejbs.addAll(listEJBs(cl, deployment, WildflyEjbComponentNode.Type.ENTITY));
+                    ejbs.addAll(listEJBs(cl, deployment, WildflyEjbComponentNode.Type.MDB));
+                    ejbs.addAll(listEJBs(cl, deployment, WildflyEjbComponentNode.Type.SINGLETON));
+                    ejbs.addAll(listEJBs(cl, deployment, WildflyEjbComponentNode.Type.STATEFULL));
+                    ejbs.addAll(listEJBs(cl, deployment, WildflyEjbComponentNode.Type.STATELESS));
+                    modules.add(new WildflyEjbModuleNode(applicationName, lookup, ejbs, true));
+                }
+            }
+
+            return modules;
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException ex) {
+            throw new IOException(ex);
+        }
+    }
+
     private List<WildflyEjbComponentNode> listEJBs(WildflyDeploymentFactory.WildFlyClassLoader cl,
             Object deployment, WildflyEjbComponentNode.Type type) throws IllegalAccessException, NoSuchMethodException,
             InvocationTargetException {
@@ -1261,24 +1286,6 @@ public class WildflyClient {
         } catch (ClassNotFoundException | IllegalAccessException | NoSuchMethodException | InvocationTargetException | InstantiationException ex) {
             throw new IOException(ex);
         }
-    }
-
-    private void enableExplodedDeployment(String scannerName) throws ClassNotFoundException, IllegalAccessException,
-            InstantiationException, NoSuchMethodException, InvocationTargetException, IOException {
-        WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
-        LinkedHashMap<Object, Object> values = new LinkedHashMap<>();
-        values.put(SUBSYSTEM, "deployment-scanner");
-        values.put("scanner", scannerName);
-
-        final Object updateDeploymentScanner = createModelNode(cl);
-        setModelNodeChildString(cl, getModelNodeChild(cl, updateDeploymentScanner, OP), WRITE_ATTRIBUTE_OPERATION);
-        // ModelNode
-        Object scannerAddress = createPathAddressAsModelNode(cl, values);
-        setModelNodeChild(cl, getModelNodeChild(cl, updateDeploymentScanner, ADDRESS), scannerAddress);
-        setModelNodeChildString(cl, getModelNodeChild(cl, updateDeploymentScanner, INCLUDE_RUNTIME), "true");
-        setModelNodeChildString(cl, getModelNodeChild(cl, updateDeploymentScanner, NAME), "auto-deploy-exploded");
-        setModelNodeChildString(cl, getModelNodeChild(cl, updateDeploymentScanner, VALUE), "true");
-        executeOnModelNode(cl, updateDeploymentScanner);
     }
 
     public Collection<WildflyResourceAdapter> listResourceAdapters() throws IOException {

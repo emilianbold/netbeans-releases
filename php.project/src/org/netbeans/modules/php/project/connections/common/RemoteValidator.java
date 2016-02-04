@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.php.project.connections.common;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.openide.util.NbBundle;
@@ -57,6 +59,15 @@ public final class RemoteValidator {
 
 
     private RemoteValidator() {
+    }
+
+    public static String validateIp(String externalIp) {
+        try {
+            InetAddress.getAllByName(externalIp);
+        } catch (UnknownHostException ex) {
+            return NbBundle.getMessage(RemoteValidator.class, "MSG_NoIpAddress");
+        }
+        return null;
     }
 
     public static String validateHost(String host) {

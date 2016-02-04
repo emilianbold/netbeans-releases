@@ -95,7 +95,8 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
     private SourceAndIssuesWizardPanel panel;
 
     // XXX maybe move to bundle
-    @Messages("SourceAndIssuesWizardPanelGUI.GitOnKenai=Git (on {0})")
+    @Messages({"# {0} - name of the ODCS server where a project with a Git repository will be created",
+               "SourceAndIssuesWizardPanelGUI.GitOnKenai=Git (on {0})"})
     private String getGitRepoItem() {
         return SourceAndIssuesWizardPanelGUI_GitOnKenai(panel.getServer().getDisplayName());
     }

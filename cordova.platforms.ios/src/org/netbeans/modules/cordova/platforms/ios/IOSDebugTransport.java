@@ -402,13 +402,17 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
                 if (url == null) {
                     continue;
                 }
+                String urlString = url.toString().trim();
+                if(urlString.isEmpty()) {
+                    continue;
+                }
                 NSObject title = o.objectForKey("WIRTitleKey"); // NOI18N
                 if (getConnectionURL()==null) {
                     //auto setup for phonegap. There is always on tab
                     setBaseUrl(url.toString());
                 }
-                currentMap.put(s, new TabDescriptor(url.toString(), title.toString(), identifier.toString()));
-                if (checkUrlMatchesConnectionUrl(url.toString())) {
+                currentMap.put(s, new TabDescriptor(urlString, title.toString(), identifier.toString()));
+                if (checkUrlMatchesConnectionUrl(urlString)) {
                     connectionUrlFound = true;
                     fixApplicationIdentifierKey(r);
                 }

@@ -47,7 +47,10 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.io.CharConversionException;
 import java.lang.reflect.InvocationTargetException;
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLWarning;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -80,8 +83,11 @@ import org.openide.xml.XMLUtil;
 public class DataView {
     private static final Logger LOG = Logger.getLogger(DataView.class.getName());
     private static final int MAX_TAB_LENGTH = 25;
-    private DatabaseConnection dbConn;
     private final List<Throwable> errMessages = new ArrayList<>();
+    private final List<SQLWarning> warningMessages = new ArrayList<>();
+    private final List<Integer> updateCount = new ArrayList<>();
+    private final List<Long> fetchTimes = new ArrayList<>();
+    private DatabaseConnection dbConn;
     private String sqlString; // Once Set, Data View assumes it will never change
     private SQLStatementGenerator stmtGenerator;
     private SQLExecutionHelper execHelper;
@@ -90,8 +96,8 @@ public class DataView {
     private JComponent container;
     private int initialPageSize = org.netbeans.modules.db.dataview.api.DataViewPageContext.getStoredPageSize();
     private boolean nbOutputComponent = false;
-    private int updateCount;
     private long executionTime;
+    private int errorPosition = -1;
 
     /**
      * Create and populate a DataView Object. Populates 1st data page of default size.
@@ -118,7 +124,7 @@ public class DataView {
             dv.execHelper.initialDataLoad();
             dv.stmtGenerator = new SQLStatementGenerator();
         } catch (Exception ex) {
-            dv.setErrorStatusText(ex);
+            dv.setErrorStatusText(null, null, ex);
         }
         return dv;
     }
@@ -179,7 +185,7 @@ public class DataView {
             LOG.log(Level.WARNING, "", ex);
         }
 
-        results = new ArrayList<Component>();
+        results = new ArrayList<>();
         results.add(container);
         return results;
     }
@@ -193,6 +199,15 @@ public class DataView {
         return !errMessages.isEmpty();
     }
 
+    /**
+     * Returns true if there were any warnings in the last database call.
+     * 
+     * @return true if a warning resulted from the last database call, false otherwise.
+     */
+    public boolean hasWarnings() {
+        return !warningMessages.isEmpty();
+    }
+    
     /**
      * Returns true if the statement executed has ResultSet.
      * 
@@ -213,14 +228,42 @@ public class DataView {
     }
 
     /**
+     * Returns Collection of SQLWarnings, if there were any 
+     * warnings in the last database call, empty otherwise
+     * 
+     * @return Collection<Throwable>
+     */
+    public Collection<SQLWarning> getWarnings() {
+        return Collections.unmodifiableCollection(warningMessages);
+    }
+    
+    /**
      * Get updated row count for the last executed sql statement.
      * 
      * @return number of rows updated in last execution, -1 if no rows updated
      */
     public int getUpdateCount() {
-        return updateCount;
+        int result = 0;
+        for(Integer uc: updateCount) {
+            if(uc != null && uc > 0) {
+                result += uc;
+            }
+        }
+        if(result > 0) {
+            return result;
+        } else {
+            return -1;
+        }
     }
 
+    public List<Integer> getUpdateCounts() {
+        return new ArrayList<>(this.updateCount);
+    }
+    
+    public List<Long> getFetchTimes() {
+        return new ArrayList<>(this.fetchTimes);
+    }
+    
     /**
      * Get execution time for the last executed sql statement
      * 
@@ -331,6 +374,9 @@ public class DataView {
             }
         });
         errMessages.clear();
+        warningMessages.clear();
+        updateCount.clear();
+        fetchTimes.clear();
     }
 
     synchronized void removeComponents() {
@@ -339,8 +385,9 @@ public class DataView {
             @Override
             public void run() {
                 if (container != null) {
-                    if (container != null) {
+                    try {
                         container.getParent().remove(container);
+                    } catch (NullPointerException ex) {
                     }
                     container.removeAll();
                     container.repaint();
@@ -356,7 +403,7 @@ public class DataView {
         }
     }
 
-    synchronized void setErrorStatusText(Throwable ex) {
+    synchronized void setErrorStatusText(Connection con, Statement stmt, Throwable ex) {
         if (ex != null) {
             if (ex instanceof DBException) {
                 if (ex.getCause() instanceof SQLException) {
@@ -364,17 +411,20 @@ public class DataView {
                 }
             }
             errMessages.add(ex);
-
+            errorPosition = ErrorPositionExtractor.extractErrorPosition(con, stmt, ex, sqlString);
+            
             String title = NbBundle.getMessage(DataView.class, "MSG_error");
             StatusDisplayer.getDefault().setStatusText(title + ": " + ex.getMessage());
         }
     }
 
-    synchronized void setErrorStatusText(String message, Throwable ex) {
+    synchronized void setErrorStatusText(Connection con, Statement stmt, String message, Throwable ex) {
         if (ex != null) {
             errMessages.add(ex);
         }
 
+        errorPosition = ErrorPositionExtractor.extractErrorPosition(con, stmt, ex, sqlString);
+        
         String title = NbBundle.getMessage(DataView.class, "MSG_error");
         StatusDisplayer.getDefault().setStatusText(title + ": " + message);
     }
@@ -392,14 +442,41 @@ public class DataView {
         });
     }
 
-    void setUpdateCount(int updateCount) {
-        this.updateCount = updateCount;
+    void addUpdateCount(int updateCount) {
+        synchronized (this.updateCount) {
+            this.updateCount.add(updateCount);
+            this.fetchTimes.add(null);
+        }
     }
 
+    void addFetchTime(long fetchTime) {
+        synchronized (this.updateCount) {
+            this.updateCount.add(null);
+            this.fetchTimes.add(fetchTime);
+        }
+    }
+    
     void setExecutionTime(long executionTime) {
         this.executionTime = executionTime;
     }
 
+    /**
+     * If exception is reportet this indicates the position of the error
+     * 
+     * @return position of reported error, -1 if not available
+     */
+    public int getErrorPosition() {
+        if(errMessages.isEmpty()) {
+            return -1;
+        } else {
+            return errorPosition;
+        }
+    }
+    
+    public void addWarning(SQLWarning warning) {
+        warningMessages.add(warning);
+    }
+    
     private DataView() {
     }
 }

@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandlerFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -59,9 +60,40 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=ProjectActionHandlerFactory.class, position=3000)
 public class RemoteBuildProjectActionHandlerFactory implements ProjectActionHandlerFactory {
 
+    private static boolean canHandleType(Type type) {
+        if (type instanceof PredefinedType) {
+            PredefinedType predefinedType = (PredefinedType) type;
+            switch (predefinedType) {
+                case PRE_BUILD:
+                case BUILD:
+                case BUILD_TESTS:
+                case CLEAN:
+                case COMPILE_SINGLE:
+                    return true;
+                case RUN:
+                case DEBUG:
+                case DEBUG_STEPINTO:
+                case DEBUG_TEST:
+                case DEBUG_STEPINTO_TEST:
+                case CHECK_EXECUTABLE:
+                case CUSTOM_ACTION:
+                case TEST:
+                    return false;
+                default:
+                    AssertionError e = new AssertionError("Unexpected action type " + predefinedType.name()); //NOI18N
+                    if (CndUtils.isDebugMode()) {
+                        throw e;
+                    } else {
+                        e.printStackTrace(System.err);
+                    }
+            }
+        }
+        return false;
+    }
+
     @Override
     public boolean canHandle(Type type, Lookup context, Configuration configuration) {
-        if (type == PredefinedType.PRE_BUILD || type == PredefinedType.BUILD || type == PredefinedType.BUILD_TESTS || type == PredefinedType.CLEAN) {
+        if (canHandleType(type)) {
             if (configuration instanceof MakeConfiguration) {
                 MakeConfiguration conf = (MakeConfiguration) configuration;
                 if (conf.getDevelopmentHost().getExecutionEnvironment().isRemote()) {

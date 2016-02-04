@@ -52,8 +52,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -73,6 +76,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.modules.web.common.api.RemoteFileCache;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
+import org.netbeans.modules.web.common.sourcemap.SourceMapsTranslator;
 import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
@@ -93,6 +97,10 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
+/**
+ * Miscellaneous editor-related utilities and a register of source maps.
+ * @author Martin Entlicher, Antoine Vandecreme
+ */
 public final class MiscEditorUtil {
 
     public static final String HTML_MIME_TYPE = "text/html";
@@ -112,6 +120,10 @@ public final class MiscEditorUtil {
     
     private static final Logger LOG = Logger.getLogger(MiscEditorUtil.class.getName());
     
+    private static final boolean USE_SOURCE_MAPS =
+            Boolean.parseBoolean(System.getProperty("javascript.debugger.useSourceMaps", "true"));
+    
+    private static final Map<Object, SourceMapsTranslator> TRANSLATORS = new WeakHashMap<>();
     private static final RequestProcessor RP = new RequestProcessor(MiscEditorUtil.class.getName());
     
     public static String getAnnotationTooltip(String annotationType) {
@@ -135,14 +147,29 @@ public final class MiscEditorUtil {
             e.printStackTrace();
         }
     }
+    
+    public static SourceMapsTranslator getSourceMapsTranslator(Debugger debugger) {
+        if (!USE_SOURCE_MAPS) {
+            return null;
+        }
+        SourceMapsTranslator smt;
+        synchronized (TRANSLATORS) {
+            smt = TRANSLATORS.get(debugger);
+            if (smt == null) {
+                smt = new SourceMapsTranslator();
+                TRANSLATORS.put(debugger, smt);
+            }
+        }
+        return smt;
+    }
 
     /**
      * Call this method only when local file is concerned (eg file://myproject/src/foo.html) 
      * and no project specific URL conversion is required. For example deserializing 
      * file:// protocol URLs or handling local file URLs directly entered by user.
      */
-    public static Line getLine(final String filePath, final int lineNumber) {
-        return getLineImpl(null, filePath, lineNumber);
+    public static Line getLine(final String filePath, final int lineNumber, final int columnNumber) {
+        return getLineImpl(null, null, filePath, lineNumber, columnNumber);
     }
     
     /**
@@ -153,19 +180,52 @@ public final class MiscEditorUtil {
      * As this happens mainly when URL is coming from browser the Script parameter
      * is used in this method signature.
      */
-    public static Line getLine(final Project project, final Script script, final int lineNumber) {
-        return getLineImpl(project, script.getURL(), lineNumber);
+    public static Line getLine(final Debugger debugger, final Project project, final Script script, final int lineNumber, final int columnNumber) {
+        return getLineImpl(debugger, project, script.getURL(), lineNumber, columnNumber);
     }
     
-    public static Line getLine(final Project project, final String stringURL, final int lineNumber) {
-        return getLineImpl(project, stringURL, lineNumber);
+    public static Line getLine(final Debugger debugger, final Project project, final String stringURL, final int lineNumber, final int columnNumber) {
+        return getLineImpl(debugger, project, stringURL, lineNumber, columnNumber);
     }
     
-    private static Line getLineImpl(Project project, final String filePath, final int lineNumber) {
+    private static Line getLineImpl(final Debugger debugger, Project project, final String filePath, int lineNumber, int columnNumber) {
         if (filePath == null || lineNumber < 0) {
             return null;
         }
         
+        FileObject fileObject = getFile(project, filePath);
+        if (fileObject == null) {
+            LOG.log(Level.INFO, "Cannot resolve \"{0}\"", filePath);
+            return null;
+        }
+        
+        if (debugger != null && USE_SOURCE_MAPS) {
+            SourceMapsTranslator smt = getSourceMapsTranslator(debugger);
+            SourceMapsTranslator.Location location = new SourceMapsTranslator.Location(fileObject, lineNumber, columnNumber);
+            location = smt.getSourceLocation(location);
+            fileObject = location.getFile();
+            lineNumber = location.getLine();
+            columnNumber = location.getColumn();
+        }
+
+        LineCookie lineCookie = getLineCookie(fileObject);
+        if (lineCookie == null) {
+            LOG.log(Level.INFO, "No line cookie for \"{0}\"", fileObject);
+            return null;
+        }
+        try {
+            return lineCookie.getLineSet().getCurrent(lineNumber);
+        } catch (IndexOutOfBoundsException ioob) {
+            List<? extends Line> lines = lineCookie.getLineSet().getLines();
+            if (lines.size() > 0) {
+                return lines.get(lines.size() - 1);
+            } else {
+                return null;
+            }
+        }
+    }
+    
+    private static FileObject getFile(Project project, String filePath) {
         FileObject fileObject = null;
         try {
             URI uri = URI.create(filePath);
@@ -197,26 +257,36 @@ public final class MiscEditorUtil {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        if (fileObject == null) {
-            LOG.log(Level.INFO, "Cannot resolve \"{0}\"", filePath);
-            return null;
-        }
-
-        LineCookie lineCookie = getLineCookie(fileObject);
-        if (lineCookie == null) {
-            LOG.log(Level.INFO, "No line cookie for \"{0}\"", fileObject);
-            return null;
-        }
-        try {
-            return lineCookie.getLineSet().getCurrent(lineNumber);
-        } catch (IndexOutOfBoundsException ioob) {
-            List<? extends Line> lines = lineCookie.getLineSet().getLines();
-            if (lines.size() > 0) {
-                return lines.get(lines.size() - 1);
-            } else {
-                return null;
+        return fileObject;
+    }
+    
+    /**
+     * Registers the script's source map, if any.
+     * @param project The project
+     * @param debugger The debugger
+     * @param script The script
+     * @return a list of corresponding source files is returned,
+     *         the list is empty when the script does not have a source map.
+     */
+    public static List<FileObject> registerScriptSourceMap(Project project, Debugger debugger, Script script) {
+        List<FileObject> mappedSourceFiles = Collections.EMPTY_LIST;
+        if (USE_SOURCE_MAPS) {
+            String url = script.getURL();
+            if (!url.isEmpty()) {
+                SourceMapsTranslator smt = getSourceMapsTranslator(debugger);
+                FileObject file = getFile(project, url);
+                if (file != null) {
+                    String smurl = script.getSourceMapURL();
+                    if (smurl != null && !smurl.isEmpty()) {
+                        boolean success = smt.registerTranslation(file, smurl);
+                        if (success) {
+                            mappedSourceFiles = smt.getSourceFiles(file);
+                        }
+                    }
+                }
             }
         }
+        return mappedSourceFiles;
     }
 
     public static Line getLine(final FileObject fileObject, final int lineNumber) {
@@ -390,13 +460,13 @@ public final class MiscEditorUtil {
      * Goes to editor location
      * @param fileObject
      * @param lineNumber - assumes index starts at 1 instead of 0.
-     */
+     *
     public static final void goToSource(FileObject fileObject, int lineNumber) {
         Line line = MiscEditorUtil.getLine(fileObject.getPath(), lineNumber - 1);
         MiscEditorUtil.showLine(line);
-    }
+    }*/
     
-    public static Action createDebuggerGoToAction (final ProjectContext pc) {
+    public static Action createDebuggerGoToAction (final ProjectContext pc, final Debugger debugger) {
         Models.ActionPerformer actionPerform =  new Models.ActionPerformer () {
             @Override
             public boolean isEnabled (Object object) {
@@ -417,7 +487,8 @@ public final class MiscEditorUtil {
                 } else*/ if ( node instanceof CallFrame ){
                     CallFrame cf = ((CallFrame)node);
                     Project project = pc.getProject();
-                    Line line = MiscEditorUtil.getLine(project, cf.getScript(), cf.getLineNumber());
+                    Line line = MiscEditorUtil.getLine(debugger, project, cf.getScript(),
+                                                       cf.getLineNumber(), cf.getColumnNumber());
                     if ( line != null ) {
                         showLine(line, true);
                     }

@@ -109,6 +109,7 @@ class ClankToAPTToken implements APTToken {
                 lastEndOffsetToken = (APTCommentToken)converted;
                 endOffsetToken = lastEndOffsetToken;
                 needToWrapAsMacro = true;
+                macroTokenIndex = -1; // clear macro index - this is the next expansion
                 assert APTUtils.isCommentToken(converted) : "annotated token must be comment";
             } else if (isFromRealMacro) {
                 // reuse start/end if was already calculated for this range
@@ -136,6 +137,7 @@ class ClankToAPTToken implements APTToken {
                     lastEndOffsetToken.setLine(tokenEndLine);
                     // remember range marker
                     lastExpansionRange = curExpansionRange;
+                    macroTokenIndex = -1; // clear macro index - this is the next expansion
                 }
                 endOffsetToken = lastEndOffsetToken;
                 offset = lastExpandedStartOffset;
@@ -145,16 +147,17 @@ class ClankToAPTToken implements APTToken {
                 long/*<FileID, uint>*/ decomposedLoc = SM.getDecomposedLoc(rawLocation);
                 offset = $second_offset(decomposedLoc);
                 converted = ClankToAPTToken.convert(PP, token, offset, spell, needLineColumns);
+                macroTokenIndex = -1; // clear macro index - we are not in expansion
             }
             if (needToWrapAsMacro) {
                 assert endOffsetToken != null;
                 if (info == null) {
-                    ++macroTokenIndex; // first token is a fake one
+                    converted = new ClankMacroExpandedToken(converted, endOffsetToken, ++macroTokenIndex);
+                } else {
+                    // annotated tokens should not have macro indexes
+                    converted = new ClankMacroExpandedToken(converted, endOffsetToken, -1); 
                 }
-                converted = new ClankMacroExpandedToken(converted, endOffsetToken, macroTokenIndex);
                 assert info == null || APTUtils.isCommentToken(converted) : "annotated token must be macro expanded comment";
-            } else {
-                macroTokenIndex = -1;
             }
             out[i] = converted;
         }

@@ -51,10 +51,12 @@ import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.model.impl.Type;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.ConditionalExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.GroupUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
@@ -87,7 +89,7 @@ public class PHP70UnhandledError extends UnhandledErrorRule {
     }
 
     private static boolean appliesTo(FileObject fileObject) {
-        return CodeUtils.isPhp70OrLess(fileObject);
+        return CodeUtils.isLessThanPhp70(fileObject);
     }
 
     //~ Inner classes
@@ -152,10 +154,24 @@ public class PHP70UnhandledError extends UnhandledErrorRule {
             super.visit(node);
         }
 
+        @Override
+        public void visit(GroupUseStatementPart node) {
+            createError(node);
+            super.visit(node);
+        }
+
         // XXX check yield in assignment
         @Override
         public void visit(YieldFromExpression node) {
             createError(node);
+            super.visit(node);
+        }
+
+        @Override
+        public void visit(ClassInstanceCreation node) {
+            if (node.isAnonymous()) {
+                createError(node);
+            }
             super.visit(node);
         }
 

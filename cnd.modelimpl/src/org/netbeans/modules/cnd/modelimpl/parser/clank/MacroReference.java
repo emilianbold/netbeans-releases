@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.SystemMacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.filesystems.FileSystem;
@@ -98,9 +99,11 @@ public final class MacroReference extends OffsetableBase implements CsmReference
             CsmFile targetFile = getTargetFile(startFile, directive.getFile());
             if (targetFile == null) {
                 if (curFile.isValid() && CsmModelAccessor.isModelAlive()) {
-                    CndUtils.assertTrue(false, "Can not resolve file by path in macro directive: ["+directive + //NOI18N
-                            "] used at [" + startOffset + "-" + endOffset + "] in file [" + curFile + " valid=" + curFile.isValid() + //NOI18N
-                            "] included from [" + startFile + " valid=" + startFile.isValid()+"]"); //NOI18N
+                    if (TraceFlags.REPORT_PARSING_ERRORS || CndUtils.isUnitTestMode()) {
+                        CndUtils.assertTrueInConsole(false, "Can not resolve file by path in macro directive: ["+directive + //NOI18N
+                                "] used at [" + startOffset + "-" + endOffset + "] in file [" + curFile + " valid=" + curFile.isValid() + //NOI18N
+                                "] included from [" + startFile + " valid=" + startFile.isValid()+"]"); //NOI18N
+                    }
                 }
                 return null;
                 //targetFile = ((ProjectBase)curFile.getProject()).getUnresolvedFile();

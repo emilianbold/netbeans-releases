@@ -329,7 +329,7 @@ public class WebProjectUtils {
             return new ClientUtils.SourceCodeSelection[0];
         }
 
-        return jspRootMethodDescriptions.toArray(new ClientUtils.SourceCodeSelection[jspRootMethodDescriptions.size()]);
+        return jspRootMethodDescriptions.toArray(new ClientUtils.SourceCodeSelection[0]);
     }
 
     public static ArrayList getJSPs(FileObject documentBase) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.indent;
 
@@ -46,6 +46,7 @@ import java.util.Collection;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
@@ -224,7 +225,7 @@ public class IndentationCounter {
                         break;
                     } else {
                         if (ts.token().id() == PHPTokenId.PHP_TOKEN
-                                || (ts.token().id() == PHPTokenId.PHP_OPERATOR && "=".equals(ts.token().text()))) { // NOI18N
+                                || (ts.token().id() == PHPTokenId.PHP_OPERATOR && TokenUtilities.textEquals("=", ts.token().text()))) { // NOI18N
                             char ch = ts.token().text().charAt(0);
                             boolean continualIndent = false;
                             boolean indent = false;
@@ -275,6 +276,8 @@ public class IndentationCounter {
                                         int offsetArrayDeclaration = offsetArrayDeclaration(startExpression, ts);
                                         if (offsetArrayDeclaration > -1) {
                                             newIndent = Utilities.getRowIndent(doc, offsetArrayDeclaration) + itemsArrayDeclararionSize;
+                                        } else if (inGroupUse(startExpression, ts)) {
+                                            newIndent = Utilities.getRowIndent(doc, startExpression);
                                         } else {
                                             newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize;
                                         }
@@ -439,6 +442,44 @@ public class IndentationCounter {
         return result;
     }
 
+    private boolean inGroupUse(int startExpression, TokenSequence ts) {
+        boolean result = false;
+        int origOffset = ts.offset();
+        ts.move(startExpression);
+        // move to start expression
+        if (ts.moveNext()
+                && ts.movePrevious()) {
+            // try to find '{', namespace and then 'use' (possibly with 'const' or 'function')
+            boolean openCurlyFound = false;
+            boolean namespaceFound = false;
+            for (;;) {
+                TokenId tokenId = ts.token().id();
+                if (tokenId == PHPTokenId.PHP_USE) {
+                    result = openCurlyFound && namespaceFound;
+                    break;
+                } else if (tokenId == PHPTokenId.PHP_CURLY_OPEN) {
+                    if (openCurlyFound) {
+                        break;
+                    }
+                    openCurlyFound = true;
+                } else if (tokenId == PHPTokenId.PHP_NS_SEPARATOR) {
+                    namespaceFound = true;
+                } else if (tokenId != PHPTokenId.WHITESPACE
+                        && tokenId != PHPTokenId.PHP_STRING
+                        && tokenId != PHPTokenId.PHP_CONST
+                        && tokenId != PHPTokenId.PHP_FUNCTION) {
+                    break;
+                }
+                if (!ts.movePrevious()) {
+                    break;
+                }
+            }
+        }
+        ts.move(origOffset);
+        ts.moveNext();
+        return result;
+    }
+
     /**
      *
      * @param ts
@@ -530,7 +571,7 @@ public class IndentationCounter {
                 return false;
             }
             if (tokenContent != null
-                    && TokenUtilities.equals(token.text(), tokenContent)) {
+                    && TokenUtilities.textEquals(token.text(), tokenContent)) {
                 return false;
             }
             return true;

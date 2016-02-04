@@ -58,6 +58,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.api.NameKind;
@@ -150,9 +151,10 @@ public final class PhpCommentGenerator {
 
         toAdd.append(" * ");
         toAdd.append(text);
-        if (type != null && !type.isEmpty()) {
+        String returnType = convertThisReturnType(type);
+        if (returnType != null && !returnType.isEmpty()) {
             toAdd.append(" ");
-            toAdd.append(type);
+            toAdd.append(returnType);
         } else {
             toAdd.append(" ");
             toAdd.append(TYPE_PLACEHOLDER);
@@ -161,6 +163,33 @@ public final class PhpCommentGenerator {
             toAdd.append(" ");
             toAdd.append(name);
         }
+    }
+
+    /**
+     * Convert \this to $this.
+     * @param returnTypes return types separated by "|"
+     * @return converted return types
+     */
+    private static String convertThisReturnType(String returnTypes) {
+        if (StringUtils.isEmpty(returnTypes)) {
+            return ""; //NOI18N
+        }
+        final String typeSeparator = "|"; //NOI18N
+        StringBuilder sb = new StringBuilder(returnTypes.length());
+        boolean first = true;
+        for (String typeName : returnTypes.split("\\" + typeSeparator)) { //NOI18N
+            if (first) {
+                first = false;
+            } else {
+                sb.append(typeSeparator);
+            }
+            if (typeName.equals("\\this")) { //NOI18N
+                sb.append("$this"); //NOI18N
+            } else {
+                sb.append(typeName);
+            }
+        }
+        return sb.toString();
     }
 
     private static void generateGlobalVariableDoc(BaseDocument doc, int offset, int indent, String indexName, String type) throws BadLocationException {

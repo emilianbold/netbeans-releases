@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,31 +37,26 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript.gulp.ui.actions;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.gulp.GulpBuildTool;
-import org.netbeans.modules.javascript.gulp.exec.GulpExecutable;
+import org.netbeans.modules.javascript.gulp.GulpBuildToolSupport;
 import org.netbeans.modules.javascript.gulp.file.GulpTasks;
 import org.netbeans.modules.javascript.gulp.ui.options.GulpOptionsPanelController;
-import org.netbeans.modules.javascript.gulp.util.GulpUtils;
 import org.netbeans.modules.web.clientproject.api.build.BuildTools;
 import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.awt.ActionID;
@@ -71,7 +66,6 @@ import org.openide.awt.ActionRegistration;
 import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
@@ -178,43 +172,15 @@ public final class RunGulpTaskAction extends AbstractAction implements ContextAw
 
     //~ Inner classes
 
-    private static final class TasksMenuSupportImpl implements BuildTools.TasksMenuSupport {
+    private static final class TasksMenuSupportImpl extends GulpBuildToolSupport implements BuildTools.TasksMenuSupport {
 
-        private final Project project;
-        @NullAllowed
-        private final FileObject gulpfile;
-        private final GulpTasks gulpTasks;
-
-
-        public TasksMenuSupportImpl(Project project, @NullAllowed FileObject gulpfile) {
-            assert project != null;
-            this.project = project;
-            this.gulpfile = gulpfile;
-            gulpTasks = GulpBuildTool.forProject(project).getGulpTasks(gulpfile);
-        }
-
-        @Override
-        public Project getProject() {
-            return project;
-        }
-
-        @Override
-        public FileObject getWorkDir() {
-            if (gulpfile == null) {
-                return project.getProjectDirectory();
-            }
-            return gulpfile.getParent();
-        }
-
-        @Override
-        public String getIdentifier() {
-            return GulpBuildTool.IDENTIFIER;
+        public TasksMenuSupportImpl(Project project, FileObject gulpfile) {
+            super(project, gulpfile);
         }
 
         @NbBundle.Messages({
             "TasksMenuSupportImpl.tasks.label=&Task(s)",
             "TasksMenuSupportImpl.tasks.loading=Loading Tasks...",
-            "TasksMenuSupportImpl.tasks.reload=Reload Tasks",
             "TasksMenuSupportImpl.tasks.manage.advanced=Manage Task(s)",
             "TasksMenuSupportImpl.gulp.configure=Configure Gulp...",
         })
@@ -225,16 +191,12 @@ public final class RunGulpTaskAction extends AbstractAction implements ContextAw
                     return Bundle.RunGulpTaskAction_name();
                 case LOADING_TASKS:
                     return Bundle.TasksMenuSupportImpl_tasks_loading();
-                case RELOAD_TASKS:
-                    return Bundle.TasksMenuSupportImpl_tasks_reload();
                 case CONFIGURE_TOOL:
                     return Bundle.TasksMenuSupportImpl_gulp_configure();
                 case MANAGE_ADVANCED:
                     return Bundle.TasksMenuSupportImpl_tasks_manage_advanced();
                 case TASKS_LABEL:
                     return Bundle.TasksMenuSupportImpl_tasks_label();
-                case BUILD_TOOL_EXEC:
-                    return GulpExecutable.GULP_NAME;
                 default:
                     assert false : "Unknown title: " + title;
             }
@@ -244,21 +206,6 @@ public final class RunGulpTaskAction extends AbstractAction implements ContextAw
         @Override
         public String getDefaultTaskName() {
             return GulpTasks.DEFAULT_TASK;
-        }
-
-        @Override
-        public Future<List<String>> getTasks() {
-            return new TasksFuture(gulpTasks);
-        }
-
-        @Override
-        public void runTask(String... args) {
-            assert !EventQueue.isDispatchThread();
-            GulpExecutable gulp = getGulpExecutable();
-            if (gulp != null) {
-                GulpUtils.logUsageGulpBuild();
-                gulp.run(args);
-            }
         }
 
         @Override
@@ -275,56 +222,6 @@ public final class RunGulpTaskAction extends AbstractAction implements ContextAw
         @Override
         public void configure() {
             OptionsDisplayer.getDefault().open(GulpOptionsPanelController.OPTIONS_PATH);
-        }
-
-        @CheckForNull
-        private GulpExecutable getGulpExecutable() {
-            if (gulpfile == null) {
-                return GulpExecutable.getDefault(project, true);
-            }
-            return GulpExecutable.getDefault(project, FileUtil.toFile(gulpfile).getParentFile(), true);
-        }
-
-    }
-
-    private static final class TasksFuture implements Future<List<String>> {
-
-        private final GulpTasks gulpTasks;
-
-
-        public TasksFuture(GulpTasks gulpTasks) {
-            assert gulpTasks != null;
-            this.gulpTasks = gulpTasks;
-        }
-
-        @Override
-        public boolean cancel(boolean mayInterruptIfRunning) {
-            return false;
-        }
-
-        @Override
-        public boolean isCancelled() {
-            return false;
-        }
-
-        @Override
-        public boolean isDone() {
-            return gulpTasks.getTasks() != null;
-        }
-
-        @Override
-        public List<String> get() throws InterruptedException, ExecutionException {
-            try {
-                return gulpTasks.loadTasks(null, null);
-            } catch (TimeoutException ex) {
-                assert false;
-            }
-            return null;
-        }
-
-        @Override
-        public List<String> get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-            return gulpTasks.loadTasks(timeout, unit);
         }
 
     }

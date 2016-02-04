@@ -63,5 +63,7 @@ public class Script extends AbstractObject {
         return (String)getObject().get("url");
     }
     
-    
+    public String getSourceMapURL() {
+        return (String)getObject().get("sourceMapURL");
+    }
 }

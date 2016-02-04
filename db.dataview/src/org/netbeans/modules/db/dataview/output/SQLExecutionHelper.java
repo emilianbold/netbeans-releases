@@ -43,10 +43,12 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -99,7 +101,7 @@ class SQLExecutionHelper {
         this.dataView = dataView;
     }
 
-    void initialDataLoad() throws SQLException {
+    void initialDataLoad() {
         assert (! SwingUtilities.isEventDispatchThread()) : "Must be called off the EDT!";
 
         /**
@@ -115,15 +117,14 @@ class SQLExecutionHelper {
         class Loader implements Runnable, Cancellable {
             // Indicate whether the execution is finished
             private boolean finished = false;
-            // Hold an exception if it is thrown in the body of the runnable
-            private SQLException ex = null;
+            private Connection conn = null;
             private Statement stmt = null;
 
             @Override
             public void run() {
                 try {
                     DatabaseConnection dc = dataView.getDatabaseConnection();
-                    Connection conn = DBConnectionFactory.getInstance().getConnection(dc);
+                    conn = DBConnectionFactory.getInstance().getConnection(dc);
                     checkNonNullConnection(conn);
                     checkSupportForMultipleResultSets(conn);
                     DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
@@ -141,9 +142,14 @@ class SQLExecutionHelper {
                     if (Thread.interrupted()) {
                         return;
                     }
-                    // Read multiple Resultsets
-                    boolean isResultSet = executeSQLStatement(stmt, sql);
+                    
+                    boolean isResultSet = executeSQLStatementForExtraction(stmt, sql);
 
+                    int updateCount = -1;
+                    if(! isResultSet) {
+                        updateCount = stmt.getUpdateCount();
+                    }
+                    
                     if (Thread.interrupted()) {
                         return;
                     }
@@ -158,31 +164,44 @@ class SQLExecutionHelper {
                             DataViewDBTable dvTable = new DataViewDBTable(tables);
                             DataViewPageContext pageContext = dataView.addPageContext(dvTable);
 
-                                loadDataFrom(pageContext, rs, useScrollableCursors);
+                            loadDataFrom(pageContext, rs, useScrollableCursors);
 
                             DataViewUtils.closeResources(rs);
-                            
+
                             dbMeta.postprocessTables(tables);
-                            }
-                            if (supportesMultipleResultSets) {
-                                isResultSet = stmt.getMoreResults();
-                                // @todo: Do somethink intelligent with the updatecounts
-                                int updateCount = stmt.getUpdateCount();
-                                if (isResultSet == false && updateCount == -1) {
-                                    break;
-                                }
-                            } else {
-                                break;
+                        } else {
+                            synchronized (dataView) {
+                                dataView.addUpdateCount(updateCount);
                             }
                         }
+                        if (supportesMultipleResultSets) {
+                            isResultSet = stmt.getMoreResults();
+                            updateCount = stmt.getUpdateCount();
+                            if (isResultSet == false && updateCount == -1) {
+                                break;
+                            }
+                        } else {
+                            break;
+                        }
+                    }
 
                     // If total count was not retrieved using scrollable cursors,
                     // compute it now.
                     if (!useScrollableCursors && dataView.getPageContexts().size() > 0) {
                         getTotalCount(isSelect, sql, stmt, dataView.getPageContext(0));
                     }
-                } catch (SQLException sqlEx) {
-                    this.ex = sqlEx;
+                } catch (final SQLException sqlEx) {
+                    try {
+                        SwingUtilities.invokeAndWait(new Runnable() {
+                            @Override
+                            public void run() {
+                                dataView.setErrorStatusText(conn, stmt, sqlEx);
+                            }
+                        });
+                    } catch (InterruptedException | InvocationTargetException ex) {
+                        assert false;
+                        // Ok - we were denied access to Swing EDT
+                    }
                 } catch (InterruptedException ex) {
                     // Expected when interrupted while waiting to get enter to
                     // the swing EDT
@@ -241,14 +260,12 @@ class SQLExecutionHelper {
                 } catch (SQLException | RuntimeException e) {
                     LOGGER.log(Level.INFO, "Database driver throws exception "  //NOI18N
                             + "when checking for multiple resultset support."); //NOI18N
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINE, null, ex);
-                    }
+                    LOGGER.log(Level.FINE, null, e);
                 }
             }
         }
-        Loader l = new Loader();
-        Future<?> f = rp.submit(l);
+        Loader loader = new Loader();
+        Future<?> f = rp.submit(loader);
         try {
             f.get();
         } catch (InterruptedException ex) {
@@ -256,20 +273,17 @@ class SQLExecutionHelper {
         } catch (ExecutionException ex) {
             throw new RuntimeException(ex.getCause());
         }
-        synchronized (l) {
+        synchronized (loader) {
             while (true) {
-                if (!l.finished) {
+                if (!loader.finished) {
                     try {
-                        l.wait();
+                        loader.wait();
                     } catch (InterruptedException ex) {
                     }
                 } else {
                     break;
                 }
             }
-        }
-        if (l.ex != null) {
-            throw l.ex;
         }
     }
 
@@ -410,8 +424,7 @@ class SQLExecutionHelper {
                         pos++;
                     }
 
-                    executePreparedStatement(pstmt);
-                    int rows = dataView.getUpdateCount();
+                    int rows = executePreparedStatement(pstmt);
                     if (rows == 0) {
                         error = true;
                         errorMsg += NbBundle.getMessage(SQLExecutionHelper.class, "MSG_no_match_to_delete");
@@ -505,8 +518,7 @@ class SQLExecutionHelper {
                 }
 
                 try {
-                    executePreparedStatement(pstmt);
-                    int rows = dataView.getUpdateCount();
+                    int rows = executePreparedStatement(pstmt);
                     if (rows == 0) {
                         error = true;
                         errorMsg += NbBundle.getMessage(SQLExecutionHelper.class, "MSG_no_match_to_update");
@@ -615,7 +627,6 @@ class SQLExecutionHelper {
                 }
                 boolean getTotal = false;
 
-                // Get total row count
                 for (DataViewPageContext pageContext : dataView.getPageContexts()) {
                     if (pageContext.getTotalRows() == -1) {
                         getTotal = true;
@@ -623,7 +634,6 @@ class SQLExecutionHelper {
                     }
                 }
 
-                // Get total row count
                 stmt = prepareSQLStatement(conn, sql, getTotal);
 
                 // Execute the query and retrieve all resultsets
@@ -631,24 +641,32 @@ class SQLExecutionHelper {
                     if (Thread.interrupted()) {
                         return;
                     }
-                    boolean resultSet = executeSQLStatement(stmt, sql);
+                    boolean isResultSet = executeSQLStatementForExtraction(stmt, sql);
 
+                    int updateCount = -1;
+                    if(! isResultSet) {
+                        updateCount = stmt.getUpdateCount();
+                    }
+                    
                     ResultSet rs = null;
                     int res = -1;
 
                     while (true) {
-                        if (resultSet) {
+                        if (isResultSet) {
                             res++;
-                            DataViewPageContext pageContext = dataView.getPageContext(
-                                    res);
+                            DataViewPageContext pageContext = dataView.getPageContext(res);
                             rs = stmt.getResultSet();
                             loadDataFrom(pageContext, rs, getTotal && useScrollableCursors);
+                            DataViewUtils.closeResources(rs);
+                        } else {
+                            synchronized (dataView) {
+                                dataView.addUpdateCount(updateCount);
+                            }
                         }
                         if (supportesMultipleResultSets) {
-                            resultSet = stmt.getMoreResults();
-                            // @todo: Do somethink intelligent with the updatecounts
-                            int updateCount = stmt.getUpdateCount();
-                            if (resultSet == false && updateCount == -1) {
+                            isResultSet = stmt.getMoreResults();
+                            updateCount = stmt.getUpdateCount();
+                            if (isResultSet == false && updateCount == -1) {
                                 break;
                             }
                         } else {
@@ -660,8 +678,8 @@ class SQLExecutionHelper {
                     if (!useScrollableCursors && getTotal && dataView.getPageContexts().size() > 0) {
                         getTotalCount(isSelectStatement(sql), sql, stmt, dataView.getPageContext(0));
                     }
-                    DataViewUtils.closeResources(rs);
                 } catch (SQLException sqlEx) {
+                    LOGGER.log(Level.INFO, "Failed to retrieve resultset", sqlEx);
                     String title = NbBundle.getMessage(SQLExecutionHelper.class, "MSG_error");
                     String msg = NbBundle.getMessage(SQLExecutionHelper.class, "Confirm_Close");
                     NotifyDescriptor nd = new NotifyDescriptor.Confirmation(sqlEx.getMessage() + "\n" + msg, title,
@@ -670,20 +688,19 @@ class SQLExecutionHelper {
                     if (nd.getValue().equals(NotifyDescriptor.YES_OPTION)) {
                         dataView.removeComponents();
                     }
-                    throw sqlEx;
                 }
             }
 
             @Override
             public void finished() {
-                DataViewUtils.closeResources(stmt);
-                dataView.resetEditable();
                 synchronized (dataView) {
+                    dataView.resetEditable();
                     if (error) {
-                        dataView.setErrorStatusText(ex);
+                        dataView.setErrorStatusText(conn, stmt, ex);
                     }
                     dataView.resetToolbar(error);
                 }
+                DataViewUtils.closeResources(stmt);
             }
 
             @Override
@@ -723,6 +740,7 @@ class SQLExecutionHelper {
         final List<Object[]> rows = new ArrayList<>();
         int colCnt = pageContext.getTableMetaData().getColumnCount();
         try {
+            long start = System.currentTimeMillis();
             boolean hasNext = false;
             boolean needSlowSkip = true;
 
@@ -790,8 +808,12 @@ class SQLExecutionHelper {
 
                 pageContext.setTotalRows(result);
             }
+            
+            long end = System.currentTimeMillis();
+            
+            dataView.addFetchTime(end - start);
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Failed to set up table model.", e); // NOI18N
+            LOGGER.log(Level.INFO, "Failed to set up table model.", e); // NOI18N
             throw e;
         } finally {
             Mutex.EVENT.writeAccess(new Runnable() {
@@ -850,49 +872,48 @@ class SQLExecutionHelper {
         return stmt;
     }
 
-    private boolean executeSQLStatement(Statement stmt, String sql) throws SQLException {
+    private boolean executeSQLStatementForExtraction(Statement stmt, String sql) throws SQLException {
         LOGGER.log(Level.FINE, "Statement: {0}", sql); // NOI18N
         dataView.setInfoStatusText(NbBundle.getMessage(SQLExecutionHelper.class, "LBL_sql_executestmt") + sql);
 
         long startTime = System.currentTimeMillis();
         boolean isResultSet = false;
-        if (stmt instanceof PreparedStatement) {
-            isResultSet = ((PreparedStatement) stmt).execute();
-        } else {
-            try {
+
+        try {
+            if (stmt instanceof PreparedStatement) {
+                isResultSet = ((PreparedStatement) stmt).execute();
+            } else {
                 DataViewPageContext pc = dataView.getPageContexts().size() > 0
                         ? dataView.getPageContext(0) : null;
                 isResultSet = stmt.execute(appendLimitIfRequired(pc, sql));
-            } catch (NullPointerException ex) {
-                LOGGER.log(Level.SEVERE, "Failed to execute SQL Statement [{0}], cause: {1}", new Object[] {sql, ex});
-                throw new SQLException(ex);
-            } catch (SQLException sqlExc) {
-                LOGGER.log(Level.SEVERE, "Failed to execute SQL Statement [{0}], cause: {1}", new Object[]{sql, sqlExc});
-                throw sqlExc;
             }
+        } catch (NullPointerException ex) {
+            LOGGER.log(Level.INFO, "Failed to execute SQL Statement [{0}], cause: {1}", new Object[]{sql, ex});
+            throw new SQLException(ex);
+        } catch (SQLException sqlExc) {
+            LOGGER.log(Level.INFO, "Failed to execute SQL Statement [{0}], cause: {1}", new Object[]{sql, sqlExc});
+            throw sqlExc;
+        } finally {
+            extractWarnings(stmt);
         }
 
         long executionTime = System.currentTimeMillis() - startTime;
         synchronized (dataView) {
-            dataView.setUpdateCount(stmt.getUpdateCount());
             dataView.setExecutionTime(executionTime);
         }
         return isResultSet;
     }
 
-    private boolean executePreparedStatement(PreparedStatement stmt) throws SQLException {
+    private int executePreparedStatement(PreparedStatement stmt) throws SQLException {
         long startTime = System.currentTimeMillis();
-        boolean isResultSet = stmt.execute();
+        
+        stmt.execute();
 
         long executionTime = System.currentTimeMillis() - startTime;
         String execTimeStr = SQLExecutionHelper.millisecondsToSeconds(executionTime);
         dataView.setInfoStatusText(NbBundle.getMessage(SQLExecutionHelper.class, "MSG_execution_success", execTimeStr));
-
-        synchronized (dataView) {
-            dataView.setUpdateCount(stmt.getUpdateCount());
-            dataView.setExecutionTime(executionTime);
-        }
-        return isResultSet;
+        
+        return stmt.getUpdateCount();
     }
 
     private void getTotalCount(boolean isSelect, String sql, Statement stmt,
@@ -1042,6 +1063,27 @@ class SQLExecutionHelper {
         } catch (Exception ex) {
             LOGGER.log(Level.WARNING, "Exception while querying" //NOI18N
                     + " database for scrollable resultset support"); //NOI18N
+        }
+    }
+
+    private void extractWarnings(Statement stmt) {
+        try {
+            for (SQLWarning warning = stmt.getConnection().getWarnings(); warning != null; warning = warning.getNextWarning()) {
+                dataView.addWarning(warning);
+            }
+            stmt.getConnection().clearWarnings();
+        } catch (Throwable ex) {
+            LOGGER.log(Level.FINE, "Failed to retrieve warnings", ex);
+            // Exceptions will be ignored at this point
+        }
+        try {
+            for(SQLWarning warning = stmt.getWarnings(); warning != null; warning = warning.getNextWarning()) {
+                dataView.addWarning(warning);
+            }
+            stmt.clearWarnings();
+        } catch (Throwable ex) {
+            LOGGER.log(Level.FINE, "Failed to retrieve warnings", ex);
+            // Exceptions will be ignored at this point
         }
     }
 }

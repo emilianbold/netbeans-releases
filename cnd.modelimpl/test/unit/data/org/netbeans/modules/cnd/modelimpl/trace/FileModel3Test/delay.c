@@ -3236,9 +3236,5 @@
 # define DELAY_F49(D, N) BOOST_PP_IF(1, BOOST_PP_DEC(N), BOOST_PP_WHILE_ ## D(DELAY_C, DELAY_F ## N, BOOST_PP_DEC(N)))
 # define DELAY_F50(D, N) BOOST_PP_IF(1, BOOST_PP_DEC(N), BOOST_PP_WHILE_ ## D(DELAY_C, DELAY_F ## N, BOOST_PP_DEC(N)))
 
-// temporary commented out- see
-// #253625 - OutOfMemoryError when preprocessing delay.c
-// please uncomment as soon as the bug is fixed
-
-//DELAY(DELAY_MAX)
+DELAY(DELAY_MAX)
 

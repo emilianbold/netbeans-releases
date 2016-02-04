@@ -42,7 +42,7 @@
 package org.netbeans.modules.docker.api;
 
 import java.io.IOException;
-import javax.swing.SwingUtilities;
+import java.util.List;
 import org.netbeans.modules.docker.DockerConfig;
 
 /**
@@ -61,15 +61,23 @@ public final class CredentialsManager {
         return INSTANCE;
     }
 
+    public List<Credentials> getAllCredentials() throws IOException {
+        //assert !SwingUtilities.isEventDispatchThread();
+        return DockerConfig.getDefault().getAllCredentials();
+    }
+
     public Credentials getCredentials(String registry) throws IOException {
-        assert !SwingUtilities.isEventDispatchThread();
+        //assert !SwingUtilities.isEventDispatchThread();
         return DockerConfig.getDefault().getCredentials(registry);
     }
 
-    public Credentials createCredentials(String registry, String username, char[] password, String email) throws IOException {
-        assert !SwingUtilities.isEventDispatchThread();
-        Credentials credentials = new Credentials(registry, username, password, email);
+    public void setCredentials(Credentials credentials) throws IOException {
+        //assert !SwingUtilities.isEventDispatchThread();
         DockerConfig.getDefault().setCredentials(credentials);
-        return credentials;
+    }
+
+    public void removeCredentials(Credentials credentials) throws IOException {
+        //assert !SwingUtilities.isEventDispatchThread();
+        DockerConfig.getDefault().removeCredentials(credentials);
     }
 }

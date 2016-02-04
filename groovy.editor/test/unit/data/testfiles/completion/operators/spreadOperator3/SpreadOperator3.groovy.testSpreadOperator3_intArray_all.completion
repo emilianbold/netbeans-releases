@@ -10,6 +10,7 @@ METHOD     any(Closure)                               boolean
 METHOD     asBoolean()                                boolean
 METHOD     asType(Class)                              Object
 METHOD     bitCount(int)                   [STATIC,   int
+METHOD     bitwiseNegate()                            Number
 METHOD     byteValue()                     [PUBLIC]   byte
 METHOD     collect()                                  Collection
 METHOD     collect(Closure)                           List
@@ -18,9 +19,11 @@ METHOD     compare(int, int)               [STATIC,   int
 METHOD     compareTo(Character)                       int
 METHOD     compareTo(Integer)              [PUBLIC]   int
 METHOD     compareTo(Number)                          int
+METHOD     compareUnsigned(int, int)       [STATIC,   int
 METHOD     decode(String)                  [STATIC,   Integer
 METHOD     div(Character)                             Number
 METHOD     div(Number)                                Number
+METHOD     divideUnsigned(int, int)        [STATIC,   int
 METHOD     doubleValue()                   [PUBLIC]   double
 METHOD     downto(Number, Closure)                    void
 METHOD     dump()                                     String
@@ -42,6 +45,7 @@ METHOD     findLastIndexOf(int, Closure)              int
 METHOD     findResult(Closure)                        Object
 METHOD     findResult(Object, Closure)                Object
 METHOD     floatValue()                    [PUBLIC]   float
+METHOD     formatUnsignedInt(int, int, ch  [STATIC]   int
 METHOD     getAt(String)                              Object
 METHOD     getChars(int, int, char[])      [STATIC]   void
 METHOD     getClass()                      [PUBLIC]   Class<?>
@@ -55,6 +59,7 @@ METHOD     grep()                                     Collection
 METHOD     grep(Object)                               Collection
 METHOD     hasProperty(String)                        MetaProperty
 METHOD     hashCode()                      [PUBLIC]   int
+METHOD     hashCode(int)                   [STATIC,   int
 METHOD     highestOneBit(int)              [STATIC,   int
 METHOD     identity(Closure)                          Object
 METHOD     inject(Closure)                            Object
@@ -71,7 +76,9 @@ METHOD     iterator()                                 Iterator
 METHOD     leftShift(Number)                          Number
 METHOD     longValue()                     [PUBLIC]   long
 METHOD     lowestOneBit(int)               [STATIC,   int
+METHOD     max(int, int)                   [STATIC,   int
 METHOD     metaClass(Closure)                         MetaClass
+METHOD     min(int, int)                   [STATIC,   int
 METHOD     minus(Character)                           Number
 METHOD     minus(Number)                              Number
 METHOD     mod(Number)                                Number
@@ -86,6 +93,8 @@ METHOD     numberOfTrailingZeros(int)      [STATIC,   int
 METHOD     or(Number)                                 Number
 METHOD     parseInt(String)                [STATIC,   int
 METHOD     parseInt(String, int)           [STATIC,   int
+METHOD     parseUnsignedInt(String)        [STATIC,   int
+METHOD     parseUnsignedInt(String, int)   [STATIC,   int
 METHOD     plus(Character)                            Number
 METHOD     plus(Number)                               Number
 METHOD     plus(String)                               String
@@ -100,6 +109,7 @@ METHOD     println()                                  void
 METHOD     println(Object)                            void
 METHOD     println(PrintWriter)                       void
 METHOD     putAt(String, Object)                      void
+METHOD     remainderUnsigned(int, int)     [STATIC,   int
 METHOD     respondsTo(String)                         List
 METHOD     respondsTo(String, Object)                 List
 METHOD     reverse(int)                    [STATIC,   int
@@ -118,6 +128,7 @@ METHOD     sprintf(String, Object)                    String
 METHOD     sprintf(String, Object)                    String
 METHOD     step(Number, Number, Closure)              void
 METHOD     stringSize(int)                 [STATIC]   int
+METHOD     sum(int, int)                   [STATIC,   int
 METHOD     times(Closure)                             void
 METHOD     toBigDecimal()                             BigDecimal
 METHOD     toBigInteger()                             BigInteger
@@ -131,7 +142,11 @@ METHOD     toOctalString(int)              [STATIC,   String
 METHOD     toString()                      [PUBLIC]   String
 METHOD     toString(int)                   [STATIC,   String
 METHOD     toString(int, int)              [STATIC,   String
+METHOD     toUnsignedLong(int)             [STATIC,   long
+METHOD     toUnsignedString(int)           [STATIC,   String
+METHOD     toUnsignedString(int, int)      [STATIC,   String
 METHOD     unaryMinus()                               Number
+METHOD     unaryPlus()                                Number
 METHOD     upto(Number, Closure)                      void
 METHOD     use(Class, Closure)                        Object
 METHOD     use(List, Closure)                         Object
@@ -143,5 +158,6 @@ METHOD     wait()                          [PUBLIC]   void
 METHOD     wait(long)                      [PUBLIC]   void
 METHOD     wait(long, int)                 [PUBLIC]   void
 METHOD     with(Closure)                              Object
+METHOD     withTraits(Class[])                        Object
 METHOD     xor(Number)                                Number
 FIELD      class                           [PUBLIC]   Class

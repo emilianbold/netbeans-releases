@@ -1,0 +1,48 @@
+
+State of macro map:
+Own Map:
+MACROS (sorted 0):
+System Map:
+MACROS (sorted 0):
+
+
+========== Dumping model of FILE bug257152.cpp
+Includes:
+    <no includes>
+Macros:
+    <no macros>
+NAMESPACE DEFINITOIN bugbug257152 [1:1/0-6:2/147] SCOPE: bug257152.cpp
+    FUNCTION myboo257152 [2:5/29-2:48/72] FunctionImpl SCOPE: bugbug257152 
+        DEFINITION: myboo257152  [3:5/77-5:6/145]
+        SIGNATURE myboo257152()
+        UNIQUE NAME F:bugbug257152::myboo257152()
+        PARAMETERS:
+        RETURNS int TEXT=int  [2:5/29-2:8/32]
+    FUNCTION DEFINITION myboo257152  [3:5/77-5:6/145] FunctionDDImpl SCOPE: bugbug257152 
+        SIGNATURE myboo257152()
+        UNIQUE NAME f:bugbug257152::myboo257152()
+        DECLARATION: myboo257152  [2:5/29-2:48/72]
+        PARAMETERS:
+        RETURNS int TEXT=int  [3:5/77-3:8/80]
+        STATEMENT COMPOUND  [3:48/120-5:6/145] SCOPE: myboo257152 
+            STATEMENT RETURN  [4:9/130-4:18/139] SCOPE: Stmt  [3:48/120-5:6/145] text: 'return 0;'
+
+========== Dumping model of PROJECT DummyProject
+NAMESPACE DEFINITIONS for bugbug257152 (bugbug257152) 
+    bug257152.cpp  [1:1/0-6:2/147]
+NAMESPACE bugbug257152 (bugbug257152) 
+    FUNCTION myboo257152 [2:5/29-2:48/72] FunctionImpl SCOPE: bugbug257152 
+        DEFINITION: myboo257152  [3:5/77-5:6/145]
+        SIGNATURE myboo257152()
+        UNIQUE NAME F:bugbug257152::myboo257152()
+        PARAMETERS:
+        RETURNS int TEXT=int  [2:5/29-2:8/32]
+    FUNCTION DEFINITION myboo257152  [3:5/77-5:6/145] FunctionDDImpl SCOPE: bugbug257152 
+        SIGNATURE myboo257152()
+        UNIQUE NAME f:bugbug257152::myboo257152()
+        DECLARATION: myboo257152  [2:5/29-2:48/72]
+        PARAMETERS:
+        RETURNS int TEXT=int  [3:5/77-3:8/80]
+        STATEMENT COMPOUND  [3:48/120-5:6/145] SCOPE: myboo257152 
+            STATEMENT RETURN  [4:9/130-4:18/139] SCOPE: Stmt  [3:48/120-5:6/145] text: 'return 0;'
+

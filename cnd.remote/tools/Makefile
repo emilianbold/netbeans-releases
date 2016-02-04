@@ -40,7 +40,9 @@
 # Version 2 license, then the option applies only if the new code is
 # made subject to such option by the copyright holder.
 
-LINKER=cc
+LINKER-Linux := gcc
+LINKER-SunOS := cc
+LINKER-Mac_OS_X := gcc
 
 CC-Linux := gcc
 CC-SunOS := cc
@@ -92,6 +94,7 @@ endif
 
 TRACE := 0
 CC := ${CC-${OSNAME}}
+LINKER := ${LINKER-${OSNAME}}
 CFLAGS := ${CFLAGS-${OSNAME}} ${FLAG32_64} -DTRACE=${TRACE} ${EXTRA_CFLAGS}
 LDFLAGS_LIB := ${LDFLAGS-LIB-${OSNAME}} ${FLAG32_64} ${DEBUG} ${PREVISE_FLAG}
 LDFLAGS_APP := ${LDFLAGS-APP-${OSNAME}} ${FLAG32_64} ${DEBUG} ${PREVISE_FLAG}
@@ -138,7 +141,7 @@ install: build_impl
 	mkdir -p ${INSTALLDIR}
 	cp -r ${DIST} ${INSTALLDIR}
 
-build_impl: check init ${DIST}/rfs_preload.so ${DIST}/rfs_controller ${DIST}/rfs_test_env
+build_impl: check init ${DIST}/rfs_preload.so ${DIST}/rfs_controller ${DIST}/rfs_test_env summarise
 
 codean:
 	@(echo; echo "========== rfs_preload.so static analysis =========="; echo)
@@ -171,19 +174,20 @@ endif
 ${DIST}/rfs_preload.so: ${PRELOAD_OBJFILES}
 	${LINKER} ${LDFLAGS_LIB} -o ${DIST}/rfs_preload.so ${PRELOAD_OBJFILES}
 	${STRIP} ${DIST}/rfs_preload.so
-	@(cd ${DIST}; echo "`pwd`/rfs_preload.so"); echo
 
 #appliction:
 ${DIST}/rfs_controller: ${CONTROLLER_OBJFILES}
 	${LINKER} ${LDFLAGS_APP} -o ${DIST}/rfs_controller ${CONTROLLER_OBJFILES}
 	${STRIP} ${DIST}/rfs_controller
-	@(cd ${DIST}; echo "`pwd`/rfs_controller"); echo
 
 #test environment:
 ${DIST}/rfs_test_env: ${TEST_ENV_OBJFILES}
 	${LINKER} ${LDFLAGS_APP} -o ${DIST}/rfs_test_env ${TEST_ENV_OBJFILES}
 	${STRIP} ${DIST}/rfs_test_env
-	@(cd ${DIST}; echo "`pwd`/rfs_test_env"); echo
+
+summarise:
+	@echo; (cd ${DIST}; echo "Build results are in the directory"; pwd; file rfs_controller rfs_preload.so rfs_test_env); echo
+	@echo; echo "----------------------------------------"; echo
 
 clean:
 	rm -rf ${BUILD} ${DIST}

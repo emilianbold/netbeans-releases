@@ -85,6 +85,10 @@ public class CndSessionChanger implements SessionBridge.SessionChanger{
     public Session changeSuggested(Session origin, String action, Map<Object, Object> properties) {
         checkAutostartOption();
         PsProvider.PsData psData = PsProvider.getDefault(Host.getLocal()).getData(false);
+        if (psData == null) {
+            NativeDebuggerManager.warning(NbBundle.getMessage(this.getClass(),"MSG_PS_Failed")); // NOI18N
+            return null;
+        }
         final Vector<Vector<String>> processes = psData.processes(
                 Pattern.compile(".*java.+:" + properties.get("conn_port") + ".*") // NOI18N
         );

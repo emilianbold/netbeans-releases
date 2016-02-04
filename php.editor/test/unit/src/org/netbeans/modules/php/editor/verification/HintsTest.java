@@ -109,6 +109,14 @@ public class HintsTest extends PHPHintsTestBase {
         checkHints(new TypeRedeclarationHintError(), "testTypeRedeclarationHint.php");
     }
 
+    public void testFieldRedeclarationHint() throws Exception {
+        checkHints(new FieldRedeclarationHintError(), "testFieldRedeclarationHint.php");
+    }
+
+    public void testConstantRedeclarationHint() throws Exception {
+        checkHints(new ConstantRedeclarationHintError(), "testConstantRedeclarationHint.php");
+    }
+
     public void testWrongOrderOfArgsHint() throws Exception {
         checkHints(new WrongOrderOfArgsHint(), "testWrongOrderOfArgsHint.php");
     }
@@ -163,6 +171,32 @@ public class HintsTest extends PHPHintsTestBase {
 
     public void testIntroduceSuggestion_06() throws Exception {
         checkHints(new IntroduceSuggestion(), "testIntroduceSuggestion.php", "Omg::$stFld;^");
+    }
+
+    // #257264
+    public void testIntroduceSuggestionFix_01() throws Exception {
+        // in case of class, a new file is created
+        // applyHint(new IntroduceSuggestion(), "testIntroduceSuggestion.php", "new MyClass();^", "Create Class");
+    }
+
+    public void testIntroduceSuggestionFix_02() throws Exception {
+        applyHint(new IntroduceSuggestion(), "testIntroduceSuggestion.php", "$foo->bar;^", "Create Field");
+    }
+
+    public void testIntroduceSuggestionFix_03() throws Exception {
+        applyHint(new IntroduceSuggestion(), "testIntroduceSuggestion.php", "$foo->method();^", "Create Method");
+    }
+
+    public void testIntroduceSuggestionFix_04() throws Exception {
+        applyHint(new IntroduceSuggestion(), "testIntroduceSuggestion.php", "Omg::CON;^", "Create Constant");
+    }
+
+    public void testIntroduceSuggestionFix_05() throws Exception {
+        applyHint(new IntroduceSuggestion(), "testIntroduceSuggestion.php", "Omg::stMeth();^", "Create Method");
+    }
+
+    public void testIntroduceSuggestionFix_06() throws Exception {
+        applyHint(new IntroduceSuggestion(), "testIntroduceSuggestion.php", "Omg::$stFld;^", "Create Field");
     }
 
     public void testAddUseImportSuggestion_01() throws Exception {

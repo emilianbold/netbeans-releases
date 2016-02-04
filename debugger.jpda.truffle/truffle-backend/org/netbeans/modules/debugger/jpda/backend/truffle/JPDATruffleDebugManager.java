@@ -100,6 +100,9 @@ class JPDATruffleDebugManager {
         //System.err.println("  code at line = "+source.getCode(line));
         String name = source.getShortName();
         String path = source.getPath();
+        if (path == null) {
+            path = name;
+        }
         String code = source.getCode();
         return new SourcePosition(source, name, path, line, code);
     }

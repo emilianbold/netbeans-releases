@@ -118,6 +118,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
     private final InstanceContent ic;
     private final RequestProcessor.Task stateChangedTask;
     private static final int WAIT_DELAY = 500;
+    private boolean confProviderListenerAttached = false;
     
     public MakeLogicalViewRootNode(Folder folder, MakeLogicalViewProvider provider, InstanceContent ic) {
         this(new ProjectRootChildren(folder, provider),folder, provider, ic);
@@ -148,11 +149,10 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         ToolsCacheManager.addChangeListener(WeakListeners.change(MakeLogicalViewRootNode.this, null));
         if (gotMakeConfigurationDescriptor()) {
             MakeProjectConfigurationProvider confProvider = provider.getProject().getLookup().lookup(MakeProjectConfigurationProvider.class);
-            if (confProvider != null){
+            if (confProvider != null){                
                 confProvider.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, confProvider));
+                confProviderListenerAttached = true;
             }
-            
-            
         }
 
         stateChangedTask = provider.getAnnotationRP().create(new StateChangeRunnableImpl(), true);
@@ -193,6 +193,21 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
     }
 
     public void reInit(MakeConfigurationDescriptor configurationDescriptor) {
+        // FIXME:
+        // It looks like unmanaged project does not refresh children correctly
+        // on the root node. It looks it ignores setChildren which is called
+        // in this method. 
+        // I've tried to put setChildren(Children.LEAF) 
+        // before setChildren(new LogicalViewChildren(folder, provider));
+        // and it cause that some of reopened project are "empty" in project view
+        // although you can click on them and they will be expanded correctly.
+        //
+        // We call reInit for opening project in reopened IDE and tried to add after reloading
+        // externally modified configuration.xml (but removed).
+        // Unfortunately these situations are not distinguished now,
+        // so to solve the issue with "Select In Project" I introduced 
+        // fallback in findFolderNode & findPath to check by name and by id
+        
         Folder logicalFolders = configurationDescriptor.getLogicalFolders();
         if (folder != null) {
             ic.remove(folder);
@@ -200,9 +215,12 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         folder = logicalFolders;
         ic.add(logicalFolders);
         setChildren(new LogicalViewChildren(folder, provider));
-        MakeProjectConfigurationProvider confProvider = provider.getProject().getLookup().lookup(MakeProjectConfigurationProvider.class);
-        if (confProvider != null) {
-            confProvider.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, confProvider));
+        if (!confProviderListenerAttached) {
+            MakeProjectConfigurationProvider confProvider = provider.getProject().getLookup().lookup(MakeProjectConfigurationProvider.class);
+            if (confProvider != null) {
+                confProvider.addPropertyChangeListener(WeakListeners.propertyChange(MakeLogicalViewRootNode.this, confProvider));
+                confProviderListenerAttached = true;
+            }
         }
         stateChanged(null);
     }

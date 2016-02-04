@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -58,6 +59,7 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
+import org.netbeans.modules.cnd.remote.support.RemoteLogger;
 import org.netbeans.modules.cnd.remote.support.RemoteProjectSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
@@ -68,6 +70,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
@@ -82,6 +85,7 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
     private ProjectActionEvent pae;
     private ExecutionEnvironment execEnv;
     private final List<ExecutionListener> listeners = new CopyOnWriteArrayList<>();
+    private final CountDownLatch delegateExecutionFinished = new CountDownLatch(1);
 
     private PrintWriter out;
     private PrintWriter err;
@@ -180,9 +184,13 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
                 }
                 @Override
                 public void executionFinished(int rc) {
-                    worker.shutdown();
-                    delegate.removeExecutionListener(this);
-                    System.setProperty(testWorkerRunningProp, "false"); // NOI18N
+                    try {
+                        worker.shutdown();
+                        delegate.removeExecutionListener(this);
+                        System.setProperty(testWorkerRunningProp, "false"); // NOI18N
+                    } finally {
+                        delegateExecutionFinished.countDown();
+                    }
                 }
             };
             delegate.addExecutionListener(listener);
@@ -194,6 +202,13 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
                 env.putenv(entry.getKey(), entry.getValue());
             }
             delegate.execute(io);
+            try {
+                // we need to ensure that worker.shutdown() is called before execute() returns
+                // see issue #257565 - FileAlreadyLockedException
+                delegateExecutionFinished.await();
+            } catch (InterruptedException ex) {
+                RemoteLogger.getInstance().log(Level.FINE, "That's just FYI: interrupted", ex);
+            }
         } else {
             System.setProperty(testWorkerRunningProp, "false"); // NOI18N
             for (ExecutionListener l : listeners) {

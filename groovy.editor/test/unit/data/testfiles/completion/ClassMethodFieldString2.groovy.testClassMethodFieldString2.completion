@@ -8,4 +8,3 @@ METHOD     split(String)                   [PUBLIC]   String[]
 METHOD     split(String, int)              [PUBLIC]   String[]
 METHOD     splitEachLine(CharSequence, Cl             Object
 METHOD     splitEachLine(Pattern, Closure             Object
-METHOD     splitEachLine(String, Closure)             Object

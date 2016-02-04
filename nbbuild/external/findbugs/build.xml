@@ -51,14 +51,14 @@ made subject to such option by the copyright holder.
     <property name="nbroot" value="../../.."/>
     
     <!-- findbugs.jar checksum -->
-    <property name="findbugs.md5" value="d3e7c731eb2a60bf3c3c65433b3728d4"/>
+    <property name="findbugs.md5" value="8122e8036f3e4e4bca760f8fdd2f779a"/>
     
     <import file="${nbroot}/nbbuild/templates/projectized.xml"/>
 
     <target name="findbugs-init">
 
         <property name="findbugs.zip.url"
-                  value="http://downloads.sourceforge.net/project/findbugs/findbugs/2.0.1/findbugs-2.0.1.zip"/>
+                  value="http://downloads.sourceforge.net/project/findbugs/findbugs/3.0.1/findbugs-3.0.1.zip"/>
 
         <condition property="findbugs.downloaded">
             <and>
@@ -70,11 +70,11 @@ made subject to such option by the copyright holder.
             </and>
         </condition>
         
-        <property name="findbugs.name" value="findbugs-2.0.1"/>
+        <property name="findbugs.name" value="findbugs-3.0.1"/>
         
         <property name="lib.dir" location="lib"/>
         <property name="build.dir" location="build"/>
-        <property name="binary.zip" location="findbugs-2.0.1.zip"/>
+        <property name="binary.zip" location="findbugs-3.0.1.zip"/>
     </target>
     
     <target name="findbugs" depends="findbugs-init,findbugs-clean,-init-proxy" unless="findbugs.downloaded">
@@ -91,21 +91,18 @@ made subject to such option by the copyright holder.
         <copy todir="${lib.dir}" overwrite="true">
             <fileset dir="${build.dir}/${findbugs.name}/lib">
                 <include name="annotations.jar"/>
-                <include name="asm-3.3.jar"/>
-                <include name="asm-analysis-3.3.jar"/>
-                <include name="asm-commons-3.3.jar"/>
-                <include name="asm-tree-3.3.jar"/>
-                <include name="asm-util-3.3.jar"/>
-                <include name="asm-xml-3.3.jar"/>
-                <include name="bcel.jar"/>
-                <include name="commons-lang-2.4.jar"/>
+                <include name="asm-debug-all-5.0.2.jar"/>
+                <include name="bcel-6.0-SNAPSHOT.jar"/>
+                <include name="commons-lang-2.6.jar"/>
                 <include name="dom4j-1.6.1.jar"/>
                 <include name="findbugs-ant.jar"/>
                 <include name="findbugs.jar"/>
                 <include name="jFormatString.jar"/>
-                <include name="jaxen-1.1.1.jar"/>
+                <include name="jaxen-1.1.6.jar"/>
+                <include name="jcip-annotations.jar"/>
                 <include name="jdepend-2.9.jar"/>
                 <include name="jsr305.jar"/>
+                <include name="yjp-controller-api-redist.jar"/>
             </fileset>
         </copy>
 

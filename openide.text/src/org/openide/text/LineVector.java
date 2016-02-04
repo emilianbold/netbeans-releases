@@ -128,6 +128,13 @@ final class LineVector {
                     }
                     int lineIndex = (line != null) ? line.getLineNumber() : -1;
                     if (lineIndex < lowLineIndex || lineIndex > highLineIndex) { // Array became unsorted
+                        if (LOG.isLoggable(Level.FINE)) {
+                            String msg = "!!!LineVector: ARRAY BECAME UNSORTED!!!\n  " +
+                                    toStringDetail() + "    lineIndex=" + lineIndex + // NOI18N
+                                    ", lowLineIndex=" + lowLineIndex + ", highLineIndex=" + highLineIndex + // NOI18N
+                                    "\n    low=" + low + ", high=" + high + ", mid=" + mid + "\n"; // NOI18N
+                            LOG.log(Level.INFO, msg, new Throwable());
+                        }
                         refArrayUnsorted = true;
                         break; // Iterate again this time sequential search will be used
                     }
@@ -204,7 +211,6 @@ final class LineVector {
         lockCheckUpdate();
         try {
             List<Line> lines = new ArrayList<Line>();
-            checkRemoveEmptyRefs();
             int last = refCount() - 1;
             int low = 0;
             int high = last;
@@ -229,6 +235,13 @@ final class LineVector {
                     int lineIndex = (line != null) ? line.getLineNumber() : -1;
                     if (lineIndex < lowLineIndex || lineIndex > highLineIndex) { // Array became unsorted
                         refArrayUnsorted = true;
+                        if (LOG.isLoggable(Level.FINE)) {
+                            String msg = "!!!LineVector: ARRAY BECAME UNSORTED!!!\n  " +
+                                    toStringDetail() + "    lineIndex=" + lineIndex + // NOI18N
+                                    ", lowLineIndex=" + lowLineIndex + ", highLineIndex=" + highLineIndex + // NOI18N
+                                    "\n    low=" + low + ", high=" + high + ", mid=" + mid + "\n"; // NOI18N
+                            LOG.log(Level.INFO, msg, new Throwable());
+                        }
                         break; // Iterate again this time sequential search will be used
                     }
                     if (lineIndex < startLineIndex) {
@@ -322,7 +335,7 @@ final class LineVector {
         synchronized (this) {
             cnt = disposedRefCount;
         }
-        if (cnt > (refCount() >>> 5)) {
+        if (cnt > 4 && cnt > (refCount() >>> 3)) {
             removeEmptyRefs();
         }
     }
@@ -367,7 +380,7 @@ final class LineVector {
             refArray[validIndex++] = null;
         }
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("LineVector.removeDisposedRefsLockAcquired() emptyCount=" + emptyCount + "\n");
+            LOG.fine("LineVector.removeDisposedRefsLockAcquired() refCount=" + refCount() + ", emptyCount=" + emptyCount + "\n");
         }
         synchronized (this) {
             disposedRefCount -= emptyCount;
@@ -427,11 +440,28 @@ final class LineVector {
     @Override
     public String toString() {
         return "refArray.length=" + refArray.length + ", gapStart=" + gapStart + ", gapLength=" + gapLength + // NOI18N
-                ", disposedRefCount=" + disposedRefCount + ", refArrayUnsorted=" + refArrayUnsorted + // NOI18N
+                ", disposedRefCount=" + disposedRefCount + ", activeRefCount=" + (refCount()-disposedRefCount) +
+                "\n  refArrayUnsorted=" + refArrayUnsorted + // NOI18N
                 ", lockThread=" + lockThread + ", lockDepth=" + lockDepth + // NOI18N
                 ", pendingLineUpdaters=" + pendingLineUpdaters; // NOI18N
     }
 
+    private String toStringDetail() {
+        StringBuilder sb = new StringBuilder(256);
+        lock();
+        try {
+            sb.append(this.toString()).append('\n');
+            for (int i = 0; i < refCount(); i++) {
+                Ref ref = refArray[rawIndex(i)];
+                Line line = ref.get();
+                sb.append("[").append(i).append("]:\t").append(line).append('\n');
+            }
+        } finally {
+            unlock();
+        }
+        return sb.toString();
+    }
+    
     
     private final class Ref extends WeakReference<Line> implements Runnable {
 

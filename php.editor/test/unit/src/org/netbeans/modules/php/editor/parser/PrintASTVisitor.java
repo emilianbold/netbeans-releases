@@ -300,9 +300,16 @@ public class PrintASTVisitor implements Visitor {
 
     @Override
     public void visit(ClassInstanceCreation node) {
-        XMLPrintNode printNode = new XMLPrintNode(node, "ClassInstanceCreation");
-        printNode.addChild(node.getClassName());
-        printNode.addChildrenGroup("Parameters", node.ctorParams());
+        XMLPrintNode printNode = new XMLPrintNode(node, "ClassInstanceCreation", new String[] {"anonymous", String.valueOf(node.isAnonymous())});
+        if (!node.isAnonymous()) {
+            printNode.addChild(node.getClassName());
+            printNode.addChildrenGroup("Parameters", node.ctorParams());
+        } else {
+            printNode.addChildrenGroup("Parameters", node.ctorParams());
+            printNode.addChild("Superclass", node.getSuperClass());
+            printNode.addChildrenGroup("Interfaces", node.getInterfaces());
+            printNode.addChild(node.getBody());
+        }
         printNode.print(this);
     }
 
@@ -531,13 +538,19 @@ public class PrintASTVisitor implements Visitor {
     }
 
     @Override
-    public void visit(UseStatementPart statementPart) {
-        XMLPrintNode printNode = new XMLPrintNode(statementPart, "UseStatementPart");
+    public void visit(SingleUseStatementPart statementPart) {
+        XMLPrintNode printNode = new XMLPrintNode(statementPart, "SingleUseStatementPart");
         printNode.addChild("Name", statementPart.getName());
         printNode.addChild("Alias", statementPart.getAlias());
         printNode.print(this);
     }
 
+    @Override
+    public void visit(GroupUseStatementPart statementPart) {
+        XMLPrintNode printNode = new XMLPrintNode(statementPart, "GroupUseStatementPart");
+        printNode.addChildren(statementPart.getItems());
+        printNode.print(this);
+    }
 
     @Override
     public void visit(IfStatement node) {

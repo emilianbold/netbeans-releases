@@ -75,7 +75,6 @@ public class WildflyDeploymentChildren extends WildflyAsyncChildren implements R
     public void updateKeys() {
         setKeys(new Object[]{Util.WAIT_NODE});
         getExecutorService().submit(new WildflyDestinationsNodeUpdater(), 0);
-        getExecutorService().submit(new WildflyDestinationsNodeUpdater(), 0);
     }
 
     class WildflyDestinationsNodeUpdater implements Runnable {
@@ -86,6 +85,7 @@ public class WildflyDeploymentChildren extends WildflyAsyncChildren implements R
         public void run() {
             try {
                 WildflyDeploymentManager dm = lookup.lookup(WildflyDeploymentManager.class);
+                keys.addAll(dm.getClient().listEJBForDeployment(lookup, deployment));
                 keys.addAll(dm.getClient().listDestinationForDeployment(lookup, deployment));
                 keys.addAll(dm.getClient().listJaxrsResources(lookup, deployment));
             } catch (Exception ex) {
@@ -113,6 +113,9 @@ public class WildflyDeploymentChildren extends WildflyAsyncChildren implements R
         }
         if (key instanceof WildflyJaxrsResourceNode) {
             return new Node[]{(WildflyJaxrsResourceNode) key};
+        }
+        if(key instanceof WildflyEjbModuleNode) {
+            return new Node[]{(WildflyEjbModuleNode) key};
         }
         if (key instanceof String && key.equals(Util.WAIT_NODE)) {
             return new Node[]{Util.createWaitNode()};

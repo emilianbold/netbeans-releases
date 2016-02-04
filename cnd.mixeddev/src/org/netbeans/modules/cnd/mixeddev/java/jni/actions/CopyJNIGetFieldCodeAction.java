@@ -59,17 +59,19 @@ import org.openide.awt.ActionRegistration;
 import org.openide.awt.StatusDisplayer;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-@ActionID(id = "org.netbeans.modules.cnd.mixeddev.java.jni.actions.CopyJNIGetFieldCodeAction", category = "MixedDevelopment")
-@ActionRegistration(displayName = "#LBL_Action_CopyJNIGetFieldCodeAction", lazy = false)
-@ActionReferences(value = {@ActionReference(path = "Editors/text/x-java/Popup/MixedDevelopment", position=80)})
-@NbBundle.Messages({"LBL_Action_CopyJNIGetFieldCodeAction=Get field code"})
 public class CopyJNIGetFieldCodeAction extends AbstractCopyJNIAccessCodeAction {
+    
+    public CopyJNIGetFieldCodeAction(Lookup context) {
+        super(context);
+        putValue(NAME, NbBundle.getMessage(MixedDevUtils.class, "cnd.mixeddev.copy_get_field_code")); // NOI18N
+    }
     
     @Override
     protected boolean isEnabledAtPosition(Document doc, int caret) {
@@ -78,12 +80,7 @@ public class CopyJNIGetFieldCodeAction extends AbstractCopyJNIAccessCodeAction {
     }
     
     @Override
-    public String getName() {
-        return NbBundle.getMessage(MixedDevUtils.class, "cnd.mixeddev.copy_get_field_code"); // NOI18N
-    }
-    
-    @Override
-    protected void performAction(Node[] activatedNodes) {
+    protected void actionPerformedImpl(Node[] activatedNodes) {
         Triple<DataObject, Document, Integer> context = extractContext(activatedNodes);
         if (context != null) {
             final Document doc = context.second;

@@ -122,7 +122,7 @@
             <ExpressionStatement start='6' end='39'>
                 <FieldAccess start='6' end='38'>
                     <AnonymousObjectVariable start='6' end='30'>
-                        <ClassInstanceCreation start='7' end='29'>
+                        <ClassInstanceCreation start='7' end='29' anonymous='false'>
                             <ClassName start='11' end='27'>
                                 <NamespaceName start='11' end='27' isCurrent='false' isGlobal='false'>
                                     <Identifier start='11' end='27' name='AnonymousObject1'/>
@@ -140,7 +140,7 @@
             <ExpressionStatement start='40' end='76'>
                 <MethodInvocation start='40' end='75'>
                     <AnonymousObjectVariable start='40' end='64'>
-                        <ClassInstanceCreation start='41' end='63'>
+                        <ClassInstanceCreation start='41' end='63' anonymous='false'>
                             <ClassName start='45' end='61'>
                                 <NamespaceName start='45' end='61' isCurrent='false' isGlobal='false'>
                                     <Identifier start='45' end='61' name='AnonymousObject2'/>
@@ -164,7 +164,7 @@
             <ExpressionStatement start='77' end='108'>
                 <FieldAccess start='77' end='107'>
                     <AnonymousObjectVariable start='77' end='99'>
-                        <ClassInstanceCreation start='78' end='98'>
+                        <ClassInstanceCreation start='78' end='98' anonymous='false'>
                             <ClassName start='82' end='98'>
                                 <NamespaceName start='82' end='98' isCurrent='false' isGlobal='false'>
                                     <Identifier start='82' end='98' name='AnonymousObject3'/>
@@ -182,7 +182,7 @@
             <ExpressionStatement start='109' end='143'>
                 <MethodInvocation start='109' end='142'>
                     <AnonymousObjectVariable start='109' end='131'>
-                        <ClassInstanceCreation start='110' end='130'>
+                        <ClassInstanceCreation start='110' end='130' anonymous='false'>
                             <ClassName start='114' end='130'>
                                 <NamespaceName start='114' end='130' isCurrent='false' isGlobal='false'>
                                     <Identifier start='114' end='130' name='AnonymousObject4'/>

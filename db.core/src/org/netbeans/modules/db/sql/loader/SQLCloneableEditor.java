@@ -97,18 +97,19 @@ import org.openide.windows.TopComponent;
  */
 @Messages("Source=&Source")
 @MultiViewElement.Registration(
-displayName = "#Source",
-iconBase = "org/netbeans/modules/db/sql/loader/resources/sql16.png",
-persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
-mimeType = SQLDataLoader.SQL_MIME_TYPE,
-preferredID = "sql.source",
-position = 1)
+        displayName = "#Source",
+        iconBase = "org/netbeans/modules/db/sql/loader/resources/sql16.png",
+        persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
+        mimeType = SQLDataLoader.SQL_MIME_TYPE,
+        preferredID = "sql.source",
+        position = 1)
 @TopComponent.Description(
         preferredID = "sql.source",
         iconBase = "org/netbeans/modules/db/sql/loader/resources/sql16.png",
         persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED)
 public final class SQLCloneableEditor extends CloneableEditor implements MultiViewElement {
     private transient JSplitPane splitter;
+    private transient Integer splitterLastPosition;
     private transient JTabbedPane resultComponent;
     private transient JPopupMenu resultPopupMenu;
     private transient Action closeTabAction;
@@ -149,7 +150,7 @@ public final class SQLCloneableEditor extends CloneableEditor implements MultiVi
         }
         
         if (resultComponent != null) {
-        populateResults(results);
+            populateResults(results);
         }
     }
     
@@ -208,9 +209,15 @@ public final class SQLCloneableEditor extends CloneableEditor implements MultiVi
         splitter.setBorder(null);
 
         container.add(splitter);
-        splitter.setDividerLocation(Math.min(container.getHeight() / 2, 250));
+        // If splitter position is present, use that to get the size
+        // check against height of container to ensure divider is visible
+        if (splitterLastPosition != null && splitterLastPosition < (container.getHeight() - 20)) {
+            splitter.setDividerLocation(splitterLastPosition);
+        } else {
+            splitter.setDividerLocation(Math.min(container.getHeight() / 2, 250));
+        }
         splitter.setDividerSize(7);
-        
+
         container.invalidate();
         container.validate();
         container.repaint();
@@ -353,6 +360,7 @@ public final class SQLCloneableEditor extends CloneableEditor implements MultiVi
             return;
         }
 
+        splitterLastPosition = splitter.getDividerLocation();
         splitter.setBottomComponent(null);
     }
 
@@ -370,7 +378,13 @@ public final class SQLCloneableEditor extends CloneableEditor implements MultiVi
 
         if (splitter.getBottomComponent() == null) {
             splitter.setBottomComponent(resultComponent);
-            splitter.setDividerLocation(Math.min(container.getHeight() / 2, 250));
+            // If splitter position is present, use that to get the size
+            // check against height of container to ensure divider is visible
+            if(splitterLastPosition != null && splitterLastPosition < (container.getHeight() - 20)) {
+                splitter.setDividerLocation(splitterLastPosition);
+            } else {
+                splitter.setDividerLocation(Math.min(container.getHeight() / 2, 250));
+            }
             splitter.setDividerSize(7);
 
             container.invalidate();
@@ -740,7 +754,8 @@ public final class SQLCloneableEditor extends CloneableEditor implements MultiVi
                     if (startOffset == endOffset) {
                         // there is no selection, execute the statement under 
                         // the caret
-                        offsets[0] = offsets[1] = editorPane.getCaretPosition();
+                        offsets[0] = editorPane.getCaretPosition();
+                        offsets[1] = offsets[0];
                     } else {
                         offsets[0] = startOffset;
                         offsets[1] = endOffset;
@@ -765,10 +780,10 @@ public final class SQLCloneableEditor extends CloneableEditor implements MultiVi
                     if (editorPane == null) {
                         return false;
                     }
-                    return Boolean.valueOf(editorPane.getSelectionStart() < editorPane.getSelectionEnd());
+                    return editorPane.getSelectionStart() < editorPane.getSelectionEnd();
                 }
             });
-            return result.booleanValue();
+            return result;
         }
         
         @Override

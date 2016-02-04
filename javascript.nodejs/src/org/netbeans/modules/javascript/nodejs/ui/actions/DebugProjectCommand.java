@@ -44,8 +44,8 @@ package org.netbeans.modules.javascript.nodejs.ui.actions;
 import java.io.File;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
+import org.netbeans.modules.javascript.nodejs.exec.NodeProcesses;
 import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferencesValidator;
-import org.netbeans.modules.javascript.nodejs.util.NodeInfo;
 import org.netbeans.modules.javascript.nodejs.util.RunInfo;
 import org.netbeans.modules.web.common.api.ValidationResult;
 import org.netbeans.spi.project.ActionProvider;
@@ -76,8 +76,8 @@ final class DebugProjectCommand extends ProjectCommand {
     }
 
     @Override
-    protected NodeInfo runNodeInternal(NodeExecutable node, RunInfo runInfo) {
-        return NodeInfo.debug(node.debug(runInfo.getDebugPort(), new File(runInfo.getStartFile()), runInfo.getStartArgs()));
+    protected NodeProcesses.RunInfo runNodeInternal(NodeExecutable node, RunInfo runInfo) {
+        return NodeProcesses.RunInfo.debug(node.debug(runInfo.getDebugPort(), new File(runInfo.getStartFile()), runInfo.getStartArgs()));
     }
 
 }

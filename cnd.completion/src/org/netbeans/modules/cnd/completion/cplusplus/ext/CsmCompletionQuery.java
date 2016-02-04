@@ -2402,7 +2402,7 @@ abstract public class CsmCompletionQuery {
                                         CsmType type0 = resolveType(item.getParameter(0));
                                         CsmType type1 = resolveType(item.getParameter(1));
                                         if(type0 != null && type1 != null) {
-                                            lastType = sup.getCommonType(type1, type0);
+                                            lastType = sup.getCommonType(this, type1, type0, item.getTokenID(0));
                                             if(lastType == null) {
                                                 if(type0.isBuiltInBased(true)) {
                                                     lastType = type1;

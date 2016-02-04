@@ -177,25 +177,6 @@ public class DarkNimbusTheme {
         UIManager.put( "nb.versioning.conflicted.color", new Color(255, 51, 51)); //NOI18N
         UIManager.put( "nb.versioning.ignored.color", new Color(153, 153, 153)); //NOI18N
         UIManager.put( "nb.versioning.remotemodification.color", new Color( 230, 230, 230)); //NOI18N
-
-        // db.dataview
-        UIManager.put("nb.dataview.table.background", new RelativeColor(new Color(0,0,0), new Color(0,0,0), "Table.background")); //NOI18N
-        UIManager.put("nb.dataview.table.altbackground", new RelativeColor(new Color(0,0,0), new Color(30,30,30), "Table.background")); //NOI18N
-        UIManager.put("nb.dataview.table.sqlconstant.foreground", new Color(220,220,220)); //NOI18N
-        UIManager.put("Table.selectionBackground", new RelativeColor(new Color(0,0,0), new Color(0,0,0), "Table[Enabled+Selected].textBackground")); //NOI18N
-        UIManager.put("nb.dataview.tablecell.focused", new RelativeColor(new Color(0,0,0), new Color(30,10,10), "Table.selectionBackground")); //NOI18N
-        UIManager.put("nb.dataview.table.rollOverRowBackground", new RelativeColor(new Color(0,0,0), new Color(30,30,30), "Table[Enabled+Selected].textBackground")); //NOI18N
-        UIManager.put("nb.dataview.tablecell.edited.selected.foreground", new Color(255, 248, 60));  //NOI18N
-        UIManager.put("nb.dataview.tablecell.edited.unselected.foreground", new Color(0, 255, 16));  //NOI18N
-        UIManager.put("nb.dataview.jxdatetimepicker.background",  new RelativeColor(new Color(0,0,0), new Color(0,0,0), "Table.background")); //NOI18N
-        UIManager.put("nb.dataview.jxdatetimepicker.foreground", new RelativeColor(new Color(0,0,0), new Color(0,0,0), "Table.foreground")); //NOI18N
-        UIManager.put("nb.dataview.jxdatetimepicker.selectedBackground", new RelativeColor(new Color(0,0,0), new Color(0,0,0), "Table[Enabled+Selected].textBackground")); //NOI18N
-        UIManager.put("nb.dataview.jxdatetimepicker.selectedForeground", new RelativeColor(new Color(0,0,0), new Color(0,0,0), "Table[Enabled+Selected].textForeground")); //NOI18N
-        UIManager.put("nb.dataview.jxdatetimepicker.daysOfTheWeekForeground", new RelativeColor(new Color(0,0,0), new Color(0,0,0), "Table.background")); //NOI18N
-        UIManager.put("nb.dataview.jxdatetimepicker.todayBackground", new RelativeColor(new Color(0,0,0), new Color(20,20,20), "Table.background")); //NOI18N
-        UIManager.put("nb.dataview.jxdatetimepicker.todayPanel.background.gradient.start", new RelativeColor(new Color(0,0,0), new Color(0,0,0), "TableHeader.background")); //NOI18N
-        UIManager.put("nb.dataview.jxdatetimepicker.todayPanel.background.gradient.end", new RelativeColor(new Color(0,0,0), new Color(10,10,10), "TableHeader.background")); //NOI18N
-        UIManager.put("nb.dataview.jxdatetimepicker.todayPanel.linkForeground", new RelativeColor(new Color(0,0,0), new Color(0,0,0), "TableHeader.foreground")); //NOI18N
         
         // autoupdate
         UIManager.put("nb.autoupdate.search.highlight", new Color(255, 75, 0));

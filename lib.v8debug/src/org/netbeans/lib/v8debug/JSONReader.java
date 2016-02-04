@@ -109,7 +109,7 @@ public class JSONReader {
         V8Type type = getType(obj);
         long requestSequence = (Long) obj.get(SEQ_REQUEST);
         String commandName = (String) obj.get(COMMAND);
-        V8Command command = V8Command.fromString(commandName);
+        V8Command command = (commandName != null) ? V8Command.fromString(commandName) : null;
         boolean running = (Boolean) obj.get(RUNNING);
         boolean success = (Boolean) obj.get(SUCCESS);
         V8Body body = null;

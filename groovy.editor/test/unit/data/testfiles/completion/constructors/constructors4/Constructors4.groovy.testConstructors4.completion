@@ -16,6 +16,7 @@ CLASS      FileNotFoundException                      null
 CLASS      FileOutputStream                           null
 CLASS      FilePermission                             null
 CLASS      FileReader                                 null
+CLASS      FileTreeBuilder                            null
 CLASS      FileWriter                                 null
 CLASS      FilenameFilter                             null
 CLASS      FilterInputStream                          null
@@ -30,3 +31,4 @@ CLASS      Formattable                                null
 CLASS      FormattableFlags                           null
 CLASS      Formatter                                  null
 CLASS      FormatterClosedException                   null
+CLASS      FunctionalInterface                        null

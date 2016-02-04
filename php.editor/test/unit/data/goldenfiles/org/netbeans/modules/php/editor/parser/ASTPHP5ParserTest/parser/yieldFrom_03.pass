@@ -95,7 +95,7 @@
                     </ExpressionStatement>
                     <ExpressionStatement start='36' end='76'>
                         <YieldFromExpression start='36' end='75'>
-                            <ClassInstanceCreation start='47' end='75'>
+                            <ClassInstanceCreation start='47' end='75' anonymous='false'>
                                 <ClassName start='51' end='64'>
                                     <NamespaceName start='51' end='64' isCurrent='false' isGlobal='false'>
                                         <Identifier start='51' end='64' name='ArrayIterator'/>

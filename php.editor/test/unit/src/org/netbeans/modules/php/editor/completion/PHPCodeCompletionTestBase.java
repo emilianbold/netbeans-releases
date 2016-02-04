@@ -72,7 +72,7 @@ public abstract class PHPCodeCompletionTestBase extends PHPTestBase {
         return Collections.singletonMap(
             PhpSourcePath.SOURCE_CP,
             ClassPathSupport.createClassPath(new FileObject[] {
-                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib"))
+                FileUtil.toFileObject(new File(getDataDir(), "testfiles/completion/lib"))
             })
         );
     }

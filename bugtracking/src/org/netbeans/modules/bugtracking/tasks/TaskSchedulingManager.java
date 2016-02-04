@@ -194,6 +194,9 @@ public final class TaskSchedulingManager {
             repositoryIds.add(repo.getId());
         }
         initializeTasks(repositoryIds);
+        // flush changes        
+        handleIssues();
+        
         Set<IssueImpl> allTasks = new HashSet<IssueImpl>(Arrays.asList(scheduledTasks.keySet().toArray(new IssueImpl[0])));
         for (Iterator<IssueImpl> it = allTasks.iterator(); it.hasNext();) {
             IssueImpl issue = it.next();
@@ -372,6 +375,7 @@ public final class TaskSchedulingManager {
     private boolean handleSingleIssue (IssueImpl issue) {
         IssueScheduleInfo info = issue.getSchedule();
         boolean changed = false;
+        
         synchronized (initializedRepositories) {
             if (info == null) {
                 if (scheduledTasks.remove(issue) != null) {
@@ -407,28 +411,31 @@ public final class TaskSchedulingManager {
     }
 
     private class HandleTask implements Runnable {
-
         @Override
         public void run() {
-            IssueImpl[] issues;
-            synchronized (issuesToHandle) {
-                issues = issuesToHandle.toArray(new IssueImpl[issuesToHandle.size()]);
-                issuesToHandle.clear();
-            }
-            boolean changed = false;
-            for (IssueImpl issue : issues) {
-                changed |= handleSingleIssue(issue);
-            }
-            synchronized (deletedIssues) {
-                issues = deletedIssues.toArray(new IssueImpl[deletedIssues.size()]);
-                deletedIssues.clear();
-            }
-            for (IssueImpl issue : issues) {
-                changed |= handleDeletedIssue(issue);
-            }
-            if (changed && !initializing) {
-                fireChange();
-            }
+            handleIssues();
+        }
+    }
+    
+    private void handleIssues() {
+        IssueImpl[] issues;
+        synchronized (issuesToHandle) {
+            issues = issuesToHandle.toArray(new IssueImpl[issuesToHandle.size()]);
+            issuesToHandle.clear();
+        }
+        boolean changed = false;
+        for (IssueImpl issue : issues) {
+            changed |= handleSingleIssue(issue);
+        }
+        synchronized (deletedIssues) {
+            issues = deletedIssues.toArray(new IssueImpl[deletedIssues.size()]);
+            deletedIssues.clear();
+        }
+        for (IssueImpl issue : issues) {
+            changed |= handleDeletedIssue(issue);
+        }
+        if (changed && !initializing) {
+            fireChange();
         }
     }
 

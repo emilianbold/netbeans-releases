@@ -152,6 +152,12 @@ public final class ProxySettingsPanel extends javax.swing.JPanel {
         return null;
     }
 
+    @Override
+    public void setVisible(boolean aFlag) {
+        hideUnwantedItems();
+        super.setVisible(aFlag);
+    }
+
     private void hideUnwantedItems() {
         int cnt = origPanel.getAccessibleContext().getAccessibleChildrenCount();
         boolean visible = false;

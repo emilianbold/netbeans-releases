@@ -136,8 +136,12 @@
             </test-dependencies>
             <public-packages/>
             <class-path-extension>
-                <runtime-relative-path>ext/io-xml-util.jar</runtime-relative-path>
-                <binary-origin>external/io-xml-util.jar</binary-origin>
+                <runtime-relative-path>ext/jing.jar</runtime-relative-path>
+                <binary-origin>external/jing.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/saxon9B.jar</runtime-relative-path>
+                <binary-origin>external/saxon9B.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/log4j-1.2.15.jar</runtime-relative-path>
@@ -148,24 +152,8 @@
                 <binary-origin>external/iri.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jing.jar</runtime-relative-path>
-                <binary-origin>external/jing.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
                 <runtime-relative-path>ext/validator.jar</runtime-relative-path>
                 <binary-origin>external/validator.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/html5-datatypes.jar</runtime-relative-path>
-                <binary-origin>external/html5-datatypes.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/non-schema.jar</runtime-relative-path>
-                <binary-origin>external/non-schema.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/saxon9B.jar</runtime-relative-path>
-                <binary-origin>external/saxon9B.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/isorelax.jar</runtime-relative-path>

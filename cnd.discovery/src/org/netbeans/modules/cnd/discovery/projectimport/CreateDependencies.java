@@ -65,7 +65,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Applicable;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
-import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
+import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
@@ -142,11 +142,11 @@ public class CreateDependencies implements PropertyChangeListener {
                             if (!checkedDll.contains(entry.getValue())) {
                                 checkedDll.add(entry.getValue());
                                 final Map<String, Object> extMap = new HashMap<>();
-                                DiscoveryWizardDescriptor.BUILD_RESULT.toMap(extMap, entry.getValue());
-                                DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(extMap, CommonUtilities.resolveSymbolicLinks());
+                                DiscoveryDescriptor.BUILD_RESULT.toMap(extMap, entry.getValue());
+                                DiscoveryDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(extMap, CommonUtilities.resolveSymbolicLinks());
                                 if (extension != null) {
                                     extension.discoverArtifacts(extMap);
-                                    List<String> dlls = DiscoveryWizardDescriptor.DEPENDENCIES.fromMap(extMap);
+                                    List<String> dlls = DiscoveryDescriptor.DEPENDENCIES.fromMap(extMap);
                                     if (dlls != null) {
                                         for(String so : dlls) {
                                             if (!dllPaths.containsKey(so)) {
@@ -251,9 +251,9 @@ public class CreateDependencies implements PropertyChangeListener {
                     }
                     if (extension != null) {
                         Map<String, Object> map = new HashMap<>();
-                        DiscoveryWizardDescriptor.BUILD_RESULT.toMap(map, executable);
-                        DiscoveryWizardDescriptor.ROOT_FOLDER.toMap(map, aProject.getProjectDirectory().getPath());
-                        DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, CommonUtilities.resolveSymbolicLinks());
+                        DiscoveryDescriptor.BUILD_RESULT.toMap(map, executable);
+                        DiscoveryDescriptor.ROOT_FOLDER.toMap(map, aProject.getProjectDirectory().getPath());
+                        DiscoveryDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, CommonUtilities.resolveSymbolicLinks());
                         process((DiscoveryExtension)extension, aProject, map);
                     }
                 }

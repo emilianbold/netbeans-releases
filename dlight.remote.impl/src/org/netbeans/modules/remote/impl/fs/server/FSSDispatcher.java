@@ -69,6 +69,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -166,7 +167,9 @@ import org.openide.util.RequestProcessor;
     }
 
     public void connected() {
-        if (RemoteFileSystemManager.getInstance().getFileSystem(env).getRoot().getImplementor().hasCache()) {
+        boolean wasValid  = valid;
+        valid = true;
+        if (wasValid && RemoteFileSystemManager.getInstance().getFileSystem(env).getRoot().getImplementor().hasCache()) {
             RP.post(new ConnectTask());
         }
     }
@@ -350,10 +353,10 @@ import org.openide.util.RequestProcessor;
         }
     }
 
-    public boolean isValid() {
+    public boolean isValidFast() {
         return valid;
     }
-    
+
     private void setInvalid(boolean force) {
         if (force) {
             valid = false;
@@ -364,7 +367,35 @@ import org.openide.util.RequestProcessor;
         }
         RemoteLogger.log(Level.WARNING, "fs_server at {0} failed: {1} ", env, lastErrorMessage.get());
     }
-    
+
+    /**
+     * Slow validity check - includes launching (if needed) of remote tools, etc.
+     * It can be slow on first call within a session or after reconncet.
+     * It should be fast in other cases.
+     *
+     * It should throw one of declared exceptions
+     * if the check is not possible (for example, the connection to host is lost).
+     * Such exception will be rethrown to client.
+     * Otherwise it should just return true or false.
+     */
+    public boolean isValidSlow()
+            throws ConnectException, ConnectionManager.CancellationException, InterruptedException {
+        FsServer srv = null;
+        try {
+            srv = getOrCreateServer();
+        } catch (ConnectException ex) {
+            throw ex;
+        } catch (InitializationException | IOException | ExecutionException ex) {
+            ex.printStackTrace(System.err);
+        }
+        if (srv == null) {
+            setInvalid(true);
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     private void checkValid() throws ExecutionException, InterruptedException {
         if (ConnectionManager.getInstance().isConnectedTo(env)) {
             FsServer srv = getServer();
@@ -708,7 +739,19 @@ import org.openide.util.RequestProcessor;
         }
         
     }
-    
+
+    private String lastPIDKey() {
+        return "last_fs_server_pid:" + ExecutionEnvironmentFactory.toUniqueID(env); //NOI18N
+    }
+
+    private void setLastPID(int pid) {
+        NbPreferences.forModule(FSSDispatcher.class).putInt(lastPIDKey(), pid);
+    }
+
+    private int getLastPID() {
+        return NbPreferences.forModule(FSSDispatcher.class).getInt(lastPIDKey(), 0);
+    }
+
     private class FsServer {
 
         private final PrintWriter writer;
@@ -750,9 +793,22 @@ import org.openide.util.RequestProcessor;
                 argsList.add("-t"); // NOI18N
                 argsList.add(Integer.toString(SERVER_THREADS));
             }
+            boolean killAllLockers = Boolean.getBoolean("remote.fs_server.kill.all"); // NOI18N
+            int killTimeout = Integer.getInteger("remote.fs_server.kill.timeout", 3000); // NOI18N
+            if (killAllLockers) {
+                argsList.add("-K"); // NOI18N
+                argsList.add(Integer.toString(killTimeout));
+            } else {
+                int lastPID = getLastPID();
+                if (lastPID != 0) {
+                    argsList.add("-K"); // NOI18N
+                    argsList.add(Integer.toString(lastPID) + ':' + Integer.toString(killTimeout)); // NOI18N
+                }
+            }
             this.args = argsList.toArray(new String[argsList.size()]);
             processBuilder.setArguments(this.args);
             process = processBuilder.call();
+            setLastPID(process.getPID());
             Charset charset = Charset.isSupported("UTF-8") // NOI18N
                     ? Charset.forName("UTF-8") // NOI18N
                     : Charset.defaultCharset();

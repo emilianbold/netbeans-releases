@@ -49,6 +49,7 @@ import org.netbeans.modules.docker.ui.build2.BuildImageAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
@@ -60,20 +61,23 @@ public class DockerInstanceNode extends AbstractNode {
 
     private static final String DOCKER_INSTANCE_ICON = "org/netbeans/modules/docker/ui/resources/docker_instance.png"; // NOI18N
 
-    private final CachedDockerInstance instance;
+    private final EnhancedDockerInstance instance;
 
-    public DockerInstanceNode(CachedDockerInstance instance) {
+    private final ChangeListener listener = new ChangeListener() {
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            fireDisplayNameChange(null, null);
+        }
+    };
+
+    public DockerInstanceNode(EnhancedDockerInstance instance) {
         super(Children.create(new DockerInstanceChildFactory(instance), true),
                 Lookups.fixed(instance.getInstance(), instance));
         this.instance = instance;
         setIconBaseWithExtension(DOCKER_INSTANCE_ICON);
+        setShortDescription(instance.getInstance().getUrl());
 
-        instance.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                fireDisplayNameChange(null, null);
-            }
-        });
+        instance.addChangeListener(WeakListeners.change(listener, instance));
         instance.refresh();
     }
 

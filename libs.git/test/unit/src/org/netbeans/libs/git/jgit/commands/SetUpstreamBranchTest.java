@@ -51,6 +51,7 @@ import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.StoredConfig;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
@@ -117,7 +118,7 @@ public class SetUpstreamBranchTest extends AbstractGitTestCase {
         assertEquals("refs/remotes/origin/master", cfg.getString(ConfigConstants.CONFIG_BRANCH_SECTION, "master", ConfigConstants.CONFIG_KEY_MERGE));
     }
     
-    public void testRemoteTracking () throws GitException {
+    public void testRemoteTracking () throws Exception {
         GitClient client = getClient(workDir);
         File f = new File(workDir, "f");
         add(f);
@@ -139,13 +140,29 @@ public class SetUpstreamBranchTest extends AbstractGitTestCase {
         assertTrue(branches.containsKey("origin/master"));
         assertNull(branches.get("master").getTrackedBranch());
         
+        StoredConfig config = repository.getConfig();
+        config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOSETUPREBASE, ConfigConstants.CONFIG_KEY_NEVER);
+        config.save();
+        
         // set tracking
         GitBranch b = client.setUpstreamBranch("master", "origin/master", NULL_PROGRESS_MONITOR);
         assertEquals("origin/master", b.getTrackedBranch().getName());
         
-        Config cfg = repository.getConfig();
-        assertEquals("origin", cfg.getString(ConfigConstants.CONFIG_BRANCH_SECTION, "master", ConfigConstants.CONFIG_KEY_REMOTE));
-        assertEquals("refs/heads/master", cfg.getString(ConfigConstants.CONFIG_BRANCH_SECTION, "master", ConfigConstants.CONFIG_KEY_MERGE));
+        config = repository.getConfig();
+        assertEquals("origin", config.getString(ConfigConstants.CONFIG_BRANCH_SECTION, "master", ConfigConstants.CONFIG_KEY_REMOTE));
+        assertEquals("refs/heads/master", config.getString(ConfigConstants.CONFIG_BRANCH_SECTION, "master", ConfigConstants.CONFIG_KEY_MERGE));
+        assertFalse(config.getBoolean(ConfigConstants.CONFIG_BRANCH_SECTION, "master", ConfigConstants.CONFIG_KEY_REBASE, false));
+        
+        // change autosetuprebase
+        config.setString(ConfigConstants.CONFIG_BRANCH_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOSETUPREBASE, ConfigConstants.CONFIG_KEY_REMOTE);
+        config.save();
+        // set tracking
+        b = client.setUpstreamBranch("master", "origin/master", NULL_PROGRESS_MONITOR);
+        assertEquals("origin/master", b.getTrackedBranch().getName());
+        config = repository.getConfig();
+        assertEquals("origin", config.getString(ConfigConstants.CONFIG_BRANCH_SECTION, "master", ConfigConstants.CONFIG_KEY_REMOTE));
+        assertEquals("refs/heads/master", config.getString(ConfigConstants.CONFIG_BRANCH_SECTION, "master", ConfigConstants.CONFIG_KEY_MERGE));
+        assertTrue(config.getBoolean(ConfigConstants.CONFIG_BRANCH_SECTION, "master", ConfigConstants.CONFIG_KEY_REBASE, false));
     }
     
 }

@@ -494,6 +494,14 @@ public final class CndFileUtils {
         return exists;
     }
 
+    public static boolean isRemoteFileSystem(FileSystem fs) {
+        return ! isLocalFileSystem(fs);
+    }
+
+    public static boolean isRemoteFileSystem(FileObject fo) {
+        return ! isLocalFileSystem(fo);
+    }
+
     public static boolean isLocalFileSystem(FileSystem fs) {
         return fs == getLocalFileSystem();
     }

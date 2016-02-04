@@ -107,6 +107,7 @@ METHOD     wait()                          [PUBLIC]   void
 METHOD     wait(long)                      [PUBLIC]   void
 METHOD     wait(long, int)                 [PUBLIC]   void
 METHOD     with(Closure)                              Object
+METHOD     withTraits(Class[])                        Object
 FIELD      DELEGATE_FIRST                  [STATIC,   int
 FIELD      DELEGATE_ONLY                   [STATIC,   int
 FIELD      DONE                            [STATIC,   int

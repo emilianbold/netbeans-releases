@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -58,6 +59,8 @@ public class MuxedStreamResult implements StreamResult {
 
     private final Socket s;
 
+    private final Charset charset;
+
     private final OutputStream outputStream;
 
     private final Demuxer demultiplexer;
@@ -68,8 +71,9 @@ public class MuxedStreamResult implements StreamResult {
 
     private StreamItem last = StreamItem.EMPTY;
 
-    public MuxedStreamResult(Socket s, InputStream is) throws IOException {
+    public MuxedStreamResult(Socket s, Charset charset, InputStream is) throws IOException {
         this.s = s;
+        this.charset = charset;
         this.outputStream = s.getOutputStream();
         this.demultiplexer = new Demuxer(is == null ? s.getInputStream() : is);
         this.stdOut = new ResultInputStream(false);
@@ -91,6 +95,11 @@ public class MuxedStreamResult implements StreamResult {
     @Override
     public boolean hasTty() {
         return false;
+    }
+
+    @Override
+    public Charset getCharset() {
+        return charset;
     }
 
     @Override

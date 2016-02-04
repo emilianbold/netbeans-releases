@@ -103,7 +103,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.TraitMethodAliasDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.TryStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
@@ -1484,7 +1484,7 @@ public class FormatVisitor extends DefaultVisitor {
     }
 
     @Override
-    public void visit(UseStatementPart statementPart) {
+    public void visit(SingleUseStatementPart statementPart) {
         FormatToken lastFormatToken = formatTokens.get(formatTokens.size() - 1);
         boolean lastRemoved = false;
         if (ts.token().id() == PHPTokenId.PHP_NS_SEPARATOR
