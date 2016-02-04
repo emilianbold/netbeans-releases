@@ -55,7 +55,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.web.clientproject.api.build.BuildTools;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -82,13 +85,28 @@ public final class AdvancedTasksStorage {
     private final String workDir;
 
 
-    public AdvancedTasksStorage(Project project, String ident, String workDir) {
+    private AdvancedTasksStorage(Project project, String ident, String workDir) {
         Parameters.notNull("project", project); // NOI18N
         Parameters.notEmpty("ident", ident); // NOI18N
-        Parameters.notNull("workDir", ident); // NOI18N
+        Parameters.notNull("workDir", workDir); // NOI18N
         this.project = project;
         this.ident = ident.toLowerCase().replace(' ', '-'); // NOI18N
         this.workDir = workDir;
+    }
+
+    //~ Factories
+
+    public static AdvancedTasksStorage forBuildToolSupport(BuildTools.BuildToolSupport support) {
+        Parameters.notNull("support", support); // NOI18N
+        String workDirPath;
+        FileObject workDir = support.getWorkDir();
+        String relativePath = FileUtil.getRelativePath(support.getProject().getProjectDirectory(), workDir);
+        if (relativePath != null) {
+            workDirPath = relativePath;
+        } else {
+            workDirPath = FileUtil.getFileDisplayName(workDir);
+        }
+        return new AdvancedTasksStorage(support.getProject(), support.getIdentifier(), workDirPath);
     }
 
     public Data loadTasks() {
@@ -216,6 +234,7 @@ public final class AdvancedTasksStorage {
 
         @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
         public Data setTasks(List<AdvancedTask> tasks) {
+            assert tasks != null;
             this.tasks = tasks;
             return this;
         }

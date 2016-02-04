@@ -44,9 +44,6 @@
 package org.netbeans.modules.derby;
 
 import java.io.File;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNotNull;
 import org.netbeans.modules.derby.DerbyOptionsTest.InstalledFileLocatorImpl;
 import org.netbeans.modules.derby.test.TestBase;
 import org.openide.util.lookup.Lookups;
@@ -67,7 +64,7 @@ public class DerbyOptionsTest2 extends TestBase {
 
     @Override
     public void setUp() throws Exception {
-        clearWorkDir();
+        super.setUp();
 
         userdir = new File(getWorkDir(), ".netbeans");
         userdir.mkdirs();

@@ -77,7 +77,7 @@ public final class JavaHyperlinkProvider implements HyperlinkProviderExt {
     }
 
     public int[] getHyperlinkSpan(Document doc, int offset, HyperlinkType type) {
-        return GoToSupport.getIdentifierSpan(doc, offset, null);
+        return GoToSupport.getIdentifierOrLambdaArrowSpan(doc, offset, null);
     }
 
     public void performClickAction(Document doc, int offset, HyperlinkType type) {

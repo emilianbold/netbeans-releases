@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.58
+#Version 1.65.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -49,7 +49,7 @@ meth public static org.netbeans.api.project.Project getOwner(org.openide.filesys
 meth public static void markExternalOwner(java.net.URI,org.netbeans.api.project.Project,int)
 meth public static void markExternalOwner(org.openide.filesystems.FileObject,org.netbeans.api.project.Project,int)
 supr java.lang.Object
-hfds LOG,cache,implementations
+hfds LOG,cache,changeId,implementations
 
 CLSS public abstract interface org.netbeans.api.project.Project
 intf org.openide.util.Lookup$Provider
@@ -69,27 +69,44 @@ meth public abstract void removePropertyChangeListener(java.beans.PropertyChange
 
 CLSS public final org.netbeans.api.project.ProjectManager
 innr public final static Result
+meth public !varargs static org.openide.util.Mutex mutex(boolean,org.netbeans.api.project.Project,org.netbeans.api.project.Project[])
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
 meth public boolean isModified(org.netbeans.api.project.Project)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public boolean isProject(org.openide.filesystems.FileObject)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public boolean isValid(org.netbeans.api.project.Project)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public java.util.Set<org.netbeans.api.project.Project> getModifiedProjects()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public org.netbeans.api.project.Project findProject(org.openide.filesystems.FileObject) throws java.io.IOException
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public org.netbeans.api.project.ProjectManager$Result isProject2(org.openide.filesystems.FileObject)
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.api.project.ProjectManager getDefault()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public static org.openide.util.Mutex mutex()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public void clearNonProjectCache()
 meth public void saveAllProjects() throws java.io.IOException
 meth public void saveProject(org.netbeans.api.project.Project) throws java.io.IOException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
-hfds DEFAULT,LOG,MUTEX,TIMERS,dir2Proj,factories,loadingThread,modifiedProjects,proj2Factory,projectDeletionListener,removedProjects
-hcls LoadStatus,ProjectDeletionListener,ProjectStateImpl
+hfds DEFAULT,LOG,impl
 
 CLSS public final static org.netbeans.api.project.ProjectManager$Result
  outer org.netbeans.api.project.ProjectManager
+cons public init(java.lang.String,java.lang.String,javax.swing.Icon)
 cons public init(javax.swing.Icon)
+meth public java.lang.String getDisplayName()
+meth public java.lang.String getProjectType()
 meth public javax.swing.Icon getIcon()
 supr java.lang.Object
-hfds icon
+hfds displayName,icon,projectType
 
 CLSS public org.netbeans.api.project.ProjectUtils
 meth public static boolean hasSubprojectCycles(org.netbeans.api.project.Project,org.netbeans.api.project.Project)
@@ -111,7 +128,6 @@ meth public static org.openide.filesystems.FileObject getCacheDirectory(org.netb
  anno 2 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
 hfds LOG
-hcls AnnotateIconProxyProjectInformation,BasicInformation
 
 CLSS public abstract interface org.netbeans.api.project.SourceGroup
 fld public final static java.lang.String PROP_CONTAINERSHIP = "containership"
@@ -319,6 +335,47 @@ meth public abstract java.awt.Image annotateIcon(org.netbeans.api.project.Projec
 meth public abstract void addChangeListener(javax.swing.event.ChangeListener)
 meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
 
+CLSS public abstract interface org.netbeans.spi.project.ProjectInformationProvider
+meth public abstract org.netbeans.api.project.ProjectInformation getProjectInformation(org.netbeans.api.project.Project)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NullAllowed()
+
+CLSS public abstract interface org.netbeans.spi.project.ProjectManagerImplementation
+innr public final static ProjectManagerCallBack
+meth public abstract !varargs org.openide.util.Mutex getMutex(boolean,org.netbeans.api.project.Project,org.netbeans.api.project.Project[])
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
+meth public abstract boolean isModified(org.netbeans.api.project.Project)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public abstract boolean isValid(org.netbeans.api.project.Project)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public abstract java.util.Set<org.netbeans.api.project.Project> getModifiedProjects()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public abstract org.netbeans.api.project.Project findProject(org.openide.filesystems.FileObject) throws java.io.IOException
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public abstract org.netbeans.api.project.ProjectManager$Result isProject(org.openide.filesystems.FileObject)
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public abstract org.openide.util.Mutex getMutex()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public abstract void clearNonProjectCache()
+meth public abstract void init(org.netbeans.spi.project.ProjectManagerImplementation$ProjectManagerCallBack)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public abstract void saveAllProjects() throws java.io.IOException
+meth public abstract void saveProject(org.netbeans.api.project.Project) throws java.io.IOException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+
+CLSS public final static org.netbeans.spi.project.ProjectManagerImplementation$ProjectManagerCallBack
+ outer org.netbeans.spi.project.ProjectManagerImplementation
+meth public void notifyDeleted(org.netbeans.api.project.Project)
+ anno 1 org.netbeans.api.annotations.common.NullAllowed()
+meth public void notifyModified(org.netbeans.api.project.Project)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+supr java.lang.Object
+hcls SPIAccessorImpl
+
 CLSS public abstract interface !annotation org.netbeans.spi.project.ProjectServiceProvider
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD])
@@ -360,10 +417,11 @@ hcls GenericOnlySources,Group
 CLSS public final org.netbeans.spi.project.support.LookupProviderSupport
 meth public static org.netbeans.spi.project.LookupMerger<org.netbeans.api.project.Sources> createSourcesMerger()
 meth public static org.netbeans.spi.project.LookupMerger<org.netbeans.spi.project.ActionProvider> createActionProviderMerger()
+meth public static org.netbeans.spi.project.LookupMerger<org.netbeans.spi.queries.SharabilityQueryImplementation2> createSharabilityQueryMerger()
 meth public static org.openide.util.Lookup createCompositeLookup(org.openide.util.Lookup,java.lang.String)
 meth public static org.openide.util.Lookup createCompositeLookup(org.openide.util.Lookup,org.openide.util.Lookup)
 supr java.lang.Object
-hcls ActionProviderMerger,MergedActionProvider,SourcesImpl,SourcesMerger
+hcls ActionProviderMerger,MergedActionProvider,MergedSharabilityQueryImplementation2,SharabilityQueryMerger,SourcesImpl,SourcesMerger
 
 CLSS public final org.netbeans.spi.project.support.ProjectOperations
 meth public static boolean isCopyOperationSupported(org.netbeans.api.project.Project)
@@ -393,7 +451,7 @@ meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Resul
 meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
 meth public static org.openide.util.Lookup getDefault()
 supr java.lang.Object
-hfds LOG,defaultLookup
+hfds LOG,defaultLookup,defaultLookupProvider
 hcls DefLookup,Empty
 
 CLSS public abstract interface static org.openide.util.Lookup$Provider

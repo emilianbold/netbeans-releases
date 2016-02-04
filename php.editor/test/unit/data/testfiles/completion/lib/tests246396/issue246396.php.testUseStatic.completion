@@ -1,5 +1,5 @@
 Code completion result for source line:
-static::|publicStaticMethod();
+static::|privateStaticMethod();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 METHOD     privateStaticMethod()           [PRIVATE,  BaseTrait
 METHOD     protectedStaticMethod()         [PROTECTE  BaseTrait

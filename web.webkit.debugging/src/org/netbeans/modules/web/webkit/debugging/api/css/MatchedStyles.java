@@ -56,7 +56,7 @@ public class MatchedStyles {
     /** CSS rules matching the node, from all applicable stylesheets. */
     private final List<Rule> matchedRules;
     /** Pseudo style rules for the node. */
-    private List<PseudoIdRules> pseudoRules;
+    // TODO: introduce when needed: private List<PseudoIdRules> pseudoRules;
     /** A chain of inherited styles (from the immediate node parent up to the DOM tree root). */
     private List<InheritedStyleEntry> inheritedRules;
 
@@ -77,6 +77,7 @@ public class MatchedStyles {
         } else {
             matchedRules = Collections.EMPTY_LIST;
         }
+        /* TODO: After it's needed, follow the most recent spec.
         if (styles.containsKey("pseudoElements")) { // NOI18N
             JSONArray rules = (JSONArray)styles.get("pseudoElements"); // NOI18N
             pseudoRules = new ArrayList<PseudoIdRules>(rules.size());
@@ -84,7 +85,7 @@ public class MatchedStyles {
                 PseudoIdRules rule = new PseudoIdRules((JSONObject)o);
                 pseudoRules.add(rule);
             }
-        }
+        }*/
         if (styles.containsKey("inherited")) { // NOI18N
             JSONArray rules = (JSONArray)styles.get("inherited"); // NOI18N
             inheritedRules = new ArrayList<InheritedStyleEntry>(rules.size());
@@ -108,10 +109,10 @@ public class MatchedStyles {
      * Returns pseudo style rules for the node.
      *
      * @return pseudo style rules for the node.
-     */
+     * TODO: Provide after it's needed, with the updated data structure.
     public List<PseudoIdRules> getPseudoRules() {
         return Collections.unmodifiableList(pseudoRules);
-    }
+    }*/
 
     /**
      * Returns the chain of inherited styles.

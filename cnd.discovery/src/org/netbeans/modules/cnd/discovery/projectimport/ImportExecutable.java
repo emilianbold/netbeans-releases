@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Applic
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Position;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
+import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
@@ -277,15 +278,15 @@ public class ImportExecutable implements PropertyChangeListener {
         try {
             lastSelectedProject = ProjectGenerator.createProject(prjParams);
             OpenProjects.getDefault().addPropertyChangeListener(this);
-            DiscoveryWizardDescriptor.BUILD_RESULT.toMap(map, binaryPath);
+            DiscoveryDescriptor.BUILD_RESULT.toMap(map, binaryPath);
             if (fullRemotefileSystem != null) {
-                DiscoveryWizardDescriptor.FILE_SYSTEM.toMap(map, fullRemotefileSystem);
+                DiscoveryDescriptor.FILE_SYSTEM.toMap(map, fullRemotefileSystem);
             }
-            DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, CommonUtilities.resolveSymbolicLinks());
+            DiscoveryDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, CommonUtilities.resolveSymbolicLinks());
             if (sourcesPath != null && sourcesPath.length()>1) {
-                DiscoveryWizardDescriptor.ROOT_FOLDER.toMap(map, sourcesPath);
+                DiscoveryDescriptor.ROOT_FOLDER.toMap(map, sourcesPath);
             } else {
-                 DiscoveryWizardDescriptor.ROOT_FOLDER.toMap(map, lastSelectedProject.getProjectDirectory().getPath());
+                 DiscoveryDescriptor.ROOT_FOLDER.toMap(map, lastSelectedProject.getProjectDirectory().getPath());
             }
             if (libs.size() > 0) {
                 StringBuilder buf = new StringBuilder();
@@ -352,22 +353,22 @@ public class ImportExecutable implements PropertyChangeListener {
                             }
                             if (addSourceRoot && sourcesPath != null && sourcesPath.length()>1) {
                                 configurationDescriptor.addSourceRoot(sourcesPath);
-                                 DiscoveryWizardDescriptor.ROOT_FOLDER.toMap(map, sourcesPath);
+                                 DiscoveryDescriptor.ROOT_FOLDER.toMap(map, sourcesPath);
                             }
                             configurationDescriptor.getActiveConfiguration().getCodeAssistanceConfiguration().getResolveSymbolicLinks().setValue(CommonUtilities.resolveSymbolicLinks());
                             if (!createProjectMode) {
                                 resetCompilerSet(configurationDescriptor.getActiveConfiguration(), applicable);
                             }
                             if (projectKind == ProjectKind.IncludeDependencies) {
-                                String additionalDependencies = DiscoveryWizardDescriptor.ADDITIONAL_LIBRARIES.fromMap(map);
+                                String additionalDependencies = DiscoveryDescriptor.ADDITIONAL_LIBRARIES.fromMap(map);
                                 String ad = additionalDependencies(applicable, configurationDescriptor.getActiveConfiguration(),
                                         DiscoveryWizardDescriptor.adaptee(map).getBuildResult());
                                 if (ad != null && !ad.isEmpty()) {
                                     if (additionalDependencies == null) {
-                                        DiscoveryWizardDescriptor.ADDITIONAL_LIBRARIES.toMap(map, ad);
+                                        DiscoveryDescriptor.ADDITIONAL_LIBRARIES.toMap(map, ad);
                                         additionalDependencies = ad;
                                     } else {
-                                        DiscoveryWizardDescriptor.ADDITIONAL_LIBRARIES.toMap(map, additionalDependencies+";"+ad); //NOI18N
+                                        DiscoveryDescriptor.ADDITIONAL_LIBRARIES.toMap(map, additionalDependencies+";"+ad); //NOI18N
                                     }
                                 }
                             }
@@ -614,10 +615,10 @@ public class ImportExecutable implements PropertyChangeListener {
                             if (!checkedDll.contains(entry.getValue())) {
                                 checkedDll.add(entry.getValue());
                                 final Map<String, Object> extMap = new HashMap<>();
-                                DiscoveryWizardDescriptor.BUILD_RESULT.toMap(extMap, entry.getValue());
+                                DiscoveryDescriptor.BUILD_RESULT.toMap(extMap, entry.getValue());
                                 if (extension != null) {
                                     extension.discoverArtifacts(extMap);
-                                    List<String> dlls = DiscoveryWizardDescriptor.DEPENDENCIES.fromMap(extMap);
+                                    List<String> dlls = DiscoveryDescriptor.DEPENDENCIES.fromMap(extMap);
                                     if (dlls != null) {
                                         for(String so : dlls) {
                                             if (!dllPaths.containsKey(so)) {

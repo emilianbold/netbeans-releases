@@ -43,15 +43,19 @@ package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * Represents a 'use' statement
- * <pre>e.g.<pre>use MyNamespace;
- *use MyNamespace as MyAlias;
- *use MyProject\Sub\Level as MyAlias;
- *use \MyProject\Sub\Level as MyAlias;
- *use \MyProject\Sub\Level as MyAlias, MyNamespace as OtherAlias, MyOtherNamespace;
+ * <pre>e.g.
+ * use MyNamespace;
+ * use MyNamespace as MyAlias;
+ * use MyProject\Sub\Level as MyAlias;
+ * use \MyProject\Sub\Level as MyAlias;
+ * use \MyProject\Sub\Level as MyAlias, MyNamespace as OtherAlias, MyOtherNamespace;
+ * use some\namespace\{ClassA, sub\ClassB, ClassC as C};
+ * </pre>
  */
 public class UseStatement extends Statement {
     private final List<UseStatementPart> parts;
@@ -90,21 +94,20 @@ public class UseStatement extends Statement {
         this(start, end, parts, Type.TYPE);
     }
 
-    public UseStatement(int start, int end, UseStatementPart[] parts, Type type) {
+    public UseStatement(int start, int end, SingleUseStatementPart[] parts, Type type) {
         this(start, end, Arrays.asList(parts), type);
     }
 
-    public UseStatement(int start, int end, UseStatementPart[] parts) {
+    public UseStatement(int start, int end, SingleUseStatementPart[] parts) {
         this(start, end, parts, Type.TYPE);
     }
 
     /**
-     * The list of single parts of this 'use' statement
-     *
-     * @return List of this statement parts
+     * Returns the list of parts of this 'use' statement.
+     * @return list of this statement parts
      */
     public List<UseStatementPart> getParts() {
-        return this.parts;
+        return Collections.unmodifiableList(parts);
     }
 
     public Type getType() {
@@ -120,7 +123,10 @@ public class UseStatement extends Statement {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (UseStatementPart useStatementPart : parts) {
-            sb.append(useStatementPart).append(","); //NOI18N
+            if (sb.length() > 0) {
+                sb.append(", "); // NOI18N
+            }
+            sb.append(useStatementPart);
         }
         return "use " + type.toString() + " " + sb.toString(); //NOI18N
     }

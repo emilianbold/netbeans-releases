@@ -130,7 +130,7 @@ public final class CallStackActionsModel extends ViewModelSupport implements
     public CallStackActionsModel(final ContextProvider contextProvider) {
         debugger = contextProvider.lookupFirst(null, Debugger.class);
         pc = contextProvider.lookupFirst(null, ProjectContext.class);
-        GO_TO_SOURCE = MiscEditorUtil.createDebuggerGoToAction(pc);
+        GO_TO_SOURCE = MiscEditorUtil.createDebuggerGoToAction(pc, debugger);
     }
 
     // NodeActionsProvider implementation ......................................
@@ -144,7 +144,8 @@ public final class CallStackActionsModel extends ViewModelSupport implements
                 debugger.setCurrentCallFrame(frame);
             } else {
                 Project project = pc.getProject();
-                Line line = MiscEditorUtil.getLine(project, frame.getScript(), frame.getLineNumber());
+                Line line = MiscEditorUtil.getLine(debugger, project, frame.getScript(),
+                                                   frame.getLineNumber(), frame.getColumnNumber());
                 MiscEditorUtil.showLine(line, true);
             }
         }

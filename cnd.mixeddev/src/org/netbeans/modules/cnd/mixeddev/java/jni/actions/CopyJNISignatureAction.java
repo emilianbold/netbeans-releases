@@ -60,21 +60,18 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-@ActionID(id = "org.netbeans.modules.cnd.mixeddev.java.jni.actions.CopyJNISignatureAction", category = "MixedDevelopment")
-@ActionRegistration(displayName = "#LBL_Action_CopyJNISignatureAction", lazy = false)
-@ActionReferences(value = {@ActionReference(path = "Editors/text/x-java/Popup/MixedDevelopment", position=40)})
-@NbBundle.Messages({"LBL_Action_CopyJNISignatureAction=Copy JNI signature"})
 public class CopyJNISignatureAction extends AbstractJNIAction {
-
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(MixedDevUtils.class, "cnd.mixeddev.copy_jni_signature"); // NOI18N
+    
+    public CopyJNISignatureAction(Lookup context) {
+        super(context);
+        putValue(NAME, NbBundle.getMessage(MixedDevUtils.class, "cnd.mixeddev.copy_jni_signature")); // NOI18N
     }
 
     @Override
@@ -90,7 +87,7 @@ public class CopyJNISignatureAction extends AbstractJNIAction {
     }
 
     @Override
-    protected void performAction(Node[] activatedNodes) {
+    protected void actionPerformedImpl(Node[] activatedNodes) {
         Triple<DataObject, Document, Integer> context = extractContext(activatedNodes);
         if (context != null) {
             final Document doc = context.second;

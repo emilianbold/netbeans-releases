@@ -44,6 +44,7 @@ package org.netbeans.modules.docker.api;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EventListener;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -52,6 +53,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -182,21 +184,29 @@ public class DockerInstance {
         return path == null ? null : new File(path);
     }
 
+    public boolean isAvailable() {
+        if (SwingUtilities.isEventDispatchThread()) {
+            throw new IllegalStateException("Method isConnected might block the EDT");
+        }
+        return new DockerAction(this).ping();
+    }
+
     public void remove() {
         eventBus.close();
         try {
+            prefs.removePreferenceChangeListener(listener);
             prefs.removeNode();
         } catch (BackingStoreException ex) {
             LOGGER.log(Level.WARNING, null, ex);
         }
     }
 
-    public void addChangeListener(ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
+    public void addConnectionListener(ConnectionListener listener) {
+        eventBus.addConnectionListener(listener);
     }
 
-    public void removeChangeListener(ChangeListener listener) {
-        changeSupport.removeChangeListener(listener);
+    public void removeConnectionListener(ConnectionListener listener) {
+        eventBus.removeConnectionListener(listener);
     }
 
     public void addImageListener(DockerEvent.Listener listener) {
@@ -213,6 +223,14 @@ public class DockerInstance {
 
     public void removeContainerListener(DockerEvent.Listener listener) {
         eventBus.removeContainerListener(listener);
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
     }
 
     @Override
@@ -255,6 +273,13 @@ public class DockerInstance {
 
     private static String escapeUrl(String url) {
         return url.replaceAll("[:/]", "_"); // NOI18N
+    }
+
+    public static interface ConnectionListener extends EventListener {
+
+        void onConnect();
+
+        void onDisconnect();
     }
 
     private class InstanceListener implements PreferenceChangeListener {

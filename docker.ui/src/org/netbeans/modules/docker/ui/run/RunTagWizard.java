@@ -49,6 +49,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -61,15 +63,15 @@ import org.netbeans.modules.docker.api.DockerImageDetail;
 import org.netbeans.modules.docker.api.DockerTag;
 import org.netbeans.modules.docker.api.DockerException;
 import org.netbeans.modules.docker.api.DockerAction;
-import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.netbeans.modules.docker.api.ActionStreamResult;
+import org.netbeans.modules.docker.ui.output.OutputUtils;
+import org.openide.NotifyDescriptor;
 
 /**
  *
@@ -92,6 +94,8 @@ public class RunTagWizard {
     public static final String PORT_MAPPING_PROPERTY = "portMapping";
 
     public static final boolean RANDOM_BIND_DEFAULT = false;
+
+    private static final Logger LOGGER = Logger.getLogger(RunTagWizard.class.getName());
 
     private final DockerTag tag;
 
@@ -200,15 +204,17 @@ public class RunTagWizard {
                     }
                     Pair<DockerContainer, ActionStreamResult> result = remote.run(name, config);
 
-                    UiUtils.openTerminal(result.first(), result.second(), interactive, true);
+                    OutputUtils.openTerminal(result.first(), result.second(), interactive, true, null);
                 } catch (Exception ex) {
-                    // FIXME display exception
-                    Exceptions.printStackTrace(ex);
+                    LOGGER.log(Level.INFO, null, ex);
+                    String msg = ex.getLocalizedMessage();
+                    NotifyDescriptor desc = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(desc);
                 }
             }
         });
     }
-    
+
     private static String getImage(DockerTag tag) {
         String id = tag.getTag();
         if (id.equals("<none>:<none>")) { // NOI18N

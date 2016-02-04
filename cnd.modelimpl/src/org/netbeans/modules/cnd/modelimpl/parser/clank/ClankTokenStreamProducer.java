@@ -528,6 +528,14 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                             // do not really enter
                             continuePreprocessing = false;
                         }
+                    } else if (includeDirectiveIndex > seekEnterToThisIncludeInfo.getIncludeDirectiveIndex()) {
+                        // i.e. we skipped onEnter hook due to skipByGuard optimization
+                        // so we've got index 1 without getting index 0
+                        // this is corrupted include stack, we don't want to go this way anymore
+                        state = State.CORRUPTED_INCLUDE_CHAIN;
+                        assert preparedPreprocessorOutput == null;
+                        // do not really enter
+                        continuePreprocessing = false;
                     } else {
                         assert includeDirectiveIndex < seekEnterToThisIncludeInfo.getIncludeDirectiveIndex() : "why hasn't stopped after interested file? " + seekEnterToThisIncludeInfo;
                         // before interested file we met #include directive
@@ -763,7 +771,10 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                 }
             }
             if (CndUtils.isDebugMode()) {
-                CndUtils.assertTrueInConsole(!isInsideInterestedFile() || this.interestedFile.equals(enteredToFileImpl), "" + isInsideInterestedFile() + ": inconsistency between " + this.interestedFile + " and ", enteredToFileImpl);
+                final boolean anAssert = !isInsideInterestedFile() || this.interestedFile.equals(enteredToFileImpl);
+                if (!anAssert) {
+                    CndUtils.assertTrueInConsole(anAssert, "" + isInsideInterestedFile() + ": inconsistency between " + this.interestedFile + " and ", enteredToFileImpl);
+                }
                 CndUtils.assertPathsEqualInConsole(enteredToFileImpl.getAbsolutePath(), enteredTo.getFilePath(), "Expected {0}\n got {1}", enteredToFileImpl, enteredTo);
             }
             pushCurrentFile(enteredToFileImpl);

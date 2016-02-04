@@ -57,8 +57,6 @@ public final class DockerContainer implements DockerEntity {
         STOPPED
     }
 
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
-
     private final DockerInstance instance;
 
     private final String id;
@@ -75,18 +73,6 @@ public final class DockerContainer implements DockerEntity {
         this.image = image;
         this.name = name;
         this.status = status;
-        instance.getEventBus().addContainerListener(new DockerEvent.Listener() {
-            @Override
-            public void onEvent(DockerEvent event) {
-                if (event.getId().equals(DockerContainer.this.id)) {
-                    Status fresh = org.netbeans.modules.docker.DockerUtils.getContainerStatus(event);
-                    if (fresh != null) {
-                        setStatus(fresh);
-                    }
-                }
-            }
-        });
-        // FIXME refresh the state once we are listening
     }
 
     public DockerInstance getInstance() {
@@ -112,30 +98,7 @@ public final class DockerContainer implements DockerEntity {
     }
 
     public Status getStatus() {
-        synchronized (this) {
-            return status;
-        }
-    }
-
-    public void setStatus(Status status) {
-        boolean fire = false;
-        synchronized (this) {
-            if (this.status != status) {
-                this.status = status;
-                fire = true;
-            }
-        }
-        if (fire) {
-            changeSupport.fireChange();
-        }
-    }
-
-    public void addChangeListener(ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
-    }
-
-    public void removeChangeListener(ChangeListener listener) {
-        changeSupport.removeChangeListener(listener);
+        return status;
     }
 
     @Override

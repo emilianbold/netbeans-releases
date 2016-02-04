@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.57
+#Version 7.63.2
 
 CLSS public java.awt.Canvas
 cons public init()
@@ -936,6 +936,7 @@ intf java.awt.ItemSelectable
 intf java.awt.event.ActionListener
 intf javax.accessibility.Accessible
 intf javax.swing.event.ListDataListener
+meth protected boolean processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
 meth protected java.beans.PropertyChangeListener createActionPropertyChangeListener(javax.swing.Action)
 meth protected java.lang.String paramString()
 meth protected javax.swing.JComboBox$KeySelectionManager createDefaultKeySelectionManager()
@@ -1119,6 +1120,8 @@ meth public void firePropertyChange(java.lang.String,boolean,boolean)
 meth public void firePropertyChange(java.lang.String,char,char)
 meth public void firePropertyChange(java.lang.String,int,int)
 meth public void grabFocus()
+meth public void hide()
+ anno 0 java.lang.Deprecated()
 meth public void paint(java.awt.Graphics)
 meth public void paintImmediately(int,int,int,int)
 meth public void paintImmediately(java.awt.Rectangle)
@@ -1626,6 +1629,10 @@ meth public abstract void removeDocumentListener(javax.swing.event.DocumentListe
 meth public abstract void removeUndoableEditListener(javax.swing.event.UndoableEditListener)
 meth public abstract void render(java.lang.Runnable)
 
+CLSS public abstract interface javax.swing.text.Position
+innr public final static Bias
+meth public abstract int getOffset()
+
 CLSS public abstract interface javax.swing.text.StyledDocument
 intf javax.swing.text.Document
 meth public abstract java.awt.Color getBackground(javax.swing.text.AttributeSet)
@@ -1735,27 +1742,12 @@ meth public abstract void open()
 CLSS public abstract interface org.netbeans.api.actions.Printable
 meth public abstract void print()
 
-CLSS public abstract interface !annotation org.netbeans.api.templates.TemplateRegistration
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD, PACKAGE])
-intf java.lang.annotation.Annotation
-meth public abstract !hasdefault boolean requireProject()
-meth public abstract !hasdefault int position()
-meth public abstract !hasdefault java.lang.String description()
-meth public abstract !hasdefault java.lang.String displayName()
-meth public abstract !hasdefault java.lang.String iconBase()
-meth public abstract !hasdefault java.lang.String id()
-meth public abstract !hasdefault java.lang.String scriptEngine()
-meth public abstract !hasdefault java.lang.String targetName()
-meth public abstract !hasdefault java.lang.String[] category()
-meth public abstract !hasdefault java.lang.String[] content()
-meth public abstract java.lang.String folder()
-
-CLSS public abstract interface !annotation org.netbeans.api.templates.TemplateRegistrations
- anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE, METHOD, PACKAGE])
-intf java.lang.annotation.Annotation
-meth public abstract org.netbeans.api.templates.TemplateRegistration[] value()
+CLSS public abstract org.netbeans.api.templates.CreateFromTemplateHandler
+cons public init()
+meth protected abstract boolean accept(org.netbeans.api.templates.CreateDescriptor)
+meth protected abstract java.util.List<org.openide.filesystems.FileObject> createFromTemplate(org.netbeans.api.templates.CreateDescriptor) throws java.io.IOException
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+supr java.lang.Object
 
 CLSS public org.openide.DialogDescriptor
 cons public init(java.lang.Object,java.lang.String)
@@ -2322,6 +2314,7 @@ meth public java.lang.String iconResource()
  anno 0 java.lang.Deprecated()
 meth public org.openide.util.HelpCtx getHelpCtx()
 supr org.openide.util.actions.NodeAction
+hfds SCRIPT_ENGINE_ATTR
 hcls FolderNodeAcceptor
 
 CLSS public org.openide.actions.ToolsAction
@@ -2846,7 +2839,7 @@ meth public void processKeyEvent(java.awt.event.KeyEvent)
 meth public void setAlwaysShown(boolean)
 meth public void setEnabled(boolean)
 supr java.lang.Object
-hfds CLIENT_PROPERTY_KEY,ICON_FIND,ICON_FIND_WITH_MENU,alwaysShown,animationTimer,asynchronous,callback,component,constraints,enabled,popupMenu,quickSearchKeyAdapter,rp,searchFieldListener,searchPanel,searchTextField
+hfds CLIENT_PROPERTY_KEY,ICON_FIND,ICON_FIND_WITH_MENU,alwaysShown,animationTimer,asynchronous,callback,component,constraints,enabled,hasSearchText,popupMenu,quickSearchKeyAdapter,rp,searchFieldListener,searchPanel,searchTextField
 hcls AnimationTimer,LazyFire,QS_FIRE,SearchFieldListener,SearchPanel,SearchTextField
 
 CLSS public abstract interface static org.openide.awt.QuickSearch$Callback
@@ -3084,7 +3077,7 @@ meth public void setDnDListener(org.openide.awt.Toolbar$DnDListener)
 meth public void setUI(javax.swing.plaf.ToolBarUI)
 meth public void setVisible(boolean)
 supr org.openide.awt.ToolbarWithOverflow
-hfds LOG,backingFolder,displayName,emptyInsets,isMetalLaF,label,processor,serialVersionUID
+hfds LOG,backingFolder,displayName,emptyAction,emptyInsets,isMetalLaF,label,processor,serialVersionUID
 hcls DefaultIconButton,Folder
 
 CLSS public static org.openide.awt.Toolbar$DnDEvent
@@ -3327,7 +3320,9 @@ cons public init()
 fld public final static java.lang.String FREE_FILE_EXTENSION = "freeFileExtension"
 meth protected abstract boolean accept(org.openide.filesystems.FileObject)
 meth protected abstract org.openide.filesystems.FileObject createFromTemplate(org.openide.filesystems.FileObject,org.openide.filesystems.FileObject,java.lang.String,java.util.Map<java.lang.String,java.lang.Object>) throws java.io.IOException
-supr java.lang.Object
+meth protected java.util.List<org.openide.filesystems.FileObject> createFromTemplate(org.netbeans.api.templates.CreateDescriptor) throws java.io.IOException
+meth public boolean accept(org.netbeans.api.templates.CreateDescriptor)
+supr org.netbeans.api.templates.CreateFromTemplateHandler
 
 CLSS public abstract interface org.openide.loaders.DataFilter
 fld public final static long serialVersionUID = 0
@@ -3586,7 +3581,7 @@ meth public void removeVetoableChangeListener(java.beans.VetoableChangeListener)
 meth public void setModified(boolean)
 meth public void setValid(boolean) throws java.beans.PropertyVetoException
 supr java.lang.Object
-hfds EA_ASSIGNED_LOADER,EA_ASSIGNED_LOADER_MODULE,LOG,OBJ_LOG,PROGRESS_INFO_TL,REGISTRY_INSTANCE,changeSupport,item,listenersMethodLock,loader,modif,modified,nodeCreationLock,nodeDelegate,serialVersionUID,syncModified,synchObject,vetoableChangeSupport,warnedClasses
+hfds BEING_CREATED,EA_ASSIGNED_LOADER,EA_ASSIGNED_LOADER_MODULE,LOCK,LOG,OBJ_LOG,PROGRESS_INFO_TL,REGISTRY_INSTANCE,changeSupport,changeSupportUpdater,item,loader,modif,modified,nodeDelegate,serialVersionUID,syncModified,synchObject,vetoableChangeSupport,warnedClasses
 hcls CreateAction,DOSavable,ModifiedRegistry,ProgressInfo,Replace
 
 CLSS public abstract interface static org.openide.loaders.DataObject$Container
@@ -4637,7 +4632,7 @@ meth public void removeChangeListener(javax.swing.event.ChangeListener)
 meth public void saveDocument() throws java.io.IOException
 meth public void setMIMEType(java.lang.String)
 supr org.openide.windows.CloneableOpenSupport
-hfds ERR,LOCAL_CLOSE_DOCUMENT,LOCK_PRINTING,PROP_PANE,alreadyModified,annotationsLoaded,checkModificationLock,docFilter,inUserQuestionExceptionHandler,kit,lastReusable,lastSaveTime,lastSelected,lineSet,lineSetWHM,listener,listeners,listeningOnEnv,lookup,mimeType,openClose,positionManager,preventModification,printing,propertyChangeSupport,reloadDialogOpened,undoRedo,warnedClasses
+hfds ERR,LOCAL_CLOSE_DOCUMENT,LOCK_PRINTING,PROP_PANE,alreadyModified,annotationsLoaded,checkModificationLock,docFilter,inUserQuestionExceptionHandler,isSaving,kit,lastReusable,lastSaveTime,lastSelected,lineSet,lineSetLineVector,listener,listeners,listeningOnEnv,lookup,mimeType,openClose,positionManager,preventModification,printing,propertyChangeSupport,reloadDialogOpened,undoRedo,warnedClasses
 hcls DocFilter,Listener,PlainEditorKit
 
 CLSS public abstract interface static org.openide.text.CloneableEditorSupport$Env
@@ -4709,7 +4704,7 @@ meth public java.util.Date getTime()
 meth public void markModified() throws java.io.IOException
 meth public void unmarkModified()
 supr org.openide.loaders.OpenSupport$Env
-hfds BIG_FILE_THRESHOLD_MB,action,canWrite,fileLock,fileObject,serialVersionUID,warnedFiles
+hfds BIG_FILE_THRESHOLD_MB,action,canWrite,fileLock,fileObject,sentBigFileInfo,serialVersionUID,warnedFiles
 hcls ME,SaveAsCapableImpl
 
 CLSS public abstract org.openide.text.DocumentLine
@@ -4737,7 +4732,7 @@ meth public void unmarkCurrentLine()
 meth public void unmarkError()
  anno 0 java.lang.Deprecated()
 supr org.openide.text.Line
-hfds assigned,breakpoint,current,docL,error,lineParts,listener,serialVersionUID
+hfds assigned,breakpoint,current,dlEqualsCounter,docL,error,lineParts,listener,serialVersionUID
 hcls FindAnnotationPosition,LR,Part
 
 CLSS public abstract static org.openide.text.DocumentLine$Set
@@ -4750,6 +4745,7 @@ meth public org.openide.text.Line getCurrent(int)
 meth public org.openide.text.Line getOriginal(int)
 supr org.openide.text.Line$Set
 hfds list,listener
+hcls OffsetLineCreator
 
 CLSS public org.openide.text.EditorSupport
  anno 0 java.lang.Deprecated()
@@ -4957,7 +4953,7 @@ meth public abstract org.openide.text.Line getOriginal(int)
 meth public final java.util.Date getDate()
 meth public int getOriginalLineNumber(org.openide.text.Line)
 supr java.lang.Object
-hfds date,whm
+hfds date,lineVector
 
 CLSS public final static !enum org.openide.text.Line$ShowOpenType
  outer org.openide.text.Line
@@ -5071,6 +5067,7 @@ hfds begin,end,serialVersionUID
 
 CLSS public final org.openide.text.PositionRef
 intf java.io.Serializable
+intf javax.swing.text.Position
 meth public int getColumn() throws java.io.IOException
 meth public int getLine() throws java.io.IOException
 meth public int getOffset()
@@ -5079,7 +5076,7 @@ meth public javax.swing.text.Position getPosition() throws java.io.IOException
 meth public javax.swing.text.Position$Bias getPositionBias()
 meth public org.openide.text.CloneableEditorSupport getCloneableEditorSupport()
 supr java.lang.Object
-hfds insertAfter,kind,manager,serialVersionUID
+hfds LOG,insertAfter,kind,manager,serialVersionUID
 hcls Manager
 
 CLSS public final org.openide.text.PrintPreferences
@@ -5179,7 +5176,7 @@ meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Resul
 meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
 meth public static org.openide.util.Lookup getDefault()
 supr java.lang.Object
-hfds LOG,defaultLookup
+hfds LOG,defaultLookup,defaultLookupProvider
 hcls DefLookup,Empty
 
 CLSS public abstract interface static org.openide.util.Lookup$Provider

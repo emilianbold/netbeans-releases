@@ -46,6 +46,7 @@ package org.netbeans.modules.web.javascript.debugger.breakpoints;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -63,9 +64,13 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.common.api.RemoteFileCache;
+import org.netbeans.modules.web.common.sourcemap.SourceMapsScanner;
+import org.netbeans.modules.web.common.sourcemap.SourceMapsTranslator;
+import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.Script;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -80,7 +85,8 @@ import org.openide.util.RequestProcessor;
  */
 @LazyActionsManagerListener.Registration(path="javascript-debuggerengine")
 public class BreakpointRuntimeSetter extends LazyActionsManagerListener
-                                     implements LazyDebuggerManagerListener {
+                                     implements LazyDebuggerManagerListener,
+                                                Debugger.ScriptsListener {
 
     public static final RequestProcessor RP = new RequestProcessor("Breakpoint updater");
     
@@ -101,10 +107,11 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
             projectSourceRoots = getProjectSourceRoots(prj);
         }
         DebuggerManager.getDebuggerManager().addDebuggerListener(this);
-        createBreakpointImpls();
+        d.addScriptsListener(this);
+        createBreakpointImpls(pc.getProject());
     }
     
-    private void createBreakpointImpls() {
+    private void createBreakpointImpls(Project p) {
         Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
         List<WebKitBreakpointManager> toAdd = new ArrayList<>();
         synchronized (breakpointImpls) {
@@ -127,9 +134,13 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
                 }
             }
         }
-        for (WebKitBreakpointManager bm : toAdd) {
-            if (bm.canAdd()) {
-                bm.add();
+        if (!toAdd.isEmpty()) {
+            SourceMapsTranslator scannedSMT = SourceMapsScanner.getInstance().scan(p);
+            MiscEditorUtil.registerProjectsSourceMapTranslator(d, scannedSMT);
+            for (WebKitBreakpointManager bm : toAdd) {
+                if (bm.canAdd()) {
+                    bm.add();
+                }
             }
         }
     }
@@ -182,6 +193,8 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
                 return ;
             }
         }
+        SourceMapsTranslator scannedSMT = SourceMapsScanner.getInstance().scan(pc.getProject());
+        MiscEditorUtil.registerProjectsSourceMapTranslator(d, scannedSMT);
         final WebKitBreakpointManager bm = (lb != null) ?
                                             createWebKitBreakpointManager(lb) :
                                             createWebKitBreakpointManager(ab);
@@ -230,6 +243,7 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
     @Override
     protected void destroy() {
         DebuggerManager.getDebuggerManager().removeDebuggerListener(this);
+        d.removeScriptsListener(this);
         List<WebKitBreakpointManager> toDestroy;
         synchronized (breakpointImpls) {
             toDestroy = new ArrayList<>(breakpointImpls.values());
@@ -304,6 +318,31 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
             }
         }
         return isInPrjSources;
+    }
+
+    @Override
+    public void scriptParsed(Script script) {
+        List<FileObject> mappedSourceFiles = MiscEditorUtil.registerScriptSourceMap(pc.getProject(), d, script);
+        if (mappedSourceFiles.size() > 0) {
+            Set<FileObject> sourceFiles = new HashSet<>(mappedSourceFiles);
+            final List<WebKitBreakpointManager> wbms = new ArrayList<>(sourceFiles.size());
+            synchronized (breakpointImpls) {
+                for (Breakpoint breakpoint : breakpointImpls.keySet()) {
+                    if (breakpoint instanceof JSLineBreakpoint) {
+                        JSLineBreakpoint jb = (JSLineBreakpoint) breakpoint;
+                        if (sourceFiles.contains(jb.getFileObject())) {
+                            WebKitBreakpointManager wbm = breakpointImpls.get(jb);
+                            wbms.add(wbm);
+                        }
+                    }
+                }
+            }
+            if (!wbms.isEmpty()) {
+                for (WebKitBreakpointManager wbm : wbms) {
+                    wbm.notifySourceMap();
+                }
+            }
+        }
     }
     
     

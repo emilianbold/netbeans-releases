@@ -43,25 +43,20 @@ package org.netbeans.modules.javascript.grunt.ui.actions;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.grunt.GruntBuildTool;
-import org.netbeans.modules.javascript.grunt.exec.GruntExecutable;
+import org.netbeans.modules.javascript.grunt.GruntBuildToolSupport;
 import org.netbeans.modules.javascript.grunt.file.GruntTasks;
 import org.netbeans.modules.javascript.grunt.ui.options.GruntOptionsPanelController;
-import org.netbeans.modules.javascript.grunt.util.GruntUtils;
 import org.netbeans.modules.web.clientproject.api.build.BuildTools;
 import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.awt.ActionID;
@@ -71,7 +66,6 @@ import org.openide.awt.ActionRegistration;
 import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
@@ -178,43 +172,15 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
 
     //~ Inner classes
 
-    private static final class TasksMenuSupportImpl implements BuildTools.TasksMenuSupport {
-
-        private final Project project;
-        @NullAllowed
-        private final FileObject gruntfile;
-        private final GruntTasks gruntTasks;
-
+    private static final class TasksMenuSupportImpl extends GruntBuildToolSupport implements BuildTools.TasksMenuSupport {
 
         public TasksMenuSupportImpl(Project project, @NullAllowed FileObject gruntfile) {
-            assert project != null;
-            this.project = project;
-            this.gruntfile = gruntfile;
-            gruntTasks = GruntBuildTool.forProject(project).getGruntTasks(gruntfile);
-        }
-
-        @Override
-        public Project getProject() {
-            return project;
-        }
-
-        @Override
-        public FileObject getWorkDir() {
-            if (gruntfile == null) {
-                return project.getProjectDirectory();
-            }
-            return gruntfile.getParent();
-        }
-
-        @Override
-        public String getIdentifier() {
-            return GruntBuildTool.IDENTIFIER;
+            super(project, gruntfile);
         }
 
         @NbBundle.Messages({
             "TasksMenuSupportImpl.tasks.label=&Task(s)",
             "TasksMenuSupportImpl.tasks.loading=Loading Tasks...",
-            "TasksMenuSupportImpl.tasks.reload=Reload Tasks",
             "TasksMenuSupportImpl.tasks.manage.advanced=Manage Task(s)",
             "TasksMenuSupportImpl.grunt.configure=Configure Grunt...",
         })
@@ -225,16 +191,12 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
                     return Bundle.RunGruntTaskAction_name();
                 case LOADING_TASKS:
                     return Bundle.TasksMenuSupportImpl_tasks_loading();
-                case RELOAD_TASKS:
-                    return Bundle.TasksMenuSupportImpl_tasks_reload();
                 case CONFIGURE_TOOL:
                     return Bundle.TasksMenuSupportImpl_grunt_configure();
                 case MANAGE_ADVANCED:
                     return Bundle.TasksMenuSupportImpl_tasks_manage_advanced();
                 case TASKS_LABEL:
                     return Bundle.TasksMenuSupportImpl_tasks_label();
-                case BUILD_TOOL_EXEC:
-                    return GruntExecutable.GRUNT_NAME;
                 default:
                     assert false : "Unknown title: " + title;
             }
@@ -244,21 +206,6 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
         @Override
         public String getDefaultTaskName() {
             return GruntTasks.DEFAULT_TASK;
-        }
-
-        @Override
-        public Future<List<String>> getTasks() {
-            return new TasksFuture(gruntTasks);
-        }
-
-        @Override
-        public void runTask(String... args) {
-            assert !EventQueue.isDispatchThread();
-            GruntExecutable grunt = getGruntExecutable();
-            if (grunt != null) {
-                GruntUtils.logUsageGruntBuild();
-                grunt.run(args);
-            }
         }
 
         @Override
@@ -275,56 +222,6 @@ public final class RunGruntTaskAction extends AbstractAction implements ContextA
         @Override
         public void configure() {
             OptionsDisplayer.getDefault().open(GruntOptionsPanelController.OPTIONS_PATH);
-        }
-
-        @CheckForNull
-        private GruntExecutable getGruntExecutable() {
-            if (gruntfile == null) {
-                return GruntExecutable.getDefault(project, true);
-            }
-            return GruntExecutable.getDefault(project, FileUtil.toFile(gruntfile).getParentFile(), true);
-        }
-
-    }
-
-    private static final class TasksFuture implements Future<List<String>> {
-
-        private final GruntTasks gruntTasks;
-
-
-        public TasksFuture(GruntTasks gruntTasks) {
-            assert gruntTasks != null;
-            this.gruntTasks = gruntTasks;
-        }
-
-        @Override
-        public boolean cancel(boolean mayInterruptIfRunning) {
-            return false;
-        }
-
-        @Override
-        public boolean isCancelled() {
-            return false;
-        }
-
-        @Override
-        public boolean isDone() {
-            return gruntTasks.getTasks() != null;
-        }
-
-        @Override
-        public List<String> get() throws InterruptedException, ExecutionException {
-            try {
-                return gruntTasks.loadTasks(null, null);
-            } catch (TimeoutException ex) {
-                assert false;
-            }
-            return null;
-        }
-
-        @Override
-        public List<String> get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-            return gruntTasks.loadTasks(timeout, unit);
         }
 
     }

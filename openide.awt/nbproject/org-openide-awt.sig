@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 7.62
+#Version 7.65.1
 
 CLSS public java.awt.Canvas
 cons public init()
@@ -808,6 +808,7 @@ intf java.awt.ItemSelectable
 intf java.awt.event.ActionListener
 intf javax.accessibility.Accessible
 intf javax.swing.event.ListDataListener
+meth protected boolean processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
 meth protected java.beans.PropertyChangeListener createActionPropertyChangeListener(javax.swing.Action)
 meth protected java.lang.String paramString()
 meth protected javax.swing.JComboBox$KeySelectionManager createDefaultKeySelectionManager()
@@ -991,6 +992,8 @@ meth public void firePropertyChange(java.lang.String,boolean,boolean)
 meth public void firePropertyChange(java.lang.String,char,char)
 meth public void firePropertyChange(java.lang.String,int,int)
 meth public void grabFocus()
+meth public void hide()
+ anno 0 java.lang.Deprecated()
 meth public void paint(java.awt.Graphics)
 meth public void paintImmediately(int,int,int,int)
 meth public void paintImmediately(java.awt.Rectangle)
@@ -1995,7 +1998,7 @@ meth public void processKeyEvent(java.awt.event.KeyEvent)
 meth public void setAlwaysShown(boolean)
 meth public void setEnabled(boolean)
 supr java.lang.Object
-hfds CLIENT_PROPERTY_KEY,ICON_FIND,ICON_FIND_WITH_MENU,alwaysShown,animationTimer,asynchronous,callback,component,constraints,enabled,popupMenu,quickSearchKeyAdapter,rp,searchFieldListener,searchPanel,searchTextField
+hfds CLIENT_PROPERTY_KEY,ICON_FIND,ICON_FIND_WITH_MENU,alwaysShown,animationTimer,asynchronous,callback,component,constraints,enabled,hasSearchText,popupMenu,quickSearchKeyAdapter,rp,searchFieldListener,searchPanel,searchTextField
 hcls AnimationTimer,LazyFire,QS_FIRE,SearchFieldListener,SearchPanel,SearchTextField
 
 CLSS public abstract interface static org.openide.awt.QuickSearch$Callback

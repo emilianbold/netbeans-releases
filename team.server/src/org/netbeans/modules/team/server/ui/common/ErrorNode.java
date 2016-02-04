@@ -70,7 +70,7 @@ public class ErrorNode extends LeafNode {
     private final LinkButton btnRefresh;
     private final Action defaultAction;
 
-    @Messages("LBL_Retry=retry")
+    @Messages({"# retry the refresh action", "LBL_Retry=retry"})
     public ErrorNode( String text, Action refreshAction ) {
         super( null );
         this.defaultAction = refreshAction;

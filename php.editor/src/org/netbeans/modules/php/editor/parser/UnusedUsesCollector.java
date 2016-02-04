@@ -50,11 +50,13 @@ import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.parser.astnodes.GroupUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
@@ -121,8 +123,9 @@ public class UnusedUsesCollector extends DefaultVisitor {
     @Override
     public void visit(UseStatement node) {
         List<UseStatementPart> parts = node.getParts();
-        if (parts.size() == 1) {
-            String correctName = getCorrectName(parts.get(0));
+        if (parts.size() == 1
+                && parts.get(0) instanceof SingleUseStatementPart) {
+            String correctName = getCorrectName((SingleUseStatementPart) parts.get(0));
             OffsetRange offsetRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
             unusedUsesOffsetRanges.put(correctName, new UnusedOffsetRanges(offsetRange, offsetRange));
         } else {
@@ -130,7 +133,7 @@ public class UnusedUsesCollector extends DefaultVisitor {
         }
     }
 
-    private String getCorrectName(UseStatementPart useStatementPart) {
+    private String getCorrectName(SingleUseStatementPart useStatementPart) {
         Identifier alias = useStatementPart.getAlias();
         String identifierName;
         if (alias != null) {
@@ -145,23 +148,53 @@ public class UnusedUsesCollector extends DefaultVisitor {
         return identifierName;
     }
 
+    // XXX endOffset should be start offset of the next UseStatementPart
     private void processUseStatementsParts(final List<UseStatementPart> parts) {
-        int lastStartOffset = 0;
-        for (int i = 0; i < parts.size(); i++) {
+        int lastStartOffset = -1;
+        int partsSize = parts.size();
+        for (int i = 0; i < partsSize; i++) {
             UseStatementPart useStatementPart = parts.get(i);
-            int endOffset = useStatementPart.getEndOffset();
-            if (i == 0) {
-                lastStartOffset = useStatementPart.getStartOffset();
-                assert i + 1 < parts.size();
-                UseStatementPart nextPart = parts.get(i + 1);
-                endOffset = nextPart.getStartOffset();
+            int endOffset;
+            if (useStatementPart instanceof SingleUseStatementPart) {
+                SingleUseStatementPart singleUseStatementPart = (SingleUseStatementPart) useStatementPart;
+                if (lastStartOffset == -1) {
+                    lastStartOffset = singleUseStatementPart.getStartOffset();
+                }
+                // XXX
+//            if (i == 0) {
+//                lastStartOffset = useStatementPart.getStartOffset();
+//                assert i + 1 < parts.size();
+//                SingleUseStatementPart nextPart = parts.get(i + 1);
+//                endOffset = nextPart.getStartOffset();
+//            }
+                endOffset = singleUseStatementPart.getEndOffset();
+                processSingleUseStatementPart(singleUseStatementPart, lastStartOffset, endOffset);
+                lastStartOffset = singleUseStatementPart.getEndOffset();
+            } else if (useStatementPart instanceof GroupUseStatementPart) {
+                GroupUseStatementPart groupUseStatementPart = (GroupUseStatementPart) useStatementPart;
+                List<SingleUseStatementPart> items = groupUseStatementPart.getItems();
+                if (items.isEmpty()) {
+                    continue;
+                }
+                if (lastStartOffset == -1) {
+                    lastStartOffset = items.get(0).getStartOffset();
+                }
+                for (SingleUseStatementPart item : items) {
+                    endOffset = item.getEndOffset();
+                    processSingleUseStatementPart(item, lastStartOffset, endOffset);
+                    lastStartOffset = item.getEndOffset();
+                }
+            } else {
+                assert false : "Unexpected class type: " + useStatementPart.getClass().getName(); // NOI18N
             }
-            String correctName = getCorrectName(useStatementPart);
-            OffsetRange rangeToVisualise = new OffsetRange(useStatementPart.getStartOffset(), useStatementPart.getEndOffset());
-            OffsetRange rangeToReplace = new OffsetRange(lastStartOffset, endOffset);
-            unusedUsesOffsetRanges.put(correctName, new UnusedOffsetRanges(rangeToVisualise, rangeToReplace));
-            lastStartOffset = useStatementPart.getEndOffset();
         }
+    }
+
+    private void processSingleUseStatementPart(SingleUseStatementPart singleUseStatementPart, int replaceStartOffset, int replaceEndOffset) {
+        String correctName = getCorrectName(singleUseStatementPart);
+        OffsetRange rangeToVisualise = new OffsetRange(singleUseStatementPart.getStartOffset(), singleUseStatementPart.getEndOffset());
+        OffsetRange rangeToReplace = new OffsetRange(replaceStartOffset, replaceEndOffset);
+        unusedUsesOffsetRanges.put(correctName, new UnusedOffsetRanges(rangeToVisualise, rangeToReplace));
     }
 
     public static final class UnusedOffsetRanges {

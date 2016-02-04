@@ -253,9 +253,12 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (confs != null) {
             for (Configuration conf : confs.toArray()) {
                 if (conf != null) {
-                    conf.setAuxObjects(Collections.<ConfigurationAuxObject>emptyList());
+                    conf.clear();
                 }
             }
+        }
+        for (Entry<String, Item> entry : projectItems.entrySet()) {
+            entry.getValue().onClose();
         }
         projectItems.clear();
         synchronized (sourceRoots) {

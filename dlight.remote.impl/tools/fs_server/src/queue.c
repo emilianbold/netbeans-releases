@@ -38,6 +38,7 @@
 
 #include "fs_common.h"
 #include "queue.h"
+#include "util.h"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -57,7 +58,7 @@ int  queue_size(queue *q) {
 }
 
 void queue_add(queue *q, void* data) {
-    queue_node *n = (queue_node*) malloc(sizeof(queue_node));
+    queue_node *n = (queue_node*) malloc_wrapper(sizeof(queue_node));
     n->data = data;
     n->next = 0;
     if (q->tail){

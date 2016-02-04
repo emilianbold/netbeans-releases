@@ -190,7 +190,12 @@ public class AttachmentsPanel extends JPanel {
                 dateLabel = new JLabel(date != null ? DateFormat.getDateInstance().format(date) : ""); // NOI18N
                 JComponent authorComponent;
                 if(email != null && !email.isEmpty()) {
-                    authorComponent = new LinkButton.MailtoButton(authorName, NbBundle.getMessage(AttachmentsPanel.class, "AttachmentPanel.authorButton.AccessibleContext.accessibleDescription"), email);
+                    authorComponent = new LinkButton.MailtoButton(
+                            authorName, 
+                            NbBundle.getMessage(AttachmentsPanel.class, "AttachmentPanel.authorButton.AccessibleContext.accessibleDescription"), 
+                            email,
+                            NbBundle.getMessage(CommentsPanel.class, "IssuePanel.headerLabel.format", new Object[] {issue.getID(), issue.getSummary()}), // subject NOI18N
+                            null);
                 } else {
                     authorComponent = new JLabel(authorName);
                 }

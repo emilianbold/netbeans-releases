@@ -45,6 +45,7 @@ import org.netbeans.modules.odcs.ui.utils.Utils;
 import java.awt.Cursor;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -53,7 +54,7 @@ import javax.swing.border.Border;
 import oracle.clouddev.server.profile.activity.client.api.Activity;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.ui.project.activity.ActivityDisplayer;
-import org.netbeans.modules.odcs.ui.project.activity.ActivityTypes;
+import org.netbeans.modules.odcs.client.api.ActivityTypes;
 import org.netbeans.modules.odcs.ui.project.activity.BuildActivityDisplayer;
 import org.netbeans.modules.odcs.ui.project.activity.DeploymentActivityDisplayer;
 import org.netbeans.modules.odcs.ui.project.activity.GenericActivityDisplayer;
@@ -83,7 +84,7 @@ public class ActivityPanel extends javax.swing.JPanel implements Expandable, Act
             case TASK:
                 activityAccessor = new TaskActivityDisplayer(activity, projectHandle, maxWidth);
                 break;
-            case SCM_COMMIT:
+            case SCM_PUSH:
             case SCM_REPO:
                 activityAccessor = new ScmActivityDisplayer(activity, projectHandle, projectHandle.getTeamProject().getScmUrl(), maxWidth);
                 break;
@@ -109,7 +110,8 @@ public class ActivityPanel extends javax.swing.JPanel implements Expandable, Act
         initComponents();
         lblIcon.setIcon(activityAccessor.getActivityIcon());
         SimpleDateFormat dateFormat = new SimpleDateFormat("hh:mm a");
-        lblTime.setText(dateFormat.format(activityAccessor.getActivityDate()));
+        lblTime.setText(dateFormat.format(activityAccessor.getActivityDate()));        
+        lblTime.setToolTipText(DateFormat.getDateTimeInstance().format(activityAccessor.getActivityDate()));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(0, 5, 0, 3);

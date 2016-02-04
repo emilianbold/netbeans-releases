@@ -340,7 +340,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             System.out.println("fireFilesPropertiesChanged "); // NOI18N
         }
         for (NativeProjectItemsListener listener : getListenersCopy()) {
-            listener.filesPropertiesChanged();
+            listener.filesPropertiesChanged(this);
         }
     }
 

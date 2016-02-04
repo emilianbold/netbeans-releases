@@ -45,7 +45,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
@@ -64,10 +66,11 @@ import org.openide.text.Line;
 
 @DebuggerServiceRegistration(types=LazyDebuggerManagerListener.class)
 public class CallStackAnnotationListener extends DebuggerManagerAdapter
-                                         implements Debugger.Listener, PropertyChangeListener {
+                                         implements PropertyChangeListener {
     
     private ProjectContext pc;
     private final List<Annotation> annotations = new ArrayList<Annotation>();
+    private final Map<Debugger, Debugger.Listener> debuggerListeners = new HashMap<>();
     
     @Override
     public String[] getProperties() {
@@ -79,7 +82,7 @@ public class CallStackAnnotationListener extends DebuggerManagerAdapter
     public void engineAdded(DebuggerEngine engine) {
         Debugger d = engine.lookupFirst("", Debugger.class);
         if (d != null) {
-            d.addListener(this);
+            addDebuggerListener(d);
             d.addPropertyChangeListener(this);
             pc = engine.lookupFirst(null, ProjectContext.class);
             List<CallFrame> stackTrace;
@@ -88,7 +91,7 @@ public class CallStackAnnotationListener extends DebuggerManagerAdapter
             } else {
                 stackTrace = Collections.emptyList();
             }
-            updateAnnotations(stackTrace);
+            updateAnnotations(d, stackTrace);
         }
     }
 
@@ -96,29 +99,13 @@ public class CallStackAnnotationListener extends DebuggerManagerAdapter
     public void engineRemoved(DebuggerEngine engine) {
         Debugger d = engine.lookupFirst("", Debugger.class);
         if (d != null) {
-            d.removeListener(this);
+            removeDebuggerListener(d);
             d.removePropertyChangeListener(this);
             pc = null;
-            updateAnnotations(Collections.<CallFrame>emptyList());
+            updateAnnotations(null, Collections.<CallFrame>emptyList());
         }
     }
 
-    @Override
-    public void paused(List<CallFrame> callStack, String reason) {
-        updateAnnotations(callStack);
-    }
-
-    @Override
-    public void resumed() {
-        updateAnnotations(Collections.<CallFrame>emptyList());
-    }
-
-    @Override
-    public void reset() {}
-
-    @Override
-    public void enabled(boolean enabled) {}
-    
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String propertyName = evt.getPropertyName();
@@ -128,7 +115,10 @@ public class CallStackAnnotationListener extends DebuggerManagerAdapter
                 Script script = cf.getScript();
                 if (script != null) {
                     Project project = pc != null ? pc.getProject() : null;
-                    Line line = MiscEditorUtil.getLine(project, script, cf.getLineNumber());
+                    Debugger d = (Debugger) evt.getSource();
+                    Line line = MiscEditorUtil.getLine(d, project, script,
+                                                       cf.getLineNumber(),
+                                                       cf.getColumnNumber());
                     MiscEditorUtil.showLine(line, true);
                 }
             }
@@ -145,13 +135,13 @@ public class CallStackAnnotationListener extends DebuggerManagerAdapter
                     } else {
                         stackTrace = Collections.emptyList();
                     }
-                    updateAnnotations(stackTrace);
+                    updateAnnotations(d, stackTrace);
                 }
             }
         }
     }
     
-    private void updateAnnotations(List<CallFrame> stackTrace) {
+    private void updateAnnotations(Debugger d, List<CallFrame> stackTrace) {
         for (Annotation ann : annotations) {
             ann.detach();
         }
@@ -163,7 +153,9 @@ public class CallStackAnnotationListener extends DebuggerManagerAdapter
                 continue;
             }
             Project project = pc != null ? pc.getProject() : null;
-            final Line line = MiscEditorUtil.getLine(project, script, cf.getLineNumber());
+            final Line line = MiscEditorUtil.getLine(d, project, script,
+                                                     cf.getLineNumber(),
+                                                     cf.getColumnNumber());
             if (line == null) {
                 first = false;
                 continue;
@@ -178,6 +170,50 @@ public class CallStackAnnotationListener extends DebuggerManagerAdapter
             }
             annotations.add(anno);
         }
+    }
+    
+    private void addDebuggerListener(Debugger d) {
+        Debugger.Listener l = new DebuggerAnnotationsListener(d);
+        synchronized (debuggerListeners) {
+            debuggerListeners.put(d, l);
+        }
+        d.addListener(l);
+    }
+    
+    private void removeDebuggerListener(Debugger d) {
+        Debugger.Listener l;
+        synchronized (debuggerListeners) {
+            l = debuggerListeners.remove(d);
+        }
+        if (l != null) {
+            d.removeListener(l);
+        }
+    }
+    
+    private class DebuggerAnnotationsListener implements Debugger.Listener {
+        
+        private final Debugger d;
+        
+        private DebuggerAnnotationsListener(Debugger d) {
+            this.d = d;
+        }
+        
+        @Override
+        public void paused(List<CallFrame> callStack, String reason) {
+            updateAnnotations(d, callStack);
+        }
+
+        @Override
+        public void resumed() {
+            updateAnnotations(null, Collections.<CallFrame>emptyList());
+        }
+
+        @Override
+        public void reset() {}
+
+        @Override
+        public void enabled(boolean enabled) {}
+        
     }
 
 }

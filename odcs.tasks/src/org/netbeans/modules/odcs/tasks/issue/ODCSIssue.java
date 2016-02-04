@@ -98,7 +98,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Tomas Stupka
  */
-public class ODCSIssue extends AbstractNbTaskWrapper {
+public class ODCSIssue extends AbstractNbTaskWrapper implements Comparable<ODCSIssue> {
 
     private final ODCSRepository repository;
 
@@ -330,8 +330,7 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
         return displayName;
     }
 
-    @Messages({"LBL_NEW_STATUS=New", "LBL_SUMMARY_CHANGED_STATUS=Summary changed",
-        "# CC is the ODCS task trackers attributes name, do not translate",
+    @Messages({"LBL_SUMMARY_CHANGED_STATUS=Summary changed",        
         "LBL_CC_FIELD_CHANGED_STATUS=CC field changed",
         "LBL_TAGS_CHANGED_STATUS=Tags changed",
         "LBL_DEPENDENCE_CHANGED_STATUS=Associations changed",
@@ -998,6 +997,17 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     public String getPriorityID() {
         final Priority priority = getPriority();
         return priority != null ? priority.getId().toString() : ""; // NOI18N
+    }
+
+    @Override
+    public int compareTo(ODCSIssue o) {
+        if(getID() == null) {
+            return -1;
+        }
+        if(o.getID() == null) {
+            return 1;
+        }
+        return Long.compare(Long.parseLong(getID()), Long.parseLong(o.getID()));
     }
 
     private static class IssueFieldColumnDescriptor extends ColumnDescriptor<String> {

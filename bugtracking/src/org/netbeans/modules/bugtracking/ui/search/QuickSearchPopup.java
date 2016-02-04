@@ -73,7 +73,6 @@ import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.netbeans.modules.bugtracking.ui.search.PopupItem.IssueItem;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
@@ -159,6 +158,10 @@ class QuickSearchPopup extends javax.swing.JPanel
     }
 
     void selectNext() {
+        if(noResultsLabel.isVisible()) {
+            runSearchLocalTask();
+            return;
+        }        
         int oldSel = jList1.getSelectedIndex();
         if (oldSel >= 0 && oldSel < jList1.getModel().getSize() - 1) {
             int idx = oldSel + 1;
@@ -170,12 +173,15 @@ class QuickSearchPopup extends javax.swing.JPanel
     }
 
     void selectPrev() {
+        if(noResultsLabel.isVisible()) {
+            return;
+        }
         int oldSel = jList1.getSelectedIndex();
         if (oldSel > 0) {
             int idx = oldSel - 1;
             jList1.setSelectedIndex(idx);
             jList1.scrollRectToVisible(jList1.getCellBounds(idx, idx));
-        } 
+        }
     }
 
     public JList getList() {
@@ -223,18 +229,23 @@ class QuickSearchPopup extends javax.swing.JPanel
         updateTimer.stop();
         // search only if we are not cancelled already
         if (comboBar.isTextFieldFocusOwner()) {
-            // start waiting on all providers execution
-            runTask(new Runnable() {
-                @Override
-                public void run() {
-                    searchLocalIssues();
-                }
-            });
+            runSearchLocalTask();
         }
+    }
+
+    private void runSearchLocalTask() {
+        // start waiting on all providers execution
+        runTask(new Runnable() {
+            @Override
+            public void run() {
+                searchLocalIssues();
+            }
+        });
     }
 
     void setRepository(RepositoryImpl repo) {
         repository = repo;
+        searchLocalIssues();
     }
 
     private void runTask(Runnable r) {
@@ -246,27 +257,21 @@ class QuickSearchPopup extends javax.swing.JPanel
 
     private void searchLocalIssues() {
         String criteria = comboBar.getText();
-        if(criteria.equals("")) { // NOI18N
-            rModel.setContent(null);
-            return;
-        }
-        currentHitlist = new ArrayList<PopupItem>();
-
+        currentHitlist = new ArrayList<>();
+   
         // first add opened issues
-        Set<String> ids = new HashSet<String>();
+        Set<String> ids = new HashSet<>();
         addIssues(getByIdOrSummary(getOpenIssues(repository), criteria), ids);
 
         // all localy known issues
         Collection<QueryImpl> queries = repository.getQueries();
-        for (QueryImpl q : queries) {
-            addIssues(getByIdOrSummary(q.getIssues(), criteria), ids);
-        }
+        queries.stream().forEach((q) -> addIssues(getByIdOrSummary(q.getIssues(), criteria), ids));
 
         // or at least what's already cached
         addIssues(getByIdOrSummary(ResultsModel.getInstance().getCachedIssues(repository), criteria), ids);
-        populateModel(criteria, false, true);
+        populateModel(criteria, false, !criteria.isEmpty());
     }
-
+    
     private void addIssues(Collection<IssueImpl> issues, Set<String> ids) {
         if(issues == null) {
             return;
@@ -277,13 +282,13 @@ class QuickSearchPopup extends javax.swing.JPanel
             }
             currentHitlist.add(new PopupItem.IssueItem(issue));
             ids.add(issue.getID());
-        }
+        }            
     }
 
     private void populateModel(final String criteria, boolean fullList, final boolean addSearchItem) {
         List<PopupItem> modelList = new ArrayList<PopupItem>();
         List<IssueImpl> recentIssues = new ArrayList<IssueImpl>(BugtrackingManager.getInstance().getRecentIssues(repository));
-        Collections.sort(currentHitlist, new IssueComparator(recentIssues));
+        Collections.sort(currentHitlist, Collections.reverseOrder(new IssueComparator(recentIssues)));
 
         for (PopupItem item : currentHitlist) {
             modelList.add(item);
@@ -317,10 +322,10 @@ class QuickSearchPopup extends javax.swing.JPanel
         @Override
         public int compare(PopupItem i1, PopupItem i2) {
             if(!(i1 instanceof IssueItem)) {
-                return -1;
+                return 1;
             }
             if(!(i2 instanceof IssueItem)) {
-                return 1;
+                return -1;
             }
             
             IssueItem ii1 = (IssueItem) i1;
@@ -329,15 +334,15 @@ class QuickSearchPopup extends javax.swing.JPanel
             int idx2 = getRecentIssueIdx(ii2.getIssue());
 
             if(idx1 > -1 && idx2 > -1) {
-                return idx1 > idx2 ? 1 : (idx2 > idx1 ? -1 : 0);
+                return idx1 > idx2 ? -1 : (idx2 > idx1 ? 1 : 0);
             }
             if(idx1 > -1) {
-                return -1;
-            }
-            if(idx2 > -1) {
                 return 1;
             }
-            return ii1.getIssue().getID().compareTo(ii2.getIssue().getID());
+            if(idx2 > -1) {
+                return -1;
+            }
+            return ii1.getIssue().compareTo(ii2.getIssue());
         }
 
         private int getRecentIssueIdx(IssueImpl issue) {

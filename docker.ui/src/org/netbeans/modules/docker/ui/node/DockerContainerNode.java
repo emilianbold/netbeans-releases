@@ -46,11 +46,13 @@ import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.api.DockerContainer;
+import org.netbeans.modules.docker.api.DockerContainerDetail;
 import org.netbeans.modules.docker.ui.commit.CommitContainerAction;
 import org.netbeans.modules.docker.ui.rename.RenameContainerAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
@@ -61,7 +63,7 @@ import org.openide.util.lookup.Lookups;
 public class DockerContainerNode extends AbstractNode {
 
     private static final String DOCKER_INSTANCE_ICON =
-            "org/netbeans/modules/docker/ui/resources/docker_image_small.png"; // NOI18N
+            "org/netbeans/modules/docker/ui/resources/docker_image.png"; // NOI18N
 
     private static final String PAUSED_ICON =
             "org/netbeans/modules/docker/ui/resources/badge_paused.png"; // NOI18N
@@ -69,20 +71,37 @@ public class DockerContainerNode extends AbstractNode {
     private static final String RUNNING_ICON
             = "org/netbeans/modules/docker/ui/resources/badge_running.png"; // NOI18N
 
-    private final DockerContainer container;
+    private final EnhancedDockerContainer container;
 
-    public DockerContainerNode(DockerContainer container) {
-        super(Children.LEAF, Lookups.fixed(container));
+    private final ChangeListener listener = new ChangeListener() {
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            fireIconChange();
+            fireDisplayNameChange(null, null);
+        }
+    };
+
+    public DockerContainerNode(EnhancedDockerContainer container) {
+        super(Children.LEAF, Lookups.fixed(container.getContainer(), container));
         this.container = container;
-        setDisplayName(container.getImage() + container.getName() + " [" + container.getShortId() + "]");
-        setShortDescription(container.getShortId());
+        DockerContainer dockerContainer = container.getContainer();
+        setShortDescription(dockerContainer.getShortId());
         setIconBaseWithExtension(DOCKER_INSTANCE_ICON);
-        this.container.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                fireIconChange();
-            }
-        });
+
+        container.addChangeListener(WeakListeners.change(listener, container));
+        container.refresh();
+    }
+
+    @Override
+    public String getDisplayName() {
+        DockerContainer dockerContainer = container.getContainer();
+        DockerContainerDetail detail = container.getDetail();
+        StringBuilder ret = new StringBuilder(dockerContainer.getImage());
+        if (detail.getName() != null) {
+            ret.append(detail.getName());
+        }
+        ret.append(" [").append(dockerContainer.getShortId()).append("]");
+        return ret.toString();
     }
 
     @Override
@@ -101,6 +120,8 @@ public class DockerContainerNode extends AbstractNode {
             null,
             SystemAction.get(CopyIdAction.class),
             null,
+            SystemAction.get(RefreshAction.class),
+            null,
             SystemAction.get(RemoveContainerAction.class)
         };
     }
@@ -108,7 +129,7 @@ public class DockerContainerNode extends AbstractNode {
     @Override
     public Image getIcon(int type) {
         Image original = super.getIcon(type);
-        return badgeIcon(original, container.getStatus());
+        return badgeIcon(original, container.getDetail().getStatus());
     }
 
     private static Image badgeIcon(Image image, DockerContainer.Status status) {

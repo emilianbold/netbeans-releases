@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.59
+#Version 1.64.1
 
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
@@ -122,7 +122,7 @@ meth public static org.openide.filesystems.FileObject findJavadocRoot(org.openid
 meth public static org.openide.filesystems.FileObject findPackageRoot(org.openide.filesystems.FileObject)
 meth public static org.openide.filesystems.FileObject findSourceRoot(org.openide.filesystems.FileObject)
 supr java.lang.Object
-hfds HOW_MANY_DIRS_TO_TRAVERSE_DEEP,JAVA_FILE,LOG,PACKAGE_INFO
+hfds JAVADOC_TRAVERSE_DEEPTH,JAVA_FILE,LOG,PACKAGE_INFO,SRC_TRAVERSE_DEEPTH
 
 CLSS public final org.netbeans.spi.java.project.support.LookupMergerSupport
 cons public init()

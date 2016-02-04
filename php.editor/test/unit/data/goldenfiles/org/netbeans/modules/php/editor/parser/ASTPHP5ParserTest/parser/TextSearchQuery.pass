@@ -13956,7 +13956,7 @@
                                                     <Variable start='3358' end='3365' isDollared='true'>
                                                         <Identifier start='3359' end='3365' name='parser'/>
                                                     </Variable>
-                                                    <ClassInstanceCreation start='3368' end='3394'>
+                                                    <ClassInstanceCreation start='3368' end='3394' anonymous='false'>
                                                         <ClassName start='3372' end='3394'>
                                                             <NamespaceName start='3372' end='3394' isCurrent='false' isGlobal='false'>
                                                                 <Identifier start='3372' end='3394' name='TextSearchQuery_Parser'/>
@@ -14092,7 +14092,7 @@
                                                             <Identifier start='3800' end='3805' name='_tree'/>
                                                         </Variable>
                                                     </FieldAccess>
-                                                    <ClassInstanceCreation start='3808' end='3858'>
+                                                    <ClassInstanceCreation start='3808' end='3858' anonymous='false'>
                                                         <ClassName start='3812' end='3843'>
                                                             <NamespaceName start='3812' end='3843' isCurrent='false' isGlobal='false'>
                                                                 <Identifier start='3812' end='3843' name='TextSearchQuery_node_regex_pcre'/>
@@ -18592,14 +18592,14 @@
                                                         <Identifier start='26532' end='26536' name='node'/>
                                                     </Variable>
                                                     <AnonymousObjectVariable start='26539' end='26630'>
-                                                        <ClassInstanceCreation start='26541' end='26628'>
+                                                        <ClassInstanceCreation start='26541' end='26628' anonymous='false'>
                                                             <ClassName start='26545' end='26569'>
                                                                 <NamespaceName start='26545' end='26569' isCurrent='false' isGlobal='false'>
                                                                     <Identifier start='26545' end='26569' name='TextSearchQuery_node_not'/>
                                                                 </NamespaceName>
                                                             </ClassName>
                                                             <Parameters>
-                                                                <ClassInstanceCreation start='26593' end='26627'>
+                                                                <ClassInstanceCreation start='26593' end='26627' anonymous='false'>
                                                                     <ClassName start='26597' end='26620'>
                                                                         <NamespaceName start='26597' end='26620' isCurrent='false' isGlobal='false'>
                                                                             <Identifier start='26597' end='26620' name='TextSearchQuery_node_or'/>
@@ -19306,7 +19306,7 @@
                                                 <Identifier start='29786' end='29791' name='lexer'/>
                                             </Variable>
                                         </FieldAccess>
-                                        <ClassInstanceCreation start='29794' end='29854'>
+                                        <ClassInstanceCreation start='29794' end='29854' anonymous='false'>
                                             <ClassName start='29798' end='29819'>
                                                 <NamespaceName start='29798' end='29819' isCurrent='false' isGlobal='false'>
                                                     <Identifier start='29798' end='29819' name='TextSearchQuery_Lexer'/>
@@ -19727,7 +19727,7 @@
                                                         <Variable start='31095' end='31100' isDollared='true'>
                                                             <Identifier start='31096' end='31100' name='expr'/>
                                                         </Variable>
-                                                        <ClassInstanceCreation start='31103' end='31153'>
+                                                        <ClassInstanceCreation start='31103' end='31153' anonymous='false'>
                                                             <ClassName start='31107' end='31131'>
                                                                 <NamespaceName start='31107' end='31131' isCurrent='false' isGlobal='false'>
                                                                     <Identifier start='31107' end='31131' name='TextSearchQuery_node_and'/>
@@ -19783,7 +19783,7 @@
                                                             <Variable start='31227' end='31232' isDollared='true'>
                                                                 <Identifier start='31228' end='31232' name='expr'/>
                                                             </Variable>
-                                                            <ClassInstanceCreation start='31235' end='31284'>
+                                                            <ClassInstanceCreation start='31235' end='31284' anonymous='false'>
                                                                 <ClassName start='31239' end='31262'>
                                                                     <NamespaceName start='31239' end='31262' isCurrent='false' isGlobal='false'>
                                                                         <Identifier start='31239' end='31262' name='TextSearchQuery_node_or'/>

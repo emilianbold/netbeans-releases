@@ -1,6 +1,6 @@
-#changeset:   16167:933dd965f35a
+#changeset:   16359:bde043dead95
 #tag:         tip
-#user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Tue Dec 15 13:53:30 2015 +0300
-#summary:     fixed #256933 - [newcodemodel] IDE cannot resolve include paths with non ASCII chars
-6AE76DCC58313A6B48DDDDE3D19011AA4BE343CF clank_0.3.6.zip
+#user:        Vladimir Voskresensky <vv159170@netbeans.org>
+#date:        Thu Jan 28 18:36:18 2016 +0300
+#summary:     use  NativeTrace.traceNotImplemented to be able to filter out in tests
+147687C3E91A8E448305A946A9D585F0DB544465 clank_0.3.6.zip

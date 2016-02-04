@@ -56,18 +56,14 @@ import org.openide.util.lookup.Lookups;
  */
 public class DockerTagNode extends AbstractNode {
 
-    private static final String DOCKER_INSTANCE_ICON = "org/netbeans/modules/docker/ui/resources/docker_image_small.png"; // NOI18N
+    private static final String DOCKER_INSTANCE_ICON = "org/netbeans/modules/docker/ui/resources/docker_image.png"; // NOI18N
 
     private final DockerTag tag;
 
     public DockerTagNode(DockerTag tag) {
         super(Children.LEAF, Lookups.fixed(tag));
         this.tag = tag;
-//        if ("<none>:<none>".equals(tag.getTag())) {
         setDisplayName(tag.getTag() + " [" + tag.getShortId() + "]");
-//        } else {
-//            setDisplayName(tag.getTag());
-//        }
         setShortDescription(tag.getShortId());
         setIconBaseWithExtension(DOCKER_INSTANCE_ICON);
     }

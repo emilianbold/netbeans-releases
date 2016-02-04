@@ -76,6 +76,7 @@ import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.api.PhpVersion;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.Cache;
 import org.netbeans.modules.php.editor.completion.CompletionContextFinder.CompletionContext;
 import org.netbeans.modules.php.editor.completion.CompletionContextFinder.KeywordCompletionType;
@@ -335,7 +336,17 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                     assert false : generateAs;
             }
 
-            return template.toString();
+            // XXX improve?
+            String tpl = template.toString();
+            String extraPrefix = request.extraPrefix;
+            if (StringUtils.hasText(extraPrefix)) {
+                if (tpl.startsWith(extraPrefix)) {
+                    tpl = tpl.substring(extraPrefix.length());
+                } else {
+                    assert false : "[" + tpl + "] should start with [" + extraPrefix + "]";
+                }
+            }
+            return tpl;
         }
 
         return getName();
@@ -380,6 +391,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     }
 
     public static boolean insertOnlyMethodsName(CompletionRequest request) {
+        if (request.insertOnlyMethodsName != null) {
+            return request.insertOnlyMethodsName;
+        }
         boolean result = false;
         TokenHierarchy<?> tokenHierarchy = request.result.getSnapshot().getTokenHierarchy();
         TokenSequence<PHPTokenId> tokenSequence = (TokenSequence<PHPTokenId>) tokenHierarchy.tokenSequence();
@@ -592,29 +606,37 @@ public abstract class PHPCompletionItem implements CompletionProposal {
          * @return more than one instance in case if optional parameters exists
          */
         static List<FunctionElementItem> getItems(final BaseFunctionElement function, CompletionRequest request) {
+            return getItems(function, request, null);
+        }
+
+        static List<FunctionElementItem> getItems(final BaseFunctionElement function, CompletionRequest request, QualifiedNameKind generateAs) {
             final List<FunctionElementItem> retval = new ArrayList<>();
             final List<ParameterElement> parameters = new ArrayList<>();
             for (ParameterElement param : function.getParameters()) {
                 if (!param.isMandatory()) {
                     if (retval.isEmpty()) {
-                        retval.add(new FunctionElementItem(function, request, parameters));
+                        retval.add(new FunctionElementItem(function, request, parameters, generateAs));
                     }
                     parameters.add(param);
-                    retval.add(new FunctionElementItem(function, request, parameters));
+                    retval.add(new FunctionElementItem(function, request, parameters, generateAs));
                 } else {
                     //assert retval.isEmpty():param.asString();
                     parameters.add(param);
                 }
             }
             if (retval.isEmpty()) {
-                retval.add(new FunctionElementItem(function, request, parameters));
+                retval.add(new FunctionElementItem(function, request, parameters, generateAs));
             }
 
             return retval;
         }
 
         FunctionElementItem(BaseFunctionElement function, CompletionRequest request, List<ParameterElement> parameters) {
-            super(function, request);
+            this(function, request, parameters, null);
+        }
+
+        FunctionElementItem(BaseFunctionElement function, CompletionRequest request, List<ParameterElement> parameters, QualifiedNameKind generateAs) {
+            super(function, request, generateAs);
             this.parameters = new ArrayList<>(parameters);
         }
 
@@ -1395,7 +1417,11 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     static class ConstantItem extends PHPCompletionItem {
 
         ConstantItem(ConstantElement constant, CompletionRequest request) {
-            super(constant, request);
+            this(constant, request, null);
+        }
+
+        ConstantItem(ConstantElement constant, CompletionRequest request, QualifiedNameKind generateAs) {
+            super(constant, request, generateAs);
         }
 
         @Override
@@ -1721,6 +1747,10 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         public PHPParseResult result;
         public ParserResult info;
         public String prefix;
+        // used in special cases (e.g. in group use)
+        public String extraPrefix;
+        // whether to complete '()' (default: null == autodetection)
+        public Boolean insertOnlyMethodsName;
         public String currentlyEditedFileURL;
         public CompletionContext context;
         ElementQuery.Index index;

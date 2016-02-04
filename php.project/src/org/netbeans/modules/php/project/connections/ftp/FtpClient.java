@@ -185,6 +185,18 @@ public class FtpClient implements RemoteClient {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, "Keep-alive interval is {0} ms", keepAliveInterval);
             }
+            if (!configuration.isPassiveMode()) {
+                String activeExternalIp = configuration.getActiveExternalIp();
+                if (StringUtils.hasText(activeExternalIp)) {
+                    ftpClient.setActiveExternalIPAddress(activeExternalIp);
+                }
+                int activePortMin = configuration.getActivePortMin();
+                int activePortMax = configuration.getActivePortMax();
+                if (activePortMin != -1
+                        && activePortMax != -1) {
+                    ftpClient.setActivePortRange(activePortMin, activePortMax);
+                }
+            }
             ftpClient.connect(configuration.getHost(), configuration.getPort());
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, "Reply is {0}", getReplyString());

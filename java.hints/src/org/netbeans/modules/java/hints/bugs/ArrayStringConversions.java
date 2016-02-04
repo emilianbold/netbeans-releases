@@ -301,13 +301,6 @@ public class ArrayStringConversions {
                 value="$s.print($v)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
-                    @ConstraintVariableType(type = "char[]", variable = "$v")
-                }
-        ),
-        @TriggerPattern(
-                value="$s.print($v)",
-                constraints = {
-                    @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
                     @ConstraintVariableType(type = "float[]", variable = "$v")
                 }
         ),
@@ -364,13 +357,6 @@ public class ArrayStringConversions {
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
                     @ConstraintVariableType(type = "long[]", variable = "$v")
-                }
-        ),
-        @TriggerPattern(
-                value="$s.println($v)",
-                constraints = {
-                    @ConstraintVariableType(type = "java.io.PrintStream", variable = "$s"),
-                    @ConstraintVariableType(type = "char[]", variable = "$v")
                 }
         ),
         @TriggerPattern(
@@ -765,13 +751,6 @@ public class ArrayStringConversions {
                 value="$s.print($v)",
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
-                    @ConstraintVariableType(type = "char[]", variable = "$v")
-                }
-        ),
-        @TriggerPattern(
-                value="$s.print($v)",
-                constraints = {
-                    @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
                     @ConstraintVariableType(type = "float[]", variable = "$v")
                 }
         ),
@@ -828,13 +807,6 @@ public class ArrayStringConversions {
                 constraints = {
                     @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
                     @ConstraintVariableType(type = "long[]", variable = "$v")
-                }
-        ),
-        @TriggerPattern(
-                value="$s.println($v)",
-                constraints = {
-                    @ConstraintVariableType(type = "java.io.PrintWriter", variable = "$s"),
-                    @ConstraintVariableType(type = "char[]", variable = "$v")
                 }
         ),
         @TriggerPattern(

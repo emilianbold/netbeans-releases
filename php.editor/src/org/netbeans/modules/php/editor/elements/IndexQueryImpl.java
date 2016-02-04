@@ -120,9 +120,9 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     private static Collection<NamespaceElement> namespacesCache = null;
     private final QuerySupport index;
     private final Set<AliasedName> aliases = new HashSet<>();
-    private AbstractElementQuery extendedQuery = new AbstractElementQuery(QueryScope.VIRTUAL_SCOPE);
+    private final AbstractElementQuery extendedQuery = new AbstractElementQuery(QueryScope.VIRTUAL_SCOPE);
 
-    /** Creates a new instance of JsIndex */
+
     private IndexQueryImpl(QuerySupport index, final Model model) {
         this.index = index;
         if (model != null) {
@@ -142,8 +142,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     private void initAliases(final Model model) {
         for (final NamespaceScope namespaceScope : model.getFileScope().getDeclaredNamespaces()) {
             if (namespaceScope != null) {
-                Collection<? extends UseScope> declaredUses = namespaceScope.getDeclaredUses();
-                for (UseScope useElement : declaredUses) {
+                for (UseScope useElement : namespaceScope.getDeclaredUses()) {
                     AliasedName aliasedName = useElement.getAliasedName();
                     if (aliasedName != null) {
                         aliases.add(aliasedName);

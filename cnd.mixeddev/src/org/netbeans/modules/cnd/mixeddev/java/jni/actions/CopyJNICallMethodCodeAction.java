@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.mixeddev.Triple;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaEntityInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaFieldInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaMethodInfo;
+import org.netbeans.modules.cnd.mixeddev.wizard.GenerateProjectAction;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -57,17 +58,19 @@ import org.openide.awt.ActionRegistration;
 import org.openide.awt.StatusDisplayer;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-@ActionID(id = "org.netbeans.modules.cnd.mixeddev.java.jni.actions.CopyJNICallMethodCodeAction", category = "MixedDevelopment")
-@ActionRegistration(displayName = "#LBL_Action_CopyJNICallMethodCodeAction", lazy = false)
-@ActionReferences(value = {@ActionReference(path = "Editors/text/x-java/Popup/MixedDevelopment", position=60)})
-@NbBundle.Messages({"LBL_Action_CopyJNICallMethodCodeAction=Get field code"})
 public class CopyJNICallMethodCodeAction extends AbstractCopyJNIAccessCodeAction {
+    
+    public CopyJNICallMethodCodeAction(Lookup context) {
+        super(context);
+        putValue(NAME, NbBundle.getMessage(MixedDevUtils.class, "cnd.mixeddev.copy_call_method_code")); // NOI18N
+    }
     
     @Override
     protected boolean isEnabledAtPosition(Document doc, int caret) {
@@ -76,12 +79,7 @@ public class CopyJNICallMethodCodeAction extends AbstractCopyJNIAccessCodeAction
     }
     
     @Override
-    public String getName() {
-        return NbBundle.getMessage(MixedDevUtils.class, "cnd.mixeddev.copy_call_method_code"); // NOI18N
-    }
-    
-    @Override
-    protected void performAction(Node[] activatedNodes) {
+    protected void actionPerformedImpl(Node[] activatedNodes) {
         Triple<DataObject, Document, Integer> context = extractContext(activatedNodes);
         if (context != null) {
             final Document doc = context.second;

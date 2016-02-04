@@ -24,6 +24,7 @@ CLASS      AssertionError                             null
 CLASS      Authenticator                              null
 CLASS      AutoCloseable                              null
 CLASS      Bar                                        null
+CLASS      Base64                                     null
 CLASS      BenchmarkInterceptor                       null
 CLASS      BigDecimal                                 null
 CLASS      BigInteger                                 null
@@ -96,11 +97,13 @@ CLASS      Date                                       null
 CLASS      Delegate                                   null
 CLASS      DelegatesTo                                null
 CLASS      DelegatingMetaClass                        null
+CLASS      DelegatingScript                           null
 CLASS      Deprecated                                 null
 CLASS      DeprecationException                       null
 CLASS      Deque                                      null
 CLASS      Dictionary                                 null
 CLASS      Double                                     null
+CLASS      DoubleSummaryStatistics                    null
 CLASS      DuplicateFormatFlagsException              null
 CLASS      EOFException                               null
 CLASS      EmptyRange                                 null
@@ -135,6 +138,7 @@ CLASS      FileNotFoundException                      null
 CLASS      FileOutputStream                           null
 CLASS      FilePermission                             null
 CLASS      FileReader                                 null
+CLASS      FileTreeBuilder                            null
 CLASS      FileWriter                                 null
 CLASS      FilenameFilter                             null
 CLASS      FilterInputStream                          null
@@ -148,7 +152,9 @@ CLASS      Formattable                                null
 CLASS      FormattableFlags                           null
 CLASS      Formatter                                  null
 CLASS      FormatterClosedException                   null
+CLASS      FunctionalInterface                        null
 CLASS      GString                                    null
+CLASS      GeneratedGroovyProxy                       null
 CLASS      Grab                                       null
 CLASS      GrabConfig                                 null
 CLASS      GrabExclude                                null
@@ -213,6 +219,7 @@ CLASS      InputStreamReader                          null
 CLASS      InstantiationError                         null
 CLASS      InstantiationException                     null
 CLASS      IntRange                                   null
+CLASS      IntSummaryStatistics                       null
 CLASS      Integer                                    null
 CLASS      Interceptor                                null
 CLASS      InterfaceAddress                           null
@@ -240,6 +247,7 @@ CLASS      ListResourceBundle                         null
 CLASS      ListWithDefault                            null
 CLASS      Locale                                     null
 CLASS      Long                                       null
+CLASS      LongSummaryStatistics                      null
 CLASS      MalformedURLException                      null
 CLASS      Map                                        null
 CLASS      MapEntry                                   null
@@ -308,7 +316,11 @@ CLASS      ObservableMap                              null
 CLASS      ObservableSet                              null
 CLASS      Observer                                   null
 CLASS      OptionAccessor                             null
+CLASS      Optional                                   null
 CLASS      OptionalDataException                      null
+CLASS      OptionalDouble                             null
+CLASS      OptionalInt                                null
+CLASS      OptionalLong                               null
 CLASS      OrderBy                                    null
 CLASS      OutOfMemoryError                           null
 CLASS      OutputStream                               null
@@ -323,6 +335,7 @@ CLASS      PipedOutputStream                          null
 CLASS      PipedReader                                null
 CLASS      PipedWriter                                null
 CLASS      PortUnreachableException                   null
+CLASS      PrimitiveIterator                          null
 CLASS      PrintStream                                null
 CLASS      PrintWriter                                null
 CLASS      PriorityQueue                              null
@@ -389,6 +402,9 @@ CLASS      SocketPermission                           null
 CLASS      SocketTimeoutException                     null
 CLASS      SortedMap                                  null
 CLASS      SortedSet                                  null
+CLASS      Spliterator                                null
+CLASS      Spliterators                               null
+CLASS      SplittableRandom                           null
 CLASS      SpreadListEvaluatingException              null
 CLASS      SpreadMap                                  null
 CLASS      SpreadMapEvaluatingException               null
@@ -405,6 +421,7 @@ CLASS      StringBuffer                               null
 CLASS      StringBufferInputStream                    null
 CLASS      StringBuilder                              null
 CLASS      StringIndexOutOfBoundsExceptio             null
+CLASS      StringJoiner                               null
 CLASS      StringReader                               null
 CLASS      StringTestUtil                             null
 CLASS      StringTokenizer                            null
@@ -426,6 +443,7 @@ CLASS      TracingInterceptor                         null
 CLASS      TreeMap                                    null
 CLASS      TreeSet                                    null
 CLASS      Tuple                                      null
+CLASS      Tuple2                                     null
 CLASS      TypeNotPresentException                    null
 CLASS      URI                                        null
 CLASS      URISyntaxException                         null
@@ -434,10 +452,12 @@ CLASS      URLClassLoader                             null
 CLASS      URLConnection                              null
 CLASS      URLDecoder                                 null
 CLASS      URLEncoder                                 null
+CLASS      URLPermission                              null
 CLASS      URLStreamHandler                           null
 CLASS      URLStreamHandlerFactory                    null
 CLASS      UTFDataFormatException                     null
 CLASS      UUID                                       null
+CLASS      UncheckedIOException                       null
 CLASS      UnknownError                               null
 CLASS      UnknownFormatConversionExcepti             null
 CLASS      UnknownFormatFlagsException                null

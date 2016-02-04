@@ -1157,9 +1157,7 @@
           <SubComponents>
             <Component class="javax.swing.JLabel" name="tableSummaryLabel">
               <Properties>
-                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/odcs/tasks/query/Bundle.properties" key="QueryPanel.tableSummaryLabel.text_1" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
+                <Property name="text" type="java.lang.String" value="jLabel2"/>
               </Properties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
@@ -1740,9 +1738,7 @@
         </Component>
         <Component class="javax.swing.JLabel" name="lastRefreshDateLabel">
           <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/odcs/tasks/query/Bundle.properties" key="QueryPanel.lastRefreshDateLabel.text_1" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
+            <Property name="text" type="java.lang.String" value="jLabel4"/>
           </Properties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
@@ -1768,9 +1764,7 @@
         </Component>
         <Component class="javax.swing.JLabel" name="nameLabel">
           <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/odcs/tasks/query/Bundle.properties" key="QueryPanel.nameLabel.text_1" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
+            <Property name="text" type="java.lang.String" value="jLabel4"/>
           </Properties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
@@ -1923,9 +1917,7 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="noContentLabel">
           <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/odcs/tasks/query/Bundle.properties" key="QueryPanel.noContentLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
+            <Property name="text" type="java.lang.String" value="jLabel9"/>
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">

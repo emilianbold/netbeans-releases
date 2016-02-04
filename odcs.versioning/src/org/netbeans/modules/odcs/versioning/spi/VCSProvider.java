@@ -42,10 +42,8 @@
 package org.netbeans.modules.odcs.versioning.spi;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
-import javax.swing.Action;
 
 /**
  *
@@ -117,6 +115,29 @@ public interface VCSProvider {
      * @return <code>true</code> in case the operation succeeded, otherwise <code>false</code>
      */
     public boolean openHistory (File workdir, String commitId);
+    
+    /**
+     * Opens a history view for the given local directory 
+     * (which will be a checkout/clone previously made from the Team Server) and commit id. <br/>
+     * Note that this operation is expected to block for any necessary time.
+     * 
+     * @param workdir
+     * @param commitIdFrom
+     * @param commitIdTo
+     * @return <code>true</code> in case the operation succeeded, otherwise <code>false</code>
+     */
+    public boolean openHistory (File workdir, String commitIdFrom, String commitIdTo);
+    
+    /**
+     * Opens a history view for the given local directory 
+     * (which will be a checkout/clone previously made from the Team Server) and commit id. <br/>
+     * Note that this operation is expected to block for any necessary time.
+     * 
+     * @param workdir
+     * @param branch
+     * @return <code>true</code> in case the operation succeeded, otherwise <code>false</code>
+     */
+    public boolean openHistoryBranch (File workdir, String branch);
 
     /**
      * Determines whether the functionality to make a local repository 

@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 6.57
+#Version 6.61.1
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -635,6 +635,7 @@ intf java.awt.ItemSelectable
 intf java.awt.event.ActionListener
 intf javax.accessibility.Accessible
 intf javax.swing.event.ListDataListener
+meth protected boolean processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
 meth protected java.beans.PropertyChangeListener createActionPropertyChangeListener(javax.swing.Action)
 meth protected java.lang.String paramString()
 meth protected javax.swing.JComboBox$KeySelectionManager createDefaultKeySelectionManager()
@@ -818,6 +819,8 @@ meth public void firePropertyChange(java.lang.String,boolean,boolean)
 meth public void firePropertyChange(java.lang.String,char,char)
 meth public void firePropertyChange(java.lang.String,int,int)
 meth public void grabFocus()
+meth public void hide()
+ anno 0 java.lang.Deprecated()
 meth public void paint(java.awt.Graphics)
 meth public void paintImmediately(int,int,int,int)
 meth public void paintImmediately(java.awt.Rectangle)
@@ -1387,7 +1390,7 @@ meth public void setModel(org.openide.explorer.propertysheet.PropertyModel)
 meth public void setPreferences(int)
 meth public void updateValue()
 supr javax.swing.JComponent
-hfds beans,changeImmediate,displayer,initializing,inner,isGtk,listener,model,preferences,prop,reusableEnv,reusableModel,settingModel
+hfds beans,changeImmediate,displayer,ignoreCommit,initializing,inner,isGtk,listener,model,preferences,prop,reusableEnv,reusableModel,settingModel
 hcls AccessiblePropertyPanel,BridgeAccessor,CustomEditorProxyAction,Listener
 
 CLSS public org.openide.explorer.propertysheet.PropertySheet
@@ -1702,12 +1705,14 @@ cons public init(boolean)
  anno 0 java.lang.Deprecated()
 intf javax.swing.ListCellRenderer
 intf javax.swing.tree.TreeCellRenderer
+meth public final boolean isShowIcons()
+meth public final void setShowIcons(boolean)
 meth public java.awt.Component getListCellRendererComponent(javax.swing.JList,java.lang.Object,int,boolean,boolean)
 meth public java.awt.Component getTreeCellRendererComponent(javax.swing.JTree,java.lang.Object,boolean,boolean,boolean,int,boolean)
 meth public static org.openide.explorer.view.NodeRenderer sharedInstance()
  anno 0 java.lang.Deprecated()
 supr java.lang.Object
-hfds bigIcons,draggedOver,instance,renderer
+hfds bigIcons,draggedOver,instance,labelGap,renderer,showIcons
 
 CLSS public org.openide.explorer.view.NodeTableModel
 cons public init()
@@ -1746,11 +1751,13 @@ meth public boolean isExpanded(org.openide.nodes.Node)
 meth public boolean isPopupAllowed()
 meth public boolean isQuickSearchAllowed()
 meth public boolean requestFocusInWindow()
+meth public final boolean isShowNodeIcons()
 meth public final boolean removePropertyColumn(java.lang.String)
 meth public final void addPropertyColumn(java.lang.String,java.lang.String)
 meth public final void addPropertyColumn(java.lang.String,java.lang.String,java.lang.String)
 meth public final void setPropertyColumnAttribute(java.lang.String,java.lang.String,java.lang.Object)
 meth public final void setPropertyColumnDescription(java.lang.String,java.lang.String)
+meth public final void setShowNodeIcons(boolean)
 meth public int getAllowedDragActions()
 meth public int getAllowedDropActions()
 meth public int getHorizontalScrollBarPolicy()
@@ -1783,7 +1790,7 @@ meth public void setTreeHorizontalScrollBarPolicy(int)
 meth public void setTreeSortable(boolean)
 meth public void writeSettings(java.util.Properties,java.lang.String)
 supr javax.swing.JScrollPane
-hfds REVALIDATING_RP,TREE_HORIZONTAL_SCROLLBAR,allowedDragActions,allowedDropActions,defaultTreeActionListener,dragActive,dragSupport,dropActive,dropSupport,dropTargetPopupAllowed,hScrollBar,horizontalScrollBarIsNeeded,isTreeHScrollBar,listener,logger,manager,managerListener,managerLock,model,outline,popupFactory,popupListener,qsKeyListener,quickSearch,rowModel,searchConstraints,searchPanel,selection,treeHorizontalScrollBarPolicy,treeModel,wlpc,wlvc
+hfds REVALIDATING_RP,TREE_HORIZONTAL_SCROLLBAR,allowedDragActions,allowedDropActions,defaultTreeActionListener,dragActive,dragSupport,dropActive,dropSupport,dropTargetPopupAllowed,hScrollBar,horizontalScrollBarIsNeeded,isTreeHScrollBar,listener,logger,manager,managerListener,managerLock,model,nodeRenderer,outline,popupFactory,popupListener,qsKeyListener,quickSearch,rowModel,searchConstraints,searchPanel,selection,treeHorizontalScrollBarPolicy,treeModel,wlpc,wlvc
 hcls DefaultTreeAction,NodeOutlineModel,OutlinePopupFactory,OutlineScrollLayout,OutlineViewOutline,PopupAction,PopupAdapter,PrototypeProperty,ScrollListener,Selection,TableSelectionListener
 
 CLSS public abstract interface org.openide.explorer.view.QuickSearchTableFilter

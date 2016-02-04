@@ -86,6 +86,10 @@ public class SearchHistoryAction extends MultipleRepositoryAction {
     }
     
     public static void openSearch (final File repository, final File[] roots, final String branchName, final String contextName) {
+        openSearch(repository, roots, branchName, contextName, roots != null && (roots.length == 1 && roots[0].isFile() || roots.length > 1 && Utils.shareCommonDataObject(roots)));
+    }
+    
+    public static void openSearch (final File repository, final File[] roots, final String branchName, final String contextName, final boolean invokeSearch) {
         final String title = NbBundle.getMessage(SearchHistoryTopComponent.class, "LBL_SearchHistoryTopComponent.title", contextName);
         final RepositoryInfo info = RepositoryInfo.getInstance(repository);
         EventQueue.invokeLater(new Runnable() {
@@ -96,7 +100,7 @@ public class SearchHistoryAction extends MultipleRepositoryAction {
                 tc.setDisplayName(title);
                 tc.open();
                 tc.requestActive();
-                if (roots != null && (roots.length == 1 && roots[0].isFile() || roots.length > 1 && Utils.shareCommonDataObject(roots))) {
+                if (invokeSearch) {
                     tc.search(false);
                 }
             }

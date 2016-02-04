@@ -102,7 +102,27 @@ public class GitApiProviderImpl implements VCSProvider {
         Git.openSearchHistory(workdir, commitId);
         return true;
     }
+    
+    @Override
+    public boolean openHistory (final File workdir, final String commitIdFrom, final String commitIdTo) {
+        assert Git.isOwner(workdir);
+        if(!Git.isOwner(workdir)) {
+            return false;
+        }
+        Git.openSearchHistory(workdir, commitIdFrom, commitIdTo);
+        return true;
+    }
 
+    @Override
+    public boolean openHistoryBranch(File workdir, String branch) {
+        assert Git.isOwner(workdir);
+        if(!Git.isOwner(workdir)) {
+            return false;
+        }
+        Git.openSearchHistoryBranch(workdir, branch);
+        return true;
+    }
+    
     @Override
     public boolean providesLocalInit(String repositoryUrl) {
         return true;

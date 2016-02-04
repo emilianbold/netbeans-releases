@@ -747,7 +747,9 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
         putConfigurationFragment(data, shared);
     }
 
-    private final class FileListener implements FileChangeListener {
+    private final class FileListener implements FileChangeListener, Runnable {
+
+        private final List<FileObject> changedFileObjects = new ArrayList<>();
 
         public FileListener() {
         }
@@ -760,8 +762,26 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
                     }
                 }
             }
+            synchronized (changedFileObjects) {
+                changedFileObjects.add(fe.getFile());
+            }
+            rp().post(this);
+        }
+
+        @Override
+        public void run() {
+            List<FileObject> l;
+            synchronized (changedFileObjects) {
+                l = new ArrayList<>(changedFileObjects);
+                changedFileObjects.clear();
+            }
+            for (FileObject fo : l) {
+                changeImpl(fo);
+            }
+        }
+
+        private void changeImpl(FileObject f) {
             String path;
-            FileObject f = fe.getFile();
             synchronized (modifiedMetadataPaths) {
                 if (f.equals(resolveFileObject(PROJECT_XML_PATH))) {
                     if (modifiedMetadataPaths.contains(PROJECT_XML_PATH)) {

@@ -97,7 +97,7 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.BuildTraceSupport;
 import org.netbeans.modules.cnd.discovery.api.ProviderPropertyType;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
-import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
+import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.FileConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.DiscoveryProjectGenerator;
@@ -1399,9 +1399,9 @@ public class ImportProject implements PropertyChangeListener {
         final DiscoveryExtensionInterface extension = (DiscoveryExtensionInterface) Lookup.getDefault().lookup(IteratorExtension.class);
         if (extension != null) {
             final Map<String, Object> map = new HashMap<>();
-            DiscoveryWizardDescriptor.ROOT_FOLDER.toMap(map, nativeProjectPath);
-            DiscoveryWizardDescriptor.EXEC_LOG_FILE.toMap(map, execLog.getLocalPath());
-            DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, resolveSymLinks);
+            DiscoveryDescriptor.ROOT_FOLDER.toMap(map, nativeProjectPath);
+            DiscoveryDescriptor.EXEC_LOG_FILE.toMap(map, execLog.getLocalPath());
+            DiscoveryDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, resolveSymLinks);
             if (extension.canApply(map, makeProject, interrupter)) {
                 if (TRACE) {
                     logger.log(Level.INFO, "#start discovery by exec log file {0}", execLog.getLocalPath()); // NOI18N
@@ -1409,7 +1409,7 @@ public class ImportProject implements PropertyChangeListener {
                 try {
                     done = true;
                     extension.apply(map, makeProject, interrupter);
-                    setBuildResults(DiscoveryWizardDescriptor.BUILD_ARTIFACTS.fromMap(map));
+                    setBuildResults(DiscoveryDescriptor.BUILD_ARTIFACTS.fromMap(map));
                     DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(makeProject, null);
                     importResult.put(Step.DiscoveryLog, State.Successful);
                 } catch (IOException ex) {
@@ -1420,7 +1420,7 @@ public class ImportProject implements PropertyChangeListener {
                     logger.log(Level.INFO, "#discovery cannot be done by exec log file {0}", execLog.getLocalPath()); // NOI18N
                 }
             }
-            DiscoveryWizardDescriptor.EXEC_LOG_FILE.toMap(map, null);
+            DiscoveryDescriptor.EXEC_LOG_FILE.toMap(map, null);
         }
         return done;
     }
@@ -1454,18 +1454,18 @@ public class ImportProject implements PropertyChangeListener {
         final DiscoveryExtensionInterface extension = (DiscoveryExtensionInterface) Lookup.getDefault().lookup(IteratorExtension.class);
         if (extension != null) {
             final Map<String, Object> map = new HashMap<>();
-            DiscoveryWizardDescriptor.ROOT_FOLDER.toMap(map, nativeProjectPath);
-            DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, resolveSymLinks);
+            DiscoveryDescriptor.ROOT_FOLDER.toMap(map, nativeProjectPath);
+            DiscoveryDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, resolveSymLinks);
             if (dwarfSource != null) {
                 if (dwarfSource.isFolder()) {
-                    DiscoveryWizardDescriptor.BUILD_FOLDER.toMap(map, dwarfSource.getPath());
+                    DiscoveryDescriptor.BUILD_FOLDER.toMap(map, dwarfSource.getPath());
                 } else {
-                    DiscoveryWizardDescriptor.BUILD_RESULT.toMap(map, dwarfSource.getPath());
+                    DiscoveryDescriptor.BUILD_RESULT.toMap(map, dwarfSource.getPath());
                 }
             }
 
             if (extension.canApply(map, makeProject, interrupter)) {
-                DiscoveryProvider provider = DiscoveryWizardDescriptor.PROVIDER.fromMap(map);
+                DiscoveryProvider provider = DiscoveryDescriptor.PROVIDER.fromMap(map);
                 if (provider != null && DiscoveryExtension.MAKE_LOG_PROVIDER.equals(provider.getID())) {
                     if (TRACE) {
                         logger.log(Level.INFO, "#start discovery by log file {0}", ProviderPropertyType.MakeLogPropertyType.getProperty(provider)); // NOI18N
@@ -1499,12 +1499,12 @@ public class ImportProject implements PropertyChangeListener {
         final DiscoveryExtensionInterface extension = (DiscoveryExtensionInterface) Lookup.getDefault().lookup(IteratorExtension.class);
         if (extension != null) {
             final Map<String, Object> map = new HashMap<>();
-            DiscoveryWizardDescriptor.ROOT_FOLDER.toMap(map, nativeProjectPath);
-            DiscoveryWizardDescriptor.LOG_FILE.toMap(map, makeLog.getLocalPath());
-            DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, resolveSymLinks);
+            DiscoveryDescriptor.ROOT_FOLDER.toMap(map, nativeProjectPath);
+            DiscoveryDescriptor.LOG_FILE.toMap(map, makeLog.getLocalPath());
+            DiscoveryDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, resolveSymLinks);
             if (extension.canApply(map, makeProject, interrupter)) {
                 if (TRACE) {
-                    DiscoveryProvider provider = DiscoveryWizardDescriptor.PROVIDER.fromMap(map);
+                    DiscoveryProvider provider = DiscoveryDescriptor.PROVIDER.fromMap(map);
                     if (provider != null && DiscoveryExtension.MAKE_LOG_PROVIDER.equals(provider.getID())) {
                         logger.log(Level.INFO, "#start discovery by build log file {0}", makeLog.getLocalPath()); // NOI18N
                     } else {
@@ -1514,7 +1514,7 @@ public class ImportProject implements PropertyChangeListener {
                 try {
                     done = true;
                     extension.apply(map, makeProject, interrupter);
-                    setBuildResults(DiscoveryWizardDescriptor.BUILD_ARTIFACTS.fromMap(map));
+                    setBuildResults(DiscoveryDescriptor.BUILD_ARTIFACTS.fromMap(map));
                     DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(makeProject, null);
                     importResult.put(Step.DiscoveryLog, State.Successful);
                 } catch (IOException ex) {
@@ -1533,14 +1533,14 @@ public class ImportProject implements PropertyChangeListener {
         final DiscoveryExtensionInterface extension = (DiscoveryExtensionInterface) Lookup.getDefault().lookup(IteratorExtension.class);
         if (extension != null) {
             final Map<String, Object> map = new HashMap<>();
-            DiscoveryWizardDescriptor.ROOT_FOLDER.toMap(map, nativeProjectPath);
-            DiscoveryWizardDescriptor.LOG_FILE.toMap(map, makeLog.getLocalPath());
-            DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, resolveSymLinks);
+            DiscoveryDescriptor.ROOT_FOLDER.toMap(map, nativeProjectPath);
+            DiscoveryDescriptor.LOG_FILE.toMap(map, makeLog.getLocalPath());
+            DiscoveryDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, resolveSymLinks);
             if (extension.canApply(map, makeProject, interrupter)) {
                 if (TRACE) {
                     logger.log(Level.INFO, "#start fix macros by log file {0}", makeLog.getLocalPath()); // NOI18N
                 }
-                List<ProjectConfiguration> confs = DiscoveryWizardDescriptor.CONFIGURATIONS.fromMap(map);
+                List<ProjectConfiguration> confs = DiscoveryDescriptor.CONFIGURATIONS.fromMap(map);
                 fixMacros(confs);
                 importResult.put(Step.FixMacros, State.Successful);
             } else {
@@ -1555,9 +1555,9 @@ public class ImportProject implements PropertyChangeListener {
         final DiscoveryExtensionInterface extension = (DiscoveryExtensionInterface) Lookup.getDefault().lookup(IteratorExtension.class);
         if (extension != null) {
             Map<String, Object> map = new HashMap<>();
-            DiscoveryWizardDescriptor.ROOT_FOLDER.toMap(map, nativeProjectPath);
-            DiscoveryWizardDescriptor.INVOKE_PROVIDER.toMap(map, Boolean.TRUE);
-            DiscoveryWizardDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, resolveSymLinks);
+            DiscoveryDescriptor.ROOT_FOLDER.toMap(map, nativeProjectPath);
+            DiscoveryDescriptor.INVOKE_PROVIDER.toMap(map, Boolean.TRUE);
+            DiscoveryDescriptor.RESOLVE_SYMBOLIC_LINKS.toMap(map, resolveSymLinks);
             if (extension.canApply(map, makeProject, interrupter)) {
                 if (TRACE) {
                     logger.log(Level.INFO, "#start discovery by object files"); // NOI18N

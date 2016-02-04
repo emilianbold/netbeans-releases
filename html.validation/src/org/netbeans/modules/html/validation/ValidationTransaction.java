@@ -43,8 +43,11 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import nu.validator.checker.XmlPiChecker;
+import nu.validator.checker.jing.CheckerSchema;
 import nu.validator.htmlparser.common.*;
 import nu.validator.htmlparser.sax.HtmlParser;
+import nu.validator.io.DataUri;
 import nu.validator.messages.MessageEmitterAdapter;
 import nu.validator.messages.TooManyErrorsException;
 import nu.validator.servlet.ParserMode;
@@ -62,9 +65,6 @@ import org.netbeans.modules.html.validation.patched.BufferingRootNamespaceSniffe
 import org.netbeans.modules.html.validation.patched.LocalCacheEntityResolver;
 import org.netbeans.modules.html.validation.patched.RootNamespaceSniffer;
 import org.openide.util.NbBundle;
-import org.whattf.checker.XmlPiChecker;
-import org.whattf.checker.jing.CheckerSchema;
-import org.whattf.io.DataUri;
 import org.xml.sax.*;
 import org.xml.sax.ext.LexicalHandler;
 
@@ -146,7 +146,6 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
     protected XMLReader reader;
     private CharacterHandlerReader sourceReader;
     protected TypedInputSource documentInput;
-    protected PrudentHttpEntityResolver httpRes;
     protected DataUriEntityResolver dataRes;
     protected ContentTypeParser contentTypeParser;
     private Map<String, Validator> loadedValidatorUrls = new HashMap<String, Validator>();
@@ -182,11 +181,11 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         //IMO should be fixed in validator.nu by using the local cache entity resolver.
 
         //MessageEmitterAdapter:
-        URL url = LocalCacheEntityResolver.getResource("http://wiki.whatwg.org/wiki/MicrosyntaxDescriptions");
-        System.setProperty("nu.validator.spec.microsyntax-descriptions", url.toExternalForm());
-
-        url = LocalCacheEntityResolver.getResource("http://wiki.whatwg.org/wiki/Validator.nu_alt_advice");
-        System.setProperty("nu.validator.spec.alt-advice", url.toExternalForm());
+//        URL url = LocalCacheEntityResolver.getResource("http://wiki.whatwg.org/wiki/MicrosyntaxDescriptions");
+//        System.setProperty("nu.validator.spec.microsyntax-descriptions", url.toExternalForm());
+//
+//        url = LocalCacheEntityResolver.getResource("http://wiki.whatwg.org/wiki/Validator.nu_alt_advice");
+//        System.setProperty("nu.validator.spec.alt-advice", url.toExternalForm());
 
 //        //CharsetData:
 //        url = LocalCacheEntityResolver.getResource("http://www.iana.org/assignments/character-sets");
@@ -464,7 +463,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         int lineOffset = 0;
 
         errorHandler = new MessageEmitterAdapter(sourceCode,
-                showSource, null, lineOffset,
+                showSource, null,  lineOffset, false,
                 new NbMessageEmitter(problemsHandler, linesMapper, true));
 
         errorHandler.setLoggingOk(true);

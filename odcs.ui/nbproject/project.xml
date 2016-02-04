@@ -88,7 +88,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.5</specification-version>
+                        <specification-version>1.7</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -132,7 +132,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.38</specification-version>
+                        <specification-version>1.50</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -208,6 +208,20 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.libs.junit4</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                </test-type>
+            </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.odcs.hudson</friend>
                 <friend>org.netbeans.modules.odcs.tasks.bridge</friend>

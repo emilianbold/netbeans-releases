@@ -487,6 +487,7 @@
                 <friend>org.netbeans.modules.javascript2.requirejs</friend>
                 <friend>org.netbeans.modules.javascript2.gj.typescript</friend>
                 <friend>org.netbeans.modules.nodejscodecompletion</friend>
+                <friend>org.netbeans.modules.web.javascript.debugger</friend>
                 <package>org.netbeans.modules.javascript2.editor.api</package>
                 <package>org.netbeans.modules.javascript2.editor.api.lexer</package>
                 <package>org.netbeans.modules.javascript2.editor.index</package>

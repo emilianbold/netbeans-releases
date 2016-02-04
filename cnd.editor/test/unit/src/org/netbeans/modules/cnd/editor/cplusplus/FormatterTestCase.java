@@ -5896,5 +5896,98 @@ public class FormatterTestCase extends EditorBase {
                 "    return 0;\n" +
                 "}\n"
                 );
-    }    
+    } 
+    
+    public void test249953() {
+        setLoadDocumentText(
+                "    int main(int argc, char** argv)\n"+
+                "{\n"+
+                "    while (not fooBar({1, 2, 3}, variable))\n"+
+                "{\n"+
+                "    object.method({1, 2, 3}, ++variable);\n"+
+                "}\n"+
+                "\n"+
+                "    return 0;\n"+
+                "}\n");
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.NEW_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
+                put(EditorOptions.newLineBeforeBrace, 
+                CodeStyle.BracePlacement.NEW_LINE.name());
+        reformat();
+        assertDocumentText("Incorrect uniform initialization",
+                "int main(int argc, char** argv)\n"+
+                "{\n"+
+                "    while (not fooBar({1, 2, 3}, variable))\n"+
+                "    {\n"+
+                "        object.method({1, 2, 3}, ++variable);\n"+
+                "    }\n"+
+                "\n"+
+                "    return 0;\n"+
+                "}\n");
+    }
+    
+    public void test257662() {
+        setLoadDocumentText(
+                "void renderScene(void)\n" +
+                "{\n" +
+                "    Do(5, [] {\n" +
+                "        clear(100, 100, 100);\n" +
+                "        clear(100, 100, 100);\n" +
+                "        clear(100, 100, 100);\n" +
+                "    });\n" +
+                "}\n"
+                );
+        setDefaultsOptions();
+        reformat();
+        assertDocumentText("after reformat lamda does not work",
+                "void renderScene(void)\n" +
+                "{\n" +
+                "    Do(5, [] {\n" +
+                "        clear(100, 100, 100);\n" +
+                "        clear(100, 100, 100);\n" +
+                "        clear(100, 100, 100);\n" +
+                "    });\n" +
+                "}\n"
+                );
+    }
+
+    public void test257662_2() {
+        setLoadDocumentText(
+                "void\n" +
+                "renderScene(void)\n" +
+                "{\n" +
+                "    using namespace D2D::draw;\n" +
+                "    Do(5, []\n" +
+                "    {\n" +
+                "        clear(100, 100, 100);\n" +
+                "       clear(100, 100, 100);\n" +
+                "       clear(100, 100, 100);\n" +
+                "       clear(100, 100, 100);\n" +
+                "    });\n" +
+                "\n" +
+                "}\n"
+                );
+        setDefaultsOptions();
+        CodeStyle codeStyle = CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument());
+        EditorOptions.resetToDefault(codeStyle, EditorOptions.ANSI_PROFILE);
+        reformat();
+        assertDocumentText("after reformat lamda does not work",
+                "void\n" +
+                "renderScene(void)\n" +
+                "{\n" +
+                "    using namespace D2D::draw;\n" +
+                "    Do(5, []\n" +
+                "    {\n" +
+                "        clear(100, 100, 100);\n" +
+                "        clear(100, 100, 100);\n" +
+                "        clear(100, 100, 100);\n" +
+                "        clear(100, 100, 100);\n" +
+                "    });\n" +
+                "\n" +
+                "}\n"
+                );
+    }
 }

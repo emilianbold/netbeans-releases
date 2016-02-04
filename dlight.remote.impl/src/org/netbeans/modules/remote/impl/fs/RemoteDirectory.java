@@ -1668,7 +1668,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     @Override
-    public void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+    public void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode, int timeoutMillis)
+            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         if (antiLoop != null) {
             if (antiLoop.contains(getPath())) {
                 return;

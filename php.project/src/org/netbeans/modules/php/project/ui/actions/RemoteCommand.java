@@ -90,6 +90,8 @@ import org.openide.windows.OutputWriter;
  * @author Radek Matous
  */
 public abstract class RemoteCommand extends Command {
+
+    private static final boolean IGNORE_REMEMBER_SYNC = Boolean.getBoolean("nb.php.remote.sync.remember.ignore"); // NOI18N
     private static final char SEP_CHAR = '='; // NOI18N
     private static final int MAX_TYPE_SIZE = getFileTypeLabelMaxSize() + 2;
     private static final Color COLOR_SUCCESS = Color.GREEN.darker().darker();
@@ -372,6 +374,10 @@ public abstract class RemoteCommand extends Command {
     // #250343 remember it also as last sync
     @NbBundle.Messages("RemoteCommand.sync.remember.title=Remote Synchronization")
     protected static void storeLastSync(final PhpProject project, final RemoteClient remoteClient, final FileObject sources, boolean possiblyAskUser) {
+        if (IGNORE_REMEMBER_SYNC) {
+            // #257391
+            return;
+        }
         if (!DO_SYNC.get()) {
             return;
         }

@@ -99,7 +99,7 @@ public abstract class IndexingBridge {
             try {
                 ((Ordering)this).await();
             } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
+                //pass: cancel of running task.
             }
         }
         enterProtectedMode();

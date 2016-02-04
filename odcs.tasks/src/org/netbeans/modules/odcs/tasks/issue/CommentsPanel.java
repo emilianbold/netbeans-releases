@@ -243,7 +243,9 @@ public class CommentsPanel extends JPanel {
             mailtoButton = new LinkButton.MailtoButton(
                     NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.mailtoButton.text"),                                        // NOI18N
                     NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.mailtoButton.AccessibleContext.accessibleDescription"),     // NOI18N
-                    author); 
+                    author,
+                    NbBundle.getMessage(CommentsPanel.class, "IssuePanel.headerLabel.format", new Object[] {issue.getID(), issue.getSummary()}),
+                    getReplayText(text)); 
             replyButton.setOpaque(false);
         }
         // IssueProvider 172653 - JTextPane too big
@@ -362,20 +364,24 @@ public class CommentsPanel extends JPanel {
                         Object value = comp.getClientProperty(REPLY_TO_PROPERTY);
                         if (value instanceof JTextPane) {
                             JTextPane pane = (JTextPane)value;
-                            String text = pane.getText();
-                            StringBuilder sb = new StringBuilder();
-                            StringTokenizer tokenizer = new StringTokenizer(text, "\n"); // NOI18N
-                            while (tokenizer.hasMoreElements()) {
-                                String line = tokenizer.nextToken();
-                                sb.append(QUOTE_PREFIX).append(line).append('\n'); // NOI18N
-                            }
-                            newCommentHandler.append(sb.toString());
+                            newCommentHandler.append(getReplayText(pane.getText()));
                         }
                     }
                 }
+
             };
         }
         return replyListener;
+    }
+    
+    private String getReplayText(String text) {
+        StringBuilder sb = new StringBuilder();
+        StringTokenizer tokenizer = new StringTokenizer(text, "\n"); // NOI18N
+        while (tokenizer.hasMoreElements()) {
+            String line = tokenizer.nextToken();
+            sb.append(QUOTE_PREFIX).append(line).append('\n'); // NOI18N
+        }
+        return sb.toString();
     }
 
     private JPanel createTextPanelPlaceholder() {

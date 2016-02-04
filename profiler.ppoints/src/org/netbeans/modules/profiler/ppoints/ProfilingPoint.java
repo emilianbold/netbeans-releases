@@ -54,8 +54,10 @@ import java.beans.PropertyChangeSupport;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URL;
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.event.SwingPropertyChangeSupport;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.lib.profiler.ui.components.HTMLLabel;
@@ -70,24 +72,26 @@ import org.openide.util.Lookup;
 public abstract class ProfilingPoint {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
     
-    public class ResultsRenderer extends HTMLLabel implements TableCellRenderer {
+    public static class ResultsRenderer extends HTMLLabel implements TableCellRenderer {
         
         private Reference<JComponent> lastTable;
+        private Reference<ProfilingPoint> lastProfilingPoint;
         
         {
             setOpaque(true);
-        }
-
-        public JComponent getComponent() {
-            return this;
+            setBorder(BorderFactory.createEmptyBorder());
+            setHorizontalAlignment(SwingConstants.RIGHT);
         }
         
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             ProfilingPoint ppoint = (ProfilingPoint)value;
-            resultsRenderer.setText(ppoint.getResultsText());
+            setText("<table cellspacing='0' cellpadding='0'><tr><td height='" + // NOI18N
+                    table.getRowHeight() + "' valign='middle'><nobr>&nbsp;" + // NOI18N
+                    ppoint.getResultsText() + "&nbsp;</nobr></td></tr></table>"); // NOI18N
             setEnabled(ppoint.isEnabled());
             lastTable = new WeakReference(table);
-            return getComponent();
+            lastProfilingPoint = new WeakReference(ppoint);
+            return this;
         }
 
         public void dispatchMouseEvent(MouseEvent e, Rectangle offset) {
@@ -112,7 +116,8 @@ public abstract class ProfilingPoint {
         }
 
         protected void showURL(URL url) {
-            showResults(url);
+            ProfilingPoint ppoint = lastProfilingPoint != null ? lastProfilingPoint.get() : null;
+            if (ppoint != null) ppoint.showResults(url);
         }
     }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser.astnodes.visitors;
 
@@ -81,6 +81,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
 import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.GroupUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.HaltCompiler;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
@@ -128,7 +129,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.TraitMethodAliasDeclarati
 import org.netbeans.modules.php.editor.parser.astnodes.TryStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
@@ -230,6 +231,9 @@ public class DefaultVisitor implements Visitor {
     public void visit(ClassInstanceCreation node) {
         scan(node.getClassName());
         scan(node.ctorParams());
+        scan(node.getSuperClass());
+        scan(node.getInterfaces());
+        scan(node.getBody());
     }
 
     @Override
@@ -334,6 +338,7 @@ public class DefaultVisitor implements Visitor {
     public void visit(FunctionDeclaration node) {
         scan(node.getFunctionName());
         scan(node.getFormalParameters());
+        scan(node.getReturnType());
         scan(node.getBody());
     }
 
@@ -606,6 +611,7 @@ public class DefaultVisitor implements Visitor {
     public void visit(LambdaFunctionDeclaration declaration) {
         scan(declaration.getFormalParameters());
         scan(declaration.getLexicalVariables());
+        scan(declaration.getReturnType());
         scan(declaration.getBody());
     }
 
@@ -615,9 +621,15 @@ public class DefaultVisitor implements Visitor {
     }
 
     @Override
-    public void visit(UseStatementPart statementPart) {
+    public void visit(SingleUseStatementPart statementPart) {
         scan(statementPart.getName());
         scan(statementPart.getAlias());
+    }
+
+    @Override
+    public void visit(GroupUseStatementPart statementPart) {
+        scan(statementPart.getBaseNamespaceName());
+        scan(statementPart.getItems());
     }
 
     @Override

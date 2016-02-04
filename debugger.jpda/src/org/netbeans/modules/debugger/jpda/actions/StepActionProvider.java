@@ -122,7 +122,6 @@ import org.openide.util.RequestProcessor.Task;
 public class StepActionProvider extends JPDADebuggerActionProvider 
 implements Executor {
 
-    private StepRequest             stepRequest;
     private final ContextProvider   lookupProvider;
     private MethodExitBreakpointListener lastMethodExitBreakpointListener;
     private int                     syntheticStep;
@@ -239,7 +238,7 @@ implements Executor {
             // 2) create new step request
             VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
             if (vm == null) return ; // There's nothing to do without the VM.
-            stepRequest = EventRequestManagerWrapper.createStepRequest (
+            StepRequest stepRequest = EventRequestManagerWrapper.createStepRequest (
                     VirtualMachineWrapper.eventRequestManager (vm),
                     tr,
                     stepSize,
@@ -427,7 +426,7 @@ implements Executor {
                     removeBPListener();
                     return false; // The session has finished
                 }
-                stepRequest = EventRequestManagerWrapper.createStepRequest(VirtualMachineWrapper.eventRequestManager(vm),
+                StepRequest stepRequest = EventRequestManagerWrapper.createStepRequest(VirtualMachineWrapper.eventRequestManager(vm),
                     tr,
                     StepRequest.STEP_LINE,
                     step

@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import org.netbeans.modules.dlight.libs.common.DLightLibsCommonLogger;
@@ -118,24 +119,61 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
     }
     
     @Override
-    public boolean isValid() {
-        return dispatcher.isValid();
+    public boolean isValidFast() {
+        return dispatcher.isValidFast();
     }
 
     @Override
-    protected DirEntry stat(String path) 
-            throws ConnectException, IOException, InterruptedException, ExecutionException {
-        return stat_or_lstat(path, false);
+    protected boolean isValidSlow() 
+            throws ConnectException, InterruptedException, CancellationException {
+        if (!dispatcher.isValidFast()) {
+            return false;
+        }
+        try {
+            return dispatcher.isValidSlow();
+        } catch (ConnectionManager.CancellationException ex) {
+            // TODO: refactor callers and change java.util.concurrent.CancellationException
+            // with ConnectionManager.CancellationException
+            throw new CancellationException(ex.getMessage());
+        }
     }
 
     @Override
-    protected DirEntry lstat(String path) 
+    protected DirEntry stat(String path)
             throws ConnectException, IOException, InterruptedException, ExecutionException {
-        return stat_or_lstat(path, true);
+        try {
+            return stat_or_lstat(path, false, 0);
+        } catch (TimeoutException ex) {
+            RemoteFileSystemUtils.reportUnexpectedTimeout(ex, path);
+            return null;
+        }
     }
 
-    private DirEntry stat_or_lstat(String path, boolean lstat) 
+    @Override
+    protected DirEntry stat(String path, int timeoutMillis)
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
+        return stat_or_lstat(path, false, timeoutMillis);
+    }
+
+    @Override
+    protected DirEntry lstat(String path)
             throws ConnectException, IOException, InterruptedException, ExecutionException {
+        try {
+            return stat_or_lstat(path, true, 0);
+        } catch (TimeoutException ex) {
+            RemoteFileSystemUtils.reportUnexpectedTimeout(ex, path);
+            return null;
+        }
+    }
+
+    @Override
+    protected DirEntry lstat(String path, int timeoutMillis)
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
+        return stat_or_lstat(path, true, timeoutMillis);
+    }
+
+    private DirEntry stat_or_lstat(String path, boolean lstat, int timeoutMillis)
+            throws TimeoutException, ConnectException, IOException, InterruptedException, ExecutionException {
 
         if (path.isEmpty()) {
             path = "/"; // NOI18N
@@ -151,8 +189,13 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
             RemoteLogger.finest("Sending stat/lstat request #{0} for {1} to fs_server", 
                     request.getId(), path);
             response = dispatcher.dispatch(request);
-            FSSResponse.Package pkg = response.getNextPackage();
-            if (pkg.getKind() == FSSResponseKind.FS_RSP_ENTRY) {
+            FSSResponse.Package pkg = response.getNextPackage(timeoutMillis);
+            if (pkg == null) {
+                String message = String.format("Timeout %d ms when getting %s for %s:%s", //NOI18N
+                        timeoutMillis, lstat ? "lstat" : "stat", env, path); //NOI18N
+                RemoteLogger.fine(message);
+                throw new TimeoutException(message);
+            } else if (pkg.getKind() == FSSResponseKind.FS_RSP_ENTRY) {
                 return createDirEntry(pkg, request.getId(), env);
             } else if (pkg.getKind() == FSSResponseKind.FS_RSP_ERROR) {
                 IOException ioe = createIOException(pkg);

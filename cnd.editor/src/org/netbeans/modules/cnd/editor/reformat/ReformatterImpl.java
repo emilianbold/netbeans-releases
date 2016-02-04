@@ -152,7 +152,7 @@ public class ReformatterImpl {
                         }
                     }
                     if (doFormat()) {
-                        newLineFormat(previous, current, braces.parenDepth);
+                        newLineFormat(previous, current);
                     }
                     break;
                 }
@@ -190,6 +190,8 @@ public class ReformatterImpl {
                         } else if (entry.isLikeToFunction()) {
                             // add new lines before method declaration
                             newLinesBeforeDeclaration(codeStyle.blankLinesBeforeMethods(), start);
+                        } else if (entry.getImportantKind() == ARROW){
+                            // lamda no action
                         } else if (entry.isLikeToArrayInitialization()) {
                             // no action
                         } else {
@@ -337,6 +339,12 @@ public class ReformatterImpl {
                     }
                     if (braces.parenDepth == 0) {
                         braces.setStatementContinuation(BracesStack.StatementContinuation.STOP);
+                    } else {
+                        if (entry != null) {
+                            if (entry.getLambdaParen() == braces.parenDepth) {
+                                braces.setStatementContinuation(BracesStack.StatementContinuation.STOP);
+                            }
+                        }
                     }
                     break;
                 }
@@ -1517,7 +1525,7 @@ public class ReformatterImpl {
         return next.id() == WHITESPACE || next.id() == ESCAPED_WHITESPACE || next.id() == NEW_LINE;
     }
     
-    private void newLineFormat(Token<CppTokenId> previous, Token<CppTokenId> current, int parenDepth) {
+    private void newLineFormat(Token<CppTokenId> previous, Token<CppTokenId> current) {
         if (previous != null) {
             boolean done = false;
             DiffResult diff = diffs.getDiffs(ts, -1);
@@ -1542,7 +1550,12 @@ public class ReformatterImpl {
             if (next.id() == NEW_LINE) {
                 return;
             }
+            int parenDepth = braces.parenDepth;
             int space = -1;
+            StackEntry top = braces.peek();
+            if (top != null && top.getImportantKind() == ARROW) {
+                parenDepth -= top.getLambdaParen();
+            }
             if (parenDepth > 0) {
                 for(int i = 1; i <= parenDepth; i++){
                     space = getParenthesisIndent(i);
@@ -1551,7 +1564,6 @@ public class ReformatterImpl {
                     }
                 }
             } else {
-                StackEntry top = braces.peek();
                 if (top != null &&
                     top.isLikeToArrayInitialization() &&
                     codeStyle.alignMultilineArrayInit()) {

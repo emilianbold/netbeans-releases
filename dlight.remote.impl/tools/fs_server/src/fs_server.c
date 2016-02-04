@@ -62,6 +62,10 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <sys/param.h>
+
+#define	MIN(a,b) (((a)<(b))?(a):(b))
+#define	MAX(a,b) (((a)>(b))?(a):(b))
 
 #define MAX_THREAD_COUNT 80
 #define DEFAULT_THREAD_COUNT 4
@@ -86,11 +90,13 @@ static bool refresh = false;
 static bool refresh_explicit = false;
 static bool statistics = false;
 static int refresh_sleep = 1;
+static int kill_locker_and_wait = 0;
+static unsigned long locker_pid_to_kill = 0;
 //static bool shutting_down = false;
 
 #define FS_SERVER_MAJOR_VERSION 1
-#define FS_SERVER_MID_VERSION 7
-#define FS_SERVER_MINOR_VERSION 4
+#define FS_SERVER_MID_VERSION 9
+#define FS_SERVER_MINOR_VERSION 0
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -128,8 +134,8 @@ static const int strerr_bufsize = PATH_MAX * 2 + 128; // should it be less?
 
 static void err_init() {
     err_info.err_no = 0;
-    err_info.errmsg = malloc(thread_emsg_bufsize);
-    err_info.strerr = malloc(strerr_bufsize);
+    err_info.errmsg = malloc_wrapper(thread_emsg_bufsize);
+    err_info.strerr = malloc_wrapper(strerr_bufsize);
     *err_info.errmsg = 0; // just in case
 }
 
@@ -403,7 +409,7 @@ static fs_request* decode_request(char* raw_request, fs_request* request, int re
 
 static fs_entry* create_fs_entry(fs_entry *entry2clone) {
     int sz = sizeof(fs_entry) + entry2clone->name_len + entry2clone->link_len + 2;
-    fs_entry *entry = malloc(sz);
+    fs_entry *entry = malloc_wrapper(sz);
     entry->name_len = entry2clone->name_len;
     entry->name = entry->data;
     strncpy(entry->name, entry2clone->name, entry->name_len);
@@ -605,7 +611,7 @@ static bool read_entries_from_cache(array/*<fs_entry>*/ *entries, dirtab_element
     bool success = false;
     if (cache_fp) {
         int buf_size = PATH_MAX + 40;
-        char *buf = malloc(buf_size);
+        char *buf = malloc_wrapper(buf_size);
         success = read_entries_from_cache_impl(entries, cache_fp, cache_path, buf, 
                 buf_size, path, persistence_version);
         free(buf);
@@ -746,7 +752,7 @@ static bool response_entry_create(buffer response_buf,
         }
 
         // name_len name type size mtime access device inode link_len link
-        snprintf(response_buf.data, response_buf.size, "%i %s %c %lu %lli %c%c%c %lu %lu %i %s\n",
+        snprintf(response_buf.data, response_buf.size, "%i %s %c %lu %llu %c%c%c %lu %lu %i %s\n",
                 utf8_char_count(escaped_name, escaped_name_size),
                 escaped_name,
                 mode_to_file_type_char(stat_buf.st_mode),
@@ -938,7 +944,7 @@ static void response_stat(int request_id, const char* path) {
     struct stat stat_buf;
     if (stat(path, &stat_buf) == 0) {
         int buf_size = MAXNAMLEN * 2 + 80; // *2 because of escaping. TODO: accurate size calculation
-        char* escaped_name = malloc(buf_size);
+        char* escaped_name = malloc_wrapper(buf_size);
         const char* basename = get_basename(path);
         escape_strcpy(escaped_name, basename);
         int escaped_name_size = strlen(escaped_name);
@@ -948,7 +954,7 @@ static void response_stat(int request_id, const char* path) {
         get_access_c(path, &stat_buf, &can_read, &can_write, &can_exec);
         
         // name_len name type size mtime access device inode link_len link
-        my_fprintf(STDOUT, "%c %i %i %s %c %lu %lli %c%c%c %lu %lu %i %s\n",
+        my_fprintf(STDOUT, "%c %i %i %s %c %lu %llu %c%c%c %lu %lu %i %s\n",
                 FS_RSP_ENTRY,
                 request_id,
                 utf8_char_count(escaped_name, escaped_name_size),
@@ -1045,7 +1051,7 @@ static bool copy_dir(const char* path, const char* path2, int id) {
         response_error(id, path2, errno, err_to_string(errno));
         return false;
     }
-    copy_dir_struct* cds = malloc(sizeof(copy_dir_struct));
+    copy_dir_struct* cds = malloc_wrapper(sizeof(copy_dir_struct));
     cds->success = true;
     cds->id = id;
 
@@ -1085,7 +1091,7 @@ static bool copy_plain_file(const char* path, const char* path2, int id) {
     bool success = false;
 
     const int buf_size = 16 * 1024;
-    buf = malloc(buf_size);
+    buf = malloc_wrapper(buf_size);
     if (buf) {
         int read_cnt;
         while ((read_cnt = fread(buf, 1, buf_size, src))) {
@@ -1124,7 +1130,7 @@ static bool copy_plain_file(const char* path, const char* path2, int id) {
 static bool copy_symlink(const char* path, const char* path2, int id) {
     bool success = false;
     const int buf_size = PATH_MAX;
-    char *link_dst = malloc(buf_size);
+    char *link_dst = malloc_wrapper(buf_size);
     ssize_t sz = readlink (path, link_dst, buf_size);
     if (sz == -1) {
         response_error(id, path, errno, err_to_string(errno));
@@ -1592,6 +1598,27 @@ static void *rp_loop(void *data) {
     return NULL;
 }
 
+static void write_pid(int fd) {
+    char buf[40];
+    int sz = snprintf(buf, sizeof buf, "PID=%lu\n", (unsigned long) getpid());
+    if (sz > 0) {
+        write(fd, buf, sz);
+    }
+}
+
+static unsigned long read_pid(int fd) {
+    char buf[40];
+    ssize_t sz = read(fd, buf, sizeof buf);
+    if (sz > 0) {
+        buf[sz] = 0;
+        if (strncmp("PID=", buf, 4) == 0) {
+            unsigned long pid = atol(buf + 4);
+            return pid;
+        }
+    }
+    return 0;
+}
+
 static void lock_or_unlock(bool lock) {
     if (!persistence) {
         return;
@@ -1599,14 +1626,41 @@ static void lock_or_unlock(bool lock) {
     const char* lock_file_name = "lock";
     static int lock_fd = -1;
     if (lock) {
-        lock_fd = open(lock_file_name, O_WRONLY | O_CREAT, 0600);
+        lock_fd = open(lock_file_name, O_RDWR | O_CREAT, 0600);
         if (lock_fd < 0) {
             report_error("error opening lock file %s/%s: %s\n", dirtab_get_basedir(), lock_file_name, strerror(errno));
             exit(FAILURE_OPENING_LOCK_FILE);
         }
         if(lockf(lock_fd, F_TLOCK, 0)) {
-            report_error("error locking lock file %s/%s: %s\n", dirtab_get_basedir(), lock_file_name, strerror(errno));
+            int lockf_errno = errno;
+            unsigned long pid = read_pid(lock_fd);
+            if (pid != 0) {
+                if (kill_locker_and_wait && (locker_pid_to_kill == 0 || locker_pid_to_kill == pid)) {
+                    // first try SIGTERM, then SIGKILL
+                    for (int round = 0; round < 2; round++) {
+                        int signal = (round == 0) ? SIGTERM : SIGKILL;
+                        trace(TRACE_INFO, "Killing pid=%lu via sending signal %i...\n", pid, signal);
+                        kill(pid, signal);
+                        int cnt = MAX(kill_locker_and_wait / 10, 1);
+                        for (int i = 0; i < cnt; i++) {
+                            if (lockf(lock_fd, F_TLOCK, 0)) {
+                                lockf_errno = errno;
+                                trace(TRACE_FINE, "waiting for pid=%lu to terminate...\n", pid);
+                                usleep(10000);
+                            } else {
+                                write_pid(lock_fd);
+                                return;
+                            }
+                        }
+                    }
+                }
+                report_error("lock file already locked by PID=%lu %s/%s: %s\n", pid, dirtab_get_basedir(), lock_file_name, strerror(lockf_errno));
+                exit(FAILURE_LOCKING_LOCK_FILE);
+            }
+            report_error("error locking lock file %s/%s: %s\n", dirtab_get_basedir(), lock_file_name, strerror(lockf_errno));
             exit(FAILURE_LOCKING_LOCK_FILE);
+        } else {
+            write_pid(lock_fd);
         }
     } else {
         if (lockf(lock_fd, F_ULOCK, 0)) {
@@ -1625,8 +1679,8 @@ static void exit_function() {
 static void main_loop() {
     //TODO: handshake with version
     int buf_size = 256 + 2 * (PATH_MAX * 2);
-    char *raw_req_buffer = malloc(buf_size);
-    char *req_buffer = malloc(buf_size);
+    char *raw_req_buffer = malloc_wrapper(buf_size);
+    char *req_buffer = malloc_wrapper(buf_size);
     while(!is_broken_pipe() &&fgets(raw_req_buffer, buf_size, stdin)) {
         trace(TRACE_FINE, "request: %s", raw_req_buffer); // no LF since buffer ends it anyhow
         log_print(raw_req_buffer);
@@ -1661,7 +1715,7 @@ static void main_loop() {
                     rp_threads[curr_thread].no = curr_thread;
                     pthread_create(&rp_threads[curr_thread].id, NULL, &rp_loop, &rp_threads[curr_thread]);
                 }
-                fs_request* new_request = malloc(request->size);
+                fs_request* new_request = malloc_wrapper(request->size);
                 clone_request(new_request, request);
                 blocking_queue_add(&req_queue, new_request);
             } else {
@@ -1688,6 +1742,10 @@ static void usage(char* argv[]) {
             "   -s statistics: print some statistics output to stderr\n"
             "   -d persistence directory: where to log responses (valid only if -p is set)\n"
             "   -c cleanup persistence upon startup\n"
+            "   -K <PID>:<msec>|<msec> kill another fs_server process that locks the cache via sending SIGTERM and\n"
+            "      wait maximum <msec> microseconds until it releases the lock\n"
+            "      <msec> should be less than 1000000\n"
+            "      if <PID> is specified then only the process with this PID can be killed\n"
             , prog_name ? prog_name : argv[0], DEFAULT_THREAD_COUNT);
 }
 
@@ -1695,7 +1753,7 @@ void process_options(int argc, char* argv[]) {
     int opt;
     int new_thread_count, new_refresh_sleep, new_trace_level;
     TraceLevel default_trace_leve = TRACE_INFO;
-    while ((opt = getopt(argc, argv, "r:pv:t:lsd:cR:")) != -1) {
+    while ((opt = getopt(argc, argv, "r:pv:t:lsd:cR:K:")) != -1) {
         switch (opt) {
             case 'R':
                 if (optarg) {
@@ -1759,6 +1817,27 @@ void process_options(int argc, char* argv[]) {
                         rp_thread_count = MAX_THREAD_COUNT;
                     } else {
                         rp_thread_count = new_thread_count;
+                    }
+                }
+                break;
+            case 'K':
+                kill_locker_and_wait = 5;
+                if (optarg) {
+                    // can be in the form <msec> or <PID>:<msec>
+                    char* p = optarg;
+                    // try finding ':'
+                    while (*p && *p != ':') {
+                        p++;
+                    }
+                    // *p is either ':' or '\0'
+                    if (p) {
+                        // *p is ':'
+                        *p++ = 0;
+                        locker_pid_to_kill = atol(optarg);
+                        kill_locker_and_wait = atoi(p);
+                    } else {
+                        locker_pid_to_kill = 0;
+                        kill_locker_and_wait = atoi(optarg);
                     }
                 }
                 break;

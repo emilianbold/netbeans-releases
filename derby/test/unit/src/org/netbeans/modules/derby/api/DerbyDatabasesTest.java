@@ -46,18 +46,21 @@ package org.netbeans.modules.derby.api;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import javax.xml.ws.Holder;
+import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.derby.DerbyDatabasesImpl;
 import org.netbeans.modules.derby.DerbyOptions;
 import org.netbeans.modules.derby.test.TestBase;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Lookup;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -66,23 +69,33 @@ import org.openide.util.lookup.ProxyLookup;
 public class DerbyDatabasesTest extends TestBase {
 
     private File systemHome;
-    private Lookup sampleDBLookup;
 
     public DerbyDatabasesTest(String testName) {
         super(testName);
     }
 
+    @Override
     public void setUp() throws Exception {
+        super.setUp();
+        
         clearWorkDir();
 
         systemHome = new File(getWorkDir(), ".netbeans-derby");
         systemHome.mkdirs();
-
-        DerbyOptions.getDefault().setSystemHome(systemHome.getAbsolutePath());
-
-        SampleDatabaseLocator sdl = new SampleDatabaseLocator();
-
-        sampleDBLookup = new ProxyLookup(Lookup.getDefault(), Lookups.singleton(sdl));
+        
+        Lookups.executeWith(sampleDBLookup, new Runnable() {
+            @Override
+            public void run() {
+                DerbyOptions.getDefault().setSystemHome(systemHome.getAbsolutePath());
+                try {
+                    JDBCDriverManager.getDefault().addDriver(JDBCDriver.create(DerbyOptions.DRIVER_DISP_NAME_NET, DerbyOptions.DRIVER_DISP_NAME_NET, DerbyOptions.DRIVER_CLASS_NET, new URL[] {}));
+                } catch (DatabaseException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+        
+        
     }
 
     public void testGetFirstFreeDatabaseName() throws Exception {
@@ -198,13 +211,14 @@ public class DerbyDatabasesTest extends TestBase {
     
     public static final class SampleDatabaseLocator extends InstalledFileLocator {
 
-        public File directory;
+        public final File directory;
 
         public SampleDatabaseLocator() {
             File derbyModule = new File(URI.create(DerbyOptions.class.getProtectionDomain().getCodeSource().getLocation().toExternalForm()));
             directory = derbyModule.getParentFile().getParentFile();
         }
 
+        @Override
         public File locate(String relativePath, String codeNameBase, boolean localized) {
             if ("modules/ext/derbysampledb.zip".equals(relativePath)) {
                 return new File(directory, relativePath);

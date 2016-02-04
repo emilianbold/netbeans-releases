@@ -94,12 +94,14 @@ public final class TomcatFactory implements DeploymentFactory {
     public static final String SERVER_ID_60 = "Tomcat60";   // NOI18N
     public static final String SERVER_ID_70 = "Tomcat70";   // NOI18N
     public static final String SERVER_ID_80 = "Tomcat80";   // NOI18N
+    public static final String SERVER_ID_90 = "Tomcat90";   // NOI18N
     
     public static final String TOMCAT_URI_PREFIX_50 = "tomcat:";    // NOI18N
     public static final String TOMCAT_URI_PREFIX_55 = "tomcat55:";  // NOI18N
     public static final String TOMCAT_URI_PREFIX_60 = "tomcat60:";  // NOI18N
     public static final String TOMCAT_URI_PREFIX_70 = "tomcat70:";  // NOI18N
     public static final String TOMCAT_URI_PREFIX_80 = "tomcat80:";  // NOI18N
+    public static final String TOMCAT_URI_PREFIX_90 = "tomcat90:";  // NOI18N
     
     public static final String TOMCAT_URI_HOME_PREFIX = "home=";    // NOI18N
     public static final String TOMCAT_URI_BASE_PREFIX = ":base=";   // NOI18N
@@ -118,12 +120,13 @@ public final class TomcatFactory implements DeploymentFactory {
     private static final String DISCONNECTED_URI_60 = TOMCAT_URI_PREFIX_60 + "apache-tomcat-6.0.x";   // NOI18N
     private static final String DISCONNECTED_URI_70 = TOMCAT_URI_PREFIX_70 + "apache-tomcat-7.0.x";   // NOI18N
     private static final String DISCONNECTED_URI_80 = TOMCAT_URI_PREFIX_80 + "apache-tomcat-8.0.x";   // NOI18N
+    private static final String DISCONNECTED_URI_90 = TOMCAT_URI_PREFIX_90 + "apache-tomcat-9.0.x";   // NOI18N
     
     private static final Set<String> DISCONNECTED_URIS = new HashSet<String>();
     static {
         Collections.addAll(DISCONNECTED_URIS, DISCONNECTED_URI_50,
                 DISCONNECTED_URI_55, DISCONNECTED_URI_60, DISCONNECTED_URI_70,
-                DISCONNECTED_URI_80, GENERIC_DISCONNECTED_URI);
+                DISCONNECTED_URI_80, DISCONNECTED_URI_90, GENERIC_DISCONNECTED_URI);
     }
     
     private static TomcatFactory instance;
@@ -209,7 +212,8 @@ public final class TomcatFactory implements DeploymentFactory {
                 || str.startsWith(TOMCAT_URI_PREFIX_55)
                 || str.startsWith(TOMCAT_URI_PREFIX_60)
                 || str.startsWith(TOMCAT_URI_PREFIX_70)
-                || str.startsWith(TOMCAT_URI_PREFIX_80));
+                || str.startsWith(TOMCAT_URI_PREFIX_80)
+                || str.startsWith(TOMCAT_URI_PREFIX_90));
     }
     
     /** 
@@ -324,12 +328,28 @@ public final class TomcatFactory implements DeploymentFactory {
             return TomcatVersion.TOMCAT_70;
         } else if (version.startsWith("8.")) { // NOI18N
             return TomcatVersion.TOMCAT_80;
+        } else if (version.startsWith("9.")) { // NOI18N
+            return TomcatVersion.TOMCAT_90;
+        }
+        int dotIndex = version.indexOf('.');
+        if (dotIndex > 0) {
+            try {
+                int major = Integer.parseInt(version.substring(0, dotIndex));
+                // forward compatibility - handle any newer tomcat as Tomcat 9
+                if (major > 9) {
+                    return TomcatVersion.TOMCAT_90;
+                }
+            } catch (NumberFormatException ex) {
+                // noop
+            }
         }
         return defaultVersion;
     }
 
     private static TomcatVersion getTomcatVersion(String uri) throws IllegalStateException {
-        if (uri.startsWith(TOMCAT_URI_PREFIX_80)) {
+        if (uri.startsWith(TOMCAT_URI_PREFIX_90)) {
+            return TomcatVersion.TOMCAT_90;
+        } else if (uri.startsWith(TOMCAT_URI_PREFIX_80)) {
             return TomcatVersion.TOMCAT_80;
         } else if (uri.startsWith(TOMCAT_URI_PREFIX_70)) {
             return TomcatVersion.TOMCAT_70;
@@ -452,6 +472,8 @@ public final class TomcatFactory implements DeploymentFactory {
             return uri.substring(GENERIC_DISCONNECTED_URI_PREFIX.length());
         }
         switch (tomcatVersion) {
+            case TOMCAT_90:
+                return uri.substring(TomcatFactory.TOMCAT_URI_PREFIX_90.length());
             case TOMCAT_80:
                 return uri.substring(TomcatFactory.TOMCAT_URI_PREFIX_80.length());
             case TOMCAT_70:

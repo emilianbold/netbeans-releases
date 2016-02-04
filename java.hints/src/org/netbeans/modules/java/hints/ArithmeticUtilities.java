@@ -955,6 +955,8 @@ public class ArithmeticUtilities {
         if (!convertTo.getKind().isPrimitive()) {
             if (Utilities.isPrimitiveWrapperType(convertTo)) {
                 convertTo = info.getTypes().unboxedType(convertTo);
+            } else if (isNull(val)) { 
+                return val;
             } else {
 // possibly a String ?
                 if (val instanceof String && convertTo.getKind() == TypeKind.DECLARED) {
@@ -963,8 +965,8 @@ public class ArithmeticUtilities {
                         return val;
                     }
                 }
-            return null;
-        }
+                return null;
+            }
         }
         switch (convertTo.getKind()) {
             case BOOLEAN:

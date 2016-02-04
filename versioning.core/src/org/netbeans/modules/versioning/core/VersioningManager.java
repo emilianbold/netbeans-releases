@@ -551,6 +551,10 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
             }
         }
 
+        // ping and wake up LH, it does not have any metadata folders so the
+        // default getTopmostManagedAncestor does not return true and does not
+        // wake the instance. It needs to be waken by force.
+        lh.getDelegate();
         boolean isManaged = lh.getTopmostManagedAncestor(folder) != null;
         if (isManaged) {
             putLocalHistoryFile(Boolean.TRUE, folder);

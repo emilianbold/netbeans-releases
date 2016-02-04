@@ -47,6 +47,7 @@ package org.netbeans.modules.bugtracking.commons;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -62,8 +63,11 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.Action;
@@ -72,8 +76,6 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
-import org.openide.awt.HtmlBrowser;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -132,6 +134,13 @@ public class LinkButton extends JButton implements MouseListener, FocusListener 
     public LinkButton() {
         super();
         init();
+    }
+    
+    public void setColors(Color linkColor, Color linkInFocusColor, Color mouseOverLinkColor, Color visitedLinkColor) {
+        this.linkInFocusColor = linkInFocusColor;
+        this.linkColor = linkColor;
+        this.mouseOverLinkColor = mouseOverLinkColor;
+        this.visitedLinkColor = visitedLinkColor;
     }
 
     private void init() {
@@ -253,18 +262,57 @@ public class LinkButton extends JButton implements MouseListener, FocusListener 
     
     public static class MailtoButton extends LinkButton {
         public MailtoButton(String text, String accessibleCtx, final String mail) {
+            this(text, accessibleCtx, mail, null, null);
+        }
+        
+        public MailtoButton(String text, String accessibleCtx, final String mail, String subject, String body) {
             super(text);
             addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    StringBuilder mailtoURI = new StringBuilder();
+                    mailtoURI.append("mailto:");
+                    mailtoURI.append(mail);
+
+                    boolean amp = false;
+                    if(subject != null || body != null) {
+                        mailtoURI.append("?");                        
+                    }
+                    if(subject != null) {
+                        mailtoURI.append("subject=");                                                
+                        mailtoURI.append(encodeURI(subject));                                                
+                        amp = true;
+                    } 
+                    if(body != null) {
+                        if(amp) {
+                            mailtoURI.append("&");                                                                            
+                        }
+                        mailtoURI.append("body=");                                                
+                        mailtoURI.append(encodeURI(body));
+                    }
                     try {
-                        HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("mailto:" + mail)); // NOI18N
-                    } catch (MalformedURLException ex) {
-                        Support.LOG.log(Level.INFO, "unable to invoke {0}", mail); // NOI18N
+                        Desktop.getDesktop().mail(new URI(mailtoURI.toString()));
+                    } catch (URISyntaxException | IOException ex) {
+                        Support.LOG.log(Level.INFO, "unable to invoke: \n" + mailtoURI.toString(), ex); // NOI18N
                     }
                 }
+
+                private String encodeURI(String text) {
+                    try {
+                        return URLEncoder.encode(text, "UTF-8")
+                                .replaceAll("\\%28", "(")
+                                .replaceAll("\\%29", ")")
+                                .replaceAll("\\+", "%20")
+                                .replaceAll("\\%21", "!")
+                                .replaceAll("\\%27", "'")
+                                .replaceAll("\\%7E", "~");
+                    } catch (UnsupportedEncodingException e) {
+                        Support.LOG.log(Level.WARNING, null, e);
+                    }
+                    return text;
+                }
             });  
-            getAccessibleContext().setAccessibleDescription(accessibleCtx);
+            getAccessibleContext().setAccessibleDescription(accessibleCtx != null ? accessibleCtx : "");
         }
     }      
 }

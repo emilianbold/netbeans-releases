@@ -39,7 +39,7 @@
         </Comments>
         <Statements>
             <UseStatement start='6' end='17' type='TYPE'>
-                <UseStatementPart start='10' end='16'>
+                <SingleUseStatementPart start='10' end='16'>
                     <Name>
                         <NamespaceName start='10' end='16' isCurrent='false' isGlobal='true'>
                             <Identifier start='11' end='12' name='A'/>
@@ -49,7 +49,7 @@
                     </Name>
                     <Alias>
                     </Alias>
-                </UseStatementPart>
+                </SingleUseStatementPart>
             </UseStatement>
             <EmptyStatement start='18' end='20'/>
             <InLineHtml start='20' end='21'/>

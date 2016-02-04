@@ -82,7 +82,7 @@ public class MockUpODCSClient implements ODCSClient {
     }
 
     @Override
-    public List<Activity> getRecentActivities(String projectId) throws ODCSException {
+    public List<Activity> getRecentActivities(String projectId, int offset, int count) throws ODCSException {
         waitAMoment(800);
         throwExIfGiven("getActivities:String");
         

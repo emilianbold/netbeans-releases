@@ -88,7 +88,7 @@ public abstract class Configuration implements ProjectConfiguration {
     // MUST be called by descendant classes
     protected final void initAuxObjects() {
         // Create and initialize auxiliary objects
-        ConfigurationAuxObjectProvider[] auxObjectProviders = ConfigurationDescriptorProvider.getAuxObjectProviders();
+        ConfigurationAuxObjectProvider[] auxObjectProviders = ConfigurationDescriptorProvider.getAuxObjectProviders();        
         for (int i = 0; i < auxObjectProviders.length; i++) {
             ConfigurationAuxObject pao = auxObjectProviders[i].factoryCreate(fsPath.getPath(), pcs, this); //XXX:fullRemote:fileSystem
             pao.initialize();
@@ -155,6 +155,8 @@ public abstract class Configuration implements ProjectConfiguration {
 
     @Override
     public String toString() {
+        // Please note that toString() is used in some UIs
+        // And I can not be sure I know all the places it is used in a UI :(
         if (isDefault()) {
             return getDisplayName() + " " + getString("ActiveTxt"); // NOI18N
         } else {
@@ -190,6 +192,22 @@ public abstract class Configuration implements ProjectConfiguration {
             list = new ArrayList<>(auxObjectsMap.values());
         }
         return list.toArray(new ConfigurationAuxObject[list.size()]);
+    }
+
+    /** guarded by auxObjectsMap */
+    private boolean valid = true;
+
+    public void clear() {
+        synchronized (auxObjectsMap) {
+            auxObjectsMap.clear();
+            valid = false;
+        }
+    }
+
+    public boolean isValid() {
+        synchronized (auxObjectsMap) {
+            return valid;
+        }
     }
 
     public void setAuxObjects(List<ConfigurationAuxObject> v) {

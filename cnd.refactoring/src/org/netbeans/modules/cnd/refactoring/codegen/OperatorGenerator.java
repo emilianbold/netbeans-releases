@@ -46,22 +46,16 @@ import java.awt.Dialog;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
-import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmFunctionParameterList;
-import org.netbeans.modules.cnd.api.model.CsmInheritance;
-import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
@@ -73,8 +67,6 @@ import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
-import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
-import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
 import org.netbeans.modules.cnd.refactoring.api.CsmContext;
@@ -87,7 +79,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Pair;
 
 /**
  *
@@ -114,66 +105,66 @@ public class OperatorGenerator implements CodeGenerator {
             if (!(CsmKindUtilities.isClass(last) || CsmKindUtilities.isField(last))) {
                 return ret;
             }
-            CsmObject objectUnderOffset = path.getObjectUnderOffset();
-            final List<Pair<CsmField,ConstructorGenerator.Inited>> fields = new ArrayList<>();
-            final List<CsmConstructor> constructors = new ArrayList<>();
-            final Map<CsmClass,List<CsmConstructor>> inheritedConstructors = new HashMap<>();
-            CsmCacheManager.enter();
-            try {
-            // check base class
-            for (CsmInheritance csmInheritance : typeElement.getBaseClasses()) {
-                CsmClass baseClass = CsmInheritanceUtilities.getCsmClass(csmInheritance);
-                if (baseClass != null) {
-                    List<CsmConstructor> list = new ArrayList<>();
-                    for (CsmMember member : baseClass.getMembers()) {
-                        if (CsmKindUtilities.isConstructor(member) &&
-                            CsmInheritanceUtilities.matchVisibility(member, CsmVisibility.PROTECTED) &&
-                            !isCopyConstructor(baseClass, (CsmConstructor)member)) {
-                            list.add((CsmConstructor)member);
-                        }
-                    }
-                    if (!list.isEmpty()) {
-                        inheritedConstructors.put(baseClass, list);
-                    }
-                }
-            }
-            GeneratorUtils.scanForFieldsAndConstructors(typeElement, fields, constructors);
-            } finally {
-                CsmCacheManager.leave();
-            }
-            ElementNode.Description constructorDescription = null;
-            if (!inheritedConstructors.isEmpty()) {
-                List<ElementNode.Description> baseClassesDescriptions = new ArrayList<>();
-                for (Map.Entry<CsmClass,List<CsmConstructor>> entry : inheritedConstructors.entrySet()) {
-                    List<ElementNode.Description> constructorDescriptions = new ArrayList<>();
-                    for(CsmConstructor c : entry.getValue()) {
-                        constructorDescriptions.add(ElementNode.Description.create(c, null, true, false));
-                    }
-                    baseClassesDescriptions.add(ElementNode.Description.create(entry.getKey(), constructorDescriptions, false, false));
-                }
-                constructorDescription = ElementNode.Description.create(typeElement, baseClassesDescriptions, false, false);
-            }
-            ElementNode.Description fieldsDescription = null;
-            if (!fields.isEmpty()) {
-                List<ElementNode.Description> fieldDescriptions = new ArrayList<>();
-                for (Pair<CsmField,ConstructorGenerator.Inited> variableElement : fields) {
-                    switch(variableElement.second()) {
-                        case must:
-                            fieldDescriptions.add(ElementNode.Description.create(variableElement.first(), null, true, true));
-                            break;
-                        case may:
-                            fieldDescriptions.add(ElementNode.Description.create(variableElement.first(), null, true, variableElement.equals(objectUnderOffset)));
-                            break;
-                        case cannot:
-                            fieldDescriptions.add(ElementNode.Description.create(variableElement.first(), null, false, false));
-                            break;
-                    }
-                }
-                fieldsDescription = ElementNode.Description.create(typeElement, Collections.singletonList(ElementNode.Description.create(typeElement, fieldDescriptions, false, false)), false, false);
-            }
-            if (constructorDescription == null && fieldsDescription == null) {
-                return ret;
-            }
+//            CsmObject objectUnderOffset = path.getObjectUnderOffset();
+//            final List<Pair<CsmField,ConstructorGenerator.Inited>> fields = new ArrayList<>();
+//            final List<CsmConstructor> constructors = new ArrayList<>();
+//            final Map<CsmClass,List<CsmConstructor>> inheritedConstructors = new HashMap<>();
+//            CsmCacheManager.enter();
+//            try {
+//            // check base class
+//            for (CsmInheritance csmInheritance : typeElement.getBaseClasses()) {
+//                CsmClass baseClass = CsmInheritanceUtilities.getCsmClass(csmInheritance);
+//                if (baseClass != null) {
+//                    List<CsmConstructor> list = new ArrayList<>();
+//                    for (CsmMember member : baseClass.getMembers()) {
+//                        if (CsmKindUtilities.isConstructor(member) &&
+//                            CsmInheritanceUtilities.matchVisibility(member, CsmVisibility.PROTECTED) &&
+//                            !isCopyConstructor(baseClass, (CsmConstructor)member)) {
+//                            list.add((CsmConstructor)member);
+//                        }
+//                    }
+//                    if (!list.isEmpty()) {
+//                        inheritedConstructors.put(baseClass, list);
+//                    }
+//                }
+//            }
+//            GeneratorUtils.scanForFieldsAndConstructors(typeElement, fields, constructors);
+//            } finally {
+//                CsmCacheManager.leave();
+//            }
+//            ElementNode.Description constructorDescription = null;
+//            if (!inheritedConstructors.isEmpty()) {
+//                List<ElementNode.Description> baseClassesDescriptions = new ArrayList<>();
+//                for (Map.Entry<CsmClass,List<CsmConstructor>> entry : inheritedConstructors.entrySet()) {
+//                    List<ElementNode.Description> constructorDescriptions = new ArrayList<>();
+//                    for(CsmConstructor c : entry.getValue()) {
+//                        constructorDescriptions.add(ElementNode.Description.create(c, null, true, false));
+//                    }
+//                    baseClassesDescriptions.add(ElementNode.Description.create(entry.getKey(), constructorDescriptions, false, false));
+//                }
+//                constructorDescription = ElementNode.Description.create(typeElement, baseClassesDescriptions, false, false);
+//            }
+//            ElementNode.Description fieldsDescription = null;
+//            if (!fields.isEmpty()) {
+//                List<ElementNode.Description> fieldDescriptions = new ArrayList<>();
+//                for (Pair<CsmField,ConstructorGenerator.Inited> variableElement : fields) {
+//                    switch(variableElement.second()) {
+//                        case must:
+//                            fieldDescriptions.add(ElementNode.Description.create(variableElement.first(), null, true, true));
+//                            break;
+//                        case may:
+//                            fieldDescriptions.add(ElementNode.Description.create(variableElement.first(), null, true, variableElement.equals(objectUnderOffset)));
+//                            break;
+//                        case cannot:
+//                            fieldDescriptions.add(ElementNode.Description.create(variableElement.first(), null, false, false));
+//                            break;
+//                    }
+//                }
+//                fieldsDescription = ElementNode.Description.create(typeElement, Collections.singletonList(ElementNode.Description.create(typeElement, fieldDescriptions, false, false)), false, false);
+//            }
+//            if (constructorDescription == null && fieldsDescription == null) {
+//                return ret;
+//            }
             List<ElementNode.Description> operators;
             ElementNode.Description operatorsDescription;
             
@@ -251,19 +242,19 @@ public class OperatorGenerator implements CodeGenerator {
             return ret;
         }
         
-        private boolean isCopyConstructor(CsmClass cls, CsmConstructor constructor) {
-            Collection<CsmParameter> parameters = constructor.getParameters();
-            if (parameters.size() == 1) {
-                CsmParameter p = parameters.iterator().next();
-                CsmType paramType = p.getType();
-                if (paramType.isReference()) {
-                    if (cls.equals(paramType.getClassifier())) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
+//        private boolean isCopyConstructor(CsmClass cls, CsmConstructor constructor) {
+//            Collection<CsmParameter> parameters = constructor.getParameters();
+//            if (parameters.size() == 1) {
+//                CsmParameter p = parameters.iterator().next();
+//                CsmType paramType = p.getType();
+//                if (paramType.isReference()) {
+//                    if (cls.equals(paramType.getClassifier())) {
+//                        return true;
+//                    }
+//                }
+//            }
+//            return false;
+//        }
     }
     
     private final JTextComponent component;

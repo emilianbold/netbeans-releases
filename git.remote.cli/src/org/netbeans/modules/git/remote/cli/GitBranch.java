@@ -62,8 +62,8 @@ public final class GitBranch {
     private final String name;
     private final boolean remote;
     private final boolean active;
+    private final String branchCode;
     private GitBranch trackedBranch;
-    private String branchCode;
 
     GitBranch (String name, boolean remote, boolean active, String id) {
         this.name = name;
@@ -111,5 +111,23 @@ public final class GitBranch {
     
     void setTrackedBranch (GitBranch trackedBranch) {
         this.trackedBranch = trackedBranch;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder buf = new StringBuilder(name);
+        if (remote) {
+            buf.append(" Remote"); //NOI18N
+        }
+        if (active) {
+            buf.append(" Active"); //NOI18N
+        }
+        if (branchCode != null) {
+            buf.append(" [").append(branchCode).append(']'); //NOI18N
+        }
+        if (trackedBranch != null) {
+            buf.append("->").append(trackedBranch.getName()); //NOI18N
+        }
+        return buf.toString();
     }
 }

@@ -63,7 +63,7 @@ public interface ODCSClient {
 
     Project getProjectById(final String projectId) throws ODCSException;
 
-    List<Activity> getRecentActivities(String projectId) throws ODCSException;
+    List<Activity> getRecentActivities(String projectId, int offset, int count) throws ODCSException;
 
     List<ScmRepository> getScmRepositories(String projectId) throws ODCSException;
 

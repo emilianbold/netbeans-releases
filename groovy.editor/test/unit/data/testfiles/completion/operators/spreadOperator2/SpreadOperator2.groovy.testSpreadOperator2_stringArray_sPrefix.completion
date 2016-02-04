@@ -12,7 +12,6 @@ METHOD     split(String)                   [PUBLIC]   String[]
 METHOD     split(String, int)              [PUBLIC]   String[]
 METHOD     splitEachLine(CharSequence, Cl             Object
 METHOD     splitEachLine(Pattern, Closure             Object
-METHOD     splitEachLine(String, Closure)             Object
 METHOD     sprintf(String, Object)                    String
 METHOD     sprintf(String, Object)                    String
 METHOD     startsWith(String)              [PUBLIC]   boolean
@@ -21,7 +20,6 @@ METHOD     stripIndent()                              String
 METHOD     stripIndent(int)                           String
 METHOD     stripMargin()                              String
 METHOD     stripMargin(CharSequence)                  String
-METHOD     stripMargin(String)                        String
 METHOD     stripMargin(char)                          String
 METHOD     subSequence(int, int)           [PUBLIC]   CharSequence
 METHOD     substring(int)                  [PUBLIC]   String

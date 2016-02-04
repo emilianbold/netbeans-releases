@@ -218,6 +218,10 @@ public final class SystemMacroImpl implements CsmMacro, CsmIdentifiable {
         @Override
         public T getObject() {
             I object = instance.getObject();
+            if (object == null) {
+                // could be request from delayed clients like Sema HL over deleted project
+                return null;
+            }
             FileImpl file = (FileImpl)object;
             CharSequence body = MacroReference.findBody(file, argument);
             if (body == null) {

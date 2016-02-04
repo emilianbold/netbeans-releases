@@ -47,17 +47,31 @@ package org.netbeans.modules.docker.api;
  */
 public class DockerContainerDetail {
 
-    private final boolean openStdin;
+    private final String name;
+
+    private final DockerContainer.Status status;
+
+    private final boolean stdin;
 
     private final boolean tty;
 
-    public DockerContainerDetail(boolean openStdin, boolean tty) {
-        this.openStdin = openStdin;
+    public DockerContainerDetail(String name, DockerContainer.Status status, boolean stdin, boolean tty) {
+        this.name = name;
+        this.status = status;
+        this.stdin = stdin;
         this.tty = tty;
     }
 
-    public boolean isOpenStdin() {
-        return openStdin;
+    public String getName() {
+        return name;
+    }
+
+    public DockerContainer.Status getStatus() {
+        return status;
+    }
+
+    public boolean isStdin() {
+        return stdin;
     }
 
     public boolean isTty() {

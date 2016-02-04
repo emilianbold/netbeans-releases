@@ -385,10 +385,22 @@ public final class DatabaseConnection implements DBConnection {
             if (! this.isVitalConnection()) {
                 return false;
             }
-
+            
             // Send a command to the server, if it fails we know the connection is invalid.
-            getJDBCConnection().getMetaData().getTables(null, null, " ", new String[] { "TABLE" }).close();
+            try {
+                return getJDBCConnection().isValid(10 * 1000);
+            } catch (AbstractMethodError err) {
+                // In case JDBC driver does not implement method 
+                getJDBCConnection().getMetaData().getTables(null, null, " ", new String[] { "TABLE" }).close();
+            }
         } catch (SQLException | NullPointerException e) {
+            if("net.sourceforge.jtds.jdbc.Driver".equals(getDriver()) 
+                    && e instanceof SQLException
+                    && "07009".equals(((SQLException) e).getSQLState())) {
+                // This state is reached when "set showplan_* ON" is run
+                // in this case metadata is broken on sql server
+                return true;
+            }
             LOGGER.log(Level.INFO, NbBundle.getMessage(DatabaseConnection.class,
                     "MSG_TestFailed", getName(), e.getMessage()));
             LOGGER.log(Level.FINE, null, e);

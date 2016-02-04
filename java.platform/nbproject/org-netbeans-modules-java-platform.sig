@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.35
+#Version 1.39.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -86,18 +86,12 @@ meth public java.lang.String toString()
 supr java.lang.Object
 hfds displayName,name,profiles,version
 
-CLSS public abstract org.netbeans.spi.java.platform.CustomPlatformInstall
-cons public init()
-meth public abstract org.openide.WizardDescriptor$InstantiatingIterator<org.openide.WizardDescriptor> createIterator()
-supr org.netbeans.spi.java.platform.GeneralPlatformInstall
+CLSS public abstract interface org.netbeans.modules.java.platform.implspi.JavaPlatformProvider
+fld public final static java.lang.String PROP_INSTALLED_PLATFORMS = "installedPlatforms"
+meth public abstract org.netbeans.api.java.platform.JavaPlatform getDefaultPlatform()
+meth public abstract org.netbeans.api.java.platform.JavaPlatform[] getInstalledPlatforms()
+meth public abstract void addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public abstract void removePropertyChangeListener(java.beans.PropertyChangeListener)
 
-CLSS public abstract org.netbeans.spi.java.platform.GeneralPlatformInstall
-meth public abstract java.lang.String getDisplayName()
-supr java.lang.Object
-
-CLSS public abstract org.netbeans.spi.java.platform.PlatformInstall
-cons public init()
-meth public abstract boolean accept(org.openide.filesystems.FileObject)
-meth public abstract org.openide.WizardDescriptor$InstantiatingIterator<org.openide.WizardDescriptor> createIterator(org.openide.filesystems.FileObject)
-supr org.netbeans.spi.java.platform.GeneralPlatformInstall
+CLSS abstract interface org.netbeans.modules.java.platform.implspi.package-info
 

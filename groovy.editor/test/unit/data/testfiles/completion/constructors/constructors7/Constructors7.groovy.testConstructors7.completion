@@ -16,13 +16,13 @@ CONSTRUCTO String(byte[], int, int, int)              null
 CONSTRUCTO String(char[])                             null
 CONSTRUCTO String(char[], boolean)                    null
 CONSTRUCTO String(char[], int, int)                   null
-CONSTRUCTO String(int, int, char[])                   null
 CONSTRUCTO String(int[], int, int)                    null
 ------------------------------------
 CLASS      StringBuffer                               null
 CLASS      StringBufferInputStream                    null
 CLASS      StringBuilder                              null
 CLASS      StringIndexOutOfBoundsExceptio             null
+CLASS      StringJoiner                               null
 CLASS      StringReader                               null
 CLASS      StringTestUtil                             null
 CLASS      StringTokenizer                            null

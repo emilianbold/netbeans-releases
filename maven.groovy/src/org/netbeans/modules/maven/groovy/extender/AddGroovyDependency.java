@@ -53,21 +53,17 @@ import org.netbeans.modules.maven.model.pom.POMModel;
  */
 public class AddGroovyDependency implements ModelOperation<POMModel> {
 
-    private static final String GROOVY_GROUP_ID = "org.codehaus.groovy"; // NOI18N
-    private static final String GROOVY_ARTIFACT_ID = "groovy-all";       // NOI18N
-    private static final String GROOVY_VERSION = "2.0.5";                // NOI18N
-
     @Override
     public void performOperation(final POMModel model) {
         model.refresh();
-        if (ModelUtils.hasModelDependency(model, GROOVY_GROUP_ID, GROOVY_ARTIFACT_ID)) {
+        if (ModelUtils.hasModelDependency(model, MavenConstants.GROOVY_GROUP_ID, MavenConstants.GROOVY_ARTIFACT_ID)) {
             return;
         }
 
         Dependency dependency = model.getFactory().createDependency();
-        dependency.setArtifactId(GROOVY_ARTIFACT_ID);
-        dependency.setGroupId(GROOVY_GROUP_ID);
-        dependency.setVersion(GROOVY_VERSION);
+        dependency.setGroupId(MavenConstants.GROOVY_GROUP_ID);
+        dependency.setArtifactId(MavenConstants.GROOVY_ARTIFACT_ID);
+        dependency.setVersion(MavenConstants.GROOVY_VERSION);
 
         model.getProject().addDependency(dependency);
     }

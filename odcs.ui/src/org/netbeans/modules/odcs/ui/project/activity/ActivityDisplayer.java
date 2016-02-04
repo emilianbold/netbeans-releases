@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.odcs.ui.project.activity;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -58,6 +59,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import oracle.clouddev.server.profile.activity.client.api.Activity;
 import oracle.clouddev.server.profile.activity.client.api.Author;
+import org.netbeans.modules.bugtracking.commons.LinkButton;
 import org.netbeans.modules.odcs.ui.utils.Utils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -86,19 +88,42 @@ public abstract class ActivityDisplayer {
     public abstract JComponent getDetailsComponent();
 
     abstract String getUserName();
+    
+    protected String getUserMail() {
+        return null;
+    }
 
     static String getUserNameFromActivity(Activity activity) {
         Author author = activity.getAuthor();
         return author != null ? author.getFullname() : "SYSTEM"; // NOI18N
     }
+    
+    static String getUserMailFromActivity(Activity activity) {
+        Author author = activity.getAuthor();
+        return author != null ? author.getEmail(): null; 
+    }
 
     public JComponent getTitleComponent() {
         JPanel panel = new JPanel(new GridBagLayout());
-        Icon userIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/ui/resources/user.png", true); //NOI18N
-        panel.add(new JLabel(getUserName(), userIcon, SwingConstants.LEFT), new GridBagConstraints());
+        Icon userIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/ui/resources/user.png", true); // NOI18N
+        final String mail = getUserMail();
+        if(mail != null) {
+            LinkButton.MailtoButton mailLink = createMailtoButton(getUserName(), mail, null, null);                
+            panel.add(new JLabel("", userIcon, SwingConstants.LEFT), new GridBagConstraints());
+            panel.add(mailLink, new GridBagConstraints());            
+        } else {
+            panel.add(new JLabel(getUserName(), userIcon, SwingConstants.LEFT), new GridBagConstraints());
+        }
         return panel;
     }
 
+    protected LinkButton.MailtoButton createMailtoButton(String text, String mail, String subject, String body) {
+        LinkButton.MailtoButton b = new LinkButton.MailtoButton(text, null, mail, subject, body);
+        b.setColors(Color.BLUE, new Color(0, 150, 255), new Color(0, 150, 255), Color.BLUE);
+        b.setFocusable(false);
+        return b;
+    }
+    
     /**
      * Override this default implementation to display activity specific icon
      */
@@ -117,7 +142,7 @@ public abstract class ActivityDisplayer {
         if (action == null) {
             action = Utils.getOpenBrowserAction(url);
             openBrowserActions.put(url, action);
-        }
+        } 
         return action;
     }
 

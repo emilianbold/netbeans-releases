@@ -79,14 +79,15 @@ import org.openide.util.Exceptions;
 public class TreeModelRoot {
     /** generated Serialized Version UID */
     static final long                 serialVersionUID = -1259352660663524178L;
-
+    
     
     // variables ...............................................................
 
     private Models.CompoundModel model;
     private HyperCompoundModel hyperModel;
-    private ModelChangeListener[] modelListeners;
+    private final ModelChangeListener[] modelListeners;
     private TreeModelNode rootNode;
+    private final Object rootNodeLock = new Object();
     private final WeakHashMap<Object, WeakReference<TreeModelNode>[]> objectToNode = new WeakHashMap<Object, WeakReference<TreeModelNode>[]>();
     private DefaultTreeFeatures treeFeatures;
     private ExplorerManager manager;
@@ -156,14 +157,18 @@ public class TreeModelRoot {
     }
 
     public TreeModelNode getRootNode () {
-        if (rootNode == null) {
-            if (hyperModel != null) {
-                rootNode = new TreeModelHyperNode (hyperModel, this, model.getRoot ());
-            } else {
-                rootNode = new TreeModelNode (model, this, model.getRoot ());
+        synchronized (rootNodeLock) {
+            TreeModelNode rn = rootNode;
+            if (rn == null) {
+                if (hyperModel != null) {
+                    rn = new TreeModelHyperNode (hyperModel, this, model.getRoot ());
+                } else {
+                    rn = new TreeModelNode (model, this, model.getRoot ());
+                }
+                rootNode = rn;
             }
+            return rn;
         }
-        return rootNode;
     }
     
     void registerNode (Object o, TreeModelNode n) {
@@ -279,23 +284,33 @@ public class TreeModelRoot {
     }
      */
 
-    public synchronized void destroy () {
-        if (model != null) {
+    public void destroy () {
+        boolean doRemoveModelListeners = false;
+        DefaultTreeFeatures tf = null;
+        synchronized (this) {
+            if (model != null) {
+                doRemoveModelListeners = true;
+                model = null;
+                tf = treeFeatures;
+                treeFeatures = null;
+            }
+            if (hyperModel != null) {
+                hyperModel = null;
+            }
+            synchronized (objectToNode) {
+                objectToNode.clear();
+            }
+        }
+        if (doRemoveModelListeners) {
             for (ModelChangeListener mchl : modelListeners) {
                 Models.CompoundModel cm = mchl.getModel();
                 if (cm != null) {
                     cm.removeModelListener (mchl);
                 }
             }
-            treeFeatures.destroy();
-            treeFeatures = null;
         }
-        model = null;
-        if (hyperModel != null) {
-            hyperModel = null;
-        }
-        synchronized (objectToNode) {
-            objectToNode.clear();
+        if (tf != null) {
+            tf.destroy();
         }
     }
 
@@ -403,7 +418,7 @@ public class TreeModelRoot {
                         });
                         return ;
                     }
-                    rootNode.setObject (model, model.getRoot ());
+                    getRootNode().setObject (model, model.getRoot ());
                 }
             });
         }

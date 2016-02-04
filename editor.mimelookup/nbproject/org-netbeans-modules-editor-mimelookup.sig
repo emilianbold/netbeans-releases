@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.36
+#Version 1.39.1
 
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
@@ -55,7 +55,7 @@ meth public static org.netbeans.api.editor.mimelookup.MimeLookup getMimeLookup(j
 meth public static org.openide.util.Lookup getLookup(java.lang.String)
 meth public static org.openide.util.Lookup getLookup(org.netbeans.api.editor.mimelookup.MimePath)
 supr org.openide.util.Lookup
-hfds mimePathLookup
+hfds mimePath,mimePathLookup
 
 CLSS public final org.netbeans.api.editor.mimelookup.MimePath
 fld public final static org.netbeans.api.editor.mimelookup.MimePath EMPTY
@@ -73,6 +73,7 @@ meth public static org.netbeans.api.editor.mimelookup.MimePath get(org.netbeans.
 meth public static org.netbeans.api.editor.mimelookup.MimePath parse(java.lang.String)
 supr java.lang.Object
 hfds LOCK,LOOKUP_LOCK,LRU,MAX_LRU_SIZE,REG_NAME_PATTERN,WELL_KNOWN_TYPES,lookup,mimePaths,mimeType,mimeType2mimePathRef,path,string2mimePath
+hcls AccessorImpl
 
 CLSS public abstract interface !annotation org.netbeans.api.editor.mimelookup.MimeRegistration
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
@@ -127,6 +128,6 @@ meth public abstract <%0 extends java.lang.Object> org.openide.util.Lookup$Resul
 meth public abstract <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
 meth public static org.openide.util.Lookup getDefault()
 supr java.lang.Object
-hfds LOG,defaultLookup
+hfds LOG,defaultLookup,defaultLookupProvider
 hcls DefLookup,Empty
 

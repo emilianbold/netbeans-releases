@@ -148,8 +148,9 @@ public class ModelSupport implements PropertyChangeListener {
                     CndFileSystemProvider.removeFileChangeListener(fileChangeListener);
                     fileChangeListener = null;
                 }
-                if (model != null && !CndTraceFlags.USE_INDEXING_API) {
-                    fileChangeListener = new SuspendableFileChangeListener(new ExternalUpdateListener(this));
+                if (model != null) {
+                    boolean remoteOnly = CndTraceFlags.USE_INDEXING_API;
+                    fileChangeListener = new SuspendableFileChangeListener(new ExternalUpdateListener(this), remoteOnly);
                     CndFileSystemProvider.addFileChangeListener(fileChangeListener);
                 }
             }

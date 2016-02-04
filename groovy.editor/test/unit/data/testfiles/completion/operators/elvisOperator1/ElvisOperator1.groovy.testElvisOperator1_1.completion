@@ -5,7 +5,7 @@ def something = x?:e|
 METHOD     each(Closure)                              Object
 METHOD     eachLine(Closure)                          Object
 METHOD     eachLine(int, Closure)                     Object
-METHOD     eachMatch(CharSequence, Closur             String
+METHOD     eachMatch(CharSequence, Closur             CharSequence
 METHOD     eachMatch(Pattern, Closure)                String
 METHOD     eachMatch(String, Closure)                 String
 METHOD     eachWithIndex(Closure)                     Object

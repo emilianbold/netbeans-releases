@@ -45,7 +45,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.docker.api.DockerContainer;
+import org.netbeans.modules.docker.api.DockerContainerDetail;
 import org.netbeans.modules.docker.api.DockerException;
+import org.netbeans.modules.docker.ui.output.ExceptionHandler;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
@@ -57,7 +59,7 @@ import org.openide.util.actions.NodeAction;
  *
  * @author Petr Hejl
  */
-public abstract class AbstractContainerAction extends NodeAction {
+public abstract class AbstractContainerAction extends NodeAction implements ExceptionHandler {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractContainerAction.class.getName());
 
@@ -73,27 +75,24 @@ public abstract class AbstractContainerAction extends NodeAction {
 
     protected abstract String getProgressMessage(DockerContainer container);
 
-    protected boolean isEnabled(DockerContainer container) {
+    protected boolean isEnabled(DockerContainerDetail detail) {
         return true;
     }
 
     @Override
     protected final void performAction(Node[] activatedNodes) {
         for (final Node node : activatedNodes) {
-            final DockerContainer container = node.getLookup().lookup(DockerContainer.class);
+            final EnhancedDockerContainer container = node.getLookup().lookup(EnhancedDockerContainer.class);
             if (container != null) {
-                final ProgressHandle handle = ProgressHandle.createHandle(getProgressMessage(container));
+                final ProgressHandle handle = ProgressHandle.createHandle(getProgressMessage(container.getContainer()));
                 handle.start();
                 Runnable task = new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            performAction(container);
+                            performAction(container.getContainer());
                         } catch (Exception ex) {
-                            LOGGER.log(Level.INFO, null, ex);
-                            String msg = ex.getLocalizedMessage();
-                            NotifyDescriptor desc = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
-                            DialogDisplayer.getDefault().notify(desc);
+                            handleException(ex);
                         } finally {
                             handle.finish();
                         }
@@ -107,8 +106,8 @@ public abstract class AbstractContainerAction extends NodeAction {
     @Override
     protected final boolean enable(Node[] activatedNodes) {
         for (Node node : activatedNodes) {
-            DockerContainer container = node.getLookup().lookup(DockerContainer.class);
-            if (container == null || !isEnabled(container)) {
+            EnhancedDockerContainer container = node.getLookup().lookup(EnhancedDockerContainer.class);
+            if (container == null || !isEnabled(container.getDetail())) {
                 return false;
             }
         }
@@ -128,5 +127,13 @@ public abstract class AbstractContainerAction extends NodeAction {
     @Override
     protected final boolean asynchronous() {
         return false;
+    }
+
+    @Override
+    public final void handleException(Exception ex) {
+        LOGGER.log(Level.INFO, null, ex);
+        String msg = ex.getLocalizedMessage();
+        NotifyDescriptor desc = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+        DialogDisplayer.getDefault().notify(desc);
     }
 }

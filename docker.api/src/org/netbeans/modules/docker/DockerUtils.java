@@ -41,14 +41,8 @@
  */
 package org.netbeans.modules.docker;
 
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.docker.api.DockerContainer;
 import org.netbeans.modules.docker.api.DockerEntity;
-import org.netbeans.modules.docker.api.DockerEvent;
-import static org.netbeans.modules.docker.api.DockerEvent.Status.DIE;
-import static org.netbeans.modules.docker.api.DockerEvent.Status.PAUSE;
-import static org.netbeans.modules.docker.api.DockerEvent.Status.START;
-import static org.netbeans.modules.docker.api.DockerEvent.Status.UNPAUSE;
 import org.netbeans.modules.docker.api.DockerTag;
 
 /**
@@ -100,26 +94,5 @@ public final class DockerUtils {
             return DockerContainer.Status.RUNNING;
         }
         return DockerContainer.Status.PAUSED;
-    }
-
-    @CheckForNull
-    public static DockerContainer.Status getContainerStatus(DockerEvent event) {
-        return getContainerStatus(event.getStatus());
-    }
-
-    @CheckForNull
-    public static DockerContainer.Status getContainerStatus(DockerEvent.Status status) {
-        switch (status) {
-            case DIE:
-                return DockerContainer.Status.STOPPED;
-            case START:
-                return DockerContainer.Status.RUNNING;
-            case PAUSE:
-                return DockerContainer.Status.PAUSED;
-            case UNPAUSE:
-                return DockerContainer.Status.RUNNING;
-            default:
-                return null;
-        }
     }
 }
