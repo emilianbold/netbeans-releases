@@ -52,6 +52,7 @@ import org.netbeans.api.annotations.common.NonNull;
  * Context for carets moving within {@link CaretMoveHandler}.
  *
  * @author Miloslav Metelka
+ * @since 2.6
  */
 public final class CaretMoveContext {
     
@@ -71,7 +72,7 @@ public final class CaretMoveContext {
      *
      * @return list of carets at the time when moving transaction has started.
      */
-    public List<CaretInfo> getOriginalCarets() {
+    public @NonNull List<CaretInfo> getOriginalCarets() {
         return transaction.getOriginalCarets();
     }
     
@@ -80,7 +81,7 @@ public final class CaretMoveContext {
      * @return last caret at the time when caret moving transaction has started.
      * @see #getOriginalCarets()
      */
-    public CaretInfo getOriginalLastCaret() {
+    public @NonNull CaretInfo getOriginalLastCaret() {
         List<CaretInfo> origCarets = getOriginalCarets();
         return origCarets.get(origCarets.size() - 1);
     }
@@ -95,7 +96,7 @@ public final class CaretMoveContext {
      *
      * @return list of carets at the time when caret moving transaction has started.
      */
-    public List<CaretInfo> getOriginalSortedCarets() {
+    public @NonNull List<CaretInfo> getOriginalSortedCarets() {
         return transaction.getOriginalSortedCarets();
     }
     

@@ -146,8 +146,20 @@ public final class EditorActionNames {
     
     /**
      * Remove the last added caret.
-     * @since XXX
+     * @since 2.6
      */
     public static final String removeLastCaret = "remove-last-caret"; // NOI18N
+    
+    /**
+     * Add a caret to the line above at the same position.
+     * @since 2.6
+     */
+    public static final String addSelectionElseCaretUpAction = "add-selection-else-caret-up"; // NOI18N
+    
+    /**
+     * Add a caret to the line below at the same position.
+     * @since 2.6
+     */
+    public static final String addSelectionElseCaretDownAction = "add-selection-else-caret-down"; // NOI18N
 
 }

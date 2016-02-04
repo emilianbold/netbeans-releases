@@ -56,7 +56,7 @@ import org.netbeans.lib.editor.util.GapList;
  *
  * @author Miloslav Metelka
  */
-public final class CaretTransaction {
+final class CaretTransaction {
     
     private final EditorCaret editorCaret;
     

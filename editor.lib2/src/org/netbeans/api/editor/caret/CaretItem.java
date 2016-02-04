@@ -79,11 +79,6 @@ final class CaretItem implements Comparable {
      */
     private CaretInfo info;
     
-//    /**
-//     * Special info for caret transaction.
-//     */
-//    private CaretInfo transactionInfo;
-
     private Rectangle caretBounds;
     
     /**

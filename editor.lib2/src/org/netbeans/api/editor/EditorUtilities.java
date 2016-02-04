@@ -63,6 +63,7 @@ public final class EditorUtilities {
      * whether caret is currently in overwrite mode (Boolean.TRUE) or insert mode (Boolean.FALSE or null).
      * <br/>
      * It's modified by appropriate editor actions.
+     * @since 2.6
      */
     public static final String CARET_OVERWRITE_MODE_PROPERTY = "caret-overwrite-mode";
 

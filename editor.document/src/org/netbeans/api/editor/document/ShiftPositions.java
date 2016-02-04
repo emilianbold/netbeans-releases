@@ -51,6 +51,7 @@ import org.openide.util.Parameters;
  * This allows for positions behind line's last character (newline) or within a tab character.
  *
  * @author Miloslav Metelka
+ * @since 1.7
  */
 public final class ShiftPositions {
 

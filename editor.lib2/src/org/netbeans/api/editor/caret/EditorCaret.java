@@ -146,6 +146,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Miloslav Metelka
  * @author Ralph Ruijs
+ * @since 2.6
  */
 public final class EditorCaret implements Caret {
     
@@ -443,6 +444,7 @@ public final class EditorCaret implements Caret {
      * If multiple carets are present this method retains only last caret
      * which then moves to the given offset.
      * 
+     * @param offset {@inheritDoc}
      * @see Caret#setDot(int) 
      */
     public @Override void setDot(final int offset) {
@@ -475,6 +477,7 @@ public final class EditorCaret implements Caret {
      * If multiple carets are present this method retains all carets
      * and moves the dot of the last caret to the given offset.
      * 
+     * @param offset {@inheritDoc}
      * @see Caret#moveDot(int) 
      */
     public @Override void moveDot(final int offset) {
@@ -690,17 +693,11 @@ public final class EditorCaret implements Caret {
         }
     }
 
-    /**
-     * Is the selection visible?
-     */
     @Override
     public boolean isSelectionVisible() {
         return selectionVisible;
     }
 
-    /**
-     * Sets the selection visibility
-     */
     @Override
     public void setSelectionVisible(boolean v) {
         if (selectionVisible == v) {
@@ -714,7 +711,6 @@ public final class EditorCaret implements Caret {
         }
     }
 
-    /** Called when UI is being installed into JTextComponent */
     @Override
     public void install(JTextComponent c) {
         assert (SwingUtilities.isEventDispatchThread()); // must be done in AWT
@@ -759,7 +755,6 @@ public final class EditorCaret implements Caret {
         dispatchUpdate(false);
     }
 
-    /** Called when UI is being removed from JTextComponent */
     @Override
     public void deinstall(JTextComponent c) {
         if (LOG.isLoggable(Level.FINE)) {
@@ -783,9 +778,6 @@ public final class EditorCaret implements Caret {
         modelChanged(activeDoc, null);
     }
 
-    /**
-     * Renders the caret
-     */
     @Override
     public void paint(Graphics g) {
         JTextComponent c = component;
@@ -841,25 +833,14 @@ public final class EditorCaret implements Caret {
         }
     }
 
-    /** Saves the current caret position.  This is used when
-     * caret up or down actions occur, moving between lines
-     * that have uneven end positions.
-     *
-     * @param p  the Point to use for the saved position
-     */
     public @Override void setMagicCaretPosition(Point p) {
         getLastCaretItem().setMagicCaretPosition(p);
     }
 
-    /** Get position used to mark beginning of the selected block */
     public @Override final Point getMagicCaretPosition() {
         return getLastCaretItem().getMagicCaretPosition();
     }
 
-    /**
-     * Sets the caret blink rate.
-     * @param rate blink rate in milliseconds, 0 means no blink
-     */
     public @Override void setBlinkRate(int rate) {
         if (LOG.isLoggable(Level.FINER)) {
             LOG.finer("setBlinkRate(" + rate + ")" + dumpVisibility() + '\n'); // NOI18N
@@ -886,9 +867,6 @@ public final class EditorCaret implements Caret {
         }
     }
 
-    /**
-     * Returns blink rate of the caret or 0 if caret doesn't blink.
-     */
     @Override
     public int getBlinkRate() {
         synchronized (listenerList) {
@@ -896,6 +874,9 @@ public final class EditorCaret implements Caret {
         }
     }
 
+    /**
+     * 
+     */
     public void setRectangularSelectionToDotAndMark() {
         int dotOffset = getDot();
         int markOffset = getMark();
@@ -908,6 +889,9 @@ public final class EditorCaret implements Caret {
         updateRectangularSelectionPaintRect();
     }
 
+    /**
+     * 
+     */
     public void updateRectangularUpDownSelection() {
         JTextComponent c = component;
         int dotOffset = getDot();
@@ -1089,50 +1073,6 @@ public final class EditorCaret implements Caret {
             }
         } finally {
             unlock();
-        }
-    }
-    
-    private void setDotCaret(final int offset, final CaretItem caret, final boolean expandFold) throws IllegalStateException {
-        JTextComponent c = component;
-        AbstractDocument doc;
-        if (c != null && (doc = activeDoc) != null) {
-            doc.readLock();
-            try {
-                boolean dotChanged = false;
-                if (offset != caret.getDot() && offset >= 0 && offset <= doc.getLength()) {
-                    dotChanged = true;
-                    try {
-                        caret.setDotPos(doc.createPosition(offset));
-                        caret.setMarkPos(doc.createPosition(offset));
-
-                        @SuppressWarnings("unchecked")
-                        Callable<Boolean> cc = (Callable<Boolean>) c.getClientProperty("org.netbeans.api.fold.expander");
-                        if (cc != null && expandFold) {
-                            // the caretPos/markPos were already called.
-                            // nothing except the document is locked at this moment.
-                            try {
-                                cc.call();
-                            } catch (Exception ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        }
-//                        if (rectangularSelection) {
-//                            setRectangularSelectionToDotAndMark();
-//                        }
-
-                    } catch (BadLocationException e) {
-                        throw new IllegalStateException(e.toString());
-                        // setting the caret to wrong position leaves it at current position
-                    }
-                }
-                if (dotChanged) {
-                    fireStateChanged();
-                    dispatchUpdate(true);
-                }
-            } finally {
-                doc.readUnlock();
-            }
-            
         }
     }
     
@@ -1599,24 +1539,30 @@ public final class EditorCaret implements Caret {
 
     private void updateSystemSelection() {
         if(component == null) return;
-        
-        StringBuilder builder = new StringBuilder();
-        boolean first = true;
-        List<CaretInfo> sortedCarets = getSortedCarets();
-        for (CaretInfo caret : sortedCarets) {
-            CaretItem caretItem = caret.getCaretItem();
-            if(caretItem.isSelection()) {
-                if(!first) {
-                    builder.append("\n");
-                } else {
-                    first = false;
-                }
-                builder.append(getSelectedText(caretItem));
-            }
+        Clipboard clip = null;
+        try {
+            clip = component.getToolkit().getSystemSelection();
+        } catch (SecurityException ex) {
+            // XXX: ignore for now, there is no ExClipboard for SystemSelection Clipboard
         }
-        Clipboard clip = component.getToolkit().getSystemSelection();
-        if(clip != null && builder.length() > 0) {
-            clip.setContents(new java.awt.datatransfer.StringSelection(builder.toString()), null);
+        if(clip != null) {
+            StringBuilder builder = new StringBuilder();
+            boolean first = true;
+            List<CaretInfo> sortedCarets = getSortedCarets();
+            for (CaretInfo caret : sortedCarets) {
+                CaretItem caretItem = caret.getCaretItem();
+                if(caretItem.isSelection()) {
+                    if(!first) {
+                        builder.append("\n");
+                    } else {
+                        first = false;
+                    }
+                    builder.append(getSelectedText(caretItem));
+                }
+            }
+            if(builder.length() > 0) {
+                clip.setContents(new java.awt.datatransfer.StringSelection(builder.toString()), null);
+            }
         }
     }
     

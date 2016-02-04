@@ -41,13 +41,13 @@
  */
 package org.netbeans.api.editor.caret;
 
-import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * Notification event about changes in editor caret.
  *
  * @author Miloslav Metelka
+ * @since 2.6
  */
 public final class EditorCaretEvent extends java.util.EventObject {
     
@@ -91,13 +91,4 @@ public final class EditorCaretEvent extends java.util.EventObject {
     public int getAffectedEndOffset() {
         return affectedEndOffset;
     }
-    
-    public List<CaretInfo> getAddedCarets() {
-        return null;
-    }
-
-    public List<CaretInfo> getRemovedCarets() {
-        return null;
-    }
-
 }

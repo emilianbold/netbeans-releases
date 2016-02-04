@@ -57,6 +57,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
  * @author Miloslav Metelka
  * @author Ralph Ruijs
  * @see EditorCaret
+ * @since 2.6
  */
 public final class CaretInfo {
     
@@ -71,7 +72,7 @@ public final class CaretInfo {
 
     private final Point magicCaretPosition;
 
-    public CaretInfo(CaretItem caretItem) {
+    CaretInfo(CaretItem caretItem) {
         this.caretItem = caretItem;
         this.dotPos = caretItem.getDotPosition();
         this.markPos = caretItem.getMarkPosition();
@@ -100,15 +101,29 @@ public final class CaretInfo {
         return markPos;
     }
     
+    /**
+     * Fetches the current position of the caret.
+     *
+     * @return the position &gt;=0
+     */
     public int getDot() {
         return (dotPos != null) ? dotPos.getOffset() : 0;
     }
 
+    /**
+     * Fetches the current position of the mark.  If there
+     * is a selection, the mark will not be the same as
+     * the dot.
+     *
+     * @return the position &gt;=0
+     */
     public int getMark() {
-        return (markPos != null) ? markPos.getOffset() : 0;
+        return (markPos != null) ? markPos.getOffset() : getDot();
     }
     
     /**
+     * Determines if there currently is a selection.
+     * 
      * @return true if there's a selection or false if there's no selection for this caret.
      */
     public boolean isSelection() {
@@ -117,21 +132,41 @@ public final class CaretInfo {
     }
     
     /**
+     * Determines if the selection is currently visible.
+     * 
      * @return true if both {@link #isSelection() } and {@link EditorCaret#isSelectionVisible() } are true.
      */
     public boolean isSelectionShowing() {
         return caretItem.editorCaret().isSelectionVisible() && isSelection();
     }
 
+    /**
+     * Returns the selected text's start position.  Return 0 for an
+     * empty document, or the value of dot if no selection.
+     *
+     * @return the start position &ge; 0
+     */
     public int getSelectionStart() {
         return Math.min(getDot(), getMark());
     }
 
+    /**
+     * Returns the selected text's end position.  Return 0 if the document
+     * is empty, or the value of dot if there is no selection.
+     *
+     * @return the end position &ge; 0
+     */
     public int getSelectionEnd() {
         return Math.max(getDot(), getMark());
     }
     
-    public Point getMagicCaretPosition() {
+    /**
+     * Gets the current caret visual location.
+     *
+     * @return the visual position.
+     * @see #setMagicCaretPosition
+     */
+    public @CheckForNull Point getMagicCaretPosition() {
         return magicCaretPosition;
     }
     

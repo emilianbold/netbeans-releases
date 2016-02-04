@@ -47,6 +47,7 @@ import org.netbeans.api.annotations.common.NonNull;
  * Handle possible moving of individual carets or creation or modification of selection.
  *
  * @author Miloslav Metelka
+ * @since 2.6
  */
 public interface CaretMoveHandler {
     

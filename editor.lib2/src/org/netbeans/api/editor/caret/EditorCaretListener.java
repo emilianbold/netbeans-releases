@@ -47,6 +47,7 @@ import org.netbeans.api.annotations.common.NonNull;
  * Listener for changes in editor caret.
  *
  * @author Miloslav Metelka
+ * @since 2.6
  */
 public interface EditorCaretListener extends java.util.EventListener {
 
