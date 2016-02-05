@@ -119,7 +119,10 @@ public class ASTNodeInfo<T extends ASTNode> {
             retval = QualifiedName.create((NamespaceName) node);
         } else if (node instanceof ClassInstanceCreation) {
             ClassInstanceCreation instanceCreation = (ClassInstanceCreation) node;
-            retval = QualifiedName.create(instanceCreation.getClassName().getName());
+            assert !instanceCreation.isAnonymous() : instanceCreation;
+            ClassName className = instanceCreation.getClassName();
+            assert className != null;
+            retval = QualifiedName.create(className.getName());
         } else if (node instanceof SingleUseStatementPart) {
             SingleUseStatementPart statementPart = (SingleUseStatementPart) node;
             retval = QualifiedName.create(statementPart.getName());
@@ -236,6 +239,9 @@ public class ASTNodeInfo<T extends ASTNode> {
     }
 
     public static ASTNodeInfo<ClassInstanceCreation> create(ClassInstanceCreation instanceCreation) {
+        if (instanceCreation.isAnonymous()) {
+            return ClassInstanceCreationInfo.create(instanceCreation);
+        }
         return new ASTNodeInfo<>(instanceCreation);
     }
 
@@ -334,6 +340,7 @@ public class ASTNodeInfo<T extends ASTNode> {
             return NavUtils.isQuoted(scalar.getStringValue()) ? NavUtils.dequote(scalar.getStringValue()) : scalar.getStringValue();
         } else if (node instanceof ClassInstanceCreation) {
             ClassInstanceCreation instanceCreation = (ClassInstanceCreation) node;
+            assert !instanceCreation.isAnonymous() : instanceCreation;
             return toName(instanceCreation.getClassName());
         } else if (node instanceof FieldAccess) {
             FieldAccess fieldAccess = (FieldAccess) node;
@@ -399,6 +406,7 @@ public class ASTNodeInfo<T extends ASTNode> {
             }
         } else if (node instanceof ClassInstanceCreation) {
             ClassInstanceCreation instanceCreation = (ClassInstanceCreation) node;
+            assert !instanceCreation.isAnonymous() : instanceCreation;
             return toOffsetRange(instanceCreation.getClassName());
         } else if (node instanceof FieldAccess) {
             FieldAccess fieldAccess = (FieldAccess) node;
