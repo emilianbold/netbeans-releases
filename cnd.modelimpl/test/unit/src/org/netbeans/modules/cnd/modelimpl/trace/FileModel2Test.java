@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.Collection;
+import org.junit.Ignore;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.APTMacroCallback;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
@@ -561,11 +562,13 @@ public class FileModel2Test extends TraceModelTestBase {
         performTest("bug248661_2.cpp");
     }
     
+    @Ignore
     public void testBug257152() throws Exception {
         // Bug 257152 - was [Bug 256791 - failing SelectModelTestCase.testSelectModelGetFunctions on Ubuntu test machine]
         performTest("bug257152.cpp");
     }
     
+    @Ignore
     public void testBug257152c() throws Exception {
         // Bug 257152 - was [Bug 256791 - failing SelectModelTestCase.testSelectModelGetFunctions on Ubuntu test machine]
         performTest("bug257152c.c");
