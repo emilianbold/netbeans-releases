@@ -211,18 +211,18 @@ public class SummaryWizardPanelGUI extends javax.swing.JPanel {
         commitedItems.setListData(sharedItems.toArray(new SharedItem[sharedItems.size()]));
 
         commitPrepareLabel.setVisible(sharedItems.size() > 0);
-        repoLabel.setVisible(sharedItems.isEmpty());
+//        repoLabel.setVisible(sharedItems.isEmpty());
         jScrollPane1.setVisible(sharedItems.size() > 0);
         tobeSharedLabel.setVisible(sharedItems.size() > 0);
 
         String newPrjScmLocal = (String) settings.getProperty(NewProjectWizardIterator.PROP_SCM_LOCAL);
-        boolean inPlaceRepository = NewProjectWizardIterator.isCommonParent(sharedItems, newPrjScmLocal);
-        projectsMoveLabel.setVisible(!inPlaceRepository);
-        if (sharedItems.isEmpty()) {
+//        boolean inPlaceRepository = NewProjectWizardIterator.isCommonParent(sharedItems, newPrjScmLocal);
+//        projectsMoveLabel.setVisible(!inPlaceRepository);
+        if (NewProjectWizardIterator.getSharedItemsToMove(settings).isEmpty()) {
             Mnemonics.setLocalizedText(projectsMoveLabel, NbBundle.getMessage(SummaryWizardPanelGUI.class, 
                     "SummaryWizardPanelGUI.projectsMoveLabelNoSelection.text"));
         }
-        localRoot.setVisible(!inPlaceRepository);
+//        localRoot.setVisible(!inPlaceRepository);
         localRoot.setText("<html><b>"+newPrjScmLocal+"</b></html>"); // NOI18N
 
         validate();

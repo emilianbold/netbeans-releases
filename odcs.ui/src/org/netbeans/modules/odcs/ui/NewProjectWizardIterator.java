@@ -132,8 +132,6 @@ public class NewProjectWizardIterator implements WizardDescriptor.ProgressInstan
         String newPrjScmType = (String) wizard.getProperty(PROP_SCM_TYPE);
         String newPrjScmLocal = (String) wizard.getProperty(PROP_SCM_LOCAL);
 
-        List<SharedItem> sharedItems = (List<SharedItem>) wizard.getProperty(PROP_FOLDERS_TO_SHARE);
-
         // Create project
         ODCSProject project = null;
         try {
@@ -193,9 +191,9 @@ public class NewProjectWizardIterator implements WizardDescriptor.ProgressInstan
                     PasswordAuthentication passwdAuth = server.getPasswordAuthentication();
                     if (passwdAuth != null) {
                         final File localScmRoot = new File(newPrjScmLocal);
-                        boolean inPlaceRepository = sharedItems.isEmpty() || isCommonParent(sharedItems, newPrjScmLocal);
                         repoInitializer.initialize(localScmRoot, repositoryUrl, passwdAuth);
-                        if (!inPlaceRepository) {
+                        List<SharedItem> sharedItems = getSharedItemsToMove(wizard);
+                        if (!sharedItems.isEmpty()) {
                             copySharedItems(sharedItems, localScmRoot);
                             // if shared items contain projects, those projects need to be closed and open from new location
                             File[] oldLoc = new File[sharedItems.size()];
@@ -239,7 +237,7 @@ public class NewProjectWizardIterator implements WizardDescriptor.ProgressInstan
     }
 
     /**
-     * Copy all items (projects, folders) to be shared on Kenai to a new directory, the SCM root.
+     * Copy all items (projects, folders) to be shared on team dev server to a new directory, the SCM root.
      *
      * @param sharedItems
      * @param localScmRoot
@@ -249,7 +247,9 @@ public class NewProjectWizardIterator implements WizardDescriptor.ProgressInstan
         FileObject dest = FileUtil.toFileObject(localScmRoot);
         for (SharedItem item : sharedItems) {
             FileObject root = FileUtil.toFileObject(item.getRoot());
-            copy(root, dest);
+            if (!dest.equals(root) && !FileUtil.isParentOf(dest, root)) {
+                copy(root, dest);
+            }
         }
     }
 
@@ -291,16 +291,27 @@ public class NewProjectWizardIterator implements WizardDescriptor.ProgressInstan
         return commonParent;
     }
 
-    static boolean isCommonParent(List<SharedItem> sharedItems, String newPrjScmLocal) {
-        File commonParent = new File(newPrjScmLocal);
+    static List<SharedItem> getSharedItemsToMove(WizardDescriptor wizard) {
+        List<SharedItem> sharedItems = (List<SharedItem>) wizard.getProperty(PROP_FOLDERS_TO_SHARE);
+        List<SharedItem> toMove = new ArrayList<>();
+        if (sharedItems == null || sharedItems.isEmpty()) {
+            return toMove;
+        }
+        File sharedParent = new File((String) wizard.getProperty(PROP_SCM_LOCAL));
         for (SharedItem item : sharedItems) {
-            if (!commonParent.equals(item.getRoot().getParentFile())) {
-                return false;
+            File itemRoot = item.getRoot();
+            do {
+                if (sharedParent.equals(itemRoot)) {
+                    item = null; // excluding directories already under the specified local repository root
+                    break;
+                }
+                itemRoot = itemRoot.getParentFile();
+            } while (itemRoot != null);
+            if (item != null) {
+                toMove.add(item);
             }
         }
-
-        if (commonParent.list() == null || commonParent.list().length != sharedItems.size()) return false;
-        return true;
+        return toMove;
     }
 
     @Override
