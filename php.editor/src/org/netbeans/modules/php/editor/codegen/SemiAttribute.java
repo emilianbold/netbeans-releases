@@ -176,6 +176,7 @@ public class SemiAttribute extends DefaultVisitor {
 
             if (rightSideExpression instanceof ClassInstanceCreation) {
                 ClassInstanceCreation classInstanceCreation = (ClassInstanceCreation) rightSideExpression;
+                // XXX anonymous class
                 Expression className = classInstanceCreation.getClassName().getName();
 
                 if (className instanceof Identifier) {
@@ -477,6 +478,7 @@ public class SemiAttribute extends DefaultVisitor {
 
     @Override
     public void visit(ClassInstanceCreation node) {
+        // XXX anonymous class
         Expression name = node.getClassName().getName();
 
         if (name instanceof Identifier) {

@@ -283,6 +283,7 @@ public final class CodeUtils {
     }
     //TODO: rewrite for php53
     public static String extractClassName(ClassName clsName) {
+        assert clsName != null;
         Expression name = clsName.getName();
         while (name instanceof Variable || name instanceof FieldAccess) {
             if (name instanceof Variable) {
@@ -385,6 +386,7 @@ public final class CodeUtils {
 
         if (rightSideExpression instanceof ClassInstanceCreation) {
             ClassInstanceCreation classInstanceCreation = (ClassInstanceCreation) rightSideExpression;
+            // XXX anonymous class
             Expression className = classInstanceCreation.getClassName().getName();
             return CodeUtils.extractUnqualifiedName(className);
         } else if (rightSideExpression instanceof ArrayCreation) {

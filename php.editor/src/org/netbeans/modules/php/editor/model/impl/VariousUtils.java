@@ -327,6 +327,7 @@ public final class VariousUtils {
         }
         if (expression instanceof ClassInstanceCreation) {
             ClassInstanceCreation classInstanceCreation = (ClassInstanceCreation) expression;
+            // XXX anonymous class
             final ClassName className = classInstanceCreation.getClassName();
             Expression name = className.getName();
             if (name instanceof NamespaceName) {
@@ -877,8 +878,12 @@ public final class VariousUtils {
         if (varBase instanceof AnonymousObjectVariable) {
             AnonymousObjectVariable aov = (AnonymousObjectVariable) varBase;
             Expression clsName = aov.getName();
-            assert clsName instanceof ClassInstanceCreation;
+            assert clsName instanceof ClassInstanceCreation : clsName.getClass().getName();
             ClassInstanceCreation cis = (ClassInstanceCreation) clsName;
+            if (cis.isAnonymous()) {
+                // XXX anonymous class
+                return null;
+            }
             String className = CodeUtils.extractClassName(cis.getClassName());
             return PRE_OPERATION_TYPE_DELIMITER + CONSTRUCTOR_TYPE_PREFIX + className;
         } else if (varBase instanceof Variable) {
