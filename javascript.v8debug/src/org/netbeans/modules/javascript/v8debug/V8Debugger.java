@@ -311,7 +311,7 @@ public final class V8Debugger {
                         public void notifyResponse(V8Request request, V8Response response) {
                             if (response != null && response.isSuccess()) {
                                 Frame.ResponseBody frb = (Frame.ResponseBody) response.getBody();
-                                fRef[0] = new CallFrame(frb.getFrame(), new ReferencedValues(response), true);
+                                fRef[0] = new CallFrame(V8Debugger.this, frb.getFrame(), new ReferencedValues(response), true);
                             }
                             synchronized (currentFrameRetrieveLock) {
                                 currentFrameRetrieveLock.notifyAll();
@@ -411,7 +411,7 @@ public final class V8Debugger {
                                 }
                                 if (numFrames == 1l) {
                                     synchronized (csRetrievingLock) {
-                                        csRef[0] = new CallStack(btrb.getFrames(), response.getReferencedValues());
+                                        csRef[0] = new CallStack(V8Debugger.this, btrb.getFrames(), response.getReferencedValues());
                                         csRetrievingLock.notifyAll();
                                     }
                                 } else {
@@ -423,7 +423,7 @@ public final class V8Debugger {
                                         public void notifyResponse(V8Request request, V8Response response) {
                                             if (response != null) {
                                                 Backtrace.ResponseBody btrb = (Backtrace.ResponseBody) response.getBody();
-                                                csRef[0] = new CallStack(btrb.getFrames(), response.getReferencedValues());
+                                                csRef[0] = new CallStack(V8Debugger.this, btrb.getFrames(), response.getReferencedValues());
                                                 //LOG.fine("getCurrentCallStack(): All frames retrieved: "+csRef[0]);
                                             }
                                             synchronized (csRetrievingLock) {

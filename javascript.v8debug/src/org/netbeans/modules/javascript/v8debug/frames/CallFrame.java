@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.javascript.v8debug.frames;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.lib.v8debug.V8Frame;
@@ -52,6 +53,10 @@ import org.netbeans.lib.v8debug.vars.V8Object;
 import org.netbeans.lib.v8debug.vars.V8ScriptValue;
 import org.netbeans.lib.v8debug.vars.V8Value;
 import org.netbeans.modules.javascript.v8debug.ReferencedValues;
+import org.netbeans.modules.javascript.v8debug.V8Debugger;
+import org.netbeans.modules.javascript2.debug.NamesTranslator;
+import org.netbeans.modules.web.common.sourcemap.SourceMapsTranslator;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -60,11 +65,15 @@ import org.openide.util.NbBundle;
  */
 public final class CallFrame {
     
+    private final V8Debugger dbg;
     private final V8Frame frame;
     private final ReferencedValues rvals;
     private final boolean topFrame;
+    private NamesTranslator nt;
+    private final AtomicBoolean checkNamesTranslator = new AtomicBoolean(true);
     
-    public CallFrame(V8Frame frame, ReferencedValues rvals, boolean topFrame) {
+    public CallFrame(V8Debugger dbg, V8Frame frame, ReferencedValues rvals, boolean topFrame) {
+        this.dbg = dbg;
         this.frame = frame;
         this.rvals = rvals;
         this.topFrame = topFrame;
@@ -106,6 +115,10 @@ public final class CallFrame {
             return null;
         }
         String className = ((V8Object) thisValue).getClassName();
+        NamesTranslator nt = getNamesTranslator();
+        if (nt != null) {
+            className = nt.translateDeclarationNodeName(className);
+        }
         return className;
     }
     
@@ -131,8 +144,62 @@ public final class CallFrame {
         }
         if (name == null || name.isEmpty()) {
             name = "["+Bundle.CTL_anonymousFunction()+"]";
+        } else {
+            NamesTranslator nt = getNamesTranslator();
+            if (nt != null) {
+                name = nt.translateDeclarationNodeName(name);
+            }
         }
         return name;
+    }
+    
+    @CheckForNull
+    public NamesTranslator getNamesTranslator() {
+        synchronized (checkNamesTranslator) {
+            if (checkNamesTranslator.get()) {
+                checkNamesTranslator.set(false);
+                SourceMapsTranslator smt = dbg.getScriptsHandler().getSourceMapsTranslator();
+                if (smt != null) {
+                    V8Script script = getScript();
+                    if (script != null) {
+                        FileObject fo = dbg.getScriptsHandler().getFile(script);
+                        int line = (int) frame.getLine();
+                        int column = (int) frame.getColumn();
+                        if (column < 0) {
+                            column = 0;
+                        } else {
+                            if (line == 0) {
+                                column -= dbg.getScriptsHandler().getScriptFirstLineColumnShift(fo);
+                            }
+                        }
+                        nt = NamesTranslator.create(smt, fo, line, column);
+                    }
+                }
+            }
+            return nt;
+        }
+    }
+    
+    @CheckForNull
+    public SourceMapsTranslator.Location getTranslatedLocation() {
+        SourceMapsTranslator smt = dbg.getScriptsHandler().getSourceMapsTranslator();
+        if (smt != null) {
+            V8Script script = getScript();
+            if (script != null) {
+                FileObject fo = dbg.getScriptsHandler().getFile(script);
+                int line = (int) frame.getLine();
+                int column = (int) frame.getColumn();
+                if (column < 0) {
+                    column = 0;
+                } else {
+                    if (line == 0) {
+                        column -= dbg.getScriptsHandler().getScriptFirstLineColumnShift(fo);
+                    }
+                }
+                return smt.getSourceLocation(new SourceMapsTranslator.Location(fo, line, column));
+            }
+        }
+        return null;
     }
 
 }

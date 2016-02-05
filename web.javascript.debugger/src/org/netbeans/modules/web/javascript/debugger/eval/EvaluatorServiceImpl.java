@@ -46,7 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
+import org.netbeans.modules.javascript2.debug.NamesTranslator;
 import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
 import org.netbeans.modules.web.javascript.debugger.locals.VariablesModel.ViewScope;
 import org.netbeans.modules.web.javascript.debugger.locals.VariablesModel.ScopedRemoteObject;
@@ -98,7 +98,7 @@ public class EvaluatorServiceImpl implements EvaluatorService, Debugger.Listener
         }
         String rtExpression = expression;
         VarNamesTranslatorFactory vtf = VarNamesTranslatorFactory.get(frame, debugger, pc.getProject());
-        MiscEditorUtil.NamesTranslator namesTranslator = vtf.getNamesTranslator();
+        NamesTranslator namesTranslator = vtf.getNamesTranslator();
         if (namesTranslator != null) {
             rtExpression = namesTranslator.reverseTranslate(expression);
         }

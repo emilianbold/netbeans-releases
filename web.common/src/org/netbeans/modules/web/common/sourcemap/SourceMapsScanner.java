@@ -43,6 +43,7 @@ package org.netbeans.modules.web.common.sourcemap;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -121,6 +122,22 @@ public final class SourceMapsScanner {
         
         return ps.getSourceMapTranslator();
     }
+
+    /**
+     * Create a {@link SourceMapsTranslator} based on all source maps found under
+     * the provided roots. The call blocks until scanning is finished.
+     * @param roots The source roots to scan
+     * @return A new instance of {@link SourceMapsTranslator}
+     */
+    public SourceMapsTranslator scan(FileObject[] roots) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("scan("+Arrays.toString(roots)+")");
+        }
+        ProjectSourceMapsScanner ps = new ProjectSourceMapsScanner();
+        ps.init(roots);
+        ps.waitScanned();
+        return ps.getSourceMapTranslator();
+    }
     
     private static final class ProjectSourceMapsScanner implements ChangeListener,
                                                                    FileChangeListener,
@@ -163,6 +180,15 @@ public final class SourceMapsScanner {
             if (prov != null) {
                 projectDependencyManager = new ProjectDependencyManager(prov);
             }
+        }
+        
+        void init(FileObject[] roots) {
+            this.roots = roots;
+            for (int i = 0; i < roots.length; i++) {
+                roots[i].addRecursiveListener(this);
+                rootsToScan.add(roots[i]);
+            }
+            scanningTask = RP.post(this);
         }
         
         void waitScanned() {

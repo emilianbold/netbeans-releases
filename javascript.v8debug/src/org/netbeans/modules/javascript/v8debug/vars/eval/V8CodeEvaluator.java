@@ -126,7 +126,7 @@ public class V8CodeEvaluator extends CodeEvaluator.EvaluatorService {
                     if (column < 0) {
                         column = 0;
                     }
-                    Line l = EditorUtils.getLine(dbg, file, line);
+                    Line l = EditorUtils.getLine(dbg, file, line, column);
                     if (l != null) {
                         return l.createPart(column, 0);
                     }

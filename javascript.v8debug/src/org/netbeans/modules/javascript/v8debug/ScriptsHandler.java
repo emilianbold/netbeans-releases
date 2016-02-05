@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -64,6 +65,8 @@ import org.netbeans.lib.v8debug.V8Script;
 import org.netbeans.lib.v8debug.commands.Scripts;
 import org.netbeans.modules.javascript2.debug.sources.SourceContent;
 import org.netbeans.modules.javascript2.debug.sources.SourceFilesCache;
+import org.netbeans.modules.web.common.sourcemap.SourceMapsScanner;
+import org.netbeans.modules.web.common.sourcemap.SourceMapsTranslator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -76,9 +79,16 @@ import org.openide.util.NbBundle;
 public class ScriptsHandler {
     
     private static final Logger LOG = Logger.getLogger(ScriptsHandler.class.getName());
+    
+    // The length of the node.js wrapper header: require('module').wrapper[0]
+    private static final int DEFAULT_FIRST_LINE_COLUMN_SHIFT = 62;
+    private static final boolean USE_SOURCE_MAPS =
+            Boolean.parseBoolean(System.getProperty("javascript.debugger.useSourceMaps", "true"));
+
 
     private final Map<Long, V8Script> scriptsById = new HashMap<>();
     private final Map<URL, V8Script> scriptsByURL = new HashMap<>();
+    private final Map<URL, Integer> scriptsFirstLineShifts = new HashMap<>();
 
     private final boolean doPathTranslation;
     private final int numPrefixes;
@@ -94,6 +104,7 @@ public class ScriptsHandler {
     private final char serverPathSeparator;
     private final String remotePathPrefix;
     private final V8Debugger dbg;
+    private final SourceMapsTranslator smt;
     
     ScriptsHandler(@NullAllowed List<String> localPaths,
                    @NullAllowed List<String> serverPaths,
@@ -134,8 +145,18 @@ public class ScriptsHandler {
                     this.localRoots[i++] = localRoot;
                 }
             }
+            if (USE_SOURCE_MAPS) {
+                this.smt = SourceMapsScanner.getInstance().scan(this.localRoots);
+            } else {
+                this.smt = null;
+            }
         } else {
             this.localRoots = null;
+            if (USE_SOURCE_MAPS) {
+                this.smt = SourceMapsTranslator.create();
+            } else {
+                this.smt = null;
+            }
         }
         if (!localPathExclusionFilters.isEmpty()) {
             FileObject[] lpefs = new FileObject[localPathExclusionFilters.size()];
@@ -183,15 +204,27 @@ public class ScriptsHandler {
             removed = scriptsById.remove(scriptId);
         }
         if (removed != null) {
+            URL removedURL = null;
             synchronized (scriptsByURL) {
                 for (Map.Entry<URL, V8Script> entry : scriptsByURL.entrySet()) {
                     if (removed == entry.getValue()) {
-                        scriptsByURL.remove(entry.getKey());
+                        removedURL = entry.getKey();
+                        scriptsByURL.remove(removedURL);
                         break;
                     }
                 }
             }
+            if (removedURL != null) {
+                synchronized (scriptsFirstLineShifts) {
+                    scriptsFirstLineShifts.remove(removedURL);
+                }
+            }
         }
+    }
+    
+    @CheckForNull
+    public SourceMapsTranslator getSourceMapsTranslator() {
+        return smt;
     }
 
     @CheckForNull
@@ -324,6 +357,100 @@ public class ScriptsHandler {
         synchronized (scriptsByURL) {
             return scriptsByURL.get(scriptURL);
         }
+    }
+    
+    /**
+     * Get a shift of columns on the first line of the script.
+     * The scripts can have prepended an extra code on the first line, which was
+     * not part of the original file. This change affects source maps.
+     * Be sure to consider this shift when interpreting source map translations.
+     * @param fo The script's file source.
+     * @return a non-negative shift of columns on the first line.
+     */
+    public int getScriptFirstLineColumnShift(FileObject fo) {
+        URL url = fo.toURL();
+        if (SourceFilesCache.URL_PROTOCOL.equals(url.getProtocol())) {
+            // Not a local file
+            return DEFAULT_FIRST_LINE_COLUMN_SHIFT;
+        }
+        Integer shift = null;
+        synchronized (scriptsFirstLineShifts) {
+            shift = scriptsFirstLineShifts.get(url);
+        }
+        if (shift == null) {
+            V8Script script = findScript(url);
+            if (script == null) {
+                return DEFAULT_FIRST_LINE_COLUMN_SHIFT;
+            }
+            // The shift should not be larger than the source start:
+            String ss = script.getSourceStart();
+            String firstLine = null;
+            try {
+                List<String> lines = fo.asLines();
+                Iterator<String> linesIterator = lines.iterator();
+                if (linesIterator.hasNext()) {
+                    firstLine = linesIterator.next();
+                }
+            } catch (IOException ex) {}
+            if (firstLine == null) { // no lines
+                shift = 0;
+            } else {
+                shift = findOffsetIn(ss, firstLine);
+                if (shift < 0) {
+                    String content = script.getSource();
+                    if (content == null) {
+                        try {
+                            content = new ScriptContentLoader(script, dbg).getContent();
+                        } catch (IOException ex) {}
+                    }
+                    if (content != null) {
+                        shift = findOffsetIn(content, firstLine);
+                    } else {
+                        shift = DEFAULT_FIRST_LINE_COLUMN_SHIFT;
+                    }
+                }
+            }
+            synchronized (scriptsFirstLineShifts) {
+                scriptsFirstLineShifts.put(url, shift);
+            }
+        }
+        return shift;
+    }
+    
+    private static int findOffsetIn(String container, String text) {
+        // Restrict the container to the first line only:
+        int nc = container.length();
+        int nIndex = container.indexOf('\n');
+        if (nIndex < 0) {
+            nIndex = nc;
+        }
+        int rIndex = container.indexOf('\r');
+        if (rIndex < 0) {
+            rIndex = nc;
+        }
+        nc = Math.min(nIndex, rIndex);
+        if (nc < container.length()) {
+            container = container.substring(0, nc);
+        }
+        if (text.startsWith(container)) {
+            return 0;
+        }
+        int nt = text.length();
+        for (int ic = 0; ic < nc; ic++) {
+            int it = 0;
+            int ict = ic;
+            for (; it < nt && ict < nc; it++, ict++) {
+                char c = container.charAt(ict);
+                char t = text.charAt(it);
+                if (c != t) {
+                    break;
+                }
+            }
+            if (ict == nc) {
+                return ic;
+            }
+        }
+        return -1; // not found
     }
     
     @CheckForNull
