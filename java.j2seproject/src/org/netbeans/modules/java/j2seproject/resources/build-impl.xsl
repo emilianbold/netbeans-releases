@@ -425,9 +425,27 @@ is divided into following sections:
             </target>
 
             <target name="-init-module-name" depends="-init-modules-cmdline-properties" if="modules.supported.internal">
-                <xsl:call-template name="createInitModuleName">
-                    <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
-                </xsl:call-template>
+                <loadresource property="module.name" quiet="true">
+                    <javaresource>
+                        <xsl:attribute name="name">module-info.java</xsl:attribute>
+                        <xsl:attribute name="parentFirst">false</xsl:attribute>
+                        <xsl:attribute name="classpath">
+                            <xsl:call-template name="createPath">
+                                <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
+                            </xsl:call-template>
+                        </xsl:attribute>
+                    </javaresource>
+                    <filterchain>
+                        <stripjavacomments/>
+                        <linecontainsregexp>
+                            <regexp pattern="module .* \{{"/>
+                        </linecontainsregexp>
+                        <tokenfilter>
+                            <linetokenizer/>
+                            <replaceregex flags="s" pattern="(\s*module\s+)(.*)(\s*\{{.*)" replace="\2"/>
+                        </tokenfilter>
+                    </filterchain>
+                </loadresource>
             </target>
 
             <target name="-init-macrodef-javac-with-modules" depends="-init-ap-cmdline-properties, -init-module-name" if="modules.supported.internal">
@@ -2963,28 +2981,4 @@ is divided into following sections:
             <xsl:text>}</xsl:text>
         </xsl:for-each>						
     </xsl:template>
-
-    <xsl:template name="createInitModuleName">
-        <xsl:param name="roots"/>
-        <xsl:for-each select="$roots/j2seproject3:root">
-            <xsl:element name="loadfile">
-                <xsl:attribute name="property">module.name</xsl:attribute>
-                <xsl:attribute name="srcFile"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}/module-info.java</xsl:text></xsl:attribute>
-                <xsl:attribute name="quiet">true</xsl:attribute>
-                <filterchain>
-                    <stripjavacomments/>
-                    <linecontainsregexp>
-                        <regexp pattern="module .* \{{"/>
-                    </linecontainsregexp>
-                    <tokenfilter>
-                        <linetokenizer/>
-                        <replaceregex pattern="(\s*module\s+)(.*)(\s*\{{.*)"
-                            flags="s"
-                            replace="\2"/>
-                    </tokenfilter>
-                </filterchain>
-            </xsl:element>
-        </xsl:for-each>
-    </xsl:template>
-    
 </xsl:stylesheet>
