@@ -149,7 +149,7 @@ public class DockerInstance {
                 String displayName = p.get(DISPLAY_NAME_KEY, null);
                 String url = p.get(URL_KEY, null);
                 if (displayName != null && url != null
-                        && (!url.startsWith("file:") || DockerIntegration.getDefault().isSocketAllowed())) { // NOI18N
+                        && (!url.startsWith("file:") || DockerIntegration.getDefault().isSocketSupported())) { // NOI18N
                     DockerInstance instance = new DockerInstance(url, p);
                     instance.init();
                     instances.add(instance);

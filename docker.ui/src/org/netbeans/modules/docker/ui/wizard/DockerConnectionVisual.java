@@ -65,7 +65,7 @@ public class DockerConnectionVisual extends javax.swing.JPanel implements Change
     public DockerConnectionVisual() {
         initComponents();
 
-        if (DockerIntegration.getDefault().isSocketAllowed()) {
+        if (DockerIntegration.getDefault().isSocketSupported()) {
             configPanel = new ConfigurationLinuxPanel();
         } else {
             configPanel = new ConfigurationPanel();

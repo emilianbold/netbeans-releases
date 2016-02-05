@@ -141,7 +141,7 @@ public final class DockerIntegration {
         changeSupport.removeChangeListener(listener);
     }
 
-    public boolean isSocketAllowed() {
+    public boolean isSocketSupported() {
         if (BaseUtilities.getOperatingSystem() != BaseUtilities.OS_LINUX) {
             return false;
         }
