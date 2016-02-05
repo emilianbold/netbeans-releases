@@ -203,25 +203,39 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
     })
     @Override
     public void readSettings(WizardDescriptor wiz) {
+        boolean init = false;
         if (wizard == null) {
+            init = true;
             wizard = wiz;
         }
 
         Configuration panel = component.getConfiguration();
         String displayName = (String) wiz.getProperty(AddDockerInstanceWizard.DISPLAY_NAME_PROPERTY);
-        if (displayName == null) {
+        if (displayName == null && init) {
             displayName = Bundle.LBL_DefaultDisplayName();
         }
         panel.setDisplayName(displayName);
 
+        Boolean socketSelected = (Boolean) wiz.getProperty(AddDockerInstanceWizard.SOCKET_SELECTED_PROPERTY);
+        if (socketSelected == null) {
+            socketSelected = isDefaultSocketSelected();
+        }
+        panel.setSocketSelected(socketSelected);
+
+        File socket = (File) wiz.getProperty(AddDockerInstanceWizard.SOCKET_PROPERTY);
+        if (socket == null && init && socketSelected) {
+            socket = getDefaultSocket();
+        }
+        panel.setSocket(socket);
+
         String url = (String) wiz.getProperty(AddDockerInstanceWizard.URL_PROPERTY);
-        if (url == null) {
+        if (url == null && init && !socketSelected) {
             url = getDefaultUrl();
         }
         panel.setUrl(url);
 
         String certPath = (String) wiz.getProperty(AddDockerInstanceWizard.CERTIFICATE_PATH_PROPERTY);
-        if (certPath == null) {
+        if (certPath == null && init && !socketSelected) {
             certPath = getDefaultCertificatePath();
         }
         panel.setCertPath(certPath);
@@ -234,6 +248,8 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
     public void storeSettings(WizardDescriptor wiz) {
         Configuration panel = component.getConfiguration();
         wiz.putProperty(AddDockerInstanceWizard.DISPLAY_NAME_PROPERTY, panel.getDisplayName());
+        wiz.putProperty(AddDockerInstanceWizard.SOCKET_SELECTED_PROPERTY, panel.isSocketSelected());
+        wiz.putProperty(AddDockerInstanceWizard.SOCKET_PROPERTY, panel.getSocket());
         wiz.putProperty(AddDockerInstanceWizard.URL_PROPERTY, panel.getUrl());
         wiz.putProperty(AddDockerInstanceWizard.CERTIFICATE_PATH_PROPERTY, panel.getCertPath());
     }
@@ -241,6 +257,18 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
     @Override
     public void stateChanged(ChangeEvent e) {
         changeSupport.fireChange();
+    }
+
+    private static boolean isDefaultSocketSelected() {
+        return Utilities.getOperatingSystem() == Utilities.OS_LINUX;
+    }
+
+    private static File getDefaultSocket() {
+        File file = new File("/var/run/docker.sock"); // NOI18N
+        if (file.exists()) {
+            return file;
+        }
+        return null;
     }
 
     private static String getDefaultUrl() {

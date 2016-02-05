@@ -50,7 +50,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="certTextField" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="browseButton" min="-2" max="-2" attributes="0"/>
+                      <Component id="certBrowseButton" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Component id="urlTextField" alignment="0" max="32767" attributes="0"/>
               </Group>
@@ -83,7 +83,7 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="certDirectoryLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="certTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="browseButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="certBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
       </Group>
@@ -107,9 +107,6 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="urlTextField">
-      <Properties>
-        <Property name="enabled" type="boolean" value="false"/>
-      </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="certDirectoryLabel">
       <Properties>
@@ -119,19 +116,15 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="certTextField">
-      <Properties>
-        <Property name="enabled" type="boolean" value="false"/>
-      </Properties>
     </Component>
-    <Component class="javax.swing.JButton" name="browseButton">
+    <Component class="javax.swing.JButton" name="certBrowseButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/docker/ui/wizard/Bundle.properties" key="ConfigurationLinuxPanel.browseButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/docker/ui/wizard/Bundle.properties" key="ConfigurationLinuxPanel.certBrowseButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
-        <Property name="enabled" type="boolean" value="false"/>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="browseButtonActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="certBrowseButtonActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JRadioButton" name="socketRadioButton">
@@ -144,6 +137,9 @@
           <ResourceString bundle="org/netbeans/modules/docker/ui/wizard/Bundle.properties" key="ConfigurationLinuxPanel.socketRadioButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="socketRadioButtonActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="socketLabel">
       <Properties>
@@ -176,6 +172,9 @@
           <ResourceString bundle="org/netbeans/modules/docker/ui/wizard/Bundle.properties" key="ConfigurationLinuxPanel.urlRadioButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="urlRadioButtonActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

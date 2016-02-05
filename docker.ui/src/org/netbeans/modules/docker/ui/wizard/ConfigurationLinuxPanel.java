@@ -99,6 +99,7 @@ public class ConfigurationLinuxPanel extends javax.swing.JPanel implements Confi
     @Override
     public void setSocketSelected(boolean socketSelected) {
         socketRadioButton.setSelected(socketSelected);
+        refresh();
     }
 
     @Override
@@ -137,6 +138,15 @@ public class ConfigurationLinuxPanel extends javax.swing.JPanel implements Confi
         certTextField.setText(path);
     }
 
+    private void refresh() {
+        boolean socketSelected = socketRadioButton.isSelected();
+        socketTextField.setEnabled(socketSelected);
+        socketBrowseButton.setEnabled(socketSelected);
+        urlTextField.setEnabled(!socketSelected);
+        certTextField.setEnabled(!socketSelected);
+        certBrowseButton.setEnabled(!socketSelected);
+    }
+
     private class DefaultDocumentListener implements DocumentListener {
 
         @Override
@@ -171,7 +181,7 @@ public class ConfigurationLinuxPanel extends javax.swing.JPanel implements Confi
         urlTextField = new javax.swing.JTextField();
         certDirectoryLabel = new javax.swing.JLabel();
         certTextField = new javax.swing.JTextField();
-        browseButton = new javax.swing.JButton();
+        certBrowseButton = new javax.swing.JButton();
         socketRadioButton = new javax.swing.JRadioButton();
         socketLabel = new javax.swing.JLabel();
         socketBrowseButton = new javax.swing.JButton();
@@ -182,23 +192,23 @@ public class ConfigurationLinuxPanel extends javax.swing.JPanel implements Confi
 
         org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(ConfigurationLinuxPanel.class, "ConfigurationLinuxPanel.urlLabel.text")); // NOI18N
 
-        urlTextField.setEnabled(false);
-
         org.openide.awt.Mnemonics.setLocalizedText(certDirectoryLabel, org.openide.util.NbBundle.getMessage(ConfigurationLinuxPanel.class, "ConfigurationLinuxPanel.certDirectoryLabel.text")); // NOI18N
 
-        certTextField.setEnabled(false);
-
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(ConfigurationLinuxPanel.class, "ConfigurationLinuxPanel.browseButton.text")); // NOI18N
-        browseButton.setEnabled(false);
-        browseButton.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(certBrowseButton, org.openide.util.NbBundle.getMessage(ConfigurationLinuxPanel.class, "ConfigurationLinuxPanel.certBrowseButton.text")); // NOI18N
+        certBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                browseButtonActionPerformed(evt);
+                certBrowseButtonActionPerformed(evt);
             }
         });
 
         switchButtonGroup.add(socketRadioButton);
         socketRadioButton.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(socketRadioButton, org.openide.util.NbBundle.getMessage(ConfigurationLinuxPanel.class, "ConfigurationLinuxPanel.socketRadioButton.text")); // NOI18N
+        socketRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                socketRadioButtonActionPerformed(evt);
+            }
+        });
 
         socketLabel.setLabelFor(socketTextField);
         org.openide.awt.Mnemonics.setLocalizedText(socketLabel, org.openide.util.NbBundle.getMessage(ConfigurationLinuxPanel.class, "ConfigurationLinuxPanel.socketLabel.text")); // NOI18N
@@ -212,6 +222,11 @@ public class ConfigurationLinuxPanel extends javax.swing.JPanel implements Confi
 
         switchButtonGroup.add(urlRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(urlRadioButton, org.openide.util.NbBundle.getMessage(ConfigurationLinuxPanel.class, "ConfigurationLinuxPanel.urlRadioButton.text")); // NOI18N
+        urlRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                urlRadioButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -242,7 +257,7 @@ public class ConfigurationLinuxPanel extends javax.swing.JPanel implements Confi
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(certTextField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(browseButton))
+                        .addComponent(certBrowseButton))
                     .addComponent(urlTextField)))
         );
         layout.setVerticalGroup(
@@ -268,11 +283,11 @@ public class ConfigurationLinuxPanel extends javax.swing.JPanel implements Confi
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(certDirectoryLabel)
                     .addComponent(certTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(browseButton)))
+                    .addComponent(certBrowseButton)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
+    private void certBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_certBrowseButtonActionPerformed
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setFileHidingEnabled(false);
@@ -283,7 +298,7 @@ public class ConfigurationLinuxPanel extends javax.swing.JPanel implements Confi
         if (chooser.showOpenDialog(SwingUtilities.getWindowAncestor(this)) == JFileChooser.APPROVE_OPTION) {
             certTextField.setText(chooser.getSelectedFile().getAbsolutePath());
         }
-    }//GEN-LAST:event_browseButtonActionPerformed
+    }//GEN-LAST:event_certBrowseButtonActionPerformed
 
     private void socketBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_socketBrowseButtonActionPerformed
         JFileChooser chooser = new JFileChooser();
@@ -298,9 +313,17 @@ public class ConfigurationLinuxPanel extends javax.swing.JPanel implements Confi
         }
     }//GEN-LAST:event_socketBrowseButtonActionPerformed
 
+    private void socketRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_socketRadioButtonActionPerformed
+        refresh();
+    }//GEN-LAST:event_socketRadioButtonActionPerformed
+
+    private void urlRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_urlRadioButtonActionPerformed
+        refresh();
+    }//GEN-LAST:event_urlRadioButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton browseButton;
+    private javax.swing.JButton certBrowseButton;
     private javax.swing.JLabel certDirectoryLabel;
     private javax.swing.JTextField certTextField;
     private javax.swing.JLabel nameLabel;
