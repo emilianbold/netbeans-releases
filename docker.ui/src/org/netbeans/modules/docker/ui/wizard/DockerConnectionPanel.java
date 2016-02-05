@@ -218,7 +218,7 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
 
         Boolean socketSelected = (Boolean) wiz.getProperty(AddDockerInstanceWizard.SOCKET_SELECTED_PROPERTY);
         if (socketSelected == null) {
-            socketSelected = isDefaultSocketSelected();
+            socketSelected = DockerIntegration.getDefault().isSocketAllowed();
         }
         panel.setSocketSelected(socketSelected);
 
@@ -257,10 +257,6 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
     @Override
     public void stateChanged(ChangeEvent e) {
         changeSupport.fireChange();
-    }
-
-    private static boolean isDefaultSocketSelected() {
-        return Utilities.getOperatingSystem() == Utilities.OS_LINUX;
     }
 
     private static File getDefaultSocket() {

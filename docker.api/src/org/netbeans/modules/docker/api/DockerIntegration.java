@@ -55,6 +55,7 @@ import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.openide.util.BaseUtilities;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbPreferences;
 import org.openide.util.Parameters;
@@ -138,6 +139,14 @@ public final class DockerIntegration {
 
     public void removeChangeListener(ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
+    }
+
+    public boolean isSocketAllowed() {
+        if (BaseUtilities.getOperatingSystem() != BaseUtilities.OS_LINUX) {
+            return false;
+        }
+        String arch = System.getProperty("os.arch"); // NOI18N
+        return arch != null && (arch.contains("x86") || arch.contains("amd64")); // NOI18N
     }
 
     private void refresh() {

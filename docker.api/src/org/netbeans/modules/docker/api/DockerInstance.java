@@ -58,7 +58,9 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.docker.DockerEventBus;
+import org.netbeans.modules.docker.DockerUtils;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.BaseUtilities;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbPreferences;
 
@@ -146,7 +148,8 @@ public class DockerInstance {
                 Preferences p = global.node(name);
                 String displayName = p.get(DISPLAY_NAME_KEY, null);
                 String url = p.get(URL_KEY, null);
-                if (displayName != null && url != null) {
+                if (displayName != null && url != null
+                        && (!url.startsWith("file:") || DockerIntegration.getDefault().isSocketAllowed())) { // NOI18N
                     DockerInstance instance = new DockerInstance(url, p);
                     instance.init();
                     instances.add(instance);
