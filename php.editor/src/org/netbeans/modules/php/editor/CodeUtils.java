@@ -386,7 +386,6 @@ public final class CodeUtils {
 
         if (rightSideExpression instanceof ClassInstanceCreation) {
             ClassInstanceCreation classInstanceCreation = (ClassInstanceCreation) rightSideExpression;
-            // XXX anonymous class
             Expression className = classInstanceCreation.getClassName().getName();
             return CodeUtils.extractUnqualifiedName(className);
         } else if (rightSideExpression instanceof ArrayCreation) {

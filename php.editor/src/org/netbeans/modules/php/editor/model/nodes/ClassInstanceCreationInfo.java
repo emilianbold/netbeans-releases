@@ -75,17 +75,6 @@ public class ClassInstanceCreationInfo extends ASTNodeInfo<ClassInstanceCreation
     }
 
     @Override
-    public String getName() {
-        return "AnonymousClass@" + getOriginalNode().getClassStartOffset();
-    }
-
-    @Override
-    public QualifiedName getQualifiedName() {
-        // XXX
-        return QualifiedName.create(getName());
-    }
-
-    @Override
     public OffsetRange getRange() {
         ClassInstanceCreation originalNode = getOriginalNode();
         return new OffsetRange(originalNode.getStartOffset(), originalNode.getEndOffset());

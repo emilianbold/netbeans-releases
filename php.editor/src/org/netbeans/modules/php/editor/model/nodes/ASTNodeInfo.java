@@ -119,10 +119,7 @@ public class ASTNodeInfo<T extends ASTNode> {
             retval = QualifiedName.create((NamespaceName) node);
         } else if (node instanceof ClassInstanceCreation) {
             ClassInstanceCreation instanceCreation = (ClassInstanceCreation) node;
-            assert !instanceCreation.isAnonymous() : instanceCreation;
-            ClassName className = instanceCreation.getClassName();
-            assert className != null;
-            retval = QualifiedName.create(className.getName());
+            retval = QualifiedName.create(instanceCreation.getClassName().getName());
         } else if (node instanceof SingleUseStatementPart) {
             SingleUseStatementPart statementPart = (SingleUseStatementPart) node;
             retval = QualifiedName.create(statementPart.getName());
@@ -340,7 +337,6 @@ public class ASTNodeInfo<T extends ASTNode> {
             return NavUtils.isQuoted(scalar.getStringValue()) ? NavUtils.dequote(scalar.getStringValue()) : scalar.getStringValue();
         } else if (node instanceof ClassInstanceCreation) {
             ClassInstanceCreation instanceCreation = (ClassInstanceCreation) node;
-            assert !instanceCreation.isAnonymous() : instanceCreation;
             return toName(instanceCreation.getClassName());
         } else if (node instanceof FieldAccess) {
             FieldAccess fieldAccess = (FieldAccess) node;
@@ -406,7 +402,6 @@ public class ASTNodeInfo<T extends ASTNode> {
             }
         } else if (node instanceof ClassInstanceCreation) {
             ClassInstanceCreation instanceCreation = (ClassInstanceCreation) node;
-            assert !instanceCreation.isAnonymous() : instanceCreation;
             return toOffsetRange(instanceCreation.getClassName());
         } else if (node instanceof FieldAccess) {
             FieldAccess fieldAccess = (FieldAccess) node;

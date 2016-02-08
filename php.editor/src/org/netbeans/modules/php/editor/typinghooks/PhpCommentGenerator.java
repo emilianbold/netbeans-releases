@@ -377,7 +377,6 @@ public final class PhpCommentGenerator {
             Expression expression = throwStatement.getExpression();
             if (expression instanceof ClassInstanceCreation) {
                 ClassInstanceCreation classInstanceCreation = (ClassInstanceCreation) expression;
-                // XXX anonymous class
                 Expression name = classInstanceCreation.getClassName().getName();
                 if (name instanceof NamespaceName) {
                     NamespaceName namespaceName = (NamespaceName) name;

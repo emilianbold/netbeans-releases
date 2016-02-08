@@ -577,9 +577,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 modelBuilder.reset();
             }
         } else {
-            ClassName className = node.getClassName();
-            assert className != null : node;
-            Expression name = className.getName();
+            Expression name = node.getClassName().getName();
             if (name instanceof Variable) {
                 scan(name);
             } else {

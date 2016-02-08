@@ -113,14 +113,14 @@ public class ClassInstanceCreation extends Expression {
 
     /**
      * Class name of this instance creation node.
+     * <p>
+     * Syntetic name for anonymous class (<tt>Anonymous#&lt;offset></tt>).
      *
      * @return class name
      */
-    @CheckForNull
     public ClassName getClassName() {
-        // XXX
         if (isAnonymous()) {
-            return new ClassName(0, 0, new Identifier(0, 0, "???"));
+            return new ClassName(classStartOffset, classStartOffset, new Identifier(0, 0, "Anonymous#" + classStartOffset)); // NOI18N
         }
         return className;
     }
@@ -146,10 +146,6 @@ public class ClassInstanceCreation extends Expression {
     @CheckForNull
     public Block getBody() {
         return body;
-    }
-
-    public int getClassStartOffset() {
-        return classStartOffset;
     }
 
     @Override
