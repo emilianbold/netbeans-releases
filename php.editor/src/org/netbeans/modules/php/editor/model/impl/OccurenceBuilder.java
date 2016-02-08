@@ -378,7 +378,11 @@ class OccurenceBuilder {
     void prepare(ClassInstanceCreation node, Scope scope) {
         ASTNodeInfo<ClassInstanceCreation> nodeInfo = ASTNodeInfo.create(node);
         if (canBePrepared(node, scope)) {
-            clasInstanceCreations.put(nodeInfo, scope);
+            if (node.isAnonymous()) {
+                // XXX anonymous class
+            } else {
+                clasInstanceCreations.put(nodeInfo, scope);
+            }
         }
     }
 
