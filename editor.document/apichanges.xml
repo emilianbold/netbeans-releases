@@ -128,7 +128,7 @@ is the proper place.
               </p>
           </description>
           <class name="ShiftPositions" package="org.netbeans.api.editor.document"/>
-          <issue number="XXX"/>
+          <issue number="257889"/>
       </change>
       <change id="TextSearchUtils-getPreviousWordStart">
           <api name="api"/>
