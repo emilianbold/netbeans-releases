@@ -41,38 +41,39 @@
  */
 package org.netbeans.modules.javascript2.editor.formatter;
 
-import jdk.nashorn.internal.ir.AccessNode;
-import jdk.nashorn.internal.ir.BinaryNode;
-import jdk.nashorn.internal.ir.Block;
-import jdk.nashorn.internal.ir.CallNode;
-import jdk.nashorn.internal.ir.CaseNode;
-import jdk.nashorn.internal.ir.CatchNode;
-import jdk.nashorn.internal.ir.DoWhileNode;
-import jdk.nashorn.internal.ir.ForNode;
-import jdk.nashorn.internal.ir.FunctionNode;
-import jdk.nashorn.internal.ir.IdentNode;
-import jdk.nashorn.internal.ir.IfNode;
-import jdk.nashorn.internal.ir.LiteralNode;
-import jdk.nashorn.internal.ir.Node;
-import jdk.nashorn.internal.ir.ObjectNode;
-import jdk.nashorn.internal.ir.PropertyNode;
-import jdk.nashorn.internal.ir.ReferenceNode;
-import jdk.nashorn.internal.ir.SwitchNode;
-import jdk.nashorn.internal.ir.TernaryNode;
-import jdk.nashorn.internal.ir.TryNode;
-import jdk.nashorn.internal.ir.UnaryNode;
-import jdk.nashorn.internal.ir.VarNode;
-import jdk.nashorn.internal.ir.WhileNode;
-import jdk.nashorn.internal.ir.WithNode;
-import jdk.nashorn.internal.ir.visitor.NodeVisitor;
-import jdk.nashorn.internal.parser.TokenType;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.AccessNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.BinaryNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.Block;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.BlockStatement;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.CallNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.CaseNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.CatchNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.ForNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.FunctionNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.IdentNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.IfNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.LexicalContext;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.LiteralNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.LoopNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.Node;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.ObjectNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.PropertyNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.Statement;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.SwitchNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.TernaryNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.TryNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.UnaryNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.VarNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.WhileNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.WithNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.visitor.NodeVisitor;
+import com.oracle.truffle.js.parser.nashorn.internal.parser.TokenType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import jdk.nashorn.internal.ir.ExecuteNode;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Token;
@@ -103,15 +104,16 @@ public class FormatVisitor extends NodeVisitor {
     private final Set<Block> caseNodes = new HashSet<Block>();
 
     public FormatVisitor(FormatTokenStream tokenStream, TokenSequence<? extends JsTokenId> ts, int formatFinish) {
+        super(new LexicalContext());
         this.ts = ts;
         this.tokenStream = tokenStream;
         this.formatFinish = formatFinish;
     }
 
     @Override
-    public Node enter(Block block) {
+    public boolean enterBlock(Block block) {
         boolean isCaseNode = false;
-        if (block instanceof FunctionNode || isScript(block)
+        if (isScript(block)
                 || caseNodes.contains(block) || !isVirtual(block)) {
 
             if (caseNodes.contains(block)) {
@@ -127,92 +129,91 @@ public class FormatVisitor extends NodeVisitor {
             }
         }
 
-        if (block instanceof FunctionNode || isScript(block)
+        if (isScript(block)
                 || isCaseNode || !isVirtual(block)) {
-            return null;
+            return false;
         } else {
-            return super.enter(block);
+            return super.enterBlock(block);
         }
     }
 
     @Override
-    public Node leave(Block block) {
-        if (block instanceof FunctionNode || isScript(block)
+    public Node leaveBlock(Block block) {
+        if (isScript(block)
                 || !isVirtual(block)) {
             return null;
         } else {
-            return super.leave(block);
+            return super.leaveBlock(block);
         }
     }
 
     @Override
-    public Node enter(CaseNode caseNode) {
+    public boolean enterCaseNode(CaseNode caseNode) {
         // we need to mark if block is case body as block itself has
         // no reference to case node
         caseNodes.add(caseNode.getBody());
-        return super.enter(caseNode);
+        return super.enterCaseNode(caseNode);
     }
 
     @Override
-    public Node leave(CaseNode caseNode) {
+    public Node leaveCaseNode(CaseNode caseNode) {
         // we are removing mark
         caseNodes.remove(caseNode.getBody());
-        return super.leave(caseNode);
+        return super.leaveCaseNode(caseNode);
     }
 
     @Override
-    public Node enter(WhileNode whileNode) {
-        // within parens spaces
-        markSpacesWithinParentheses(whileNode, getStart(whileNode), getStart(whileNode.getBody()),
-                FormatToken.Kind.AFTER_WHILE_PARENTHESIS, FormatToken.Kind.BEFORE_WHILE_PARENTHESIS);
-
-        // mark space before left brace
-        markSpacesBeforeBrace(whileNode.getBody(), FormatToken.Kind.BEFORE_WHILE_BRACE);
-
-        if (handleWhile(whileNode, FormatToken.Kind.AFTER_WHILE_START)) {
-            return null;
-        }
-
-        markEndCurlyBrace(whileNode.getBody());
-        return super.enter(whileNode);
-    }
-
-    @Override
-    public Node enter(DoWhileNode doWhileNode) {
-        // within parens spaces
-        int leftStart;
-        Block body = doWhileNode.getBody();
-        if (isVirtual(body)) {
-            // unfortunately due to condition at the end of do-while
-            // we have to care about virtual block
-            List<Node> statements = body.getStatements();
-            leftStart = getFinish(statements.get(statements.size() - 1));
-        } else {
-            leftStart = getFinish(doWhileNode.getBody());
-        }
-        markSpacesWithinParentheses(doWhileNode, leftStart, getFinish(doWhileNode),
-                FormatToken.Kind.AFTER_WHILE_PARENTHESIS, FormatToken.Kind.BEFORE_WHILE_PARENTHESIS);
-
-        // mark space before left brace
-        markSpacesBeforeBrace(doWhileNode.getBody(), FormatToken.Kind.BEFORE_DO_BRACE);
-
-        FormatToken whileToken = getPreviousToken(getFinish(doWhileNode), JsTokenId.KEYWORD_WHILE);
-        if (whileToken != null) {
-            FormatToken beforeWhile = whileToken.previous();
-            if (beforeWhile != null) {
-                appendToken(beforeWhile, FormatToken.forFormat(FormatToken.Kind.BEFORE_WHILE_KEYWORD));
+    public boolean enterWhileNode(WhileNode whileNode) {
+        if (whileNode.isDoWhile()) {
+            // within parens spaces
+            int leftStart;
+            Block body = whileNode.getBody();
+            if (isVirtual(body)) {
+                // unfortunately due to condition at the end of do-while
+                // we have to care about virtual block
+                List<Statement> statements = body.getStatements();
+                leftStart = getFinish(statements.get(statements.size() - 1));
+            } else {
+                leftStart = getFinish(whileNode.getBody());
             }
-        }
-        if (handleWhile(doWhileNode, FormatToken.Kind.AFTER_DO_START)) {
-            return null;
-        }
+            markSpacesWithinParentheses(whileNode, leftStart, getFinish(whileNode),
+                    FormatToken.Kind.AFTER_WHILE_PARENTHESIS, FormatToken.Kind.BEFORE_WHILE_PARENTHESIS);
 
-        markEndCurlyBrace(doWhileNode.getBody());
-        return super.enter(doWhileNode);
+            // mark space before left brace
+            markSpacesBeforeBrace(whileNode.getBody(), FormatToken.Kind.BEFORE_DO_BRACE);
+
+            FormatToken whileToken = getPreviousToken(getFinish(whileNode), JsTokenId.KEYWORD_WHILE);
+            if (whileToken != null) {
+                FormatToken beforeWhile = whileToken.previous();
+                if (beforeWhile != null) {
+                    appendToken(beforeWhile, FormatToken.forFormat(FormatToken.Kind.BEFORE_WHILE_KEYWORD));
+                }
+            }
+            if (handleLoop(whileNode, FormatToken.Kind.AFTER_DO_START)) {
+                return false;
+            }
+
+            markEndCurlyBrace(whileNode.getBody());
+            return super.enterWhileNode(whileNode);
+        } else {
+            // within parens spaces
+            markSpacesWithinParentheses(whileNode, getStart(whileNode), getStart(whileNode.getBody()),
+                    FormatToken.Kind.AFTER_WHILE_PARENTHESIS, FormatToken.Kind.BEFORE_WHILE_PARENTHESIS);
+
+            // mark space before left brace
+            markSpacesBeforeBrace(whileNode.getBody(), FormatToken.Kind.BEFORE_WHILE_BRACE);
+
+            if (handleLoop(whileNode, FormatToken.Kind.AFTER_WHILE_START)) {
+                return false;
+            }
+
+            markEndCurlyBrace(whileNode.getBody());
+            return super.enterWhileNode(whileNode);
+        }
     }
 
     @Override
-    public Node enter(ForNode forNode) {
+    public boolean enterForNode(ForNode forNode) {
         // within parens spaces
         markSpacesWithinParentheses(forNode, getStart(forNode), getStart(forNode.getBody()),
                 FormatToken.Kind.AFTER_FOR_PARENTHESIS, FormatToken.Kind.BEFORE_FOR_PARENTHESIS);
@@ -251,16 +252,16 @@ public class FormatVisitor extends NodeVisitor {
                         FormatToken.forFormat(FormatToken.Kind.BEFORE_FOR_MODIFY));
             }
         }
-        if (handleWhile(forNode, FormatToken.Kind.AFTER_FOR_START)) {
-            return null;
+        if (handleLoop(forNode, FormatToken.Kind.AFTER_FOR_START)) {
+            return false;
         }
 
         markEndCurlyBrace(forNode.getBody());
-        return super.enter(forNode);
+        return super.enterForNode(forNode);
     }
 
     @Override
-    public Node enter(IfNode ifNode) {
+    public boolean enterIfNode(IfNode ifNode) {
         ifNode.getTest().accept(this);
 
         // within parens spaces
@@ -275,7 +276,7 @@ public class FormatVisitor extends NodeVisitor {
         if (isVirtual(body)) {
             handleVirtualBlock(body, FormatToken.Kind.AFTER_IF_START);
         } else {
-            enter(body);
+            enterBlock(body);
             markEndCurlyBrace(body);
         }
 
@@ -284,7 +285,7 @@ public class FormatVisitor extends NodeVisitor {
         if (body != null) {
             if (isVirtual(body)) {
                 // do the standard block related things
-                List<Node> statements = body.getStatements();
+                List<Statement> statements = body.getStatements();
                 // there might be no statements when code is broken
                 if (!statements.isEmpty() && (statements.get(0) instanceof IfNode)) {
                     // we mark else if statement here
@@ -300,21 +301,21 @@ public class FormatVisitor extends NodeVisitor {
                 // mark space before left brace
                 markSpacesBeforeBrace(body, FormatToken.Kind.BEFORE_ELSE_BRACE);
 
-                enter(body);
+                enterBlock(body);
                 markEndCurlyBrace(body);
             }
         }
 
+        return false;
+    }
+
+    @Override
+    public Node leaveIfNode(IfNode ifNode) {
         return null;
     }
 
     @Override
-    public Node leave(IfNode ifNode) {
-        return null;
-    }
-
-    @Override
-    public Node enter(WithNode withNode) {
+    public boolean enterWithNode(WithNode withNode) {
         // within parens spaces
         markSpacesWithinParentheses(withNode, getStart(withNode), getStart(withNode.getBody()),
                 FormatToken.Kind.AFTER_WITH_PARENTHESIS, FormatToken.Kind.BEFORE_WITH_PARENTHESIS);
@@ -326,16 +327,16 @@ public class FormatVisitor extends NodeVisitor {
 
         if (isVirtual(body)) {
             handleVirtualBlock(body, FormatToken.Kind.AFTER_WITH_START);
-            return null;
+            return false;
         }
 
         markEndCurlyBrace(body);
-        return super.enter(withNode);
+        return super.enterWithNode(withNode);
     }
 
     @Override
-    public Node enter(FunctionNode functionNode) {
-        enter((Block) functionNode);
+    public boolean enterFunctionNode(FunctionNode functionNode) {
+        enterBlock(functionNode.getBody());
 
         if (!isScript(functionNode)) {
             int start = getFunctionStart(functionNode);
@@ -404,32 +405,33 @@ public class FormatVisitor extends NodeVisitor {
                     }
                 }
 
-                if (functionNode.isStatement()) {
-                    FormatToken rightBrace = getPreviousToken(getFinish(functionNode),
-                            JsTokenId.BRACKET_RIGHT_CURLY,
-                            leftBrace != null ? leftBrace.getOffset() : start);
-                    if (rightBrace != null) {
-                        appendToken(rightBrace, FormatToken.forFormat(
-                                FormatToken.Kind.AFTER_STATEMENT));
-                    }
-                }
+// TRUFFLE
+//                if (functionNode.isStatement()) {
+//                    FormatToken rightBrace = getPreviousToken(getFinish(functionNode),
+//                            JsTokenId.BRACKET_RIGHT_CURLY,
+//                            leftBrace != null ? leftBrace.getOffset() : start);
+//                    if (rightBrace != null) {
+//                        appendToken(rightBrace, FormatToken.forFormat(
+//                                FormatToken.Kind.AFTER_STATEMENT));
+//                    }
+//                }
 
                 markEndCurlyBrace(functionNode);
             }
 
         }
+        return false;
+    }
+
+    @Override
+    public Node leaveFunctionNode(FunctionNode functionNode) {
+        leaveBlock(functionNode.getBody());
+
         return null;
     }
 
     @Override
-    public Node leave(FunctionNode functionNode) {
-        leave((Block) functionNode);
-
-        return null;
-    }
-
-    @Override
-    public Node enter(CallNode callNode) {
+    public boolean enterCallNode(CallNode callNode) {
         FormatToken leftBrace = getNextToken(getFinish(callNode.getFunction()),
                 JsTokenId.BRACKET_LEFT_PAREN, getFinish(callNode));
         if (leftBrace != null) {
@@ -487,11 +489,11 @@ public class FormatVisitor extends NodeVisitor {
         }
         handleFunctionCallChain(callNode);
 
-        return super.enter(callNode);
+        return super.enterCallNode(callNode);
     }
 
     @Override
-    public Node enter(ObjectNode objectNode) {
+    public boolean enterObjectNode(ObjectNode objectNode) {
         // indentation mark
         FormatToken formatToken = getPreviousToken(getStart(objectNode), JsTokenId.BRACKET_LEFT_CURLY, true);
         if (formatToken != null) {
@@ -510,12 +512,12 @@ public class FormatVisitor extends NodeVisitor {
 
             PropertyNode propertyNode = (PropertyNode) property;
             if (propertyNode.getGetter() != null) {
-                ReferenceNode getter = (ReferenceNode) propertyNode.getGetter();
-                markPropertyFinish(getFinish(getter.getReference()), objectFinish, false);
+                FunctionNode getter = (FunctionNode) propertyNode.getGetter();
+                markPropertyFinish(getFinish(getter), objectFinish, false);
             }
             if (propertyNode.getSetter() != null) {
-                ReferenceNode setter = (ReferenceNode) propertyNode.getSetter();
-                markPropertyFinish(getFinish(setter.getReference()), objectFinish, false);
+                FunctionNode setter = (FunctionNode) propertyNode.getSetter();
+                markPropertyFinish(getFinish(setter), objectFinish, false);
             }
 
             // mark property end
@@ -531,11 +533,11 @@ public class FormatVisitor extends NodeVisitor {
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
         }
 
-        return null;
+        return false;
     }
 
     @Override
-    public Node enter(PropertyNode propertyNode) {
+    public boolean enterPropertyNode(PropertyNode propertyNode) {
         FormatToken colon = getNextToken(getFinish(propertyNode.getKey()),
                 JsTokenId.OPERATOR_COLON, getFinish(propertyNode));
         if (colon != null) {
@@ -545,11 +547,11 @@ public class FormatVisitor extends NodeVisitor {
                 appendTokenAfterLastVirtual(before, FormatToken.forFormat(FormatToken.Kind.BEFORE_PROPERTY_OPERATOR));
             }
         }
-        return super.enter(propertyNode);
+        return super.enterPropertyNode(propertyNode);
     }
 
     @Override
-    public Node enter(SwitchNode switchNode) {
+    public boolean enterSwitchNode(SwitchNode switchNode) {
         // within parens spaces
         markSpacesWithinParentheses(switchNode);
 
@@ -584,11 +586,11 @@ public class FormatVisitor extends NodeVisitor {
         }
 
         markEndCurlyBrace(switchNode);
-        return super.enter(switchNode);
+        return super.enterSwitchNode(switchNode);
     }
 
     @Override
-    public Node enter(UnaryNode unaryNode) {
+    public boolean enterUnaryNode(UnaryNode unaryNode) {
         TokenType type = unaryNode.tokenType();
         if (UNARY_TYPES.contains(type)) {
             if (TokenType.DECPOSTFIX.equals(type) || TokenType.INCPOSTFIX.equals(type)) {
@@ -642,12 +644,12 @@ public class FormatVisitor extends NodeVisitor {
             }
         }
 
-        return super.enter(unaryNode);
+        return super.enterUnaryNode(unaryNode);
     }
 
     @Override
-    public Node enter(TernaryNode ternaryNode) {
-        int start = getStart(ternaryNode.rhs());
+    public boolean enterTernaryNode(TernaryNode ternaryNode) {
+        int start = getStart(ternaryNode.getTest());
         FormatToken question = getPreviousToken(start, JsTokenId.OPERATOR_TERNARY);
         if (question != null) {
             FormatToken previous = question.previous();
@@ -657,7 +659,7 @@ public class FormatVisitor extends NodeVisitor {
             }
             appendToken(question, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR));
             appendToken(question, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR_WRAP));
-            FormatToken colon = getPreviousToken(getStart(ternaryNode.third()), JsTokenId.OPERATOR_COLON);
+            FormatToken colon = getPreviousToken(getStart(ternaryNode.getFalseExpression()), JsTokenId.OPERATOR_COLON);
             if (colon != null) {
                 previous = colon.previous();
                 if (previous != null) {
@@ -669,11 +671,11 @@ public class FormatVisitor extends NodeVisitor {
             }
         }
 
-        return super.enter(ternaryNode);
+        return super.enterTernaryNode(ternaryNode);
     }
 
     @Override
-    public Node enter(CatchNode catchNode) {
+    public boolean enterCatchNode(CatchNode catchNode) {
         // within parens spaces
         markSpacesWithinParentheses(catchNode, getStart(catchNode), getStart(catchNode.getBody()),
                 FormatToken.Kind.AFTER_CATCH_PARENTHESIS, FormatToken.Kind.BEFORE_CATCH_PARENTHESIS);
@@ -682,11 +684,11 @@ public class FormatVisitor extends NodeVisitor {
         markSpacesBeforeBrace(catchNode.getBody(), FormatToken.Kind.BEFORE_CATCH_BRACE);
 
         markEndCurlyBrace(catchNode.getBody());
-        return super.enter(catchNode);
+        return super.enterCatchNode(catchNode);
     }
 
     @Override
-    public Node enter(TryNode tryNode) {
+    public boolean enterTryNode(TryNode tryNode) {
         // mark space before left brace
         markSpacesBeforeBrace(tryNode.getBody(), FormatToken.Kind.BEFORE_TRY_BRACE);
 
@@ -698,11 +700,11 @@ public class FormatVisitor extends NodeVisitor {
 
         markEndCurlyBrace(tryNode.getBody());
         markEndCurlyBrace(finallyBody);
-        return super.enter(tryNode);
+        return super.enterTryNode(tryNode);
     }
 
     @Override
-    public Node enter(LiteralNode literalNode) {
+    public boolean enterLiteralNode(LiteralNode literalNode) {
         Object value = literalNode.getValue();
         if (value instanceof Node[]) {
             int start = getStart(literalNode);
@@ -727,29 +729,31 @@ public class FormatVisitor extends NodeVisitor {
                 }
             }
 
-            Node[] items = literalNode.getArray();
-            if (items != null && items.length > 0) {
-                int prevItemFinish = start;
-                for (int i = 1; i < items.length; i++) {
-                    Node prevItem = items[i - 1];
-                    if (prevItem != null) {
-                        prevItemFinish = getFinish(prevItem);
-                    }
-                    FormatToken comma = getNextToken(prevItemFinish, JsTokenId.OPERATOR_COMMA, finish);
-                    if (comma != null) {
-                        prevItemFinish = comma.getOffset();
-                        appendTokenAfterLastVirtual(comma,
-                                FormatToken.forFormat(FormatToken.Kind.AFTER_ARRAY_LITERAL_ITEM));
+            if (literalNode.isArray()) {
+                Node[] items = ((LiteralNode.ArrayLiteralNode) literalNode).getValue();
+                if (items != null && items.length > 0) {
+                    int prevItemFinish = start;
+                    for (int i = 1; i < items.length; i++) {
+                        Node prevItem = items[i - 1];
+                        if (prevItem != null) {
+                            prevItemFinish = getFinish(prevItem);
+                        }
+                        FormatToken comma = getNextToken(prevItemFinish, JsTokenId.OPERATOR_COMMA, finish);
+                        if (comma != null) {
+                            prevItemFinish = comma.getOffset();
+                            appendTokenAfterLastVirtual(comma,
+                                    FormatToken.forFormat(FormatToken.Kind.AFTER_ARRAY_LITERAL_ITEM));
+                        }
                     }
                 }
             }
         }
 
-        return super.enter(literalNode);
+        return super.enterLiteralNode(literalNode);
     }
 
     @Override
-    public Node enter(VarNode varNode) {
+    public boolean enterVarNode(VarNode varNode) {
         int finish = getFinish(varNode) - 1;
         Token nextToken = getNextNonEmptyToken(finish);
         if (nextToken != null && nextToken.id() == JsTokenId.OPERATOR_COMMA) {
@@ -761,7 +765,7 @@ public class FormatVisitor extends NodeVisitor {
             }
         }
 
-        return super.enter(varNode);
+        return super.enterVarNode(varNode);
     }
 
     private void handleFunctionCallChain(CallNode callNode) {
@@ -784,8 +788,8 @@ public class FormatVisitor extends NodeVisitor {
         }
     }
 
-    private boolean handleWhile(WhileNode whileNode, FormatToken.Kind afterStart) {
-        Block body = whileNode.getBody();
+    private boolean handleLoop(LoopNode loopNode, FormatToken.Kind afterStart) {
+        Block body = loopNode.getBody();
         if (isVirtual(body)) {
             handleVirtualBlock(body, afterStart);
             return true;
@@ -814,15 +818,11 @@ public class FormatVisitor extends NodeVisitor {
     private void handleCaseBlock(Block block) {
         handleBlockContent(block);
 
-        List<Node> nodes = block.getStatements();
+        List<Statement> nodes = block.getStatements();
         if (nodes.size() == 1) {
-            Node node = nodes.get(0);
-            if (node instanceof ExecuteNode) {
-                node = ((ExecuteNode) node).getExpression();
-                if (node instanceof Block) {
-                    // the case contains one big block
-                    return;
-                }
+            Statement node = nodes.get(0);
+            if (node instanceof BlockStatement) {
+                return;
             }
         }
 
@@ -911,14 +911,15 @@ public class FormatVisitor extends NodeVisitor {
 
     private void handleBlockContent(Block block) {
         // functions
-        if (block instanceof FunctionNode) {
-            for (FunctionNode function : ((FunctionNode) block).getFunctions()) {
-                function.accept(this);
-            }
-        }
+// TRUFFLE
+//        if (block instanceof FunctionNode) {
+//            for (FunctionNode function : ((FunctionNode) block).getFunctions()) {
+//                function.accept(this);
+//            }
+//        }
 
         // statements
-        List<Node> statements = block.getStatements();
+        List<Statement> statements = block.getStatements();
         for (int i = 0; i < statements.size(); i++) {
             Node statement = statements.get(i);
             statement.accept(this);
@@ -1251,7 +1252,7 @@ public class FormatVisitor extends NodeVisitor {
         // in case it is string literal.
         int start = node.getStart();
         long firstToken = node.getToken();
-        TokenType type = jdk.nashorn.internal.parser.Token.descType(firstToken);
+        TokenType type = com.oracle.truffle.js.parser.nashorn.internal.parser.Token.descType(firstToken);
         if (type.equals(TokenType.STRING) || type.equals(TokenType.ESCSTRING)) {
             ts.move(start - 1);
             if (ts.moveNext()) {
@@ -1326,7 +1327,7 @@ public class FormatVisitor extends NodeVisitor {
 
     private boolean isVirtual(Block block) {
         return block.getStart() == block.getFinish()
-                    || jdk.nashorn.internal.parser.Token.descType(block.getToken()) != TokenType.LBRACE
+                    || com.oracle.truffle.js.parser.nashorn.internal.parser.Token.descType(block.getToken()) != TokenType.LBRACE
                     || block.isCatchBlock();
     }
 
