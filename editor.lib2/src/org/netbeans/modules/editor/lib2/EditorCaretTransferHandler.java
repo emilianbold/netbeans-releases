@@ -264,7 +264,7 @@ public class EditorCaretTransferHandler extends TransferHandler {
                         try {
                             if (RectangularSelectionUtils.isRectangularSelection(tc)) {
                                 RectangularSelectionUtils.removeSelection(tc);
-                                editorCaret.setRectangularSelectionToDotAndMark();
+                                RectangularSelectionCaretAccessor.get().setRectangularSelectionToDotAndMark(editorCaret);
                             } else {
                                 doc.remove(Math.min(dot, mark), Math.abs(dot - mark));
                             }

@@ -122,6 +122,7 @@ import org.netbeans.lib.editor.util.ListenerList;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
+import org.netbeans.modules.editor.lib2.RectangularSelectionCaretAccessor;
 import org.netbeans.modules.editor.lib2.RectangularSelectionTransferHandler;
 import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
 import org.netbeans.modules.editor.lib2.actions.EditorActionUtilities;
@@ -156,6 +157,25 @@ public final class EditorCaret implements Caret {
     
     // -J-Dorg.netbeans.editor.BaseCaret.level=FINEST
     private static final Logger LOG = Logger.getLogger(EditorCaret.class.getName());
+    
+    static {
+        RectangularSelectionCaretAccessor.register(new RectangularSelectionCaretAccessor() {
+            @Override
+            public void setRectangularSelectionToDotAndMark(EditorCaret editorCaret) {
+                editorCaret.setRectangularSelectionToDotAndMark();
+            }
+
+            @Override
+            public void updateRectangularUpDownSelection(EditorCaret editorCaret) {
+                editorCaret.updateRectangularUpDownSelection();
+            }
+
+            @Override
+            public void extendRectangularSelection(EditorCaret editorCaret, boolean toRight, boolean ctrl) {
+                editorCaret.extendRectangularSelection(toRight, ctrl);
+            }
+        });
+    }
 
     static final long serialVersionUID = 0L;
 
@@ -877,7 +897,7 @@ public final class EditorCaret implements Caret {
     /**
      * 
      */
-    public void setRectangularSelectionToDotAndMark() {
+    void setRectangularSelectionToDotAndMark() {
         int dotOffset = getDot();
         int markOffset = getMark();
         try {
@@ -892,7 +912,7 @@ public final class EditorCaret implements Caret {
     /**
      * 
      */
-    public void updateRectangularUpDownSelection() {
+    void updateRectangularUpDownSelection() {
         JTextComponent c = component;
         int dotOffset = getDot();
         try {
@@ -911,7 +931,7 @@ public final class EditorCaret implements Caret {
      * @param toRight true for right or false for left.
      * @param ctrl true for ctrl pressed.
      */
-    public void extendRectangularSelection(boolean toRight, boolean ctrl) {
+    void extendRectangularSelection(boolean toRight, boolean ctrl) {
         JTextComponent c = component;
         Document doc = c.getDocument();
         int dotOffset = getDot();

@@ -124,6 +124,7 @@ import org.netbeans.api.editor.caret.CaretMoveContext;
 import org.netbeans.api.editor.caret.CaretMoveHandler;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
 import org.netbeans.modules.editor.lib.SettingsConversions;
+import org.netbeans.modules.editor.lib2.RectangularSelectionCaretAccessor;
 import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
 import org.netbeans.modules.editor.lib2.actions.KeyBindingsUpdater;
 import org.netbeans.modules.editor.lib2.typinghooks.DeletedTextInterceptorsManager;
@@ -1127,7 +1128,7 @@ public class BaseKit extends DefaultEditorKit {
                         });
                         Caret caret = target.getCaret();
                         if (caret instanceof EditorCaret) {
-                            ((EditorCaret)caret).setRectangularSelectionToDotAndMark();
+                            RectangularSelectionCaretAccessor.get().setRectangularSelectionToDotAndMark((EditorCaret)caret);
                         }
                         if (changed[0]) {
                             return;
@@ -2016,7 +2017,7 @@ public class BaseKit extends DefaultEditorKit {
                                                         if (!RectangularSelectionUtils.removeSelection(target)) {
                                                             RectangularSelectionUtils.removeChar(target, nextChar);
                                                         }
-                                                        editorCaret.setRectangularSelectionToDotAndMark();
+                                                        RectangularSelectionCaretAccessor.get().setRectangularSelectionToDotAndMark((EditorCaret)caret);
                                                     } else {
                                                         doc.remove(Math.min(dot, mark), Math.abs(dot - mark));
                                                     }
@@ -2090,7 +2091,7 @@ public class BaseKit extends DefaultEditorKit {
                                         RectangularSelectionUtils.removeChar(target, nextChar);
                                     }
                                     if (caret instanceof EditorCaret) {
-                                        ((EditorCaret)caret).setRectangularSelectionToDotAndMark();
+                                        RectangularSelectionCaretAccessor.get().setRectangularSelectionToDotAndMark((EditorCaret)caret);
                                     }
                                 } else {
                                     doc.remove(Math.min(dot, mark), Math.abs(dot - mark));
@@ -2529,7 +2530,7 @@ public class BaseKit extends DefaultEditorKit {
                                         if (select) {
                                             context.moveDot(caretInfo, dotPos);
                                             if (RectangularSelectionUtils.isRectangularSelection(target)) {
-                                                editorCaret.updateRectangularUpDownSelection();
+                                                RectangularSelectionCaretAccessor.get().updateRectangularUpDownSelection(editorCaret);
                                             }
                                         } else {
                                             context.setDot(caretInfo, dotPos);
@@ -2563,7 +2564,7 @@ public class BaseKit extends DefaultEditorKit {
                             caret.moveDot(dot);
                             if (RectangularSelectionUtils.isRectangularSelection(target)) {
                                 if (caret instanceof EditorCaret) {
-                                    ((EditorCaret) caret).updateRectangularUpDownSelection();
+                                    RectangularSelectionCaretAccessor.get().updateRectangularUpDownSelection((EditorCaret)caret);
                                 }
                             }
                         } else {
@@ -2621,7 +2622,7 @@ public class BaseKit extends DefaultEditorKit {
                                         if (select) {
                                             context.moveDot(caretInfo, dotPos);
                                             if (RectangularSelectionUtils.isRectangularSelection(target)) {
-                                                editorCaret.updateRectangularUpDownSelection();
+                                                RectangularSelectionCaretAccessor.get().updateRectangularUpDownSelection(editorCaret);
                                             }
                                         } else {
                                             context.setDot(caretInfo, dotPos);
@@ -2655,7 +2656,7 @@ public class BaseKit extends DefaultEditorKit {
                             caret.moveDot(dot);
                             if (RectangularSelectionUtils.isRectangularSelection(target)) {
                                 if (caret instanceof EditorCaret) {
-                                    ((EditorCaret)caret).updateRectangularUpDownSelection();
+                                    RectangularSelectionCaretAccessor.get().updateRectangularUpDownSelection((EditorCaret)caret);
                                 }
                             }
                         } else {
@@ -2917,7 +2918,7 @@ public class BaseKit extends DefaultEditorKit {
                                     Position dotPos = doc.createPosition(dot);
                                     if (select) {
                                         if (RectangularSelectionUtils.isRectangularSelection(target)) {
-                                            editorCaret.extendRectangularSelection(true, false);
+                                            RectangularSelectionCaretAccessor.get().extendRectangularSelection(editorCaret, true, false);
                                         } else {
                                             context.moveDot(caretInfo, dotPos);
                                         }
@@ -2951,7 +2952,7 @@ public class BaseKit extends DefaultEditorKit {
                               pos, Position.Bias.Forward, SwingConstants.EAST, null);
                     if (select) {
                         if (caret instanceof EditorCaret && RectangularSelectionUtils.isRectangularSelection(target)) {
-                            ((EditorCaret)caret).extendRectangularSelection(true, false);
+                            RectangularSelectionCaretAccessor.get().extendRectangularSelection((EditorCaret)caret, true, false);
                         } else {
                             caret.moveDot(dot);
                         }
@@ -3230,7 +3231,7 @@ public class BaseKit extends DefaultEditorKit {
                                 pos, Position.Bias.Backward, SwingConstants.WEST, null);
                         if (select) {
                             if (caret instanceof EditorCaret && RectangularSelectionUtils.isRectangularSelection(target)) {
-                                ((EditorCaret) caret).extendRectangularSelection(false, false);
+                                RectangularSelectionCaretAccessor.get().extendRectangularSelection((EditorCaret)caret, false, false);
                             } else {
                                 caret.moveDot(dot);
                             }
@@ -3610,7 +3611,7 @@ public class BaseKit extends DefaultEditorKit {
                     boolean select = selectionNextWordAction.equals(getValue(Action.NAME));
                     if (select) {
                         if (caret instanceof EditorCaret && RectangularSelectionUtils.isRectangularSelection(target)) {
-                            ((EditorCaret) caret).extendRectangularSelection(true, true);
+                            RectangularSelectionCaretAccessor.get().extendRectangularSelection((EditorCaret)caret, true, true);
                         } else {
                             caret.moveDot(newDotOffset);
                         }
@@ -3652,7 +3653,7 @@ public class BaseKit extends DefaultEditorKit {
                     boolean select = selectionPreviousWordAction.equals(getValue(Action.NAME));
                     if (select) {
                         if (caret instanceof EditorCaret && RectangularSelectionUtils.isRectangularSelection(target)) {
-                            ((EditorCaret) caret).extendRectangularSelection(false, true);
+                            RectangularSelectionCaretAccessor.get().extendRectangularSelection((EditorCaret)caret, false, true);
                         } else {
                             caret.moveDot(newDotOffset);
                         }
