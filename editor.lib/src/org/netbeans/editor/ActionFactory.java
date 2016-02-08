@@ -865,7 +865,6 @@ public class ActionFactory {
     /** Switch to overwrite mode or back to insert mode
      * @deprecated Replaced by ToggleTypingModeAction in editor.actions module
      */
-    @EditorActionRegistration(name = BaseKit.toggleTypingModeAction)
     public static class ToggleTypingModeAction extends LocalBaseAction {
 
         static final long serialVersionUID =-2431132686507799723L;
