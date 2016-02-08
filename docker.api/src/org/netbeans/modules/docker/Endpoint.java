@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,68 +37,62 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.api;
+package org.netbeans.modules.docker;
 
+import com.etsy.net.UnixDomainSocketClient;
 import java.io.Closeable;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.docker.Endpoint;
-import org.netbeans.modules.docker.StreamItem;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
 
 /**
  *
  * @author Petr Hejl
  */
-public final class ActionChunkedResult implements Closeable {
+public interface Endpoint extends Closeable {
 
-    private final Endpoint s;
+    InputStream getInputStream() throws IOException;
 
-    private final StreamItem.Fetcher fetcher;
+    OutputStream getOutputStream() throws IOException;
 
-    private final Charset charset;
+    public static Endpoint forSocket(final Socket s) {
+        return new Endpoint() {
+            @Override
+            public InputStream getInputStream() throws IOException {
+                return s.getInputStream();
+            }
 
-    ActionChunkedResult(Endpoint s, StreamItem.Fetcher fetcher, Charset charset) {
-        this.s = s;
-        this.fetcher = fetcher;
-        this.charset = charset;
+            @Override
+            public OutputStream getOutputStream() throws IOException {
+                return s.getOutputStream();
+            }
+
+            @Override
+            public void close() throws IOException {
+                s.close();
+            }
+        };
     }
 
-    @CheckForNull
-    public Chunk fetchChunk() {
-        StreamItem r = fetcher.fetch();
-        if (r == null) {
-            return null;
-        }
-        ByteBuffer buffer = r.getData();
-        return new Chunk(new String(buffer.array(), buffer.position(), buffer.limit(), charset), r.isError());
-    }
+    public static Endpoint forDomainSocket(final UnixDomainSocketClient s) {
+        return new Endpoint() {
+            @Override
+            public InputStream getInputStream() throws IOException {
+                return s.getInputStream();
+            }
 
-    @Override
-    public void close() throws IOException {
-        s.close();
-    }
+            @Override
+            public OutputStream getOutputStream() throws IOException {
+                return s.getOutputStream();
+            }
 
-    public static class Chunk {
-
-        private final String data;
-
-        private final boolean error;
-
-        private Chunk(String data, boolean error) {
-            this.data = data;
-            this.error = error;
-        }
-
-        public String getData() {
-            return data;
-        }
-
-        public boolean isError() {
-            return error;
-        }
+            @Override
+            public void close() throws IOException {
+                s.close();
+            }
+        };
     }
 }

@@ -43,7 +43,6 @@ package org.netbeans.modules.docker;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -76,7 +75,7 @@ public class DockerEventBus implements Closeable, DockerEvent.Listener, Connecti
 
     private final List<DockerEvent.Listener> containerListeners = new ArrayList<>();
 
-    private Socket socket;
+    private Endpoint endpoint;
 
     private DockerEvent lastEvent;
 
@@ -173,10 +172,10 @@ public class DockerEventBus implements Closeable, DockerEvent.Listener, Connecti
     }
 
     @Override
-    public void onConnect(Socket s) {
+    public void onConnect(Endpoint e) {
         List<DockerInstance.ConnectionListener> toFire;
         synchronized (this) {
-            this.socket = s;
+            this.endpoint = e;
             toFire = new ArrayList<>(connectionListeners);
         }
         for (DockerInstance.ConnectionListener l : toFire) {
@@ -258,11 +257,11 @@ public class DockerEventBus implements Closeable, DockerEvent.Listener, Connecti
 
     private void stop() {
         // FIXME close the socket to stop waiting for events
-        Socket current;
+        Endpoint current;
         synchronized (this) {
             stop = true;
-            current = socket;
-            socket = null;
+            current = endpoint;
+            endpoint = null;
         }
         try {
             if (current != null) {
