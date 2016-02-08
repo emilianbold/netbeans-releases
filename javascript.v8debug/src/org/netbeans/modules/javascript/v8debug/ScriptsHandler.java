@@ -137,14 +137,18 @@ public class ScriptsHandler {
             this.numPrefixes = 0;
         }
         if (!localPaths.isEmpty()) {
-            this.localRoots = new FileObject[localPaths.size()];
+            FileObject[] lroots = new FileObject[localPaths.size()];
             int i = 0;
             for (String localPath : localPaths) {
-                FileObject localRoot = FileUtil.toFileObject(new File(localPath));
+                FileObject localRoot = FileUtil.toFileObject(FileUtil.normalizeFile(new File(localPath)));
                 if (localRoot != null) {
-                    this.localRoots[i++] = localRoot;
+                    lroots[i++] = localRoot;
                 }
             }
+            if (i < localPaths.size()) {
+                lroots = Arrays.copyOf(lroots, i);
+            }
+            this.localRoots = lroots;
             if (USE_SOURCE_MAPS) {
                 this.smt = SourceMapsScanner.getInstance().scan(this.localRoots);
             } else {
