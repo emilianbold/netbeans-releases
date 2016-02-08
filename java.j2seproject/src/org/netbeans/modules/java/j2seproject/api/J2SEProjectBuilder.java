@@ -539,6 +539,12 @@ public class J2SEProjectBuilder {
                 },
                 false);
         ep.setProperty(J2SEProjectProperties.JAVAC_EXTERNAL_VM, "true");    //NOI18N
+        //Todo: Fixme - disable CoS on modular JDK as CoS does not support it yet
+        final SpecificationVersion jdk9 = new SpecificationVersion("9");     //NOI18N
+        if (jdk9.compareTo(sourceLevel) <= 0) {
+            ep.setProperty("compile.on.save.unsupported.jigsaw",    //NOI18N
+                    Boolean.TRUE.toString());
+        }
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE, "true"); // NOI18N
