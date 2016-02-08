@@ -41,22 +41,19 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import jdk.nashorn.internal.ir.FunctionNode;
-import jdk.nashorn.internal.ir.IdentNode;
-import jdk.nashorn.internal.ir.LiteralNode;
-import jdk.nashorn.internal.ir.ObjectNode;
-import jdk.nashorn.internal.ir.PropertyNode;
-import jdk.nashorn.internal.parser.Token;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.FunctionNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.IdentNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.LiteralNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.ObjectNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.PropertyNode;
+import com.oracle.truffle.js.parser.nashorn.internal.parser.Token;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsModifier;
-import static org.netbeans.modules.javascript2.editor.doc.spi.JsModifier.PRIVATE;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;

@@ -1,0 +1,10 @@
+<FunctionNode name='export-from-default.js' kind='SCRIPT' start='0' end='29'>
+  <isProgram/>
+  <!-- FunctionNode Parameters -->
+  <!-- FunctionNode Body -->
+  <Block start='0' end='28'>
+    <isFunctionBody/>
+    <isSynthetic/>
+    <!-- Block Statements -->
+  </Block>
+</FunctionNode>

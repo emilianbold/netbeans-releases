@@ -1,0 +1,12 @@
+<FunctionNode name='invalid_var_await.js' kind='SCRIPT' start='0' end='18'>
+  <isProgram/>
+  <!-- FunctionNode Parameters -->
+  <!-- FunctionNode Body -->
+  <Block start='0' end='17'>
+    <isFunctionBody/>
+    <isSynthetic/>
+    <!-- Block Statements -->
+    <VarNode name='await' start='11' end='16'>
+    </VarNode>
+  </Block>
+</FunctionNode>
