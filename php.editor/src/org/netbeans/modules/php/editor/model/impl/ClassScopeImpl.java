@@ -75,6 +75,7 @@ import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.ClassInstanceCreationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
@@ -108,6 +109,27 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
 
     //new contructors
     ClassScopeImpl(Scope inScope, ClassDeclarationInfo nodeInfo, boolean isDeprecated) {
+        super(inScope, nodeInfo, isDeprecated);
+        Expression superId = nodeInfo.getSuperClass();
+        if (superId != null) {
+            NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(inScope);
+            QualifiedName superClassName = QualifiedName.create(superId);
+            if (namespaceScope == null) {
+                this.possibleFQSuperClassNames = Collections.emptyList();
+            } else {
+                this.possibleFQSuperClassNames = VariousUtils.getPossibleFQN(superClassName, nodeInfo.getSuperClass().getStartOffset(), namespaceScope);
+            }
+            if (superClassName != null) {
+                this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(superClassName.toString());
+            }
+        } else {
+            this.possibleFQSuperClassNames = Collections.emptyList();
+            this.superClass = Union2.<String, List<ClassScopeImpl>>createFirst(null);
+        }
+        usedTraits = nodeInfo.getUsedTraits();
+    }
+
+    ClassScopeImpl(Scope inScope, ClassInstanceCreationInfo nodeInfo, boolean isDeprecated) {
         super(inScope, nodeInfo, isDeprecated);
         Expression superId = nodeInfo.getSuperClass();
         if (superId != null) {
@@ -371,10 +393,20 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         QualifiedName superClassName = getSuperClassName();
         if (superClassName != null) {
             final String name = superClassName.getName();
+            // anonymous classes can be "nested" so find the nearest namespace
+            NamespaceScope namespaceScope = null;
+            Scope scope = getInScope();
+            for (;;) {
+                if (scope instanceof NamespaceScope) {
+                    namespaceScope = (NamespaceScope) scope;
+                    break;
+                }
+                scope = scope.getInScope();
+            }
             final String namespaceName = VariousUtils.getFullyQualifiedName(
                     superClassName,
                     getOffset(),
-                    (NamespaceScope) getInScope()).getNamespaceName();
+                    namespaceScope).getNamespaceName();
             indexDocument.addPair(PHPIndexer.FIELD_SUPER_CLASS, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
         }
         Set<QualifiedName> superInterfaces = getSuperInterfaces();

@@ -236,6 +236,9 @@ public class ASTNodeInfo<T extends ASTNode> {
     }
 
     public static ASTNodeInfo<ClassInstanceCreation> create(ClassInstanceCreation instanceCreation) {
+        if (instanceCreation.isAnonymous()) {
+            return ClassInstanceCreationInfo.create(instanceCreation);
+        }
         return new ASTNodeInfo<>(instanceCreation);
     }
 

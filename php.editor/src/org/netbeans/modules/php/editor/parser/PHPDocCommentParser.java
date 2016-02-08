@@ -91,7 +91,7 @@ public class PHPDocCommentParser {
 
     }
 
-    private static Pattern pattern = Pattern.compile("[\r\n][ \\t]*[*]?[ \\t]*");
+    private static final Pattern pattern = Pattern.compile("[\r\n][ \\t]*[*]?[ \\t]*"); // NOI18N
 
     /**
      * Tags that define something of a type
@@ -112,6 +112,7 @@ public class PHPDocCommentParser {
      *
      * @param startOffset this is offset of the comment in the document. It's used
      * for creating ASTNodes.
+     * @param endOffset
      * @param comment
      * @return
      */
@@ -220,7 +221,8 @@ public class PHPDocCommentParser {
     private PHPDocTag createTag(int start, int end, AnnotationParsedLine type, String description, String originalComment, int originalCommentStart) {
         final Map<OffsetRange, String> types = type.getTypes();
         if (types.isEmpty()) {
-            List<PHPDocTypeNode> docTypes = findTypes(description, start, originalComment, originalCommentStart);
+            boolean isReturnTag = type.equals(PHPDocTag.Type.RETURN);
+            List<PHPDocTypeNode> docTypes = findTypes(description, start, originalComment, originalCommentStart, isReturnTag);
             if (PHP_DOC_VAR_TYPE_TAGS.contains(type)) {
                 String variable = getVaribleName(description);
                 PHPDocNode varibaleNode = null;
@@ -261,9 +263,13 @@ public class PHPDocCommentParser {
     }
 
     private List<PHPDocTypeNode> findTypes(String description, int startDescription, String originalComment, int originalCommentStart) {
+        return findTypes(description, startDescription, originalComment, originalCommentStart, false);
+    }
+
+    private List<PHPDocTypeNode> findTypes(String description, int startDescription, String originalComment, int originalCommentStart, boolean isReturnTag) {
         List<PHPDocTypeNode> result = new ArrayList<>();
 
-        for (String stype : getTypes(description)) {
+        for (String stype : getTypes(description, isReturnTag)) {
             stype = removeHTMLTags(stype);
             int startDocNode = findStartOfDocNode(originalComment, originalCommentStart, stype, startDescription);
             int index = stype.indexOf("::");    //NOI18N
@@ -286,10 +292,10 @@ public class PHPDocCommentParser {
         return result;
     }
 
-    private List<String> getTypes(String description) {
+    private List<String> getTypes(String description, boolean isReturnTag) {
         String[] tokens = description.trim().split("[ ]+"); //NOI18N
         ArrayList<String> types = new ArrayList<>();
-        if (tokens.length > 0 && !tokens[0].startsWith("$")) { //NOI18N
+        if (tokens.length > 0 && (isReturnTag || !tokens[0].startsWith("$"))) { //NOI18N
             if (tokens[0].indexOf('|') > -1) {
                 String[] ttokens = tokens[0].split("[|]"); //NOI18N
                 for (String ttoken : ttokens) {

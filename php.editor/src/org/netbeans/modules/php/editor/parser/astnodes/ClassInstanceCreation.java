@@ -42,13 +42,11 @@
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.php.api.util.StringUtils;
 
 /**
  * Represents a class creation. It can be just calling ctor
@@ -66,13 +64,13 @@ import org.netbeans.modules.php.api.util.StringUtils;
 public class ClassInstanceCreation extends Expression {
 
     // common
-    private List<Expression> ctorParams = new ArrayList<>();
+    private final List<Expression> ctorParams = new ArrayList<>();
     // ctor
     private ClassName className;
     // anonymous
     private final int classStartOffset;
     private Expression superClass;
-    private List<Expression> interfaces = new ArrayList<>();
+    private final List<Expression> interfaces = new ArrayList<>();
     private Block body;
 
 
@@ -92,6 +90,7 @@ public class ClassInstanceCreation extends Expression {
             @NullAllowed List<Expression> interfaces, @NonNull Block body) {
         super(start, end);
         assert classStartOffset > -1 : classStartOffset;
+        assert body != null;
         this.classStartOffset = classStartOffset;
         if (ctorParams != null) {
             this.ctorParams.addAll(ctorParams);
@@ -114,14 +113,14 @@ public class ClassInstanceCreation extends Expression {
 
     /**
      * Class name of this instance creation node.
+     * <p>
+     * Syntetic name for anonymous class (<tt>Anonymous#&lt;offset></tt>).
      *
      * @return class name
      */
-    @CheckForNull
     public ClassName getClassName() {
-        // XXX
         if (isAnonymous()) {
-            return new ClassName(0, 0, new Identifier(0, 0, "???"));
+            return new ClassName(classStartOffset, classStartOffset, new Identifier(0, 0, "Anonymous#" + classStartOffset)); // NOI18N
         }
         return className;
     }

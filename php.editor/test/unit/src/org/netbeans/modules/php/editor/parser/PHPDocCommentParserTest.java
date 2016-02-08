@@ -271,6 +271,12 @@ public class PHPDocCommentParserTest extends PHPTestBase {
         perform(comment, "ReturnType03");
     }
 
+    public void testIssue257869() throws Exception {
+        String comment = " * Function XYZ.\n" +
+                " * @return $this test documentation\n";
+        perform(comment, "testIssue257869");
+    }
+
     public void testParamReturn01() throws Exception {
         String comment =
                 "   * Retrieves the entry at a specific index.\n" +

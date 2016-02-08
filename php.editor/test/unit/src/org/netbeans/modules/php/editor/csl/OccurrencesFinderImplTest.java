@@ -1319,13 +1319,11 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
     }
 
     public void testGroupUses01_14() throws Exception {
-        // unused
-        checkOccurrences(getTestPath(), "class Cl^sAB implements Iface {", true);
+        checkOccurrences(getTestPath(), "class Cl^sAB implements Iface {", true); // unused
     }
 
     public void testGroupUses01_15() throws Exception {
-        // unused
-        checkOccurrences(getTestPath(), "class MyC^ls implements Iface {", true);
+        checkOccurrences(getTestPath(), "class MyC^ls implements Iface {", true); // unused
     }
 
     @Override

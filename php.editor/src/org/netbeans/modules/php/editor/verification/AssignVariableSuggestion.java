@@ -145,6 +145,7 @@ public class AssignVariableSuggestion extends SuggestionRule {
                 String guessName = null;
                 if (expression instanceof ClassInstanceCreation) {
                     ClassInstanceCreation instanceCreation = (ClassInstanceCreation) expression;
+                    // XXX anonymous class
                     guessName = CodeUtils.extractClassName(instanceCreation.getClassName());
                 } else if (expression instanceof MethodInvocation) {
                     MethodInvocation methodInvocation = (MethodInvocation) expression;

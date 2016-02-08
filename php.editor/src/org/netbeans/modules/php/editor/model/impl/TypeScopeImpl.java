@@ -70,6 +70,7 @@ import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.ClassInstanceCreationInfo;
 import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.TraitDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
@@ -86,6 +87,16 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
     private Set<? super TypeScope> subRecursionDetection = new HashSet<>();
 
     TypeScopeImpl(Scope inScope, ClassDeclarationInfo nodeInfo, boolean isDeprecated) {
+        super(inScope, nodeInfo, nodeInfo.getAccessModifiers(), nodeInfo.getOriginalNode().getBody(), isDeprecated);
+        List<? extends Expression> interfaces = nodeInfo.getInterfaces();
+        for (Expression identifier : interfaces) {
+            String ifaceName = CodeUtils.extractQualifiedName(identifier);
+            ifaces.put(ifaceName, null);
+            fqIfaces.add(VariousUtils.getFullyQualifiedName(QualifiedName.create(ifaceName), nodeInfo.getOriginalNode().getStartOffset(), inScope));
+        }
+    }
+
+    TypeScopeImpl(Scope inScope, ClassInstanceCreationInfo nodeInfo, boolean isDeprecated) {
         super(inScope, nodeInfo, nodeInfo.getAccessModifiers(), nodeInfo.getOriginalNode().getBody(), isDeprecated);
         List<? extends Expression> interfaces = nodeInfo.getInterfaces();
         for (Expression identifier : interfaces) {
