@@ -642,6 +642,7 @@ implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
      * Inserts all elements of the given array at the end of this list.
      *
      * @param elements array of elements to insert.
+     * @return <tt>true</tt> if this list changed as a result of the call.
      * @since 1.64
      */
     public boolean addArray(Object[] elements) {
@@ -654,6 +655,7 @@ implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
      *
      * @param index index at which to insert first element from the array.
      * @param elements array of elements to insert.
+     * @return <tt>true</tt> if this list changed as a result of the call.
      */
     public boolean addArray(int index, Object[] elements) {
         return addArray(index, elements, 0, elements.length);
@@ -667,6 +669,7 @@ implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
      * @param elements array of elements from which to insert elements.
      * @param off offset in the elements pointing to first element to copy.
      * @param len number of elements to copy from the elements array.
+     * @return <tt>true</tt> if this list changed as a result of the call.
      */
     public boolean addArray(int index, Object[] elements, int off, int len) {
         int size = size();
