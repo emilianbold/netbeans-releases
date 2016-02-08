@@ -58,9 +58,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.docker.DockerEventBus;
-import org.netbeans.modules.docker.DockerUtils;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.BaseUtilities;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbPreferences;
 
