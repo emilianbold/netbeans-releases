@@ -1,0 +1,149 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 2016 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+particular file as subject to the "Classpath" exception as provided
+by Oracle in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+
+Contributor(s):
+
+Portions Copyrighted 2016 Sun Microsystems, Inc.
+-->
+
+<html>
+  <head>
+    <title>org.netbeans.api.editor.caret</title>
+  </head>
+  <body>
+
+  <p>
+  The Editor Caret API opens up the editor to give information about it's carets
+  and to manipulate them.
+  </p>
+  
+  <h3>Key parts of the API</h3>
+  
+  <p>
+  The whole API is organized around the
+  <code><a href="@org-netbeans-modules-editor-lib2@/org/netbeans/api/editor/caret/EditorCaret.html">EditorCaret</a></code>
+  class, an implementation of the <code>javax.swing.text.Caret</code> managing
+  all the carets in a single document. Information about carets maintained by
+  <code>EditorCaret</code> is stored in the immutable class
+  <code><a href="@org-netbeans-modules-editor-lib2@/org/netbeans/api/editor/caret/CaretInfo.html">CaretInfo</a></code>.
+  Once a caret gets mutated its corresponding caret info becomes obsolete
+  and new caret info instance gets created lazily.
+  <code><a href="@org-netbeans-modules-editor-lib2@/org/netbeans/api/editor/caret/EditorCaretListener.html">EditorCaretListener</a></code>
+  can be registered to an <code>EditorCaret</code> to be informed about caret
+  addition/removal or movement with an
+  <code><a href="@org-netbeans-modules-editor-lib2@/org/netbeans/api/editor/caret/EditorCaretEvent.html">EditorCaretEvent</a></code>.
+  </p>
+  
+  <p>
+  The <code>EditorCaret</code> mutates it's carets in a single transaction. The
+  functional interface 
+  <code><a href="@org-netbeans-modules-editor-lib2@/org/netbeans/api/editor/caret/CaretMoveHandler.html">CaretMoveHandler</a></code>
+  uses the 
+  <code><a href="@org-netbeans-modules-editor-lib2@/org/netbeans/api/editor/caret/CaretMoveContext.html">CaretMoveContext</a></code>
+  to manipulate carets. The following code shows how all carets are moved to the
+  end of the word they are currently on.
+  
+  <pre><code>
+    editorCaret.moveCarets((CaretMoveContext context) -> {
+        for (CaretInfo ci : context.getOriginalCarets()) {
+            Position pos = target.getDocument().createPosition(Utilities.getWordEnd(target, ci.getDot()));
+            context.setDot(ci, pos);
+        }
+    });
+  </code>
+  </pre>
+  </p>
+
+  <h3>Locking and <code>Document</code> changes</h3>
+  
+  <p>
+  The basics of the locking and events model of Swing documents is
+  described in the javadoc of the
+  <a href="http://java.sun.com/j2se/1.5.0/docs/api/javax/swing/text/AbstractDocument.html">javax.swing.text.AbstractDocument</a>
+  class. Netbeans documents use the same patterns and so does the Caret API,
+  because of its tight relation to documents. The fundamentals of the Swing documents
+  locking model are that any changes to a document are done under the
+  document's write lock, the document's listeners are notified synchronously on the
+  mutating thread and have full read access to the document, but can't modify it.
+  </p>
+  
+  <ul>
+    <li>
+    Any calls from the infrastructure to <code>EditorCaret</code> to query or
+    mutate its carets, should be called with document's read-lock acquired which
+    will guarantee stability of <code>CaretInfo#getDot()</code> and
+    <code>CaretInfo#getMark()</code> and prevent caret merging as a possible
+    effect of document modifications.
+    </li>
+    <li>
+    When <code>EditorCaret</code> needs to notify its listeners that some
+    of its carets have changed, all the events have to be fired under the
+    layer's document's read lock. Obviously, the listeners are not allowed to
+    modify the document from the event notification methods.
+    </li>
+  </ul>
+  
+  <p>
+  The Caret API does not use any special threads and any processing it
+  does is always done on the caller's thread. This means that the above described
+  constraints hardly cause any limitation for practical use.
+  </p>
+  
+  <p>
+  The Caret API is generally thread-safe meaning that it can be used
+  simultaneously from multiple threads if not stated otherwise. This doesn't
+  change in any way the rule of acquiring a read lock before calling the API.
+  Swing documents generally allow access for multiple readers that can run
+  concurrently.
+  </p>
+  
+  <h3><a name="compatibilty">Backwards compatibility</a></h3>
+  <p>
+  As a technical limitation, <code>EditorCaret</code> has to implement <code>Caret</code>
+  to be able to work with Swings Text API. The <code>Caret</code> interface is not
+  aware of multiple carets and any call to it's method will work on the last added
+  caret. Manipulating the caret using <code>setDot(int)</code> or <code>moveDot(int)</code>
+  will retain only the last added caret and move it accordingly.
+  </p>
+  
+  <h3><a name="usecases">Use cases</a></h3>
+  
+  <p style="color:red">TBD</p>
+  
+  </body>
+</html>
