@@ -1106,7 +1106,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             if (previousProviders != null) {
                 add = new HashSet<>(now);
                 add.removeAll(previousProviders);
-                HashSet<AnnotationProvider> toRemove = new HashSet<>(previousProviders);
+                HashSet<AnnotationProvider> toRemove = new HashSet<AnnotationProvider>(previousProviders);
                 toRemove.removeAll(now);
                 for (AnnotationProvider ap : toRemove) {
                     ap.removeFileStatusListener(this);

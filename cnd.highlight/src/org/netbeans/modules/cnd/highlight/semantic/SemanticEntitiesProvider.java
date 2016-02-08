@@ -478,12 +478,11 @@ public final class SemanticEntitiesProvider {
     }
     
     private SemanticEntitiesProvider() {
-        Collection<? extends SemanticEntity> lookupAll = Lookup.getDefault().lookupAll(SemanticEntity.class);
         if (HighlighterBase.MINIMAL) { // for QEs who want to save performance on UI tests
             list = new ArrayList<>();
-            list.add(lookupAll.iterator().next());
+            list.add(Lookup.getDefault().lookup(SemanticEntity.class));
         } else {
-            list = new ArrayList<>(Lookup.getDefault().lookupAll(SemanticEntity.class));
+            list = new ArrayList<SemanticEntity>(Lookup.getDefault().lookupAll(SemanticEntity.class));
         } 
     }
     

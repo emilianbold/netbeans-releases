@@ -260,7 +260,7 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
     public static void applyHostSetup(ToolsCacheManager cacheManager, HostSetupWorker.Result createHostData) {
         ServerRecord newServerRecord = CreateHostWizardIterator.finishHostSetup(createHostData);
         if (newServerRecord != null) {
-            List<ServerRecord> hosts = new ArrayList<>(ServerList.getRecords());
+            List<ServerRecord> hosts = new ArrayList<ServerRecord>(ServerList.getRecords());
             if (!hosts.contains(newServerRecord)) {
                 hosts.add(newServerRecord);
                 cacheManager.setHosts(hosts);
