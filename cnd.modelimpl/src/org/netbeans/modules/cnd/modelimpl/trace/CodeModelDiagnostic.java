@@ -430,7 +430,7 @@ public final class CodeModelDiagnostic {
 
         @Override
         public void dumpInfo(Lookup context, PrintWriter printOut) throws IOException{
-            Collection<CsmProject> projects = new ArrayList<>(context.lookupAll(CsmProject.class));
+            Collection<CsmProject> projects = new ArrayList<CsmProject>(context.lookupAll(CsmProject.class));
             if (projects.isEmpty()) {
                 CsmFile file = context.lookup(CsmFile.class);
                 if (file != null) {
@@ -460,7 +460,7 @@ public final class CodeModelDiagnostic {
 
         @Override
         public void dumpInfo(Lookup context, PrintWriter printOut) throws IOException {
-            Collection<CsmProject> projects = new ArrayList<>(context.lookupAll(CsmProject.class));
+            Collection<CsmProject> projects = new ArrayList<CsmProject>(context.lookupAll(CsmProject.class));
             if (projects.isEmpty()) {
                 CsmFile file = context.lookup(CsmFile.class);
                 if (file != null) {
@@ -492,7 +492,7 @@ public final class CodeModelDiagnostic {
 
         @Override
         public void dumpInfo(Lookup context, PrintWriter printOut) {
-            Collection<CsmProject> projects = new ArrayList<>(context.lookupAll(CsmProject.class));
+            Collection<CsmProject> projects = new ArrayList<CsmProject>(context.lookupAll(CsmProject.class));
             if (projects.isEmpty()) {
                 CsmFile file = context.lookup(CsmFile.class);
                 if (file != null) {

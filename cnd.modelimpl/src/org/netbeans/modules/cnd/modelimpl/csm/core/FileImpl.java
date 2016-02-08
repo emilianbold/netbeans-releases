@@ -1718,7 +1718,7 @@ public final class FileImpl implements CsmFile,
     @Override
     public Collection<CsmErrorDirective> getErrors() {
         checkNotInParsingThreadImpl();
-        return new ArrayList<>(currentFileContent.getErrors());
+        return new ArrayList<CsmErrorDirective>(currentFileContent.getErrors());
     }
 
     public Iterator<CsmInclude> getIncludes(CsmFilter filter) {

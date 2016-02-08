@@ -212,7 +212,7 @@ public final class HostListRootNode extends AbstractNode {
             ToolsCacheManager cacheManager = ToolsCacheManager.createInstance(true);
             ServerRecord newServerRecord = CreateHostWizardIterator.invokeMe(cacheManager);
             if (newServerRecord != null) {
-                List<ServerRecord> hosts = new ArrayList<>(ServerList.getRecords());
+                List<ServerRecord> hosts = new ArrayList<ServerRecord>(ServerList.getRecords());
                 if (!hosts.contains(newServerRecord)) {
                     hosts.add(newServerRecord);
                     cacheManager.setHosts(hosts);
