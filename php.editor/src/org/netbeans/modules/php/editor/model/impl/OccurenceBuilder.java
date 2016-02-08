@@ -691,7 +691,6 @@ class OccurenceBuilder {
                             : elementInfo.getQualifiedName();
                     final Set<TypeElement> types = index.getTypes(NameKind.exact(qualifiedName));
                     if (elementInfo.setDeclarations(types)) {
-                        buildClassInstanceCreation(elementInfo, fileScope, cachedOccurences);
                         buildClassNames(elementInfo, fileScope, cachedOccurences);
                         buildClassIDs(elementInfo, fileScope, cachedOccurences);
                         buildClassDeclarations(elementInfo, fileScope, cachedOccurences);
