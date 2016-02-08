@@ -103,7 +103,6 @@ import org.netbeans.modules.docker.Endpoint;
 import org.netbeans.modules.docker.StreamResult;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
-import org.openide.util.RequestProcessor;
 import org.openide.util.io.NullInputStream;
 import org.openide.util.io.NullOutputStream;
 
@@ -134,7 +133,7 @@ public class DockerAction {
             String userhome = System.getProperty("netbeans.user");
             System.setProperty("juds.folder.preferred", userhome);
         }
-        
+
         DockerActionAccessor.setDefault(new DockerActionAccessor() {
             @Override
             public void events(DockerAction action, Long since, DockerEvent.Listener listener, ConnectionListener connectionListener) throws DockerException {
@@ -146,8 +145,6 @@ public class DockerAction {
         Collections.addAll(REMOVE_CONTAINER_CODES, HttpURLConnection.HTTP_NO_CONTENT, HttpURLConnection.HTTP_NOT_FOUND);
         Collections.addAll(REMOVE_IMAGE_CODES, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_NOT_FOUND);
     }
-
-    private final RequestProcessor requestProcessor = new RequestProcessor(DockerAction.class);
 
     private final DockerInstance instance;
 
@@ -165,8 +162,8 @@ public class DockerAction {
 
     public List<DockerImage> getImages() {
         try {
-            JSONArray value = (JSONArray) doGetRequest(instance.getUrl(),
-                    "/images/json", Collections.singleton(HttpURLConnection.HTTP_OK));
+            JSONArray value = (JSONArray) doGetRequest("/images/json",
+                    Collections.singleton(HttpURLConnection.HTTP_OK));
             List<DockerImage> ret = new ArrayList<>(value.size());
             for (Object o : value) {
                 JSONObject json  = (JSONObject) o;
@@ -186,8 +183,8 @@ public class DockerAction {
 
     public List<DockerContainer> getContainers() {
         try {
-            JSONArray value = (JSONArray) doGetRequest(instance.getUrl(),
-                    "/containers/json?all=1", Collections.singleton(HttpURLConnection.HTTP_OK));
+            JSONArray value = (JSONArray) doGetRequest("/containers/json?all=1",
+                    Collections.singleton(HttpURLConnection.HTTP_OK));
             List<DockerContainer> ret = new ArrayList<>(value.size());
             for (Object o : value) {
                 JSONObject json = (JSONObject) o;
@@ -215,8 +212,9 @@ public class DockerAction {
         }
 
         try {
-            JSONArray value = (JSONArray) doGetRequest(instance.getUrl(),
-                    "/images/search?term=" + HttpUtils.encodeParameter(searchTerm), Collections.singleton(HttpURLConnection.HTTP_OK));
+            JSONArray value = (JSONArray) doGetRequest(
+                    "/images/search?term=" + HttpUtils.encodeParameter(searchTerm),
+                    Collections.singleton(HttpURLConnection.HTTP_OK));
             List<DockerRegistryImage> ret = new ArrayList<>(value.size());
             for (Object o : value) {
                 JSONObject json = (JSONObject) o;
@@ -261,7 +259,7 @@ public class DockerAction {
                 action.append("&pause=0");
             }
 
-            JSONObject value = (JSONObject) doPostRequest(instance.getUrl(), action.toString(),
+            JSONObject value = (JSONObject) doPostRequest(action.toString(),
                     true, Collections.singleton(HttpURLConnection.HTTP_CREATED));
 
             String id = (String) value.get("Id");
@@ -287,8 +285,7 @@ public class DockerAction {
         Parameters.notNull("name", name);
 
         try {
-            doPostRequest(instance.getUrl(),
-                    "/containers/" + container.getId() + "/rename?name=" + HttpUtils.encodeParameter(name),
+            doPostRequest("/containers/" + container.getId() + "/rename?name=" + HttpUtils.encodeParameter(name),
                     false, Collections.singleton(HttpURLConnection.HTTP_NO_CONTENT));
 
             long time = System.currentTimeMillis() / 1000;
@@ -320,7 +317,7 @@ public class DockerAction {
             action.append("&tag=").append(tag);
         }
 
-        doPostRequest(instance.getUrl(), action.toString(),
+        doPostRequest(action.toString(),
                 false, Collections.singleton(HttpURLConnection.HTTP_CREATED));
 
         String tagResult = DockerUtils.getTag(repository, tag);
@@ -336,8 +333,8 @@ public class DockerAction {
     }
 
     public DockerContainerDetail getDetail(DockerContainer container) throws DockerException {
-        JSONObject value = (JSONObject) doGetRequest(instance.getUrl(),
-                "/containers/" + container.getId() + "/json", Collections.singleton(HttpURLConnection.HTTP_OK));
+        JSONObject value = (JSONObject) doGetRequest("/containers/" + container.getId() + "/json",
+                Collections.singleton(HttpURLConnection.HTTP_OK));
         String name = (String) value.get("Name");
         DockerContainer.Status status = DockerContainer.Status.STOPPED;
         JSONObject state = (JSONObject) value.get("State");
@@ -364,8 +361,8 @@ public class DockerAction {
     }
 
     public DockerImageDetail getDetail(DockerImage image) throws DockerException {
-        JSONObject value = (JSONObject) doGetRequest(instance.getUrl(),
-                "/images/" + image.getId() + "/json", Collections.singleton(HttpURLConnection.HTTP_OK));
+        JSONObject value = (JSONObject) doGetRequest("/images/" + image.getId() + "/json",
+                Collections.singleton(HttpURLConnection.HTTP_OK));
         List<ExposedPort> ports = new LinkedList<>();
         JSONObject config = (JSONObject) value.get("Config");
         if (config != null) {
@@ -388,7 +385,7 @@ public class DockerAction {
     }
 
     public void start(DockerContainer container) throws DockerException {
-        doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/start", false, START_STOP_CONTAINER_CODES);
+        doPostRequest("/containers/" + container.getId() + "/start", false, START_STOP_CONTAINER_CODES);
 
         if (emitEvents) {
             instance.getEventBus().sendEvent(
@@ -398,7 +395,7 @@ public class DockerAction {
     }
 
     public void stop(DockerContainer container) throws DockerException {
-        doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/stop", false, START_STOP_CONTAINER_CODES);
+        doPostRequest("/containers/" + container.getId() + "/stop", false, START_STOP_CONTAINER_CODES);
 
         if (emitEvents) {
             instance.getEventBus().sendEvent(
@@ -408,7 +405,7 @@ public class DockerAction {
     }
 
     public void pause(DockerContainer container) throws DockerException {
-        doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/pause", false,
+        doPostRequest("/containers/" + container.getId() + "/pause", false,
                 Collections.singleton(HttpURLConnection.HTTP_NO_CONTENT));
 
         if (emitEvents) {
@@ -419,7 +416,7 @@ public class DockerAction {
     }
 
     public void unpause(DockerContainer container) throws DockerException {
-        doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/unpause", false,
+        doPostRequest("/containers/" + container.getId() + "/unpause", false,
                 Collections.singleton(HttpURLConnection.HTTP_NO_CONTENT));
 
         if (emitEvents) {
@@ -431,7 +428,7 @@ public class DockerAction {
 
     public void remove(DockerTag tag) throws DockerException {
         String id = getImage(tag);
-        doDeleteRequest(instance.getUrl(), "/images/" + id, true, REMOVE_IMAGE_CODES);
+        doDeleteRequest("/images/" + id, true, REMOVE_IMAGE_CODES);
 
         // XXX to be precise we should emit DELETE event if we
         // delete the last image, but for our purpose this is enough
@@ -443,7 +440,7 @@ public class DockerAction {
     }
 
     public void remove(DockerContainer container) throws DockerException {
-        doDeleteRequest(instance.getUrl(), "/containers/" + container.getId(), false,
+        doDeleteRequest("/containers/" + container.getId(), false,
                 REMOVE_CONTAINER_CODES);
 
         if (emitEvents) {
@@ -455,7 +452,7 @@ public class DockerAction {
 
     public void resizeTerminal(DockerContainer container, int rows, int columns) throws DockerException {
         // formally there should be restart so changes take place
-        doPostRequest(instance.getUrl(), "/containers/" + container.getId() + "/resize?h=" + rows + "&w=" + columns,
+        doPostRequest("/containers/" + container.getId() + "/resize?h=" + rows + "&w=" + columns,
                 false, Collections.singleton(HttpURLConnection.HTTP_OK));
     }
 
@@ -1061,7 +1058,7 @@ public class DockerAction {
        }
     }
 
-    private Object doGetRequest(@NonNull String url, @NonNull String action, Set<Integer> okCodes) throws DockerException {
+    private Object doGetRequest(@NonNull String action, Set<Integer> okCodes) throws DockerException {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
         try {
@@ -1102,7 +1099,7 @@ public class DockerAction {
         }
     }
 
-    private Object doPostRequest(@NonNull String url, @NonNull String action, boolean output, Set<Integer> okCodes) throws DockerException {
+    private Object doPostRequest(@NonNull String action, boolean output, Set<Integer> okCodes) throws DockerException {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
         try {
@@ -1147,7 +1144,7 @@ public class DockerAction {
         }
     }
 
-    private Object doDeleteRequest(@NonNull String url, @NonNull String action, boolean output, Set<Integer> okCodes) throws DockerException {
+    private Object doDeleteRequest(@NonNull String action, boolean output, Set<Integer> okCodes) throws DockerException {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
 
         try {
