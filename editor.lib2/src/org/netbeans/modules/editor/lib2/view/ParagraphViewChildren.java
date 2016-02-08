@@ -373,7 +373,7 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
 
     /**
      * Layout pView's children according to line wrap setting.
-     * <br/>
+     * <br>
      * This method should ONLY be called by pView which then re-checks children size
      * and possibly updates itself appropriately.
      */

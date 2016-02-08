@@ -48,7 +48,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 
 /**
  * Immutable info about a single caret used in caret API - see {@link EditorCaret}.
- * <br/>
+ * <br>
  * There is one-to-one reference between immutable caret info and mutable {@link CaretItem}.
  * CaretItem is not accessible through the caret API and it's managed privately by EditorCaret.
  * Once the caret item gets mutated its corresponding caret info becomes obsolete
@@ -82,7 +82,7 @@ public final class CaretInfo {
     /**
      * Get position of the caret itself.
      * @return non-null position of the caret placement. The position may be virtual
-     *  so methods in {@link VirtualPositions} may be used if necessary.
+     *  so methods in {@link org.netbeans.api.editor.document.ShiftPositions} may be used if necessary.
      */
     @CheckForNull
     public Position getDotPosition() {
@@ -94,7 +94,7 @@ public final class CaretInfo {
      * or return position denoting the other end of an existing selection (which is either before
      * or after the dot position depending of how the selection was created).
      * @return non-null position of the caret placement. The position may be virtual
-     *  so methods in {@link VirtualPositions} may be used if necessary.
+     *  so methods in {@link org.netbeans.api.editor.document.ShiftPositions} may be used if necessary.
      */
     @CheckForNull
     public Position getMarkPosition() {
@@ -164,7 +164,6 @@ public final class CaretInfo {
      * Gets the current caret visual location.
      *
      * @return the visual position.
-     * @see #setMagicCaretPosition
      */
     public @CheckForNull Point getMagicCaretPosition() {
         return magicCaretPosition;

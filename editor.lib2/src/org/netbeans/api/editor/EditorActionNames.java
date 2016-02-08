@@ -81,7 +81,7 @@ public final class EditorActionNames {
 
     /**
      * Zoom text in by increasing default font size.
-     * <br/>
+     * <br>
      * textComponent.getClientProperty("text-zoom") contains positive (or negative)
      * integer of how many points the font size should be increased (decreased).
      * @since 1.45

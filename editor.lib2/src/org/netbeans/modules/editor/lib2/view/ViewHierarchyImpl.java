@@ -68,9 +68,9 @@ public final class ViewHierarchyImpl {
     
     /**
      * Logger for core operations of the view hierarchy - resolving modelToView() and viewToModel() etc.
-     * <br/>
+     * <br>
      * FINE logs basic info about view hierarchy operations performed.
-     * <br/>
+     * <br>
      * FINER also reports query during document's modification (when the view hierarchy cannot respond
      *  appropriately to queries since it would give incorrect results).
      */
@@ -79,11 +79,11 @@ public final class ViewHierarchyImpl {
     /**
      * Logger tracking all view factory changes that cause either rebuild of the views
      * or offset repaints.
-     * <br/>
+     * <br>
      * FINE reports which factory reported a change and an offset range of that change.
-     * <br/>
+     * <br>
      * FINER reports additional detailed information about the change.
-     * <br/>
+     * <br>
      * FINEST reports stacktrace where a particular span change request originated.
      */
     static final Logger CHANGE_LOG = Logger.getLogger("org.netbeans.editor.view.change"); // -J-Dorg.netbeans.editor.view.change.level=FINE
@@ -100,46 +100,46 @@ public final class ViewHierarchyImpl {
     
     /**
      * Logger for span change requests on the views and underlying text component.
-     * <br/>
+     * <br>
      * FINE reports span change descriptions
-     * <br/>
+     * <br>
      * FINEST reports stacktrace where a particular span change request originated.
      */
     static final Logger SPAN_LOG = Logger.getLogger("org.netbeans.editor.view.span"); // -J-Dorg.netbeans.editor.view.span.level=FINE
     
     /**
      * Logger for repaint requests of the underlying text component.
-     * <br/>
+     * <br>
      * FINE reports repaint request's coordinates
-     * <br/>
+     * <br>
      * FINEST reports stacktrace where a particular repaint request originated.
      */
     static final Logger REPAINT_LOG = Logger.getLogger("org.netbeans.editor.view.repaint"); // -J-Dorg.netbeans.editor.view.repaint.level=FINE
     
     /**
      * Logger for extra consistency checks inside view hierarchy (may slow down processing).
-     * <br/>
+     * <br>
      */
     static final Logger CHECK_LOG = Logger.getLogger("org.netbeans.editor.view.check"); // -J-Dorg.netbeans.editor.view.check.level=FINE
     
     /**
      * Logger related to any settings being used in view hierarchy.
-     * <br/>
+     * <br>
      */
     static final Logger SETTINGS_LOG = Logger.getLogger("org.netbeans.editor.view.settings"); // -J-Dorg.netbeans.editor.view.settings.level=FINE
     
     /**
      * Logger related to view hierarchy events generation.
-     * <br/>
+     * <br>
      */
     static final Logger EVENT_LOG = Logger.getLogger("org.netbeans.editor.view.event"); // -J-Dorg.netbeans.editor.view.event.level=FINE
     
     /**
      * Logger for tracking view hierarchy locking.
-     * <br/>
+     * <br>
      * FINER stores the stack of the lock thread of view hierarchy in lockStack variable
      * (it should help to find missing unlock).
-     * <br/>
+     * <br>
      * FINEST in addition it dumps thread dump of each locker of a view hierarchy. 
      */
     // -J-Dorg.netbeans.modules.editor.lib2.view.ViewHierarchyImpl.level=FINER

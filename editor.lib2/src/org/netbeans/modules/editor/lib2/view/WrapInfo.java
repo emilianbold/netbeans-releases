@@ -59,7 +59,7 @@ import org.netbeans.lib.editor.util.GapList;
 
 /**
  * Information about line wrapping that may be attached to {@link ParagraphViewChildren}.
- * <br/>
+ * <br>
  * Wrapping uses constant wrap line height - children height from {@link ParagraphViewChildren}.
  * 
  * @author Miloslav Metelka

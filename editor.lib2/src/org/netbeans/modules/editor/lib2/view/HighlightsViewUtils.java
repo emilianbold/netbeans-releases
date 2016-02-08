@@ -75,7 +75,7 @@ import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 
 /**
  * Utilities related to HighlightsView and TextLayout management.
- * <br/>
+ * <br>
  * Unfortunately the TextLayout based on AttributedCharacterIterator does not handle
  * correctly italic fonts (at least on Mac it renders background rectangle non-italicized).
  * Therefore child views with foreground that differs from text layout's "global" foreground
@@ -539,7 +539,7 @@ public class HighlightsViewUtils {
     /**
      * Paint strike-through line for a font currently set to the graphics
      * with the color currently set to the graphics.
-     * <br/>
+     * <br>
      * It's assumed that the clipping is set appropriately because the method
      * renders whole textLayoutAlloc with the strike-through.
      *

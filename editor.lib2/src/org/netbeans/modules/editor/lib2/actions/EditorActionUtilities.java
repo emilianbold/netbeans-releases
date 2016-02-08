@@ -382,7 +382,7 @@ public final class EditorActionUtilities {
 
     /**
      * Get single-key accelerator for a given declared action.
-     * <br/>
+     * <br>
      * Unfortunately currently there's no easy way to display multi-keybinding in menu-item
      * (there's just JMenuItem.setAccelerator() and its impl is L&F-based)
      * so just display single-keystroke accelerators.

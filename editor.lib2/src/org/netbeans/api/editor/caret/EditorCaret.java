@@ -141,7 +141,7 @@ import org.openide.util.WeakListeners;
  * It supports multi-caret editing mode where an arbitrary number of carets
  * is placed at arbitrary positions throughout a document.
  * In this mode each caret is described by its <code>CaretInfo</code> object.
- * <br/>
+ * <br>
  * The caret works over text components having {@link AbstractDocument} based document.
  *
  * @author Miloslav Metelka
@@ -175,7 +175,7 @@ public final class EditorCaret implements Caret {
      * Cached infos corresponding to caret items or null if any of the items were changed
      *  so another copy of the caret items- (translated into caret infos) will get created
      * upon query to {@link #getCarets() }.
-     * <br/>
+     * <br>
      * Once the list gets created both the list content and information in each caret info are immutable.
      */
     private List<CaretInfo> caretInfos;
@@ -184,7 +184,7 @@ public final class EditorCaret implements Caret {
      * Cached infos corresponding to sorted caret items or null if any of the sorted items were changed
      * so another copy of the sorted caret items (translated into caret infos) will get created
      * upon query to {@link #getSortedCarets() }.
-     * <br/>
+     * <br>
      * Once the list gets created both the list content and information in each caret info are immutable.
      */
     private List<CaretInfo> sortedCaretInfos;
@@ -209,7 +209,7 @@ public final class EditorCaret implements Caret {
 
     /**
      * Whether blinking caret is currently visible on the screen.
-     * <br/>
+     * <br>
      * This changes from true to false after each tick of a timer
      * (assuming <code>visible == true</code>).
      */
@@ -353,15 +353,15 @@ public final class EditorCaret implements Caret {
     
     /**
      * Get information about all existing carets in the order they were created.
-     * <br/>
+     * <br>
      * The list always has at least one item. The last caret (last item of the list)
      * is the most recent caret.
-     * <br/>
+     * <br>
      * The list is a snapshot of the current state of the carets. The list content itself and its contained
      * caret infos are guaranteed not change after subsequent calls to caret API or document modifications.
-     * <br/
+     * <br>
      * The list is nonmodifiable.
-     * <br/>
+     * <br>
      * This method should be called with document's read-lock acquired which will guarantee
      * stability of {@link CaretInfo#getDot() } and {@link CaretInfo#getMark() } and prevent
      * caret merging as a possible effect of document modifications.
@@ -384,12 +384,12 @@ public final class EditorCaret implements Caret {
     
     /**
      * Get information about all existing carets sorted by dot positions in ascending order.
-     * <br/>
+     * <br>
      * The list is a snapshot of the current state of the carets. The list content itself and its contained
      * caret infos are guaranteed not change after subsequent calls to caret API or document modifications.
-     * <br/>
+     * <br>
      * The list is nonmodifiable.
-     * <br/>
+     * <br>
      * This method should be called with document's read-lock acquired which will guarantee
      * stability of {@link CaretInfo#getDot() } and {@link CaretInfo#getMark() } and prevent
      * caret merging as a possible effect of document modifications.
@@ -412,9 +412,9 @@ public final class EditorCaret implements Caret {
     
     /**
      * Get info about the most recently created caret.
-     * <br/>
+     * <br>
      * For normal mode this is the only caret returned by {@link #getCarets() }.
-     * <br/>
+     * <br>
      * For multi-caret mode this is the last item in the list returned by {@link #getCarets() }.
      * 
      * @return last caret (the most recently added caret).
@@ -438,9 +438,9 @@ public final class EditorCaret implements Caret {
     
     /**
      * Assign a new offset to the caret in the underlying document.
-     * <br/>
+     * <br>
      * This method implicitly sets the selection range to zero.
-     * <br/>
+     * <br>
      * If multiple carets are present this method retains only last caret
      * which then moves to the given offset.
      * 
@@ -473,7 +473,7 @@ public final class EditorCaret implements Caret {
     /**
      * Moves the caret position (dot) to some other position, leaving behind the
      * mark. This is useful for making selections.
-     * <br/>
+     * <br>
      * If multiple carets are present this method retains all carets
      * and moves the dot of the last caret to the given offset.
      * 
@@ -503,10 +503,10 @@ public final class EditorCaret implements Caret {
 
     /**
      * Move multiple carets or create/modify selections.
-     * <br/>
+     * <br>
      * For performance reasons this is made as a single transaction over the caret
      * with only one change event being fired.
-     * <br/>
+     * <br>
      * Note that the move handler does not permit to add or remove carets - this has to be performed
      * by other methods present in this class (as another transaction over the editor caret).
      *
@@ -524,7 +524,7 @@ public final class EditorCaret implements Caret {
      * Create a new caret at the given position with a possible selection.
      * <br>
      * The caret will become the last caret of the list returned by {@link #getCarets() }.
-     * <br/>
+     * <br>
      * This method requires the caller to have either read lock or write lock acquired
      * over the underlying document.
      * 
@@ -542,10 +542,10 @@ public final class EditorCaret implements Caret {
     
     /**
      * Add multiple carets at once.
-     * <br/>
+     * <br>
      * It is similar to calling {@link #addCaret(javax.swing.text.Position, javax.swing.text.Position) }
      * multiple times but this method is more efficient (it only fires caret change once).
-     * <br/>
+     * <br>
      * This method requires the caller to have either read lock or write lock acquired
      * over the underlying document.
      * 
@@ -563,10 +563,10 @@ public final class EditorCaret implements Caret {
 
     /**
      * Replace all current carets with the new ones.
-     * <br/>
+     * <br>
      * This method requires the caller to have either read lock or write lock acquired
      * over the underlying document.
-     * <br/>
+     * <br>
      * @param dotAndMarkPosPairs list of position pairs consisting of dot position
      *  and mark position (selection start position) which may be the same position like dot
      *  if the particular caret has no selection. The list must have even size.
@@ -584,7 +584,7 @@ public final class EditorCaret implements Caret {
 
     /**
      * Remove last added caret (determined by {@link #getLastCaret() }).
-     * <br/>
+     * <br>
      * If there is just one caret the method has no effect.
      * 
      * @return difference between current count of carets and the number of carets when the operation started.
@@ -608,7 +608,7 @@ public final class EditorCaret implements Caret {
     /**
      * Adds listener to track caret changes in detail.
      * 
-     * @param listener 
+     * @param listener non-null listener.
      */
     public void addEditorCaretListener(@NonNull EditorCaretListener listener) {
         listenerList.add(listener);
@@ -909,7 +909,7 @@ public final class EditorCaret implements Caret {
      * or by word (if ctrl is pressed).
      *
      * @param toRight true for right or false for left.
-     * @param ctrl 
+     * @param ctrl true for ctrl pressed.
      */
     public void extendRectangularSelection(boolean toRight, boolean ctrl) {
         JTextComponent c = component;
@@ -1412,7 +1412,7 @@ public final class EditorCaret implements Caret {
 
     /**
      * Update the caret's visual position.
-     * <br/>
+     * <br>
      * The document is read-locked while calling this method.
      *
      * @param scrollViewToCaret whether the view of the text component should be

@@ -54,7 +54,7 @@ public interface ShiftHighlightsSequence extends HighlightsSequence {
     /**
      * Get extra shift "within" a particular character (either tab or newline)
      * while {@link #getStartOffset()} points to the tab or newline character.
-     * <br/>
+     * <br>
      * To highlight second and third space of a tab character at offset == 123
      * the {@link #getStartOffset() } == {@link #getEndOffset() } == 123
      * and {@link #getStartShift() } == 1 and {@link #getEndShift() } == 3.

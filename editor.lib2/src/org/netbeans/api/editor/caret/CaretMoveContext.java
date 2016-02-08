@@ -64,7 +64,7 @@ public final class CaretMoveContext {
 
     /**
      * Get list of carets at the time when transaction started.
-     * <br/>
+     * <br>
      * <b>Note</b>: information contained in the returned list will not reflect changes
      * performed by the dot/selection modification methods contained in this class.
      * It will always return the original state from the beginning of the move transaction.
@@ -88,7 +88,7 @@ public final class CaretMoveContext {
     
     /**
      * Get list of carets sorted ascending order at the time when transaction started.
-     * <br/>
+     * <br>
      * <b>Note</b>: information contained in the returned list will not reflect changes
      * performed by the dot/selection modification methods contained in this class.
      * It will always return the original state from the beginning of the move transaction.
@@ -130,7 +130,7 @@ public final class CaretMoveContext {
      * @param caret non-null getCaret.
      * @param dotPos new dot position.
      * @param markPos starting position of the selection or the same position like dotPos if there should be no selection.
-     *  <br/>
+     *  <br>
      *  The position may point to a lower offset than dotPos in case the selection
      *  should extend from a higher offset to a lower offset.
      * @return false if passed caret is obsolete or invalid (e.g. a member of another {@link EditorCaret})

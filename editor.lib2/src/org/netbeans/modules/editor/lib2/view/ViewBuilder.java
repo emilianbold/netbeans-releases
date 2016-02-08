@@ -117,7 +117,7 @@ final class ViewBuilder {
     
     /**
      * Start offset of a before-modOffset local view that may be reused.
-     * <br/>
+     * <br>
      * If set to Integer.MAX_VALUE then no more before-modOffset reusing possible
      * or bmReusePView has no children.
      */
@@ -136,7 +136,7 @@ final class ViewBuilder {
     /**
      * Start offset of an above-modOffset local view that may be reused
      * (or if no local views exist inside 
-     * <br/>
+     * <br>
      * If set to Integer.MAX_VALUE then no more before-modOffset reusing possible
      * or bmReusePView has no children.
      */
@@ -186,7 +186,7 @@ final class ViewBuilder {
 
     /**
      * Actual local views replace inside currently served paragraph view.
-     * <br/>
+     * <br>
      * It may be equal to firstReplace when replacing inside firstly updated paragraph view.
      */
     private ViewReplace<ParagraphView,EditorView> localReplace;

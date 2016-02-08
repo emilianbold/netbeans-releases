@@ -49,7 +49,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 
 /**
  * A single caret inside {@link EditorCaret} handled internally by EditorCaret.
- * <br/>
+ * <br>
  * For API client methods {@link CaretInfo} class is used. There is one-to-one reference
  * between caret item and caret info. But the info is immutable so once the caret item
  * gets mutated its corresponding caret info becomes obsolete and new info gets created
@@ -135,7 +135,7 @@ final class CaretItem implements Comparable {
      * Get position of the caret itself.
      *
      * @return non-null position of the caret placement. The position may be
-     * virtual so methods in {@link VirtualPositions} may be used if necessary.
+     * virtual so methods in {@link org.netbeans.api.editor.document.ShiftPositions} may be used if necessary.
      */
     @CheckForNull
     Position getDotPosition() {
@@ -149,7 +149,7 @@ final class CaretItem implements Comparable {
      * how the selection was created).
      *
      * @return non-null position of the caret placement. The position may be
-     * virtual so methods in {@link VirtualPositions} may be used if necessary.
+     * virtual so methods in {@link org.netbeans.api.editor.document.ShiftPositions} may be used if necessary.
      */
     @CheckForNull
     Position getMarkPosition() {

@@ -42,7 +42,7 @@ import javax.swing.event.DocumentEvent;
 
 /**
  * View hierarchy event describing view rebuilding or view re-measurement change in view hierarchy.
- * <br/>
+ * <br>
  * Change may be related to several events:<ul>
  * <li> Document modification produces immediate updates to view hierarchy.
  * </li>
@@ -62,10 +62,10 @@ import javax.swing.event.DocumentEvent;
  * {@link #changeEndOffset()}) and whether the change produces any changes for y-coordinate related
  * components (such as error stripe and various side bars). Note that y-coordinate related clients
  * may completely ignore the change start/end offsets and only take care of y-related change information.
- * <br/>
+ * <br>
  * If change produces y-coordinate changes the changed visual area corresponds to
  * &lt;{@link #startY()},{@link #endY()}&gt;.
- * <br/>
+ * <br>
  * The change may cause rest of the document to move visually down/up which is reflected in {@link #deltaY()}
  * giving amount of pixels the area starting at {@link #endY()} moves down (negative value means moving up).
  * </p>
@@ -73,7 +73,7 @@ import javax.swing.event.DocumentEvent;
  * <p>
  * Note that when this event is notified the listeners must make no direct queries to view hierarchy.
  * They should only mark what has changed and needs to be recomputed and ask later.
- * <br/>
+ * <br>
  * View hierarchy events are fired rather frequently so the code in listeners should be efficient.
  * </p>
  * 
@@ -108,12 +108,12 @@ public final class ViewHierarchyEvent extends EventObject {
     
     /**
      * Start offset of a visual change in view hierarchy.
-     * <br/>
+     * <br>
      * All model-to-view translations between {@link #changeStartOffset()} till {@link #changeEndOffset()}
      * might shift or change. They could change in x-coordinate and possibly also in y-coordinate in case
      * they lay between {@link #startY()} and {@link #endY()}. Those below {@link #endY()} have y-coordinate
      * shifted down by {@link #deltaY()} (may be negative for shifting up).
-     * <br/>
+     * <br>
      * Offset corresponds to a state after possible document modification
      * (returned by {@link #documentEvent()}.
      *
@@ -125,12 +125,12 @@ public final class ViewHierarchyEvent extends EventObject {
     
     /**
      * End offset of a visual change in view hierarchy.
-     * <br/>
+     * <br>
      * All model-to-view translations between {@link #changeStartOffset()} till {@link #changeEndOffset()}
      * might shift or change. They could change in x-coordinate and possibly also in y-coordinate in case
      * they lay between {@link #startY()} and {@link #endY()}. Those below {@link #endY()} have y-coordinate
      * shifted down by {@link #deltaY()} (may be negative for shifting up).
-     * <br/>
+     * <br>
      * Offset corresponds to a state after possible document modification
      * (returned by {@link #documentEvent()}.
      *
@@ -142,11 +142,11 @@ public final class ViewHierarchyEvent extends EventObject {
 
     /**
      * Whether this change affects y-coordinate clients or not.
-     * <br/>
+     * <br>
      * Return true if there was at least one paragraph view which changed its visual height.
      * Such views are be included inside {@link #startY()} and {@link #endY()} interval
      * and a corresponding {@link #deltaY()} is provided.
-     * <br/>
+     * <br>
      * If the paragraph views retain their original offset boundaries upon rebuild
      * (and their precise span is not computed) they are not reported
      * as being y-changed.
@@ -159,10 +159,10 @@ public final class ViewHierarchyEvent extends EventObject {
 
     /**
      * Where the y-coordinate change begins.
-     * <br/>
+     * <br>
      * Previously computed model-to-view values that have their y-coordinate
      * within {@link #startY()} and {@link #endY()} interval may be affected.
-     * <br/>
+     * <br>
      * Measurements below {@link #endY()} should shift
      * its y-coordinate down by {@link #deltaY()} (may be negative for shifting up).
      *
@@ -174,10 +174,10 @@ public final class ViewHierarchyEvent extends EventObject {
     
     /**
      * Where the y-coordinate change ends.
-     * <br/>
+     * <br>
      * Previously computed model-to-view values that have their y-coordinate
      * within {@link #startY()} and {@link #endY()} interval may be affected.
-     * <br/>
+     * <br>
      * Measurements below {@link #endY()} should shift
      * its y-coordinate down by {@link #deltaY()} (may be negative for shifting up).
      *
@@ -189,7 +189,7 @@ public final class ViewHierarchyEvent extends EventObject {
 
     /**
      * Shift of area starting at {@link #endY()} down (or up if negative).
-     * <br/>
+     * <br>
      * Measurements below {@link #endY()} should shift
      * its y-coordinate down by {@link #deltaY()} (may be negative for shifting up).
      *

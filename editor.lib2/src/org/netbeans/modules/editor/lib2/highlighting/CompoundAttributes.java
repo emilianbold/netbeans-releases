@@ -50,9 +50,9 @@ import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 /**
  * Multiple highlights for a particular view contains an array of highlights
  * and a starting offset to which the (ending) offsets in HighlightItem(s) are related.
- * <br/>
+ * <br>
  * The view should assign this object to its internal 'attributes' variable that holds the AttributeSet.
- * <br/>
+ * <br>
  * The AttributeSet implementation returns attributes of the first section of the compound attributes.
  *
  * @author Miloslav Metelka

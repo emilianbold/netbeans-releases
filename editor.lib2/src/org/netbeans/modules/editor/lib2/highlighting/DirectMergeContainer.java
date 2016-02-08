@@ -63,10 +63,10 @@ import org.openide.util.WeakListeners;
 /**
  * Compound highlights-layer container that does non-cached direct merging
  * of individual layers' highlights.
- * <br/>
+ * <br>
  * It's somewhat similar to a view building process in view hierarchy which also maintains
  * next-change-offset where a change in the particular layer occurs and needs to be processed.
- * <br/>
+ * <br>
  * {@link ShiftHighlightsSequence} are supported and the highlights sequences returned by the container
  * are always instances of this interface.
  *
@@ -150,7 +150,7 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
     /**
      * Get event from a contained layer which caused highlight change
      * (mainly for debugging purposes).
-     * <br/>
+     * <br>
      * The information is only available during firing to change listeners registered by
      * {@link #addHighlightsChangeListener(org.netbeans.spi.editor.highlighting.HighlightsChangeListener)}.
      * 

@@ -68,7 +68,7 @@ import org.openide.util.NbBundle;
 
 /**
  * Clipboard transfer handler for rectangular selection.
- * <br/>
+ * <br>
  * It overrides the original transfer handler during the rectangular selection.
  *
  * @author Miloslav Metelka

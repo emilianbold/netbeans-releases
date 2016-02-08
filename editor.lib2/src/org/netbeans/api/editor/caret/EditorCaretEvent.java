@@ -72,7 +72,7 @@ public final class EditorCaretEvent extends java.util.EventObject {
 
     /**
      * Get start of the region that was affected by caret change.
-     * <br/>
+     * <br>
      * This offset region will be repainted automatically by the editor infrastructure.
      *
      * @return &gt;= 0 offset.
@@ -83,7 +83,7 @@ public final class EditorCaretEvent extends java.util.EventObject {
     
     /**
      * Get end of the region that was affected by caret change.
-     * <br/>
+     * <br>
      * This offset region will be repainted automatically by the editor infrastructure.
      *
      * @return &gt;= 0 offset.

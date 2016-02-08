@@ -42,9 +42,9 @@ import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * View hierarchy associated with a particular text component (for its whole lifetime).
- * <br/>
+ * <br>
  * View hierarchy needs to be locked before doing most operations - see {@link #lock() }.
- * <br/>
+ * <br>
  * If editor view hierarchy is currently not installed into particular text component
  * (text component's root view is not an instance of DocumentView)
  * the methods (in LockedViewHierarchy) return default values as described in their documentation.
@@ -76,7 +76,7 @@ public final class ViewHierarchy {
     
     /**
      * Get text component that this view hierarchy is associated with.
-     * <br/>
+     * <br>
      * 
      * @return non-null text component.
      */
@@ -86,10 +86,10 @@ public final class ViewHierarchy {
     
     /**
      * Lock view hierarchy in order to perform operations described in {@link LockedViewHierarchy }.
-     * <br/>
+     * <br>
      * Underlying document of the view hierarchy's text component must be read-locked
      * to guarantee stability of offsets passed to methods of LockedViewHierarchy.
-     * <br/>
+     * <br>
      * Code example:<code>
      * // Possible textComponent.getDocument() read-locking
      * LockedViewHierarchy lvh = ViewHierarchy.get(textComponent).lock();
@@ -109,7 +109,7 @@ public final class ViewHierarchy {
     
     /**
      * Add listener for view hierarchy changes.
-     * <br/>
+     * <br>
      * Listener will be notified on a locked view hierarchy.
      *
      * @param l non-null listener.
