@@ -105,9 +105,11 @@ public class AddDockerInstanceWizard {
             if (socketSelected) {
                 File file = (File) wiz.getProperty(SOCKET_PROPERTY);
                 try {
-                    return DockerIntegration.getDefault().createInstance(
+                    DockerInstance instance = DockerInstance.getInstance(
+                            Utilities.toURI(file).toURL().toString(),
                             (String) wiz.getProperty(DISPLAY_NAME_PROPERTY),
-                            Utilities.toURI(file).toURL().toString(), null, null, null);
+                            null, null, null);
+                    return DockerIntegration.getDefault().addInstance(instance);
                 } catch (MalformedURLException ex) {
                     LOGGER.log(Level.WARNING, null, ex);
                 }
@@ -124,9 +126,11 @@ public class AddDockerInstanceWizard {
                     keyFile = new File(file, DEFAULT_KEY_FILE);
                 }
 
-                return DockerIntegration.getDefault().createInstance(
+                DockerInstance instance = DockerInstance.getInstance(
+                        (String) wiz.getProperty(URL_PROPERTY),
                         (String) wiz.getProperty(DISPLAY_NAME_PROPERTY),
-                        (String) wiz.getProperty(URL_PROPERTY), caFile, certFile, keyFile);
+                        caFile, certFile, keyFile);
+                return DockerIntegration.getDefault().addInstance(instance);
             }
         }
         return null;

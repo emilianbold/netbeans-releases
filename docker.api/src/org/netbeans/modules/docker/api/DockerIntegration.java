@@ -42,19 +42,16 @@
 
 package org.netbeans.modules.docker.api;
 
-import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 import java.util.prefs.NodeChangeEvent;
 import java.util.prefs.NodeChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.util.BaseUtilities;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbPreferences;
@@ -65,8 +62,6 @@ import org.openide.util.Parameters;
  * @author Petr Hejl
  */
 public final class DockerIntegration {
-
-    private static final Logger LOGGER = Logger.getLogger(DockerIntegration.class.getName());
 
     private static DockerIntegration registry;
 
@@ -110,21 +105,32 @@ public final class DockerIntegration {
         return ret;
     }
 
-    public DockerInstance createInstance(@NonNull String displayName, @NonNull String url,
-            @NullAllowed File caCertificate, @NullAllowed File certificate, @NullAllowed File key) {
-        Parameters.notNull("displayName", displayName);
-        Parameters.notNull("url", url);
+    public DockerInstance addInstance(@NonNull DockerInstance instance) {
+        Parameters.notNull("instance", instance);
 
-        DockerInstance instance;
+        String url = instance.getUrl();
         synchronized (this) {
             if (instances.containsKey(url)) {
                 throw new IllegalStateException("Docker instance already exist: " + url);
             }
-            instance = DockerInstance.create(displayName, url, caCertificate, certificate, key);
+            instance.save();
             instances.put(url, instance);
         }
         changeSupport.fireChange();
         return instance;
+    }
+
+    public void removeInstance(@NonNull DockerInstance instance) {
+        Parameters.notNull("instance", instance);
+
+        synchronized (this) {
+            instances.remove(instance.getUrl());
+            instance.delete();
+
+            // FIXME we shouldn't need it and use it
+            instance.getEventBus().close();
+        }
+        changeSupport.fireChange();
     }
 
     public Collection<? extends DockerInstance> getInstances() {
@@ -154,7 +160,7 @@ public final class DockerIntegration {
         synchronized (this) {
             initialized = true;
             Set<String> toRemove = new HashSet<>(instances.keySet());
-            for (DockerInstance i : DockerInstance.findAll()) {
+            for (DockerInstance i : DockerInstance.loadAll()) {
                 if (instances.get(i.getUrl()) == null) {
                     fire = true;
                     instances.put(i.getUrl(), i);

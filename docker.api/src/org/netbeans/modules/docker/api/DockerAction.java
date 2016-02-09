@@ -973,7 +973,7 @@ public class DockerAction {
         }
     }
 
-    boolean ping() {
+    public boolean ping() {
         assert !SwingUtilities.isEventDispatchThread() : "Remote access invoked from EDT";
         try {
             Endpoint s = createEndpoint();
