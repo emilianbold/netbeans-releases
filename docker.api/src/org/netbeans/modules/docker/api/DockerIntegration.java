@@ -98,7 +98,7 @@ public final class DockerIntegration {
             ret = registry;
         }
         synchronized (ret) {
-            if (!ret.initialized) {
+            if (!ret.isInitialized()) {
                 ret.refresh();
             }
         }
@@ -155,6 +155,12 @@ public final class DockerIntegration {
         return arch != null && (arch.contains("x86") || arch.contains("amd64")); // NOI18N
     }
 
+    private boolean isInitialized() {
+        synchronized (this) {
+            return initialized;
+        }
+    }
+    
     private void refresh() {
         boolean fire = false;
         synchronized (this) {
