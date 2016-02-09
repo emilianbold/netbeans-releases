@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
+import org.netbeans.modules.cnd.modelimpl.trace.TraceModelFileFilter;
+
 /**
  *
  * @author Vladimir Voskresensky
@@ -51,8 +53,59 @@ package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
 
     public NamespacesHyperlinkTestCase(String testName) {
-        super(testName);
+        super(testName, true);
         //System.setProperty("cnd.modelimpl.trace.registration", "true");
+    }
+    
+    @Override
+    protected TraceModelFileFilter getTraceModelFileFilter() {
+        String testName = getName();
+        String simpleName = testName.substring(4);
+        switch (simpleName) {
+            case "228949_BaseClassFromAnotherNS":
+                return new SimpleFileFilter("bug228949"); 
+            case "UsingNS1":
+            case "UsingNS1S2":
+            case "UsingDirectivesS1":
+            case "UsingDirectivesS1S2":
+            case "UsingCout":
+            case "UsingNS2":
+            case "UsingDirectivesS2":
+            case "NestedTypesOfTemplatedClass":
+            case "MainDefFQN":
+            case "UsingNS2_2":
+                return new SimpleFileFilter("main", "file"); 
+            case "UsingDirectives":
+                return new SimpleFileFilter("main"); 
+            case "S1FooDefS1Decls":
+            case "S2BooDefS1Decls":
+            case "S1FooDefS2":
+            case "S2BooDefS2Decls":
+            case "DeclsFromHeader":
+            case "ClassS1":
+            case "ClassS2":
+            case "S2BooDefFQN":
+            case "S1FooDefFQN":
+                return new SimpleFileFilter("file"); 
+            case "ScopeInTypeAfterConst":
+                return new SimpleFileFilter("boost_in_type_after_scope"); 
+            case "Bug219398":
+            case "TypeIdName":
+                return new SimpleFileFilter("typeid", "typeinfo"); 
+            case "228949_UsingNsInOtherHeader":
+            case "228949_DeferWhenUsingNsInOtherHeader":
+                return new SimpleFileFilter("bug228949"); 
+            case "UsingInOtherNsDef":
+                return new SimpleFileFilter("using_in_ns"); 
+            case "ChildNamespaces":
+            case "ChildNamespaces2":
+            case "ChildNamespaces3":
+                return new SimpleFileFilter("child_ns"); 
+            case "DoubleUsing":
+                return new SimpleFileFilter("iz207841"); 
+            default:
+                return new SimpleFileFilter(simpleName); 
+        }
     }
 
     public void test228949_UsingNsInOtherHeader() throws Exception {
@@ -422,7 +475,7 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("typeid.cpp", 39, 61, "typeinfo.h", 21, 5);
     }            
     
-    public void testBug231548() throws Exception {
+    public void test231548() throws Exception {
         performTest("231548.cc", 22, 5, "231548.cc", 11, 3);
         performTest("231548.cc", 22, 16, "231548.cc", 2, 5);
         performTest("231548.cc", 23, 5, "231548.cc", 12, 3);
@@ -430,12 +483,12 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         performNullTargetTest("231548.cc", 24, 5);
     }
     
-    public void testBug235102() throws Exception {
+    public void testBug235102_ns() throws Exception {
         performTest("bug235102_ns.cpp", 17, 20, "bug235102_ns.cpp", 4, 13);
         performTest("bug235102_ns.cpp", 37, 20, "bug235102_ns.cpp", 24, 13);
     }
 
-    public void testBug235102_2() throws Exception {
+    public void testBug235102_ns_2() throws Exception {
         performTest("bug235102_ns_2.cpp", 8, 12, "bug235102_ns_2.hpp", 12, 13);
     }    
 
