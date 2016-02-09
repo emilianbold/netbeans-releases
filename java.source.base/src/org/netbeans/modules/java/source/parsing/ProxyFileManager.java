@@ -751,6 +751,7 @@ public final class ProxyFileManager implements JavaFileManager {
                         for (JavaFileManager fm : fms) {
                             if (fm.hasLocation(StandardLocation.CLASS_OUTPUT)) {
                                 active = fm;
+                                break;
                             }
                         }
                         return active == null ?
