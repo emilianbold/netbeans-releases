@@ -46,7 +46,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.api.DockerAction;
 import org.netbeans.modules.docker.api.DockerInstance;
-import org.netbeans.modules.docker.api.DockerIntegration;
+import org.netbeans.modules.docker.api.DockerSupport;
 import org.openide.util.ChangeSupport;
 import org.openide.util.RequestProcessor;
 
@@ -110,7 +110,7 @@ public class EnhancedDockerInstance implements Refreshable {
 
     public void remove() {
         instance.removeConnectionListener(listener);
-        DockerIntegration.getDefault().removeInstance(instance);
+        DockerSupport.getDefault().removeInstance(instance);
     }
 
     @Override

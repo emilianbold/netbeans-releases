@@ -52,7 +52,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.api.DockerInstance;
-import org.netbeans.modules.docker.api.DockerIntegration;
+import org.netbeans.modules.docker.api.DockerSupport;
 import org.netbeans.modules.docker.ui.UiUtils;
 import org.netbeans.modules.docker.ui.wizard.AddDockerInstanceWizard;
 import org.openide.util.ChangeSupport;
@@ -91,7 +91,7 @@ public class BuildInstanceVisual extends javax.swing.JPanel {
     public BuildInstanceVisual() {
         initComponents();
 
-        DockerIntegration integration = DockerIntegration.getDefault();
+        DockerSupport integration = DockerSupport.getDefault();
         integration.addChangeListener(WeakListeners.change(instancesListener, integration));
 
         instanceComboBox.setModel(model);
@@ -144,7 +144,7 @@ public class BuildInstanceVisual extends javax.swing.JPanel {
         assert SwingUtilities.isEventDispatchThread();
         DockerInstanceWrapper wrapper = (DockerInstanceWrapper) model.getSelectedItem();
         model.removeAllElements();
-        List<DockerInstance> instances = new ArrayList<>(DockerIntegration.getDefault().getInstances());
+        List<DockerInstance> instances = new ArrayList<>(DockerSupport.getDefault().getInstances());
         Collections.sort(instances, UiUtils.getInstanceComparator());
         for (DockerInstance i : instances) {
             model.addElement(new DockerInstanceWrapper(i));

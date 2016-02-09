@@ -49,7 +49,7 @@ import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.api.DockerInstance;
-import org.netbeans.modules.docker.api.DockerIntegration;
+import org.netbeans.modules.docker.api.DockerSupport;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
@@ -116,7 +116,7 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_EmptyDisplayName());
             return false;
         }
-        for (DockerInstance instance : DockerIntegration.getDefault().getInstances()) {
+        for (DockerInstance instance : DockerSupport.getDefault().getInstances()) {
             if (displayName.equals(instance.getDisplayName())) {
                 wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_AlreadyUsedDisplayName());
                 return false;
@@ -218,7 +218,7 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
 
         Boolean socketSelected = (Boolean) wiz.getProperty(AddDockerInstanceWizard.SOCKET_SELECTED_PROPERTY);
         if (socketSelected == null) {
-            socketSelected = DockerIntegration.getDefault().isSocketSupported();
+            socketSelected = DockerSupport.getDefault().isSocketSupported();
         }
         panel.setSocketSelected(socketSelected);
 

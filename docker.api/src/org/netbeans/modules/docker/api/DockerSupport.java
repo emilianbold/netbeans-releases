@@ -61,9 +61,9 @@ import org.openide.util.Parameters;
  *
  * @author Petr Hejl
  */
-public final class DockerIntegration {
+public final class DockerSupport {
 
-    private static DockerIntegration registry;
+    private static DockerSupport support;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -73,29 +73,29 @@ public final class DockerIntegration {
     // GuardedBy("this")
     private boolean initialized;
 
-    private DockerIntegration() {
+    private DockerSupport() {
         super();
     }
 
-    public static DockerIntegration getDefault() {
-        DockerIntegration ret;
-        synchronized (DockerIntegration.class) {
-            if (registry == null) {
-                registry = new DockerIntegration();
+    public static DockerSupport getDefault() {
+        DockerSupport ret;
+        synchronized (DockerSupport.class) {
+            if (support == null) {
+                support = new DockerSupport();
                 Preferences p = NbPreferences.forModule(DockerInstance.class).node(DockerInstance.INSTANCES_KEY);
                 p.addNodeChangeListener(new NodeChangeListener() {
                     @Override
                     public void childAdded(NodeChangeEvent evt) {
-                        registry.refresh();
+                        support.refresh();
                     }
 
                     @Override
                     public void childRemoved(NodeChangeEvent evt) {
-                        registry.refresh();
+                        support.refresh();
                     }
                 });
             }
-            ret = registry;
+            ret = support;
         }
         synchronized (ret) {
             if (!ret.isInitialized()) {

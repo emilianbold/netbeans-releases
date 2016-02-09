@@ -50,7 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import org.netbeans.modules.docker.api.DockerInstance;
-import org.netbeans.modules.docker.api.DockerIntegration;
+import org.netbeans.modules.docker.api.DockerSupport;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -109,7 +109,7 @@ public class AddDockerInstanceWizard {
                             Utilities.toURI(file).toURL().toString(),
                             (String) wiz.getProperty(DISPLAY_NAME_PROPERTY),
                             null, null, null);
-                    return DockerIntegration.getDefault().addInstance(instance);
+                    return DockerSupport.getDefault().addInstance(instance);
                 } catch (MalformedURLException ex) {
                     LOGGER.log(Level.WARNING, null, ex);
                 }
@@ -130,7 +130,7 @@ public class AddDockerInstanceWizard {
                         (String) wiz.getProperty(URL_PROPERTY),
                         (String) wiz.getProperty(DISPLAY_NAME_PROPERTY),
                         caFile, certFile, keyFile);
-                return DockerIntegration.getDefault().addInstance(instance);
+                return DockerSupport.getDefault().addInstance(instance);
             }
         }
         return null;

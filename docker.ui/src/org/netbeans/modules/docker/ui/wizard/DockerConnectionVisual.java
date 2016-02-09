@@ -44,7 +44,7 @@ package org.netbeans.modules.docker.ui.wizard;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.docker.api.DockerIntegration;
+import org.netbeans.modules.docker.api.DockerSupport;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -65,7 +65,7 @@ public class DockerConnectionVisual extends javax.swing.JPanel implements Change
     public DockerConnectionVisual() {
         initComponents();
 
-        if (DockerIntegration.getDefault().isSocketSupported()) {
+        if (DockerSupport.getDefault().isSocketSupported()) {
             configPanel = new ConfigurationLinuxPanel();
         } else {
             configPanel = new ConfigurationPanel();
