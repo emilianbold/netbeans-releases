@@ -121,7 +121,7 @@ import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.api.editor.NavigationHistory;
 import org.netbeans.api.editor.caret.CaretMoveContext;
-import org.netbeans.api.editor.caret.CaretMoveHandler;
+import org.netbeans.spi.editor.caret.CaretMoveHandler;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.netbeans.modules.editor.lib2.RectangularSelectionCaretAccessor;
@@ -3430,7 +3430,7 @@ public class BaseKit extends DefaultEditorKit {
             if (target != null) {
                 Caret caret = target.getCaret();
                 if(caret instanceof EditorCaret) {
-                    ((EditorCaret) caret).moveCarets(new org.netbeans.api.editor.caret.CaretMoveHandler() {
+                    ((EditorCaret) caret).moveCarets(new org.netbeans.spi.editor.caret.CaretMoveHandler() {
                         @Override
                         public void moveCarets(CaretMoveContext context) {
                             for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {

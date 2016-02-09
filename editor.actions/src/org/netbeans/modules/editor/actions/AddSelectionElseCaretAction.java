@@ -55,10 +55,10 @@ import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
 import org.netbeans.api.editor.caret.EditorCaret;
 import org.netbeans.api.editor.caret.CaretMoveContext;
-import org.netbeans.api.editor.caret.CaretMoveHandler;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.spi.editor.AbstractEditorAction;
+import org.netbeans.spi.editor.caret.CaretMoveHandler;
 
 /**
  *

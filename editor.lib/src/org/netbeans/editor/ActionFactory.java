@@ -104,7 +104,7 @@ import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.api.editor.NavigationHistory;
 import org.netbeans.api.editor.caret.CaretMoveContext;
-import org.netbeans.api.editor.caret.CaretMoveHandler;
+import org.netbeans.spi.editor.caret.CaretMoveHandler;
 import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
 import org.netbeans.modules.editor.lib2.view.DocumentView;
 import org.netbeans.spi.editor.typinghooks.CamelCaseInterceptor;

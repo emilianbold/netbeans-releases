@@ -41,6 +41,7 @@
  */
 package org.netbeans.api.editor.caret;
 
+import org.netbeans.spi.editor.caret.CaretMoveHandler;
 import java.awt.Point;
 import java.util.List;
 import javax.swing.text.BadLocationException;

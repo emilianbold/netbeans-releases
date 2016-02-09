@@ -41,6 +41,7 @@
  */
 package org.netbeans.api.editor.caret;
 
+import org.netbeans.spi.editor.caret.CaretMoveHandler;
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;

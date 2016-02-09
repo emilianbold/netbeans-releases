@@ -39,12 +39,13 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.api.editor.caret;
+package org.netbeans.spi.editor.caret;
 
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.editor.caret.CaretMoveContext;
 
 /**
- * Handle possible moving of individual carets or creation or modification of selection.
+ * Handle possible moving of individual carets to new positions or change their selections.
  *
  * @author Miloslav Metelka
  * @since 2.6
@@ -52,7 +53,8 @@ import org.netbeans.api.annotations.common.NonNull;
 public interface CaretMoveHandler {
     
     /**
-     * Possibly move one or more carets to new position by using the given context.
+     * Possibly move one or more carets to new position or change their selections
+     * by using methods in the given context.
      *
      * @param context non-null context containing the manipulation methods.
      */
