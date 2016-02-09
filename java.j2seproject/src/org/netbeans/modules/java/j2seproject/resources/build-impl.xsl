@@ -1729,13 +1729,12 @@ is divided into following sections:
                             </xsl:if>
                             <jvmarg value="-modulepath"/>
                             <jvmarg line="@{{modulepath}}"/>
+                            <jvmarg value="-classpath"/>
+                            <jvmarg line="@{{classpath}}"/>
                             <jvmarg value="-Dfile.encoding=${{runtime.encoding}}"/>
                             <redirector inputencoding="${{runtime.encoding}}" outputencoding="${{runtime.encoding}}" errorencoding="${{runtime.encoding}}"/>
                             <jvmarg line="${{run.jvmargs}}"/>
                             <jvmarg line="${{run.jvmargs.ide}}"/>
-                            <classpath>
-                                <path path="@{{classpath}}"/>
-                            </classpath>
                             <syspropertyset>
                                 <propertyref prefix="run-sys-prop."/>
                                 <mapper type="glob" from="run-sys-prop.*" to="*"/>
