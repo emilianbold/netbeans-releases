@@ -146,7 +146,8 @@ public class DockerInstance {
                 Preferences p = global.node(name);
                 String displayName = p.get(DISPLAY_NAME_KEY, null);
                 String url = p.get(URL_KEY, null);
-                if (displayName != null && url != null) {
+                if (displayName != null && url != null
+                        && (!url.startsWith("file:") || DockerIntegration.getDefault().isSocketSupported())) { // NOI18N
                     DockerInstance instance = new DockerInstance(url, p);
                     instance.init();
                     instances.add(instance);
