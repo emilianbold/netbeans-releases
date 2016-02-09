@@ -1722,15 +1722,17 @@ is divided into following sections:
                         <xsl:attribute name="optional">true</xsl:attribute>
                     </element>
                     <sequential>
+                        <property location="${{build.dir}}/empty" name="empty.dir"/>
+                        <mkdir dir="${{empty.dir}}"/>
                         <java fork="true" classname="@{{modulename}}/@{{classname}}" failonerror="${{java.failonerror}}">
                             <xsl:attribute name="dir">${work.dir}</xsl:attribute>
                             <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
                             <jvmarg value="-modulepath"/>
-                            <jvmarg line="@{{modulepath}}"/>
+                            <jvmarg line="@{{modulepath}}:${{empty.dir}}"/>
                             <jvmarg value="-classpath"/>
-                            <jvmarg line="@{{classpath}}"/>
+                            <jvmarg line="@{{classpath}}:${{empty.dir}}"/>
                             <jvmarg value="-Dfile.encoding=${{runtime.encoding}}"/>
                             <redirector inputencoding="${{runtime.encoding}}" outputencoding="${{runtime.encoding}}" errorencoding="${{runtime.encoding}}"/>
                             <jvmarg line="${{run.jvmargs}}"/>
