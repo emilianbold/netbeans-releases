@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.api.editor.caret;
+    package org.netbeans.api.editor.caret;
 
 import org.netbeans.spi.editor.caret.CaretMoveHandler;
 import java.awt.AlphaComposite;

@@ -48,7 +48,7 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
   <body>
 
   <p>
-  The Editor Caret API opens up the editor to give information about it's carets
+  The Editor Caret API opens up the editor to give information about its carets
   and to manipulate them.
   </p>
   
@@ -70,11 +70,10 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
   </p>
   
   <p>
-  The <code>EditorCaret</code> mutates it's carets in a single transaction. The
-  functional interface 
-  <code><a href="@org-netbeans-modules-editor-lib2@/org/netbeans/api/editor/caret/CaretMoveHandler.html">CaretMoveHandler</a></code>
-  uses the 
+  The <code>EditorCaret</code> mutates its carets in a single transaction.
   <code><a href="@org-netbeans-modules-editor-lib2@/org/netbeans/api/editor/caret/CaretMoveContext.html">CaretMoveContext</a></code>
+  allows clients implementing
+  <code><a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/caret/CaretMoveHandler.html">CaretMoveHandler</a></code>
   to manipulate carets. The following code shows how all carets are moved to the
   end of the word they are currently on.
   
@@ -136,7 +135,7 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
   <p>
   As a technical limitation, <code>EditorCaret</code> has to implement <code>Caret</code>
   to be able to work with Swings Text API. The <code>Caret</code> interface is not
-  aware of multiple carets and any call to it's method will work on the last added
+  aware of multiple carets and any call to its method will work on the last added
   caret. Manipulating the caret using <code>setDot(int)</code> or <code>moveDot(int)</code>
   will retain only the last added caret and move it accordingly.
   </p>

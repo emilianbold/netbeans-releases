@@ -55,6 +55,17 @@ public interface CaretMoveHandler {
     /**
      * Possibly move one or more carets to new position or change their selections
      * by using methods in the given context.
+     * <br>
+     * The method will be called with a document lock acquired.
+     * <br>
+     * The method is allowed to make document mutations in case the caller
+     * of {@link org.netbeans.api.editor.caret.EditorCaret#moveCarets(CaretMoveHandler) }
+     * acquired document write-lock.
+     * <br>
+     * To prevent deadlocks the method should not acquire any additional locks.
+     * <br>
+     * The method is not allowed to call methods of EditorCaret that mutate its state
+     * and do nested calls to <code>EditorCaret.moveCarets()</code>.
      *
      * @param context non-null context containing the manipulation methods.
      */

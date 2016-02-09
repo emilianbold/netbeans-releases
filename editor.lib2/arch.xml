@@ -142,7 +142,10 @@ folding, braces matching, etc.
         <a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/typinghooks/package-summary.html#usecases">org.netbeans.spi.editor.typinghooks</a>
     </li>
     <li>Caret API -
-        <a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/typinghooks/package-summary.html#usecases">org.netbeans.spi.editor.typinghooks</a>
+        <a href="@org-netbeans-modules-editor-lib2@/org/netbeans/api/editor/caret/package-summary.html#usecases">org.netbeans.api.editor.caret</a>
+    </li>
+    <li>Caret SPI -
+        <a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/caret/package-summary.html#usecases">org.netbeans.spi.editor.caret</a>
     </li>
     </ul>
 </answer>
