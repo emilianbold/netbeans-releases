@@ -45,9 +45,9 @@
 package org.netbeans.modules.cnd.modelimpl.test;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
-import static junit.framework.Assert.fail;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -73,11 +73,9 @@ import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
-import static junit.framework.Assert.fail;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelFileFilter;
 
 /**
@@ -188,7 +186,7 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         if (performInWorkDir) {
             workDirBasedProject = new File(getWorkDir(), "project"); // NOI18N
             // copy data dir
-            CndCoreTestUtils.copyDirToWorkDir(getTestCaseDataDir(), workDirBasedProject);
+            copyDirToWorkDir(getTestCaseDataDir(), workDirBasedProject, getTraceModelFileFilter());
             projectDir = workDirBasedProject; 
         } else {
             projectDir = getTestCaseDataDir();
@@ -262,6 +260,10 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
+        if (CndTraceFlags.USE_INDEXING_API) {
+            RepositoryUpdater.getDefault().stop(null);
+        }
+        
         Iterator<TestModelHelper> iterator = projectHelpers.values().iterator();
         while (iterator.hasNext()) {
             TestModelHelper testModelHelper = iterator.next();
@@ -413,4 +415,60 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
             fail(buf.toString());
         }         
     }
+    
+    private void copyDirToWorkDir(File sourceDir, File toDir, TraceModelFileFilter filter) throws IOException {
+        assert (sourceDir.isDirectory()) : sourceDir.getAbsolutePath() + " is not a directory" ;// NOI18N;
+        assert (sourceDir.exists()) : sourceDir.getAbsolutePath() + " does not exist" ;// NOI18N;
+        toDir.mkdirs();
+        assert (toDir.isDirectory());
+        File files[] = sourceDir.listFiles();
+        if (files != null) {
+            for (int i = 0; i < files.length; i++) {
+                File curFile = files[i];
+                File newFile = new File(toDir, curFile.getName());
+                if (curFile.isDirectory()) {
+                    copyDirToWorkDir(curFile, newFile, filter);
+                } else {
+                    boolean add = true;
+                    if (filter != null) {
+                        add = filter.isProjectFile(curFile.getName());
+                    }
+                    if (add) {
+                        copyToWorkDir(curFile, newFile, filter);
+                    }
+                }
+            }
+        }
+    }
+    
+    private void copyToWorkDir(File resource, File toFile, TraceModelFileFilter filter) throws IOException {
+        CndCoreTestUtils.copyToFile(resource, toFile);
+    }
+    
+    public static final class SimpleFileFilter implements TraceModelFileFilter {
+        private final String pattern;
+        private final String additional;
+        
+        public SimpleFileFilter(String name) {
+            pattern = name.toLowerCase();
+            additional = null;
+        }
+
+        public SimpleFileFilter(String first, String second) {
+            pattern = first.toLowerCase();
+            additional = second.toLowerCase();
+        }
+
+        @Override
+        public boolean isProjectFile(String filename) {
+            if (filename.toLowerCase().contains(pattern)) {
+                return true;
+            }
+            if (additional != null) {
+                return filename.toLowerCase().contains(additional);
+            }
+            return false;
+        }
+    }
+
 }

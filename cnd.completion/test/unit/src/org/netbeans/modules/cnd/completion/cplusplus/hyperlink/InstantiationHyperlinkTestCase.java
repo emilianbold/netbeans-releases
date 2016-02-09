@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
 import junit.framework.AssertionFailedError;
+import org.netbeans.modules.cnd.modelimpl.trace.TraceModelFileFilter;
 
 /**
  *
@@ -50,7 +51,21 @@ import junit.framework.AssertionFailedError;
  */
 public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
     public InstantiationHyperlinkTestCase(String testName) {
-        super(testName);
+        super(testName, true);
+    }
+    
+    @Override
+    protected TraceModelFileFilter getTraceModelFileFilter() {
+        String testName = getName();
+        String simpleName = testName.substring(4);
+        switch (simpleName) {
+            case "CyclicTypedef":
+                return new SimpleFileFilter("cyclic_typedef"); 
+            case "GccVector":
+                return new SimpleFileFilter("iz146697"); 
+            default:
+                return new SimpleFileFilter(simpleName); 
+        }
     }
 
     public void test159679() throws Exception {
@@ -181,7 +196,7 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz172419.cpp", 16, 7, "iz172419.cpp", 2, 5);
     }
 
-    public void testBug144079() throws Exception {
+    public void testIZ144079() throws Exception {
         // Bug 144079 - Hyperlink from type goes to the main template instead of specialization
         performTest("iz144079.cpp", 10, 12, "iz144079.cpp", 5, 1);
         performTest("iz144079.cpp", 11, 12, "iz144079.cpp", 1, 1);

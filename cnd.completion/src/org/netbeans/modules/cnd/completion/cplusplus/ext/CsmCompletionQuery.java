@@ -2370,10 +2370,7 @@ abstract public class CsmCompletionQuery {
                         case PLUS:
                         case MINUS:
                             if (findType && mtdList.isEmpty() && lastType == null) {
-                                if (item.getParameterCount() > 0) {
-                                    lastType = resolveType(item.getParameter(0));
-                                    staticOnly = false;
-                                }
+                                findStandardCommonType(item);
                                 break;
                             }
                             // nobreak;
@@ -2398,25 +2395,8 @@ abstract public class CsmCompletionQuery {
                                     if (filtered.size() > 0) {
                                         mtdList = filtered;
                                         lastType = CompletionSupport.extractFunctionType(this, mtdList, null, typeList);
-                                    } else if (item.getParameterCount() > 1) {
-                                        CsmType type0 = resolveType(item.getParameter(0));
-                                        CsmType type1 = resolveType(item.getParameter(1));
-                                        if(type0 != null && type1 != null) {
-                                            lastType = sup.getCommonType(this, type1, type0, item.getTokenID(0));
-                                            if(lastType == null) {
-                                                if(type0.isBuiltInBased(true)) {
-                                                    lastType = type1;
-                                                } else {
-                                                    lastType = type0;
-                                                }
-                                            }
-                                        } else {
-                                            lastType = type0;
-                                        }
-                                        staticOnly = false;
-                                    } else if (item.getParameterCount() > 0) {
-                                        lastType = resolveType(item.getParameter(0));
-                                        staticOnly = false;
+                                    } else {
+                                        findStandardCommonType(item);
                                     }
                                 }
                                 if(lastType == null) {
@@ -3229,6 +3209,29 @@ abstract public class CsmCompletionQuery {
                 }
             }
             return func;
+        }
+        
+        private void findStandardCommonType(CsmCompletionExpression item) {
+            if (item.getParameterCount() > 1) {
+                CsmType type0 = resolveType(item.getParameter(0));
+                CsmType type1 = resolveType(item.getParameter(1));
+                if (type0 != null && type1 != null) {
+                    lastType = sup.getCommonType(this, type1, type0, item.getTokenID(0));
+                    if (lastType == null) {
+                        if (type0.isBuiltInBased(true)) {
+                            lastType = type1;
+                        } else {
+                            lastType = type0;
+                        }
+                    }
+                } else {
+                    lastType = type0;
+                }
+                staticOnly = false;
+            } else if (item.getParameterCount() > 0) {
+                lastType = resolveType(item.getParameter(0));
+                staticOnly = false;
+            }
         }
         
         private boolean shouldDoADLLookup(boolean first, boolean methodOpen) {

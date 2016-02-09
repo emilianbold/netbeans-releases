@@ -42,13 +42,33 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
+import org.netbeans.modules.cnd.modelimpl.trace.TraceModelFileFilter;
+
 /**
  * @author Nikolay Krasilnikov
  */
 public class Cpp11TestCase extends HyperlinkBaseTestCase {
 
     public Cpp11TestCase(String testName) {
-        super(testName);
+        super(testName, true);
+    }
+
+    @Override
+    protected TraceModelFileFilter getTraceModelFileFilter() {
+        String testName = getName();
+        String simpleName = testName.substring(4);
+        switch (simpleName) {
+            case "ExtEnumDefition212843":
+                return new SimpleFileFilter("iz212843");
+            case "StronglyTypedEnumerations":
+                return new SimpleFileFilter("enum");
+            case "RangeBasedForLoop":
+                return new SimpleFileFilter("rangefor");
+            case "ExtMemberEnumEnumerators212124":
+                return new SimpleFileFilter("iz212124");
+            default:
+                return new SimpleFileFilter(simpleName); 
+        }
     }
 
     @Override

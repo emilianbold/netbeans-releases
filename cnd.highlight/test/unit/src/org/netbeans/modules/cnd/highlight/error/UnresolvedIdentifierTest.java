@@ -49,6 +49,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImplTest;
+import org.netbeans.modules.cnd.modelimpl.trace.TraceModelFileFilter;
 
 /**
  * Test for IdentifierErrorProvider.
@@ -63,6 +64,28 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
 
     public UnresolvedIdentifierTest(String testName) {
         super(testName);
+    }
+    
+    @Override
+    protected TraceModelFileFilter getTraceModelFileFilter() {
+        String testName = getName();
+        String simpleName = testName.substring(4);
+        switch (simpleName) {
+            case "IZ162745":
+                return new SimpleFileFilter("unnamed_enum_typedef"); 
+            case "TemplateParameterTypes":
+                return new SimpleFileFilter("templates"); 
+            case "TemplateParameterAncestor":
+                return new SimpleFileFilter("template_parameter_ancestor"); 
+            case "TypedefTemplate":
+                return new SimpleFileFilter("typedef_templ"); 
+            case "ForwardClassDecl":
+                return new SimpleFileFilter("forward_class_decl"); 
+            case "SkipSomeInstructionsBlock":
+                return new SimpleFileFilter("skipBlocks"); 
+            default:
+                return new SimpleFileFilter(simpleName); 
+        }
     }
 
     public void test234573() throws Exception {
@@ -95,7 +118,7 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("iz191336.cpp");
     }
     
-    public void testArrowDerefOfThis() throws Exception {
+    public void testArrow_Deref_Of_This() throws Exception {
         performStaticTest("arrow_deref_of_this.cpp");
     }
 
@@ -150,11 +173,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("template_parameter_ancestor.cpp");
     }
     
-    public void testIZ144873() throws Exception {
+    public void testIZ_144873() throws Exception {
         performStaticTest("iz_144873.cpp");
     }
 
-    public void testIZ145118() throws Exception {
+    public void testIZ_145118() throws Exception {
         performStaticTest("iz_145118.cpp");
     }
 
@@ -293,7 +316,7 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("bug186638.cpp");
     }
 
-    public void testIZ201258() throws Exception {
+    public void testBug201258() throws Exception {
         // Bug 201258 - Forward declarations not resolved
         performStaticTest("bug201258.cpp");
     }
