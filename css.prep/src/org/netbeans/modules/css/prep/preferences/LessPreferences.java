@@ -68,7 +68,7 @@ public final class LessPreferences extends BasePreferences implements CssPreproc
 
     @Override
     public boolean isConfigured(Project project) {
-        return isEnabled(project, CONFIGURED);
+        return isConfigured(project, CONFIGURED);
     }
 
     @Override
