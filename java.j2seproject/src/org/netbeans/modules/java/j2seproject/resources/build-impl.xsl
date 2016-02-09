@@ -531,10 +531,6 @@ is divided into following sections:
                         <xsl:attribute name="name">gensrcdir</xsl:attribute>
                         <xsl:attribute name="default">${empty.dir}</xsl:attribute>
                     </attribute>
-                    <attribute>
-                        <xsl:attribute name="name">modulename</xsl:attribute>
-                        <xsl:attribute name="default">${module.name}</xsl:attribute>
-                    </attribute>
                     <element>
                         <xsl:attribute name="name">customize</xsl:attribute>
                         <xsl:attribute name="optional">true</xsl:attribute>
@@ -543,11 +539,10 @@ is divided into following sections:
                         <property name="empty.dir" location="${{build.dir}}/empty"/><!-- #157692 -->
                         <mkdir dir="${{empty.dir}}"/>
                         <mkdir dir="@{{apgeneratedsrcdir}}"/>
-                        <mkdir dir="@{{destdir}}/@{{modulename}}"/>
                         <javac>
                             <xsl:attribute name="srcdir">@{srcdir}</xsl:attribute>
                             <xsl:attribute name="sourcepath">@{sourcepath}</xsl:attribute>
-                            <xsl:attribute name="destdir">@{destdir}/@{modulename}</xsl:attribute>
+                            <xsl:attribute name="destdir">@{destdir}</xsl:attribute>
                             <xsl:attribute name="debug">@{debug}</xsl:attribute>
                             <xsl:attribute name="deprecation">${javac.deprecation}</xsl:attribute>
                             <xsl:attribute name="encoding">${source.encoding}</xsl:attribute>
@@ -1787,7 +1782,7 @@ is divided into following sections:
                     <xsl:attribute name="name">jar</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
                     <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}" index="${{jar.index}}">
-                        <j2seproject1:fileset dir="${{build.classes.dir}}/${{module.name}}" excludes="${{dist.archive.excludes}}"/>
+                        <j2seproject1:fileset dir="${{build.classes.dir}}" excludes="${{dist.archive.excludes}}"/>
                         <!-- XXX should have a property serving as the excludes list -->
                     </jar>
                 </presetdef>
@@ -1934,7 +1929,7 @@ is divided into following sections:
             
             <target name="-pre-pre-compile">
                 <xsl:attribute name="depends">init,deps-jar<xsl:if test="/p:project/p:configuration/jaxrpc:web-service-clients/jaxrpc:web-service-client">,web-service-client-generate</xsl:if></xsl:attribute>
-                <mkdir dir="${{build.classes.dir}}/${{module.name}}"/>
+                <mkdir dir="${{build.classes.dir}}"/>
             </target>
             
             <target name="-pre-compile">
@@ -1961,7 +1956,7 @@ is divided into following sections:
                 <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile, -copy-persistence-xml,-compile-depend</xsl:attribute>
                 <xsl:attribute name="if">have.sources</xsl:attribute>
                 <j2seproject3:javac gensrcdir="${{build.generated.sources.dir}}"/>
-                <copy todir="${{build.classes.dir}}/${{module.name}}">
+                <copy todir="${{build.classes.dir}}">
                     <xsl:call-template name="createFilesets">
                         <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
                         <!-- XXX should perhaps use ${includes} and ${excludes} -->
