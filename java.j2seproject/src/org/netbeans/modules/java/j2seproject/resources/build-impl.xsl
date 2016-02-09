@@ -1693,8 +1693,61 @@ is divided into following sections:
                     </sequential>
                 </macrodef>
             </target>
-            
-            <target name="-init-macrodef-java">
+            <target name="-init-macrodef-java-with-modules" if="modules.supported.internal">
+                <macrodef>
+                    <xsl:attribute name="name">java</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">modulename</xsl:attribute>
+                        <xsl:attribute name="default">${module.name}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">classname</xsl:attribute>
+                        <xsl:attribute name="default">${main.class}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">modulepath</xsl:attribute>
+                        <xsl:attribute name="default">${run.modulepath}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">classpath</xsl:attribute>
+                        <xsl:attribute name="default">${run.classpath}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">jvm</xsl:attribute>
+                        <xsl:attribute name="default">jvm</xsl:attribute>
+                    </attribute>
+                    <element>
+                        <xsl:attribute name="name">customize</xsl:attribute>
+                        <xsl:attribute name="optional">true</xsl:attribute>
+                    </element>
+                    <sequential>
+                        <java fork="true" classname="@{{modulename}}/@{{classname}}" failonerror="${{java.failonerror}}">
+                            <xsl:attribute name="dir">${work.dir}</xsl:attribute>
+                            <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
+                                <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
+                            </xsl:if>
+                            <jvmarg value="-modulepath"/>
+                            <jvmarg line="@{{modulepath}}"/>
+                            <jvmarg value="-Dfile.encoding=${{runtime.encoding}}"/>
+                            <redirector inputencoding="${{runtime.encoding}}" outputencoding="${{runtime.encoding}}" errorencoding="${{runtime.encoding}}"/>
+                            <jvmarg line="${{run.jvmargs}}"/>
+                            <jvmarg line="${{run.jvmargs.ide}}"/>
+                            <classpath>
+                                <path path="@{{classpath}}"/>
+                            </classpath>
+                            <syspropertyset>
+                                <propertyref prefix="run-sys-prop."/>
+                                <mapper type="glob" from="run-sys-prop.*" to="*"/>
+                            </syspropertyset>
+                            <customize/>
+                            <jvmarg value="-m"/>
+                        </java>
+                    </sequential>
+                </macrodef>
+            </target>
+
+            <target name="-init-macrodef-java-without-modules" unless="modules.supported.internal">
                 <macrodef>
                     <xsl:attribute name="name">java</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
@@ -1737,6 +1790,8 @@ is divided into following sections:
                     </sequential>
                 </macrodef>
             </target>
+
+            <target name="-init-macrodef-java" depends="-init-modules-properties, -init-macrodef-java-with-modules, -init-macrodef-java-without-modules"/>
 
             <target name="-init-macrodef-copylibs">
                 <macrodef>
