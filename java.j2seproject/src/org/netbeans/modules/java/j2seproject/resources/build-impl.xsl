@@ -171,6 +171,7 @@ is divided into following sections:
                     </not>
                 </condition>
                 <property name="javac.modulepath" value=""/>
+                <property name="run.modulepath" value="${{javac.modulepath}}:${{build.classes.dir}}"/>
                 <property name="javac.upgrademodulepath" value=""/>
                 <condition property="javac.systemmodulepath.cmd.line.arg" value="-systemmodulepath '${{javac.systemmodulepath}}'" else="">
                     <and>
@@ -206,11 +207,11 @@ is divided into following sections:
                 <property name="module.name" value=""/>
             </target>
 
-            <target name="-init-module-name-no-modules" depends="-init-modules-properties" unless="modules.supported.internal">
+            <target name="-init-module-name-without-modules" depends="-init-modules-properties" unless="modules.supported.internal">
                 <property name="module.name" value=""/>
             </target>
 
-            <target name="-init-module-name" depends="-init-modules-properties, -init-module-name-with-modules, -init-module-name-no-modules"/>
+            <target name="-init-module-name" depends="-init-modules-properties, -init-module-name-with-modules, -init-module-name-without-modules"/>
 
             <target name="-do-init">
                 <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-init-modules-properties,-init-module-name,-init-macrodef-property</xsl:attribute>
