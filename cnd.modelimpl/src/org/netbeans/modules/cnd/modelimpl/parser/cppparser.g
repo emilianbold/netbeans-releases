@@ -350,6 +350,7 @@ tokens {
 	in_return = false;
 	is_address = false;
 	is_pointer = false;
+        in_postfunc_unknown_specifiers = 0;
 
 	/*if ((flags & CPP_STATEMENT_TRACE) > 0) {
 	    statementTrace = 1;
@@ -636,6 +637,20 @@ tokens {
 	boolean in_return;
 	boolean is_address;
 	boolean is_pointer;
+        int in_postfunc_unknown_specifiers; // to protect from infinite loop
+
+        private boolean setInPostFuncUnknownSpecifiers(boolean enter) {
+            if (enter) {
+                boolean weAreInside = (in_postfunc_unknown_specifiers > 0);
+                ++in_postfunc_unknown_specifiers;
+                return weAreInside;
+            } else {
+                if (in_postfunc_unknown_specifiers > 0) {
+                    --in_postfunc_unknown_specifiers;
+                }
+                return true; // always return true if we are exiting
+            }
+        }
 
         private static final int NESTED_CLASSES_LIMIT = 32;
 
@@ -2070,6 +2085,26 @@ unknown_posttype_declaration_specifiers_list
     ((literal_ident literal_ident) => s=literal_ident! unknown_posttype_declaration_specifiers_list)?
     ;
 
+unknown_postfunction_declarator_specifiers
+    {String s;}
+    :
+        (   
+            {setInPostFuncUnknownSpecifiers(true)}?
+                // We are already inside this rule, return immediately
+        |
+            (
+                (function_K_R_parameter_list LCURLY)=>
+                    // Do not consume K&R params.
+            |
+                ((literal_ident)+ is_post_declarator_token)=> 
+                    (options {greedy = true;} : s = literal_ident!)+
+            |
+                // Empty alternative
+            )
+        )
+        ({setInPostFuncUnknownSpecifiers(false)}?)
+    ;
+
 decl_specifiers_before_type
     {StorageClass sc; TypeQualifier tq;}
     :
@@ -2892,6 +2927,7 @@ function_like_var_declarator
         (asm_block!)?
         (options {greedy=true;} :function_attribute_specification)?
         (options {greedy=true;} : LITERAL_override | LITERAL_final | LITERAL_new)*                
+        unknown_postfunction_declarator_specifiers
     ;
 
 declarator_suffixes
@@ -2948,6 +2984,8 @@ function_direct_declarator [boolean definition, boolean symTabCheck]
         (options {greedy=true;} :function_attribute_specification)?
         (options {greedy=true;} :asm_block!)?
         (options {greedy=true;} :function_attribute_specification)?
+
+        unknown_postfunction_declarator_specifiers
     ;
  
 protected
@@ -3098,6 +3136,8 @@ ctor_direct_declarator[boolean definition] returns [boolean isCtor = false]
         ((ASSIGNEQUAL OCTALINT) => ASSIGNEQUAL OCTALINT)?
         // IZ 136239 : C++ grammar does not allow attributes after constructor
         (function_attribute_specification)?
+
+        unknown_postfunction_declarator_specifiers
     ;
 
 qualified_ctor_id returns [String q = ""]
@@ -3190,7 +3230,7 @@ dtor_declarator[boolean definition]
 	LPAREN (LITERAL_void)? RPAREN
         //{declaratorEndParameterList(definition);}
         (ASSIGNEQUAL OCTALINT)?	
-	(exception_specification)?        
+	(exception_specification)?      
 	;
 
 protected
@@ -3242,7 +3282,9 @@ dtor_direct_declarator[boolean definition]
 
         ((ASSIGNEQUAL OCTALINT) => ASSIGNEQUAL OCTALINT)?
 
-        (options {greedy=true;} :function_attribute_specification)?
+        (options {greedy=true;} : function_attribute_specification)?
+
+        unknown_postfunction_declarator_specifiers
 	;
 
 qualified_dtor_id returns [String q = ""]
