@@ -214,6 +214,10 @@ public enum ServerDetails {
      * @return -1 if the directory is not a GlassFish server install
      */
     public static int getVersionFromInstallDirectory(File glassfishDir)  {
+        if (glassfishDir == null) {
+            return -1;
+        }
+
         GlassFishVersion version
                 = ServerUtils.getServerVersion(glassfishDir.getAbsolutePath());
         ServerDetails sd = null;
