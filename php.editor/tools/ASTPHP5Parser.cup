@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser;
 
@@ -58,6 +58,9 @@ parser code {:
     private ErrorStrategy errorStrategy = defaultStrategy;
 
     private ParserErrorHandler errorHandler = null;
+    private String fileName = null;
+    private int anonymousClassCounter = 0;
+
 
     public void setErrorHandler (ParserErrorHandler handler) {
         this.errorHandler = handler;
@@ -65,6 +68,20 @@ parser code {:
 
     public ParserErrorHandler getErrorHandler () {
         return this.errorHandler;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        assert fileName != null;
+        this.fileName = fileName;
+    }
+
+    public int incrementAndGetAnonymousClassCounter() {
+        anonymousClassCounter++;
+        return anonymousClassCounter;
     }
 
 	public Dispatch createDispatch(VariableBase dispatcher, VariableBase property, List dimensions) {
@@ -4131,8 +4148,9 @@ T_NEW:start T_CLASS:c ctor_arguments:ctor
 extends_from:superClass implements_list:interfaces
 T_CURLY_OPEN:blockStart class_statement_list:statementList T_CURLY_CLOSE:blockEnd
 {:
+    final int counter = parser.incrementAndGetAnonymousClassCounter();
 	Block block = new Block(blockStartleft, blockEndright, statementList);
-	ClassInstanceCreation classInstance = ClassInstanceCreation.anonymous(startleft, blockEndright, cleft, ctor, superClass, interfaces, block);
+	ClassInstanceCreation classInstance = ClassInstanceCreation.anonymous(parser.getFileName(), counter, startleft, blockEndright, cleft, ctor, superClass, interfaces, block);
 	RESULT = classInstance;
 :}
 ;

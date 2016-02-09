@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.php.editor.csl;
@@ -1324,6 +1324,215 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
 
     public void testGroupUses01_15() throws Exception {
         checkOccurrences(getTestPath(), "class MyC^ls implements Iface {", true); // unused
+    }
+
+    public void testAnonymousClasses01_01() throws Exception {
+        checkOccurrences(getTestPath(), "interface Lo^gger {", true);
+    }
+
+    public void testAnonymousClasses01_02() throws Exception {
+        checkOccurrences(getTestPath(), "    public function lo^g(string $msg);", true);
+    }
+
+    public void testAnonymousClasses01_03() throws Exception {
+        checkOccurrences(getTestPath(), "$anonCls = new class implements Log^ger {", true);
+    }
+
+    public void testAnonymousClasses01_04() throws Exception {
+        checkOccurrences(getTestPath(), "    public function lo^g(string $msg1) {", true);
+    }
+
+    public void testAnonymousClasses01_05() throws Exception {
+        checkOccurrences(getTestPath(), "    public function log(string $ms^g1) {", true);
+    }
+
+    public void testAnonymousClasses01_06() throws Exception {
+        checkOccurrences(getTestPath(), "        echo $ms^g1;", true);
+    }
+
+    public void testAnonymousClasses01_07() throws Exception {
+        checkOccurrences(getTestPath(), "    public function getLogger(): Log^ger {", true);
+    }
+
+    public void testAnonymousClasses01_08() throws Exception {
+        checkOccurrences(getTestPath(), "    public function setLogger(Lo^gger $logger) {", true);
+    }
+
+    public void testAnonymousClasses01_09() throws Exception {
+        checkOccurrences(getTestPath(), "$app->setLogger(new class implements Lo^gger {", true);
+    }
+
+    public void testAnonymousClasses01_10() throws Exception {
+        checkOccurrences(getTestPath(), "    public function l^og(string $msg2) {", true);
+    }
+
+    public void testAnonymousClasses01_11() throws Exception {
+        checkOccurrences(getTestPath(), "    public function log(string $m^sg2) {", true);
+    }
+
+    public void testAnonymousClasses01_12() throws Exception {
+        checkOccurrences(getTestPath(), "        echo $ms^g2;", true);
+    }
+
+    public void testAnonymousClasses01_13() throws Exception {
+        checkOccurrences(getTestPath(), "(new class implements Log^ger {", true);
+    }
+
+    public void testAnonymousClasses01_14() throws Exception {
+        checkOccurrences(getTestPath(), "    public function l^og(string $msg3) {", true);
+    }
+
+    public void testAnonymousClasses01_15() throws Exception {
+        checkOccurrences(getTestPath(), "    public function log(string $m^sg3) {", true);
+    }
+
+    public void testAnonymousClasses01_16() throws Exception {
+        checkOccurrences(getTestPath(), "        echo $ms^g3 . PHP_EOL;", true);
+    }
+
+    public void testAnonymousClasses01_17() throws Exception {
+        checkOccurrences(getTestPath(), "})->lo^g('hello world');", true);
+    }
+
+    public void testAnonymousClasses02_01() throws Exception {
+        checkOccurrences(getTestPath(), "class Some^Class {", true);
+    }
+
+    public void testAnonymousClasses02_02() throws Exception {
+        checkOccurrences(getTestPath(), "interface Some^Interface {", true);
+    }
+
+    public void testAnonymousClasses02_03() throws Exception {
+        checkOccurrences(getTestPath(), "trait Some^Trait {", true);
+    }
+
+    public void testAnonymousClasses02_04() throws Exception {
+        checkOccurrences(getTestPath(), "var_dump(new class(10) extends Some^Class implements SomeInterface {", true);
+    }
+
+    public void testAnonymousClasses02_05() throws Exception {
+        checkOccurrences(getTestPath(), "var_dump(new class(10) extends SomeClass implements Some^Interface {", true);
+    }
+
+    public void testAnonymousClasses02_06() throws Exception {
+        checkOccurrences(getTestPath(), "    private $n^um;", true);
+    }
+
+    public void testAnonymousClasses02_07() throws Exception {
+        checkOccurrences(getTestPath(), "    public function __construct($n^um) {", true);
+    }
+
+    public void testAnonymousClasses02_08() throws Exception {
+        checkOccurrences(getTestPath(), "        $this->n^um = $num;", true);
+    }
+
+    public void testAnonymousClasses02_09() throws Exception {
+        checkOccurrences(getTestPath(), "        $this->num = $nu^m;", true);
+    }
+
+    public void testAnonymousClasses02_10() throws Exception {
+        checkOccurrences(getTestPath(), "    use Some^Trait;", true);
+    }
+
+    public void testAnonymousClasses03_01() throws Exception {
+        checkOccurrences(getTestPath(), "class Ou^ter {", true);
+    }
+
+    public void testAnonymousClasses03_02() throws Exception {
+        checkOccurrences(getTestPath(), "    private $pr^op = 1;", true);
+    }
+
+    public void testAnonymousClasses03_03() throws Exception {
+        checkOccurrences(getTestPath(), "    protected $pro^p2 = 2;", true);
+    }
+
+    public void testAnonymousClasses03_04() throws Exception {
+        checkOccurrences(getTestPath(), "    protected function fun^c1() {", true);
+    }
+
+    public void testAnonymousClasses03_05() throws Exception {
+        checkOccurrences(getTestPath(), "    public function fun^c2() {", true);
+    }
+
+    public void testAnonymousClasses03_06() throws Exception {
+        checkOccurrences(getTestPath(), "        return new class($this->pr^op) extends Outer {", true);
+    }
+
+    public void testAnonymousClasses03_07() throws Exception {
+        checkOccurrences(getTestPath(), "        return new class($this->prop) extends Out^er {", true);
+    }
+
+    // XXX
+//    public void testAnonymousClasses03_08() throws Exception {
+//        checkOccurrences(getTestPath(), "            private $pro^p3;", true);
+//    }
+
+    // XXX
+//    public void testAnonymousClasses03_09() throws Exception {
+//        checkOccurrences(getTestPath(), "                $this->pro^p3 = $prop;", true);
+//    }
+
+    // XXX
+//    public void testAnonymousClasses03_10() throws Exception {
+//        checkOccurrences(getTestPath(), "            public function fun^c3() {", true);
+//    }
+
+    public void testAnonymousClasses03_11() throws Exception {
+        checkOccurrences(getTestPath(), "                return $this->pr^op2 + $this->prop3 + $this->func1();", true);
+    }
+
+    // XXX
+//    public void testAnonymousClasses03_12() throws Exception {
+//        checkOccurrences(getTestPath(), "                return $this->prop2 + $this->pr^op3 + $this->func1();", true);
+//    }
+
+    public void testAnonymousClasses03_13() throws Exception {
+        checkOccurrences(getTestPath(), "                return $this->prop2 + $this->prop3 + $this->fun^c1();", true);
+    }
+
+    public void testAnonymousClasses03_14() throws Exception {
+        checkOccurrences(getTestPath(), "echo (new Out^er)->func2()->func3() . PHP_EOL;", true);
+    }
+
+    public void testAnonymousClasses03_15() throws Exception {
+        checkOccurrences(getTestPath(), "echo (new Outer)->fu^nc2()->func3() . PHP_EOL;", true);
+    }
+
+    // XXX
+//    public void testAnonymousClasses03_16() throws Exception {
+//        checkOccurrences(getTestPath(), "echo (new Outer)->func2()->fu^nc3() . PHP_EOL;", true);
+//    }
+
+    public void testAnonymousClasses04_01() throws Exception {
+        checkOccurrences(getTestPath(), "        $this->tes^tB();", true);
+    }
+
+    public void testAnonymousClasses04_02() throws Exception {
+        checkOccurrences(getTestPath(), "    private function tes^tB() {", true);
+    }
+
+    public void testAnonymousClasses05_01() throws Exception {
+        checkOccurrences(getTestPath(), "interface Log^ger {", true);
+    }
+
+    public void testAnonymousClasses05_02() throws Exception {
+        checkOccurrences(getTestPath(), "use api\\Lo^gger as MyLogger;", true);
+    }
+
+    public void testAnonymousClasses05_03() throws Exception {
+        checkOccurrences(getTestPath(), "use api\\Logger as MyLogg^er;", true);
+    }
+
+    public void testAnonymousClasses05_04() throws Exception {
+        checkOccurrences(getTestPath(), "$x = new class implements MyLog^ger {", true);
+    }
+
+    public void testAnonymousClasses05_05() throws Exception {
+        checkOccurrences(getTestPath(), "    public function lo^g($msg2) {", true);
+    }
+
+    public void testAnonymousClasses05_06() throws Exception {
+        checkOccurrences(getTestPath(), "$x->lo^g('');", true);
     }
 
     @Override

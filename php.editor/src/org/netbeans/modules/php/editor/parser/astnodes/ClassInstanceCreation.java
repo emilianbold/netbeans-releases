@@ -68,6 +68,9 @@ public class ClassInstanceCreation extends Expression {
     // ctor
     private ClassName className;
     // anonymous
+    @NullAllowed
+    private final String fileName;
+    private final int classCounter;
     private final int classStartOffset;
     private Expression superClass;
     private final List<Expression> interfaces = new ArrayList<>();
@@ -82,15 +85,20 @@ public class ClassInstanceCreation extends Expression {
         if (ctorParams != null) {
             this.ctorParams.addAll(ctorParams);
         }
+        fileName = null;
+        classCounter = -1;
         classStartOffset = -1;
     }
 
     // anonymous
-    private ClassInstanceCreation(int start, int end, int classStartOffset, @NullAllowed List<Expression> ctorParams, @NullAllowed Expression superClass,
-            @NullAllowed List<Expression> interfaces, @NonNull Block body) {
+    private ClassInstanceCreation(String fileName, int classCounter, int start, int end, int classStartOffset, @NullAllowed List<Expression> ctorParams,
+            @NullAllowed Expression superClass, @NullAllowed List<Expression> interfaces, @NonNull Block body) {
         super(start, end);
+        assert classCounter > 0 : classCounter;
         assert classStartOffset > -1 : classStartOffset;
         assert body != null;
+        this.fileName = fileName == null ? null : fileName.replace(' ', '_').replace('.', '_'); // NOI18N
+        this.classCounter = classCounter;
         this.classStartOffset = classStartOffset;
         if (ctorParams != null) {
             this.ctorParams.addAll(ctorParams);
@@ -102,9 +110,9 @@ public class ClassInstanceCreation extends Expression {
         this.body = body;
     }
 
-    public static ClassInstanceCreation anonymous(int start, int end, int classStartOffset, List<Expression> ctorParams, Expression superClass,
-            List<Expression> interfaces, Block body) {
-        return new ClassInstanceCreation(start, end, classStartOffset, ctorParams, superClass, interfaces, body);
+    public static ClassInstanceCreation anonymous(String fileName, int classCounter, int start, int end, int classStartOffset, List<Expression> ctorParams,
+            Expression superClass, List<Expression> interfaces, Block body) {
+        return new ClassInstanceCreation(fileName, classCounter, start, end, classStartOffset, ctorParams, superClass, interfaces, body);
     }
 
     public boolean isAnonymous() {
@@ -114,13 +122,14 @@ public class ClassInstanceCreation extends Expression {
     /**
      * Class name of this instance creation node.
      * <p>
-     * Syntetic name for anonymous class (<tt>Anonymous#&lt;offset></tt>).
+     * Syntetic name for anonymous class (<tt>#anon#&lt;fileName>#&lt;counter></tt>).
      *
      * @return class name
      */
     public ClassName getClassName() {
         if (isAnonymous()) {
-            return new ClassName(classStartOffset, classStartOffset, new Identifier(0, 0, "Anonymous#" + classStartOffset)); // NOI18N
+            return new ClassName(classStartOffset, classStartOffset,
+                    new Identifier(classStartOffset, classStartOffset, "#anon#" + fileName + "#" + classCounter)); // NOI18N
         }
         return className;
     }
