@@ -64,10 +64,19 @@ abstract class BasePreferences {
     }
 
     protected boolean isEnabled(Project project, String propertyName) {
+        // first, try to find property in private.properties
+        String privateEnabled = getPrivatePreferences(project).get(propertyName, null);
+        if (privateEnabled != null) {
+            return Boolean.parseBoolean(privateEnabled);
+        }
+        // get property from public project.properties
         return getPreferences(project).getBoolean(propertyName, false);
     }
 
     protected void setEnabled(Project project, String propertyName, boolean enabled) {
+        // delete property from private.properties
+        getPrivatePreferences(project).remove(propertyName);
+        // set property in public project.properties
         getPreferences(project).putBoolean(propertyName, enabled);
     }
 
@@ -95,6 +104,11 @@ abstract class BasePreferences {
     protected Preferences getPreferences(Project project) {
         assert project != null;
         return ProjectUtils.getPreferences(project, BasePreferences.class, true);
+    }
+
+    protected Preferences getPrivatePreferences(Project project) {
+        assert project != null;
+        return ProjectUtils.getPreferences(project, BasePreferences.class, false);
     }
 
 }
