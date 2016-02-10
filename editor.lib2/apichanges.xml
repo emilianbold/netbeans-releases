@@ -124,7 +124,6 @@ is the proper place.
             <class name="EditorUtilities" package="org.netbeans.api.editor" />
             <package name="org.netbeans.api.editor.caret" />
             <issue number="257893"/>
-            <branch name="editor_multi_caret"/>
         </change>
         <change id="shift-highlights-sequence">
             <summary>Extended HightlightsSequence by ShiftHighlightsSequence</summary>
