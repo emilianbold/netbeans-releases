@@ -530,6 +530,26 @@ public final class EditorCaret implements Caret {
      * <br>
      * Note that the move handler does not permit to add or remove carets - this has to be performed
      * by other methods present in this class (as another transaction over the editor caret).
+     * <br>
+     * <pre>
+     * <code>
+     *   // Go one line up with all carets
+     *   editorCaret.moveCarets(new CaretMoveHandler() {
+     *     &#64;Override public void moveCarets(CaretMoveContext context) {
+     *       for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
+     *         try {
+     *           int dot = caretInfo.getDot();
+     *           dot = Utilities.getPositionAbove(target, dot, p.x);
+     *           Position dotPos = doc.createPosition(dot);
+     *           context.setDot(caretInfo, dotPos);
+     *         } catch (BadLocationException e) {
+     *           // the position stays the same
+     *         }
+     *       }
+     *     }
+     *   });
+     * </code>
+     * </pre>
      *
      * @param moveHandler non-null move handler to perform the changes. The handler's methods
      *  will be given a context to operate on.
@@ -548,6 +568,18 @@ public final class EditorCaret implements Caret {
      * <br>
      * This method requires the caller to have either read lock or write lock acquired
      * over the underlying document.
+     * <br>
+     * <pre>
+     * <code>
+     *   editorCaret.addCaret(pos, pos); // Add a new caret at pos.getOffset()
+     * 
+     *   Position pos2 = doc.createPosition(pos.getOffset() + 2);
+     *   // Add a new caret with selection starting at pos and extending to pos2 with caret located at pos2
+     *   editorCaret.addCaret(pos2, pos);
+     *   // Add a new caret with selection starting at pos and extending to pos2 with caret located at pos
+     *   editorCaret.addCaret(pos, pos2);
+     * </code>
+     * </pre>
      * 
      * @param dotPos position of the newly created caret.
      * @param markPos beginning of the selection (the other end is dotPos) or the same position like dotPos for no selection.
@@ -555,6 +587,9 @@ public final class EditorCaret implements Caret {
      * @return difference between current count of carets and the number of carets when the operation started.
      *  Returns Integer.MIN_VALUE if the operation was cancelled due to the caret not being installed in any text component
      *  or no document installed in the text component.
+     *  <br>
+     *  Note that adding a new caret to offset where another caret is already located may lead
+     *  to its immediate removal.
      */
     public int addCaret(@NonNull Position dotPos, @NonNull Position markPos) {
         return runTransaction(CaretTransaction.RemoveType.NO_REMOVE, 0,
@@ -569,6 +604,19 @@ public final class EditorCaret implements Caret {
      * <br>
      * This method requires the caller to have either read lock or write lock acquired
      * over the underlying document.
+     * <br>
+     * <pre>
+     * <code>
+     *   List&lt;Position&gt; pairs = new ArrayList&lt;&gt;();
+     *   pairs.add(dotPos);
+     *   pairs.add(dotPos);
+     *   pairs.add(dot2Pos);
+     *   pairs.add(mark2Pos);
+     *   // Add caret located at dotPos.getOffset() and another one with selection
+     *   // starting at mark2Pos and extending to dot2Pos with caret located at dot2Pos
+     *   editorCaret.addCaret(pairs);
+     * </code>
+     * </pre>
      * 
      * @param dotAndMarkPosPairs list of position pairs consisting of dot position
      *  and mark position (selection start position) which may be the same position like the dot

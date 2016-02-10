@@ -138,11 +138,21 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
   aware of multiple carets and any call to its method will work on the last added
   caret. Manipulating the caret using <code>setDot(int)</code> or <code>moveDot(int)</code>
   will retain only the last added caret and move it accordingly.
+  <br>
+  <code>editorTextComponent.getCaret()</code> will now always return <code>EditorCaret</code>
+  instance instead of the original caret implementation <code>org.netbeans.editor.BaseCaret</code>.
+  Since clients were expected to only rely on <code>javax.swing.text.Caret</code> returned type
+  (except internal code in editor modules) they should not be affected by the change
+  since <code>EditorCaret</code> implements <code>Caret</code> interface.
+  <br>
+  With official Caret API the clients can start to cast
+  <code>editorTextComponent.getCaret()</code> to <code>EditorCaret</code> type
+  and use its extended functionality.
   </p>
   
   <h3><a name="usecases">Use cases</a></h3>
-  
-  <p style="color:red">TBD</p>
-  
+  <p>
+  Use cases are shown in javadoc documentation of particular methods.
+  </p>
   </body>
 </html>
