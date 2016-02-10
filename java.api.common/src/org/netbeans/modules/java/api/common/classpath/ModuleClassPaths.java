@@ -477,15 +477,18 @@ final class ModuleClassPaths {
                     .forEach(res::add);
             final List<PathResourceImplementation> selfResResources;
             final ClassPath bootModules;
+            final ClassPath userModules;
             final ClassPath bootCp;
             if (systemModules != null) {
                 selfResResources = Collections.emptyList();
                 bootModules = systemModules;
+                userModules = base;
                 bootCp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(
                     findJavaBase(getModulesByName(systemModules, null)));
             } else {
                 selfResResources = findJavaBase(modulesByName);
                 bootModules = base;
+                userModules = ClassPath.EMPTY;
                 bootCp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(selfResResources);
             }
             LOG.log(
@@ -522,6 +525,7 @@ final class ModuleClassPaths {
                                 final JavaSource src = JavaSource.create(
                                     new ClasspathInfo.Builder(bootCp)
                                             .setModuleBootPath(bootModules)
+                                            .setModuleCompilePath(userModules)
                                             .build(),
                                     modules);
                                 if (src != null) {
