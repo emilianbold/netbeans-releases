@@ -44,15 +44,17 @@
 
 package org.netbeans.modules.cnd.lexer;
 
-import static junit.framework.Assert.assertFalse;
 import junit.framework.TestCase;
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppStringTokenId;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.DoxygenTokenId;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.Filter;
 
 /**
  * Test several lexer inputs.
@@ -659,330 +661,183 @@ public class CppLexerBatchTestCase extends TestCase {
         assertFalse("No more tokens", ts.moveNext());
     }
 
-    private String getAllKeywords() {
-        return "asm auto bool break case catch char class const const_cast continue " +
-            "default delete do double dynamic_cast else enum finally float for friend goto if " +
-            "inline int long mutable namespace new operator " +
-            "private protected public register reinterpret_cast restrict return " +
-            "short signed sizeof static static_cast struct switch " +
-            "template this throw try typedef typeid typename typeof " +
-            "union unsigned using virtual void volatile wchar_t while " +
-            "_Bool _Complex _Imaginary " +
-            "null true false";
+    private enum L {
+        C,
+        CPP,
+        CPP11,
+        BOTH
     }
 
+    private static final class T {
+        final TokenId id;
+        final String t;
+        final L l;
+
+        private static T T(TokenId id, String t, L l) {
+            return new T(id, t, l);
+        }
+        private T(TokenId id, String t, L l) {
+            this.id = id;
+            this.t = t;
+            this.l = l;
+        }
+    }
+
+    public void assertNextTokenEquals(TokenSequence<?> ts, T t, L current) {
+        if (t.l == L.BOTH) {
+            LexerTestUtilities.assertNextTokenEquals(ts, t.id, t.t);
+        } else if (t.l == current) {
+            LexerTestUtilities.assertNextTokenEquals(ts, t.id, t.t);
+        } else {
+            if (current == L.CPP11 && t.id == CppTokenId.IDENTIFIER) {
+                Filter<CppTokenId> keywordsFilter = CndLexerUtilities.getStdCpp11Filter();
+                CppTokenId filtered = keywordsFilter.check(t.t);
+                if (filtered == null) {
+                    filtered = CppTokenId.IDENTIFIER;
+                }
+                LexerTestUtilities.assertNextTokenEquals(ts, filtered, t.t);
+            } else {
+                LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, t.t);
+            }
+        }
+    }
+
+    private T[] getAllKW() {
+        return new T[] {
+            T.T(CppTokenId.ALIGNAS, "alignas", L.CPP11),
+            T.T(CppTokenId.ALIGNOF, "alignof", L.CPP11),
+            T.T(CppTokenId.ALTERNATE_AND, "and", L.CPP),
+            T.T(CppTokenId.ALTERNATE_AND_EQ, "and_eq", L.CPP),
+            //T.T(CppTokenId.ASM, "asm", L.BOTH), // failed for C
+            T.T(CppTokenId.AUTO, "auto", L.BOTH),
+            T.T(CppTokenId.ALTERNATE_BITAND, "bitand", L.CPP),
+            T.T(CppTokenId.BOOL, "bool", L.CPP),
+            T.T(CppTokenId.BREAK, "break", L.BOTH),
+            T.T(CppTokenId.CASE, "case", L.BOTH),
+            T.T(CppTokenId.CATCH, "catch", L.CPP),
+            T.T(CppTokenId.CHAR, "char", L.BOTH),
+            T.T(CppTokenId.CHAR16_T, "char16_t", L.CPP11),
+            T.T(CppTokenId.CHAR32_T, "char32_t", L.CPP11),
+            T.T(CppTokenId.CLASS, "class", L.CPP),
+            T.T(CppTokenId.ALTERNATE_COMPL, "compl", L.CPP),
+            //T.T(CppTokenId.CONCEPT, "concept", L.CPP), // unsupported keyword
+            T.T(CppTokenId.CONST, "const", L.BOTH),
+            T.T(CppTokenId.CONSTEXPR, "constexpr", L.CPP11),
+            T.T(CppTokenId.CONST_CAST, "const_cast", L.CPP),
+            T.T(CppTokenId.CONTINUE, "continue", L.BOTH),
+            T.T(CppTokenId.DECLTYPE, "decltype", L.CPP11),
+            T.T(CppTokenId.DEFAULT, "default", L.BOTH),
+            T.T(CppTokenId.DELETE, "delete", L.CPP),
+            T.T(CppTokenId.DO, "do", L.BOTH),
+            T.T(CppTokenId.DOUBLE, "double", L.BOTH),
+            T.T(CppTokenId.DYNAMIC_CAST, "dynamic_cast", L.CPP),
+            T.T(CppTokenId.ELSE, "else", L.BOTH),
+            T.T(CppTokenId.ENUM, "enum", L.BOTH),
+            T.T(CppTokenId.EXPLICIT, "explicit", L.CPP),
+            T.T(CppTokenId.EXTERN, "extern", L.BOTH),
+            T.T(CppTokenId.EXPORT, "export", L.CPP),
+            T.T(CppTokenId.FINAL, "final", L.CPP11),
+            T.T(CppTokenId.FINALLY, "finally", L.CPP),
+            T.T(CppTokenId.FLOAT, "float", L.BOTH),
+            T.T(CppTokenId.FOR, "for", L.BOTH),
+            //T.T(CppTokenId.FORTRAN, "fortran", L.C), // unsupported keyword
+            T.T(CppTokenId.FRIEND, "friend", L.CPP),
+            T.T(CppTokenId.GOTO, "goto", L.BOTH),
+            T.T(CppTokenId.IF, "if", L.BOTH),
+            T.T(CppTokenId.INLINE, "inline", L.BOTH),
+            T.T(CppTokenId.INT, "int", L.BOTH),
+            T.T(CppTokenId.LONG, "long", L.BOTH),
+            T.T(CppTokenId.MUTABLE, "mutable", L.CPP),
+            T.T(CppTokenId.NAMESPACE, "namespace", L.CPP),
+            T.T(CppTokenId.NEW, "new", L.CPP),
+            T.T(CppTokenId.NOEXCEPT, "noexcept", L.CPP11),
+            T.T(CppTokenId.ALTERNATE_NOT, "not", L.CPP),
+            T.T(CppTokenId.ALTERNATE_NOT_EQ, "not_eq", L.CPP),
+            T.T(CppTokenId.NULLPTR, "nullptr", L.CPP11),
+            T.T(CppTokenId.OPERATOR, "operator", L.CPP),
+            T.T(CppTokenId.ALTERNATE_OR, "or", L.CPP),
+            T.T(CppTokenId.ALTERNATE_OR_EQ, "or_eq", L.CPP),
+            T.T(CppTokenId.OVERRIDE, "override", L.CPP11),
+            T.T(CppTokenId.PRIVATE, "private", L.CPP),
+            T.T(CppTokenId.PROTECTED, "protected", L.CPP),
+            T.T(CppTokenId.PUBLIC, "public", L.CPP),
+            T.T(CppTokenId.REGISTER, "register", L.BOTH),
+            T.T(CppTokenId.REINTERPRET_CAST, "reinterpret_cast", L.CPP),
+            //T.T(CppTokenId.REQUIRES, "requires", L.CPP), // unsupported keyword
+            T.T(CppTokenId.RESTRICT, "restrict", L.C),
+            T.T(CppTokenId.RETURN, "return", L.BOTH),
+            T.T(CppTokenId.SHORT, "short", L.BOTH),
+            T.T(CppTokenId.SIGNED, "signed", L.BOTH),
+            T.T(CppTokenId.SIZEOF, "sizeof", L.BOTH),
+            T.T(CppTokenId.STATIC, "static", L.BOTH),
+            T.T(CppTokenId.STATIC_ASSERT, "static_assert", L.CPP11),
+            T.T(CppTokenId.STATIC_CAST, "static_cast", L.CPP),
+            T.T(CppTokenId.STRUCT, "struct", L.BOTH),
+            T.T(CppTokenId.SHORT, "short", L.BOTH),
+            T.T(CppTokenId.SWITCH, "switch", L.BOTH),
+            T.T(CppTokenId.TEMPLATE, "template", L.CPP),
+            T.T(CppTokenId.THIS, "this", L.CPP),
+            T.T(CppTokenId.THREAD_LOCAL, "thread_local", L.CPP11),
+            T.T(CppTokenId.THROW, "throw", L.CPP),
+            T.T(CppTokenId.TRY, "try", L.CPP),
+            T.T(CppTokenId.TYPEDEF, "typedef", L.BOTH),
+            T.T(CppTokenId.TYPEID, "typeid", L.CPP),
+            T.T(CppTokenId.TYPENAME, "typename", L.CPP),
+            T.T( CppTokenId.TYPEOF, "typeof", L.CPP),
+            T.T(CppTokenId.UNION, "union", L.BOTH),
+            T.T(CppTokenId.UNSIGNED, "unsigned", L.BOTH),
+            T.T(CppTokenId.USING, "using", L.CPP),
+            T.T(CppTokenId.VIRTUAL, "virtual", L.CPP),
+            T.T(CppTokenId.VOID, "void", L.BOTH),
+            T.T(CppTokenId.VOLATILE, "volatile", L.BOTH),
+            T.T(CppTokenId.WCHAR_T, "wchar_t", L.CPP),
+            T.T(CppTokenId.WHILE, "while", L.BOTH),
+            T.T(CppTokenId.ALTERNATE_XOR, "xor", L.CPP),
+            T.T(CppTokenId.ALTERNATE_XOR_EQ, "xor_eq", L.CPP),
+            //T.T(CppTokenId._ALIGNAS, "_Alignas", L.C), // unsupported keyword
+            //T.T(CppTokenId._ALIGNOF, "_Alignof", L.C), // unsupported keyword
+            //T.T(CppTokenId._ATOMIC, "_Atomic", L.C), // unsupported keyword
+            T.T(CppTokenId._BOOL, "_Bool", L.C),
+            T.T(CppTokenId._COMPLEX, "_Complex", L.C),
+            //T.T(CppTokenId._GENERIC, "_Generic", L.C), // unsupported keyword
+            T.T(CppTokenId._IMAGINARY, "_Imaginary", L.C),
+            //T.T(CppTokenId._PRAGMA, "_Pragma", L.BOTH), // unsupported keyword
+            T.T(CppTokenId._NORETURN, "_Noreturn", L.C),
+            //T.T(CppTokenId._STATIC_ASSERT, "_Static_assert", L.C), // unsupported keyword
+            //T.T(CppTokenId._THREAD_LOCAL, "_Thread_local", L.C), // unsupported keyword
+            T.T(CppTokenId.IDENTIFIER, "null", L.BOTH),
+            T.T(CppTokenId.TRUE, "true", L.CPP),
+            T.T(CppTokenId.FALSE, "false", L.CPP),
+        };
+    }
+    
+    
     public void testCppKeywords() {
-        String text = getAllKeywords();
+        StringBuilder buf = new StringBuilder();
+        for(T t : getAllKW()) {
+            buf.append(t.t).append(' ');
+        }
+        String text = buf.toString();
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
         TokenSequence<?> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.ASM, "asm");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.AUTO, "auto");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.BOOL, "bool");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.BREAK, "break");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.CASE, "case");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.CATCH, "catch");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.CHAR, "char");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.CLASS, "class");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.CONST, "const");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.CONST_CAST, "const_cast");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.CONTINUE, "continue");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.DEFAULT, "default");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.DELETE, "delete");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.DO, "do");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.DOUBLE, "double");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.DYNAMIC_CAST, "dynamic_cast");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.ELSE, "else");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.ENUM, "enum");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.FINALLY, "finally");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.FLOAT, "float");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.FOR, "for");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.FRIEND, "friend");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.GOTO, "goto");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IF, "if");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.INLINE, "inline");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.INT, "int");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.LONG, "long");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.MUTABLE, "mutable");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NAMESPACE, "namespace");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW, "new");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.OPERATOR, "operator");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PRIVATE, "private");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PROTECTED, "protected");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PUBLIC, "public");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.REGISTER, "register");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.REINTERPRET_CAST, "reinterpret_cast");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "restrict"); // C
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.RETURN, "return");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.SHORT, "short");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.SIGNED, "signed");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.SIZEOF, "sizeof");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.STATIC, "static");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.STATIC_CAST, "static_cast");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.STRUCT, "struct");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.SWITCH, "switch");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.TEMPLATE, "template");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.THIS, "this");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.THROW, "throw");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.TRY, "try");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.TYPEDEF, "typedef");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.TYPEID, "typeid");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.TYPENAME, "typename");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.TYPEOF, "typeof");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.UNION, "union");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.UNSIGNED, "unsigned");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.USING, "using");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.VIRTUAL, "virtual");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.VOID, "void");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.VOLATILE, "volatile");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WCHAR_T, "wchar_t");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHILE, "while");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "_Bool"); //C
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "_Complex"); //C
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "_Imaginary"); //C
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "null");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.TRUE, "true");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.FALSE, "false");
+        for(T t : getAllKW()) {
+            assertNextTokenEquals(ts, t, L.CPP);
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
+        }
     }
 
     public void testCKeywords() {
-        String text = getAllKeywords();
+        StringBuilder buf = new StringBuilder();
+        for(T t : getAllKW()) {
+            buf.append(t.t).append(' ');
+        }
+        String text = buf.toString();
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageC());
         TokenSequence<?> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "asm"); // C++
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.AUTO, "auto");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "bool"); //C++
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.BREAK, "break");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.CASE, "case");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "catch"); // C++
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.CHAR, "char");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "class"); // C++
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.CONST, "const");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "const_cast"); // C++
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.CONTINUE, "continue");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.DEFAULT, "default");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "delete"); // C++
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.DO, "do");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.DOUBLE, "double");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "dynamic_cast"); // C++
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.ELSE, "else");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.ENUM, "enum");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "finally"); // C++
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.FLOAT, "float");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.FOR, "for");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "friend"); // C++
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.GOTO, "goto");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IF, "if");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.INLINE, "inline");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.INT, "int");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.LONG, "long");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "mutable"); // C++
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "namespace"); // C++
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "new"); // C++
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "operator"); // C++
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "private"); // C++
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "protected"); // C++
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "public"); // C++
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.REGISTER, "register");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "reinterpret_cast"); // C++
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.RESTRICT, "restrict"); // C
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.RETURN, "return");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.SHORT, "short");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.SIGNED, "signed");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.SIZEOF, "sizeof");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.STATIC, "static");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "static_cast"); // C++
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.STRUCT, "struct");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.SWITCH, "switch");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "template"); // C++
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "this"); // C++
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "throw"); // C++
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "try"); // C++
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.TYPEDEF, "typedef");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "typeid"); // C++
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "typename"); // C++
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "typeof"); // C++
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.UNION, "union");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.UNSIGNED, "unsigned");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "using"); // C++
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "virtual"); // C++
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.VOID, "void");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.VOLATILE, "volatile");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "wchar_t"); // C++
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHILE, "while");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId._BOOL, "_Bool"); //C
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId._COMPLEX, "_Complex"); //C
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId._IMAGINARY, "_Imaginary"); //C
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "null");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "true"); // C++
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "false"); // C++
-    }
-
-    public void testNonKeywords() {
-        String text = "asma autos b br car dou doubl finall im i ifa inti throwx ";
-
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
-        TokenSequence<?> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "asma");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "autos");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "b");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "br");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "car");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "dou");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "doubl");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "finall");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "im");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "i");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "ifa");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "inti");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "throwx");
+        for(T t : getAllKW()) {
+            assertNextTokenEquals(ts, t, L.C);
+            LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
+        }
     }
 
     public void testEmbedding() {
