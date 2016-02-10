@@ -181,7 +181,7 @@ is divided into following sections:
                 </condition>
             </target>
 
-            <target name="-init-module-name-with-modules" depends="-init-modules-properties" if="modules.supported.internal">
+            <target name="-init-module-name" depends="-init-modules-properties" if="modules.supported.internal">
                 <loadresource property="module.name" quiet="true">
                     <javaresource>
                         <xsl:attribute name="name">module-info.java</xsl:attribute>
@@ -204,14 +204,16 @@ is divided into following sections:
                         <striplinebreaks/>
                     </filterchain>
                 </loadresource>
+                <condition property="named.module.internal">
+                    <isset property="module.name"/>
+                </condition>
+                <condition property="unnamed.module.internal">
+                    <not>
+                        <isset property="named.module.internal"/>
+                    </not>
+                </condition>
                 <property name="module.name" value=""/>
             </target>
-
-            <target name="-init-module-name-without-modules" depends="-init-modules-properties" unless="modules.supported.internal">
-                <property name="module.name" value=""/>
-            </target>
-
-            <target name="-init-module-name" depends="-init-modules-properties, -init-module-name-with-modules, -init-module-name-without-modules"/>
 
             <target name="-do-init">
                 <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-init-modules-properties,-init-module-name,-init-macrodef-property</xsl:attribute>
@@ -1693,7 +1695,7 @@ is divided into following sections:
                     </sequential>
                 </macrodef>
             </target>
-            <target name="-init-macrodef-java-with-modules" if="modules.supported.internal">
+            <target name="-init-macrodef-java-with-modules" if="named.module.internal">
                 <macrodef>
                     <xsl:attribute name="name">java</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
@@ -1748,6 +1750,57 @@ is divided into following sections:
                 </macrodef>
             </target>
 
+            <target name="-init-macrodef-java-with-unnamed-module" if="unnamed.module.internal">
+                <macrodef>
+                    <xsl:attribute name="name">java</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">classname</xsl:attribute>
+                        <xsl:attribute name="default">${main.class}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">modulepath</xsl:attribute>
+                        <xsl:attribute name="default">${run.modulepath}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">classpath</xsl:attribute>
+                        <xsl:attribute name="default">${run.classpath}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">jvm</xsl:attribute>
+                        <xsl:attribute name="default">jvm</xsl:attribute>
+                    </attribute>
+                    <element>
+                        <xsl:attribute name="name">customize</xsl:attribute>
+                        <xsl:attribute name="optional">true</xsl:attribute>
+                    </element>
+                    <sequential>
+                        <property location="${{build.dir}}/empty" name="empty.dir"/>
+                        <mkdir dir="${{empty.dir}}"/>
+                        <java fork="true" classname="@{{classname}}" failonerror="${{java.failonerror}}">
+                            <xsl:attribute name="dir">${work.dir}</xsl:attribute>
+                            <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
+                                <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
+                            </xsl:if>
+                            <jvmarg value="-modulepath"/>
+                            <jvmarg line="@{{modulepath}}:${{empty.dir}}"/>
+                            <jvmarg value="-Dfile.encoding=${{runtime.encoding}}"/>
+                            <redirector inputencoding="${{runtime.encoding}}" outputencoding="${{runtime.encoding}}" errorencoding="${{runtime.encoding}}"/>
+                            <jvmarg line="${{run.jvmargs}}"/>
+                            <jvmarg line="${{run.jvmargs.ide}}"/>
+                            <classpath>
+                                <path path="@{{classpath}}"/>
+                            </classpath>
+                            <syspropertyset>
+                                <propertyref prefix="run-sys-prop."/>
+                                <mapper type="glob" from="run-sys-prop.*" to="*"/>
+                            </syspropertyset>
+                            <customize/>
+                        </java>
+                    </sequential>
+                </macrodef>
+            </target>
+
             <target name="-init-macrodef-java-without-modules" unless="modules.supported.internal">
                 <macrodef>
                     <xsl:attribute name="name">java</xsl:attribute>
@@ -1792,7 +1845,7 @@ is divided into following sections:
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-java" depends="-init-modules-properties, -init-macrodef-java-with-modules, -init-macrodef-java-without-modules"/>
+            <target name="-init-macrodef-java" depends="-init-modules-properties, -init-macrodef-java-with-modules, -init-macrodef-java-with-unnamed-module, -init-macrodef-java-without-modules"/>
 
             <target name="-init-macrodef-copylibs">
                 <macrodef>
