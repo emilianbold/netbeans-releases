@@ -407,6 +407,8 @@ final class ModuleClassPaths {
         //@GuardedBy("this")
         private ClasspathInfo activeProjectSourceRoots;
         //@GuardedBy("this")
+        private volatile boolean rootsChanging;
+        //@GuardedBy("this")
         private Collection<File> moduleInfos;
 
         ModuleInfoClassPathImplementation(
@@ -650,9 +652,16 @@ final class ModuleClassPaths {
 
         @Override
         public void rootsAdded(final RootsEvent event) {
-            final ClasspathInfo info;
+            ClasspathInfo info;
             synchronized (this) {
                 info = activeProjectSourceRoots;
+                if (info != null) {
+                    if (rootsChanging) {
+                        info = null;
+                    } else {
+                        rootsChanging = true;
+                    }
+                }
             }
             if (info != null) {
                 try {
@@ -665,6 +674,7 @@ final class ModuleClassPaths {
                                     base,
                                     event
                                 });
+                            rootsChanging = false;
                             resetCache(TOMBSTONE, true);
                         },
                         true);
