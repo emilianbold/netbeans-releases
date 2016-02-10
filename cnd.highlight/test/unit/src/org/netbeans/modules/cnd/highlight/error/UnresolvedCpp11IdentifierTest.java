@@ -71,8 +71,7 @@ public class UnresolvedCpp11IdentifierTest extends ErrorHighlightingBaseTestCase
     
     @Override
     protected TraceModelFileFilter getTraceModelFileFilter() {
-        String testName = getName();
-        String simpleName = testName.substring(4);
+        String simpleName = SimpleFileFilter.testNameToFileName(getName());
         switch (simpleName) {
             default:
                 return new SimpleFileFilter(simpleName); 

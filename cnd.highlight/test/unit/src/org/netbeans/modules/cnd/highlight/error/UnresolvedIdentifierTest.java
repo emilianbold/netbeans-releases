@@ -68,8 +68,7 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
     
     @Override
     protected TraceModelFileFilter getTraceModelFileFilter() {
-        String testName = getName();
-        String simpleName = testName.substring(4);
+        String simpleName = SimpleFileFilter.testNameToFileName(getName());
         switch (simpleName) {
             case "IZ162745":
                 return new SimpleFileFilter("unnamed_enum_typedef"); 

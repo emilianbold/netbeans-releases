@@ -56,8 +56,7 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
     
     @Override
     protected TraceModelFileFilter getTraceModelFileFilter() {
-        String testName = getName();
-        String simpleName = testName.substring(4);
+        String simpleName = SimpleFileFilter.testNameToFileName(getName());
         switch (simpleName) {
             case "CyclicTypedef":
                 return new SimpleFileFilter("cyclic_typedef"); 

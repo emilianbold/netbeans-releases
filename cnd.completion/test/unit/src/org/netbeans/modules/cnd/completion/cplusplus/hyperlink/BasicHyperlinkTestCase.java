@@ -60,8 +60,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
 
     @Override
     protected TraceModelFileFilter getTraceModelFileFilter() {
-        String testName = getName();
-        String simpleName = testName.substring(4);
+        String simpleName = SimpleFileFilter.testNameToFileName(getName());
         switch (simpleName) {
             case "IZ157907":
                 return new SimpleFileFilter("fun_macro_and_name");
@@ -102,10 +101,6 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
                 return new SimpleFileFilter("template_parameter2");
             case "TemplateParameter":
                 return new SimpleFileFilter("template_parameter");
-            case "Bug223298_2":
-                return new SimpleFileFilter("bug223298");
-            case "Bug190127_2":
-                return new SimpleFileFilter("bug190127");
             case "Bug191305":
                 return new SimpleFileFilter("bug191198");
             default:
@@ -847,7 +842,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug191314.c", 2, 56, "bug191314.c", 2, 47);
     }
 
-    public void testBug190127_2() throws Exception {
+    public void testBug190127$2() throws Exception {
         // Bug 190127 - Extern declarations without return type are not supported
         performTest("bug190127.c", 4, 12, "bug190127.c", 1, 1);
     }
@@ -1048,7 +1043,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug223298.cpp", 10, 10, "bug223298.cpp", 6, 1);
     }    
 
-    public void testBug223298_2() throws Exception {
+    public void testBug223298$2() throws Exception {
         // Bug 223298 - Wrong recognition of function
         performTest("bug223298.c", 10, 10, "bug223298.c", 6, 1);
     }

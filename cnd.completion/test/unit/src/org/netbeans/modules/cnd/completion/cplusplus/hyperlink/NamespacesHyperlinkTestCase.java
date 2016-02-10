@@ -59,8 +59,7 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
     
     @Override
     protected TraceModelFileFilter getTraceModelFileFilter() {
-        String testName = getName();
-        String simpleName = testName.substring(4);
+        String simpleName = SimpleFileFilter.testNameToFileName(getName());
         switch (simpleName) {
             case "228949_BaseClassFromAnotherNS":
                 return new SimpleFileFilter("bug228949"); 

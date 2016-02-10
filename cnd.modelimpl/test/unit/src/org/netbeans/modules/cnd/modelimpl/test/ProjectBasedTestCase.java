@@ -459,6 +459,15 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
             additional = second.toLowerCase();
         }
 
+        public static String testNameToFileName(String testName){
+            String simpleName = testName.substring(4);
+            int separator = simpleName.indexOf('$');
+            if (separator > 0) {
+                simpleName = simpleName.substring(0, separator);
+            }
+            return simpleName;
+        }
+        
         @Override
         public boolean isProjectFile(String filename) {
             if (filename.toLowerCase().contains(pattern)) {
