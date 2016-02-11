@@ -92,7 +92,7 @@ public class DockerConnectionVisual extends javax.swing.JPanel implements Change
     public Configuration getConfiguration() {
         return configPanel;
     }
-    
+
     public void setWaitingState(boolean wait) {
         Component rootPane = getRootPane();
         if (rootPane != null) {
