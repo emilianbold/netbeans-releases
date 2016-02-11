@@ -136,4 +136,18 @@ public final class EditorActionNames {
      * @since 1.64
      */
     public static final String organizeMembers = "organize-members"; // NOI18N
+    
+    /**
+     * Navigates to the previous occurence of the symbol under the caret. The action
+     * should be implemented by specific language EditorKit
+     * @since 2.3
+     */
+    public static final String gotoPrevOccurrence = "prev-marked-occurrence"; // NOI18N
+    
+    /**
+     * Navigates to the next occurence of the symbol under the caret. The action
+     * should be implemented by specific language EditorKit
+     * @since 2.3
+     */
+    public static final String gotoNextOccurrence = "next-marked-occurrence"; // NOI18N
 }

@@ -58,6 +58,7 @@ package org.netbeans.modules.java.editor.semantic;
 import java.awt.event.ActionEvent;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorActionNames;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
@@ -71,8 +72,9 @@ import org.openide.util.NbBundle;
  */
 public class GoToMarkOccurrencesAction extends BaseAction {
 
-    private static final String prevActionName = "java-prev-marked-occurrence"; // NOI18N
-    private static final String nextActionName = "java-next-marked-occurrence"; // NOI18N
+    private static final String prevActionName = EditorActionNames.gotoPrevOccurrence;
+    private static final String nextActionName = EditorActionNames.gotoNextOccurrence;
+    
     static final String markedOccurence = "marked-occurrence"; // NOI18N
 
     private final boolean next;

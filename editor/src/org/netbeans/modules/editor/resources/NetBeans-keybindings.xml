@@ -199,4 +199,7 @@ made subject to such option by the copyright holder.
     <bind actionName="word-match-prev" key="D-K"/>
     <bind actionName="zoom-text-in" key="O-MOUSE_WHEEL_UP"/>
     <bind actionName="zoom-text-out" key="O-MOUSE_WHEEL_DOWN"/>
+
+    <bind actionName="prev-marked-occurrence" key="O-UP"/>
+    <bind actionName="next-marked-occurrence" key="O-DOWN"/>
 </bindings>
