@@ -69,6 +69,10 @@ public class HintsTest extends PHPHintsTestBase {
         checkHints(new ImplementAbstractMethodsHintError(), "testImplementAbstractMethodsHint.php");
     }
 
+    public void testIssue257898() throws Exception {
+        checkHints(new ImplementAbstractMethodsHintError(), "testIssue257898.php");
+    }
+
     public void testImplementAbstractMethodsHintFix_01() throws Exception {
         applyHint(new ImplementAbstractMethodsHintError(), "testImplementAbstractMethodsHintFix.php", "Extendin^gClass1", "Implement");
     }
