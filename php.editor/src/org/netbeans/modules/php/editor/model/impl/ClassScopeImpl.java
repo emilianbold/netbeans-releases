@@ -50,6 +50,7 @@ import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
@@ -435,7 +436,9 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
                     lazyMethod.scan();
                 }
             }
-            methodScope.addSelfToIndex(indexDocument);
+            if (!StringUtils.isEmpty(methodScope.getName())) { // #257898
+                methodScope.addSelfToIndex(indexDocument);
+            }
         }
         for (FieldElement fieldElement : getDeclaredFields()) {
             fieldElement.addSelfToIndex(indexDocument);

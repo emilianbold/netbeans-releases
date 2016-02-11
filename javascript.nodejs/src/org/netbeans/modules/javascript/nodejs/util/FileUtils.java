@@ -89,7 +89,7 @@ public final class FileUtils {
 
     private static final boolean IS_WINDOWS = Utilities.isWindows();
     private static final String JAVASCRIPT_MIME_TYPE = "text/javascript"; // NOI18N
-    private static final String NODEJS_SOURCES_URL = "http://nodejs.org/dist/v%1$s/node-v%1$s.tar.gz"; // NOI18N
+    private static final String NODEJS_SOURCES_URL = "https://nodejs.org/dist/v%1$s/node-v%1$s.tar.gz"; // NOI18N
     private static final String IOJS_SOURCES_URL = "https://iojs.org/dist/v%1$s/iojs-v%1$s.tar.gz"; // NOI18N
 
 

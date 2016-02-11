@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.navigation.callgraph;
 import java.util.Collection;
 import java.util.Collections;
 import javax.swing.JPanel;
+import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -94,8 +95,10 @@ public class CallGraphModelFactoryImpl extends CallGraphModelFactory {
         CsmObject obj = ref.getReferencedObject();
         if (CsmKindUtilities.isFunction(obj)) {
             declaration = (CsmFunction) obj;
-        } else if(CsmKindUtilities.isVariable(obj)) { 
+        } else if(CsmKindUtilities.isVariable(obj) && !CsmKindUtilities.isLocalVariable(obj)) {
             declaration = (CsmVariable) obj;
+        } else if(CsmKindUtilities.isEnumerator(obj)) {
+            declaration = (CsmEnumerator) obj;
         } else {
             obj = ref.getClosestTopLevelObject();
             if (CsmKindUtilities.isFunction(obj)) {

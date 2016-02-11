@@ -61,6 +61,7 @@ import org.netbeans.modules.csl.api.IndexSearcher;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.completion.PHPCompletionItem;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
@@ -112,7 +113,9 @@ public class PHPTypeSearcher implements IndexSearcher {
             final NameKind prefix = NameKind.create(query, useKind);
             if (!isVariable) {
                 for (PhpElement indexedElement : index.getTopLevelElements(prefix)) {
-                    result.add(new PHPTypeDescriptor(indexedElement, helper));
+                    if (!CodeUtils.isSynteticTypeName(indexedElement.getName())) {
+                        result.add(new PHPTypeDescriptor(indexedElement, helper));
+                    }
                 }
                 for (PhpElement indexedElement : index.getMethods(prefix)) {
                     result.add(new PHPTypeDescriptor(indexedElement, helper));
@@ -169,7 +172,9 @@ public class PHPTypeSearcher implements IndexSearcher {
             String query = qnk.isUnqualified() ? prepareIdxQuery(textForQuery, regexpKinds, kind).toLowerCase() : textForQuery;
             NameKind nameKind = NameKind.prefix(QualifiedName.create(query));
             for (PhpElement indexedElement : index.getTypes(nameKind)) {
-                result.add(new PHPTypeDescriptor(indexedElement, helper));
+                if (!CodeUtils.isSynteticTypeName(indexedElement.getName())) {
+                    result.add(new PHPTypeDescriptor(indexedElement, helper));
+                }
             }
         }
         if (qnk.isUnqualified() && regexpKinds.contains(kind)) {

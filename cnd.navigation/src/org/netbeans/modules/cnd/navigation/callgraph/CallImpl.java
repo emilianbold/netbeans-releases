@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.navigation.callgraph;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
@@ -168,6 +169,8 @@ public class CallImpl implements Call {
             return new FunctionImpl((CsmFunction) entity);
         } else if (CsmKindUtilities.isVariable(entity)) {
             return new VariableImpl((CsmVariable) entity);
+        } else if (CsmKindUtilities.isEnumerator(entity)) {
+            return new VariableImpl((CsmEnumerator) entity);
         } else {
             return null;
         }
