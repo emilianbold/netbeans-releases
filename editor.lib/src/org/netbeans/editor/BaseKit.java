@@ -3758,7 +3758,7 @@ public class BaseKit extends DefaultEditorKit {
             if (target != null) {
                 final Caret caret = target.getCaret();
                 final BaseDocument doc = (BaseDocument)target.getDocument();
-                doc.runAtomicAsUser (new Runnable () {
+                doc.render(new Runnable () {
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
                         try {
