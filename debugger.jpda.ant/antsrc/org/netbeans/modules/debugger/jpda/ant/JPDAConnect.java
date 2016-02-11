@@ -77,6 +77,9 @@ public class JPDAConnect extends Task {
     /** Explicit sourcepath of the debugged process. */
     private JPDAStart.Sourcepath sourcepath = null;
     
+    /** Explicit modulepath of the debugged process. */
+    private Path modulepath = null;
+
     /** Explicit classpath of the debugged process. */
     private Path classpath = null;
     
@@ -108,6 +111,13 @@ public class JPDAConnect extends Task {
     
     private String getAddress () {
         return address;
+    }
+
+    public void addModulepath (Path path) {
+        logger.log(Level.FINE, "addModlepath({0})", path);
+        if (modulepath != null)
+            throw new BuildException ("Only one modulepath subelement is supported");
+        modulepath = path;
     }
     
     public void addClasspath (Path path) {
@@ -162,6 +172,7 @@ public class JPDAConnect extends Task {
         }
 
         JPDAStart.verifyPaths(getProject(), classpath);
+        JPDAStart.verifyPaths(getProject(), modulepath);
         //JPDAStart.verifyPaths(getProject(), bootclasspath); Do not check the paths on bootclasspath (see issue #70930).
         JPDAStart.verifyPaths(getProject(), plainSourcepath);
         
@@ -183,8 +194,8 @@ public class JPDAConnect extends Task {
 
         ClassPath sourcePath = JPDAStart.createSourcePath (
             getProject (),
-            null,
-            classpath, 
+            modulepath,
+            classpath,
             plainSourcepath,
             isSourcePathExclusive
         );
@@ -194,6 +205,7 @@ public class JPDAConnect extends Task {
         );
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("Create sourcepath:"); // NOI18N
+            logger.fine("    modulepath : " + modulepath); // NOI18N
             logger.fine("    classpath : " + classpath); // NOI18N
             logger.fine("    sourcepath : " + plainSourcepath); // NOI18N
             logger.fine("    bootclasspath : " + bootclasspath); // NOI18N
