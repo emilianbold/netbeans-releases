@@ -59,6 +59,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
+@NbBundle.Messages("MSG_InaccessibleSocket=Socket is not accessible.")
 public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchronousValidatingPanel<WizardDescriptor>, ChangeListener {
 
     private static final Pattern REMOTE_HOST_PATTERN = Pattern.compile("^(tcp://)[^/:](:\\d+)($|/.*)"); // NOI18N
@@ -98,7 +99,6 @@ public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchron
         "MSG_EmptyDisplayName=Display name must not be empty.",
         "MSG_AlreadyUsedDisplayName=Display name is already used by another instance.",
         "MSG_EmptySocket=Unix socket must not be empty.",
-        "MSG_InaccessibleSocket=Socket is not accessible.",
         "MSG_EmptyUrl=URL must not be empty.",
         "MSG_InvalidUrl=URL must be valid http or https URL.",
         "MSG_NonExistingCertificatePath=The certificates path does not exist.",
