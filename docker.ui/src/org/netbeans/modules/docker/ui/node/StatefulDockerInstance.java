@@ -54,9 +54,9 @@ import org.openide.util.RequestProcessor;
  *
  * @author Petr Hejl
  */
-public class EnhancedDockerInstance implements Refreshable {
+public class StatefulDockerInstance implements Refreshable {
 
-    private static final RequestProcessor RP = new RequestProcessor(EnhancedDockerInstance.class);
+    private static final RequestProcessor RP = new RequestProcessor(StatefulDockerInstance.class);
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -77,7 +77,7 @@ public class EnhancedDockerInstance implements Refreshable {
 
     private final DockerInstance instance;
 
-    public EnhancedDockerInstance(DockerInstance instance) {
+    public StatefulDockerInstance(DockerInstance instance) {
         this.instance = instance;
         instance.addConnectionListener(listener);
     }
@@ -131,7 +131,7 @@ public class EnhancedDockerInstance implements Refreshable {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final EnhancedDockerInstance other = (EnhancedDockerInstance) obj;
+        final StatefulDockerInstance other = (StatefulDockerInstance) obj;
         if (!Objects.equals(this.instance, other.instance)) {
             return false;
         }

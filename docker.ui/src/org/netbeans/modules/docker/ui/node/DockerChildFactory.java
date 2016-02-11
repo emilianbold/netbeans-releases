@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,94 +37,80 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.docker.ui.node;
 
-import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.docker.api.DockerImage;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.api.DockerInstance;
-import org.netbeans.modules.docker.api.DockerTag;
-import org.netbeans.modules.docker.api.DockerEvent;
-import org.netbeans.modules.docker.api.DockerAction;
+import org.netbeans.modules.docker.api.DockerSupport;
+import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Petr Hejl
  */
-public class DockerImagesChildFactory extends NodeClosingFactory<DockerTag> implements Refreshable, Closeable {
+public class DockerChildFactory extends NodeClosingFactory<StatefulDockerInstance> implements ChangeListener {
 
-    private static final Logger LOGGER = Logger.getLogger(DockerImagesChildFactory.class.getName());
+    private static final RequestProcessor REFRESH_PROCESSOR = new RequestProcessor("Docker node update/refresh", 5);
 
-    private static final Comparator<DockerTag> COMPARATOR = new Comparator<DockerTag>() {
+    private final DockerSupport registry;
 
-        @Override
-        public int compare(DockerTag o1, DockerTag o2) {
-            return o1.getTag().compareTo(o2.getTag());
-        }
-    };
+    public DockerChildFactory(DockerSupport registry) {
+        this.registry = registry;
+    }
 
-    private final RequestProcessor requestProcessor = new RequestProcessor(DockerImagesChildFactory.class);
+    public void init() {
+        REFRESH_PROCESSOR.post(new Runnable() {
 
-    private final DockerInstance instance;
-
-    private final RequestProcessor.Task refreshTask;
-
-    private final DockerEvent.Listener listener;
-
-    public DockerImagesChildFactory(DockerInstance instance) {
-        this.instance = instance;
-        this.refreshTask = requestProcessor.create(new Runnable() {
             @Override
             public void run() {
-                LOGGER.log(Level.FINE, "Refreshing images");
-                refresh();
-            }
-        });
-        this.listener = new DockerEvent.Listener() {
-            @Override
-            public void onEvent(DockerEvent event) {
-                if (DockerEvent.Status.PUSH != event.getStatus()) {
-                    refreshTask.schedule(200);
+                synchronized (DockerChildFactory.this) {
+                    registry.addChangeListener(
+                            WeakListeners.create(ChangeListener.class, DockerChildFactory.this, registry));
+                    updateState(new ChangeEvent(registry));
                 }
             }
-        };
-        instance.addImageListener(listener);
+        });
     }
 
     @Override
-    protected Node createNodeForKey(DockerTag key) {
-        return new DockerTagNode(key);
+    public void stateChanged(final ChangeEvent e) {
+        REFRESH_PROCESSOR.post(new Runnable() {
+            public void run() {
+                updateState(e);
+            }
+        });
     }
 
-    @Override
-    protected boolean createKeys(List<DockerTag> toPopulate) {
-        DockerAction facade = new DockerAction(instance);
-        List<DockerTag> tags = new ArrayList<>();
-        for (DockerImage image : facade.getImages()) {
-            tags.addAll(image.getTags());
-        }
-        Collections.sort(tags, COMPARATOR);
-        toPopulate.addAll(tags);
-        return true;
+    private synchronized void updateState(final ChangeEvent e) {
+        refresh();
     }
 
-    @Override
-    public final void refresh() {
+    protected final void refresh() {
         refresh(false);
     }
 
     @Override
-    public void close() {
-        instance.removeImageListener(listener);
+    protected Node createNodeForKey(StatefulDockerInstance key) {
+        return new DockerInstanceNode(key, new DockerInstanceChildFactory(key));
+    }
+
+    @Override
+    protected boolean createKeys(List<StatefulDockerInstance> toPopulate) {
+        List<DockerInstance> fresh = new ArrayList<>(registry.getInstances());
+        Collections.sort(fresh, UiUtils.getInstanceComparator());
+        for (DockerInstance i : fresh) {
+            toPopulate.add(new StatefulDockerInstance(i));
+        }
+        return true;
     }
 
 }

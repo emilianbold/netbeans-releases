@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.docker.ui.node;
 
+import java.io.Closeable;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -64,7 +65,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Petr Hejl
  */
-public class DockerContainersChildFactory extends ChildFactory<EnhancedDockerContainer> implements Refreshable {
+public class DockerContainersChildFactory extends NodeClosingFactory<StatefulDockerContainer> implements Refreshable, Closeable {
 
     private static final Logger LOGGER = Logger.getLogger(DockerContainersChildFactory.class.getName());
 
@@ -82,13 +83,15 @@ public class DockerContainersChildFactory extends ChildFactory<EnhancedDockerCon
         Collections.addAll(CHANGE_EVENTS, DockerEvent.Status.COPY, DockerEvent.Status.CREATE, DockerEvent.Status.DESTROY);
     }
 
-    private final Map<DockerContainer, WeakReference<EnhancedDockerContainer>> cache = new WeakHashMap<>();
+    private final Map<DockerContainer, WeakReference<StatefulDockerContainer>> cache = new WeakHashMap<>();
 
     private final RequestProcessor requestProcessor = new RequestProcessor(DockerContainersChildFactory.class);
 
     private final DockerInstance instance;
 
     private final RequestProcessor.Task refreshTask;
+
+    private final DockerEvent.Listener listener;
 
     public DockerContainersChildFactory(DockerInstance instance) {
         this.instance = instance;
@@ -99,35 +102,36 @@ public class DockerContainersChildFactory extends ChildFactory<EnhancedDockerCon
                 refresh();
             }
         });
-        instance.addContainerListener(new DockerEvent.Listener() {
+        this.listener = new DockerEvent.Listener() {
             @Override
             public void onEvent(DockerEvent event) {
                 if (CHANGE_EVENTS.contains(event.getStatus())) {
                     refreshTask.schedule(200);
                 }
             }
-        });
+        };
+        instance.addContainerListener(listener);
     }
 
     @Override
-    protected Node createNodeForKey(EnhancedDockerContainer key) {
+    protected Node createNodeForKey(StatefulDockerContainer key) {
         return new DockerContainerNode(key);
     }
 
     @Override
-    protected boolean createKeys(List<EnhancedDockerContainer> toPopulate) {
+    protected boolean createKeys(List<StatefulDockerContainer> toPopulate) {
         DockerAction facade = new DockerAction(instance);
         List<DockerContainer> containers = new ArrayList<>(facade.getContainers());
         Collections.sort(containers, COMPARATOR);
         synchronized (cache) {
             for (DockerContainer c : containers) {
-                EnhancedDockerContainer cached = null;
-                WeakReference<EnhancedDockerContainer> ref = cache.get(c);
+                StatefulDockerContainer cached = null;
+                WeakReference<StatefulDockerContainer> ref = cache.get(c);
                 if (ref != null) {
                     cached = ref.get();
                 }
                 if (cached == null) {
-                    cached = new EnhancedDockerContainer(c);
+                    cached = new StatefulDockerContainer(c);
                     cache.put(c, new WeakReference<>(cached));
                 } else {
                     cached.refresh();
@@ -141,6 +145,19 @@ public class DockerContainersChildFactory extends ChildFactory<EnhancedDockerCon
     @Override
     public final void refresh() {
         refresh(false);
+    }
+
+    @Override
+    public void close() {
+        instance.removeContainerListener(listener);
+        synchronized (cache) {
+            for (WeakReference<StatefulDockerContainer> r : cache.values()) {
+                StatefulDockerContainer c  = r.get();
+                if (c != null) {
+                    c.close();
+                }
+            }
+        }
     }
 
 }

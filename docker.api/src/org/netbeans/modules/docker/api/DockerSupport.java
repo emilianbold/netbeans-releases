@@ -47,6 +47,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.NodeChangeEvent;
 import java.util.prefs.NodeChangeListener;
 import java.util.prefs.Preferences;
@@ -62,6 +64,8 @@ import org.openide.util.Parameters;
  * @author Petr Hejl
  */
 public final class DockerSupport {
+
+    private static final Logger LOGGER = Logger.getLogger(DockerSupport.class.getName());
 
     private static DockerSupport support;
 
@@ -127,8 +131,8 @@ public final class DockerSupport {
             instances.remove(instance.getUrl());
             instance.delete();
 
-            // FIXME we shouldn't need it and use it
-            instance.getEventBus().close();
+            // we shouldn't need it and use it
+            //instance.getEventBus().close();
         }
         changeSupport.fireChange();
     }
@@ -160,7 +164,7 @@ public final class DockerSupport {
             return initialized;
         }
     }
-    
+
     private void refresh() {
         boolean fire = false;
         synchronized (this) {

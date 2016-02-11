@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,55 +37,36 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.docker.ui.node;
 
-import org.netbeans.modules.docker.api.DockerInstance;
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 
 /**
  *
  * @author Petr Hejl
  */
-public class RemoveInstanceAction extends NodeAction {
+public abstract class NodeClosingFactory<T> extends ChildFactory.DestroyableNodes<T> {
+
+    private static final Logger LOGGER = Logger.getLogger(NodeClosingFactory.class.getName());
 
     @Override
-    protected void performAction(Node[] activatedNodes) {
-        for (Node node : activatedNodes) {
-            StatefulDockerInstance instance = node.getLookup().lookup(StatefulDockerInstance.class);
-            if (instance != null) {
-                instance.remove();
+    protected void destroyNodes(Node[] arr) {
+        for (Node n : arr) {
+            for (Closeable c : n.getLookup().lookupAll(Closeable.class)) {
+                try {
+                    LOGGER.log(Level.FINE, "Closing {0}", c.getClass().getName());
+                    c.close();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.FINE, null, ex);
+                }
             }
         }
-    }
-
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        for (Node node : activatedNodes) {
-            if (node.getLookup().lookup(DockerInstance.class) == null) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    @NbBundle.Messages("LBL_RemoveInstanceAction=Remove")
-    @Override
-    public String getName() {
-        return Bundle.LBL_RemoveInstanceAction();
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return false;
     }
 }
