@@ -201,7 +201,7 @@ public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchron
         component.setWaitingState(false);
     }
 
-    @NbBundle.Messages("MSG_CannotConnect=Cannot establish connection to the instance")
+    @NbBundle.Messages("MSG_CannotConnect=Cannot establish connection.")
     @Override
     public void validate() throws WizardValidationException {
         Configuration panel = component.getConfiguration();
@@ -209,7 +209,13 @@ public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchron
             DockerInstance instance;
             boolean socketSelected = panel.isSocketSelected();
             if (socketSelected) {
-                instance = DockerInstance.getInstance(Utilities.toURI(panel.getSocket()).toURL().toString(),
+                File socket = panel.getSocket();
+                // this is repeated here as the acessibility might have change since the last check
+                if (!socket.exists() || !socket.canRead() || !socket.canWrite()) {
+                    String error = Bundle.MSG_InaccessibleSocket();
+                    throw new WizardValidationException((JComponent) component, error, error);
+                }
+                instance = DockerInstance.getInstance(Utilities.toURI(socket).toURL().toString(),
                         null, null, null, null);
             } else {
                 File caFile = null;
