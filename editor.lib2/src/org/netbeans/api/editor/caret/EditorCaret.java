@@ -2050,7 +2050,7 @@ public final class EditorCaret implements Caret {
                 final int endOffset = offset + evt.getLength();
                 if (offset == 0) {
                     // Manually shift carets at offset zero
-                    runTransaction(CaretTransaction.RemoveType.DOCUMENT_INSERT_ZERO_OFFSET, 0, null, null);
+                    runTransaction(CaretTransaction.RemoveType.DOCUMENT_INSERT_ZERO_OFFSET, endOffset, null, null);
                 }
                 // [TODO] proper undo solution
                 modified = true;
