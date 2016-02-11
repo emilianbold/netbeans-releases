@@ -44,9 +44,10 @@ package org.netbeans.modules.docker.ui.wizard;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.api.DockerAction;
@@ -65,6 +66,8 @@ public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchron
     private static final Pattern REMOTE_HOST_PATTERN = Pattern.compile("^(tcp://)[^/:](:\\d+)($|/.*)"); // NOI18N
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+
+    private final Map<String, Object> values = new HashMap<>();
 
     /**
      * The visual component that displays this panel. If you need to access the
@@ -193,6 +196,15 @@ public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchron
 
     @Override
     public void prepareValidation() {
+        synchronized (values) {
+            values.clear();
+            Configuration panel = component.getConfiguration();
+            values.put(AddDockerInstanceWizard.DISPLAY_NAME_PROPERTY, panel.getDisplayName());
+            values.put(AddDockerInstanceWizard.SOCKET_SELECTED_PROPERTY, panel.isSocketSelected());
+            values.put(AddDockerInstanceWizard.SOCKET_PROPERTY, panel.getSocket());
+            values.put(AddDockerInstanceWizard.URL_PROPERTY, panel.getUrl());
+            values.put(AddDockerInstanceWizard.CERTIFICATE_PATH_PROPERTY, panel.getCertPath());
+        }
         component.setWaitingState(true);
     }
 
@@ -204,32 +216,34 @@ public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchron
     @NbBundle.Messages("MSG_CannotConnect=Cannot establish connection.")
     @Override
     public void validate() throws WizardValidationException {
-        Configuration panel = component.getConfiguration();
         try {
             DockerInstance instance;
-            boolean socketSelected = panel.isSocketSelected();
-            if (socketSelected) {
-                File socket = panel.getSocket();
-                // this is repeated here as the acessibility might have change since the last check
-                if (!socket.exists() || !socket.canRead() || !socket.canWrite()) {
-                    String error = Bundle.MSG_InaccessibleSocket();
-                    throw new WizardValidationException(component, error, error);
-                }
-                instance = DockerInstance.getInstance(Utilities.toURI(socket).toURL().toString(),
-                        null, null, null, null);
-            } else {
-                File caFile = null;
-                File certFile = null;
-                File keyFile = null;
+            synchronized (values) {
+                boolean socketSelected = (Boolean) values.get(AddDockerInstanceWizard.SOCKET_SELECTED_PROPERTY);
+                if (socketSelected) {
+                    File socket = (File) values.get(AddDockerInstanceWizard.SOCKET_PROPERTY);
+                    // this is repeated here as the acessibility might have change since the last check
+                    if (!socket.exists() || !socket.canRead() || !socket.canWrite()) {
+                        String error = Bundle.MSG_InaccessibleSocket();
+                        throw new WizardValidationException(component, error, error);
+                    }
+                    instance = DockerInstance.getInstance(Utilities.toURI(socket).toURL().toString(),
+                            null, null, null, null);
+                } else {
+                    File caFile = null;
+                    File certFile = null;
+                    File keyFile = null;
 
-                String strCertPath = panel.getCertPath();
-                if (strCertPath != null) {
-                    File file = new File(strCertPath);
-                    caFile = new File(file, AddDockerInstanceWizard.DEFAULT_CA_FILE);
-                    certFile = new File(file, AddDockerInstanceWizard.DEFAULT_CERT_FILE);
-                    keyFile = new File(file, AddDockerInstanceWizard.DEFAULT_KEY_FILE);
+                    String strCertPath = (String) values.get(AddDockerInstanceWizard.CERTIFICATE_PATH_PROPERTY);
+                    if (strCertPath != null) {
+                        File file = new File(strCertPath);
+                        caFile = new File(file, AddDockerInstanceWizard.DEFAULT_CA_FILE);
+                        certFile = new File(file, AddDockerInstanceWizard.DEFAULT_CERT_FILE);
+                        keyFile = new File(file, AddDockerInstanceWizard.DEFAULT_KEY_FILE);
+                    }
+                    instance = DockerInstance.getInstance((String) values.get(AddDockerInstanceWizard.URL_PROPERTY),
+                            null, caFile, certFile, keyFile);
                 }
-                instance = DockerInstance.getInstance(panel.getUrl(), null, caFile, certFile, keyFile);
             }
 
             DockerAction action = new DockerAction(instance);
