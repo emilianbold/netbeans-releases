@@ -1377,14 +1377,14 @@ is divided into following sections:
                         <delete dir="${{build.test.results.dir}}" quiet="true"/>
                         <mkdir dir="${{build.test.results.dir}}"/>
                         <j2seproject3:debug classname="org.testng.TestNG" classpath="${{debug.test.classpath}}">
-                            <customize>
+                            <customizeDebuggee>
                                 <customize2/>
                                 <jvmarg value="-ea"/>
                                 <arg line="${{testng.debug.mode}}"/>
                                 <arg line="-d ${{build.test.results.dir}}"/>
                                 <arg line="-listener org.testng.reporters.VerboseReporter"/>
                                 <arg line="${{testng.cmd.args}}"/>
-                            </customize>
+                            </customizeDebuggee>
                         </j2seproject3:debug>
                     </sequential>
                 </macrodef>
@@ -1659,39 +1659,33 @@ is divided into following sections:
                     <xsl:attribute name="name">debug</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
                     <attribute>
+                        <xsl:attribute name="name">modulename</xsl:attribute>
+                        <xsl:attribute name="default">${module.name}</xsl:attribute>
+                    </attribute>
+                    <attribute>
                         <xsl:attribute name="name">classname</xsl:attribute>
                         <xsl:attribute name="default">${main.class}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">modulepath</xsl:attribute>
+                        <xsl:attribute name="default">${run.modulepath}</xsl:attribute>
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">classpath</xsl:attribute>
                         <xsl:attribute name="default">${debug.classpath}</xsl:attribute>
                     </attribute>
                     <element>
-                        <xsl:attribute name="name">customize</xsl:attribute>
+                        <xsl:attribute name="name">customizeDebuggee</xsl:attribute>
                         <xsl:attribute name="optional">true</xsl:attribute>
                     </element>
                     <sequential>
-                        <java fork="true" classname="@{{classname}}" failonerror="${{java.failonerror}}">
-                            <xsl:attribute name="dir">${work.dir}</xsl:attribute>
-                            <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
-                                <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
-                            </xsl:if>
-                            <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
-                            <jvmarg line="${{debug-args-line}}"/>
-                            <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
-                            <jvmarg value="-Dfile.encoding=${{runtime.encoding}}"/>
-                            <redirector inputencoding="${{runtime.encoding}}" outputencoding="${{runtime.encoding}}" errorencoding="${{runtime.encoding}}"/>
-                            <jvmarg line="${{run.jvmargs}}"/>
-                            <jvmarg line="${{run.jvmargs.ide}}"/>
-                            <classpath>
-                                <path path="@{{classpath}}"/>
-                            </classpath>
-                            <syspropertyset>
-                                <propertyref prefix="run-sys-prop."/>
-                                <mapper type="glob" from="run-sys-prop.*" to="*"/>
-                            </syspropertyset>
-                            <customize/>
-                        </java>
+                        <j2seproject1:java modulename="@{{modulename}}" classname="@{{classname}}" modulepath="@{{modulepath}}" classpath="@{{classpath}}">
+                            <customize>
+                                <jvmarg line="${{debug-args-line}}"/>
+                                <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
+                                <customizeDebuggee/>
+                            </customize>
+                        </j2seproject1:java>
                     </sequential>
                 </macrodef>
             </target>
@@ -2295,9 +2289,9 @@ is divided into following sections:
             <target name="-debug-start-debuggee">
                 <xsl:attribute name="depends">init,compile</xsl:attribute>
                 <j2seproject3:debug>
-                    <customize>
+                    <customizeDebuggee>
                         <arg line="${{application.args}}"/>
-                    </customize>
+                    </customizeDebuggee>
                 </j2seproject3:debug>
             </target>
             
@@ -2850,9 +2844,9 @@ is divided into following sections:
                 <xsl:attribute name="depends">init,compile-single</xsl:attribute>
                 <fail unless="applet.url">Must select one file in the IDE or set applet.url</fail>
                 <j2seproject3:debug classname="sun.applet.AppletViewer">
-                    <customize>
+                    <customizeDebuggee>
                         <arg value="${{applet.url}}"/>
-                    </customize>
+                    </customizeDebuggee>
                 </j2seproject3:debug>
             </target>
             
