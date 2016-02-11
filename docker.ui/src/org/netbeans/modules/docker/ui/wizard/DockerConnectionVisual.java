@@ -41,13 +41,10 @@
  */
 package org.netbeans.modules.docker.ui.wizard;
 
-import java.io.File;
-import javax.swing.JFileChooser;
-import javax.swing.SwingUtilities;
+import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import org.netbeans.modules.docker.ui.UiUtils;
+import org.netbeans.modules.docker.api.DockerSupport;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -56,9 +53,11 @@ import org.openide.util.Utilities;
  *
  * @author Petr Hejl
  */
-public class DockerConnectionVisual extends javax.swing.JPanel {
+public class DockerConnectionVisual extends javax.swing.JPanel implements ChangeListener {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+
+    private final Configuration configPanel;
 
     /**
      * Creates new form DockerWizardVisual
@@ -66,15 +65,14 @@ public class DockerConnectionVisual extends javax.swing.JPanel {
     public DockerConnectionVisual() {
         initComponents();
 
-        // do not show the port binding explanation on mac and windows
-        if (Utilities.isMac() || Utilities.isWindows()) {
-            explanationLabel.setVisible(false);
+        if (DockerSupport.getDefault().isSocketSupported()) {
+            configPanel = new ConfigurationLinuxPanel();
+        } else {
+            configPanel = new ConfigurationPanel();
         }
 
-        DefaultDocumentListener listener = new DefaultDocumentListener();
-        nameTextField.getDocument().addDocumentListener(listener);
-        urlTextField.getDocument().addDocumentListener(listener);
-        certTextField.getDocument().addDocumentListener(listener);
+        configPanel.addChangeListener(this);
+        mainPanel.add((JPanel) configPanel);
     }
 
     public void addChangeListener(ChangeListener l) {
@@ -85,52 +83,19 @@ public class DockerConnectionVisual extends javax.swing.JPanel {
         changeSupport.removeChangeListener(l);
     }
 
-    public String getDisplayName() {
-        return UiUtils.getValue(nameTextField);
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        changeSupport.fireChange();
     }
 
-    public void setDisplayName(String displayName) {
-        nameTextField.setText(displayName);
-    }
-
-    public String getUrl() {
-        return UiUtils.getValue(urlTextField);
-    }
-
-    public void setUrl(String url) {
-        urlTextField.setText(url);
-    }
-
-    public String getCertPath() {
-        return UiUtils.getValue(certTextField);
-    }
-
-    public void setCertPath(String path) {
-        certTextField.setText(path);
+    public Configuration getConfiguration() {
+        return configPanel;
     }
 
     @NbBundle.Messages("MSG_Connection=Connection")
     @Override
     public String getName() {
         return Bundle.MSG_Connection();
-    }
-
-    private class DefaultDocumentListener implements DocumentListener {
-
-        @Override
-        public void insertUpdate(DocumentEvent e) {
-            changeSupport.fireChange();
-        }
-
-        @Override
-        public void removeUpdate(DocumentEvent e) {
-            changeSupport.fireChange();
-        }
-
-        @Override
-        public void changedUpdate(DocumentEvent e) {
-            changeSupport.fireChange();
-        }
     }
 
     /**
@@ -142,93 +107,47 @@ public class DockerConnectionVisual extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        urlLabel = new javax.swing.JLabel();
-        urlTextField = new javax.swing.JTextField();
-        explanationLabel = new javax.swing.JLabel();
-        nameLabel = new javax.swing.JLabel();
-        nameTextField = new javax.swing.JTextField();
-        certDirectoryLabel = new javax.swing.JLabel();
-        certTextField = new javax.swing.JTextField();
-        browseButton = new javax.swing.JButton();
+        mainPanel = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
+        testButton = new javax.swing.JButton();
 
-        urlLabel.setLabelFor(urlTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(urlLabel, org.openide.util.NbBundle.getMessage(DockerConnectionVisual.class, "DockerConnectionVisual.urlLabel.text")); // NOI18N
+        mainPanel.setLayout(new java.awt.BorderLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(explanationLabel, org.openide.util.NbBundle.getMessage(DockerConnectionVisual.class, "DockerConnectionVisual.explanationLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(testButton, org.openide.util.NbBundle.getMessage(DockerConnectionVisual.class, "DockerConnectionVisual.testButton.text")); // NOI18N
 
-        nameLabel.setLabelFor(nameTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(DockerConnectionVisual.class, "DockerConnectionVisual.nameLabel.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(certDirectoryLabel, org.openide.util.NbBundle.getMessage(DockerConnectionVisual.class, "DockerConnectionVisual.certDirectoryLabel.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(DockerConnectionVisual.class, "DockerConnectionVisual.browseButton.text")); // NOI18N
-        browseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                browseButtonActionPerformed(evt);
-            }
-        });
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(testButton)
+                .addGap(0, 291, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(testButton)
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(explanationLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(certDirectoryLabel)
-                    .addComponent(urlLabel)
-                    .addComponent(nameLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(nameTextField)
-                    .addComponent(urlTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(certTextField)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(browseButton))))
+            .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(nameLabel)
-                    .addComponent(nameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(urlLabel)
-                    .addComponent(urlTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(certDirectoryLabel)
-                    .addComponent(certTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(browseButton))
+                .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(explanationLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        JFileChooser chooser = new JFileChooser();
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setFileHidingEnabled(false);
-        String text = certTextField.getText();
-        if (text != null && !text.trim().isEmpty()) {
-            chooser.setSelectedFile(new File(text));
-        }
-        if (chooser.showOpenDialog(SwingUtilities.getWindowAncestor(this)) == JFileChooser.APPROVE_OPTION) {
-            certTextField.setText(chooser.getSelectedFile().getAbsolutePath());
-        }
-    }//GEN-LAST:event_browseButtonActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton browseButton;
-    private javax.swing.JLabel certDirectoryLabel;
-    private javax.swing.JTextField certTextField;
-    private javax.swing.JLabel explanationLabel;
-    private javax.swing.JLabel nameLabel;
-    private javax.swing.JTextField nameTextField;
-    private javax.swing.JLabel urlLabel;
-    private javax.swing.JTextField urlTextField;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel mainPanel;
+    private javax.swing.JButton testButton;
     // End of variables declaration//GEN-END:variables
 }

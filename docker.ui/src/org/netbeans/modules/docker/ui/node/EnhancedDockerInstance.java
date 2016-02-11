@@ -44,10 +44,11 @@ package org.netbeans.modules.docker.ui.node;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.docker.api.DockerAction;
 import org.netbeans.modules.docker.api.DockerInstance;
+import org.netbeans.modules.docker.api.DockerSupport;
 import org.openide.util.ChangeSupport;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListeners;
 
 /**
  *
@@ -102,14 +103,14 @@ public class EnhancedDockerInstance implements Refreshable {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                update(instance.isAvailable());
+                update(new DockerAction(instance).ping());
             }
         });
     }
-    
+
     public void remove() {
         instance.removeConnectionListener(listener);
-        instance.remove();
+        DockerSupport.getDefault().removeInstance(instance);
     }
 
     @Override

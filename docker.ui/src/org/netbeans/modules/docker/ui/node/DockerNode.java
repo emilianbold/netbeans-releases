@@ -56,7 +56,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.docker.api.DockerInstance;
-import org.netbeans.modules.docker.api.DockerIntegration;
+import org.netbeans.modules.docker.api.DockerSupport;
 import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -93,7 +93,7 @@ public final class DockerNode extends AbstractNode {
     )
     public static synchronized DockerNode getInstance() {
         if (node == null) {
-            ChildFactory factory = new ChildFactory(DockerIntegration.getDefault());
+            ChildFactory factory = new ChildFactory(DockerSupport.getDefault());
             factory.init();
 
             node = new DockerNode(factory,
@@ -116,9 +116,9 @@ public final class DockerNode extends AbstractNode {
     private static class ChildFactory extends org.openide.nodes.ChildFactory<EnhancedDockerInstance>
             implements ChangeListener {
 
-        private final DockerIntegration registry;
+        private final DockerSupport registry;
 
-        public ChildFactory(DockerIntegration registry) {
+        public ChildFactory(DockerSupport registry) {
             super();
             this.registry = registry;
         }
