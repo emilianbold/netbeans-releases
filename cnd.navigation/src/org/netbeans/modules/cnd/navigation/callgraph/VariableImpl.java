@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.callgraph.api.Function;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
@@ -67,11 +68,11 @@ public class VariableImpl implements Function {
         preferredIcons.put(CsmDeclaration.Kind.VARIABLE, CsmDeclaration.Kind.VARIABLE_DEFINITION);
     }
     
-    private final CsmVariable variable;
+    private final CsmOffsetableDeclaration variable;
     private String htmlDisplayName = ""; // NOI18N
     private String scopeName = null; // NOI18N
     
-    public VariableImpl(CsmVariable variable) {
+    public VariableImpl(CsmOffsetableDeclaration variable) {
         this.variable = variable;
     }
     
@@ -100,7 +101,7 @@ public class VariableImpl implements Function {
         return scopeName;
     }
     
-    public CsmVariable getVariable() {
+    public CsmOffsetableDeclaration getVariable() {
         return variable;
     }
     
@@ -193,8 +194,10 @@ public class VariableImpl implements Function {
     
     @Override
     public Kind kind() {
-        if (CsmKindUtilities.isFunctionPointerType(variable.getType())) {
-            return Kind.FUNCTION_POINTER;
+        if (CsmKindUtilities.isVariable(variable)) {
+            if (CsmKindUtilities.isFunctionPointerType(((CsmVariable)variable).getType())) {
+                return Kind.FUNCTION_POINTER;
+            }
         }
         return Kind.VARIABLE;
     }

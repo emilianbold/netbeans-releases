@@ -131,4 +131,7 @@ made subject to such option by the copyright holder.
     <!-- conflict with system zoom shortcut (Alt-mousewheel), see issue #212484, comment #12 -->
     <bind actionName="zoom-text-in" key="A-MOUSE_WHEEL_UP"/>
     <bind actionName="zoom-text-out" key="A-MOUSE_WHEEL_DOWN"/>
+
+    <bind actionName="next-marked-occurrence" key="A-DOWN"/>
+    <bind actionName="prev-marked-occurrence" key="A-UP"/>
 </bindings>
