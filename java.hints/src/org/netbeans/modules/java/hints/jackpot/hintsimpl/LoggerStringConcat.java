@@ -199,6 +199,13 @@ public class LoggerStringConcat {
 
         return ErrorDescriptionFactory.forTree(ctx, message, NbBundle.getMessage(LoggerStringConcat.class, "MSG_LoggerStringConcat"), fix.toEditorFix());
     }
+    
+    private static String literalToMessageFormat(String v) {
+        String fmtValue = v.replaceAll("'", "''");
+        fmtValue = fmtValue.replaceAll(Pattern.quote("{"), Matcher.quoteReplacement("'{'"));
+        fmtValue = fmtValue.replaceAll(Pattern.quote("}"), Matcher.quoteReplacement("'}'"));
+        return fmtValue;
+    }
 
     private static void rewrite(WorkingCopy wc, ExpressionTree level, MethodInvocationTree invocation, TreePath message) {
         List<List<TreePath>> sorted = Utilities.splitStringConcatenationToElements(wc, message);
@@ -207,14 +214,50 @@ public class LoggerStringConcat {
         List<ExpressionTree> newParams = new LinkedList<ExpressionTree>();
         int variablesCount = 0;
         TreeMaker make = wc.getTreeMaker();
-
+        Tree singleLeaf = null;
+        
         for (List<TreePath> element : sorted) {
+            if (element.size() == 1 &&
+                !Utilities.isConstantString(wc, element.get(0), true)) {
+                workingLiteral.append("{");
+                workingLiteral.append(Integer.toString(variablesCount++));
+                workingLiteral.append("}");
+                newParams.add((ExpressionTree) element.get(0).getLeaf());
+            } else {
+                // the cluster is a series of literals and compile-time
+                // constants (which must remain independent)
+                for (TreePath p : element) {
+                    Tree l = p.getLeaf();
+                    if (Utilities.isStringOrCharLiteral(l)) {
+                        if (workingLiteral.length() == 0) {
+                            // will overwrite each other if there are multiple consecutive zero-length
+                            // strings, but that does not matter, the value is the same
+                            // and so is the type. Remind expressions like "" + 5
+                            singleLeaf = l;
+                        } else {
+                            singleLeaf = null;
+                        }
+                        workingLiteral.append(
+                            literalToMessageFormat(
+                                    ((LiteralTree)l).getValue().toString()
+                            )
+                        );
+                    } else {
+                        // must join, some const-reference which must be preserved
+                        if (singleLeaf != null) {
+                            newMessage.add(singleLeaf);
+                            workingLiteral = new StringBuilder();
+                        } else if (workingLiteral.length() > 0) {
+                            newMessage.add(make.Literal(workingLiteral.toString()));
+                            workingLiteral = new StringBuilder();
+                        }
+                        newMessage.add(l);
+                    }
+                }
+            }
+            /*
             if (element.size() == 1 && Utilities.isStringOrCharLiteral(element.get(0).getLeaf())) {
-                String literalValue = ((LiteralTree) element.get(0).getLeaf()).getValue().toString();
-
-                literalValue = literalValue.replaceAll("'", "''");
-                literalValue = literalValue.replaceAll(Pattern.quote("{"), Matcher.quoteReplacement("'{'"));
-                literalValue = literalValue.replaceAll(Pattern.quote("}"), Matcher.quoteReplacement("'}'"));
+                String literalValue = literalToMessageFormat(((LiteralTree) element.get(0).getLeaf()).getValue().toString());
                 workingLiteral.append(literalValue);
             } else {
                 if (element.size() == 1 && !Utilities.isConstantString(wc, element.get(0), true)) {
@@ -256,6 +299,7 @@ public class LoggerStringConcat {
                     }
                 }
             }
+            */
         }
 
         if (workingLiteral.length() > 0) {

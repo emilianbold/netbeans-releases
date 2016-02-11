@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.highlight.semantic.actions;
 
 import java.awt.event.ActionEvent;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorActionNames;
 import org.netbeans.editor.BaseAction;
 import org.openide.util.NbBundle;
 
@@ -56,7 +57,7 @@ import org.openide.util.NbBundle;
  */
 public final class GotoNextOccurrenceAction extends BaseAction {
 
-    private static final String actionName = "cpp-next-marked-occurrence"; // NOI18N
+    private static final String actionName = EditorActionNames.gotoNextOccurrence; // NOI18N
     private static GotoNextOccurrenceAction instance;
 
     public static synchronized GotoNextOccurrenceAction getInstance() {

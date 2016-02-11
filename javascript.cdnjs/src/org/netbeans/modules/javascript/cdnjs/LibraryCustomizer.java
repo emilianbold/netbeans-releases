@@ -183,7 +183,11 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             try {
                 Library.Version[] selectedVersions = customizer.getSelectedLibraries();
                 Library.Version[] versionsToStore = updateLibraries(selectedVersions);
-                LibraryPersistence.getDefault().storeLibraries(project, versionsToStore);
+                try {
+                    LibraryPersistence.getDefault().storeLibraries(project, versionsToStore);
+                } catch (IOException ex) {
+                    Logger.getLogger(StoreListener.class.getName()).log(Level.INFO, "Cannot store libraries", ex);
+                }
 
                 String libraryFolder = customizer.getLibraryFolder();
                 storeLibraryFolder(project, libraryFolder);

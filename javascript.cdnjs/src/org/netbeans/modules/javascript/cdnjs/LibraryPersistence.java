@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript.cdnjs;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.logging.Level;
@@ -50,6 +51,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.web.common.api.UsageLogger;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -179,7 +181,7 @@ public final class LibraryPersistence {
      * @param project project whose library information should be stored.
      * @param libraries libraries used by the project.
      */
-    void storeLibraries(Project project, Library.Version[] libraries) {
+    void storeLibraries(Project project, Library.Version[] libraries) throws IOException {
         Arrays.sort(libraries, new LibraryVersionComparator());
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         try {
@@ -206,6 +208,7 @@ public final class LibraryPersistence {
             }
             AuxiliaryConfiguration config = ProjectUtils.getAuxiliaryConfiguration(project);
             config.putConfigurationFragment(librariesElement, true);
+            ProjectManager.getDefault().saveProject(project);
 
             logLibraryUsage(libraries);
 

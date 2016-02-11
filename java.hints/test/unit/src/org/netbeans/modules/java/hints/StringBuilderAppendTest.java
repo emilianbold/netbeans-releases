@@ -72,7 +72,7 @@ public class StringBuilderAppendTest extends NbTestCase {
                               "public class Test {\n" +
                               "    private void test(int a, int b) {\n" +
                               "        StringBuilder sb = new StringBuilder();\n" +
-                              "        sb.append(\"a\" + \"b\").append(a).append(\"c\").append(b);\n" +
+                              "        sb.append(\"ab\").append(a).append(\"c\").append(b);\n" +
                               "    }\n" +
                               "}\n");
     }
@@ -95,7 +95,7 @@ public class StringBuilderAppendTest extends NbTestCase {
                               "public class Test {\n" +
                               "    private void test(int a, int b) {\n" +
                               "        StringBuffer sb = new StringBuffer();\n" +
-                              "        sb.append(\"a\" + \"b\").append(a).append(\"c\").append(b);\n" +
+                              "        sb.append(\"ab\").append(a).append(\"c\").append(b);\n" +
                               "    }\n" +
                               "}\n");
     }
@@ -119,7 +119,7 @@ public class StringBuilderAppendTest extends NbTestCase {
                               "public class Test {\n" +
                               "    private void test(int a, int b) {\n" +
                               "        StringBuffer sb = new StringBuffer();\n" +
-                              "        sb.append(\"a\" + \"b\").append(a).append(\"c\" + CONST);\n" +
+                              "        sb.append(\"ab\").append(a).append(\"c\" + CONST);\n" +
                               "    }\n" +
                               "    private static final String CONST = \"d\";\n" +
                               "}\n");
@@ -186,7 +186,7 @@ public class StringBuilderAppendTest extends NbTestCase {
                               "public class Test {\n" +
                               "    private void test(int a, int b) {\n" +
                               "        StringBuffer sb = new StringBuffer();\n" +
-                              "        sb.append(\"a\" + \"b\").append(a).append(\"c\");\n" +
+                              "        sb.append(\"ab\").append(a).append(\"c\");\n" +
                               "    }\n" +
                               "    private static final String CONST = \"d\";\n" +
                               "}\n");
