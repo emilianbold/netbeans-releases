@@ -794,17 +794,17 @@ public class CppLexerBatchTestCase extends TestCase {
             T.T(CppTokenId.WHILE, "while", L.BOTH),
             T.T(CppTokenId.ALTERNATE_XOR, "xor", L.CPP),
             T.T(CppTokenId.ALTERNATE_XOR_EQ, "xor_eq", L.CPP),
-            //T.T(CppTokenId._ALIGNAS, "_Alignas", L.C), // unsupported keyword
-            //T.T(CppTokenId._ALIGNOF, "_Alignof", L.C), // unsupported keyword
-            //T.T(CppTokenId._ATOMIC, "_Atomic", L.C), // unsupported keyword
+            T.T(CppTokenId._ALIGNAS, "_Alignas", L.C), // unsupported keyword
+            T.T(CppTokenId._ALIGNOF, "_Alignof", L.C), // unsupported keyword
+            T.T(CppTokenId._ATOMIC, "_Atomic", L.C), // unsupported keyword
             T.T(CppTokenId._BOOL, "_Bool", L.C),
             T.T(CppTokenId._COMPLEX, "_Complex", L.C),
             //T.T(CppTokenId._GENERIC, "_Generic", L.C), // unsupported keyword
             T.T(CppTokenId._IMAGINARY, "_Imaginary", L.C),
             //T.T(CppTokenId._PRAGMA, "_Pragma", L.BOTH), // unsupported keyword
             T.T(CppTokenId._NORETURN, "_Noreturn", L.C),
-            //T.T(CppTokenId._STATIC_ASSERT, "_Static_assert", L.C), // unsupported keyword
-            //T.T(CppTokenId._THREAD_LOCAL, "_Thread_local", L.C), // unsupported keyword
+            T.T(CppTokenId._STATIC_ASSERT, "_Static_assert", L.C), // unsupported keyword
+            T.T(CppTokenId._THREAD_LOCAL, "_Thread_local", L.C), // unsupported keyword
             T.T(CppTokenId.IDENTIFIER, "null", L.BOTH),
             T.T(CppTokenId.TRUE, "true", L.CPP),
             T.T(CppTokenId.FALSE, "false", L.CPP),
