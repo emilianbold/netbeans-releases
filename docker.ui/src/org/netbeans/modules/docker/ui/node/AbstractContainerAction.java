@@ -82,7 +82,7 @@ public abstract class AbstractContainerAction extends NodeAction implements Exce
     @Override
     protected final void performAction(Node[] activatedNodes) {
         for (final Node node : activatedNodes) {
-            final EnhancedDockerContainer container = node.getLookup().lookup(EnhancedDockerContainer.class);
+            final StatefulDockerContainer container = node.getLookup().lookup(StatefulDockerContainer.class);
             if (container != null) {
                 final ProgressHandle handle = ProgressHandle.createHandle(getProgressMessage(container.getContainer()));
                 handle.start();
@@ -106,7 +106,7 @@ public abstract class AbstractContainerAction extends NodeAction implements Exce
     @Override
     protected final boolean enable(Node[] activatedNodes) {
         for (Node node : activatedNodes) {
-            EnhancedDockerContainer container = node.getLookup().lookup(EnhancedDockerContainer.class);
+            StatefulDockerContainer container = node.getLookup().lookup(StatefulDockerContainer.class);
             if (container == null || !isEnabled(container.getDetail())) {
                 return false;
             }

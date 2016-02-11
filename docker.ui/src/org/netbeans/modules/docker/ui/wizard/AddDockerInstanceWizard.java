@@ -42,15 +42,19 @@
 package org.netbeans.modules.docker.ui.wizard;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import org.netbeans.modules.docker.api.DockerInstance;
-import org.netbeans.modules.docker.api.DockerIntegration;
+import org.netbeans.modules.docker.api.DockerSupport;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -59,6 +63,10 @@ import org.openide.util.NbBundle;
 public class AddDockerInstanceWizard {
 
     public static final String DISPLAY_NAME_PROPERTY = "displayName";
+
+    public static final String SOCKET_SELECTED_PROPERTY = "socketSelected";
+
+    public static final String SOCKET_PROPERTY = "socket";
 
     public static final String URL_PROPERTY = "url";
 
@@ -69,6 +77,8 @@ public class AddDockerInstanceWizard {
     public static final String DEFAULT_CERT_FILE = "cert.pem";
 
     public static final String DEFAULT_KEY_FILE = "key.pem";
+
+    private static final Logger LOGGER = Logger.getLogger(AddDockerInstanceWizard.class.getName());
 
     @NbBundle.Messages("LBL_AddDockerInstance=Add Docker Instance")
     public DockerInstance show() {
@@ -91,20 +101,37 @@ public class AddDockerInstanceWizard {
         wiz.setTitle(Bundle.LBL_AddDockerInstance());
         if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
 
-            File caFile = null;
-            File certFile = null;
-            File keyFile = null;
+            Boolean socketSelected = (Boolean) wiz.getProperty(SOCKET_SELECTED_PROPERTY);
+            if (socketSelected) {
+                File file = (File) wiz.getProperty(SOCKET_PROPERTY);
+                try {
+                    DockerInstance instance = DockerInstance.getInstance(
+                            Utilities.toURI(file).toURL().toString(),
+                            (String) wiz.getProperty(DISPLAY_NAME_PROPERTY),
+                            null, null, null);
+                    return DockerSupport.getDefault().addInstance(instance);
+                } catch (MalformedURLException ex) {
+                    LOGGER.log(Level.WARNING, null, ex);
+                }
+            } else {
+                File caFile = null;
+                File certFile = null;
+                File keyFile = null;
 
-            String strCertPath = (String) wiz.getProperty(CERTIFICATE_PATH_PROPERTY);
-            if (strCertPath != null) {
-                File file = new File(strCertPath);
-                caFile = new File(file, DEFAULT_CA_FILE);
-                certFile = new File(file, DEFAULT_CERT_FILE);
-                keyFile = new File(file, DEFAULT_KEY_FILE);
+                String strCertPath = (String) wiz.getProperty(CERTIFICATE_PATH_PROPERTY);
+                if (strCertPath != null) {
+                    File file = new File(strCertPath);
+                    caFile = new File(file, DEFAULT_CA_FILE);
+                    certFile = new File(file, DEFAULT_CERT_FILE);
+                    keyFile = new File(file, DEFAULT_KEY_FILE);
+                }
+
+                DockerInstance instance = DockerInstance.getInstance(
+                        (String) wiz.getProperty(URL_PROPERTY),
+                        (String) wiz.getProperty(DISPLAY_NAME_PROPERTY),
+                        caFile, certFile, keyFile);
+                return DockerSupport.getDefault().addInstance(instance);
             }
-
-            return DockerIntegration.getDefault().createInstance((String) wiz.getProperty(DISPLAY_NAME_PROPERTY),
-                    (String) wiz.getProperty(URL_PROPERTY), caFile, certFile, keyFile);
         }
         return null;
     }
