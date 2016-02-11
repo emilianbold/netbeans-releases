@@ -46,17 +46,20 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.docker.api.DockerAction;
 import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.api.DockerSupport;
 import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
+public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchronousValidatingPanel<WizardDescriptor>, ChangeListener {
 
     private static final Pattern REMOTE_HOST_PATTERN = Pattern.compile("^(tcp://)[^/:](:\\d+)($|/.*)"); // NOI18N
 
@@ -186,6 +189,52 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
         }
 
         return true;
+    }
+
+    @Override
+    public void prepareValidation() {
+        component.setWaitingState(true);
+    }
+
+    @Override
+    public void finishValidation() {
+        component.setWaitingState(false);
+    }
+
+    @NbBundle.Messages("MSG_CannotConnect=Cannot establish connection to the instance")
+    @Override
+    public void validate() throws WizardValidationException {
+        Configuration panel = component.getConfiguration();
+        try {
+            DockerInstance instance;
+            boolean socketSelected = panel.isSocketSelected();
+            if (socketSelected) {
+                instance = DockerInstance.getInstance(Utilities.toURI(panel.getSocket()).toURL().toString(),
+                        null, null, null, null);
+            } else {
+                File caFile = null;
+                File certFile = null;
+                File keyFile = null;
+
+                String strCertPath = panel.getCertPath();
+                if (strCertPath != null) {
+                    File file = new File(strCertPath);
+                    caFile = new File(file, AddDockerInstanceWizard.DEFAULT_CA_FILE);
+                    certFile = new File(file, AddDockerInstanceWizard.DEFAULT_CERT_FILE);
+                    keyFile = new File(file, AddDockerInstanceWizard.DEFAULT_KEY_FILE);
+                }
+                instance = DockerInstance.getInstance(panel.getUrl(), null, caFile, certFile, keyFile);
+            }
+
+            DockerAction action = new DockerAction(instance);
+            if (!action.ping()) {
+                String error = Bundle.MSG_CannotConnect();
+                throw new WizardValidationException((JComponent) component, error, error);
+            }
+        } catch (MalformedURLException ex) {
+            String error = Bundle.MSG_CannotConnect();
+            throw new WizardValidationException((JComponent) component, error, error);
+        }
     }
 
     @Override

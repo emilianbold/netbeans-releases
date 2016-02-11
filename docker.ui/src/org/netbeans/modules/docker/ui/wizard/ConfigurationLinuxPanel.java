@@ -145,6 +145,8 @@ public class ConfigurationLinuxPanel extends javax.swing.JPanel implements Confi
         urlTextField.setEnabled(!socketSelected);
         certTextField.setEnabled(!socketSelected);
         certBrowseButton.setEnabled(!socketSelected);
+
+        changeSupport.fireChange();
     }
 
     private class DefaultDocumentListener implements DocumentListener {

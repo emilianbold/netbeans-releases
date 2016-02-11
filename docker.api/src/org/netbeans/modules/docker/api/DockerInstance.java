@@ -113,7 +113,7 @@ public class DockerInstance {
     }
 
     @NonNull
-    public static DockerInstance getInstance(@NonNull String url, @NonNull String displayName,
+    public static DockerInstance getInstance(@NonNull String url, @NullAllowed String displayName,
             @NullAllowed File caCertificate, @NullAllowed File certificate, @NullAllowed File key) {
 
         return new DockerInstance(url, displayName, caCertificate, certificate, key);
