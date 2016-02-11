@@ -58,6 +58,7 @@ package org.netbeans.modules.csl.api;
 import java.awt.event.ActionEvent;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorActionNames;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.csl.editor.semantic.MarkOccurrencesHighlighter;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
@@ -82,8 +83,8 @@ import org.openide.util.NbBundle;
  */
 public final class GoToMarkOccurrencesAction extends BaseAction {
 
-    private static final String prevActionName = "csl-prev-marked-occurrence"; // NOI18N
-    private static final String nextActionName = "csl-next-marked-occurrence"; // NOI18N
+    private static final String prevActionName = EditorActionNames.gotoPrevOccurrence;
+    private static final String nextActionName = EditorActionNames.gotoNextOccurrence;
 
     private final boolean next;
 

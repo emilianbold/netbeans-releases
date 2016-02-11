@@ -59,7 +59,4 @@ made subject to such option by the copyright holder.
     <bind key="DOS-DOWN" actionName="select-element-previous"/>
     <bind actionName="complete-line" key="D-SEMICOLON"/>
     <bind actionName="complete-line-newline" key="DS-SEMICOLON"/>
-
-    <bind actionName="java-next-marked-occurrence" key="A-DOWN"/>
-    <bind actionName="java-prev-marked-occurrence" key="A-UP"/>
 </bindings>
