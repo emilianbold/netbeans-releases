@@ -172,6 +172,7 @@ is divided into following sections:
                 </condition>
                 <property name="javac.modulepath" value=""/>
                 <property name="run.modulepath" value="${{javac.modulepath}}:${{build.classes.dir}}"/>
+                <property name="debug.modulepath" value="${{run.modulepath}}"/>
                 <property name="javac.upgrademodulepath" value=""/>
                 <condition property="javac.systemmodulepath.cmd.line.arg" value="-systemmodulepath '${{javac.systemmodulepath}}'" else="">
                     <and>
@@ -1586,6 +1587,10 @@ is divided into following sections:
                         <xsl:attribute name="default">${main.class}</xsl:attribute>
                     </attribute>
                     <attribute>
+                        <xsl:attribute name="name">modulepath</xsl:attribute>
+                        <xsl:attribute name="default">${debug.modulepath}</xsl:attribute>
+                    </attribute>
+                    <attribute>
                         <xsl:attribute name="name">classpath</xsl:attribute>
                         <xsl:attribute name="default">${debug.classpath}</xsl:attribute>
                     </attribute>
@@ -1595,6 +1600,9 @@ is divided into following sections:
                     </attribute>
                     <sequential>
                         <nbjpdastart transport="${{debug-transport}}" addressproperty="jpda.address" name="@{{name}}" stopclassname="@{{stopclassname}}">
+                            <modulepath>
+                                <path path="@{{modulepath}}"/>
+                            </modulepath>
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
@@ -1668,7 +1676,7 @@ is divided into following sections:
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">modulepath</xsl:attribute>
-                        <xsl:attribute name="default">${run.modulepath}</xsl:attribute>
+                        <xsl:attribute name="default">${debug.modulepath}</xsl:attribute>
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">classpath</xsl:attribute>

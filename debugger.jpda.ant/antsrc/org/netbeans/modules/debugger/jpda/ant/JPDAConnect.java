@@ -183,6 +183,7 @@ public class JPDAConnect extends Task {
 
         ClassPath sourcePath = JPDAStart.createSourcePath (
             getProject (),
+            null,
             classpath, 
             plainSourcepath,
             isSourcePathExclusive

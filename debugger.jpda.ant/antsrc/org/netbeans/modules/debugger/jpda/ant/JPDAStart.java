@@ -60,12 +60,14 @@ import com.sun.jdi.connect.ListeningConnector;
 import com.sun.jdi.connect.Transport;
 import com.sun.jdi.connect.Connector;
 import java.beans.PropertyChangeListener;
+import java.io.FileFilter;
 
 import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -123,6 +125,14 @@ public class JPDAStart extends Task implements Runnable {
     private static final String SHMEM_TRANSPORT = "dt_shmem"; // NOI18N
     private static final String SOCKET_CONNECTOR = "com.sun.jdi.SocketListen"; // NOI18N
     private static final String SHMEM_CONNECTOR = "com.sun.jdi.SharedMemoryListen"; // NOI18N
+    private static final String MODULE_INFO_CLZ = "module-info.class";  //NOI18N
+    private static final Set<? extends String> MODULE_FILES;
+    static {
+        final Set<String> exts = new HashSet<String>();
+        exts.add("jar");    //NOI18N
+        exts.add("jmod");   //NOI18N
+        MODULE_FILES = Collections.unmodifiableSet(exts);
+    }
 
     /** Name of the property to which the JPDA address will be set.
      * Target VM should use this address and connect to it
@@ -144,6 +154,8 @@ public class JPDAStart extends Task implements Runnable {
     private Path                    classpath = null;
     /** Explicit bootclasspath of the debugged process. */
     private Path                    bootclasspath = null;
+    /** Explicit modulepath of the debugged process. */
+    private Path                    modulepath = null;
     private final Object []         lock = new Object[2];
     /** The class debugger should stop in, or null. */
     private String                  stopClassName = null;
@@ -218,6 +230,13 @@ public class JPDAStart extends Task implements Runnable {
         bootclasspath = path;
     }
 
+    public void addModulepath (Path path) {
+        logger.log(Level.FINE, "addModlepath({0})", path);
+        if (modulepath != null)
+            throw new BuildException ("Only one modulepath subelement is supported");
+        modulepath = path;
+    }
+
     public void addSourcepath (Sourcepath path) {
         logger.log(Level.FINE, "addSourcepath({0})", path);
         if (sourcepath != null)
@@ -259,6 +278,7 @@ public class JPDAStart extends Task implements Runnable {
     @Override
     public void execute () throws BuildException {
         verifyPaths(getProject(), classpath);
+        verifyPaths(getProject(), modulepath);
         //verifyPaths(getProject(), bootclasspath); Do not check the paths on bootclasspath (see issue #70930).
         if (sourcepath != null) {
             isSourcePathExclusive = sourcepath.isExclusive();
@@ -447,6 +467,7 @@ public class JPDAStart extends Task implements Runnable {
                 debug ("Creating source path"); // NOI18N
                 ClassPath sourcePath = createSourcePath (
                     getProject (),
+                    modulepath,
                     classpath,
                     plainSourcepath,
                     isSourcePathExclusive
@@ -457,6 +478,7 @@ public class JPDAStart extends Task implements Runnable {
                 );
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("Create sourcepath:"); // NOI18N
+                    logger.log(Level.FINE, "    modulepath : {0}", modulepath); // NOI18N
                     logger.log(Level.FINE, "    classpath : {0}", classpath); // NOI18N
                     logger.log(Level.FINE, "    sourcepath : {0}", plainSourcepath); // NOI18N
                     logger.log(Level.FINE, "    bootclasspath : {0}", bootclasspath); // NOI18N
@@ -665,6 +687,7 @@ public class JPDAStart extends Task implements Runnable {
 
     static ClassPath createSourcePath (
         Project project,
+        Path modulepath,
         Path classpath,
         Path sourcepath,
         boolean isSourcePathExclusive
@@ -673,12 +696,57 @@ public class JPDAStart extends Task implements Runnable {
             return convertToClassPath (project, sourcepath);
         }
         ClassPath cp = convertToSourcePath (project, classpath, true);
+        ClassPath modulesSources = convertToSourcePath(project, modules(project, modulepath), true);
         ClassPath sp = convertToClassPath (project, sourcepath);
 
         ClassPath sourcePath = ClassPathSupport.createProxyClassPath (
-            new ClassPath[] {cp, sp}
+            new ClassPath[] {cp, modulesSources, sp}
         );
         return sourcePath;
+    }
+
+    private static Path modules(
+            Project project,
+            Path modulepath) {
+        if (modulepath == null) {
+            return null;
+        }
+        final Path modules = new Path(project);
+        for (String pathElement : modulepath.list()) {
+            final String pathName = project.replaceProperties(pathElement);
+            if (pathName.lastIndexOf(URL_EMBEDDING) >=0) {
+                modules.append(new Path(project, pathElement));
+                continue;
+            }
+            final File file = FileUtil.normalizeFile(project.resolveFile (pathName));
+            if (file.isDirectory() && !new File(file,MODULE_INFO_CLZ).exists()) {
+                //Folder of modules add them
+                for (File module : file.listFiles(new FileFilter() {
+                    @Override
+                    public boolean accept(File pathname) {
+                        return pathname.isDirectory() ||
+                            MODULE_FILES.contains(getExt(pathname));
+                    }
+                   })) {
+                    modules.append(new Path(project, String.format("%s%s%s",   //NOI18N
+                           pathElement,
+                           File.separatorChar,
+                           module.getName())));
+               }
+            } else {
+                modules.append(new Path(project, pathElement));
+            }
+
+        }
+        return modules;
+    }
+
+    private static String getExt(final File file) {
+        final String name = file.getName();
+        final int dot = name.indexOf('.');  //NOI18N
+        return dot <= 0 ?
+                "" :
+                name.substring(dot+1).toLowerCase();
     }
 
     static ClassPath createJDKSourcePath (
