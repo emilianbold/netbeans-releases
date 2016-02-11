@@ -213,7 +213,7 @@ public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchron
                 // this is repeated here as the acessibility might have change since the last check
                 if (!socket.exists() || !socket.canRead() || !socket.canWrite()) {
                     String error = Bundle.MSG_InaccessibleSocket();
-                    throw new WizardValidationException((JComponent) component, error, error);
+                    throw new WizardValidationException(component, error, error);
                 }
                 instance = DockerInstance.getInstance(Utilities.toURI(socket).toURL().toString(),
                         null, null, null, null);
@@ -235,11 +235,11 @@ public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchron
             DockerAction action = new DockerAction(instance);
             if (!action.ping()) {
                 String error = Bundle.MSG_CannotConnect();
-                throw new WizardValidationException((JComponent) component, error, error);
+                throw new WizardValidationException(component, error, error);
             }
         } catch (MalformedURLException ex) {
             String error = Bundle.MSG_CannotConnect();
-            throw new WizardValidationException((JComponent) component, error, error);
+            throw new WizardValidationException(component, error, error);
         }
     }
 
