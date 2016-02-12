@@ -147,21 +147,25 @@ public class NotifyProjectProblem extends javax.swing.JPanel {
                 throw new IllegalArgumentException();
         }
 
-        ActionListener onClickAction = (ActionEvent e) -> {
-            NotifyProjectProblem panel = new NotifyProjectProblem(detector, explanation);
-            DialogDescriptor descriptor = new DialogDescriptor(panel, title, true,
-                    new Object[]{DialogDescriptor.CLOSED_OPTION}, DialogDescriptor.CLOSED_OPTION,
-                    DialogDescriptor.DEFAULT_ALIGN, null, null);
-            Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-            try {
-                dlg.setVisible(true);
-            } catch (Throwable th) {
-                if (!(th.getCause() instanceof InterruptedException)) {
-                    throw new RuntimeException(th);
+        ActionListener onClickAction = new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                NotifyProjectProblem panel = new NotifyProjectProblem(detector, explanation);
+                DialogDescriptor descriptor = new DialogDescriptor(panel, title, true,
+                        new Object[]{DialogDescriptor.CLOSED_OPTION}, DialogDescriptor.CLOSED_OPTION,
+                        DialogDescriptor.DEFAULT_ALIGN, null, null);
+                Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+                try {
+                    dlg.setVisible(true);
+                } catch (Throwable th) {
+                    if (!(th.getCause() instanceof InterruptedException)) {
+                        throw new RuntimeException(th);
+                    }
+                    descriptor.setValue(DialogDescriptor.CANCEL_OPTION);
+                } finally {
+                    dlg.dispose();
                 }
-                descriptor.setValue(DialogDescriptor.CANCEL_OPTION);
-            } finally {
-                dlg.dispose();
             }
         };
         ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/discovery/performance/exclamation.gif", false); // NOI18N
