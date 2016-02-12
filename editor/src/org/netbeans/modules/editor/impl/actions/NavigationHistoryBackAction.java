@@ -185,7 +185,7 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
             // Haven't navigated back yet
             JTextComponent c = componentRef.get();
             JTextComponent target = c != null ? c : getTextComponent(evt);
-            if (target != null) {
+            if (target != null && target.getCaret() != null) {
                 try {
                     history.markWaypoint(target, target.getCaret().getDot(), true, false);
                 } catch (BadLocationException ble) {
