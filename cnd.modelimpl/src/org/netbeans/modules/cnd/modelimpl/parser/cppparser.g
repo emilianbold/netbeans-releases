@@ -417,6 +417,7 @@ tokens {
 	protected static final TypeQualifier tqInvalid = new TypeQualifier("tqInvalid");
 	protected static final TypeQualifier tqCONST = new TypeQualifier("tqCONST");
 	protected static final TypeQualifier tqVOLATILE = new TypeQualifier("tqVOLATILE");
+        protected static final TypeQualifier tqAtomic = new TypeQualifier("tqAtomic");
 	protected static final TypeQualifier tqCDECL = new TypeQualifier("tqCDECL");
 	protected static final TypeQualifier tqOTHER = new TypeQualifier("tqOTHER");
 
@@ -2154,11 +2155,13 @@ common_storage_class_specifier returns [CPPParser.StorageClass sc = scInvalid]
     |   LITERAL___global {sc = scOTHER;}
     |   LITERAL___hidden {sc = scOTHER;}
     |   LITERAL_thread_local {sc = scOTHER;}
+    |   LITERAL__Thread_local {sc = scOTHER;}
     ;
 
 cv_qualifier returns [CPPParser.TypeQualifier tq = tqInvalid] // aka cv_qualifier
 	:  (literal_const|LITERAL_const_cast)	{tq = tqCONST;} 
 	|  literal_volatile			{tq = tqVOLATILE;}
+        |  LITERAL__Atomic              {tq = tqAtomic;}
 	|  LITERAL__TYPE_QUALIFIER__    {tq = tqOTHER;}
 	;
 
@@ -3507,7 +3510,7 @@ declspec!
 protected
 type_attribute_specification!
         :
-            attribute_specification_list | declspec | LITERAL_alignas balanceParens
+            attribute_specification_list | declspec | literal__alignas balanceParens
 
         ;
 
@@ -3835,7 +3838,7 @@ statement
         |
                 // #227479 - SQL EXEC support is broken
                 // This alternative is greedy and must be after pro_c alternative
-                ( is_declaration | LITERAL_namespace | literal_inline LITERAL_namespace | LITERAL_static_assert ) =>
+                ( is_declaration | LITERAL_namespace | literal_inline LITERAL_namespace | LITERAL_static_assert | LITERAL__Static_assert) =>
                 {if (statementTrace>=1) 
 			printf("statement_1[%d]: declaration\n", LT(1).getLine());
 		}
@@ -4255,7 +4258,7 @@ asm_block
 
 static_assert_declaration
     :
-        LITERAL_static_assert LPAREN constant_expression COMMA (STRING_LITERAL)+ RPAREN SEMICOLON
+        (LITERAL_static_assert | LITERAL__Static_assert) LPAREN constant_expression COMMA (STRING_LITERAL)+ RPAREN SEMICOLON
     ;
 
 pro_c_statement
@@ -4438,6 +4441,7 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen, int temp
             |   LITERAL___imag
 
             |   LITERAL_alignof
+            |   LITERAL__Alignof
             |   LITERAL___alignof
             |   LITERAL___alignof__
 
@@ -4446,8 +4450,10 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen, int temp
             |   LITERAL_auto
             |   LITERAL_constexpr
             |   LITERAL_thread_local
+            |   LITERAL__Thread_local
             |   LITERAL_static_assert
-            |   LITERAL_alignas
+            |   LITERAL__Static_assert
+            |   literal__alignas
             |   LITERAL_noexcept
 
             |   LITERAL_OPERATOR 
@@ -4684,6 +4690,7 @@ lazy_expression_predicate
     |   LITERAL___imag
 
     |   LITERAL_alignof
+    |   LITERAL__Alignof
     |   LITERAL___alignof
     |   LITERAL___alignof__
 
@@ -4692,8 +4699,10 @@ lazy_expression_predicate
     |   LITERAL_auto
     |   LITERAL_constexpr
     |   LITERAL_thread_local
+    |   LITERAL__Thread_local
     |   LITERAL_static_assert
-    |   LITERAL_alignas
+    |   LITERAL__Static_assert
+    |   literal__alignas
     |   LITERAL_noexcept
 
     |   GREATERTHAN lazy_expression_predicate
@@ -5037,3 +5046,5 @@ literal_finally : LITERAL___finally;
 protected
 literal_decltype : LITERAL_decltype | LITERAL___decltype;
 
+protected
+literal__alignas: LITERAL_alignas | LITERAL__Alignas;
