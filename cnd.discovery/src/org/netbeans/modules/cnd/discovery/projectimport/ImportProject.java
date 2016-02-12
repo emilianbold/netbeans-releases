@@ -786,7 +786,7 @@ public class ImportProject implements PropertyChangeListener {
         if (logFile != null && logFile.exists() && logFile.canRead()){
             BufferedReader in = null;
             try {
-                in = Files.newBufferedReader(logFile.toPath(), Charset.forName("UTF-8"));
+                in = Files.newBufferedReader(logFile.toPath(), Charset.forName("UTF-8")); // NOI18N
                 while (true) {
                     String line = in.readLine();
                     if (line == null) {

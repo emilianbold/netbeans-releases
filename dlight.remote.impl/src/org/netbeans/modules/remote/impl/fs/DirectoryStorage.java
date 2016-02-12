@@ -99,7 +99,7 @@ public class DirectoryStorage {
     static DirectoryStorage load(File storageFile, ExecutionEnvironment env) throws IOException, FormatException {
         BufferedReader br = null;
         try {
-            br = Files.newBufferedReader(storageFile.toPath(), Charset.forName("UTF-8"));
+            br = Files.newBufferedReader(storageFile.toPath(), Charset.forName("UTF-8")); // NOI18N
             // check version
             String line = br.readLine();
             String prefix = "VERSION="; // NOI18N

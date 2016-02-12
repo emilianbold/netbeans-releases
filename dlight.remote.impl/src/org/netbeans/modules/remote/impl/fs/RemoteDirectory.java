@@ -1790,7 +1790,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     private static void printFile(File file, PrintStream out) {
         BufferedReader rdr = null;
         try {
-            rdr = Files.newBufferedReader(file.toPath(), Charset.forName("UTF-8"));
+            rdr = Files.newBufferedReader(file.toPath(), Charset.forName("UTF-8")); // NOI18N
             try {
                 String line;
                 while ((line = rdr.readLine()) != null) {

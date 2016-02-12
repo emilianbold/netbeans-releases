@@ -125,7 +125,7 @@ public class MagicCache {
         if (od.exists()) {
             BufferedReader in = null;
             try {
-                in = Files.newBufferedReader(od.toPath(), Charset.forName("UTF-8"));
+                in = Files.newBufferedReader(od.toPath(), Charset.forName("UTF-8")); // NOI18N
                 String line = null;
                 String file = null;
                 byte[] res = null;
