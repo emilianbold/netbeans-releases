@@ -59,7 +59,7 @@ import org.openide.util.NbBundle;
  * @author ilia
  */
 public class PinPanel extends javax.swing.JPanel {
-    public static final String PROPERTY_VALID = "valid";
+    public static final String PROPERTY_VALID = "valid"; //NOI18N
 
     /**
      * Creates new form PinPanel
