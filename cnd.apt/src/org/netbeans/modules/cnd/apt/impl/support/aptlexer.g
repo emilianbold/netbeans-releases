@@ -195,6 +195,7 @@ tokens {
     FIRST_LITERAL_TOKEN;
     LITERAL_OPERATOR = "operator"; // NOI18N
     LITERAL_alignof="alignof"; // NOI18N
+    LITERAL__Alignof="_Alignof"; // NOI18N
     LITERAL___alignof__="__alignof__"; // NOI18N
     LITERAL_typeof="typeof"; // NOI18N
     LITERAL___typeof__="__typeof__"; // NOI18N
@@ -313,8 +314,11 @@ tokens {
     LITERAL_decltype="decltype"; // NOI18N
     LITERAL_nullptr="nullptr"; // NOI18N
     LITERAL_thread_local="thread_local"; // NOI18N
+    LITERAL__Thread_local="_Thread_local"; // NOI18N
     LITERAL_static_assert="static_assert"; // NOI18N
+    LITERAL__Static_assert="_Static_assert"; // NOI18N
     LITERAL_alignas="alignas"; // NOI18N
+    LITERAL__Alignas="_Alignas"; // NOI18N
     LITERAL_char16_t="char16_t"; // NOI18N
     LITERAL_char32_t="char32_t"; // NOI18N
     LITERAL_noexcept="noexcept"; // NOI18N
@@ -333,6 +337,7 @@ tokens {
     LITERAL___has_trivial_constructor="__has_trivial_constructor"; // NOI18N
     LITERAL___restrict__="__restrict__"; // NOI18N
     LITERAL__Noreturn="_Noreturn"; // NOI18N
+    LITERAL__Atomic="_Atomic"; // NOI18N
     LITERAL___has_nothrow_assign="__has_nothrow_assign"; // NOI18N
     LITERAL___has_nothrow_copy="__has_nothrow_copy"; // NOI18N
     LITERAL___has_nothrow_constructor="__has_nothrow_constructor"; // NOI18N
