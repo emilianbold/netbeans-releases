@@ -77,7 +77,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
-import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
@@ -342,34 +341,6 @@ public final class J2SEProject implements Project {
                         addOpenPostAction(newWebServicesAction()).
                         addOpenPostAction(newMissingPropertiesAction()).
                         addOpenPostAction(newUpdateCopyLibsAction()).
-                        //Todo: Fixme - disable CoS on modular JDK as CoS does not support it yet
-                        addOpenPostAction(new Runnable() {
-                            private SourceLevelQuery.Result res;
-                            @Override
-                            public void run() {
-                                res = SourceLevelQuery.getSourceLevel2(getProjectDirectory());
-                                res.addChangeListener((e)->check());
-                                check();
-                            }
-
-                            private void check() {
-                                ProjectManager.mutex().postReadRequest(() -> ProjectManager.mutex().postWriteRequest(() -> {
-                                            final EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                                            final String sl = res.getSourceLevel();
-                                            if (sl != null && new SpecificationVersion("9").compareTo(new SpecificationVersion(sl)) <= 0) { //NOI18N
-                                                ep.setProperty("compile.on.save.unsupported.jigsaw", Boolean.TRUE.toString()); //NOI18N
-                                            } else {
-                                                ep.remove("compile.on.save.unsupported.jigsaw");    //NOI18N
-                                            }
-                                            updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-                                            try {
-                                                ProjectManager.getDefault().saveProject(J2SEProject.this);
-                                            } catch (IOException ioe) {
-                                                Exceptions.printStackTrace(ioe);
-                                            }
-                                }));
-                            }
-                        }).
                         addClosePostAction(newStopMainUpdaterAction()).
                         build()),
             QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),

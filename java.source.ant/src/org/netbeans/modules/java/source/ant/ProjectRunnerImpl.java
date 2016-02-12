@@ -49,7 +49,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
@@ -72,6 +71,7 @@ import org.apache.tools.ant.module.api.AntTargetExecutor;
 import org.apache.tools.ant.module.api.support.AntScriptUtils;
 import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
@@ -104,9 +104,11 @@ import org.w3c.dom.TypeInfo;
 import org.w3c.dom.UserDataHandler;
 
 import static org.netbeans.api.java.project.runner.JavaRunner.*;
+import org.netbeans.api.java.queries.SourceLevelQuery;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.ProjectManager;
 import org.openide.loaders.DataObject;
-import org.openide.util.BaseUtilities;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
@@ -150,6 +152,7 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
         String className = getValue(properties, PROP_CLASSNAME, String.class);
         ClassPath boot = getValue(properties, "boot.classpath", ClassPath.class);
         ClassPath exec = getValue(properties, PROP_EXECUTE_CLASSPATH, ClassPath.class);
+        ClassPath execModule = getValue(properties, PROP_EXECUTE_MODULEPATH, ClassPath.class);
         String javaTool = getValue(properties, PROP_PLATFORM_JAVA, String.class);
         String projectName = getValue(properties, PROP_PROJECT_NAME, String.class);
         Iterable<String> args = getMultiValue(properties, PROP_APPLICATION_ARGS, String.class);
@@ -307,6 +310,54 @@ out:                for (FileObject root : exec.getRoots()) {
             }
             
             setProperty(antProps, "encoding", encoding);
+        }
+        {
+            //TODO: Fix this section when run.modulepath is correctly provided
+            FileObject binary = null;
+            String binaryResource = className.replace('.', '/') + ".class";
+            if (execModule != null) {
+                for (FileObject root : execModule.getRoots()) {
+                    if (root.getFileObject(binaryResource) != null) {
+                        binary = root;
+                        break;
+                    }
+                }
+            }
+            if (binary == null && exec != null) {
+                for (FileObject root : exec.getRoots()) {
+                    if (root.getFileObject(binaryResource) != null) {
+                        binary = root;
+                        break;
+                    }
+                }
+            }
+            if (binary != null) {
+                String sourceLevel = SourceLevelQuery.getSourceLevel(binary);
+                if (new SpecificationVersion("9").compareTo(new SpecificationVersion(sourceLevel)) <= 0) {
+                    setProperty(antProps, "modules.supported.internal", "true");
+                    if (execModule != null) {
+                        setProperty(antProps, "modulepath", execModule.toString(ClassPath.PathConversionMode.FAIL));
+                    } else {
+                        String sourceResource = className.replace('.', '/') + ".java";
+                        for (FileObject srcRoot : SourceForBinaryQuery.findSourceRoots(binary.toURL()).getRoots()) {
+                            FileObject srcFile = srcRoot.getFileObject(sourceResource);
+                            if (srcFile != null) {
+                                ClassPath modulePath = ClassPath.getClassPath(srcFile, JavaClassPathConstants.MODULE_COMPILE_PATH);
+                                String mp = modulePath != null ? modulePath.toString(ClassPath.PathConversionMode.FAIL) : null;
+                                setProperty(antProps, "modulepath", mp != null && mp.length() > 0 ? mp + ':' + binary.getPath() : binary.getPath());
+                                break;
+                            }                            
+                        }
+                    }
+                    String moduleName = binary.getFileObject("module-info.class") != null ? SourceUtils.getModuleName(binary.toURL()) : null;
+                    if (moduleName != null) {
+                        setProperty(antProps, "module.name", moduleName);
+                        setProperty(antProps, "named.module.internal", "true");
+                    } else {
+                        setProperty(antProps, "unnamed.module.internal", "true");
+                    }
+                }
+            }
         }
 
         for (Entry<String, ?> e : properties.entrySet()) {

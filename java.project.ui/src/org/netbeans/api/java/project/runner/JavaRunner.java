@@ -234,6 +234,13 @@ public final class JavaRunner {
      */
     public static final String PROP_EXECUTE_CLASSPATH = "execute.classpath";
 
+    /** Execute modulepath to use for execution of the class. Should be {@link ClassPath}.
+     *  Will be autodetected from {@link #PROP_EXECUTE_FILE} if missing.
+     *
+     * @since 1.68
+     */
+    public static final String PROP_EXECUTE_MODULEPATH = "execute.modulepath";
+
     /** Java tool to use for execution. Should be {@link String} (absolute path) or {@link FileObject} or {@link java.io.File}.
      *  Will be autodetected from {@link #PROP_PLATFORM} if missing.
      *
