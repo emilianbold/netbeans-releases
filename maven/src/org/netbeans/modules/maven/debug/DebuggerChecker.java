@@ -348,21 +348,21 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
         DebuggerEngine debuggerEngine = DebuggerManager.getDebuggerManager ().
             getCurrentEngine ();
         if (debuggerEngine == null) {
-            logger.println("NetBeans: No debugging sessions was found.");
+            logger.println("No debugging sessions was found.");
             return;
         }
         JPDADebugger debugger = debuggerEngine.lookupFirst 
             (null, JPDADebugger.class);
         if (debugger == null) {
-            logger.println("NetBeans: Current debugger is not JPDA one.");
+            logger.println("Current debugger is not JPDA one.");
             return;
         }
         if (!debugger.canFixClasses ()) {
-            logger.println("NetBeans: The debugger does not support Fix action.");
+            logger.println("The debugger does not support Fix action.");
             return;
         }
         if (debugger.getState () == JPDADebugger.STATE_DISCONNECTED) {
-            logger.println("NetBeans: The debugger is not running");
+            logger.println("The debugger is not running");
             return;
         }
         
@@ -400,11 +400,11 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
         }
                 
         if (map.isEmpty()) {
-            logger.println("NetBeans: No class to reload");
+            logger.println("No class to reload");
             return;
         } else {
             StringBuilder sb = new StringBuilder();
-            sb.append("NetBeans: classes to reload:\n");
+            sb.append("Classes to reload:\n");
             for (String c : map.keySet()) {
                 sb.append(" ");
                 sb.append(c);
@@ -432,7 +432,7 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
             error = "Out of memory in the target VM has occurred during class reload.";
         }
         if (error != null) {
-            logger.println("NetBeans:" + error);
+            logger.println(error);
         } else {
             logger.println("Code updated");
         }
