@@ -46,46 +46,53 @@
  */
 package org.netbeans.modules.terminal;
 
+import java.awt.Color;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.terminal.support.TerminalPinSupport.TerminalCreationDetails;
 import org.netbeans.modules.terminal.support.TerminalPinSupport.TerminalDetails;
 import org.netbeans.modules.terminal.support.TerminalPinSupport.TerminalPinningDetails;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author ilia
  */
 public class PinPanel extends javax.swing.JPanel {
+    public static final String PROPERTY_VALID = "valid";
 
     /**
      * Creates new form PinPanel
      */
     public PinPanel(TerminalDetails details) {
-	initComponents();
+        initComponents();
 
-	TerminalCreationDetails creationDetails = details.getCreationDetails();
-	TerminalPinningDetails pinningDetails = details.getPinningDetails();
+        TerminalCreationDetails creationDetails = details.getCreationDetails();
+        TerminalPinningDetails pinningDetails = details.getPinningDetails();
 
-	envField.setText(creationDetails.getExecEnv());
-	titleField.setText(pinningDetails.getTitle());
-	customCheckBox.setSelected(pinningDetails.isCustomTitle());
-	customStateChanged(pinningDetails.isCustomTitle());
-	if (pinningDetails.getCwd() != null) {
-	    directoryField.setText(pinningDetails.getCwd());
-	} else {
-	    directoryField.setText("");
-	}
+        envField.setText(creationDetails.getExecEnv());
+        titleField.setText(pinningDetails.getTitle());
+        customCheckBox.setSelected(pinningDetails.isCustomTitle());
+        customStateChanged(pinningDetails.isCustomTitle());
+        if (pinningDetails.getCwd() != null) {
+            directoryField.setText(pinningDetails.getCwd());
+        } else {
+            directoryField.setText("");
+        }
+
+        directoryField.getDocument().addDocumentListener(new Validator());
     }
 
     public String getTitle() {
-	return titleField.getText();
+        return titleField.getText();
     }
 
     public boolean isCustomTitle() {
-	return customCheckBox.isSelected();
+        return customCheckBox.isSelected();
     }
 
     public String getDirectory() {
-	return directoryField.getText();
+        return directoryField.getText();
     }
 
     /**
@@ -104,6 +111,7 @@ public class PinPanel extends javax.swing.JPanel {
         customCheckBox = new javax.swing.JCheckBox();
         directoryLabel = new javax.swing.JLabel();
         directoryField = new javax.swing.JTextField();
+        statusLabel = new javax.swing.JLabel();
 
         envLabel.setLabelFor(envField);
         org.openide.awt.Mnemonics.setLocalizedText(envLabel, org.openide.util.NbBundle.getMessage(PinPanel.class, "PinPanel.envLabel.text")); // NOI18N
@@ -135,6 +143,8 @@ public class PinPanel extends javax.swing.JPanel {
 
         directoryField.setText(org.openide.util.NbBundle.getMessage(PinPanel.class, "PinPanel.directoryField.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(statusLabel, org.openide.util.NbBundle.getMessage(PinPanel.class, "PinPanel.statusLabel.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -142,17 +152,20 @@ public class PinPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(directoryLabel)
-                    .addComponent(titleLabel)
-                    .addComponent(envLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(envField)
+                    .addComponent(statusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(titleField, javax.swing.GroupLayout.DEFAULT_SIZE, 117, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(directoryLabel)
+                            .addComponent(titleLabel)
+                            .addComponent(envLabel))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(customCheckBox))
-                    .addComponent(directoryField))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(envField)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(titleField, javax.swing.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(customCheckBox))
+                            .addComponent(directoryField))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -171,7 +184,9 @@ public class PinPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(directoryLabel)
                     .addComponent(directoryField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(statusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         envLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PinPanel.class, "PinPanel.envLabel.AccessibleContext.accessibleDescription")); // NOI18N
@@ -187,20 +202,20 @@ public class PinPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void envFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_envFieldActionPerformed
-	// TODO add your handling code here:
+        // TODO add your handling code here:
     }//GEN-LAST:event_envFieldActionPerformed
 
     private void customCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_customCheckBoxActionPerformed
-	customStateChanged(customCheckBox.isSelected());
+        customStateChanged(customCheckBox.isSelected());
     }//GEN-LAST:event_customCheckBoxActionPerformed
 
     private void customStateChanged(boolean newState) {
-	if (newState) {
-	    titleField.setEnabled(true);
-	    titleField.requestFocus();
-	} else {
-	    titleField.setEnabled(false);
-	}
+        if (newState) {
+            titleField.setEnabled(true);
+            titleField.requestFocus();
+        } else {
+            titleField.setEnabled(false);
+        }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox customCheckBox;
@@ -208,7 +223,47 @@ public class PinPanel extends javax.swing.JPanel {
     private javax.swing.JLabel directoryLabel;
     private javax.swing.JTextField envField;
     private javax.swing.JLabel envLabel;
+    private javax.swing.JLabel statusLabel;
     private javax.swing.JTextField titleField;
     private javax.swing.JLabel titleLabel;
     // End of variables declaration//GEN-END:variables
+
+    public class Validator implements DocumentListener {
+
+        private boolean validOld = true;
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            updateText();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            updateText();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            updateText();
+        }
+
+        private boolean isValid() {
+            return directoryField.getText().startsWith("/"); //NOI18N
+        }
+
+        private void updateText() {
+            boolean validNew = isValid();
+            if (validNew && !validOld) {
+                firePropertyChange(PROPERTY_VALID, validOld, validNew);
+                validOld = true;
+                statusLabel.setText(""); //NOI18N
+            } else if (!validNew && validOld) {
+                firePropertyChange(PROPERTY_VALID, validOld, validNew);
+                validOld = false;
+                statusLabel.setText(NbBundle.getMessage(PinPanel.class, "ERR_RelativeDir")); //NOI18N
+                statusLabel.setForeground(Color.RED);
+            }
+        }
+
+    }
 }
