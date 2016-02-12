@@ -43,10 +43,11 @@ package org.netbeans.modules.dlight.sendto.api;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -205,7 +206,7 @@ public final class ScriptsRegistry {
         try {
             File file = File.createTempFile(getFilePrefix(config), "", tmpDir); // NOI18N
             file.deleteOnExit();
-            BufferedWriter w = new BufferedWriter(new FileWriter(file));
+            BufferedWriter w = Files.newBufferedWriter(file.toPath(), Charset.forName("UTF-8")); //NOI18N
             w.write(script);
             w.flush();
             w.close();

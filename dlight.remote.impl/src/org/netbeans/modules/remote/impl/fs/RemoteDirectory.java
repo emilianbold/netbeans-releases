@@ -46,7 +46,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -56,6 +55,8 @@ import java.io.StringWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.ConnectException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -1789,7 +1790,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     private static void printFile(File file, PrintStream out) {
         BufferedReader rdr = null;
         try {
-            rdr = new BufferedReader(new FileReader(file));
+            rdr = Files.newBufferedReader(file.toPath(), Charset.forName("UTF-8"));
             try {
                 String line;
                 while ((line = rdr.readLine()) != null) {

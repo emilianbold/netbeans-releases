@@ -45,12 +45,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -124,7 +125,7 @@ public class MagicCache {
         if (od.exists()) {
             BufferedReader in = null;
             try {
-                in = new BufferedReader(new FileReader(od));
+                in = Files.newBufferedReader(od.toPath(), Charset.forName("UTF-8"));
                 String line = null;
                 String file = null;
                 byte[] res = null;

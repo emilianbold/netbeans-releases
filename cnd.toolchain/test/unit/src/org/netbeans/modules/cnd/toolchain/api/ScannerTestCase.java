@@ -44,8 +44,9 @@ package org.netbeans.modules.cnd.toolchain.api;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -407,7 +408,7 @@ public class ScannerTestCase extends NbTestCase {
     }
 
     private void doTest(File logFile, ScannerDescriptor scanner, PrintStream ref) throws Exception {
-        BufferedReader reader = new BufferedReader(new FileReader(logFile));
+        BufferedReader reader = Files.newBufferedReader(logFile.toPath(), Charset.forName("UTF-8"));
         String line;
         int lineCnt = 0;
         while ((line = reader.readLine()) != null) {

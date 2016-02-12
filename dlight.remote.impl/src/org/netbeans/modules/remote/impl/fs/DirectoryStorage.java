@@ -45,9 +45,9 @@ package org.netbeans.modules.remote.impl.fs;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -99,7 +99,7 @@ public class DirectoryStorage {
     static DirectoryStorage load(File storageFile, ExecutionEnvironment env) throws IOException, FormatException {
         BufferedReader br = null;
         try {
-            br = new BufferedReader(new FileReader(storageFile));
+            br = Files.newBufferedReader(storageFile.toPath(), Charset.forName("UTF-8"));
             // check version
             String line = br.readLine();
             String prefix = "VERSION="; // NOI18N
@@ -171,7 +171,7 @@ public class DirectoryStorage {
         BufferedWriter wr = null;
         synchronized (this) {
             try {
-                wr = new BufferedWriter(new FileWriter(cacheFile));
+                wr = Files.newBufferedWriter(cacheFile.toPath(), Charset.forName("UTF-8")); //NOI18N 
                 wr.write("VERSION=" + VERSION + "\n"); //NOI18N
                 Collection<DirEntry> invalid = new ArrayList<>();
                 Collection<DirEntry> valid = new ArrayList<>();

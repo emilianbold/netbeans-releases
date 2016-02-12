@@ -52,7 +52,6 @@ import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FilterWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -60,6 +59,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -258,7 +258,7 @@ public class ResolveConflictsExecutor extends GitProgressSupport {
     private Difference[] copyParts(boolean generateDiffs, VCSFileProxy source,
                                    File dest, boolean leftPart, Charset charset) throws IOException {
         BufferedReader r = new BufferedReader(new InputStreamReader(source.getInputStream(false), charset));
-        BufferedWriter w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(dest), charset));
+        BufferedWriter w = Files.newBufferedWriter(dest.toPath(), charset);
         ArrayList<Difference> diffList = null;
         if (generateDiffs) {
             diffList = new ArrayList<>();
