@@ -1580,11 +1580,7 @@ public class SourceUtils {
                 return moduleName;
             }
             //No module -> automatic module
-            for (URL binRoot : BinaryForSourceQuery.findBinaryRoots(srcRootURLs.get(0)).getRoots()) {
-                if (FileObjects.JAR.equals(binRoot.getProtocol())) {
-                    return autoName(FileObjects.stripExtension(FileUtil.archiveOrDirForURL(binRoot).getName()));
-                }
-            }
+            return autoName(srcRootURLs);
         } else if (canUseSources) {
             FileObject moduleInfo = null;
             FileObject root = null;
@@ -1624,6 +1620,19 @@ public class SourceUtils {
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }
+            } else {
+                //No module -> automatic module
+                return autoName(srcRootURLs);
+            }
+        }
+        return null;
+    }
+
+    @CheckForNull
+    private static String autoName(@NonNull final List<? extends URL> srcRootURLs) {
+        for (URL binRoot : BinaryForSourceQuery.findBinaryRoots(srcRootURLs.get(0)).getRoots()) {
+            if (FileObjects.JAR.equals(binRoot.getProtocol())) {
+                return autoName(FileObjects.stripExtension(FileUtil.archiveOrDirForURL(binRoot).getName()));
             }
         }
         return null;
