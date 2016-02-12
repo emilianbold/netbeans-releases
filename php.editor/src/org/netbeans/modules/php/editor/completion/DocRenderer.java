@@ -44,21 +44,28 @@ package org.netbeans.modules.php.editor.completion;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -72,15 +79,21 @@ import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QuerySupportFactory;
+import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.ConstantElement;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
+import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
 import org.netbeans.modules.php.editor.index.PHPDOCTagElement;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
+import org.netbeans.modules.php.editor.lexer.LexUtilities;
+import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.editor.parser.PHPDocCommentParser;
 import org.netbeans.modules.php.editor.parser.annotation.LinkParsedLine;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -90,6 +103,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocNode;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
@@ -99,7 +113,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -134,6 +147,7 @@ final class DocRenderer {
         }
 
         if (element instanceof TypeMemberElement) {
+            // XXX can pass through here?
             TypeMemberElement indexedClassMember = (TypeMemberElement) element;
             return documentIndexedElement(indexedClassMember);
         }
@@ -182,12 +196,13 @@ final class DocRenderer {
             try {
                 Source source = Source.create(nextFo);
                 if (source != null) {
-                    PHPDocExtractor phpDocExtractor = new PHPDocExtractor(header, indexedElement);
-                    ParserManager.parse(Collections.singleton(source), phpDocExtractor);
+                    ASTNodeFinder nodeFinder = new ASTNodeFinder(indexedElement);
+                    ParserManager.parse(Collections.singleton(source), nodeFinder);
+                    PHPDocExtractor phpDocExtractor = new PHPDocExtractor(header, indexedElement, nodeFinder.getNode(), nodeFinder.getPhpDocBlock());
                     result = phpDocExtractor.getPhpDocumentation();
                 }
             } catch (ParseException ex) {
-                Exceptions.printStackTrace(ex);
+                LOGGER.log(Level.WARNING, null, ex);
             }
         }
         return result;
@@ -226,7 +241,7 @@ final class DocRenderer {
         return location;
     }
 
-    static final class PHPDocExtractor extends UserTask {
+    static final class PHPDocExtractor {
         // http://manual.phpdoc.org/HTMLSmartyConverter/HandS/phpDocumentor/tutorial_phpDocumentor.howto.pkg.html#basics.desc
         // + table (table, tr, th, td)
 
@@ -235,28 +250,66 @@ final class DocRenderer {
         private static final Pattern REPLACE_NEWLINE_PATTERN = Pattern.compile("(\r?\n){2,}"); // NOI18N
         // #183594
         private static final Pattern LIST_PATTERN = Pattern.compile("(\r?\n)(?=([-+#o]\\s|\\d\\.?\\s))"); // NOI18N
+        private static final Pattern DESC_HEADER_PATTERN = Pattern.compile("(\r?\n)*(.*?((\r?\n){2,}|\\.\\s*\r?\n)|.*)", Pattern.DOTALL); // NOI18N
+        private static final Pattern INLINE_INHERITDOC_PATTERN = Pattern.compile("\\{@inheritdoc *\\}", Pattern.CASE_INSENSITIVE); // NOI18N
         private static final ArrayList<String> LINK_TAGS = new ArrayList<>();
 
         static {
-            LINK_TAGS.add("@link");
-            LINK_TAGS.add("@see");
-            LINK_TAGS.add("@use");
+            LINK_TAGS.add("@link"); // NOI18N
+            LINK_TAGS.add("@see"); // NOI18N
+            LINK_TAGS.add("@use"); // NOI18N
         }
         private final CCDocHtmlFormatter header;
         private final StringBuilder phpDoc = new StringBuilder();;
         private final PhpElement indexedElement;
         private final List<String> links = new ArrayList<>();
+        private final ASTNode node;
+        private PHPDocBlock phpDocBlock;
 
-        public PHPDocExtractor(CCDocHtmlFormatter header, PhpElement indexedElement) {
+        public PHPDocExtractor(CCDocHtmlFormatter header, PhpElement indexedElement, ASTNode node, PHPDocBlock phpDocBlock) {
             this.header = header;
             this.indexedElement = indexedElement;
+            this.node = node;
+            this.phpDocBlock = phpDocBlock;
         }
 
         public PhpDocumentation getPhpDocumentation() {
+            extract();
             return PhpDocumentation.Factory.create(header, phpDoc, links);
         }
 
         public void cancel() {
+        }
+
+        private void extract() {
+            if (node == null) {
+                return;
+            }
+            extractHeader();
+            extractPHPDoc();
+        }
+
+        private void extractHeader() {
+            if (node instanceof FunctionDeclaration) {
+                doFunctionDeclaration((FunctionDeclaration) node);
+            } else {
+                header.name(indexedElement.getKind(), true);
+                header.appendText(indexedElement.getName());
+                header.name(indexedElement.getKind(), false);
+                String value = null;
+                if (indexedElement instanceof ConstantElement) {
+                    ConstantElement constant = (ConstantElement) indexedElement;
+                    value = constant.getValue();
+                } else if (indexedElement instanceof TypeConstantElement) {
+                    TypeConstantElement constant = (TypeConstantElement) indexedElement;
+                    value = constant.getValue();
+                }
+                if (value != null) {
+                    header.appendText(" = "); //NOI18N
+                    header.appendText(value);
+                }
+            }
+            header.appendHtml("<br/><br/>"); //NOI18N
         }
 
         private void doFunctionDeclaration(FunctionDeclaration functionDeclaration) {
@@ -286,7 +339,7 @@ final class DocRenderer {
 
                 if (param.isOptional()) {
                     header.type(true);
-                    header.appendText("=");
+                    header.appendText("="); // NOI18N
 
                     if (param.getDefaultValue() instanceof Scalar) {
                         Scalar scalar = (Scalar) param.getDefaultValue();
@@ -301,69 +354,27 @@ final class DocRenderer {
                 }
             }
 
-            header.appendText(")");
+            header.appendText(")"); // NOI18N
             header.parameters(false);
         }
 
-        @Override
-        public void run(ResultIterator resultIterator) throws Exception {
-            ParserResult presult = (ParserResult) resultIterator.getParserResult();
-            if (presult != null) {
-                Program program = Utils.getRoot(presult);
-
-                if (program != null) {
-                    ASTNode node = Utils.getNodeAtOffset(program, indexedElement.getOffset());
-
-                    if (node == null) { // issue #118222
-                        LOGGER.log(
-                                Level.WARNING,
-                                "Could not find AST node for element {0} defined in {1}",
-                                new Object[]{indexedElement.getName(), indexedElement.getFilenameUrl()});
-                        return;
-                    }
-                    if (node instanceof FunctionDeclaration) {
-                        doFunctionDeclaration((FunctionDeclaration) node);
+        private void extractPHPDoc() {
+            if (node instanceof PHPDocTag) {
+                if (node instanceof PHPDocMethodTag) {
+                    extractPHPDoc((PHPDocMethodTag) node);
+                } else {
+                    if (node instanceof PHPDocVarTypeTag) {
+                        PHPDocVarTypeTag varTypeTag = (PHPDocVarTypeTag) node;
+                        String type = composeType(varTypeTag.getTypes());
+                        phpDoc.append(processPhpDoc(String.format("%s<br /><table><tr><th align=\"left\">Type:</th><td>%s</td></tr></table>", // NOI18N
+                                varTypeTag.getDocumentation(),
+                                type)));
                     } else {
-                        header.name(indexedElement.getKind(), true);
-                        header.appendText(indexedElement.getName());
-                        header.name(indexedElement.getKind(), false);
-                        String value = null;
-                        if (indexedElement instanceof ConstantElement) {
-                            ConstantElement constant = (ConstantElement) indexedElement;
-                            value = constant.getValue();
-                        } else if (indexedElement instanceof TypeConstantElement) {
-                            TypeConstantElement constant = (TypeConstantElement) indexedElement;
-                            value = constant.getValue();
-                        }
-                        if (value != null) {
-                            header.appendText(" = "); //NOI18N
-                            header.appendText(value);
-                        }
-                    }
-
-                    header.appendHtml("<br/><br/>"); //NOI18N
-                    if (node instanceof PHPDocTag) {
-                        if (node instanceof PHPDocMethodTag) {
-                            extractPHPDoc((PHPDocMethodTag) node);
-                        } else {
-                            if (node instanceof PHPDocVarTypeTag) {
-                                PHPDocVarTypeTag varTypeTag = (PHPDocVarTypeTag) node;
-                                String type = composeType(varTypeTag.getTypes());
-                                phpDoc.append(processPhpDoc(String.format("%s<br /><table><tr><th align=\"left\">Type:</th><td>%s</td></tr></table>",
-                                        varTypeTag.getDocumentation(),
-                                        type))); //NOI18N
-                            } else {
-                                phpDoc.append(processPhpDoc(((PHPDocTag) node).getDocumentation()));
-                            }
-                        }
-                    } else {
-                        Comment comment = Utils.getCommentForNode(program, node);
-
-                        if (comment instanceof PHPDocBlock) {
-                            extractPHPDoc((PHPDocBlock) comment);
-                        }
+                        phpDoc.append(processPhpDoc(((PHPDocTag) node).getDocumentation()));
                     }
                 }
+            } else {
+                extractPHPDocBlock();
             }
         }
 
@@ -387,18 +398,29 @@ final class DocRenderer {
             phpDoc.append(composeFunctionDoc(description, params.toString(), returnValue.toString(), null));
         }
 
-        private void extractPHPDoc(PHPDocBlock pHPDocBlock) {
-            StringBuilder params = new StringBuilder();
-            StringBuilder returnValue = new StringBuilder();
+        private void extractPHPDocBlock() {
+            if (phpDocBlock == null) {
+                return;
+            }
+            List<PHPDocVarTypeTag> params = new ArrayList<>();
+            List<PHPDocTypeTag> returns = new ArrayList<>();
             StringBuilder others = new StringBuilder();
 
-            for (PHPDocTag tag : pHPDocBlock.getTags()) {
+            // class, interface or method
+            List<PhpElement> inheritedElements = getInheritedElements();
+            List<PHPDocBlock> inheritedComments = getInheritedComments(inheritedElements);
+
+            String description = phpDocBlock.getDescription();
+            description = composeDescription(description, inheritedComments);
+
+            for (PHPDocTag tag : phpDocBlock.getTags()) {
                 AnnotationParsedLine kind = tag.getKind();
                 if (kind.equals(PHPDocTag.Type.PARAM)) {
-                    params.append(composeParameterLine((PHPDocVarTypeTag) tag));
+                    PHPDocVarTypeTag paramTag = (PHPDocVarTypeTag) tag;
+                    params.add(paramTag);
                 } else if (kind.equals(PHPDocTag.Type.RETURN)) {
                     PHPDocTypeTag returnTag = (PHPDocTypeTag) tag;
-                    returnValue.append(composeTypesAndDescription(returnTag.getTypes(), returnTag.getDocumentation()));
+                    returns.add(returnTag);
                 } else if (kind.equals(PHPDocTag.Type.VAR)) {
                     PHPDocTypeTag typeTag = (PHPDocTypeTag) tag;
                     others.append(composeTypesAndDescription(typeTag.getTypes(), typeTag.getDocumentation()));
@@ -409,16 +431,19 @@ final class DocRenderer {
                 } else if (kind instanceof LinkParsedLine) {
                     links.add(kind.getDescription());
                 } else {
+                    String tagDescription = kind instanceof PHPDocTag.Type
+                            ? tag.getValue() // kind description is empty
+                            : kind.getDescription();
                     String oline = String.format("<tr><th align=\"left\">%s</th><td>%s</td></tr>%n", //NOI18N
-                            processPhpDoc(tag.getKind().getName()), processPhpDoc(tag.getKind().getDescription(), "")); //NOI18N
+                            processPhpDoc(tag.getKind().getName()), processPhpDoc(tagDescription, "")); //NOI18N
                     others.append(oline);
                 }
             }
 
             phpDoc.append(composeFunctionDoc(processDescription(
-                    processPhpDoc(pHPDocBlock.getDescription(), "")), //NOI18N
-                    params.toString(),
-                    returnValue.toString(),
+                    processPhpDoc(description, "")), //NOI18N
+                    composeParamTags(params, inheritedComments),
+                    composeReturnTags(returns, inheritedComments),
                     others.toString()));
         }
 
@@ -485,14 +510,18 @@ final class DocRenderer {
         }
 
         private String composeParameterLine(PHPDocVarTypeTag param) {
-            String type = composeType(param.getTypes());
+            return composeParameterLine(param.getTypes(), param.getVariable().getValue(), param.getDocumentation());
+        }
+
+        private String composeParameterLine(List<PHPDocTypeNode> types, String variableValue, String documentation) {
+            String type = composeType(types);
             String pline = String.format("<tr><td>&nbsp;</td><td valign=\"top\" %s><nobr>%s</nobr></td><td valign=\"top\" %s><nobr><b>%s</b></nobr></td><td valign=\"top\" %s>%s</td></tr>%n", //NOI18N
                     TD_STYLE,
                     type,
                     TD_STYLE,
-                    param.getVariable().getValue(),
+                    variableValue,
                     TD_STYLE_MAX_WIDTH,
-                    param.getDocumentation() == null ? "&nbsp" : processPhpDoc(param.getDocumentation()));
+                    documentation == null ? "&nbsp" : processPhpDoc(documentation)); // NOI18N
             return pline;
         }
 
@@ -551,6 +580,398 @@ final class DocRenderer {
             return result;
         }
 
+        private String composeDescription(String description, List<PHPDocBlock> comments) {
+            String ret = description;
+            if (ret != null) {
+                for (PHPDocBlock comment : comments) {
+                    ret = replaceInheritdocForDescription(ret, comment.getDescription());
+                    if (!hasInlineInheritdoc(ret)) {
+                        break;
+                    }
+                }
+            }
+            return ret;
+        }
+
+        private String replaceInheritdocForDescription(String description, String parentDescription) {
+            if (description != null && hasInlineInheritdoc(description)) {
+                if (parentDescription != null && !parentDescription.trim().isEmpty()) {
+                    if (INLINE_INHERITDOC_PATTERN.matcher(description.trim()).matches()) {
+                        return parentDescription;
+                    }
+                    String inheritdoc = removeDescriptionHeader(parentDescription);
+                    return replaceInlineInheritdoc(description, inheritdoc);
+                }
+            }
+            return description;
+        }
+
+        private String composeParamTags(List<PHPDocVarTypeTag> paramTags, List<PHPDocBlock> inheritedComments) {
+            StringBuilder params = new StringBuilder();
+            // add also missing params
+            if (indexedElement instanceof MethodElement) {
+                MethodElement methodElement = (MethodElement) indexedElement;
+                List<ParameterElement> parameters = methodElement.getParameters();
+                for (ParameterElement parameter : parameters) {
+                    PHPDocVarTypeTag param = null;
+                    String name = parameter.getName();
+                    for (PHPDocVarTypeTag paramTag : paramTags) {
+                        String value = paramTag.getVariable().getValue();
+                        if (name.equals(value)) {
+                            param = paramTag;
+                        }
+                    }
+                    // use fallback params
+                    if (param == null) {
+                        for (PHPDocBlock inheritedComment : inheritedComments) {
+                            List<PHPDocTag> tags = inheritedComment.getTags();
+                            for (PHPDocTag tag : tags) {
+                                AnnotationParsedLine kind = tag.getKind();
+                                if (kind.equals(PHPDocTag.Type.PARAM)) {
+                                    PHPDocVarTypeTag t = (PHPDocVarTypeTag) tag;
+                                    String value = t.getVariable().getValue();
+                                    if (name.equals(value)) {
+                                        param = t;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (param != null) {
+                                break;
+                            }
+                        }
+                    }
+                    // append line
+                    if (param != null) {
+                        String paramDescription = composeParamTagDescription(param, inheritedComments);
+                        String paramLine = composeParameterLine(param.getTypes(), param.getVariable().getValue(), paramDescription);
+                        params.append(paramLine);
+                    } else {
+                        String paramLine = composeParameterLine(Collections.<PHPDocTypeNode>emptyList(), name, ""); // NOI18N
+                        params.append(paramLine);
+                    }
+                }
+            } else {
+                for (PHPDocVarTypeTag paramTag : paramTags) {
+                    String paramLine = composeParameterLine(paramTag);
+                    params.append(paramLine);
+                }
+            }
+            return params.toString();
+        }
+
+        private String composeParamTagDescription(PHPDocVarTypeTag tag, List<PHPDocBlock> phpDocBlocks) {
+            String documentation = tag.getDocumentation();
+            for (PHPDocBlock docBlock : phpDocBlocks) {
+                documentation = composeParamTagDescription(documentation, tag, docBlock);
+            }
+            return documentation;
+        }
+
+        private String composeParamTagDescription(String documentation, PHPDocVarTypeTag varTypeTag, PHPDocBlock phpDocBlock) {
+            String ret = documentation;
+            if (ret != null && hasInlineInheritdoc(ret)) {
+                List<PHPDocTag> tags = phpDocBlock.getTags();
+                for (PHPDocTag tag : tags) {
+                    AnnotationParsedLine kind = tag.getKind();
+                    if (kind.equals(PHPDocTag.Type.PARAM)) {
+                        PHPDocVarTypeTag inheritedTag = (PHPDocVarTypeTag) tag;
+                        PHPDocNode variable = varTypeTag.getVariable();
+                        PHPDocNode inheritedVariable = inheritedTag.getVariable();
+                        if (variable != null && inheritedVariable != null) {
+                            if (variable.getValue().equals(inheritedVariable.getValue())) {
+                                String inheritedDocumentation = inheritedTag.getDocumentation();
+                                if (inheritedDocumentation != null && !inheritedDocumentation.trim().isEmpty()) {
+                                    return replaceInlineInheritdoc(ret, inheritedTag.getDocumentation());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return ret;
+        }
+
+        private String composeReturnTags(List<PHPDocTypeTag> returnTags, List<PHPDocBlock> inheritedComments) {
+            StringBuilder returnValue = new StringBuilder();
+            // if a return tag is missing, use fallback(parent) one
+            List<PHPDocTypeTag> fallbacks = new ArrayList<>(returnTags);
+            if (fallbacks.isEmpty()) {
+                for (PHPDocBlock inheritedComment : inheritedComments) {
+                    List<PHPDocTag> tags = inheritedComment.getTags();
+                    for (PHPDocTag tag : tags) {
+                        if (tag.getKind().equals(PHPDocTag.Type.RETURN)) {
+                            fallbacks.add((PHPDocTypeTag) tag);
+                        }
+                    }
+                    if (!fallbacks.isEmpty()) {
+                        break;
+                    }
+                }
+            }
+            for (PHPDocTypeTag fallback : fallbacks) {
+                returnValue.append(composeTypesAndDescription(fallback.getTypes(), fallback.getDocumentation()));
+            }
+            return returnValue.toString();
+        }
+
+        private List<PhpElement> getInheritedElements() {
+            if (!needInheritedElements()) {
+                return Collections.emptyList();
+            }
+
+            List<PhpElement> inheritedElements = new ArrayList<>();
+            if (indexedElement instanceof MethodElement) {
+                MethodElement methodElement = (MethodElement) indexedElement;
+                inheritedElements.addAll(getAllOverriddenMethods(methodElement));
+            } else if (indexedElement instanceof ClassElement) {
+                ClassElement classElement = (ClassElement) indexedElement;
+                inheritedElements.addAll(getAllInheritedClasses(classElement));
+            } else if (indexedElement instanceof InterfaceElement) {
+                InterfaceElement interfaceElement = (InterfaceElement) indexedElement;
+                inheritedElements.addAll(getAllInheritedInterfaces(interfaceElement));
+            }
+            return inheritedElements;
+        }
+
+        private boolean needInheritedElements() {
+            if (phpDocBlock == null) {
+                return false;
+            }
+            String description = phpDocBlock.getDescription();
+            if (hasInlineInheritdoc(description)) {
+                return true;
+            }
+
+            if (indexedElement instanceof MethodElement) {
+                List<PHPDocTag> tags = phpDocBlock.getTags();
+                Set<String> params = new HashSet<>(tags.size());
+                for (PHPDocTag tag : tags) {
+                    AnnotationParsedLine kind = tag.getKind();
+                    if (kind.equals(PHPDocTag.Type.PARAM)) {
+                        PHPDocVarTypeTag t = (PHPDocVarTypeTag) tag;
+                        params.add(t.getVariable().getValue());
+                        if (hasInlineInheritdoc(tag.getDocumentation())) {
+                            return true;
+                        }
+                    }
+                }
+                MethodElement method = (MethodElement) indexedElement;
+                for (ParameterElement parameter : method.getParameters()) {
+                    if (!params.contains(parameter.getName())) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private List<PHPDocBlock> getInheritedComments(List<PhpElement> elements) {
+            List<PHPDocBlock> inheritedComments = new ArrayList<>();
+            for (PhpElement element : elements) {
+                PHPDocBlock docBlock = getPhpDocBlock(element);
+                if (docBlock != null) {
+                    if (isOnlyInheritdoc(phpDocBlock)) {
+                        phpDocBlock = docBlock;
+                    } else {
+                        inheritedComments.add(docBlock);
+                    }
+                }
+            }
+            return inheritedComments;
+        }
+
+        private boolean isOnlyInheritdoc(PHPDocBlock phpDocBlock) {
+            return INLINE_INHERITDOC_PATTERN.matcher(phpDocBlock.getDescription().trim()).matches()
+                    && phpDocBlock.getTags().isEmpty();
+        }
+
+        static String replaceInlineInheritdoc(String description, String inheritdoc) {
+            if (description == null || inheritdoc == null) {
+                return description;
+            }
+            if (inheritdoc.trim().isEmpty()) {
+                return description;
+            }
+            return INLINE_INHERITDOC_PATTERN.matcher(description).replaceAll(inheritdoc);
+        }
+
+        static boolean hasInlineInheritdoc(String description) {
+            return description == null ? false : INLINE_INHERITDOC_PATTERN.matcher(description).find();
+        }
+
+        static String removeDescriptionHeader(String description) {
+            return description == null ? null : DESC_HEADER_PATTERN.matcher(description).replaceFirst(""); // NOI18N
+        }
+
+        private static Index getIndex(PhpElement phpElement) {
+            final ElementQuery elementQuery = phpElement.getElementQuery();
+            return elementQuery.getQueryScope().isIndexScope()
+                    ? (Index) elementQuery
+                    : ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(phpElement.getFileObject()));
+        }
+
+        /**
+         * Get all inherited classes recursively.
+         *
+         * @param typeElement the TypeElement
+         * @return All inherited types
+         */
+        private static List<TypeElement> getAllInheritedClasses(TypeElement typeElement) {
+            List<TypeElement> types = new ArrayList<>();
+            getInheritedClasses(typeElement, types);
+            return types;
+        }
+
+        private static void getInheritedClasses(TypeElement typeElement, List<TypeElement> types) {
+            Set<ClassElement> inheritedClasses = getInheritedClasses(typeElement);
+            types.addAll(inheritedClasses);
+            for (ClassElement inheritedClasse : inheritedClasses) {
+                getInheritedClasses(inheritedClasse, types);
+            }
+        }
+
+        private static Set<ClassElement> getInheritedClasses(TypeElement typeElement) {
+            Index index = getIndex(typeElement);
+            return index.getDirectInheritedClasses(typeElement);
+        }
+
+        /**
+         * Get all inherited interfaces recursively.
+         *
+         * @param typeElement the TypeElement
+         * @return All inherited types
+         */
+        private static List<TypeElement> getAllInheritedInterfaces(TypeElement typeElement) {
+            List<TypeElement> types = new ArrayList<>();
+            getInheritedInterfaces(typeElement, types);
+            return types;
+        }
+
+        private static void getInheritedInterfaces(TypeElement typeElement, List<TypeElement> types) {
+            Set<InterfaceElement> inheritedInterfaces = getInheritedInterfaces(typeElement);
+            types.addAll(inheritedInterfaces);
+            for (InterfaceElement inheritedInterface : inheritedInterfaces) {
+                getInheritedClasses(inheritedInterface, types);
+            }
+        }
+
+        private static Set<InterfaceElement> getInheritedInterfaces(TypeElement typeElement) {
+            Index index = getIndex(typeElement);
+            return index.getDirectInheritedInterfaces(typeElement);
+        }
+
+        private static List<MethodElement> getAllOverriddenMethods(MethodElement method) {
+            List<MethodElement> methods = new ArrayList<>();
+            getOverriddenMethods(method, methods);
+            return methods;
+        }
+
+        private static void getOverriddenMethods(MethodElement method, List<MethodElement> methods) {
+            Set<MethodElement> overriddenMethods = getOverriddenMethods(method);
+            methods.addAll(overriddenMethods);
+            for (MethodElement overriddenMethod : overriddenMethods) {
+                getOverriddenMethods(overriddenMethod, methods);
+            }
+        }
+
+        private static Set<MethodElement> getOverriddenMethods(MethodElement method) {
+            ElementFilter methodNameFilter = ElementFilter.forName(NameKind.exact(method.getName()));
+            return methodNameFilter.filter(getInheritedMethods(method));
+        }
+
+        private static Set<MethodElement> getInheritedMethods(MethodElement method) {
+            Index index = getIndex(method);
+            TypeElement type = method.getType();
+            if (type == null) {
+                return Collections.emptySet();
+            }
+            return index.getInheritedMethods(type);
+        }
+
+        @CheckForNull
+        private PHPDocBlock getPhpDocBlock(final PhpElement phpElement) {
+            if (!canBeProcessed(phpElement)) {
+                return null;
+            }
+            FileObject fileObject = phpElement.getFileObject();
+            BaseDocument document = GsfUtilities.getDocument(fileObject, true);
+            if (document != null) {
+                document.readLock();
+                try {
+                    int offset = phpElement.getOffset();
+                    TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(document, offset);
+                    if (ts != null) {
+                        ts.move(offset);
+                        if (ts.movePrevious()) {
+                            List<PHPTokenId> lookfor = Arrays.asList(
+                                    PHPTokenId.PHPDOC_COMMENT,
+                                    PHPTokenId.PHP_CURLY_OPEN,
+                                    PHPTokenId.PHP_CURLY_CLOSE,
+                                    PHPTokenId.PHP_SEMICOLON
+                            );
+                            Token<? extends PHPTokenId> token = LexUtilities.findPreviousToken(ts, lookfor);
+                            if (token != null && token.id() == PHPTokenId.PHPDOC_COMMENT) {
+                                PHPDocCommentParser phpDocCommentParser = new PHPDocCommentParser();
+                                return phpDocCommentParser.parse(
+                                        ts.offset() - 3, // - /**
+                                        ts.offset() + token.length(),
+                                        token.text().toString()
+                                );
+                            }
+                        }
+                    }
+                } finally {
+                    document.readUnlock();
+                }
+            }
+            return null;
+        }
+    }
+
+    private static final class ASTNodeFinder extends UserTask {
+
+        private final PhpElement indexedElement;
+        private ASTNode node;
+        private PHPDocBlock phpDocBlock;
+
+        public ASTNodeFinder(PhpElement indexedElement) {
+            this.indexedElement = indexedElement;
+        }
+
+        @Override
+        public void run(ResultIterator resultIterator) throws Exception {
+            ParserResult presult = (ParserResult) resultIterator.getParserResult();
+            if (presult != null) {
+                Program program = Utils.getRoot(presult);
+                if (program != null) {
+                    node = Utils.getNodeAtOffset(program, indexedElement.getOffset());
+                    if (node == null) { // issue #118222
+                        LOGGER.log(
+                                Level.WARNING,
+                                "Could not find AST node for element {0} defined in {1}",
+                                new Object[]{indexedElement.getName(), indexedElement.getFilenameUrl()});
+                        return;
+                    }
+                    if (!(node instanceof PHPDocTag)) {
+                        Comment comment = Utils.getCommentForNode(program, node);
+                        if (comment instanceof PHPDocBlock) {
+                            phpDocBlock = (PHPDocBlock) comment;
+                        }
+                    }
+                }
+            }
+        }
+
+        @CheckForNull
+        public ASTNode getNode() {
+            return node;
+        }
+
+        @CheckForNull
+        public PHPDocBlock getPhpDocBlock() {
+            return phpDocBlock;
+        }
     }
 
     private interface PhpDocumentation {
