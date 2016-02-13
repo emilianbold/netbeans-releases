@@ -108,7 +108,7 @@ public class JPDAStart implements Runnable {
      */
     public String execute(Project project) throws Throwable {
         this.project = project;
-        io.getOut().println("NetBeans: JPDA Listening Start..."); //NOI18N
+        io.getOut().println("JPDA Listening Start..."); //NOI18N
 //            getLog().debug("Entering synch lock"); //NOI18N
         synchronized (lock) {
 //                getLog().debug("Entered synch lock"); //NOI18N
