@@ -367,11 +367,20 @@ public final class EditorCaret implements Caret {
         listenerImpl = new ListenerImpl();
     }
 
+    /**
+     * Get dot offset of the last created caret in the underlying document.
+     * @return dot offset &gt;=0
+     */
     @Override
     public int getDot() {
         return getLastCaret().getDot();
     }
-    
+
+    /**
+     * Get mark offset of the last created caret in the underlying document.
+     * If there is a selection, the mark will not be the same as the dot.
+     * @return mark offset &gt;=0
+     */
     @Override
     public int getMark() {
         return getLastCaret().getMark();
@@ -410,6 +419,9 @@ public final class EditorCaret implements Caret {
     
     /**
      * Get information about all existing carets sorted by dot positions in ascending order.
+     * <br>
+     * If some of the carets are {@link org.netbeans.api.editor.document.ShiftPositions}
+     * their order will reflect the increasing shift.
      * <br>
      * The list is a snapshot of the current state of the carets. The list content itself and its contained
      * caret infos are guaranteed not change after subsequent calls to caret API or document modifications.
@@ -1121,10 +1133,10 @@ public final class EditorCaret implements Caret {
                                 }
                                 assert (sortedCaretItems != null) : "Null sortedCaretItems! removeType=" + removeType; // NOI18N
                             }
-                        }
-                        if (activeTransaction.isAnyChange()) {
-                            caretInfos = null;
-                            sortedCaretInfos = null;
+                            if (activeTransaction.isAnyChange()) {
+                                caretInfos = null;
+                                sortedCaretInfos = null;
+                            }
                         }
                         pendingRepaintRemovedItemsList = activeTransaction.
                                 addRemovedItems(pendingRepaintRemovedItemsList);

@@ -140,7 +140,7 @@ public final class EditorActionNames {
 
     /**
      * Toggle caret between regular insert mode and overwrite mode.
-     * @since 1.31
+     * @since 2.6
      */
     public static final String toggleTypingMode = "toggle-typing-mode"; // NOI18N
     

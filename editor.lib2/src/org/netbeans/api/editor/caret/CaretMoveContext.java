@@ -87,7 +87,11 @@ public final class CaretMoveContext {
     }
     
     /**
-     * Get list of carets sorted ascending order at the time when transaction started.
+     * Get list of carets at the time when transaction started
+     * sorted by dot positions in ascending order.
+     * <br>
+     * If some of the carets are {@link org.netbeans.api.editor.document.ShiftPositions}
+     * their order will reflect the increasing shift.
      * <br>
      * <b>Note</b>: information contained in the returned list will not reflect changes
      * performed by the dot/selection modification methods contained in this class.
