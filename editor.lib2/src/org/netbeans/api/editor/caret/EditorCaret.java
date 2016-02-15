@@ -1060,6 +1060,12 @@ public final class EditorCaret implements Caret {
     GapList<CaretItem> getSortedCaretItems() {
         return sortedCaretItems; // No sync as this should only be accessed by transaction's methods
     }
+    
+    void ensureValidInfo(CaretItem caretItem) {
+        synchronized (listenerList) {
+            caretItem.ensureValidInfo();
+        }
+    }
 
     /** This method may be accessed arbitrarily */
     private CaretItem getLastCaretItem() {
@@ -1102,6 +1108,12 @@ public final class EditorCaret implements Caret {
                                 diffCount = replaceItems.size() - caretItems.size();
                                 caretItems = replaceItems;
                                 sortedCaretItems = activeTransaction.getSortedCaretItems();
+                                for (CaretItem caretItem : caretItems) {
+                                    if (caretItem.isInfoObsolete()) {
+                                        caretItem.clearInfoObsolete();
+                                        caretItem.clearInfo();
+                                    }
+                                }
                                 assert (sortedCaretItems != null) : "Null sortedCaretItems! removeType=" + removeType; // NOI18N
                             }
                         }

@@ -64,7 +64,9 @@ final class CaretItem implements Comparable {
 
     private static final int TRANSACTION_MARK_REMOVED = 1;
     
-    private static final int UPDATE_VISUAL_BOUNDS = 2;
+    private static final int INFO_OBSOLETE = 2;
+
+    private static final int UPDATE_VISUAL_BOUNDS = 4;
 
     private final EditorCaret editorCaret;
     
@@ -241,6 +243,19 @@ final class CaretItem implements Comparable {
         this.statusBits &= ~UPDATE_VISUAL_BOUNDS;
     }
     
+    void markInfoObsolete() {
+        this.statusBits |= INFO_OBSOLETE;
+    }
+    
+    boolean isInfoObsolete() {
+        return (this.statusBits & INFO_OBSOLETE) != 0;
+    }
+    
+    void clearInfoObsolete() {
+        this.statusBits &= ~INFO_OBSOLETE;
+    }
+    
+
     @Override
     public int compareTo(Object o) {
         return getDot() - ((CaretItem)o).getDot();

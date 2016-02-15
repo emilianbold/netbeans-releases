@@ -145,22 +145,23 @@ final class CaretTransaction {
         if (index != -1) {
             Position origDotPos = caretItem.getDotPosition();
             Position origMarkPos = caretItem.getMarkPosition();
-            boolean changed = false;
-            if (origDotPos == null || ShiftPositions.compare(dotPos, origDotPos) != 0) {
-                caretItem.setDotPos(dotPos);
-                changed = true;
-            }
-            if (origMarkPos == null || ShiftPositions.compare(markPos, origMarkPos) != 0) {
-                caretItem.setMarkPos(markPos);
-                changed = true;
-            }
-            if (changed) {
+            boolean dotChanged = origDotPos == null || ShiftPositions.compare(dotPos, origDotPos) != 0;
+            boolean markChanged = origMarkPos == null || ShiftPositions.compare(markPos, origMarkPos) != 0;
+            if (dotChanged || markChanged) {
+                editorCaret.ensureValidInfo(caretItem);
+                if (dotChanged) {
+                    caretItem.setDotPos(dotPos);
+                }
+                if (markChanged) {
+                    caretItem.setMarkPos(markPos);
+                }
                 updateAffectedIndexes(index, index + 1);
                 caretItem.markUpdateVisualBounds();
-                caretItem.clearInfo();
+                caretItem.markInfoObsolete();
                 dotOrMarkChanged = true;
+                return true;
             }
-            return changed;
+            return false;
         }
         return false;
         //caret.setDotCaret(offset, this, true);
