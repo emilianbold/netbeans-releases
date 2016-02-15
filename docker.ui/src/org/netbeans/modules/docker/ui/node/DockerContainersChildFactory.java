@@ -73,14 +73,16 @@ public class DockerContainersChildFactory extends NodeClosingFactory<StatefulDoc
 
         @Override
         public int compare(DockerContainer o1, DockerContainer o2) {
-            return o1.getId().compareTo(o2.getId());
+            return o1.getImage().compareTo(o2.getImage());
         }
     };
 
     private static final Set<DockerEvent.Status> CHANGE_EVENTS = new HashSet<>();
 
     static {
-        Collections.addAll(CHANGE_EVENTS, DockerEvent.Status.COPY, DockerEvent.Status.CREATE, DockerEvent.Status.DESTROY);
+        // rename is here because it may reorder nodes
+        Collections.addAll(CHANGE_EVENTS, DockerEvent.Status.COPY, DockerEvent.Status.CREATE,
+                DockerEvent.Status.DESTROY, DockerEvent.Status.RENAME);
     }
 
     private final Map<DockerContainer, WeakReference<StatefulDockerContainer>> cache = new WeakHashMap<>();
