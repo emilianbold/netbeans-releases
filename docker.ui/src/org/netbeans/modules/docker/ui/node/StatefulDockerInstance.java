@@ -41,90 +41,107 @@
  */
 package org.netbeans.modules.docker.ui.node;
 
-import java.io.Closeable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.docker.api.DockerImage;
-import org.netbeans.modules.docker.api.DockerInstance;
-import org.netbeans.modules.docker.api.DockerTag;
-import org.netbeans.modules.docker.api.DockerEvent;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.api.DockerAction;
-import org.openide.nodes.Node;
+import org.netbeans.modules.docker.api.DockerInstance;
+import org.netbeans.modules.docker.api.DockerSupport;
+import org.openide.util.ChangeSupport;
 import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Petr Hejl
  */
-public class DockerImagesChildFactory extends NodeClosingFactory<DockerTag> implements Refreshable, Closeable {
+public class StatefulDockerInstance implements Refreshable {
 
-    private static final Logger LOGGER = Logger.getLogger(DockerImagesChildFactory.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(StatefulDockerInstance.class);
 
-    private static final Comparator<DockerTag> COMPARATOR = new Comparator<DockerTag>() {
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+
+    // FIXME default value
+    private final AtomicBoolean available = new AtomicBoolean(true);
+
+    private final DockerInstance.ConnectionListener listener = new DockerInstance.ConnectionListener() {
+        @Override
+        public void onConnect() {
+            update(true);
+        }
 
         @Override
-        public int compare(DockerTag o1, DockerTag o2) {
-            return o1.getTag().compareTo(o2.getTag());
+        public void onDisconnect() {
+            update(false);
         }
     };
 
-    private final RequestProcessor requestProcessor = new RequestProcessor(DockerImagesChildFactory.class);
-
     private final DockerInstance instance;
 
-    private final RequestProcessor.Task refreshTask;
-
-    private final DockerEvent.Listener listener;
-
-    public DockerImagesChildFactory(DockerInstance instance) {
+    public StatefulDockerInstance(DockerInstance instance) {
         this.instance = instance;
-        this.refreshTask = requestProcessor.create(new Runnable() {
+        instance.addConnectionListener(listener);
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
+    }
+
+    public DockerInstance getInstance() {
+        return instance;
+    }
+
+    public boolean isAvailable() {
+        return available.get();
+    }
+
+    @Override
+    public void refresh() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
-                LOGGER.log(Level.FINE, "Refreshing images");
-                refresh();
+                update(new DockerAction(instance).ping());
             }
         });
-        this.listener = new DockerEvent.Listener() {
-            @Override
-            public void onEvent(DockerEvent event) {
-                if (DockerEvent.Status.PUSH != event.getStatus()) {
-                    refreshTask.schedule(200);
-                }
-            }
-        };
-        instance.addImageListener(listener);
+    }
+
+    public void remove() {
+        instance.removeConnectionListener(listener);
+        DockerSupport.getDefault().removeInstance(instance);
     }
 
     @Override
-    protected Node createNodeForKey(DockerTag key) {
-        return new DockerTagNode(key);
+    public int hashCode() {
+        int hash = 7;
+        hash = 61 * hash + Objects.hashCode(this.instance);
+        return hash;
     }
 
     @Override
-    protected boolean createKeys(List<DockerTag> toPopulate) {
-        DockerAction facade = new DockerAction(instance);
-        List<DockerTag> tags = new ArrayList<>();
-        for (DockerImage image : facade.getImages()) {
-            tags.addAll(image.getTags());
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
         }
-        Collections.sort(tags, COMPARATOR);
-        toPopulate.addAll(tags);
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final StatefulDockerInstance other = (StatefulDockerInstance) obj;
+        if (!Objects.equals(this.instance, other.instance)) {
+            return false;
+        }
         return true;
     }
 
-    @Override
-    public final void refresh() {
-        refresh(false);
+    private void update(boolean newValue) {
+        boolean oldValue = available.getAndSet(newValue);
+        if (oldValue != newValue) {
+            changeSupport.fireChange();
+        }
     }
-
-    @Override
-    public void close() {
-        instance.removeImageListener(listener);
-    }
-
 }

@@ -220,6 +220,10 @@ public abstract class ChildFactory <T> {
         //do nothing
     }
     
+    void destroyNodes(Node[] arr) {
+        //do nothing
+    }
+
     interface Observer {
         public void refresh(boolean immediate);
     }
@@ -266,6 +270,28 @@ public abstract class ChildFactory <T> {
          */
         @Override
         protected void removeNotify() {
+            //do nothing
+        }
+
+    }
+
+    /**
+     * Subclass of {@link Detachable} with lifecycle method invoked when
+     * nodes created by the factory are no longer needed.
+     *
+     * @param <T> The key type for this child factory
+     * @since org.openide.nodes 7.44
+     */
+    public static abstract class DestroyableNodes<T> extends Detachable<T>{
+
+        /**
+         * Called when nodes created previously by this factory are no longer
+         * present in the node hierarchy.
+         *
+         * @param arr nodes which are no longer needed
+         */
+        @Override
+        protected void destroyNodes(Node[] arr) {
             //do nothing
         }
 

@@ -44,19 +44,16 @@
 
 package org.netbeans.modules.docker.ui.node;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.docker.api.DockerInstance;
-import org.netbeans.modules.docker.api.DockerIntegration;
+import org.netbeans.modules.docker.api.DockerSupport;
 import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -68,14 +65,11 @@ import org.openide.util.WeakListeners;
 
 public final class DockerNode extends AbstractNode {
 
-    private static final RequestProcessor REFRESH_PROCESSOR =
-            new RequestProcessor("Docker node update/refresh", 5);
-
     private static final String DOCKER_ICON = "org/netbeans/modules/docker/ui/resources/docker_root.png"; // NOI18N
 
     private static DockerNode node;
 
-    private DockerNode(ChildFactory factory, String displayName, String shortDesc, String iconBase) {
+    private DockerNode(DockerChildFactory factory, String displayName, String shortDesc, String iconBase) {
         super(Children.create(factory, true));
 
         setName(""); // NOI18N
@@ -93,7 +87,7 @@ public final class DockerNode extends AbstractNode {
     )
     public static synchronized DockerNode getInstance() {
         if (node == null) {
-            ChildFactory factory = new ChildFactory(DockerIntegration.getDefault());
+            DockerChildFactory factory = new DockerChildFactory(DockerSupport.getDefault());
             factory.init();
 
             node = new DockerNode(factory,
@@ -113,60 +107,4 @@ public final class DockerNode extends AbstractNode {
         return ret.toArray(new Action[ret.size()]);
     }
 
-    private static class ChildFactory extends org.openide.nodes.ChildFactory<EnhancedDockerInstance>
-            implements ChangeListener {
-
-        private final DockerIntegration registry;
-
-        public ChildFactory(DockerIntegration registry) {
-            super();
-            this.registry = registry;
-        }
-
-        public void init() {
-            REFRESH_PROCESSOR.post(new Runnable() {
-
-                public void run() {
-                    synchronized (ChildFactory.this) {
-                        registry.addChangeListener(
-                            WeakListeners.create(ChangeListener.class, ChildFactory.this, registry));
-                        updateState(new ChangeEvent(registry));
-                    }
-                }
-            });
-        }
-
-        public void stateChanged(final ChangeEvent e) {
-            REFRESH_PROCESSOR.post(new Runnable() {
-
-                public void run() {
-                    updateState(e);
-                }
-            });
-        }
-
-        private synchronized void updateState(final ChangeEvent e) {
-            refresh();
-        }
-
-        protected final void refresh() {
-            refresh(false);
-        }
-
-        @Override
-        protected Node createNodeForKey(EnhancedDockerInstance key) {
-            return new DockerInstanceNode(key);
-        }
-
-        @Override
-        protected boolean createKeys(List<EnhancedDockerInstance> toPopulate) {
-            List<DockerInstance> fresh = new ArrayList<>(registry.getInstances());
-            Collections.sort(fresh, UiUtils.getInstanceComparator());
-            for (DockerInstance i : fresh) {
-                toPopulate.add(new EnhancedDockerInstance(i));
-            }
-            return true;
-        }
-
-    } // end of ChildFactory
 }

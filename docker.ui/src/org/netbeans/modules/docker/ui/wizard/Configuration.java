@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,68 +37,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.api;
+package org.netbeans.modules.docker.ui.wizard;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.docker.Endpoint;
-import org.netbeans.modules.docker.StreamItem;
+import java.io.File;
+import javax.swing.event.ChangeListener;
 
 /**
  *
  * @author Petr Hejl
  */
-public final class ActionChunkedResult implements Closeable {
+public interface Configuration {
 
-    private final Endpoint s;
+    void addChangeListener(ChangeListener l);
 
-    private final StreamItem.Fetcher fetcher;
+    void removeChangeListener(ChangeListener l);
 
-    private final Charset charset;
+    String getDisplayName();
 
-    ActionChunkedResult(Endpoint s, StreamItem.Fetcher fetcher, Charset charset) {
-        this.s = s;
-        this.fetcher = fetcher;
-        this.charset = charset;
-    }
+    void setDisplayName(String displayName);
 
-    @CheckForNull
-    public Chunk fetchChunk() {
-        StreamItem r = fetcher.fetch();
-        if (r == null) {
-            return null;
-        }
-        ByteBuffer buffer = r.getData();
-        return new Chunk(new String(buffer.array(), buffer.position(), buffer.limit(), charset), r.isError());
-    }
+    boolean isSocketSelected();
 
-    @Override
-    public void close() throws IOException {
-        s.close();
-    }
+    void setSocketSelected(boolean socketSelected);
 
-    public static class Chunk {
+    File getSocket();
 
-        private final String data;
+    void setSocket(File socket);
 
-        private final boolean error;
+    String getUrl();
 
-        private Chunk(String data, boolean error) {
-            this.data = data;
-            this.error = error;
-        }
+    void setUrl(String url);
 
-        public String getData() {
-            return data;
-        }
+    String getCertPath();
 
-        public boolean isError() {
-            return error;
-        }
-    }
+    void setCertPath(String path);
 }
