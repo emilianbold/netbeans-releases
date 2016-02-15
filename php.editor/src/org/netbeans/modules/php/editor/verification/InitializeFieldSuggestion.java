@@ -52,7 +52,9 @@ import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
@@ -116,6 +118,20 @@ public class InitializeFieldSuggestion extends SuggestionRule {
         @Override
         public void visit(ClassDeclaration node) {
             typeBodyStartOffset = node.getBody().getStartOffset() + 1;
+            declaredFields = new ArrayList<>();
+            usedVariables = new ArrayList<>();
+            super.visit(node);
+            typeBodyStartOffset = 0;
+        }
+
+        @Override
+        public void visit(ClassInstanceCreation node) {
+            if (!node.isAnonymous()) {
+                return;
+            }
+            Block body = node.getBody();
+            assert body != null : node;
+            typeBodyStartOffset = body.getStartOffset() + 1;
             declaredFields = new ArrayList<>();
             usedVariables = new ArrayList<>();
             super.visit(node);
