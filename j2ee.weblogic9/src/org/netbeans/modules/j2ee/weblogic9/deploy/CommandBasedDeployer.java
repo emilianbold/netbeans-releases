@@ -101,8 +101,6 @@ public final class CommandBasedDeployer extends AbstractDeployer {
 
     private static final Logger LOGGER = Logger.getLogger(CommandBasedDeployer.class.getName());
 
-    private static final RequestProcessor URL_WAIT_RP = new RequestProcessor("Weblogic URL Wait", 10); // NOI18N
-    
     private static final RequestProcessor RP = new RequestProcessor(CommandBasedDeployer.class);
 
     private static final Callable<String> NON_PROXY = new Callable<String>() {
