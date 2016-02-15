@@ -123,16 +123,16 @@ public final class WebLogicDeployer {
      * @since 1.14
      */
     @NonNull
-    public Future<Collection<Target>> getTargets() {
-        return DEPLOYMENT_RP.submit(new Callable<Collection<Target>>() {
+    public Future<Collection<DeploymentTarget>> getTargets() {
+        return DEPLOYMENT_RP.submit(new Callable<Collection<DeploymentTarget>>() {
 
             @Override
-            public Collection<Target> call() throws Exception {
-                return config.getRemote().executeAction(new WebLogicRemote.JmxAction<Collection<Target>>() {
+            public Collection<DeploymentTarget> call() throws Exception {
+                return config.getRemote().executeAction(new WebLogicRemote.JmxAction<Collection<DeploymentTarget>>() {
 
                     @Override
-                    public Collection<Target> execute(MBeanServerConnection connection) throws Exception {
-                        List<Target> result = new ArrayList<>();
+                    public Collection<DeploymentTarget> execute(MBeanServerConnection connection) throws Exception {
+                        List<DeploymentTarget> result = new ArrayList<>();
                         ObjectName service = new ObjectName("com.bea:Name=DomainRuntimeService," // NOI18N
                                 + "Type=weblogic.management.mbeanservers.domainruntime.DomainRuntimeServiceMBean"); // NOI18N
                         ObjectName domainPending = (ObjectName) connection.getAttribute(service, "DomainPending"); // NOI18N
@@ -141,9 +141,9 @@ public final class WebLogicDeployer {
                             if (domainTargets != null) {
                                 for (ObjectName singleTarget : domainTargets) {
                                     String strType = (String) connection.getAttribute(singleTarget, "Type"); // NOI18N
-                                    Target.Type type = Target.Type.parse(strType);
+                                    DeploymentTarget.Type type = DeploymentTarget.Type.parse(strType);
                                     if (type != null) {
-                                        result.add(new Target((String) connection.getAttribute(singleTarget, "Name"), type)); // NOI18N
+                                        result.add(new DeploymentTarget((String) connection.getAttribute(singleTarget, "Name"), type)); // NOI18N
                                     } else {
                                         LOGGER.log(Level.INFO, "Unknown target type {0}", strType);
                                     }
@@ -228,11 +228,11 @@ public final class WebLogicDeployer {
     public Future<String> deploy(@NonNull File file, @NullAllowed DeployListener listener,
             @NullAllowed String name) {
 
-        return performDeploy(file, Collections.<Target>emptyList(), listener, name);
+        return performDeploy(file, Collections.<DeploymentTarget>emptyList(), listener, name);
     }
 
     @NonNull
-    public Future<String> deploy(@NonNull File file, @NonNull Collection<Target> targets, @NullAllowed DeployListener listener,
+    public Future<String> deploy(@NonNull File file, @NonNull Collection<DeploymentTarget> targets, @NullAllowed DeployListener listener,
             @NullAllowed String name) {
 
         return performDeploy(file, targets, listener, name);
@@ -448,7 +448,7 @@ public final class WebLogicDeployer {
         });
     }
 
-    private Future<String> performDeploy(@NonNull final File file, final @NonNull Collection<Target> targets,
+    private Future<String> performDeploy(@NonNull final File file, final @NonNull Collection<DeploymentTarget> targets,
             @NullAllowed final DeployListener listener, @NullAllowed final String name) {
 
         if (listener != null) {
@@ -476,7 +476,7 @@ public final class WebLogicDeployer {
 
                 if (!targets.isEmpty()) {
                     StringBuilder sb = new StringBuilder();
-                    for (Target t : targets) {
+                    for (DeploymentTarget t : targets) {
                         if (sb.length() > 0) {
                             sb.append(','); // NOI18N
                         }
@@ -889,11 +889,16 @@ public final class WebLogicDeployer {
 
         private final String webContext;
 
-        private Application(String id, String type, URL url, String webContext) {
+        private final List<URL> serverUrls;
+
+        private Application(String id, String type, URL url, String webContext, URL... server) {
             this.name = id;
             this.type = type;
             this.url = url;
             this.webContext = webContext;
+
+            this.serverUrls = new ArrayList<>(server.length);
+            Collections.addAll(this.serverUrls, server);
         }
 
         public String getName() {
@@ -910,6 +915,15 @@ public final class WebLogicDeployer {
 
         public String getWebContext() {
             return webContext;
+        }
+
+        /**
+         * 
+         * @return 
+         * @since 1.15
+         */
+        public List<URL> getServerUrls() {
+            return Collections.unmodifiableList(serverUrls);
         }
     }
 

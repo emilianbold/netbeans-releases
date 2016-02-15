@@ -600,7 +600,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         final WebLogicDeployer deployer = WebLogicDeployer.getInstance(
                 getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()), NON_PROXY);
         if (wlsTarget == null) {
-            deployer.deploy(file, Collections.<org.netbeans.modules.weblogic.common.api.Target>emptySet(), listener, name);
+            deployer.deploy(file, Collections.<org.netbeans.modules.weblogic.common.api.DeploymentTarget>emptySet(), listener, name);
             return progress;
         }
 
@@ -612,10 +612,10 @@ public final class CommandBasedDeployer extends AbstractDeployer {
             @Override
             public void run() {
                 try {
-                    org.netbeans.modules.weblogic.common.api.Target selected = null;
-                    for (org.netbeans.modules.weblogic.common.api.Target t : deployer.getTargets().get()) {
-                        if ((t.getType() == org.netbeans.modules.weblogic.common.api.Target.Type.SERVER
-                                || t.getType() == org.netbeans.modules.weblogic.common.api.Target.Type.CLUSTER)
+                    org.netbeans.modules.weblogic.common.api.DeploymentTarget selected = null;
+                    for (org.netbeans.modules.weblogic.common.api.DeploymentTarget t : deployer.getTargets().get()) {
+                        if ((t.getType() == org.netbeans.modules.weblogic.common.api.DeploymentTarget.Type.SERVER
+                                || t.getType() == org.netbeans.modules.weblogic.common.api.DeploymentTarget.Type.CLUSTER)
                                 && wlsTarget.equals(t.getName())) {
                             selected = t;
                             break;

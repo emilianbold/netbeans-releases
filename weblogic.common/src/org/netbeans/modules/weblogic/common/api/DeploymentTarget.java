@@ -52,7 +52,7 @@ import org.netbeans.api.annotations.common.NonNull;
  * @author Petr Hejl
  * @since 1.14
  */
-public final class Target {
+public final class DeploymentTarget {
 
     public enum Type {
 
@@ -81,7 +81,7 @@ public final class Target {
 
     private final Type type;
 
-    Target(String name, Type type) {
+    DeploymentTarget(String name, Type type) {
         this.name = name;
         this.type = type;
     }
@@ -112,7 +112,7 @@ public final class Target {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final Target other = (Target) obj;
+        final DeploymentTarget other = (DeploymentTarget) obj;
         if (!Objects.equals(this.name, other.name)) {
             return false;
         }
