@@ -1,5 +1,5 @@
 <?php
-namespace main;
+namespace My;
 
 $x = new class {
     public function testAnon() {
