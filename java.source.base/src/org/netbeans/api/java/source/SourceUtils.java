@@ -116,6 +116,7 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.java.preprocessorbridge.spi.ImportProcessor;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
+import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.JavadocHelper;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
@@ -131,6 +132,7 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
@@ -1319,6 +1321,23 @@ public class SourceUtils {
             }
         }
         return null;
+    }
+
+    /**
+     * Invalidates parser for given java source.
+     * @param javaSource the source to invalidate
+     * @param rescheduleTasks true if the scheduled tasks should be reexecuted
+     * @since 2.16
+     */
+    public static void invalidate(
+            @NonNull final FileObject javaSource,
+            final boolean rescheduleTasks) {
+        Parameters.notNull("javaSource", javaSource);   //NOI18N
+        if (rescheduleTasks) {
+            Utilities.revalidate(javaSource);
+        } else {
+            Utilities.invalidate(javaSource);
+        }
     }
 
     // --------------- Helper methods of getFile () -----------------------------

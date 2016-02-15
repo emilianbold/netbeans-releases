@@ -2891,10 +2891,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             for (Indexable indexable : toInvalidate) {
                 final FileObject cheapFo = SPIAccessor.getInstance().getFileObject(indexable);
                 if (cheapFo != null) {
-                    final Source src = SourceAccessor.getINSTANCE().get(cheapFo);
-                    if (src != null) {
-                        SourceAccessor.getINSTANCE().setFlags(src, EnumSet.of(SourceFlags.INVALID));    //Only invalidate not reschedule
-                    }
+                    Utilities.invalidate(cheapFo);
                 }
             }
             final long et = System.currentTimeMillis();
