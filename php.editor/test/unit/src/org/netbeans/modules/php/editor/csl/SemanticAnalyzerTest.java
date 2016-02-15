@@ -196,7 +196,8 @@ public class SemanticAnalyzerTest extends SemanticAnalysisTestBase {
     }
 
     public void testIssue247411() throws Exception {
-        // check unused private fields and methods for trait
+        // doesn't check unused private fields and methods for trait
+        // fixed in #257985
         checkSemantic("testfiles/semantic/issue247411.php");
     }
 }

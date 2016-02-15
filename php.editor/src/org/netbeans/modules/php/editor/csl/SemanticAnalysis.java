@@ -469,10 +469,14 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             String name = identifier.getName().toLowerCase();
             Set<ColoringAttributes> coloring = createMethodDeclarationColoring(md);
             // don't color private magic private method. methods which start __
-            if (isPrivate && name != null && !name.startsWith("__")) {
+            // in case of trait, just ignore it because it may be used in other classes
+            if (isPrivate
+                    && !typeInfo.isTrait()
+                    && name != null
+                    && !name.startsWith("__")) { // NOI18N
                 privateUnusedMethods.put(new UnusedIdentifier(name, typeInfo), new ASTNodeColoring(identifier, coloring));
             } else {
-                // color now only non private method
+                // color now only non private method and all trait methods
                 addColoringForNode(identifier, coloring);
             }
             if (!Modifier.isAbstract(md.getModifier())) {
@@ -615,7 +619,9 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             for (int i = 0; i < variables.length; i++) {
                 Variable variable = variables[i];
                 Set<ColoringAttributes> coloring = createFieldDeclarationColoring(variable, isStatic);
-                if (!isPrivate) {
+                // in case of trait, just ignore it because it may be used in other classes
+                if (!isPrivate
+                        || typeInfo.isTrait()) {
                     addColoringForNode(variable.getName(), coloring);
                 } else {
                     if (variable.getName() instanceof Identifier) {
@@ -912,22 +918,30 @@ public class SemanticAnalysis extends SemanticAnalyzer {
     private interface TypeInfo {
 
         Expression getName();
+        boolean isTrait();
 
     }
 
     private static final class TypeDeclarationTypeInfo implements TypeInfo {
 
         private final TypeDeclaration typeDeclaration;
+        private final boolean isTrait;
 
 
         TypeDeclarationTypeInfo(TypeDeclaration typeDeclaration) {
             assert typeDeclaration != null;
             this.typeDeclaration = typeDeclaration;
+            this.isTrait = typeDeclaration instanceof TraitDeclaration;
         }
 
         @Override
         public Expression getName() {
             return typeDeclaration.getName();
+        }
+
+        @Override
+        public boolean isTrait() {
+            return isTrait;
         }
 
     }
@@ -937,7 +951,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         private final ClassInstanceCreation classInstanceCreation;
 
 
-        public ClassInstanceCreationTypeInfo(ClassInstanceCreation classInstanceCreation) {
+        ClassInstanceCreationTypeInfo(ClassInstanceCreation classInstanceCreation) {
             assert classInstanceCreation != null;
             this.classInstanceCreation = classInstanceCreation;
         }
@@ -945,6 +959,11 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         @Override
         public Expression getName() {
             return classInstanceCreation.getClassName().getName();
+        }
+
+        @Override
+        public boolean isTrait() {
+            return false;
         }
 
     }
