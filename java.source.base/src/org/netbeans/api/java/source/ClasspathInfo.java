@@ -223,7 +223,10 @@ public final class ClasspathInfo {
         final ClasspathInfo other = (ClasspathInfo) obj;
         return Arrays.equals(toURIs(this.srcClassPath), toURIs(other.srcClassPath)) &&
             Arrays.equals(toURIs(this.compileClassPath), toURIs(other.compileClassPath)) &&
-            Arrays.equals(toURIs(this.bootClassPath), toURIs(other.bootClassPath));
+            Arrays.equals(toURIs(this.bootClassPath), toURIs(other.bootClassPath)) &&
+            Arrays.equals(toURIs(this.moduleBootPath), toURIs(other.moduleBootPath)) &&
+            Arrays.equals(toURIs(this.moduleCompilePath), toURIs(other.moduleCompilePath)) &&
+            Arrays.equals(toURIs(this.moduleClassPath), toURIs(other.moduleClassPath));
     }
     // Factory methods ---------------------------------------------------------
 

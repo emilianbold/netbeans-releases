@@ -100,6 +100,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.BaseUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -108,6 +109,11 @@ import org.openide.util.WeakListeners;
  */
 final class ModuleClassPaths {
     private static final Logger LOG = Logger.getLogger(ModuleClassPaths.class.getName());
+    /**
+     * Changes from ClassIndex are collapsed using runWhenScanFinished and need to be fired asynchronously
+     * to make changes done by invalidate visible due to ParserManager.parse nesting.
+     */
+    private static final RequestProcessor CLASS_INDEX_FIRER = new RequestProcessor(ModuleClassPaths.class);
 
     private ModuleClassPaths() {
         throw new IllegalArgumentException("No instance allowed."); //NOI18N
@@ -653,6 +659,7 @@ final class ModuleClassPaths {
         @Override
         public void rootsAdded(final RootsEvent event) {
             ClasspathInfo info;
+            final Collection<? extends File> toInvalidate;
             synchronized (this) {
                 info = activeProjectSourceRoots;
                 if (info != null) {
@@ -662,20 +669,27 @@ final class ModuleClassPaths {
                         rootsChanging = true;
                     }
                 }
+                toInvalidate = info != null ?
+                        moduleInfos :
+                        Collections.emptyList();
             }
             if (info != null) {
                 try {
                     JavaSource.create(info).runWhenScanFinished((cc)->{
-                            LOG.log(
-                                Level.FINER,
-                                "{0} for {1} got class index event: {2}",    //NOI18N
-                                new Object[]{
-                                    ModuleInfoClassPathImplementation.class.getSimpleName(),
-                                    base,
-                                    event
-                                });
-                            rootsChanging = false;
-                            resetCache(TOMBSTONE, true);
+                        LOG.log(
+                            Level.FINER,
+                            "{0} for {1} got class index event: {2}",    //NOI18N
+                            new Object[]{
+                                ModuleInfoClassPathImplementation.class.getSimpleName(),
+                                base,
+                                event
+                            });
+                        for (File f : toInvalidate) {
+                            Optional.ofNullable(FileUtil.toFileObject(f))
+                                    .ifPresent((fo)->SourceUtils.invalidate(fo, false));
+                        }
+                        rootsChanging = false;
+                        CLASS_INDEX_FIRER.execute(()->resetCache(TOMBSTONE, true));
                         },
                         true);
                 } catch (IOException ioe) {
