@@ -89,6 +89,7 @@ import org.netbeans.modules.weblogic.common.api.WebLogicDeployer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -136,7 +137,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         if (name.endsWith(".war") || name.endsWith(".ear")) { // NOI18N
             name = name.substring(0, name.length() - 4);
         }
-        final TargetModuleID moduleId = createModuleId(target[0], file, host, port, secured, name, null);
+        final WLTargetModuleID moduleId = createModuleId(target[0], file, host, port, secured, name, null);
         return deploy(moduleId, file, null, wlsTarget);
     }
 
@@ -243,13 +244,6 @@ public final class CommandBasedDeployer extends AbstractDeployer {
 
             @Override
             public void onStepFinish(String name) {
-                try {
-                    waitForUrlReady(getDeploymentManager(), module, progress);
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                } catch (TimeoutException ex) {
-                    // FIXME
-                }
             }
 
             @Override
@@ -547,8 +541,10 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         return progress;
     }
 
-    private ProgressObject deploy(final TargetModuleID moduleId, final File file, final String name, final String wlsTarget) {
+    private ProgressObject deploy(final WLTargetModuleID moduleId, final File file, final String name, final String wlsTarget) {
         final WLProgressObject progress = new WLProgressObject(moduleId);
+        final WebLogicDeployer deployer = WebLogicDeployer.getInstance(
+                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()), NON_PROXY);
 
         final DeployListener listener = new DeployListener() {
 
@@ -561,9 +557,11 @@ public final class CommandBasedDeployer extends AbstractDeployer {
 
             @Override
             public void onFinish() {
-                progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
-                        ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
-                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deployment_Completed")));
+                if (wlsTarget == null) {
+                    progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deployment_Completed")));
+                }
             }
 
             @Override
@@ -596,8 +594,6 @@ public final class CommandBasedDeployer extends AbstractDeployer {
             }
         };
 
-        final WebLogicDeployer deployer = WebLogicDeployer.getInstance(
-                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()), NON_PROXY);
         if (wlsTarget == null) {
             deployer.deploy(file, Collections.<org.netbeans.modules.weblogic.common.api.DeploymentTarget>emptySet(), listener, name);
             return progress;
@@ -626,7 +622,26 @@ public final class CommandBasedDeployer extends AbstractDeployer {
                                 NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deployment_Failed_No_Target", wlsTarget)));
                         return;
                     }
-                    deployer.deploy(file, Collections.singleton(selected), listener, name);
+                    String result = deployer.deploy(file, Collections.singleton(selected), listener, name).get();
+                    try {
+                        for (WebLogicDeployer.Application app : deployer.list(null).get()) {
+                            if (result.equals(app.getName())) {
+                                for (URL u : app.getServerUrls()) {
+                                    moduleId.addUrl(u);
+                                }
+                                break;
+                            }
+                        }
+                    } catch (InterruptedException ex) {
+                        LOGGER.log(Level.INFO, null, ex);
+                        Thread.currentThread().interrupt();
+                    } catch (ExecutionException ex) {
+                        LOGGER.log(Level.INFO, null, ex);
+                    } finally {
+                        progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
+                                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deployment_Completed")));
+                    }
                 } catch (InterruptedException ex) {
                     progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
