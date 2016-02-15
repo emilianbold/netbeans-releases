@@ -68,8 +68,11 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
+import javax.management.ReflectionException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.base.BaseExecutionDescriptor;
@@ -81,6 +84,7 @@ import org.netbeans.api.extexecution.base.input.LineProcessors;
 import org.netbeans.modules.weblogic.common.ProxyUtils;
 import org.netbeans.modules.weblogic.common.spi.WebLogicTrustHandler;
 import org.openide.util.BaseUtilities;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
@@ -179,6 +183,7 @@ public final class WebLogicDeployer {
                             if ("AppDeployment".equals(type)) { // NOI18N
                                 String moduleType = (String) connection.getAttribute(bean, "ModuleType"); // NOI18N
                                 String contextRoot = null;
+                                List<URL> urls = null;
                                 ObjectName[] targets = (ObjectName[]) connection.getAttribute(bean, "Targets"); // NOI18N
                                 if (targets != null && targets.length > 0) {
                                     String server = (String) connection.getAttribute(targets[0], "Name"); // NOI18N
@@ -202,6 +207,9 @@ public final class WebLogicDeployer {
                                                 }
                                             }
                                         }
+                                        if (contextRoot != null) {
+                                            urls = getServerUrls(connection, serverRuntime, contextRoot);
+                                        }
                                     }
                                 }
                                 if (contextRoot != null) {
@@ -211,9 +219,9 @@ public final class WebLogicDeployer {
                                     } else {
                                         url = new URL("http://" + config.getHost() + ":" + config.getPort() + contextRoot); // NOI18N
                                     }
-                                    result.add(new Application(name, moduleType, url, contextRoot));
+                                    result.add(new Application(name, moduleType, url, contextRoot, urls));
                                 } else {
-                                    result.add(new Application(name, moduleType, null, null));
+                                    result.add(new Application(name, moduleType, null, null, Collections.<URL>emptyList()));
                                 }
                             }
                         }
@@ -830,6 +838,46 @@ public final class WebLogicDeployer {
         return BaseUtilities.isWindows() ? "java.exe" : "java"; // NOI18N
     }
 
+    private static List<URL> getServerUrls(MBeanServerConnection connection,
+            ObjectName serverRuntime, String contextRoot) {
+
+        assert contextRoot != null;
+
+        List<URL> ret = new ArrayList<>();
+        URL url = getServerUrl(connection, serverRuntime, "getIPv4URL", "http", contextRoot); // NOI18N
+        if (url != null) {
+            ret.add(url);
+        }
+        url = getServerUrl(connection, serverRuntime, "getIPv4URL", "https", contextRoot); // NOI18N
+        if (url != null) {
+            ret.add(url);
+        }
+        url = getServerUrl(connection, serverRuntime, "getIPv6URL", "http", contextRoot); // NOI18N
+        if (url != null) {
+            ret.add(url);
+        }
+        url = getServerUrl(connection, serverRuntime, "getIPv6URL", "https", contextRoot); // NOI18N
+        if (url != null) {
+            ret.add(url);
+        }
+        return ret;
+    }
+
+    private static URL getServerUrl(MBeanServerConnection connection,
+            ObjectName serverRuntime, String method, String protocol, String contextRoot) {
+        try {
+            String url = (String) connection.invoke(
+                    serverRuntime, method, new Object[]{protocol}, new String[]{"java.lang.String"}); // NOI18N
+            if (url == null) {
+                return null;
+            }
+            return new URL(url + contextRoot);
+        } catch (InstanceNotFoundException | MBeanException | ReflectionException | IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return null;
+    }
+
     private static String getName(File file, String name) {
         // #249066
         // during the remote deployment from windows to linux file is
@@ -891,14 +939,13 @@ public final class WebLogicDeployer {
 
         private final List<URL> serverUrls;
 
-        private Application(String id, String type, URL url, String webContext, URL... server) {
+        private Application(String id, String type, URL url, String webContext, List<URL> serverUrls) {
             this.name = id;
             this.type = type;
             this.url = url;
             this.webContext = webContext;
 
-            this.serverUrls = new ArrayList<>(server.length);
-            Collections.addAll(this.serverUrls, server);
+            this.serverUrls = new ArrayList<>(serverUrls);
         }
 
         public String getName() {
