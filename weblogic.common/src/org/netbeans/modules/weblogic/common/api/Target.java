@@ -70,7 +70,7 @@ public final class Target {
                     return t;
                 }
             }
-            if ("JMSSERVER".equals(text)) { // NOI18N
+            if ("JMSSERVER".equals(upper)) { // NOI18N
                 return JMS_SERVER;
             }
             return null;
