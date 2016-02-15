@@ -144,6 +144,11 @@ import org.openide.util.WeakListeners;
  * is placed at arbitrary positions throughout a document.
  * In this mode each caret is described by its <code>CaretInfo</code> object.
  * <br>
+ * The <code>Caret</code> interface is not aware of multiple carets and a call
+ * to <code>setDot(int)</code> will only retain a single caret. For multiple
+ * carets a call to <code>moveDot(int)</code> will move the last caret only
+ * (but it retains other existing carets).
+ * <br>
  * The caret works over text components having {@link AbstractDocument} based document.
  *
  * @author Miloslav Metelka

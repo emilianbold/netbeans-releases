@@ -135,9 +135,9 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
   <p>
   As a technical limitation, <code>EditorCaret</code> has to implement <code>Caret</code>
   to be able to work with Swings Text API. The <code>Caret</code> interface is not
-  aware of multiple carets and any call to its method will work on the last added
-  caret. Manipulating the caret using <code>setDot(int)</code> or <code>moveDot(int)</code>
-  will retain only the last added caret and move it accordingly.
+  aware of multiple carets and a call to <code>setDot(int)</code> will only retain
+  a single caret. For multiple carets a call to <code>moveDot(int)</code> will move the last
+  caret only (but it retains other existing carets).
   <br>
   <code>editorTextComponent.getCaret()</code> will now always return <code>EditorCaret</code>
   instance instead of the original caret implementation <code>org.netbeans.editor.BaseCaret</code>.
