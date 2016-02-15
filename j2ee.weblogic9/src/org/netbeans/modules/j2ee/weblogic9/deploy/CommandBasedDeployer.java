@@ -760,65 +760,6 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         return javaBinary;
     }
 
-    private static void waitForUrlReady(WLDeploymentManager dm, TargetModuleID moduleID,
-            WLProgressObject progressObject) throws InterruptedException, TimeoutException {
-
-        // prevent hitting the old content
-        Thread.sleep(3000);
-        long start = System.currentTimeMillis();
-        String webUrl = moduleID.getWebURL();
-        if (webUrl == null) {
-            TargetModuleID[] ch = moduleID.getChildTargetModuleID();
-            if (ch != null) {
-                for (int i = 0; i < ch.length; i++) {
-                    webUrl = ch[i].getWebURL();
-                    if (webUrl != null) {
-                        waitForUrlReady(dm, webUrl, progressObject, start);
-                    }
-                }
-            }
-        } else {
-            waitForUrlReady(dm, webUrl, progressObject, start);
-        }
-    }
-
-    private static void waitForUrlReady(WLDeploymentManager dm, String webUrl, WLProgressObject progressObject,
-            long start) throws InterruptedException, TimeoutException {
-
-        if (webUrl != null) {
-            try {
-                String realUrl = webUrl;
-
-                // FIXME this is bit hacky
-                if (dm.getCommonConfiguration().isSecured()
-                        && realUrl.startsWith("http:") // NOI18N
-                        && realUrl.contains(":" + dm.getPort() + "/")) { // NOI18N
-                    realUrl = "https:" + realUrl.substring(5); // NOI18N
-                }
-                URL url = new URL(realUrl);
-                String waitingMsg = NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Waiting_For_Url", url);
-
-                progressObject.fireProgressEvent(null,
-                        new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
-
-                int timeout = 1000;
-                while (System.currentTimeMillis() - start < TIMEOUT) {
-                    if (URLWait.waitForUrlReady(dm, URL_WAIT_RP, url, timeout)) {
-                        break;
-                    }
-                    if (Thread.currentThread().isInterrupted()) {
-                        throw new InterruptedException();
-                    }
-                    if (timeout < TIMEOUT / 10) {
-                        timeout = Math.min(TIMEOUT / 10, 2 * timeout);
-                    }
-                }
-            } catch (MalformedURLException ex) {
-                LOGGER.log(Level.INFO, null, ex);
-            }
-        }
-    }
-
     private static WLTargetModuleID createModuleId(Target target, File file,
             String host, String port, boolean secured, String name, J2eeModule.Type type) {
 
