@@ -43,7 +43,6 @@ package org.netbeans.modules.web.common.api;
 
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.common.cssprep.CssPreprocessorAccessor;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementationListener;
@@ -83,8 +82,8 @@ public final class CssPreprocessor {
     }
 
     /**
-     * Return the <b>non-localized (usually english)</b> identifier of this CSS preprocessor.
-     * @return the <b>non-localized (usually english)</b> identifier; never {@code null}
+     * Return the <b>non-localized (usually English)</b> identifier of this CSS preprocessor.
+     * @return the <b>non-localized (usually English)</b> identifier; never {@code null}
      */
     @NonNull
     public String getIdentifier() {

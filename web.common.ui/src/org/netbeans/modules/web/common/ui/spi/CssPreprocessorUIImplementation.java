@@ -64,8 +64,8 @@ import org.openide.util.HelpCtx;
 public interface CssPreprocessorUIImplementation {
 
     /**
-     * Return the <b>non-localized (usually english)</b> identifier of this CSS preprocessor.
-     * @return the <b>non-localized (usually english)</b> identifier; never {@code null}
+     * Return the <b>non-localized (usually English)</b> identifier of this CSS preprocessor.
+     * @return the <b>non-localized (usually English)</b> identifier; never {@code null}
      */
     @NonNull
     String getIdentifier();

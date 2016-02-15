@@ -58,8 +58,8 @@ import org.openide.filesystems.FileObject;
 public interface CssPreprocessorImplementation {
 
     /**
-     * Return the <b>non-localized (usually english)</b> identifier of this CSS preprocessor.
-     * @return the <b>non-localized (usually english)</b> identifier; never {@code null}
+     * Return the <b>non-localized (usually English)</b> identifier of this CSS preprocessor.
+     * @return the <b>non-localized (usually English)</b> identifier; never {@code null}
      */
     @NonNull
     String getIdentifier();
@@ -91,7 +91,7 @@ public interface CssPreprocessorImplementation {
 
     /**
      * Attach a listener that is to be notified of changes
-     * in this CSS peprocessor.
+     * in this CSS preprocessor.
      * @param listener a listener, can be {@code null}
      * @since 1.44
      */
