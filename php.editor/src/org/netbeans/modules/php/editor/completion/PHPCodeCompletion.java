@@ -356,6 +356,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                 completionResult.add(new PHPCompletionItem.TagItem("<?=", 2, request)); //NOI18N
                 break;
             case NEW_CLASS:
+                autoCompleteKeywords(completionResult, request, Arrays.asList("class")); //NOI18N
                 autoCompleteNamespaces(completionResult, request);
                 autoCompleteNewClass(completionResult, request);
                 break;
@@ -575,14 +576,16 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         final NameKind query;
         if (classes.size() == 1) {
             ClassElement clazz = (ClassElement) classes.toArray()[0];
-            if (!clazz.isAbstract()) {
+            if (!clazz.isAbstract()
+                    && !CodeUtils.isSynteticTypeName(clazz.getName())) {
                 // if there is only once class find constructors for it
                 query = isCamelCase ? NameKind.create(prefix.toString(), QuerySupport.Kind.CAMEL_CASE) : NameKind.caseInsensitivePrefix(prefix);
                 autoCompleteConstructors(completionResult, request, model, query);
             }
         } else {
             for (ClassElement clazz : classes) {
-                if (!clazz.isAbstract()) {
+                if (!clazz.isAbstract()
+                        && !CodeUtils.isSynteticTypeName(clazz.getName())) {
                     // check whether the prefix is exactly the class
                     NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(request.result.getModel().getFileScope(), request.anchor);
                     String fqPrefixName = VariousUtils.qualifyTypeNames(request.prefix, request.anchor, namespaceScope);
@@ -664,7 +667,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             completionResult.setFilterable(false);
         }
         for (ClassElement clazz : classes) {
-            completionResult.add(new PHPCompletionItem.ClassItem(clazz, request, endWithDoubleColon, kind));
+            if (!CodeUtils.isSynteticTypeName(clazz.getName())) {
+                completionResult.add(new PHPCompletionItem.ClassItem(clazz, request, endWithDoubleColon, kind));
+            }
         }
     }
 
@@ -1139,7 +1144,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                     completionResult.add(functionItem);
                 }
             } else if (element instanceof ClassElement) {
-                completionResult.add(new PHPCompletionItem.ClassItem((ClassElement) element, request, true, null));
+                ClassElement classElement = (ClassElement) element;
+                if (!CodeUtils.isSynteticTypeName(classElement.getName())) {
+                    completionResult.add(new PHPCompletionItem.ClassItem(classElement, request, true, null));
+                }
             } else if (element instanceof InterfaceElement) {
                 completionResult.add(new PHPCompletionItem.InterfaceItem((InterfaceElement) element, request, true));
             } else if (offerGlobalVariables && element instanceof VariableElement) {

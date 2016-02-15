@@ -294,6 +294,14 @@ public class PHP70CodeCompletionTest extends PHPCodeCompletionTestBase {
         checkCompletion("testfiles/completion/lib/php70/groupUse03.php", "    B\\^ClsAB,", false);
     }
 
+    public void testAnonymousClass01a() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/anonymousClass01.php", "$^x->testAnon();", false);
+    }
+
+    public void testAnonymousClass01b() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/anonymousClass01.php", "$x->^testAnon();", false);
+    }
+
     // XXX add tests for CC after NS aliases!
 
 }

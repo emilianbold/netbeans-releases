@@ -78,6 +78,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.Cache;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.completion.CompletionContextFinder.CompletionContext;
 import org.netbeans.modules.php.editor.completion.CompletionContextFinder.KeywordCompletionType;
 import org.netbeans.modules.php.editor.actions.IconsUtils;
@@ -199,12 +200,17 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     @Override
     public String getLhsHtml(HtmlFormatter formatter) {
         formatter.name(getKind(), true);
+        String name = getName();
+        if (CodeUtils.isSynteticTypeName(name)) {
+            // anonymous class
+            name = "{}"; // NOI18N
+        }
         if (isDeprecated()) {
             formatter.deprecated(true);
-            formatter.appendText(getName());
+            formatter.appendText(name);
             formatter.deprecated(false);
         } else {
-            formatter.appendText(getName());
+            formatter.appendText(name);
         }
         formatter.name(getKind(), false);
         return formatter.getText();
@@ -357,9 +363,15 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         if (element instanceof TypeMemberElement) {
             TypeMemberElement classMember = (TypeMemberElement) element;
             TypeElement type = classMember.getType();
+            String name = type.getName();
+            if (CodeUtils.isSynteticTypeName(name)) {
+                // anonymous class
+                formatter.appendText("{}"); // NOI18N
+                return formatter.getText();
+            }
             QualifiedName qualifiedName = type.getNamespaceName();
             if (qualifiedName.isDefaultNamespace()) {
-                formatter.appendText(type.getName());
+                formatter.appendText(name);
                 return formatter.getText();
             } else {
                 formatter.appendText(type.getFullyQualifiedName().toString());
@@ -1625,7 +1637,12 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 if (typeResolver.isResolved()) {
                     QualifiedName qualifiedName = typeResolver.getTypeName(false);
                     if (qualifiedName != null) {
-                        typeName = qualifiedName.toString();
+                        if (CodeUtils.isSynteticTypeName(qualifiedName.getName())) {
+                            // anonymous class
+                            typeName = "{}"; // NOI18N
+                        } else {
+                            typeName = qualifiedName.toString();
+                        }
                     }
                 }
             }
