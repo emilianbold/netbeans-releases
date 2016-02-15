@@ -53,6 +53,7 @@ import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
+import org.netbeans.modules.javascript2.debug.ui.JSUtils;
 import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
@@ -116,7 +117,7 @@ public class BreakpointActionProvider extends ActionsProviderSupport
         boolean add = true;
         for ( Breakpoint breakpoint : breakpoints ) {
             if (breakpoint instanceof JSLineBreakpoint
-                    && ((JSLineBreakpoint) breakpoint).getLine().equals(line)  )
+                    && JSUtils.getLine((JSLineBreakpoint) breakpoint).equals(line)  )
             {
                 DebuggerManager.getDebuggerManager().removeBreakpoint(
                         breakpoint );
@@ -127,7 +128,7 @@ public class BreakpointActionProvider extends ActionsProviderSupport
         add = add && MiscEditorUtil.isInJavaScript(line);
         if ( add ) {
             DebuggerManager.getDebuggerManager().addBreakpoint(
-                    new JSLineBreakpoint(line));
+                    JSUtils.createLineBreakpoint(line));
         }
     }
 

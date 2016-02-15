@@ -55,7 +55,7 @@ import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
 import org.netbeans.modules.javascript.v8debug.vars.EvaluationError;
 import org.netbeans.modules.javascript.v8debug.vars.V8Evaluator;
 import org.netbeans.modules.javascript.v8debug.vars.Variable;
-import org.netbeans.modules.javascript2.debug.EditorContextSetter;
+import org.netbeans.modules.javascript2.debug.ui.EditorContextSetter;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ui.CodeEvaluator;
 import org.openide.filesystems.FileObject;

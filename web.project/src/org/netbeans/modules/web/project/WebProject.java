@@ -172,6 +172,7 @@ import org.netbeans.modules.javaee.project.api.problems.PlatformUpdatedCallBackI
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.modules.web.common.ui.api.CssPreprocessorsUI;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.web.project.classpath.DelagatingProjectClassPathModifierImpl;
@@ -665,7 +666,7 @@ public final class WebProject implements Project {
             new JavaEEProjectSettingsImpl(this),
             BrokenReferencesSupport.createReferenceProblemsProvider(helper, refHelper, eval, lvp.getBreakableProperties(), lvp.getPlatformProperties()),
             BrokenReferencesSupport.createPlatformVersionProblemProvider(helper, eval, PlatformUpdatedCallBackImpl.create(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, updateHelper), JavaPlatform.getDefault().getSpecification().getName(), ProjectProperties.PLATFORM_ACTIVE, ProjectProperties.JAVAC_SOURCE, ProjectProperties.JAVAC_TARGET),
-            CssPreprocessors.getDefault().createProjectProblemsProvider(this),
+            CssPreprocessorsUI.getDefault().createProjectProblemsProvider(this),
             UILookupMergerSupport.createProjectProblemsProviderMerger(),
         });
 

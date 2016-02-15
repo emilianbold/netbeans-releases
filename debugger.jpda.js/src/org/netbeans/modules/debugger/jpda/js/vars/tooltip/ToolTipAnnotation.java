@@ -53,7 +53,7 @@ import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.js.JSUtils;
 import org.netbeans.modules.debugger.jpda.js.vars.DebuggerSupport;
 import org.netbeans.modules.debugger.jpda.js.vars.JSVariable;
-import org.netbeans.modules.javascript2.debug.tooltip.AbstractJSToolTipAnnotation;
+import org.netbeans.modules.javascript2.debug.ui.tooltip.AbstractJSToolTipAnnotation;
 import org.openide.util.Pair;
 
 /**

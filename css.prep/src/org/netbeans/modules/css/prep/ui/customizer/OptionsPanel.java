@@ -79,6 +79,7 @@ import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.api.ValidationResult;
+import org.netbeans.modules.web.common.ui.api.CssPreprocessorsUI;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -482,7 +483,7 @@ public class OptionsPanel extends JPanel {
     }//GEN-LAST:event_removeButtonActionPerformed
 
     private void configureExecutablesButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_configureExecutablesButtonActionPerformed
-        OptionsDisplayer.getDefault().open(CssPreprocessors.OPTIONS_PATH);
+        OptionsDisplayer.getDefault().open(CssPreprocessorsUI.OPTIONS_PATH);
     }//GEN-LAST:event_configureExecutablesButtonActionPerformed
 
     private void recompileButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_recompileButtonActionPerformed

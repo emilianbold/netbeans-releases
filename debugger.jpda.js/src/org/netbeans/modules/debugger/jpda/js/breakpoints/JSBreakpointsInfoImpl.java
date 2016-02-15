@@ -51,7 +51,7 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.js.source.Source;
-import org.netbeans.modules.javascript2.debug.JSUtils;
+import org.netbeans.modules.javascript2.debug.ui.JSUtils;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointsInfo;
 import org.netbeans.modules.javascript2.debug.sources.SourceFilesCache;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;

@@ -48,7 +48,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.modules.javascript2.debug.tooltip.DebuggerTooltipSupport;
+import org.netbeans.modules.javascript2.debug.ui.tooltip.DebuggerTooltipSupport;
 
 /**
  *

@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.web.common.api;
 
-import java.awt.Color;
 import java.net.URL;
 import java.util.*;
 import javax.swing.text.DefaultEditorKit;
@@ -69,11 +68,6 @@ public class WebUtilsTest extends CslTestBase {
 
     public WebUtilsTest(String testName) {
         super(testName);
-    }
-
-    public void toHexColorCode() {
-        assertEquals("#ff0000", WebUtils.toHexCode(Color.RED));
-        assertEquals("#2201aa", WebUtils.toHexCode(Color.decode("#2201aa")));
     }
 
     public void testResolve() {

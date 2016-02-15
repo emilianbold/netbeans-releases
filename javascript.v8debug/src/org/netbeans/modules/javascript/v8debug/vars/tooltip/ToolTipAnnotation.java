@@ -54,7 +54,7 @@ import org.netbeans.modules.javascript.v8debug.vars.EvaluationError;
 import org.netbeans.modules.javascript.v8debug.vars.V8Evaluator;
 import org.netbeans.modules.javascript.v8debug.vars.Variable;
 import org.netbeans.modules.javascript.v8debug.vars.models.VariablesModel;
-import org.netbeans.modules.javascript2.debug.tooltip.AbstractJSToolTipAnnotation;
+import org.netbeans.modules.javascript2.debug.ui.tooltip.AbstractJSToolTipAnnotation;
 import org.openide.util.Pair;
 
 /**

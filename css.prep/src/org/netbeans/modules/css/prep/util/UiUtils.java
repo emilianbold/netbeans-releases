@@ -48,7 +48,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.css.live.LiveUpdater;
-import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.modules.web.common.ui.api.CssPreprocessorsUI;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
@@ -74,7 +74,7 @@ public final class UiUtils {
      * Display Options dialog with Miscellaneous &lt; CSS Preprocessors panel preselected.
      */
     public static void showOptions() {
-        OptionsDisplayer.getDefault().open(CssPreprocessors.OPTIONS_PATH);
+        OptionsDisplayer.getDefault().open(CssPreprocessorsUI.OPTIONS_PATH);
     }
 
     /**

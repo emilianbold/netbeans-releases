@@ -54,10 +54,10 @@ import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.modules.css.prep.options.CssPrepOptions;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.UiUtils;
-import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.api.ExternalExecutable;
 import org.netbeans.modules.web.common.api.ExternalExecutableValidator;
 import org.netbeans.modules.web.common.api.Version;
+import org.netbeans.modules.web.common.ui.api.CssPreprocessorsUI;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
@@ -164,7 +164,7 @@ public abstract class SassCli {
         return new ExternalExecutable(sassPath)
                 .workDir(workDir)
                 .displayName(title)
-                .optionsPath(CssPreprocessors.OPTIONS_PATH);
+                .optionsPath(CssPreprocessorsUI.OPTIONS_PATH);
     }
 
     private ExecutionDescriptor getDescriptor(Runnable postTask) {

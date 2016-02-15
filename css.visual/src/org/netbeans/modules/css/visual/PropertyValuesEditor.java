@@ -77,7 +77,6 @@ import org.netbeans.modules.css.lib.api.properties.FixedTextGrammarElement;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
-import org.netbeans.modules.css.lib.api.properties.ResolvedToken;
 import org.netbeans.modules.css.lib.api.properties.Token;
 import org.netbeans.modules.css.lib.api.properties.TokenAcceptor;
 import org.netbeans.modules.css.lib.api.properties.UnitGrammarElement;
@@ -85,7 +84,7 @@ import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.PropertyDeclaration;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.css.visual.actions.GoToSourceAction;
-import org.netbeans.modules.web.common.api.WebUtils;
+import org.netbeans.modules.web.common.ui.api.WebUIUtils;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.filesystems.FileObject;
@@ -275,7 +274,7 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
 
             Color color = color_ref.get();
             if (color != null) {
-                str = WebUtils.toHexCode(color);
+                str = WebUIUtils.toHexCode(color);
             } else {
                 //dialog cancelled, no value - do not allow the CHOOSE_COLOR_ITEM marker to be set the to property
                 return;
@@ -438,13 +437,13 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
 
                 if (strval.startsWith("#")) { //NOI18N
                     String colorCode = strval.substring(1);
-                    icon = WebUtils.createColorIcon(colorCode); //null CssColor will create default icon
+                    icon = WebUIUtils.createColorIcon(colorCode); //null CssColor will create default icon
                 }
 
                 if (strval.equals(CHOOSE_COLOR_ITEM)) {
                     Color chooserColor = getJColorChooser().getColor();
-                    String hexCode = chooserColor != null ? WebUtils.toHexCode(chooserColor) : null;
-                    icon = WebUtils.createColorIcon(hexCode);
+                    String hexCode = chooserColor != null ? WebUIUtils.toHexCode(chooserColor) : null;
+                    icon = WebUIUtils.createColorIcon(hexCode);
                 }
 
                 FixedTextGrammarElement element = tags2fixedElement.get(strval);
@@ -453,7 +452,7 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
                         if ("@colors-list".equals(element.origin())) { //NOI18N
                             //try to find color code
                             CssColor color = CssColor.getColor(strval);
-                            icon = WebUtils.createColorIcon(color == null ? null : color.colorCode()); //null CssColor will create default icon
+                            icon = WebUIUtils.createColorIcon(color == null ? null : color.colorCode()); //null CssColor will create default icon
                         }
                     }
                 }

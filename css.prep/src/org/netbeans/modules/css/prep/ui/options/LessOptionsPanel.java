@@ -66,7 +66,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.css.prep.less.LessExecutable;
 import org.netbeans.modules.css.prep.util.FileUtils;
-import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.modules.web.common.ui.api.CssPreprocessorsUI;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
@@ -76,7 +76,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 @OptionsPanelController.Keywords(keywords={"css", "preprocessors", "less", "#CssPrepOptionsPanel.keywords.preprocessing"},
-        location=CssPreprocessors.OPTIONS_CATEGORY, tabTitle="#CssPrepOptionsPanel.name")
+        location=CssPreprocessorsUI.OPTIONS_CATEGORY, tabTitle="#CssPrepOptionsPanel.name")
 public final class LessOptionsPanel extends JPanel {
 
     private static final long serialVersionUID = 268356546654654L;

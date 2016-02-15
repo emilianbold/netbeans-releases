@@ -73,7 +73,7 @@ import org.netbeans.modules.javascript.v8debug.vars.V8Evaluator;
 import org.netbeans.modules.javascript.v8debug.vars.VarValuesLoader;
 import org.netbeans.modules.javascript.v8debug.vars.Variable;
 import org.netbeans.modules.javascript2.debug.NamesTranslator;
-import org.netbeans.modules.javascript2.debug.models.ViewModelSupport;
+import org.netbeans.modules.javascript2.debug.ui.models.ViewModelSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.ui.Constants;
@@ -102,7 +102,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
     //@StaticResource(searchClasspath = true)
     private static final String ICON_LOCAL = "org/netbeans/modules/debugger/resources/localsView/local_variable_16.png"; // NOI18N
     @StaticResource(searchClasspath = true)
-    private static final String ICON_SCOPE = "org/netbeans/modules/javascript2/debug/resources/global_variable_16.png"; // NOI18N
+    private static final String ICON_SCOPE = "org/netbeans/modules/javascript2/debug/ui/resources/global_variable_16.png"; // NOI18N
     
     protected final V8Debugger dbg;
     private final VarValuesLoader vvl;

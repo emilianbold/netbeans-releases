@@ -57,7 +57,7 @@ import org.netbeans.modules.javascript.v8debug.V8Debugger;
 import org.netbeans.modules.javascript.v8debug.V8DebuggerSessionProvider;
 import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
 import org.netbeans.modules.javascript.v8debug.frames.CallStack;
-import org.netbeans.modules.javascript2.debug.models.ViewModelSupport;
+import org.netbeans.modules.javascript2.debug.ui.models.ViewModelSupport;
 import org.netbeans.modules.web.common.sourcemap.SourceMapsTranslator;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;

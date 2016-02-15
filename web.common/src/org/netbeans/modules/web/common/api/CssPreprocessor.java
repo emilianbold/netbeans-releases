@@ -47,8 +47,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.common.cssprep.CssPreprocessorAccessor;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementationListener;
-import org.netbeans.spi.project.ui.ProjectProblemsProvider;
-import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
 import org.openide.util.Parameters;
 
 /**
@@ -65,19 +63,6 @@ public final class CssPreprocessor {
             public CssPreprocessor create(CssPreprocessorImplementation cssPreprocessorImplementation) {
                 return new CssPreprocessor(cssPreprocessorImplementation);
             }
-            @Override
-            public CssPreprocessorImplementation.Customizer createCustomizer(CssPreprocessor cssPreprocessor, Project project) {
-                return cssPreprocessor.createCustomizer(project);
-            }
-
-            @Override
-            public CssPreprocessorImplementation.Options createOptions(CssPreprocessor cssPreprocessor) {
-                return cssPreprocessor.createOptions();
-            }
-            @Override
-            public ProjectProblemsProvider createProjectProblemsProvider(CssPreprocessor cssPreprocessor, Project project) {
-                return cssPreprocessor.createProjectProblemsProvider(project);
-            }
         });
     }
 
@@ -87,19 +72,6 @@ public final class CssPreprocessor {
 
     CssPreprocessorImplementation getDelegate() {
         return delegate;
-    }
-
-    CssPreprocessorImplementation.Customizer createCustomizer(@NonNull Project project) {
-        return delegate.createCustomizer(project);
-    }
-
-    CssPreprocessorImplementation.Options createOptions() {
-        return delegate.createOptions();
-    }
-
-    ProjectProblemsProvider createProjectProblemsProvider(@NonNull Project project) {
-        Parameters.notNull("project", project); // NOI18N
-        return delegate.createProjectProblemsProvider(project);
     }
 
     void addCssPreprocessorListener(@NullAllowed CssPreprocessorImplementationListener listener) {

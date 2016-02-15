@@ -43,7 +43,7 @@ package org.netbeans.modules.css.prep.problems;
 
 import java.util.concurrent.Future;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.modules.web.common.ui.api.CssPreprocessorsUI;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
@@ -62,7 +62,7 @@ public class CustomizerProblemResolver implements ProjectProblemResolver {
     public Future<ProjectProblemsProvider.Result> resolve() {
         CustomizerProvider2 customizerProvider = project.getLookup().lookup(CustomizerProvider2.class);
         assert customizerProvider != null : "CustomizerProvider2 must be found in lookup of " + project.getClass().getName();
-        customizerProvider.showCustomizer(CssPreprocessors.CUSTOMIZER_IDENT, null);
+        customizerProvider.showCustomizer(CssPreprocessorsUI.CUSTOMIZER_IDENT, null);
         return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.UNRESOLVED));
     }
 

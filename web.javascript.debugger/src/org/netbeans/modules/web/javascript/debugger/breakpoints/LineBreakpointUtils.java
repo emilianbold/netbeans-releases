@@ -78,7 +78,7 @@ class LineBreakpointUtils {
     }
     
     private static String getURLStringImpl(JSLineBreakpoint lb, Project p, URL urlConnectionBeingDebugged, boolean applyInternalServerMapping) {
-        FileObject fo = lb.getLine().getLookup().lookup(FileObject.class);
+        FileObject fo = lb.getFileObject();
         return getURLStringImpl(fo, p, urlConnectionBeingDebugged, applyInternalServerMapping);
     }
     

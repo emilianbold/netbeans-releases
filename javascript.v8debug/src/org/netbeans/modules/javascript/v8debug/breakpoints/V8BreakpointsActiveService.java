@@ -50,7 +50,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.javascript.v8debug.V8Debugger;
-import org.netbeans.modules.javascript2.debug.JSUtils;
+import org.netbeans.modules.javascript2.debug.ui.JSUtils;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointsInfo;
 import org.netbeans.modules.javascript2.debug.sources.SourceFilesCache;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;

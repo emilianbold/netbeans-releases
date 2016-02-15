@@ -54,7 +54,8 @@ import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.debugger.jpda.js.source.Source;
-import org.netbeans.modules.javascript2.debug.breakpoints.FutureLine;
+import org.netbeans.modules.javascript2.debug.EditorLineHandler;
+import org.netbeans.modules.javascript2.debug.EditorLineHandlerFactory;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.netbeans.modules.javascript2.debug.breakpoints.io.BreakpointsFromGroup;
 import org.netbeans.modules.javascript2.debug.breakpoints.io.BreakpointsFromGroup.TestGroupProperties;
@@ -103,27 +104,17 @@ public class JSBreakpointReader implements Properties.Reader {
                 FileObject fo = URLMapper.findFileObject(url);
                 if (fo == null) {
                     if (SourceFilesCache.URL_PROTOCOL.equals(url.getProtocol())) {
-                        Line line = new FutureLine(url, lineNumber - 1);
-                        return new JSLineBreakpoint(line);
+                        EditorLineHandler lineHandler = EditorLineHandlerFactory.getHandler(url, lineNumber);
+                        return new JSLineBreakpoint(lineHandler);
                     } else {
                         return null;
                     }
-                }
-                try {
-                    DataObject dobj = DataObject.find(fo);
-                    LineCookie lineCookie = dobj.getLookup().lookup(LineCookie.class);
-                    if (lineCookie == null) {
+                } else {
+                    EditorLineHandler lineHandler = EditorLineHandlerFactory.getHandler(fo, lineNumber);
+                    if (lineHandler == null) {
                         return null;
                     }
-                    try {
-                        Line line = lineCookie.getLineSet().getCurrent(lineNumber - 1);
-                        b = new JSLineBreakpoint(line);
-                    } catch (IndexOutOfBoundsException ioobex) {
-                        // The line is gone.
-                        return null;
-                    }
-                } catch (DataObjectNotFoundException ex) {
-                    return null;
+                    b = new JSLineBreakpoint(lineHandler);
                 }
             } catch (MalformedURLException ex) {
                 LOG.log(Level.CONFIG, "urlStr = "+urlStr, ex);

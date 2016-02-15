@@ -78,7 +78,7 @@ import org.openide.util.datatransfer.PasteType;
 public class VariablesJSNodeModel implements ExtendedNodeModelFilter {
     
     @StaticResource(searchClasspath = true)
-    private static final String GLOBAL = "org/netbeans/modules/javascript2/debug/resources/global_variable_16.png"; // NOI18N
+    private static final String GLOBAL = "org/netbeans/modules/javascript2/debug/ui/resources/global_variable_16.png"; // NOI18N
 
     @Override
     public boolean canRename(ExtendedNodeModel original, Object node) throws UnknownTypeException {

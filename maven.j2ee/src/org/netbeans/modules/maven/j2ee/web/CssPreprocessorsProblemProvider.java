@@ -45,7 +45,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.modules.web.common.ui.api.CssPreprocessorsUI;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 
@@ -56,7 +56,7 @@ public class CssPreprocessorsProblemProvider implements ProjectProblemsProvider 
 
 
     public CssPreprocessorsProblemProvider(Project project) {
-        problemsProvider = CssPreprocessors.getDefault().createProjectProblemsProvider(project);
+        problemsProvider = CssPreprocessorsUI.getDefault().createProjectProblemsProvider(project);
     }
 
     @Override

@@ -56,12 +56,12 @@ import org.netbeans.modules.css.prep.util.BaseCssPreprocessor;
 import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
 import org.netbeans.modules.css.prep.util.Warnings;
 import org.netbeans.modules.web.common.api.ValidationResult;
-import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
+import org.netbeans.modules.web.common.ui.spi.CssPreprocessorUIImplementation;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.Pair;
 
-public final class CustomizerImpl implements CssPreprocessorImplementation.Customizer, PropertyChangeListener {
+public final class CustomizerImpl implements CssPreprocessorUIImplementation.Customizer, PropertyChangeListener {
 
     private final BaseCssPreprocessor cssPreprocessor;
     private final Project project;

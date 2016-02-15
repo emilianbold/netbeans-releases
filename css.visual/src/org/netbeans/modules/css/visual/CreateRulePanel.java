@@ -114,6 +114,7 @@ import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
+import org.netbeans.modules.web.common.ui.api.WebUIUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
@@ -538,7 +539,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
             compoundDefaultValue.append(e.id());
 
             elementPathLabelText.append("<font color=\"");
-            elementPathLabelText.append(WebUtils.toHexCode(tagColor));
+            elementPathLabelText.append(WebUIUtils.toHexCode(tagColor));
             elementPathLabelText.append("\">");
             elementPathLabelText.append("&lt;");
             elementPathLabelText.append(e.id());

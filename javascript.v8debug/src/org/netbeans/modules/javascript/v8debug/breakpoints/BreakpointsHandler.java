@@ -66,9 +66,10 @@ import org.netbeans.lib.v8debug.events.BreakEventBody;
 import org.netbeans.modules.javascript.v8debug.ScriptsHandler;
 import org.netbeans.modules.javascript.v8debug.V8Debugger;
 import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
-import org.netbeans.modules.javascript2.debug.breakpoints.FutureLine;
+import org.netbeans.modules.javascript2.debug.EditorLineHandler;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointStatus;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
+import org.netbeans.modules.javascript2.debug.ui.TextLineHandler;
 import org.netbeans.modules.web.common.sourcemap.SourceMapsTranslator;
 import org.netbeans.modules.web.common.sourcemap.SourceMapsTranslator.Location;
 import org.openide.filesystems.FileObject;
@@ -171,13 +172,10 @@ public class BreakpointsHandler implements V8Debugger.Listener {
                 }
             }
             serverPath = scriptsHandler.getServerPath(fo);
-        } else {
-            Line line = b.getLine();
-            if (line instanceof FutureLine) {
-                URL url = ((FutureLine) line).getURL();
-                if (scriptsHandler.containsRemoteFile(url)) {
-                    serverPath = scriptsHandler.getServerPath(url);
-                }
+        } else {    // Future BP
+            URL url = b.getURL();
+            if (scriptsHandler.containsRemoteFile(url)) {
+                serverPath = scriptsHandler.getServerPath(url);
             }
         }
         if (serverPath == null) {

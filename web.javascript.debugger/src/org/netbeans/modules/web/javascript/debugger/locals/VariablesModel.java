@@ -62,7 +62,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.javascript2.debug.NamesTranslator;
-import org.netbeans.modules.javascript2.debug.models.ViewModelSupport;
+import org.netbeans.modules.javascript2.debug.ui.models.ViewModelSupport;
 import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
 import org.netbeans.modules.web.javascript.debugger.eval.EvaluatorService;
 import org.netbeans.modules.web.javascript.debugger.eval.VarNamesTranslatorFactory;
@@ -96,9 +96,9 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
     //@StaticResource(searchClasspath = true)
     public static final String LOCAL = "org/netbeans/modules/debugger/resources/localsView/local_variable_16.png"; // NOI18N
     @StaticResource(searchClasspath = true)
-    public static final String GLOBAL = "org/netbeans/modules/javascript2/debug/resources/global_variable_16.png"; // NOI18N
+    public static final String GLOBAL = "org/netbeans/modules/javascript2/debug/ui/resources/global_variable_16.png"; // NOI18N
     @StaticResource(searchClasspath = true)
-    public static final String PROTO = "org/netbeans/modules/javascript2/debug/resources/proto_variable_16.png"; // NOI18N
+    public static final String PROTO = "org/netbeans/modules/javascript2/debug/ui/resources/proto_variable_16.png"; // NOI18N
     
     protected final Debugger debugger;
     protected final EvaluatorService evaluator;

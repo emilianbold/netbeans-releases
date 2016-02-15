@@ -68,7 +68,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.css.prep.sass.SassCli;
 import org.netbeans.modules.css.prep.util.FileUtils;
-import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.modules.web.common.ui.api.CssPreprocessorsUI;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
@@ -78,7 +78,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 @OptionsPanelController.Keywords(keywords={"css", "preprocessors", "sass", "#CssPrepOptionsPanel.keywords.preprocessing"},
-        location=CssPreprocessors.OPTIONS_CATEGORY, tabTitle="#CssPrepOptionsPanel.name")
+        location=CssPreprocessorsUI.OPTIONS_CATEGORY, tabTitle="#CssPrepOptionsPanel.name")
 public final class SassOptionsPanel extends JPanel {
 
     private static final Logger LOGGER = Logger.getLogger(SassOptionsPanel.class.getName());

@@ -74,7 +74,6 @@ import org.netbeans.modules.web.webkit.debugging.api.dom.NodeAnnotator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.text.Line;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -327,7 +326,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                 url = reformatFileURL(url);
                 org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint br = null;
                 try {
-                    return d.addLineBreakpoint(url, lb.getLine().getLineNumber(), null, lb.getCondition());
+                    return d.addLineBreakpoint(url, lb.getLineNumber() - 1, null, lb.getCondition());
                 } catch (BreakpointException bex) {
                     JSBreakpointStatus.setInvalid(lb, bex.getLocalizedMessage());
                 }
@@ -374,7 +373,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
         @Override
         public void propertyChange(PropertyChangeEvent event) {
             String propertyName = event.getPropertyName();
-            if (JSLineBreakpoint.PROP_LINE.equals(propertyName)) {
+            if (JSLineBreakpoint.PROP_LINE_NUMBER.equals(propertyName)) {
                 Boolean ignore = ignoreLineUpdate.get();
                 if (ignore != null && ignore.booleanValue()) {
                     return ;
@@ -382,7 +381,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                 resubmit();
             } else if (JSLineBreakpoint.PROP_CONDITION.equals(propertyName)) {
                 resubmit();
-            } else if (JSLineBreakpoint.PROP_LINE_NUMBER.equals(propertyName) ||
+            } else if (//JSLineBreakpoint.PROP_LINE_NUMBER.equals(propertyName) ||
                        JSLineBreakpoint.PROP_FILE.equals(propertyName)) {
                 lineChanged.set(true);
             } else if (org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint.PROP_LOCATION.equals(propertyName)) {
@@ -451,7 +450,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
      * @param lineNumber
      */
     private static List<Breakpoint> checkDuplicateBreakpoints(JSLineBreakpoint lb, long lineNumber) {
-        FileObject fo = lb.getLine().getLookup().lookup(FileObject.class);
+        FileObject fo = lb.getFileObject();
         if (fo == null) {
             return null;
         }
@@ -462,14 +461,10 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                     continue;
                 }
                 JSLineBreakpoint tlb = (JSLineBreakpoint) b;
-                Line tl = tlb.getLine();
-                if (tl == null) {
+                if (tlb.getLineNumber() != lineNumber) {
                     continue;
                 }
-                if (tl.getLineNumber() != lineNumber) {
-                    continue;
-                }
-                FileObject tfo = tl.getLookup().lookup(FileObject.class);
+                FileObject tfo = tlb.getFileObject();
                 if (!fo.equals(tfo)) {
                     continue;
                 }

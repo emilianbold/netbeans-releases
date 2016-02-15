@@ -55,9 +55,9 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.netbeans.modules.css.prep.preferences.CssPreprocessorPreferences;
-import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.api.ValidationResult;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
+import org.netbeans.modules.web.common.ui.api.CssPreprocessorsUI;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.DialogDisplayer;
@@ -111,7 +111,7 @@ public final class CssPreprocessorUtils {
         if (customizerProvider == null) {
             LOGGER.log(Level.WARNING, "CustomizerProvider2 not found in lookup of project {0}", project.getClass().getName());
         } else {
-            customizerProvider.showCustomizer(CssPreprocessors.CUSTOMIZER_IDENT, null);
+            customizerProvider.showCustomizer(CssPreprocessorsUI.CUSTOMIZER_IDENT, null);
         }
     }
 

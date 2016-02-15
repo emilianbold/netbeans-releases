@@ -42,17 +42,10 @@
 package org.netbeans.modules.css.prep.less;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.CssPreprocessorType;
-import org.netbeans.modules.css.prep.problems.LessProjectProblemsProvider;
 import org.netbeans.modules.css.prep.process.LessProcessor;
-import org.netbeans.modules.css.prep.ui.customizer.CustomizerImpl;
-import org.netbeans.modules.css.prep.ui.options.LessOptions;
 import org.netbeans.modules.css.prep.util.BaseCssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
-import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation.Customizer;
-import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation.Options;
-import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -77,21 +70,6 @@ public final class LessCssPreprocessor extends BaseCssPreprocessor {
     @Override
     public void process(Project project, FileObject fileObject, String originalName, String originalExtension) {
         new LessProcessor(this).process(project, fileObject, originalName, originalExtension);
-    }
-
-    @Override
-    public Customizer createCustomizer(Project project) {
-        return new CustomizerImpl(this, project, CssPreprocessorType.LESS);
-    }
-
-    @Override
-    public ProjectProblemsProvider createProjectProblemsProvider(Project project) {
-        return new LessProjectProblemsProvider(project);
-    }
-
-    @Override
-    public Options createOptions() {
-        return new LessOptions(this);
     }
 
 }

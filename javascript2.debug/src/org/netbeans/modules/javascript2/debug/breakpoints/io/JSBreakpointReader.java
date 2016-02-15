@@ -53,17 +53,14 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.javascript2.debug.breakpoints.FutureLine;
+import org.netbeans.modules.javascript2.debug.EditorLineHandler;
+import org.netbeans.modules.javascript2.debug.EditorLineHandlerFactory;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointsInfoManager;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.netbeans.modules.javascript2.debug.breakpoints.io.BreakpointsFromGroup.TestGroupProperties;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
-import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.Line;
 
 /**
  *
@@ -99,27 +96,18 @@ public class JSBreakpointReader implements Properties.Reader {
                 FileObject fo = URLMapper.findFileObject(url);
                 if (fo == null) {
                     if (JSBreakpointsInfoManager.getDefault().isTransientURL(url)) {
-                        Line line = new FutureLine(url, lineNumber - 1);
-                        return new JSLineBreakpoint(line);
+                        EditorLineHandler line = EditorLineHandlerFactory.getHandler(url, lineNumber);
+                        b = new JSLineBreakpoint(line);
                     } else {
                         return null;
                     }
-                }
-                try {
-                    DataObject dobj = DataObject.find(fo);
-                    LineCookie lineCookie = dobj.getLookup().lookup(LineCookie.class);
-                    if (lineCookie == null) {
-                        return null;
-                    }
-                    try {
-                        Line line = lineCookie.getLineSet().getCurrent(lineNumber - 1);
+                } else {
+                    EditorLineHandler line = EditorLineHandlerFactory.getHandler(fo, lineNumber);
+                    if (line != null) {
                         b = new JSLineBreakpoint(line);
-                    } catch (IndexOutOfBoundsException ioobex) {
-                        // The line is gone.
+                    } else {
                         return null;
                     }
-                } catch (DataObjectNotFoundException ex) {
-                    return null;
                 }
             } catch (MalformedURLException ex) {
                 LOG.log(Level.CONFIG, "urlStr = "+urlStr, ex);
