@@ -267,8 +267,11 @@ public class PHPDocCommentParser {
     }
 
     private List<PHPDocTypeNode> findTypes(String description, int startDescription, String originalComment, int originalCommentStart, boolean isReturnTag) {
-        List<PHPDocTypeNode> result = new ArrayList<>();
+        if (StringUtils.isEmpty(description)) {
+            return Collections.emptyList();
+        }
 
+        List<PHPDocTypeNode> result = new ArrayList<>();
         for (String stype : getTypes(description, isReturnTag)) {
             stype = removeHTMLTags(stype);
             int startDocNode = findStartOfDocNode(originalComment, originalCommentStart, stype, startDescription);

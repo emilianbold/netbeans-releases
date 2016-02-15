@@ -47,6 +47,7 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.PHPDocCommentParser;
@@ -272,12 +273,19 @@ public class PHPTokenList implements TokenList {
         List<PHPDocTypeNode> types = docTypeTag.getTypes();
         PHPDocTypeNode lastType = null;
         for (PHPDocTypeNode type : types) {
+            String value = type.getValue();
+            if (StringUtils.isEmpty(value)) {
+                continue;
+            }
             if (lastType == null || lastType.getEndOffset() < type.getEndOffset()) {
                 lastType = type;
             }
         }
         if (lastType != null) {
-            currentOffsetInComment = lastType.getEndOffset();
+            int endOffset = lastType.getEndOffset();
+            if (currentOffsetInComment < endOffset) {
+                currentOffsetInComment = endOffset;
+            }
         }
 
         if (docTypeTag instanceof PHPDocMethodTag) {
@@ -291,7 +299,10 @@ public class PHPTokenList implements TokenList {
                 }
             }
             if (lastParam != null) {
-                currentOffsetInComment = lastParam.getEndOffset();
+                int endOffset = lastParam.getEndOffset();
+                if (currentOffsetInComment < endOffset) {
+                    currentOffsetInComment = endOffset;
+                }
             } else {
                 // ignore method name
                 PHPDocNode methodName = methodTag.getMethodName();
@@ -301,7 +312,7 @@ public class PHPTokenList implements TokenList {
                             currentOffsetInComment,
                             LetterType.MethodName
                     );
-                    if (data.first().equals(methodName.getValue())) {
+                    if (data != null && data.first().equals(methodName.getValue())) {
                         currentOffsetInComment = getCurrentOffsetInComment(data);
                     }
                 }

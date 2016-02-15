@@ -342,6 +342,12 @@ public class PHPDocCommentParserTest extends PHPTestBase {
         perform(comment, "Issue197946");
     }
 
+    public void testIssue257953() throws Exception {
+        // types should be an empty list
+        String comment = " * @param";
+        perform(comment, "testIssue257953");
+    }
+
     public void perform(String comment, String filename) throws Exception {
         PHPDocCommentParser parser = new PHPDocCommentParser();
         PHPDocBlock block = parser.parse(0, comment.length(), comment);

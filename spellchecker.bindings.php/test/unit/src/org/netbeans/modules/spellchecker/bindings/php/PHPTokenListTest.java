@@ -64,6 +64,11 @@ public class PHPTokenListTest extends NbTestCase {
         super(name);
     }
 
+    @Override
+    protected int timeOut() {
+        return 10000;
+    }
+
     public void testSimpleWordBroker() throws Exception {
         tokenListTest(
                 "  /**\n"
@@ -128,6 +133,14 @@ public class PHPTokenListTest extends NbTestCase {
                 + " * @return $this|int returndesc\n"
                 + " */",
                 "paramdesc", "propertydesc", "propertyrdesc", "propertywdesc", "vardesc", "returndesc"
+        );
+    }
+
+    public void testIssue257953() throws Exception {
+        tokenListTest(
+                "  /**\n"
+                + " * @param\n"
+                + " */"
         );
     }
 
