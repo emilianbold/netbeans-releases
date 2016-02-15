@@ -184,6 +184,17 @@ public class PHPTokenListTest extends NbTestCase {
         );
     }
 
+    public void testIssue257977() throws Exception {
+        tokenListTest(
+                "  /**\n"
+                + " * @since   2016-02-12\n"
+                + " *\n"
+                + " * Test\n"
+                + " */",
+                "Test"
+        );
+    }
+
     public void testPositions() throws Exception {
         Document doc = new PlainDocument();
         doc.putProperty(Language.class, PHPTokenId.language());
