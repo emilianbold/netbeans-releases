@@ -801,7 +801,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             Collection<PhpElement> allTopLevel = request.index.getTopLevelElements(NameKind.empty(), aliasedNames, Trait.ALIAS);
             for (PhpElement element : allTopLevel) {
                 if (element instanceof ClassElement) {
-                    completionResult.add(new PHPCompletionItem.ClassItem((ClassElement) element, request, endWithDoubleColon, kind));
+                    ClassElement classElement = (ClassElement) element;
+                    if (!CodeUtils.isSynteticTypeName(classElement.getName())) {
+                        completionResult.add(new PHPCompletionItem.ClassItem(classElement, request, endWithDoubleColon, kind));
+                    }
                 } else if (element instanceof InterfaceElement) {
                     completionResult.add(new PHPCompletionItem.InterfaceItem((InterfaceElement) element, request, kind, endWithDoubleColon));
                 }
