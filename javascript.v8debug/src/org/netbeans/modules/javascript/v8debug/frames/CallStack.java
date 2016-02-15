@@ -51,6 +51,7 @@ import org.netbeans.lib.v8debug.vars.ReferencedValue;
 import org.netbeans.lib.v8debug.vars.V8ScriptValue;
 import org.netbeans.lib.v8debug.vars.V8Value;
 import org.netbeans.modules.javascript.v8debug.ReferencedValues;
+import org.netbeans.modules.javascript.v8debug.V8Debugger;
 
 /**
  *
@@ -58,14 +59,16 @@ import org.netbeans.modules.javascript.v8debug.ReferencedValues;
  */
 public final class CallStack {
     
-    public static final CallStack EMPTY = new CallStack(new V8Frame[] {}, new ReferencedValue[] {});
+    public static final CallStack EMPTY = new CallStack(null, new V8Frame[] {}, new ReferencedValue[] {});
     
+    private final V8Debugger dbg;
     private final V8Frame[] frames;
     private final ReferencedValues rvals;
     private CallFrame[] callFrames;
     private CallFrame topFrame;
     
-    public CallStack(V8Frame[] frames, ReferencedValue[] referencedValues) {
+    public CallStack(V8Debugger dbg, V8Frame[] frames, ReferencedValue[] referencedValues) {
+        this.dbg = dbg;
         this.frames = frames;
         this.rvals = new ReferencedValues(referencedValues);
     }
@@ -84,12 +87,12 @@ public final class CallStack {
                 CallFrame[] cfs = new CallFrame[frames.length];
                 if (frames.length > 0) {
                     if (topFrame == null) {
-                        topFrame = new CallFrame(frames[0], rvals, true);
+                        topFrame = new CallFrame(dbg, frames[0], rvals, true);
                     }
                     cfs[0] = topFrame;
                 }
                 for (int i = 1; i < frames.length; i++) {
-                    cfs[i] = new CallFrame(frames[i], rvals, false);
+                    cfs[i] = new CallFrame(dbg, frames[i], rvals, false);
                 }
                 callFrames = cfs;
             }
@@ -109,7 +112,7 @@ public final class CallStack {
         if (frames.length > 0) {
             synchronized (this) {
                 if (topFrame == null) {
-                    topFrame = new CallFrame(frames[0], rvals, true);
+                    topFrame = new CallFrame(dbg, frames[0], rvals, true);
                 }
                 return topFrame;
             }

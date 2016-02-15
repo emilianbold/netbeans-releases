@@ -85,7 +85,7 @@ public class RemoveHostAction extends SingleHostAction {
         if (JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(),
                 message, title, JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
             ToolsCacheManager cacheManager = ToolsCacheManager.createInstance(true);
-            List<ServerRecord> hosts = new ArrayList<>(ServerList.getRecords());
+            List<ServerRecord> hosts = new ArrayList<ServerRecord>(ServerList.getRecords());
             hosts.remove(record);
             ConnectionManager.getInstance().forget(env);
             cacheManager.setHosts(hosts);

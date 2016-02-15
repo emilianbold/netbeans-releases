@@ -53,6 +53,8 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmEnum;
+import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -140,7 +142,7 @@ public class CallModelImpl implements CallModel {
             }
         } else if (newRoot instanceof VariableImpl) {
             VariableImpl impl = (VariableImpl)newRoot;
-            CsmVariable v = impl.getVariable();
+            CsmOffsetableDeclaration v = impl.getVariable();
             if (v != null) {
                 uin = new DeclarationUIN(project, v);
                 name = v.getName().toString();
@@ -368,6 +370,8 @@ public class CallModelImpl implements CallModel {
             return new FunctionImpl((CsmFunction) entity);
         } else if (CsmKindUtilities.isVariable(entity)) {
             return new VariableImpl((CsmVariable) entity);
+        }  else if (CsmKindUtilities.isEnumerator(entity)) {
+            return new VariableImpl((CsmEnumerator) entity);
         } else {
             return null;
         }
@@ -442,6 +446,14 @@ public class CallModelImpl implements CallModel {
                             return res;
                         }
                     }
+                } else if (CsmKindUtilities.isEnum(element)) {
+                    CsmEnum cls = (CsmEnum) element;
+                    for (CsmEnumerator member : cls.getEnumerators()) {
+                        CsmOffsetableDeclaration res = findDeclaration(member);
+                        if (res != null) {
+                            return res;
+                        }
+                    }
                 }
                 return null;
             } else if (CsmKindUtilities.isNamespaceDefinition(element)) {
@@ -454,29 +466,14 @@ public class CallModelImpl implements CallModel {
             } else if (CsmKindUtilities.isFunction(element)) {
                 if (element.getUniqueName().equals(declarationUin)) {
                     return (CsmOffsetableDeclaration)element;
-                } else if (CsmKindUtilities.isOffsetableDeclaration(element)) {
-                    if (CsmKindUtilities.isFunctionDefinition(element)) {
-                        CsmFunction func = (CsmFunction) element;
-                        int start = func.getStartOffset();
-                        int end = func.getEndOffset();
-                        Document doc = CsmReferenceRepository.getDocument(fileUid.getObject());
-                        CsmReferenceResolver refResolver = CsmReferenceResolver.getDefault();
-                        for (int i = start; i <= end; i++) {
-                            CsmReference ref = refResolver.findReference(fileUid.getObject(), doc, i);
-                            if (ref != null) {
-                                CsmObject obj = ref.getReferencedObject();
-                                if (CsmKindUtilities.isVariable(obj)) {
-                                    CsmVariable var = (CsmVariable) obj;
-                                    if (var.getUniqueName().equals(declarationUin)) {
-                                        return (CsmOffsetableDeclaration) var;
-                                    }
-                                }
-                            }
-                        }
-                    }
                 }
             } else if (CsmKindUtilities.isVariableDeclaration(element)) {
                 CsmVariable var = (CsmVariable) element;
+                if (var.getUniqueName().equals(declarationUin)) {
+                    return (CsmOffsetableDeclaration) var;
+                }
+            } else if (CsmKindUtilities.isEnumerator(element)) {
+                CsmEnumerator var = (CsmEnumerator) element;
                 if (var.getUniqueName().equals(declarationUin)) {
                     return (CsmOffsetableDeclaration) var;
                 }

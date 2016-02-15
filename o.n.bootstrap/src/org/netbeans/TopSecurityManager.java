@@ -753,10 +753,17 @@ LOOP:   for (int i = 0; i < ctx.length; i++) {
     /** Throws exception if accessed from javax.swing.TransferHandler class
      */
     private void checkWhetherAccessedFromSwingTransfer () throws SecurityException {
+        boolean throwExc = false;
         for (Class<?> c : getClassContext()) {
-            if (c.getName().equals("javax.swing.TransferHandler$TransferAction")) {
-                throw new SecurityException ("All swing access to clipboard should be redirected to ExClipboard"); // NOI18N
+            if (c.getName().equals("org.netbeans.editor.BaseCaret")) { // NOI18N
+                return;
             }
+            if (c.getName().equals("javax.swing.TransferHandler$TransferAction")) { // NOI18N
+                throwExc = true;
+            }
+        }
+        if (throwExc) {
+            throw new SecurityException("All swing access to clipboard should be redirected to ExClipboard"); // NOI18N
         }
     }
 

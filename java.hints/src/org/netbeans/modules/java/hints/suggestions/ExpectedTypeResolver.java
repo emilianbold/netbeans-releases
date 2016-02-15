@@ -998,7 +998,11 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
         List<TypeMirror> tt = new ArrayList<TypeMirror>();
         Element el = info.getTrees().getElement(getCurrentPath());
         
-        if (el != null && el.getKind() == ElementKind.METHOD) {
+        if (el == null) {
+            return null;
+        }
+        
+        if (el.getKind() == ElementKind.METHOD) {
             // special hack: if the casted value is a lambda, we NEED to assign it a type prior to method invocation:
             TreePath exp = getExpressionWithoutCasts();
             if (exp != null && exp.getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {

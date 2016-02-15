@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.clientproject.build;
 
 import java.awt.EventQueue;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -54,6 +55,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.web.clientproject.api.build.BuildTools;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -124,7 +126,7 @@ public final class AdvancedTasksStorage {
                 .setShowSimpleTasks(showSimpleTasks.get());
     }
 
-    public void storeTasks(Data data) {
+    public void storeTasks(Data data) throws IOException {
         assert !EventQueue.isDispatchThread();
         assert data != null;
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -133,6 +135,7 @@ public final class AdvancedTasksStorage {
             DocumentBuilder builder = factory.newDocumentBuilder();
             storeTasks(data, config, true, builder);
             storeTasks(data, config, false, builder);
+            ProjectManager.getDefault().saveProject(project);
         } catch (ParserConfigurationException pcex) {
             LOGGER.log(Level.SEVERE, "Unable to store tasks!", pcex);
         }

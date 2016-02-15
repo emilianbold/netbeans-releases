@@ -72,6 +72,7 @@ import org.netbeans.modules.javascript.v8debug.vars.ScopeValue;
 import org.netbeans.modules.javascript.v8debug.vars.V8Evaluator;
 import org.netbeans.modules.javascript.v8debug.vars.VarValuesLoader;
 import org.netbeans.modules.javascript.v8debug.vars.Variable;
+import org.netbeans.modules.javascript2.debug.NamesTranslator;
 import org.netbeans.modules.javascript2.debug.models.ViewModelSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
@@ -83,7 +84,6 @@ import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakSet;
 import org.openide.util.datatransfer.PasteType;
@@ -128,6 +128,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
             if (cf == null) {
                 return EMPTY_CHILDREN;
             }
+            NamesTranslator nt = cf.getNamesTranslator();
             V8Frame frame = cf.getFrame();
             Map<String, ReferencedValue> argumentRefs = frame.getArgumentRefs();
             Map<String, ReferencedValue> localRefs = frame.getLocalRefs();
@@ -146,6 +147,8 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
                 String name = namerv.getKey();
                 if (name == null) {
                     name = Bundle.CTL_Argument((i+1));
+                } else if (nt != null) {
+                    name = nt.translate(name);
                 }
                 ReferencedValue rv = namerv.getValue();
                 long ref = rv.getReference();
@@ -165,6 +168,9 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
                 if (v == null) {
                     v = rv.getValue();
                     incompleteValue = true;
+                }
+                if (nt != null) {
+                    name = nt.translate(name);
                 }
                 ch[i++] = new Variable(Variable.Kind.LOCAL, name, ref, v, incompleteValue);
             }

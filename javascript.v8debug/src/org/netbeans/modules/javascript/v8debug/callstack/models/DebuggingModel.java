@@ -58,6 +58,7 @@ import org.netbeans.modules.javascript.v8debug.V8DebuggerSessionProvider;
 import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
 import org.netbeans.modules.javascript.v8debug.frames.CallStack;
 import org.netbeans.modules.javascript2.debug.models.ViewModelSupport;
+import org.netbeans.modules.web.common.sourcemap.SourceMapsTranslator;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
@@ -66,6 +67,7 @@ import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
 
@@ -187,18 +189,27 @@ public class DebuggingModel extends ViewModelSupport implements TreeModel, Exten
     public String getDisplayName(Object node) throws UnknownTypeException {
         if (node instanceof CallFrame) {
             CallFrame cf = (CallFrame) node;
+            SourceMapsTranslator.Location translatedLocation = cf.getTranslatedLocation();
             V8Frame frame = cf.getFrame();
-            String text = "";
-            String scriptName = getScriptName(cf);
             String thisName = cf.getThisName();
             if ("Object".equals(thisName) || "global".equals(thisName)) {
                 thisName = null;
             }
             String functionName = cf.getFunctionName();
-            long line = frame.getLine()+1;
-            long column = frame.getColumn()+1;
+            String scriptName;
+            long line;
+            long column;
+            if (translatedLocation != null) {
+                scriptName = getScriptName(translatedLocation.getFile());
+                line = translatedLocation.getLine()+1;
+                column = translatedLocation.getColumn()+1;
+            } else {
+                scriptName = getScriptName(cf);
+                line = frame.getLine()+1;
+                column = frame.getColumn()+1;
+            }
             
-            text = ((thisName != null && !thisName.isEmpty()) ? thisName + '.' : "") +
+            String text = ((thisName != null && !thisName.isEmpty()) ? thisName + '.' : "") +
                    functionName +
                    " (" + ((scriptName != null) ? scriptName : "?") +
                    ":"+line+":"+column+")";
@@ -227,6 +238,10 @@ public class DebuggingModel extends ViewModelSupport implements TreeModel, Exten
             return scriptName;
         }
         return null;
+    }
+    
+    private static String getScriptName(FileObject fo) {
+        return fo.getNameExt();
     }
     
     @Override

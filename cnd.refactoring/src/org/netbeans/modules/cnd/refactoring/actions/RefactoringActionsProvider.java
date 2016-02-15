@@ -130,7 +130,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         if (CsmModelAccessor.getModelState() != CsmModelState.ON) {
             return false;
         }
-        Set<Node> nodes = new HashSet<>(lookup.lookupAll(Node.class));
+        Set<? extends Node> nodes = new HashSet<>(lookup.lookupAll(Node.class));
         // only one node can be renamed at once or no nodes, but csm object
         if (nodes.size() == 1 || nodes.isEmpty()) {
             CsmObject ctx = CsmRefactoringUtils.findContextObject(lookup);

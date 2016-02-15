@@ -288,6 +288,7 @@
                 <friend>org.netbeans.modules.dlight</friend>
                 <friend>org.netbeans.modules.dlight.collector.procfs</friend>
                 <friend>org.netbeans.modules.dlight.collector.stdout</friend>
+                <friend>org.netbeans.modules.dlight.core.ui</friend>
                 <friend>org.netbeans.modules.dlight.cpu</friend>
                 <friend>org.netbeans.modules.dlight.db.h2</friend>
                 <friend>org.netbeans.modules.dlight.discover</friend>

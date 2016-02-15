@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.javascript.v8debug.vars;
 
-import java.util.Map;
 import org.netbeans.lib.v8debug.V8Command;
 import org.netbeans.lib.v8debug.V8Request;
 import org.netbeans.lib.v8debug.V8Response;
@@ -54,6 +53,8 @@ import org.netbeans.lib.v8debug.vars.V8Object;
 import org.netbeans.lib.v8debug.vars.V8String;
 import org.netbeans.lib.v8debug.vars.V8Value;
 import org.netbeans.modules.javascript.v8debug.V8Debugger;
+import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
+import org.netbeans.modules.javascript2.debug.NamesTranslator;
 
 /**
  *
@@ -64,6 +65,14 @@ public class V8Evaluator {
     public static V8Value evaluate(V8Debugger debugger, String expression) throws EvaluationError {
         final V8Value[] valueRef = new V8Value[] { null };
         final String[] errRef = new String[] { null };
+        NamesTranslator nt = null;
+        CallFrame cf = debugger.getCurrentFrame();
+        if (cf != null) {
+            nt = cf.getNamesTranslator();
+        }
+        if (nt != null) {
+            expression = nt.reverseTranslate(expression);
+        }
         V8Request request =
                 debugger.sendCommandRequest(V8Command.Evaluate,
                                             new Evaluate.Arguments(expression),

@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
+import org.netbeans.modules.cnd.modelimpl.trace.TraceModelFileFilter;
+
 /**
  *
  * @author Vladimir Kvashin
@@ -51,6 +53,33 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
     public TemplateSpecializationsTestCase(String testName) {
         super(testName);
     }
+    
+    @Override
+    protected TraceModelFileFilter getTraceModelFileFilter() {
+        String simpleName = SimpleFileFilter.testNameToFileName(getName());
+        switch (simpleName) {
+            case "FriendTemplateFun":
+                return new SimpleFileFilter("iz157359"); 
+            case "IZ144156_func_spec_tpl_params":
+                return new SimpleFileFilter("template_fun_spec"); 
+            case "IZ143977_Parm_in_Loki_0":
+                return new SimpleFileFilter("iz143977_0"); 
+            case "IZ143977_Parm_in_Loki_2":
+                return new SimpleFileFilter("iz143977_2"); 
+            case "IZ143977_Parm_in_Loki_3":
+                return new SimpleFileFilter("iz143977_3"); 
+            case "IZ144156_func_partial_spec_pointer":
+            case "IZ144156_func_full_spec_char":
+            case "IZ144156_func_partial_spec_pair":
+            case "IZ144156_func_spec_main":
+            case "IZ144156_func_full_spec_pair_char":
+                return new SimpleFileFilter("template_fun_spec"); 
+            case "IZ103462_1":
+                return new SimpleFileFilter("iz103462_first_and_second_1"); 
+            default:
+                return new SimpleFileFilter(simpleName); 
+        }
+    }
 
     public void testFriendTemplateFun() throws Exception {
         // IZ#157359: IDE highlights protected field as wrong
@@ -58,7 +87,7 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         super.performTest("iz157359.cc", 15, 25, "iz157359.cc", 8, 3);
     }
 
-    public void testIZ143611_using_inherited_spec_field() throws Exception {
+    public void testIZ143611_inherited_spec_field() throws Exception {
         performTest("iz143611_inherited_spec_field.cc", 21, 15, "iz143611_inherited_spec_field.cc", 7, 5); // param_t
         performTest("iz143611_inherited_spec_field.cc", 26, 15, "iz143611_inherited_spec_field.cc", 11, 5); // param_int
         performTest("iz143611_inherited_spec_field.cc", 31, 15, "iz143611_inherited_spec_field.cc", 15, 5); // param_char_int
@@ -127,7 +156,7 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         performTest("bug187258.cpp", 21, 45, "bug187258.cpp", 6, 5);
     }
 
-    public void testExplicitSpecializations() throws Exception {
+    public void testExplicit_Specializations() throws Exception {
         // Improving specializations
         performTest("explicit_specializations.cpp", 5, 11, "explicit_specializations.cpp", 8, 1);
 //        performTest("explicit_specializations.cpp", 8, 69, "explicit_specializations.cpp", 5, 5);

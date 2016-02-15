@@ -44,9 +44,9 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
-import java.util.Arrays;
 import org.junit.Test;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelFileFilter;
+import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase.SimpleFileFilter;
 
 /**
  *
@@ -55,22 +55,57 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModelFileFilter;
 public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
 
     public BasicHyperlinkTestCase(String testName) {
-        super(testName);
+        super(testName, true);
     }
 
     @Override
     protected TraceModelFileFilter getTraceModelFileFilter() {
-        final String testName = getName();
-        if (Arrays.asList("testTwoMacros").contains(testName)) {
-            return new TraceModelFileFilter() {
-
-                @Override
-                public boolean isProjectFile(String filename) {
-                    return filename.contains("twoMacros");
-                }
-            };
+        String simpleName = SimpleFileFilter.testNameToFileName(getName());
+        switch (simpleName) {
+            case "IZ157907":
+                return new SimpleFileFilter("fun_macro_and_name");
+            case "IZ139600":
+            case "VarInFunWithInitalization":
+            case "ParamWithoutSpace":
+            case "FileLocalVariable":
+            case "FuncParamUsage":
+            case "ForLoopLocalVarsUsage":
+            case "NameWithUnderscore":
+            case "SameNameDiffScope":
+            case "GlobalVar":
+                return new SimpleFileFilter("main");
+            case "FuncUsage":
+            case "KRFuncParamUsage":
+            case "KRFooDeclDefUsageH":
+            case "KRFooDeclDefUsageC":
+            case "KRFuncParamDecl":
+            case "KRFooDeclDefUsage":
+                return new SimpleFileFilter("kr");
+            case "FuncLocalVarsUsage":
+                return new SimpleFileFilter("main","kr");
+            case "ConstParameter":
+                return new SimpleFileFilter("const");
+            case "StaticFunctions":
+                return new SimpleFileFilter("static_function");
+            case "StringInMacroParams":
+                return new SimpleFileFilter("string_in_macro_params");
+            case "StaticConstInNamespace":
+                return new SimpleFileFilter("IZ141765_static_const_in_nsp");
+            case "StaticVariable":
+                return new SimpleFileFilter("static_variable");
+            case "StaticFunctionInHeader":
+                return new SimpleFileFilter("IZ141601_static_fun_in_hdr");
+            case "Bug202191":
+                return new SimpleFileFilter("bug201237_2");
+            case "TemplateParameterBeforeFunction":
+                return new SimpleFileFilter("template_parameter2");
+            case "TemplateParameter":
+                return new SimpleFileFilter("template_parameter");
+            case "Bug191305":
+                return new SimpleFileFilter("bug191198");
+            default:
+                return new SimpleFileFilter(simpleName); 
         }
-        return null;
     }
 
     public void test239814() throws Exception {
@@ -772,7 +807,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug191081.cpp", 8, 33, "bug191081.cpp", 2, 9);
     }
 
-    public void testIZ191198() throws Exception {
+    public void testBug191198() throws Exception {
         // #191198 -  Parser error in buf.c
         performTest("bug191198.c", 9, 35, "bug191198.c", 2, 9);
         performTest("bug191198.c", 9, 45, "bug191198.c", 3, 9);
@@ -780,13 +815,13 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug191198.c", 15, 45, "bug191198.c", 3, 9);        
     }
     
-    public void testIZ191305() throws Exception {
+    public void testBug191305() throws Exception {
         performTest("bug191198.c", 22, 40, "bug191198.c", 3, 9);
         performTest("bug191198.c", 23, 26, "bug191198.c", 2, 9);
         performTest("bug191198.c", 23, 40, "bug191198.c", 3, 9);
     }
     
-    public void testIZ191200() throws Exception {
+    public void testBug191200() throws Exception {
         // #191200 -  Parser errors in val_tables.c
         performTest("bug191200.c", 14, 25, "bug191200.c", 8, 5);
         performTest("bug191200.c", 16, 25, "bug191200.c", 8, 5);
@@ -807,7 +842,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug191314.c", 2, 56, "bug191314.c", 2, 47);
     }
 
-    public void testBug190127_2() throws Exception {
+    public void testBug190127$2() throws Exception {
         // Bug 190127 - Extern declarations without return type are not supported
         performTest("bug190127.c", 4, 12, "bug190127.c", 1, 1);
     }
@@ -1008,7 +1043,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug223298.cpp", 10, 10, "bug223298.cpp", 6, 1);
     }    
 
-    public void testBug223298_2() throws Exception {
+    public void testBug223298$2() throws Exception {
         // Bug 223298 - Wrong recognition of function
         performTest("bug223298.c", 10, 10, "bug223298.c", 6, 1);
     }
@@ -1168,7 +1203,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug257031.cpp", 15, 52, "bug257031.cpp", 14, 21);
     }
     
-    public void testBug257647() throws Exception {
+    public void testBug257647() throws Exception {        
         // Bug 257647 - C pointer arithmetic and invalid hints in fprintf
         performTest("bug257647.cpp", 10, 12, "bug257647.cpp", 5, 5);
         performTest("bug257647.cpp", 11, 12, "bug257647.cpp", 5, 5);
@@ -1188,5 +1223,5 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         }
 
     }
+    
 }
-

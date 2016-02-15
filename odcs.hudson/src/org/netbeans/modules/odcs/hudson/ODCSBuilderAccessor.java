@@ -218,7 +218,7 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
 
     @Override
     public Action getNewBuildAction(ProjectHandle<ODCSProject> projectHandle) {
-        final String urlString = projectHandle.getTeamProject().getBuildUrl();
+        final String urlString = projectHandle.getTeamProject().getWebUrl() + "/build/"; // NOI18N
         final URL url;
         try {
             url = new URL(urlString);

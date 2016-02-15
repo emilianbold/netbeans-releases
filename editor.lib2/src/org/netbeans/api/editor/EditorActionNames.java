@@ -151,6 +151,20 @@ public final class EditorActionNames {
     public static final String removeLastCaret = "remove-last-caret"; // NOI18N
     
     /**
+     * Navigates to the previous occurence of the symbol under the caret. The action
+     * should be implemented by specific language EditorKit
+     * @since 2.3
+     */
+    public static final String gotoPrevOccurrence = "prev-marked-occurrence"; // NOI18N
+    
+    /**
+     * Navigates to the next occurence of the symbol under the caret. The action
+     * should be implemented by specific language EditorKit
+     * @since 2.3
+     */
+    public static final String gotoNextOccurrence = "next-marked-occurrence"; // NOI18N
+    
+    /**
      * Add a caret to the line above at the same position.
      * @since 2.6
      */

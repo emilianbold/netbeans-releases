@@ -176,7 +176,7 @@ public interface SourceMapsTranslator {
         }
         
         public int getColumn() {
-            if (column < 0) {
+            if (column < 0 && mapping != null) {
                 column = mapping.getOriginalColumn();
             }
             return column;

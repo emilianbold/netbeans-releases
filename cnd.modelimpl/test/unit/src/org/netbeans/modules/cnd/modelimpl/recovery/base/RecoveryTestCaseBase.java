@@ -41,18 +41,16 @@
  */
 package org.netbeans.modules.cnd.modelimpl.recovery.base;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-import static junit.framework.Assert.fail;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -239,27 +237,19 @@ public class RecoveryTestCaseBase extends ProjectBasedTestCase {
 
     private void applyChanges(Diff diff) throws FileNotFoundException, IOException {
         File dataFile = getDataFile(diff.file());
-        BufferedReader in = new BufferedReader(new FileReader(dataFile));
-        List<String> list = new ArrayList<>();
-        while (true) {
-            String s = in.readLine();
-            if (s == null) {
-                break;
+        final Charset charset = Charset.forName("UTF-8");
+        List<String> list = Files.readAllLines(dataFile.toPath(), charset);
+        try (BufferedWriter out = Files.newBufferedWriter(dataFile.toPath(), charset)) {
+            for (int i = 0; i < list.size(); i++) {
+                String s = list.get(i);
+                if (diff.line() == i + 1) {
+                    s = s.substring(0, diff.column() - 1) + diff.insert() + s.substring(diff.column() - 1 + diff.length());
+                }
+                out.write(s);
+                out.write("\n");
             }
-            list.add(s);
+            out.flush();
         }
-        in.close();
-        BufferedWriter out = new BufferedWriter(new FileWriter(dataFile));
-        for (int i = 0; i < list.size(); i++) {
-            String s = list.get(i);
-            if (diff.line() == i + 1) {
-                s = s.substring(0, diff.column() - 1) + diff.insert() + s.substring(diff.column() - 1 + diff.length());
-            }
-            out.write(s);
-            out.write("\n");
-        }
-        out.flush();
-        out.close();
     }
 
     private void printTree(CsmFile file, Writer out, int level) throws IOException {

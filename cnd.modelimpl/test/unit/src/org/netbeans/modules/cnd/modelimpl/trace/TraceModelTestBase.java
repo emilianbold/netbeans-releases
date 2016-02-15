@@ -48,14 +48,13 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -425,8 +424,9 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         origin = origin.substring(0, i);
         
         File goldenErrFileCopy = new File(workDir, goldenErrFileName + ".golden");
-        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(goldenErrFile), "UTF-8"));
-        BufferedWriter wr = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(goldenErrFileCopy), "UTF-8"));
+        final Charset charset = Charset.forName("UTF-8");
+        BufferedReader br = Files.newBufferedReader(goldenErrFile.toPath(), charset);
+        BufferedWriter wr = Files.newBufferedWriter(goldenErrFileCopy.toPath(), charset);
         for (String line = br.readLine(); line != null; line = br.readLine()) {
             i = line.indexOf(macro);
             if (i >= 0) {

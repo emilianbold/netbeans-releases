@@ -167,6 +167,10 @@ public class SemanticAnalyzerTest extends SemanticAnalysisTestBase {
         checkSemantic("testfiles/semantic/constantsInFiledsDeclColoring.php");
     }
 
+    public void testAnonymousClass01() throws Exception {
+        checkSemantic("testfiles/semantic/anonymousClass01.php");
+    }
+
     public void testIssue213105() throws Exception {
         checkSemantic("testfiles/semantic/issue213105.php");
     }

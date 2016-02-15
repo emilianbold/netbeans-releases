@@ -436,8 +436,14 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         } else if (parent instanceof Program
                 || parent instanceof Block) {
             // return type
-            Kind[] kinds = {Kind.CLASS, Kind.IFACE}; // also TRAIT?
+            Kind[] kinds = {Kind.CLASS, Kind.IFACE};
             occurencesBuilder.prepare(kinds, namespaceName, fileScope);
+        } else if (parent instanceof ClassInstanceCreation) {
+            if (((ClassInstanceCreation) parent).isAnonymous()) {
+                // superclass, ifaces
+                Kind[] kinds = {Kind.CLASS, Kind.IFACE};
+                occurencesBuilder.prepare(kinds, namespaceName, fileScope);
+            }
         } else if (!(parent instanceof ClassDeclaration) && !(parent instanceof InterfaceDeclaration)
                 && !(parent instanceof FormalParameter) && !(parent instanceof InstanceOfExpression)
                 && !(parent instanceof UseTraitStatementPart) && !(parent instanceof TraitConflictResolutionDeclaration)
@@ -562,17 +568,27 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(ClassInstanceCreation node) {
-        Expression className = node.getClassName().getName();
-        if (className instanceof Variable) {
-            scan(className);
-        } else {
-            ScopeImpl currentScope = modelBuilder.getCurrentScope();
-            occurencesBuilder.prepare(node, currentScope);
-            if (className instanceof NamespaceName) {
-                occurencesBuilder.prepare((NamespaceName) className, currentScope);
+        if (node.isAnonymous()) {
+            modelBuilder.build(node, occurencesBuilder);
+            checkComments(node);
+            try {
+                super.visit(node);
+            } finally {
+                modelBuilder.reset();
             }
+        } else {
+            Expression name = node.getClassName().getName();
+            if (name instanceof Variable) {
+                scan(name);
+            } else {
+                ScopeImpl currentScope = modelBuilder.getCurrentScope();
+                occurencesBuilder.prepare(node, currentScope);
+                if (name instanceof NamespaceName) {
+                    occurencesBuilder.prepare((NamespaceName) name, currentScope);
+                }
+            }
+            scan(node.ctorParams());
         }
-        scan(node.ctorParams());
     }
 
     @Override

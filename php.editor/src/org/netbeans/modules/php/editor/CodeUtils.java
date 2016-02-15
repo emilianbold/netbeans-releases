@@ -161,6 +161,17 @@ public final class CodeUtils {
         return new NamespaceName(start, end, segments, baseNamespaceName.isGlobal(), baseNamespaceName.isCurrent());
     }
 
+    /**
+     * Checks whether the given name is syntetic name. It means that
+     * the name starts with "#".
+     * @param name name to be checked
+     * @return {@code true} if the given name is syntetic
+     */
+    public static boolean isSynteticTypeName(String name) {
+        assert name != null;
+        return name.startsWith("#"); // NOI18N
+    }
+
     // XXX remove!
     public static boolean isLessThanPhp70(FileObject file) {
         return CodeUtils.isPhpVersionLessThan(file, PhpVersion.PHP_56);
@@ -283,6 +294,7 @@ public final class CodeUtils {
     }
     //TODO: rewrite for php53
     public static String extractClassName(ClassName clsName) {
+        assert clsName != null;
         Expression name = clsName.getName();
         while (name instanceof Variable || name instanceof FieldAccess) {
             if (name instanceof Variable) {

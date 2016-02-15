@@ -56,6 +56,7 @@ import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.ClassInstanceCreationInfo;
 import org.netbeans.modules.php.editor.model.nodes.IncludeInfo;
 import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MagicMethodDeclarationInfo;
@@ -64,6 +65,7 @@ import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.TraitDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
@@ -110,6 +112,14 @@ class ModelBuilder {
 
     ClassScope build(ClassDeclaration node, OccurenceBuilder occurencesBuilder) {
         ClassScopeImpl classScope = ModelElementFactory.create(ClassDeclarationInfo.create(node), this);
+        setCurrentScope(classScope);
+        occurencesBuilder.prepare(node, classScope);
+        return classScope;
+    }
+
+    ClassScope build(ClassInstanceCreation node, OccurenceBuilder occurencesBuilder) {
+        assert node.isAnonymous() : node;
+        ClassScopeImpl classScope = ModelElementFactory.create(ClassInstanceCreationInfo.create(node), this);
         setCurrentScope(classScope);
         occurencesBuilder.prepare(node, classScope);
         return classScope;
@@ -269,6 +279,19 @@ class ModelBuilder {
         }
 
         static ClassScopeImpl create(ClassDeclarationInfo nodeInfo, ModelBuilder context) {
+            Scope currentScope = context.getCurrentScope();
+            if (currentScope == null) {
+                currentScope = context.getCurrentNameSpace();
+            }
+            if (currentScope instanceof FunctionScope) {
+                currentScope = currentScope.getInScope();
+            }
+            boolean isDeprecated = VariousUtils.isDeprecatedFromPHPDoc(context.getProgram(), nodeInfo.getOriginalNode());
+            ClassScopeImpl clz = new ClassScopeImpl(currentScope, nodeInfo, isDeprecated);
+            return clz;
+        }
+
+        static ClassScopeImpl create(ClassInstanceCreationInfo nodeInfo, ModelBuilder context) {
             Scope currentScope = context.getCurrentScope();
             if (currentScope == null) {
                 currentScope = context.getCurrentNameSpace();

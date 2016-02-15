@@ -130,7 +130,7 @@ public class ProjectActionSupport {
     private final List<ProjectActionHandlerFactory> handlerFactories;
 
     private ProjectActionSupport() {
-        handlerFactories = new ArrayList<>(
+        handlerFactories = new ArrayList<ProjectActionHandlerFactory>(
                 Lookup.getDefault().lookupAll(ProjectActionHandlerFactory.class));
     }
 

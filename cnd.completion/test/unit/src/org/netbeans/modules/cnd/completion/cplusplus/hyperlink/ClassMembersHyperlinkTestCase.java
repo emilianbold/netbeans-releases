@@ -44,13 +44,114 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
+import org.netbeans.modules.cnd.modelimpl.trace.TraceModelFileFilter;
+import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase.SimpleFileFilter;
+
 /**
  *
  * @author Vladimir Voskresensky
  */
 public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
     public ClassMembersHyperlinkTestCase(String testName) {
-        super(testName);
+        super(testName, true);
+    }
+    
+    @Override
+    protected TraceModelFileFilter getTraceModelFileFilter() {
+        String simpleName = SimpleFileFilter.testNameToFileName(getName());
+        switch (simpleName) {
+            case "Operators":
+            case "ClassNameInFuncsParams":
+            case "FriendOperatorHyperlink":
+            case "Constructors":
+            case "ClassMethodRetClassAPtr":
+            case "ClassMethodRetClassARef":
+            case "PrivateMethods":
+            case "PublicMethods":
+            case "1":
+            case "2":
+            case "3":
+            case "4":
+            case "5":
+            case "MyInnerInt1":
+            case "ClassMethodRetMyInt":
+            case "InitList":
+            case "ClassNameInFuncRetType":
+            case "Destructors":
+            case "ProtectedMethods":
+            case "StaticFields":
+                return new SimpleFileFilter("ClassA"); 
+            case "InnerSelfDeclaration":
+            case "Overloads":
+            case "FunParamInHeader":
+            case "StringFuncsParams":
+                return new SimpleFileFilter("ClassB"); 
+            case "ConstructorInitializerListInHeader":
+            case "ConstructorInitializerListInSource":
+                return new SimpleFileFilter("ClassA", "ClassB"); 
+            case "OperatorsInBaseClasses":
+                return new SimpleFileFilter("iz147312_operators_in_base_cls"); 
+            case "StdVector":
+                return new SimpleFileFilter("IZ141105_std_vector"); 
+            case "SameName":
+            case "IZ136894":
+            case "IZ137483":
+            case "IZ145617":
+            case "IZ145828":
+            case "MainParamsUsing":
+            case "GlobalFunctionGo":
+                return new SimpleFileFilter("main"); 
+            case "IZ137798":
+            case "IZ137799":
+            case "NestedStructAndVar":
+                return new SimpleFileFilter("IZ137799and137798");
+            case "IZ138902":
+            case "IZ144880":
+            case "IZ145230":
+            case "IZ145822":
+            case "IZ146030_5":
+                return new SimpleFileFilter("useenumerators");
+            case "IZ144731":
+                return new SimpleFileFilter("iz145077");
+            case "GoToDeclarationForTemplateMethods":
+            case "GoToDefinitionForTemplateMethods":
+                return new SimpleFileFilter("templateMethods");
+            case "ClassUsageAfterDereferrencedObjects":
+            case "ClassMembersUsageAfterDereferrencedClass":
+            case "187254":
+                return new SimpleFileFilter("ClassNameAfterDeref");
+            case "ClassFwdTemplateParameters":
+            case "NestedTemplateClassTemplateParameters":
+            case "TemplateParameters":
+            case "RenamedTemplateParameters":
+            case "ConstInTemplateParameters":
+            case "TemplateParameterPriority":
+            case "TypenameInTemplateParameterDeclaration":
+            case "TemplateParamsInNestedClasses":
+                return new SimpleFileFilter("templateParameters");
+            case "ClassNameCollision":
+                return new SimpleFileFilter("iz156123");
+            case "FriendFuncHyperlink":
+            case "FromMainToClassDecl":
+            case "Includes":
+                return new SimpleFileFilter("ClassA","main");
+            case "CastsAndPtrs":
+                return new SimpleFileFilter("ClassB","main");
+            case "DerefArrayByArrow":
+                return new SimpleFileFilter("iz149783");
+            case "IZ146030_3":
+                return new SimpleFileFilter("accessMember"); 
+            case "IZ148223":
+                return new SimpleFileFilter("operators_hyperlink"); 
+            case "IZ223046_overloads":
+                return new SimpleFileFilter("iz223046"); 
+            case "InnerTypePriority":
+                return new SimpleFileFilter("IZ144050"); 
+            case "MethodPrefix":
+                return new SimpleFileFilter("IZ125760"); 
+            default:
+                return new SimpleFileFilter(simpleName); 
+        }
     }
 
     public void testIZ241212() throws Exception {
@@ -672,7 +773,7 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("templateMethods.cc", 8, 28, "templateMethods.cc", 31, 1); //A in D2
     }
 
-    public void test_iz_143285_nested_classifiers() throws Exception {
+    public void testIZ143285_nested_classifiers() throws Exception {
         // IZ#143285 Unresolved reference to typedefed class' typedef
         performTest("IZ143285_nested_classifiers.cc", 11, 33, "IZ143285_nested_classifiers.cc", 8, 17);
         performTest("IZ143285_nested_classifiers.cc", 15, 28, "IZ143285_nested_classifiers.cc", 3, 9);
@@ -1083,7 +1184,7 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz223046.cpp", 35, 25, "iz223046.cpp", 16, 5);
     }
 
-    public void testIZ223966_overloads_template_spec() throws Exception {
+    public void testIZ_223966_overloads_template_spec() throws Exception {
         // Bug 217994 - default method parameter construct isn't handled properly
         performTest("iz_223966_overloads_template_spec.cpp", 14, 7, "iz_223966_overloads_template_spec.cpp", 9, 1);
         performTest("iz_223966_overloads_template_spec.cpp", 15, 7, "iz_223966_overloads_template_spec.cpp", 9, 1);

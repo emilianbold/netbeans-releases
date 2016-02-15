@@ -60,7 +60,7 @@ import org.openide.util.ChangeSupport;
 @ProjectServiceProvider(service = NodeJsSupport.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
 public final class NodeJsSupportImpl implements NodeJsSupport {
 
-    private static final String NODEJS_DOC_URL = "http://nodejs.org/docs/v%s/api/"; // NOI18N
+    private static final String NODEJS_DOC_URL = "https://nodejs.org/docs/v%s/api/"; // NOI18N
     private static final String IOJS_DOC_URL = "https://iojs.org/dist/v%s/doc/api/"; // NOI18N
 
     private final Project project;

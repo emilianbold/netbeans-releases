@@ -47,7 +47,6 @@ import java.util.List;
 import org.netbeans.lib.v8debug.V8Frame;
 import org.netbeans.lib.v8debug.V8Script;
 import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
-import org.netbeans.modules.javascript.v8debug.sources.SourceMapsTranslatorManager;
 import org.netbeans.modules.web.common.sourcemap.SourceMapsTranslator;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -64,10 +63,15 @@ public final class EditorUtils {
     
     private EditorUtils() {}
     
-    public static Line getLine(V8Debugger dbg, FileObject fo, int line) {
-        SourceMapsTranslator smtr = SourceMapsTranslatorManager.get(dbg);
+    public static Line getLine(V8Debugger dbg, FileObject fo, int line, int column) {
+        SourceMapsTranslator smtr = dbg.getScriptsHandler().getSourceMapsTranslator();
         if (smtr != null) {
-            SourceMapsTranslator.Location loc = new SourceMapsTranslator.Location(fo, line, 0);
+            if (column < 0) {
+                column = 0; // If column not defined, set it to zero
+            } else if (line == 0) {
+                column -= dbg.getScriptsHandler().getScriptFirstLineColumnShift(fo);
+            }
+            SourceMapsTranslator.Location loc = new SourceMapsTranslator.Location(fo, line, column);
             loc = smtr.getSourceLocation(loc);
             fo = loc.getFile();
             line = loc.getLine();
@@ -112,7 +116,7 @@ public final class EditorUtils {
         }
         ScriptsHandler scriptsHandler = dbg.getScriptsHandler();
         FileObject fo = scriptsHandler.getFile(script);
-        Line line = EditorUtils.getLine(dbg, fo, (int) f.getLine());
+        Line line = EditorUtils.getLine(dbg, fo, (int) f.getLine(), (int) f.getColumn());
         if (line != null) {
             EditorUtils.showLine(line, toFront);
         }

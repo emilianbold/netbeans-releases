@@ -109,7 +109,7 @@ is the proper place.
     <changes>
         <change id="editor-caret">
             <summary>Caret API introduced</summary>
-            <version major="2" minor="6"/>
+            <version major="2" minor="7"/>
             <date day="22" month="2" year="2016"/>
             <author login="mmetelka"/>
             <author login="ralphbenjamin"/>
@@ -124,6 +124,21 @@ is the proper place.
             <class name="EditorUtilities" package="org.netbeans.api.editor" />
             <package name="org.netbeans.api.editor.caret" />
             <issue number="257893"/>
+        </change>
+        <change id="occurrences-names">
+            <summary>Added IDs for goto prev/next occurrence actions</summary>
+            <version major="2" minor="6"/>
+            <date day="30" month="1" year="2016"/>
+            <author login="sdedic"/>
+           <compatibility binary="compatible" semantic="compatible" source="compatible" addition="yes"/>
+            <description>
+                <p>
+                    Many languages define their own actions and support for navigating between symbol occurrences.
+                    Common action name allows them to be presented and configured as one action in IDE configuration.
+                </p>
+           </description>
+            <class name="EditorActionNames" package="org.netbeans.api.editor"/>
+            <issue number="194356"/>
         </change>
         <change id="shift-highlights-sequence">
             <summary>Extended HightlightsSequence by ShiftHighlightsSequence</summary>

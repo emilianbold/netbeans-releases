@@ -67,6 +67,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.php.api.PhpVersion;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
@@ -242,7 +243,10 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
     private static Set<String> toNames(Set<? extends PhpElement> elements) {
         Set<String> names = new HashSet<>();
         for (PhpElement elem : elements) {
-            names.add(elem.getName());
+            String name = elem.getName();
+            if (!StringUtils.isEmpty(name)) {
+                names.add(name);
+            }
         }
         return names;
     }

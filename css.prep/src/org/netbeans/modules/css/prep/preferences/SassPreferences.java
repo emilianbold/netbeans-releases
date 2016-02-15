@@ -68,7 +68,7 @@ public final class SassPreferences extends BasePreferences implements CssPreproc
 
     @Override
     public boolean isConfigured(Project project) {
-        return isEnabled(project, CONFIGURED);
+        return isConfigured(project, CONFIGURED);
     }
 
     @Override

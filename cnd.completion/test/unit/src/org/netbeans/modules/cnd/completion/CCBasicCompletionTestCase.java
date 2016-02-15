@@ -49,7 +49,8 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionBaseTestCase;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelFileFilter;
 
 /**
- *
+ * NOTE: DO NOT ADD NEW TEST METHODS. 
+ * IT IS SENSITIVE TO GLOBAL SYMBOLS AND A LOT OF GOLDEN FILES NEED TO BE CHANGED.
  * @author Vladimir Voskresensky
  */
 public class CCBasicCompletionTestCase extends CompletionBaseTestCase {

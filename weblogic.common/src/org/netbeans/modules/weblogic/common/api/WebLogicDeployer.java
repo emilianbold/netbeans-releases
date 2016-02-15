@@ -116,6 +116,47 @@ public final class WebLogicDeployer {
         return new WebLogicDeployer(config, javaBinary, nonProxy);
     }
 
+    /**
+     * Returns all available targets.
+     *
+     * @return all available targets
+     * @since 1.14
+     */
+    @NonNull
+    public Future<Collection<Target>> getTargets() {
+        return DEPLOYMENT_RP.submit(new Callable<Collection<Target>>() {
+
+            @Override
+            public Collection<Target> call() throws Exception {
+                return config.getRemote().executeAction(new WebLogicRemote.JmxAction<Collection<Target>>() {
+
+                    @Override
+                    public Collection<Target> execute(MBeanServerConnection connection) throws Exception {
+                        List<Target> result = new ArrayList<>();
+                        ObjectName service = new ObjectName("com.bea:Name=DomainRuntimeService," // NOI18N
+                                + "Type=weblogic.management.mbeanservers.domainruntime.DomainRuntimeServiceMBean"); // NOI18N
+                        ObjectName domainPending = (ObjectName) connection.getAttribute(service, "DomainPending"); // NOI18N
+                        if (domainPending != null) {
+                            ObjectName[] domainTargets = (ObjectName[]) connection.getAttribute(domainPending, "Targets"); // NOI18N
+                            if (domainTargets != null) {
+                                for (ObjectName singleTarget : domainTargets) {
+                                    String strType = (String) connection.getAttribute(singleTarget, "Type"); // NOI18N
+                                    Target.Type type = Target.Type.parse(strType);
+                                    if (type != null) {
+                                        result.add(new Target((String) connection.getAttribute(singleTarget, "Name"), type)); // NOI18N
+                                    } else {
+                                        LOGGER.log(Level.INFO, "Unknown target type {0}", strType);
+                                    }
+                                }
+                            }
+                        }
+                        return result;
+                    }
+                }, nonProxy);
+            }
+        });
+    }
+
     @NonNull
     public Future<Collection<Application>> list(@NullAllowed final InetAddress publicAddress) {
         return DEPLOYMENT_RP.submit(new Callable<Collection<Application>>() {
@@ -187,7 +228,14 @@ public final class WebLogicDeployer {
     public Future<String> deploy(@NonNull File file, @NullAllowed DeployListener listener,
             @NullAllowed String name) {
 
-        return performDeploy(file, listener, name);
+        return performDeploy(file, Collections.<Target>emptyList(), listener, name);
+    }
+
+    @NonNull
+    public Future<String> deploy(@NonNull File file, @NonNull Collection<Target> targets, @NullAllowed DeployListener listener,
+            @NullAllowed String name) {
+
+        return performDeploy(file, targets, listener, name);
     }
 
     @NonNull
@@ -400,8 +448,8 @@ public final class WebLogicDeployer {
         });
     }
 
-    private Future<String> performDeploy(@NonNull final File file, @NullAllowed final DeployListener listener,
-            @NullAllowed final String name) {
+    private Future<String> performDeploy(@NonNull final File file, final @NonNull Collection<Target> targets,
+            @NullAllowed final DeployListener listener, @NullAllowed final String name) {
 
         if (listener != null) {
             listener.onStart();
@@ -425,6 +473,18 @@ public final class WebLogicDeployer {
                 }
                 parameters.add("-source"); // NOI18N
                 parameters.add(file.getAbsolutePath());
+
+                if (!targets.isEmpty()) {
+                    StringBuilder sb = new StringBuilder();
+                    for (Target t : targets) {
+                        if (sb.length() > 0) {
+                            sb.append(','); // NOI18N
+                        }
+                        sb.append(t.getName());
+                    }
+                    parameters.add("-targets"); // NOI18N
+                    parameters.add(sb.toString());
+                }
 
                 LastLineProcessor lineProcessor = new LastLineProcessor();
                 BaseExecutionService service = createService("-deploy", // NOI18N

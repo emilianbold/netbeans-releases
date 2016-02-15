@@ -52,6 +52,8 @@ import org.netbeans.lib.v8debug.commands.ChangeBreakpoint;
 import org.netbeans.modules.javascript.v8debug.V8Debugger;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointStatus;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
+import org.netbeans.modules.web.common.sourcemap.SourceMapsTranslator;
+import org.netbeans.modules.web.common.sourcemap.SourceMapsTranslator.Location;
 import org.openide.util.WeakListeners;
 
 /**
@@ -64,15 +66,18 @@ public final class SubmittedBreakpoint {
     
     private final JSLineBreakpoint breakpoint;
     private final long id;
+    private final Location bpLoc;
     private final V8Debugger dbg;
     private final PropertyChangeListener bpChangeListener;
     private final PropertyChangeListener addedChangeListener;
     
     SubmittedBreakpoint(JSLineBreakpoint breakpoint, long id,
+                        SourceMapsTranslator.Location bpLoc,
                         V8Breakpoint.ActualLocation[] actualLocations,
                         V8Debugger dbg) {
         this.breakpoint = breakpoint;
         this.id = id;
+        this.bpLoc = bpLoc;
         this.dbg = dbg;
         LOG.log(Level.FINE, "SubmittedBreakpoint({0}, {1})", new Object[]{breakpoint, id});
         adjustLocation(actualLocations);
@@ -94,11 +99,23 @@ public final class SubmittedBreakpoint {
     private void adjustLocation(V8Breakpoint.ActualLocation[] actualLocations) {
         if (actualLocations != null && actualLocations.length > 0) {
             long line = actualLocations[0].getLine();
-            breakpoint.setLine((int) line + 1);
+            long column = actualLocations[0].getColumn();
+            updatePosition(line, column);
         }
     }
     
     void updatePosition(long line, long column) {
+        SourceMapsTranslator smt = dbg.getScriptsHandler().getSourceMapsTranslator();
+        if (smt != null && bpLoc != null) {
+            if (line == 0) {
+                column -= dbg.getScriptsHandler().getScriptFirstLineColumnShift(bpLoc.getFile());
+            }
+            Location newLoc = new Location(bpLoc.getFile(), (int) line, (int) column);
+            Location l = smt.getSourceLocation(newLoc);
+            if (l != newLoc) {
+                line = l.getLine();
+            }
+        }
         breakpoint.setLine((int) line + 1);
     }
 
