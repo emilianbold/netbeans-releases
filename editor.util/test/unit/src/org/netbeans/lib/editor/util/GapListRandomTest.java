@@ -45,6 +45,7 @@
 package org.netbeans.lib.editor.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 import junit.framework.TestCase;
 
@@ -218,7 +219,28 @@ public class GapListRandomTest extends TestCase {
                     gl.set(index, o);
                 }
             } else if ((r -= copyRatio) < 0) {
-                
+                int methodType = (int)(random.nextDouble() * 3);
+                int alSize = al.size();
+                int off = (int)(random.nextDouble() * alSize);
+                int len = (int)(random.nextDouble() * (alSize + 1 - off));
+                switch (methodType) {
+                    case 0:
+                        GapList copyList = gl.copy();
+                        assertEquals("Lists differ", al, copyList);
+                        break;
+                    case 1:
+                        ArrayList<Object> targetList = new ArrayList<Object>();
+                        gl.copyElements(off, len, targetList);
+                        assertEquals("Lists differ", al.subList(off, off + len), targetList);
+                        break;
+                    case 2:
+                        Object[] targetArray = new Object[len];
+                        gl.copyElements(off, len, targetArray, 0);
+                        assertEquals("Lists differ", al.subList(off, off + len), Arrays.asList(targetArray));
+                        break;
+                    default:
+                        throw new AssertionError();
+                }
             }
 
             checkConsistency();
