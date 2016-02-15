@@ -1,7 +1,7 @@
 <?php
 namespace My;
 
-$x = new class {
+$anon = new class {
     public function testAnon() {
         $this->testBnon();
     }
@@ -10,4 +10,4 @@ $x = new class {
         echo 'testBnon' . PHP_EOL;
     }
 };
-$x->testAnon();
+$anon->testAnon();
