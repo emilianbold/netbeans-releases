@@ -847,7 +847,7 @@ pseudo
                 )
                 | {isScssSource()}? sass_interpolation_expression_var
                 |
-                ( NOT ws? LPAREN ws? simpleSelectorSequence? RPAREN )
+                ( NOT ws? LPAREN ws? (simpleSelectorSequence ws?)? RPAREN )
                 | 
                 ({isLessSource()}? {tokenNameEquals("extend")}? IDENT ws? LPAREN ws? selectorsGroup? RPAREN)
              ) 
