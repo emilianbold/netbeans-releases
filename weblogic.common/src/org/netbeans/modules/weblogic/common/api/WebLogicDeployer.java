@@ -183,32 +183,37 @@ public final class WebLogicDeployer {
                             if ("AppDeployment".equals(type)) { // NOI18N
                                 String moduleType = (String) connection.getAttribute(bean, "ModuleType"); // NOI18N
                                 String contextRoot = null;
-                                List<URL> urls = null;
+                                List<URL> urls = new ArrayList<>();
                                 ObjectName[] targets = (ObjectName[]) connection.getAttribute(bean, "Targets"); // NOI18N
                                 if (targets != null && targets.length > 0) {
-                                    String server = (String) connection.getAttribute(targets[0], "Name"); // NOI18N
-                                    ObjectName serverRuntime = (ObjectName) connection.invoke(
-                                            service, "lookupServerRuntime", new Object[]{server}, new String[] {"java.lang.String"}); // NOI18N
-                                    if (serverRuntime != null) {
-                                        ObjectName appRuntime = (ObjectName) connection.invoke(
-                                                serverRuntime, "lookupApplicationRuntime", new Object[]{name}, new String[] {"java.lang.String"}); // NOI18N
-                                        if (appRuntime != null) {
-                                            ObjectName[] runtimes = (ObjectName[]) connection.getAttribute(appRuntime, "ComponentRuntimes"); // NOI18N
-                                            if (runtimes != null) {
-                                                for (ObjectName runtime : runtimes) {
-                                                    String runtimeType = (String) connection.getAttribute(runtime, "Type"); // NOI18N
-                                                    if ("WebAppComponentRuntime".equals(runtimeType)) { // NOI18N
-                                                        contextRoot = (String) connection.getAttribute(runtime, "ContextRoot"); // NOI18N
-                                                        if (contextRoot != null) {
-                                                            // XXX may there be multiple web apps in ear?
-                                                            break;
+                                    // FIXME should the Application include all DeploymentTargets
+                                    for (int i = 0; i < targets.length; i++) {
+                                        String server = (String) connection.getAttribute(targets[i], "Name"); // NOI18N
+                                        ObjectName serverRuntime = (ObjectName) connection.invoke(
+                                                service, "lookupServerRuntime", new Object[]{server}, new String[]{"java.lang.String"}); // NOI18N
+                                        if (serverRuntime != null) {
+                                            ObjectName appRuntime = (ObjectName) connection.invoke(
+                                                    serverRuntime, "lookupApplicationRuntime", new Object[]{name}, new String[]{"java.lang.String"}); // NOI18N
+                                            if (appRuntime != null) {
+                                                ObjectName[] runtimes = (ObjectName[]) connection.getAttribute(appRuntime, "ComponentRuntimes"); // NOI18N
+                                                if (runtimes != null) {
+                                                    for (ObjectName runtime : runtimes) {
+                                                        String runtimeType = (String) connection.getAttribute(runtime, "Type"); // NOI18N
+                                                        if ("WebAppComponentRuntime".equals(runtimeType)) { // NOI18N
+                                                            String contextRootCurrent = (String) connection.getAttribute(runtime, "ContextRoot"); // NOI18N
+                                                            if (contextRootCurrent != null) {
+                                                                urls.addAll(getServerUrls(connection, serverRuntime, contextRootCurrent));
+                                                                if (contextRoot == null) {
+                                                                    // XXX may there be multiple web apps in ear?
+                                                                    // XXX may there be different context root on different servers ?
+                                                                    // hope not
+                                                                    contextRoot = contextRootCurrent;
+                                                                }
+                                                            }
                                                         }
                                                     }
                                                 }
                                             }
-                                        }
-                                        if (contextRoot != null) {
-                                            urls = getServerUrls(connection, serverRuntime, contextRoot);
                                         }
                                     }
                                 }

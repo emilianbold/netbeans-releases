@@ -44,6 +44,7 @@
 package org.netbeans.modules.j2ee.weblogic9.deploy;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -120,9 +121,18 @@ public class WLTargetModuleID implements WebTargetModuleID {
         synchronized (this) {
             candidates = new ArrayList<URL>(serverUrls);
         }
+        String web = getWebURL();
+        if (web != null) {
+            try {
+                candidates.add(new URL(web));
+            } catch (MalformedURLException ex) {
+                // just continue
+            }
+        }
+
         for (URL c : candidates) {
-            if (URLWait.waitForUrlReady(null, requestProcessor, c, 10000)) {
-               return c; 
+            if (URLWait.waitForUrlReady(null, requestProcessor, c, 1000)) {
+                return c;
             }
         }
         return null;

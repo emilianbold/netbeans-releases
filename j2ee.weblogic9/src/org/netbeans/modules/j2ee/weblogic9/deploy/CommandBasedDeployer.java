@@ -55,7 +55,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,8 +66,6 @@ import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.ProgressObject;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
@@ -78,7 +75,6 @@ import org.netbeans.modules.j2ee.weblogic9.config.WLApplicationModule;
 import org.netbeans.modules.j2ee.weblogic9.config.WLDatasource;
 import org.netbeans.modules.j2ee.weblogic9.config.WLMessageDestination;
 import org.netbeans.modules.j2ee.weblogic9.dd.model.WebApplicationModel;
-import org.netbeans.modules.j2ee.weblogic9.optional.NonProxyHostsHelper;
 import org.netbeans.modules.j2ee.weblogic9.ui.FailedAuthenticationSupport;
 import org.netbeans.modules.weblogic.common.api.BatchDeployListener;
 import org.netbeans.modules.weblogic.common.api.DeployListener;
@@ -88,7 +84,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -102,14 +97,6 @@ public final class CommandBasedDeployer extends AbstractDeployer {
     private static final Logger LOGGER = Logger.getLogger(CommandBasedDeployer.class.getName());
 
     private static final RequestProcessor RP = new RequestProcessor(CommandBasedDeployer.class);
-
-    private static final Callable<String> NON_PROXY = new Callable<String>() {
-
-        @Override
-        public String call() throws Exception {
-            return NonProxyHostsHelper.getNonProxyHosts();
-        }
-    };
 
     public CommandBasedDeployer(WLDeploymentManager deploymentManager) {
         super(deploymentManager);
@@ -209,8 +196,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
             }
         };
 
-        WebLogicDeployer deployer = WebLogicDeployer.getInstance(
-                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()), NON_PROXY);
+        WebLogicDeployer deployer = getDeploymentManager().createDeployer();
         deployer.undeploy(names.keySet(), listener);
 
         return progress;
@@ -284,8 +270,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
             }
         };
 
-        WebLogicDeployer deployer = WebLogicDeployer.getInstance(
-                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()), NON_PROXY);
+        WebLogicDeployer deployer = getDeploymentManager().createDeployer();
         deployer.start(names.keySet(), listener);
 
         return progress;
@@ -360,8 +345,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
             }
         };
 
-        WebLogicDeployer deployer = WebLogicDeployer.getInstance(
-                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()), NON_PROXY);
+        WebLogicDeployer deployer = getDeploymentManager().createDeployer();
         deployer.stop(names.keySet(), listener);
 
         return progress;
@@ -455,8 +439,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
             artifacts.add(new WebLogicDeployer.Artifact(module.getOrigin(), module.getName(), false));
         }
 
-        WebLogicDeployer deployer = WebLogicDeployer.getInstance(
-                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()), NON_PROXY);
+        WebLogicDeployer deployer = getDeploymentManager().createDeployer();
         deployer.deploy(artifacts, listener);
 
         return progress;
@@ -528,8 +511,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
             artifacts.add(new WebLogicDeployer.Artifact(lib, null, true));
         }
 
-        WebLogicDeployer deployer = WebLogicDeployer.getInstance(
-                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()), NON_PROXY);
+        WebLogicDeployer deployer = getDeploymentManager().createDeployer();
         deployer.deploy(artifacts, listener);
 
         return progress;
@@ -537,8 +519,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
 
     private ProgressObject deploy(final WLTargetModuleID moduleId, final File file, final String name, final String wlsTarget) {
         final WLProgressObject progress = new WLProgressObject(moduleId);
-        final WebLogicDeployer deployer = WebLogicDeployer.getInstance(
-                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()), NON_PROXY);
+        final WebLogicDeployer deployer = getDeploymentManager().createDeployer();
 
         final DeployListener listener = new DeployListener() {
 
@@ -659,6 +640,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
     private ProgressObject redeploy(final TargetModuleID[] targetModuleID, final File file) {
         assert file == null || targetModuleID.length == 1;
         final WLProgressObject progress = new WLProgressObject(targetModuleID);
+        final WebLogicDeployer deployer = getDeploymentManager().createDeployer();
 
         final Map<String, TargetModuleID> names = new LinkedHashMap<String, TargetModuleID>();
         for (TargetModuleID id : targetModuleID) {
@@ -726,8 +708,6 @@ public final class CommandBasedDeployer extends AbstractDeployer {
             }
         };
 
-        WebLogicDeployer deployer = WebLogicDeployer.getInstance(
-                getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()), NON_PROXY);
         if (file != null) {
             deployer.redeploy(targetModuleID[0].getModuleID(), file, listener);
         } else {
@@ -735,23 +715,6 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         }
 
         return progress;
-    }
-
-    private String getJavaBinary() {
-        // TODO configurable ? or use the jdk server is running on ?
-        JavaPlatform platform = JavaPlatformManager.getDefault().getDefaultPlatform();
-        Collection<FileObject> folders = platform.getInstallFolders();
-        String javaBinary = Utilities.isWindows() ? "java.exe" : "java"; // NOI18N
-        if (folders.size() > 0) {
-            FileObject folder = folders.iterator().next();
-            File file = FileUtil.toFile(folder);
-            if (file != null) {
-                javaBinary = file.getAbsolutePath() + File.separator
-                        + "bin" + File.separator
-                        + (Utilities.isWindows() ? "java.exe" : "java"); // NOI18N
-            }
-        }
-        return javaBinary;
     }
 
     private static WLTargetModuleID createModuleId(Target target, File file,
