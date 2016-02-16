@@ -474,9 +474,13 @@ public final class Tester {
             mapFailureInfoInternal(kase, testCase);
         }
 
+        @NbBundle.Messages("ParsingProcessor.failure.unknown=Unknown failure")
         private void mapFailureInfoInternal(TestCaseVo kase, TestCase testCase) {
             String message = kase.getMessage();
-            assert message != null : kase;
+            // #257477
+            if (message == null) {
+                message = Bundle.ParsingProcessor_failure_unknown();
+            }
             List<String> stackTrace = kase.getStackTrace();
             if (stackTrace == null) {
                 stackTrace = Collections.emptyList();
