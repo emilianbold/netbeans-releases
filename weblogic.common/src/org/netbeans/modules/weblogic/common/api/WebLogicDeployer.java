@@ -638,6 +638,12 @@ public final class WebLogicDeployer {
 
     public Future<Void> deploy(@NonNull final List<Artifact> artifacts,
             @NullAllowed final BatchDeployListener listener) {
+        return deploy(artifacts, Collections.<DeploymentTarget>emptyList(), listener);
+    }
+
+    public Future<Void> deploy(@NonNull final List<Artifact> artifacts,
+            @NonNull final Collection<DeploymentTarget> targets,
+            @NullAllowed final BatchDeployListener listener) {
 
         if (listener != null) {
             listener.onStart();
@@ -653,6 +659,17 @@ public final class WebLogicDeployer {
                     parameters.add("-upload"); // NOI18N
                     if (config.isRemote()) {
                         parameters.add("-remote"); // NOI18N
+                    }
+                    if (!targets.isEmpty()) {
+                        StringBuilder sb = new StringBuilder();
+                        for (DeploymentTarget t : targets) {
+                            if (sb.length() > 0) {
+                                sb.append(','); // NOI18N
+                            }
+                            sb.append(t.getName());
+                        }
+                        parameters.add("-targets"); // NOI18N
+                        parameters.add(sb.toString());
                     }
                     String name = getName(artifact.getFile(), artifact.getName());
                     parameters.add("-name"); // NOI18N

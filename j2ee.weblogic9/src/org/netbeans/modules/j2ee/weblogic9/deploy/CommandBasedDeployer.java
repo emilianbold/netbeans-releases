@@ -352,16 +352,17 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         return progress;
     }
 
-    public ProgressObject deployDatasource(final Collection<WLDatasource> datasources) {
-        return deployApplicationModules(datasources, NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Module_Datasource"));
+    public ProgressObject deployDatasource(final Collection<WLDatasource> datasources, final Set<String> wlsTarget) {
+        return deployApplicationModules(datasources, NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Module_Datasource"), wlsTarget);
     }
 
-    public ProgressObject deployMessageDestinations(final Collection<WLMessageDestination> destinations) {
-        return deployApplicationModules(destinations, NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Module_JMS"));
+    public ProgressObject deployMessageDestinations(final Collection<WLMessageDestination> destinations, final Set<String> wlsTarget) {
+        return deployApplicationModules(destinations, NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Module_JMS"), wlsTarget);
     }
 
     private ProgressObject deployApplicationModules(
-            final Collection<? extends WLApplicationModule> modules, final String moduleDisplayName) {
+            final Collection<? extends WLApplicationModule> modules, final String moduleDisplayName,
+            final Set<String> wlsTarget) {
 
         final String upperDisplayName = moduleDisplayName.length() <= 0 ? moduleDisplayName :
                 Character.toUpperCase(moduleDisplayName.charAt(0)) + moduleDisplayName.substring(1);
@@ -446,7 +447,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         return progress;
     }
 
-    public ProgressObject deployLibraries(final Set<File> libraries) {
+    public ProgressObject deployLibraries(final Set<File> libraries, final Set<String> wlsTarget) {
         final WLProgressObject progress = new WLProgressObject(new TargetModuleID[0]);
 
         BatchDeployListener listener = new BatchDeployListener() {
