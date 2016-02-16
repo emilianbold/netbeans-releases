@@ -56,6 +56,7 @@ import java.util.logging.Logger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -446,7 +447,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
         }
         CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
         return wlDeployer.deploy(target, file, file2, getHost(), getPort(),
-                getCommonConfiguration().isSecured(), getInstanceProperties().getProperty(WLPluginProperties.DEPLOY_TARGET));
+                getCommonConfiguration().isSecured(), getDeployTargets());
     }
 
     @Override
@@ -460,7 +461,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
         CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
         return wlDeployer.deploy(targets, deployment.getModuleFile(), deployment.getDeploymentPlan(),
                 getHost(), getPort(), getCommonConfiguration().isSecured(),
-                getInstanceProperties().getProperty(WLPluginProperties.DEPLOY_TARGET));
+                getDeployTargets());
     }
 
     public ProgressObject distribute(Target[] target, ModuleType moduleType, InputStream inputStream, InputStream inputStream0) throws IllegalStateException {
@@ -786,6 +787,17 @@ public class WLDeploymentManager implements DeploymentManager2 {
             config = WebLogicConfiguration.forLocalDomain(new File(serverHome), new File(domainHome), credentials);
         }
         return config;
+    }
+
+    private Set<String> getDeployTargets() {
+        String value = getInstanceProperties().getProperty(WLPluginProperties.DEPLOY_TARGETS);
+        if (value == null || value.isEmpty()) {
+            return Collections.emptySet();
+        }
+        String[] parts = value.split(","); // NOI18N
+        Set<String> ret = new HashSet<String>(parts.length);
+        Collections.addAll(ret, parts);
+        return ret;
     }
 
     private File getJavaBinary() {

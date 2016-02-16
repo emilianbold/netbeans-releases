@@ -78,6 +78,7 @@ import org.netbeans.modules.j2ee.weblogic9.dd.model.WebApplicationModel;
 import org.netbeans.modules.j2ee.weblogic9.ui.FailedAuthenticationSupport;
 import org.netbeans.modules.weblogic.common.api.BatchDeployListener;
 import org.netbeans.modules.weblogic.common.api.DeployListener;
+import org.netbeans.modules.weblogic.common.api.DeploymentTarget;
 import org.netbeans.modules.weblogic.common.api.WebLogicDeployer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -112,7 +113,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
     }
 
     public ProgressObject deploy(Target[] target, final File file, final File plan,
-            String host, String port, boolean secured, String wlsTarget) {
+            String host, String port, boolean secured, Set<String> wlsTarget) {
         // TODO is this correct only first server mentioned
         String name = file.getName();
         if (name.endsWith(".war") || name.endsWith(".ear")) { // NOI18N
@@ -517,7 +518,8 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         return progress;
     }
 
-    private ProgressObject deploy(final WLTargetModuleID moduleId, final File file, final String name, final String wlsTarget) {
+    private ProgressObject deploy(final WLTargetModuleID moduleId, final File file,
+            final String name, final Set<String> wlsTarget) {
         final WLProgressObject progress = new WLProgressObject(moduleId);
         final WebLogicDeployer deployer = getDeploymentManager().createDeployer();
 
@@ -569,8 +571,8 @@ public final class CommandBasedDeployer extends AbstractDeployer {
             }
         };
 
-        if (wlsTarget == null) {
-            deployer.deploy(file, Collections.<org.netbeans.modules.weblogic.common.api.DeploymentTarget>emptySet(), listener, name);
+        if (wlsTarget == null || wlsTarget.isEmpty()) {
+            deployer.deploy(file, Collections.<DeploymentTarget>emptySet(), listener, name);
             return progress;
         }
 
@@ -582,22 +584,21 @@ public final class CommandBasedDeployer extends AbstractDeployer {
             @Override
             public void run() {
                 try {
-                    org.netbeans.modules.weblogic.common.api.DeploymentTarget selected = null;
-                    for (org.netbeans.modules.weblogic.common.api.DeploymentTarget t : deployer.getTargets().get()) {
-                        if ((t.getType() == org.netbeans.modules.weblogic.common.api.DeploymentTarget.Type.SERVER
-                                || t.getType() == org.netbeans.modules.weblogic.common.api.DeploymentTarget.Type.CLUSTER)
-                                && wlsTarget.equals(t.getName())) {
-                            selected = t;
-                            break;
+                    List<DeploymentTarget> selected = new ArrayList<DeploymentTarget>(wlsTarget.size());
+                    for (DeploymentTarget t : deployer.getTargets().get()) {
+                        if ((t.getType() == DeploymentTarget.Type.SERVER
+                                || t.getType() == DeploymentTarget.Type.CLUSTER)
+                                && wlsTarget.contains(t.getName())) {
+                            selected.add(t);
                         }
                     }
-                    if (selected == null) {
+                    if (selected.size() != wlsTarget.size()) {
                         progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
                                 ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deployment_Failed_No_Target", wlsTarget)));
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deployment_Failed_No_Target")));
                         return;
                     }
-                    String result = deployer.deploy(file, Collections.singleton(selected), listener, name).get();
+                    String result = deployer.deploy(file, selected, listener, name).get();
                     try {
                         for (WebLogicDeployer.Application app : deployer.list(null).get()) {
                             if (result.equals(app.getName())) {
