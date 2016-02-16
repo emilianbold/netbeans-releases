@@ -534,7 +534,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
 
             @Override
             public void onFinish() {
-                if (wlsTarget == null) {
+                if (wlsTarget == null || wlsTarget.isEmpty()) {
                     progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
                             NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deployment_Completed")));
