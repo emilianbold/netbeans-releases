@@ -55,8 +55,6 @@ public interface JSBreakpointsInfo {
     
     public static final String PROP_BREAKPOINTS_ACTIVE = "breakpointsActive";   // NOI18N
     
-    public boolean isDefault();
-    
     public boolean isAnnotatable(FileObject fo);
     
     public boolean isTransientURL(URL url);

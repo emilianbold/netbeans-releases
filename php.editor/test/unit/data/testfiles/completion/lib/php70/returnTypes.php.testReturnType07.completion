@@ -24,6 +24,7 @@ CLASS      Comment                         [PUBLIC]   returnTypesTyping11.php
 CLASS      Comment                         [PUBLIC]   returnTypesTyping12.php
 CLASS      FloatClass                      [PUBLIC]   scalarTypeHints.php
 CLASS      IntClass                        [PUBLIC]   scalarTypeHints.php
+CLASS      Outer                           [PUBLIC]   My
 CLASS      StringClass                     [PUBLIC]   scalarTypeHints.php
 KEYWORD    array                                      null
 KEYWORD    bool                                       null

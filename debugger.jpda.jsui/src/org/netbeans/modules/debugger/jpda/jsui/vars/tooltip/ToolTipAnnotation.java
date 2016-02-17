@@ -40,7 +40,7 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.js.vars.tooltip;
+package org.netbeans.modules.debugger.jpda.jsui.vars.tooltip;
 
 import java.util.concurrent.CancellationException;
 import org.netbeans.api.debugger.DebuggerEngine;

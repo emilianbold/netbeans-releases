@@ -1092,7 +1092,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             if (keyword.startsWith("$")) { //NOI18N
                 if (className != null) {
                     formatter.type(true);
-                    formatter.appendText(className);
+                    formatter.appendText(CodeUtils.isSynteticTypeName(className) ? "{}" : className); // NOI18N
                     formatter.type(false);
                 }
                 formatter.appendText(" "); //NOI18N

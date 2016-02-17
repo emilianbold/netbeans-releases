@@ -55,7 +55,7 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
                 <folder name="ToolTips">
-                    <file name="org-netbeans-modules-debugger-jpda-js-vars-tooltip-ToolTipAnnotation.instance"/>
+                    <file name="org-netbeans-modules-debugger-jpda-jsui-vars-tooltip-ToolTipAnnotation.instance"/>
                 </folder>
                 <folder name="Popup">
                  <!-- <file name="org-netbeans-modules-debugger-ui-actions-DebugFileAction.shadow">

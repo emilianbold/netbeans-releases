@@ -649,7 +649,9 @@ final class CompletionContextFinder {
 
     @CheckForNull
     private static CompletionContext getClsIfaceDeclContext(Token<PHPTokenId> token, int tokenOffset, TokenSequence<PHPTokenId> tokenSequence) {
+        boolean isNew = false;
         boolean isClass = false;
+        int openParenthesis = 0;
         boolean isIface = false;
         boolean isExtends = false;
         boolean isImplements = false;
@@ -658,11 +660,34 @@ final class CompletionContextFinder {
         Token<PHPTokenId> stringToken = null;
         boolean nokeywords;
         List<? extends Token<PHPTokenId>> preceedingLineTokens = getPreceedingLineTokens(token, tokenOffset, tokenSequence);
-        for (Token<PHPTokenId> cToken : preceedingLineTokens) {
+        for (int i = 0; i < preceedingLineTokens.size(); i++) {
+            Token<PHPTokenId> cToken = preceedingLineTokens.get(i);
             TokenId id = cToken.id();
             nokeywords = !isIface && !isClass && !isExtends && !isImplements && !isNsSeparator;
-            if (id.equals(PHPTokenId.PHP_CLASS)) {
+            if (id.equals(PHPTokenId.PHP_TOKEN)
+                    && ")".equals(cToken.text().toString())) { // NOI18N
+                openParenthesis--;
+            } else if (id.equals(PHPTokenId.PHP_TOKEN)
+                    && "(".equals(cToken.text().toString())) { // NOI18N
+                openParenthesis++;
+            } else if (id.equals(PHPTokenId.PHP_CLASS)) {
                 isClass = true;
+                // anonymous class?
+                int j = i + 1;
+                while (j < preceedingLineTokens.size()) {
+                    Token<PHPTokenId> tkn = preceedingLineTokens.get(j);
+                    ++j;
+                    if (tkn.id() == PHPTokenId.WHITESPACE) {
+                        continue;
+                    }
+                    isNew = tkn.id() == PHPTokenId.PHP_NEW;
+                    break;
+                }
+                if (isNew
+                        && openParenthesis > 0) {
+                    // anonymous class arguments (including e.g. 'new class(foo(|))')
+                    return null;
+                }
                 break;
             } else if (id.equals(PHPTokenId.PHP_INTERFACE)) {
                 isIface = true;
@@ -702,7 +727,11 @@ final class CompletionContextFinder {
             } else if (isIface) {
                 return !isString ? CompletionContext.NONE : CompletionContext.EXTENDS;
             } else if (isClass) {
-                return !isString ? CompletionContext.NONE : CompletionContext.INHERITANCE;
+                if (isString
+                        || isNew) {
+                    return CompletionContext.INHERITANCE;
+                }
+                return CompletionContext.NONE;
             }
         } else if (isExtends || isImplements) {
             boolean firstString = false;

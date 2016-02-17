@@ -261,6 +261,14 @@ public final class CodeUtils {
         return clsName != null ? extractUnqualifiedName(clsName) : null;
     }
 
+    @CheckForNull
+    public static String extractUnqualifiedSuperClassName(ClassInstanceCreation classInstanceCreation) {
+        assert classInstanceCreation != null;
+        assert classInstanceCreation.isAnonymous() : classInstanceCreation;
+        Expression clsName = classInstanceCreation.getSuperClass();
+        return clsName != null ? extractUnqualifiedName(clsName) : null;
+    }
+
     public static String extractUnqualifiedName(NamespaceName namespaceName) {
         final List<Identifier> segments = namespaceName.getSegments();
         return segments.get(segments.size() - 1).getName();
@@ -313,6 +321,10 @@ public final class CodeUtils {
 
     public static String extractClassName(ClassDeclaration clsDeclaration) {
         return clsDeclaration.getName().getName();
+    }
+
+    public static String extractClassName(ClassInstanceCreation classInstanceCreation) {
+        return extractClassName(classInstanceCreation.getClassName());
     }
 
     public static String extractTypeName(TypeDeclaration typeDeclaration) {

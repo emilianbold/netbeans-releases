@@ -40,7 +40,7 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.js.frames.models;
+package org.netbeans.modules.debugger.jpda.jsui.frames.models;
 
 import com.sun.jdi.AbsentInformationException;
 import java.awt.Toolkit;
