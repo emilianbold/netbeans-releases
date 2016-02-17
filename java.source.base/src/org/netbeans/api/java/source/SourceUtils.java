@@ -1617,7 +1617,7 @@ public class SourceUtils {
                 final JavacTaskImpl jt = JavacParser.createJavacTask(
                         new ClasspathInfo.Builder(ClassPath.EMPTY).build(),
                         null,
-                        Source.JDK1_9.name,
+                        null,
                         null,
                         null,
                         null,
