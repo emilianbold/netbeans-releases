@@ -3,5 +3,4 @@ return $this->|prop2 + $this->prop3 + $this->func1();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 METHOD     func1()                         [PROTECTE  \My\Outer
 METHOD     func2()                         [PUBLIC]   \My\Outer
-VARIABLE   ? prop                          [PRIVATE]  \My\Outer
 VARIABLE   ? prop2                         [PROTECTE  \My\Outer
