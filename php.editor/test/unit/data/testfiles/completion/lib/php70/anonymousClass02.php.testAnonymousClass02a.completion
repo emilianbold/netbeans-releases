@@ -27,6 +27,7 @@ CLASS      Comment                         [PUBLIC]   returnTypesTyping12.php
 CLASS      CommentsIterator                [PUBLIC]   My\Firm
 CLASS      FloatClass                      [PUBLIC]   scalarTypeHints.php
 CLASS      IntClass                        [PUBLIC]   scalarTypeHints.php
+CLASS      Outer                           [PUBLIC]   My
 CLASS      StringClass                     [PUBLIC]   scalarTypeHints.php
 METHOD     bar()                           [PUBLIC]   My\Firm
 METHOD     baz($data)                      [PUBLIC]   My\Firm
