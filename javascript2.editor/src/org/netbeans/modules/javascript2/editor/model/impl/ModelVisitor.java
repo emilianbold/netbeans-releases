@@ -117,7 +117,6 @@ public class ModelVisitor extends PathNodeVisitor {
     /**
      * Keeps the name of the visited properties
      */
-    private final List<List<FunctionNode>> functionStack;
     private final JsParserResult parserResult;
 
     // keeps objects that are created as arguments of a function call
@@ -133,7 +132,6 @@ public class ModelVisitor extends PathNodeVisitor {
         this.modelBuilder = new ModelBuilder(JsFunctionImpl.createGlobal(
                 fileObject, Integer.MAX_VALUE, parserResult.getSnapshot().getMimeType()));
         this.occurrenceBuilder = occurrenceBuilder;
-        this.functionStack = new ArrayList<List<FunctionNode>>();
         this.parserResult = parserResult; 
         this.scriptName = fileObject != null ? fileObject.getName().replace('.', '_') : "";
         lc = getLexicalContext();
@@ -778,11 +776,11 @@ public class ModelVisitor extends PathNodeVisitor {
             }
         } 
 //        else {
-            for(FunctionNode cFunction: getDeclaredFunction(functionNode)) {
-                if (cFunction.isAnonymous()) {
-                    cFunction.setName(lc, scriptName + cFunction.getName());
-                }
-            }
+//            for(FunctionNode cFunction: getDeclaredFunction(functionNode)) {
+//                if (cFunction.isAnonymous()) {
+//                    cFunction.setName(lc, scriptName + cFunction.getName());
+//                }
+//            }
 //        }
         if (fncScope != null) {
             // create variables that are declared in the function
@@ -1005,23 +1003,6 @@ public class ModelVisitor extends PathNodeVisitor {
 //        functionStack.remove(functionStack.size() - 1);
         removeFromPathTheLast();
         return false;
-    }
-    
-    private List<FunctionNode> getDeclaredFunction (FunctionNode inNode) {
-        final List<FunctionNode> declared = new ArrayList<FunctionNode>();
-        
-        Block block = inNode.getBody();
-        
-        block.accept(new NodeVisitor<LexicalContext>(lc) {
-            
-            @Override
-            public boolean enterFunctionNode(FunctionNode functionNode) {
-                declared.add(functionNode);
-                return false;
-            }
-           
-        });
-        return declared;
     }
     
     private List<VarNode> getDeclaredVar(FunctionNode inNode) {
