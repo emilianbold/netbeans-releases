@@ -41,10 +41,6 @@
  */
 package org.netbeans.modules.debugger.jpda.js;
 
-import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
-import org.openide.filesystems.FileObject;
-import org.openide.text.Line;
-
 /**
  *
  * @author Martin
@@ -59,16 +55,5 @@ public class JSUtils {
     public static final String VAR_THIS = ":this";     // NOI18N
     public static final String VAR_SCOPE = ":scope";   // NOI18N
     public static final String VAR_CALLEE = ":callee"; // NOI18N
-    
-    public static Line getCurrentLine() {
-        FileObject fo = EditorContextDispatcher.getDefault().getCurrentFile();
-        if (fo == null) {
-            return null;
-        }
-        if (!JS_MIME_TYPE.equalsIgnoreCase(fo.getMIMEType())) {
-            return null;
-        }
-        return EditorContextDispatcher.getDefault().getCurrentLine();
-    }
     
 }

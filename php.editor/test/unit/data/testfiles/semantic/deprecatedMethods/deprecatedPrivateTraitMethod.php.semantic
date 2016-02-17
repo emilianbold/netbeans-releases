@@ -2,7 +2,7 @@
 
 trait |>CLASS:TraitName<| {
     /** @deprecated */
-    private function |>DEPRECATED,METHOD,UNUSED:bar3<|() {}
+    private function |>DEPRECATED,METHOD:bar3<|() {}
 }
 
 ?>

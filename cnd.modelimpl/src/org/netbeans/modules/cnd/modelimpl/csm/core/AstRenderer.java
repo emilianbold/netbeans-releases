@@ -1021,7 +1021,8 @@ public class AstRenderer {
                 node = node.getNextSibling();
             }
             AST classNode = node;
-            while (classNode != null && (isVolatileQualifier(classNode.getType()) || isConstQualifier(classNode.getType()))) {
+            while (classNode != null && (isVolatileQualifier(classNode.getType()) 
+                    || isConstQualifier(classNode.getType())) || isAtomicQualifier(classNode.getType())) {
                 classNode = classNode.getNextSibling();
             }
             if (classNode == null) {
@@ -1740,11 +1741,21 @@ public class AstRenderer {
     }
 
     public static boolean isQualifier(int tokenType) {
-        return isCVQualifier(tokenType) || isStorageClassSpecifier(tokenType) || (tokenType == CPPTokenTypes.LITERAL_typename);
+        return isCVQualifier(tokenType) || isStorageClassSpecifier(tokenType) || isAtomicQualifier(tokenType)
+                || (tokenType == CPPTokenTypes.LITERAL_typename);
     }
 
     public static boolean isCVQualifier(int tokenType) {
         return isConstQualifier(tokenType) || isVolatileQualifier(tokenType);
+    }
+
+    public static boolean isAtomicQualifier(int tokenType) {
+        switch (tokenType) {
+            case CPPTokenTypes.LITERAL__Atomic:
+                return true;
+            default:
+                return false;
+        }
     }
 
     public static boolean isConstQualifier(int tokenType) {
@@ -1793,6 +1804,7 @@ public class AstRenderer {
             case CPPTokenTypes.LITERAL___hidden:
                 return true;
             case CPPTokenTypes.LITERAL_thread_local:
+            case CPPTokenTypes.LITERAL__Thread_local:
                 return true;
             default:
                 return false;

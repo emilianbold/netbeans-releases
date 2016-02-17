@@ -142,7 +142,7 @@ public final class DeploymentHelper {
         if (jmp == null) {
             err.println();
             err.println();
-            err.println("NetBeans: Application Server deployment not available for Maven project '" + ProjectUtils.getInformation(project).getDisplayName() + "'"); // NOI18N
+            err.println("Application Server deployment not available for Maven project '" + ProjectUtils.getInformation(project).getDisplayName() + "'"); // NOI18N
             return DeploymentResult.FAILED;
         }
 
@@ -158,14 +158,14 @@ public final class DeploymentHelper {
 
         serverInstanceID = jmp.getServerInstanceID();
         if (DEV_NULL.equals(serverInstanceID) || serverInstanceID == null) {
-            err.println("NetBeans: No suitable Deployment Server is defined for the project or globally."); // NOI18N
+            err.println("No suitable Deployment Server is defined for the project or globally."); // NOI18N
             return DeploymentResult.FAILED;
         }
         ServerInstance si = Deployment.getDefault().getServerInstance(serverInstanceID);
         try {
-            out.println("NetBeans: Deploying on " + (si != null ? si.getDisplayName() : serverInstanceID)); //NOI18N - no localization in maven build now.
+            out.println("Deploying on " + (si != null ? si.getDisplayName() : serverInstanceID)); //NOI18N - no localization in maven build now.
         } catch (InstanceRemovedException ex) {
-            out.println("NetBeans: Deploying on " + serverInstanceID); // NOI18N
+            out.println("Deploying on " + serverInstanceID); // NOI18N
         }
         try {
             out.println("    profile mode: " + profilemode); // NOI18N

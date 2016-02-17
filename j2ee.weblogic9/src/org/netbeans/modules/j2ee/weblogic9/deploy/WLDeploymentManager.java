@@ -102,6 +102,7 @@ import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLProductProperties;
 import org.netbeans.modules.j2ee.weblogic9.j2ee.WLJ2eePlatformFactory;
 import org.netbeans.modules.weblogic.common.api.WebLogicConfiguration;
+import org.netbeans.modules.weblogic.common.api.WebLogicDeployer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -421,7 +422,8 @@ public class WLDeploymentManager implements DeploymentManager2 {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
         CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
-        return wlDeployer.deploy(target, file, file2, getHost(), getPort(), getCommonConfiguration().isSecured());
+        return wlDeployer.deploy(target, file, file2, getHost(), getPort(),
+                getCommonConfiguration().isSecured(), getInstanceProperties().getProperty(WLPluginProperties.DEPLOY_TARGET));
     }
 
     @Override
@@ -434,7 +436,8 @@ public class WLDeploymentManager implements DeploymentManager2 {
 
         CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
         return wlDeployer.deploy(targets, deployment.getModuleFile(), deployment.getDeploymentPlan(),
-                getHost(), getPort(), getCommonConfiguration().isSecured());
+                getHost(), getPort(), getCommonConfiguration().isSecured(),
+                getInstanceProperties().getProperty(WLPluginProperties.DEPLOY_TARGET));
     }
 
     public ProgressObject distribute(Target[] target, ModuleType moduleType, InputStream inputStream, InputStream inputStream0) throws IllegalStateException {

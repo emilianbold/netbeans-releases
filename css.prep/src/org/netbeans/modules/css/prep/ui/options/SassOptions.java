@@ -51,10 +51,10 @@ import org.netbeans.modules.css.prep.sass.SassCli;
 import org.netbeans.modules.css.prep.sass.SassCssPreprocessor;
 import org.netbeans.modules.css.prep.util.Warnings;
 import org.netbeans.modules.web.common.api.ValidationResult;
-import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
+import org.netbeans.modules.web.common.ui.spi.CssPreprocessorUIImplementation;
 import org.openide.util.NbBundle;
 
-public class SassOptions implements CssPreprocessorImplementation.Options {
+public class SassOptions implements CssPreprocessorUIImplementation.Options {
 
     private final SassCssPreprocessor sassCssPreprocessor;
 

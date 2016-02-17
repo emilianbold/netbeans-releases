@@ -877,7 +877,7 @@ public final class VariousUtils {
         if (varBase instanceof AnonymousObjectVariable) {
             AnonymousObjectVariable aov = (AnonymousObjectVariable) varBase;
             Expression clsName = aov.getName();
-            assert clsName instanceof ClassInstanceCreation;
+            assert clsName instanceof ClassInstanceCreation : clsName.getClass().getName();
             ClassInstanceCreation cis = (ClassInstanceCreation) clsName;
             String className = CodeUtils.extractClassName(cis.getClassName());
             return PRE_OPERATION_TYPE_DELIMITER + CONSTRUCTOR_TYPE_PREFIX + className;

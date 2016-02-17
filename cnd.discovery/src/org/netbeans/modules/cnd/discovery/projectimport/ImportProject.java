@@ -44,15 +44,14 @@ package org.netbeans.modules.cnd.discovery.projectimport;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -627,7 +626,7 @@ public class ImportProject implements PropertyChangeListener {
         }
         Writer outputListener = null;
         try {
-            outputListener = new BufferedWriter(new FileWriter(configureLog));
+            outputListener =  Files.newBufferedWriter(configureLog.toPath(), Charset.forName("UTF-8")); //NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -787,7 +786,7 @@ public class ImportProject implements PropertyChangeListener {
         if (logFile != null && logFile.exists() && logFile.canRead()){
             BufferedReader in = null;
             try {
-                in = new BufferedReader(new FileReader(logFile));
+                in = Files.newBufferedReader(logFile.toPath(), Charset.forName("UTF-8")); // NOI18N
                 while (true) {
                     String line = in.readLine();
                     if (line == null) {
@@ -961,7 +960,7 @@ public class ImportProject implements PropertyChangeListener {
         Writer outputListener = null;
         if (makeLog != null) {
             try {
-                outputListener = new BufferedWriter(new FileWriter(makeLog.getLocalFile()));
+                outputListener =  Files.newBufferedWriter(makeLog.getLocalFile().toPath(), Charset.forName("UTF-8")); //NOI18N 
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

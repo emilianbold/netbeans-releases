@@ -43,7 +43,7 @@ package org.netbeans.modules.javascript.v8debug.vars.tooltip;
 
 import org.netbeans.modules.javascript.v8debug.V8DebuggerEngineProvider;
 import org.netbeans.modules.javascript.v8debug.vars.models.VariablesModel;
-import org.netbeans.modules.javascript2.debug.tooltip.AbstractJSToolTipAnnotation;
+import org.netbeans.modules.javascript2.debug.ui.tooltip.AbstractJSToolTipAnnotation;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;

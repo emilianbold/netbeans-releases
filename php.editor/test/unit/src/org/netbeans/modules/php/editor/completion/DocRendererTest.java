@@ -45,6 +45,7 @@ package org.netbeans.modules.php.editor.completion;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.netbeans.modules.php.editor.PHPTestBase;
+import org.netbeans.modules.php.editor.completion.DocRenderer.PHPDocExtractor;
 
 public class DocRendererTest extends PHPTestBase {
 
@@ -99,7 +100,7 @@ public class DocRendererTest extends PHPTestBase {
         String tested = "Sort the given array of {@link MyObject}s by ORDER field.";
         String expected = "Sort the given array of <a href=\"MyObject\">MyObject</a>s by ORDER field.";
 
-        DocRenderer.PHPDocExtractor extractor = new DocRenderer.PHPDocExtractor(null, null);
+        DocRenderer.PHPDocExtractor extractor = new DocRenderer.PHPDocExtractor(null, null, null, null);
 
         String result = extractor.processDescription(tested);
 
@@ -107,6 +108,223 @@ public class DocRendererTest extends PHPTestBase {
             System.err.println("[" + result + "] => [" + expected + "]");
         }
         assertEquals(expected, result);
+    }
+
+    public void testHasInlineInheritdoc() {
+        assertTrue(PHPDocExtractor.hasInlineInheritdoc("Description {@inheritdoc}"));
+        assertTrue(PHPDocExtractor.hasInlineInheritdoc("{@inheritDoc} Child Description."));
+        assertTrue(PHPDocExtractor.hasInlineInheritdoc("{@inheritDoc } Child Description."));
+
+        assertFalse(PHPDocExtractor.hasInlineInheritdoc("@inheritdoc"));
+        assertFalse(PHPDocExtractor.hasInlineInheritdoc(""));
+        assertFalse(PHPDocExtractor.hasInlineInheritdoc(null));
+    }
+
+    public void testRemoveDescriptionHeader_01() {
+        /**
+         * Header of PHPDoc comment.
+         */
+        checkRemoveDescriptionHeader("", "\nHeader of PHPDoc comment.\n");
+    }
+
+    public void testRemoveDescriptionHeader_02() {
+        /** Header of PHPDoc comment.
+         */
+        checkRemoveDescriptionHeader("", "Header of PHPDoc comment.\n");
+    }
+
+    public void testRemoveDescriptionHeader_03() {
+        /**
+         * Header of PHPDoc comment. 
+         * Description.
+         */
+        checkRemoveDescriptionHeader("Description.\n", "\nHeader of PHPDoc comment. \nDescription.\n");
+    }
+
+    public void testRemoveDescriptionHeader_04() {
+        /**
+         * Header of PHPDoc comment
+         * Description.
+         */
+        checkRemoveDescriptionHeader("", "\nHeader of PHPDoc comment\nDescription.\n");
+    }
+
+    public void testRemoveDescriptionHeader_05() {
+        /**
+         * Header of PHPDoc comment
+         * Description.
+         * Something.
+         */
+        checkRemoveDescriptionHeader("Something\n", "\nHeader of PHPDoc comment\nDescription.\nSomething\n");
+    }
+
+    public void testRemoveDescriptionHeader_06() {
+        /**
+         * Header of PHPDoc comment
+         *
+         * Description.
+         */
+        checkRemoveDescriptionHeader("Description.\n", "\nHeader of PHPDoc comment\n\nDescription.\n");
+    }
+
+    public void testRemoveDescriptionHeader_07() {
+        /**
+         * Header of PHPDoc comment.
+         *
+         * Description.
+         */
+        checkRemoveDescriptionHeader("Description.\n", "\nHeader of PHPDoc comment.\n\nDescription.\n");
+    }
+
+    // has tags
+    public void testRemoveDescriptionHeader_08() {
+        /**
+         * Header of PHPDoc comment.
+         * @param string $parameter description.
+         */
+        checkRemoveDescriptionHeader("", "\r\nHeader of PHPDoc comment.");
+    }
+
+    public void testRemoveDescriptionHeader_09() {
+        /** Header of PHPDoc comment.
+         * @param string $parameter description.
+         */
+        checkRemoveDescriptionHeader("", "Header of PHPDoc comment.");
+    }
+
+    public void testRemoveDescriptionHeader_10() {
+        /**
+         * Header of PHPDoc comment.
+         * Description.
+         * @param string $parameter description.
+         */
+        checkRemoveDescriptionHeader("Description.", "\nHeader of PHPDoc comment.\nDescription.");
+    }
+
+    public void testRemoveDescriptionHeader_11() {
+        /**
+         * Header of PHPDoc comment
+         * Description.
+         * @param string $parameter description.
+         */
+        checkRemoveDescriptionHeader("", "\nHeader of PHPDoc comment\nDescription.");
+    }
+
+    public void testRemoveDescriptionHeader_12() {
+        /**
+         * Header of PHPDoc comment
+         * Description.
+         * Something.
+         * @param string $parameter description.
+         */
+        checkRemoveDescriptionHeader("Something", "\nHeader of PHPDoc comment\nDescription.\nSomething");
+    }
+
+    public void testRemoveDescriptionHeader_13() {
+        /**
+         * Header of PHPDoc comment
+         *
+         * Description.
+         * @param string $parameter description.
+         */
+        checkRemoveDescriptionHeader("Description.", "\nHeader of PHPDoc comment\n\nDescription.");
+    }
+
+    public void testRemoveDescriptionHeader_14() {
+        /**
+         * Header of PHPDoc comment.
+         *
+         * Description.
+         * @param string $parameter description.
+         */
+        checkRemoveDescriptionHeader("Description.", "\nHeader of PHPDoc comment.\n\nDescription.");
+    }
+
+    public void testRemoveDescriptionHeader_15() {
+        /**
+         * Header of PHPDoc comment.
+         *
+         * Description. Multiple Line
+         * Description.
+         * Something.
+         * @param string $parameter description.
+         */
+        checkRemoveDescriptionHeader(
+                "Description. Multiple Line\nDescription.\nSomething.",
+                "\nHeader of PHPDoc comment.\n\nDescription. Multiple Line\nDescription.\nSomething."
+        );
+    }
+
+    public void testReplaceInlineInheritdoc_01() {
+        checkReplaceInlineInheritdoc(
+                "Header.\nParent Description. Child Description.",
+                "Header.\n{@inheritdoc} Child Description.",
+                "Parent Description."
+        );
+    }
+
+    public void testReplaceInlineInheritdoc_02() {
+        checkReplaceInlineInheritdoc(
+                "Header.\nParent Description. Child Description. Parent Description.",
+                "Header.\n{@inheritdoc} Child Description. {@inheritDoc}",
+                "Parent Description."
+        );
+    }
+
+    public void testReplaceInlineInheritdoc_03() {
+        checkReplaceInlineInheritdoc(
+                "Header.\n{@inheritdoc} Child Description.",
+                "Header.\n{@inheritdoc} Child Description.",
+                null
+        );
+    }
+
+    public void testReplaceInlineInheritdoc_04() {
+        checkReplaceInlineInheritdoc(
+                null,
+                null,
+                "Parent Description"
+        );
+    }
+
+    public void testReplaceInlineInheritdoc_05() {
+        checkReplaceInlineInheritdoc(
+                null,
+                null,
+                null
+        );
+    }
+
+    public void testReplaceInlineInheritdoc_06() {
+        checkReplaceInlineInheritdoc(
+                "Header.\n{@inheritdoc} Child Description.",
+                "Header.\n{@inheritdoc} Child Description.",
+                ""
+        );
+    }
+
+    public void testReplaceInlineInheritdoc_07() {
+        checkReplaceInlineInheritdoc(
+                "Header.\n{@inheritdoc} Child Description.",
+                "Header.\n{@inheritdoc} Child Description.",
+                "   \r\n   	"
+        );
+    }
+
+    public void testReplaceInlineInheritdoc_08() {
+        checkReplaceInlineInheritdoc(
+                "Header.\n@inheritdoc Child Description.",
+                "Header.\n@inheritdoc Child Description.",
+                "Parent Description."
+        );
+    }
+
+    private void checkRemoveDescriptionHeader(String expected, String description) {
+        assertEquals(expected, PHPDocExtractor.removeDescriptionHeader(description));
+    }
+
+    private void checkReplaceInlineInheritdoc(String expected, String description, String inheritdoc) {
+        assertEquals(expected, PHPDocExtractor.replaceInlineInheritdoc(description, inheritdoc));
     }
 
 }

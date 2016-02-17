@@ -109,6 +109,7 @@ import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.api.CssPreprocessorsListener;
 import org.netbeans.modules.web.common.api.UsageLogger;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
+import org.netbeans.modules.web.common.ui.api.CssPreprocessorsUI;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
@@ -571,7 +572,7 @@ public class ClientSideProject implements Project {
                new ClientSideProjectSources(this, projectHelper, eval),
                new ClientSideModuleImpl(this),
                ProjectPropertiesProblemProvider.createForProject(this),
-               CssPreprocessors.getDefault().createProjectProblemsProvider(this),
+               CssPreprocessorsUI.getDefault().createProjectProblemsProvider(this),
                UILookupMergerSupport.createProjectProblemsProviderMerger(),
                new CreateFromTemplateAttributesImpl(projectHelper, fileEncodingQuery),
                SharabilityQueryImpl.create(projectHelper, eval, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER,

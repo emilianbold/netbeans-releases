@@ -55,6 +55,8 @@ import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTTraceUtils;
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.List;
 
@@ -1175,7 +1177,7 @@ public class TraceModel extends TraceModelBase {
                 outFile.delete();
             }
             outFile.createNewFile();
-            Writer out = new BufferedWriter(new FileWriter(outFile));
+            Writer out = Files.newBufferedWriter(outFile.toPath(), Charset.forName("UTF-8")); //NOI18N 
             APTTraceUtils.xmlSerialize(apt, out);
             out.flush();
             APT light = APTBuilder.buildAPTLight(apt);
@@ -1184,7 +1186,7 @@ public class TraceModel extends TraceModelBase {
                 outFileLW.delete();
             }
             outFileLW.createNewFile();
-            Writer outLW = new BufferedWriter(new FileWriter(outFileLW));
+            Writer outLW =  Files.newBufferedWriter(outFileLW.toPath(), Charset.forName("UTF-8")); //NOI18N
             APTTraceUtils.xmlSerialize(light, outLW);
             outLW.flush();
         }

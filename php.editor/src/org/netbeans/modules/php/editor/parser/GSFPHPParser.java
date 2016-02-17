@@ -196,7 +196,11 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(context.getSanitizedSource()), shortTags, aspTags);
         ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
 
+        final FileObject fileObject = context.getSnapshot().getSource().getFileObject();
         parser.setErrorHandler(errorHandler);
+        if (fileObject != null) {
+            parser.setFileName(fileObject.getNameExt());
+        }
 
         java_cup.runtime.Symbol rootSymbol = parser.parse();
         if (scanner.getCurlyBalance() != 0 && !sanitizedSource) {
@@ -205,6 +209,9 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                 context.setSourceHolder(new StringSourceHolder(context.getSanitizedSource()));
                 scanner = new ASTPHP5Scanner(new StringReader(context.getBaseSource()), shortTags, aspTags);
                 parser = new ASTPHP5Parser(scanner);
+                if (fileObject != null) {
+                    parser.setFileName(fileObject.getNameExt());
+                }
                 rootSymbol = parser.parse();
             }
         }

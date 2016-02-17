@@ -127,6 +127,7 @@ import org.netbeans.modules.web.common.api.UsageLogger;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
+import org.netbeans.modules.web.common.ui.api.CssPreprocessorsUI;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
@@ -764,7 +765,7 @@ public final class PhpProject implements Project {
                 new PhpSubTreeSearchOptions(),
                 new PhpTestingProvidersImpl(testingProviders),
                 InternalWebServer.createForProject(this),
-                CssPreprocessors.getDefault().createProjectProblemsProvider(this),
+                CssPreprocessorsUI.getDefault().createProjectProblemsProvider(this),
                 ProjectPropertiesProblemProvider.createForProject(this),
                 UILookupMergerSupport.createProjectProblemsProviderMerger(),
                 new ProjectWebRootProviderImpl(),

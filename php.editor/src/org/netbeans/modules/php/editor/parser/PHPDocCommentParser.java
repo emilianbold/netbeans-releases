@@ -91,7 +91,7 @@ public class PHPDocCommentParser {
 
     }
 
-    private static Pattern pattern = Pattern.compile("[\r\n][ \\t]*[*]?[ \\t]*");
+    private static final Pattern pattern = Pattern.compile("[\r\n][ \\t]*[*]?[ \\t]*"); // NOI18N
 
     /**
      * Tags that define something of a type
@@ -112,6 +112,7 @@ public class PHPDocCommentParser {
      *
      * @param startOffset this is offset of the comment in the document. It's used
      * for creating ASTNodes.
+     * @param endOffset
      * @param comment
      * @return
      */
@@ -202,11 +203,14 @@ public class PHPDocCommentParser {
                 blockDescription = description + line;
             } else {
                 description = description + line;
+                String tagDescription = description.length() > 0 && description.charAt(description.length() - 1) == '\n'
+                        ? description.substring(0, description.length() - 1)
+                        : description;
                 PHPDocTag tag = createTag(
                         startOffset + 3 + lastStartIndex,
                         startOffset + 3 + lastEndIndex,
                         lastTag,
-                        description.substring(0, description.length() - 1),
+                        tagDescription,
                         comment,
                         startOffset + 3);
                 if (tag != null) {
@@ -220,13 +224,16 @@ public class PHPDocCommentParser {
     private PHPDocTag createTag(int start, int end, AnnotationParsedLine type, String description, String originalComment, int originalCommentStart) {
         final Map<OffsetRange, String> types = type.getTypes();
         if (types.isEmpty()) {
-            List<PHPDocTypeNode> docTypes = findTypes(description, start, originalComment, originalCommentStart);
+            boolean isReturnTag = type.equals(PHPDocTag.Type.RETURN);
+            List<PHPDocTypeNode> docTypes = findTypes(description, start, originalComment, originalCommentStart, isReturnTag);
             if (PHP_DOC_VAR_TYPE_TAGS.contains(type)) {
                 String variable = getVaribleName(description);
                 PHPDocNode varibaleNode = null;
                 if (variable != null) {
                     int startOfVariable = findStartOfDocNode(originalComment, originalCommentStart, variable, start);
-                    varibaleNode = new PHPDocNode(startOfVariable, startOfVariable + variable.length(), variable);
+                    if (startOfVariable != -1) {
+                        varibaleNode = new PHPDocNode(startOfVariable, startOfVariable + variable.length(), variable);
+                    }
                 } else if (type.equals(PHPDocTag.Type.PARAM)) {
                     varibaleNode = new PHPDocNode(start, start, ""); //NOI18N
                 }
@@ -238,9 +245,14 @@ public class PHPDocCommentParser {
                 String name = getMethodName(description);
                 if (name != null) {
                     int startOfVariable = findStartOfDocNode(originalComment, originalCommentStart, name, start);
-                    PHPDocNode methodNode = new PHPDocNode(startOfVariable, startOfVariable + name.length(), name);
-                    List<PHPDocVarTypeTag> params = findMethodParams(description, findStartOfDocNode(originalComment, originalCommentStart, description, start));
-                    return new PHPDocMethodTag(start, end, type, docTypes, methodNode, params, description);
+                    if (startOfVariable != -1) {
+                        PHPDocNode methodNode = new PHPDocNode(startOfVariable, startOfVariable + name.length(), name);
+                        int startOfDescription = findStartOfDocNode(originalComment, originalCommentStart, description, start);
+                        if (startOfDescription != -1) {
+                            List<PHPDocVarTypeTag> params = findMethodParams(description, startOfDescription);
+                            return new PHPDocMethodTag(start, end, type, docTypes, methodNode, params, description);
+                        }
+                    }
                 }
                 return null;
             } else if (type.equals(PHPDocTag.Type.RETURN) || type.equals(PHPDocTag.Type.VAR)) {
@@ -261,11 +273,21 @@ public class PHPDocCommentParser {
     }
 
     private List<PHPDocTypeNode> findTypes(String description, int startDescription, String originalComment, int originalCommentStart) {
-        List<PHPDocTypeNode> result = new ArrayList<>();
+        return findTypes(description, startDescription, originalComment, originalCommentStart, false);
+    }
 
-        for (String stype : getTypes(description)) {
+    private List<PHPDocTypeNode> findTypes(String description, int startDescription, String originalComment, int originalCommentStart, boolean isReturnTag) {
+        if (StringUtils.isEmpty(description)) {
+            return Collections.emptyList();
+        }
+
+        List<PHPDocTypeNode> result = new ArrayList<>();
+        for (String stype : getTypes(description, isReturnTag)) {
             stype = removeHTMLTags(stype);
             int startDocNode = findStartOfDocNode(originalComment, originalCommentStart, stype, startDescription);
+            if (startDocNode == -1) {
+                continue;
+            }
             int index = stype.indexOf("::");    //NOI18N
             boolean isArray = (stype.indexOf('[') > 0 && stype.indexOf(']') > 0);
             if (isArray) {
@@ -286,10 +308,10 @@ public class PHPDocCommentParser {
         return result;
     }
 
-    private List<String> getTypes(String description) {
+    private List<String> getTypes(String description, boolean isReturnTag) {
         String[] tokens = description.trim().split("[ ]+"); //NOI18N
         ArrayList<String> types = new ArrayList<>();
-        if (tokens.length > 0 && !tokens[0].startsWith("$")) { //NOI18N
+        if (tokens.length > 0 && (isReturnTag || !tokens[0].startsWith("$"))) { //NOI18N
             if (tokens[0].indexOf('|') > -1) {
                 String[] ttokens = tokens[0].split("[|]"); //NOI18N
                 for (String ttoken : ttokens) {
@@ -348,11 +370,13 @@ public class PHPDocCommentParser {
                 paramName = getVaribleName(token.trim());
                 if (paramName != null) {
                     int startOfParamName = findStartOfDocNode(description, startOfDescription, paramName, position);
-                    PHPDocNode paramNameNode = new PHPDocNode(startOfParamName, startOfParamName + paramName.length(), paramName);
-                    List<PHPDocTypeNode> types = token.trim().indexOf(' ') > -1
-                            ? findTypes(token, position, description, startOfDescription)
-                            : Collections.EMPTY_LIST;
-                    result.add(new PHPDocVarTypeTag(position, startOfParamName + paramName.length(), PHPDocTag.Type.PARAM, token, types, paramNameNode));
+                    if (startOfParamName != -1) {
+                        PHPDocNode paramNameNode = new PHPDocNode(startOfParamName, startOfParamName + paramName.length(), paramName);
+                        List<PHPDocTypeNode> types = token.trim().indexOf(' ') > -1
+                                ? findTypes(token, position, description, startOfDescription)
+                                : Collections.EMPTY_LIST;
+                        result.add(new PHPDocVarTypeTag(position, startOfParamName + paramName.length(), PHPDocTag.Type.PARAM, token, types, paramNameNode));
+                    }
                 }
                 position = position + token.length() + 1;
             }
@@ -373,9 +397,19 @@ public class PHPDocCommentParser {
         return value;
     }
 
+    /**
+     * Find the start position of the specified string in the comment.
+     *
+     * @param originalComment the comment
+     * @param originalStart the offset of the original comment
+     * @param what the target string
+     * @param from the start offset
+     * @return the start position of the specified string if it is found,
+     * otherwise -1.
+     */
     private int findStartOfDocNode(String originalComment, int originalStart, String what, int from) {
         int pos = originalComment.indexOf(what, from - originalStart);
-        return originalStart + pos;
+        return pos == -1 ? pos : originalStart + pos;
     }
 
     private String removeStarAndTrim(String text) {

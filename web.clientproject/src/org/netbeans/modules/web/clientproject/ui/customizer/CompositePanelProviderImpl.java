@@ -52,7 +52,7 @@ import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
 import org.netbeans.modules.web.clientproject.api.platform.PlatformProvider;
-import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.modules.web.common.ui.api.CssPreprocessorsUI;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
@@ -150,7 +150,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             projectType = ClientSideProjectType.TYPE,
             position = 150)
     public static ProjectCustomizer.CompositeCategoryProvider createCssPreprocessors() {
-        return CssPreprocessors.getDefault().createCustomizer();
+        return CssPreprocessorsUI.getDefault().createCustomizer();
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(

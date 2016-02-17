@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.web.clientproject.ui.options;
 
-import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.modules.web.common.ui.api.CssPreprocessorsUI;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 
@@ -51,13 +51,13 @@ public final class CssPreprocessorsOptionsFactory {
     }
 
     @OptionsPanelController.SubRegistration(
-        id = CssPreprocessors.OPTIONS_SUBCATEGORY,
-        location = CssPreprocessors.OPTIONS_CATEGORY,
+        id = CssPreprocessorsUI.OPTIONS_SUBCATEGORY,
+        location = CssPreprocessorsUI.OPTIONS_CATEGORY,
         displayName = "#CssPreprocessorsOptionsFactory.name"
     )
     @NbBundle.Messages("CssPreprocessorsOptionsFactory.name=CSS Preprocessors")
     public static OptionsPanelController createOptions() {
-        return CssPreprocessors.getDefault().createOptions();
+        return CssPreprocessorsUI.getDefault().createOptions();
     }
 
 }

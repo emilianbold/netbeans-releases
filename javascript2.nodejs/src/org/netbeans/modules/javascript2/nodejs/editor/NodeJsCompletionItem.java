@@ -50,7 +50,7 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.web.common.api.FileReferenceCompletion;
+import org.netbeans.modules.web.common.ui.api.FileReferenceCompletion;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 

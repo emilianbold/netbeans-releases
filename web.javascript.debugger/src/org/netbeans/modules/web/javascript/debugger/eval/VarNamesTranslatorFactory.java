@@ -44,8 +44,8 @@ package org.netbeans.modules.web.javascript.debugger.eval;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript2.debug.NamesTranslator;
 import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
-import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil.NamesTranslator;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 

@@ -210,6 +210,9 @@ public class Generator implements PropertyChangeListener {
         debug.getQmakeConfiguration().getBuildMode().setValue(QmakeConfiguration.DEBUG_MODE);
         debug.getCCCompilerConfiguration().getIncludeDirectories().setValue(getIncludePaths(dirF.getPath()));
         debug.getLinkerConfiguration().getLibrariesConfiguration().setValue(libs);
+        if (toolchain != null && toolchain.getCompilerFlavor().isSunStudioCompiler()) {
+            debug.getLinkerConfiguration().getNorunpathOption().setValue(false);
+        }
         
         MakeConfiguration release = MakeConfiguration.createConfiguration(dirF, "Release", conftype, null, hostUID, toolchain, defaultToolchain); // NOI18N
         release.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
@@ -219,6 +222,9 @@ public class Generator implements PropertyChangeListener {
         release.getQmakeConfiguration().getBuildMode().setValue(QmakeConfiguration.RELEASE_MODE);
         release.getCCCompilerConfiguration().getIncludeDirectories().setValue(getIncludePaths(dirF.getPath()));
         release.getLinkerConfiguration().getLibrariesConfiguration().setValue(libs);
+        if (toolchain != null && toolchain.getCompilerFlavor().isSunStudioCompiler()) {
+            release.getLinkerConfiguration().getNorunpathOption().setValue(false);
+        }
         
         MakeConfiguration[] confs = new MakeConfiguration[]{debug, release};
         ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, dirF);

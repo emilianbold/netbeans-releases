@@ -72,7 +72,7 @@ import org.netbeans.modules.html.editor.lib.api.model.HtmlTagAttribute;
 import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.javadoc.HelpManager;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTagType;
-import org.netbeans.modules.web.common.api.FileReferenceCompletion;
+import org.netbeans.modules.web.common.ui.api.FileReferenceCompletion;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 import org.netbeans.swing.plaf.LFCustoms;

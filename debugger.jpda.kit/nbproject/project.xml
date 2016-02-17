@@ -54,7 +54,7 @@ made subject to such option by the copyright holder.
                     <run-dependency/>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.debugger.jpda.js</code-name-base>
+                    <code-name-base>org.netbeans.modules.debugger.jpda.jsui</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
                     </run-dependency>

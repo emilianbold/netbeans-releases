@@ -69,7 +69,7 @@ import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleCustomizerExtender;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
-import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.modules.web.common.ui.api.CssPreprocessorsUI;
 import org.netbeans.spi.project.support.ant.ui.CustomizerUtilities;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
@@ -297,7 +297,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         position = 195
     )
     public static ProjectCustomizer.CompositeCategoryProvider createCssPreprocessors() {
-        return CssPreprocessors.getDefault().createCustomizer();
+        return CssPreprocessorsUI.getDefault().createCustomizer();
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(

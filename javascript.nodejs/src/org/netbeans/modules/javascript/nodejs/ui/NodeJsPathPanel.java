@@ -489,7 +489,7 @@ public final class NodeJsPathPanel extends JPanel {
 
     private void nodeInstallLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_nodeInstallLabelMousePressed
         try {
-            HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("http://nodejs.org/")); // NOI18N
+            HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("https://nodejs.org/")); // NOI18N
         } catch (MalformedURLException ex) {
             LOGGER.log(Level.WARNING, null, ex);
         }

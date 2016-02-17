@@ -142,7 +142,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>2.0</specification-version>
+                        <specification-version>2.6</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -475,6 +475,7 @@
                 <friend>org.netbeans.modules.html.angular</friend>
                 <friend>org.netbeans.modules.html.knockout</friend>
                 <friend>org.netbeans.modules.html.ojet</friend>
+                <friend>org.netbeans.modules.javascript2.debug</friend>
                 <friend>org.netbeans.modules.javascript2.gj.bootstrap</friend>
                 <friend>org.netbeans.modules.javascript2.extjs</friend>
                 <friend>org.netbeans.modules.javascript2.jade</friend>
@@ -487,7 +488,6 @@
                 <friend>org.netbeans.modules.javascript2.requirejs</friend>
                 <friend>org.netbeans.modules.javascript2.gj.typescript</friend>
                 <friend>org.netbeans.modules.nodejscodecompletion</friend>
-                <friend>org.netbeans.modules.web.javascript.debugger</friend>
                 <package>org.netbeans.modules.javascript2.editor.api</package>
                 <package>org.netbeans.modules.javascript2.editor.api.lexer</package>
                 <package>org.netbeans.modules.javascript2.editor.index</package>

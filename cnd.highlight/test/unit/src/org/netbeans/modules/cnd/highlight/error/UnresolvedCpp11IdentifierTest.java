@@ -52,6 +52,7 @@ import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.Filter;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.modelimpl.trace.TraceModelFileFilter;
 import org.netbeans.modules.cnd.source.spi.CndSourcePropertiesProvider;
 import org.openide.loaders.DataObject;
 import org.openide.util.lookup.Lookups;
@@ -66,6 +67,15 @@ public class UnresolvedCpp11IdentifierTest extends ErrorHighlightingBaseTestCase
 
     public UnresolvedCpp11IdentifierTest(String testName) {
         super(testName);
+    }
+    
+    @Override
+    protected TraceModelFileFilter getTraceModelFileFilter() {
+        String simpleName = SimpleFileFilter.testNameToFileName(getName());
+        switch (simpleName) {
+            default:
+                return new SimpleFileFilter(simpleName); 
+        }
     }
 
     @Override

@@ -46,7 +46,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import org.netbeans.modules.javascript.v8debug.V8Debugger;
 import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
-import org.netbeans.modules.javascript2.debug.tooltip.DebuggerTooltipSupport;
+import org.netbeans.modules.javascript2.debug.ui.tooltip.DebuggerTooltipSupport;
 
 /**
  *

@@ -513,6 +513,7 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
             forceVariableAsUsed = true;
             scan(node.getClassName());
             scan(node.ctorParams());
+            scan(node.getBody());
             forceVariableAsUsed = false;
         }
 

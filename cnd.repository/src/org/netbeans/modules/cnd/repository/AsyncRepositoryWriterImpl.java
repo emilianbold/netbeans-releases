@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.storage.StorageManager;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -81,6 +82,15 @@ import org.openide.util.RequestProcessor;
     private final AtomicBoolean flush = new AtomicBoolean(false);
     private boolean doneFlag;
     private final RemoveKeySupport removeKeySupport;
+    private static final int WAIT_TIMEOUT;
+    
+    static {
+        if (CndUtils.isUnitTestMode()) {
+            WAIT_TIMEOUT = 10;
+        } else {
+            WAIT_TIMEOUT = 500;
+        }
+    }
 
     public AsyncRepositoryWriterImpl(final StorageManager storage, RemoveKeySupport removeKeySupport) {
         this.removeKeySupport = removeKeySupport;
@@ -234,7 +244,7 @@ import org.openide.util.RequestProcessor;
 
                 if (!draining) {
                     try {
-                        Thread.sleep(500);
+                        Thread.sleep(WAIT_TIMEOUT);
                     } catch (InterruptedException ex) {
                         RepositoryExceptions.throwException(this, ex);
                     }

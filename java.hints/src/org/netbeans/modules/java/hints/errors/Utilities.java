@@ -700,8 +700,13 @@ public class Utilities {
 
         while (!todo.isEmpty()) {
             TreePath tp = todo.remove(0);
+            Tree l = tp.getLeaf();
+            while (l.getKind() == Kind.PARENTHESIZED) {
+                tp = new TreePath(tp, ((ParenthesizedTree)l).getExpression());
+                l = tp.getLeaf();
+            }
 
-            if (tp.getLeaf().getKind() != Kind.PLUS) {
+            if (l.getKind() != Kind.PLUS) {
                 result.add(tp);
                 continue;
             }

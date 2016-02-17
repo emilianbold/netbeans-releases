@@ -44,21 +44,32 @@ package org.netbeans.modules.javascript2.debug.breakpoints;
 
 import java.beans.BeanDescriptor;
 import java.beans.SimpleBeanInfo;
-import org.netbeans.modules.javascript2.debug.breakpoints.ui.JSLineBreakpointCustomizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Martin
  */
 public class JSLineBreakpointBeanInfo extends SimpleBeanInfo {
+
+    private static final Logger LOG = Logger.getLogger(JSLineBreakpointBeanInfo.class.getName());
     
     public JSLineBreakpointBeanInfo() {}
 
     @Override
     public BeanDescriptor getBeanDescriptor() {
+        Class customizer = null;
+        try {
+            customizer = Class.forName("org.netbeans.modules.javascript2.debug.ui.breakpoints.JSLineBreakpointCustomizer",
+                                       true, Lookup.getDefault().lookup(ClassLoader.class));
+        } catch (ClassNotFoundException cnfex) {
+            LOG.log(Level.WARNING, "No BP customizer", cnfex);
+        }
         return new BeanDescriptor(
                 JSLineBreakpoint.class,
-                JSLineBreakpointCustomizer.class);
+                customizer);
     }
     
 }

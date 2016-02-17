@@ -161,6 +161,17 @@ public final class CodeUtils {
         return new NamespaceName(start, end, segments, baseNamespaceName.isGlobal(), baseNamespaceName.isCurrent());
     }
 
+    /**
+     * Checks whether the given name is syntetic name. It means that
+     * the name starts with "#".
+     * @param name name to be checked
+     * @return {@code true} if the given name is syntetic
+     */
+    public static boolean isSynteticTypeName(String name) {
+        assert name != null;
+        return name.startsWith("#"); // NOI18N
+    }
+
     // XXX remove!
     public static boolean isLessThanPhp70(FileObject file) {
         return CodeUtils.isPhpVersionLessThan(file, PhpVersion.PHP_56);
@@ -250,6 +261,14 @@ public final class CodeUtils {
         return clsName != null ? extractUnqualifiedName(clsName) : null;
     }
 
+    @CheckForNull
+    public static String extractUnqualifiedSuperClassName(ClassInstanceCreation classInstanceCreation) {
+        assert classInstanceCreation != null;
+        assert classInstanceCreation.isAnonymous() : classInstanceCreation;
+        Expression clsName = classInstanceCreation.getSuperClass();
+        return clsName != null ? extractUnqualifiedName(clsName) : null;
+    }
+
     public static String extractUnqualifiedName(NamespaceName namespaceName) {
         final List<Identifier> segments = namespaceName.getSegments();
         return segments.get(segments.size() - 1).getName();
@@ -283,6 +302,7 @@ public final class CodeUtils {
     }
     //TODO: rewrite for php53
     public static String extractClassName(ClassName clsName) {
+        assert clsName != null;
         Expression name = clsName.getName();
         while (name instanceof Variable || name instanceof FieldAccess) {
             if (name instanceof Variable) {
@@ -301,6 +321,10 @@ public final class CodeUtils {
 
     public static String extractClassName(ClassDeclaration clsDeclaration) {
         return clsDeclaration.getName().getName();
+    }
+
+    public static String extractClassName(ClassInstanceCreation classInstanceCreation) {
+        return extractClassName(classInstanceCreation.getClassName());
     }
 
     public static String extractTypeName(TypeDeclaration typeDeclaration) {

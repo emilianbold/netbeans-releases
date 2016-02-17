@@ -74,6 +74,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
@@ -258,7 +259,8 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         private Set<FunctionElement> deprecatedFunctions;
 
         // last visited type declaration
-        private TypeDeclaration typeDeclaration;
+        private TypeInfo typeInfo;
+
 
         public SemanticHighlightVisitor(Map<OffsetRange, Set<ColoringAttributes>> highlights, Snapshot snapshot, Model model) {
             this.highlights = highlights;
@@ -384,7 +386,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 return;
             }
             addToPath(cldec);
-            this.typeDeclaration = cldec;
+            typeInfo = new TypeDeclarationTypeInfo(cldec);
             scan(cldec.getSuperClass());
             scan(cldec.getInterfaes());
             Identifier name = cldec.getName();
@@ -400,6 +402,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 }
                 addColoringForUnusedPrivateFields();
             }
+            removeFromPath();
         }
 
         private Set<ColoringAttributes> createTypeNameColoring(Identifier typeName) {
@@ -466,10 +469,14 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             String name = identifier.getName().toLowerCase();
             Set<ColoringAttributes> coloring = createMethodDeclarationColoring(md);
             // don't color private magic private method. methods which start __
-            if (isPrivate && name != null && !name.startsWith("__")) {
-                privateUnusedMethods.put(new UnusedIdentifier(name, typeDeclaration), new ASTNodeColoring(identifier, coloring));
+            // in case of trait, just ignore it because it may be used in other classes
+            if (isPrivate
+                    && !typeInfo.isTrait()
+                    && name != null
+                    && !name.startsWith("__")) { // NOI18N
+                privateUnusedMethods.put(new UnusedIdentifier(name, typeInfo), new ASTNodeColoring(identifier, coloring));
             } else {
-                // color now only non private method
+                // color now only non private method and all trait methods
                 addColoringForNode(identifier, coloring);
             }
             if (!Modifier.isAbstract(md.getModifier())) {
@@ -499,7 +506,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             if (!isCancelled() && isResolveDeprecatedElements()) {
                 VariableScope variableScope = model.getVariableScope(methodName.getStartOffset());
                 QualifiedName typeFullyQualifiedName = VariousUtils.getFullyQualifiedName(
-                        QualifiedName.create(typeDeclaration.getName()),
+                        QualifiedName.create(typeInfo.getName()),
                         methodName.getStartOffset(),
                         variableScope);
                 for (MethodElement methodElement : getDeprecatedMethods()) {
@@ -537,7 +544,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 identifier = (Identifier) node.getMethod().getFunctionName().getName();
             }
             if (identifier != null) {
-                ASTNodeColoring item = privateUnusedMethods.remove(new UnusedIdentifier(identifier.getName().toLowerCase(), typeDeclaration));
+                ASTNodeColoring item = privateUnusedMethods.remove(new UnusedIdentifier(identifier.getName().toLowerCase(), typeInfo));
                 if (item != null) {
                     addColoringForNode(item.identifier, item.coloring);
                 }
@@ -547,11 +554,37 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         }
 
         @Override
+        public void visit(ClassInstanceCreation node) {
+            if (isCancelled()) {
+                return;
+            }
+            if (node.isAnonymous()) {
+                addToPath(node);
+                typeInfo = new ClassInstanceCreationTypeInfo(node);
+                scan(node.getSuperClass());
+                scan(node.getInterfaces());
+                needToScan = new ArrayList<>();
+                Block body = node.getBody();
+                if (body != null) {
+                    body.accept(this);
+
+                    // find all usages in the method bodies
+                    while (!needToScan.isEmpty()) {
+                        Block block = needToScan.remove(0);
+                        block.accept(this);
+                    }
+                    addColoringForUnusedPrivateFields();
+                }
+                removeFromPath();
+            }
+        }
+
+        @Override
         public void visit(InterfaceDeclaration node) {
             if (isCancelled()) {
                 return;
             }
-            typeDeclaration = node;
+            typeInfo = new TypeDeclarationTypeInfo(node);
             Identifier name = node.getName();
             addColoringForNode(name, createTypeNameColoring(name));
             super.visit(node);
@@ -562,7 +595,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             if (isCancelled()) {
                 return;
             }
-            typeDeclaration = node;
+            typeInfo = new TypeDeclarationTypeInfo(node);
             Identifier name = node.getName();
             addColoringForNode(name, createTypeNameColoring(name));
             needToScan = new ArrayList<>();
@@ -586,12 +619,14 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             for (int i = 0; i < variables.length; i++) {
                 Variable variable = variables[i];
                 Set<ColoringAttributes> coloring = createFieldDeclarationColoring(variable, isStatic);
-                if (!isPrivate) {
+                // in case of trait, just ignore it because it may be used in other classes
+                if (!isPrivate
+                        || typeInfo.isTrait()) {
                     addColoringForNode(variable.getName(), coloring);
                 } else {
                     if (variable.getName() instanceof Identifier) {
                         Identifier identifier =  (Identifier) variable.getName();
-                        privateFieldsUnused.put(new UnusedIdentifier(identifier.getName(), typeDeclaration), new ASTNodeColoring(identifier, coloring));
+                        privateFieldsUnused.put(new UnusedIdentifier(identifier.getName(), typeInfo), new ASTNodeColoring(identifier, coloring));
                     }
                 }
             }
@@ -616,7 +651,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 String variableName = CodeUtils.extractVariableName(variable);
                 VariableScope variableScope = model.getVariableScope(variable.getStartOffset());
                 QualifiedName typeFullyQualifiedName = VariousUtils.getFullyQualifiedName(
-                        QualifiedName.create(typeDeclaration.getName()),
+                        QualifiedName.create(typeInfo.getName()),
                         variable.getStartOffset(),
                         variableScope);
                 for (FieldElement fieldElement : getDeprecatedFields()) {
@@ -650,7 +685,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             if (fnName.getName() instanceof Identifier) {
                 Identifier identifier = (Identifier) fnName.getName();
                 String name = identifier.getName().toLowerCase();
-                ASTNodeColoring item = privateUnusedMethods.remove(new UnusedIdentifier(name, typeDeclaration));
+                ASTNodeColoring item = privateUnusedMethods.remove(new UnusedIdentifier(name, typeInfo));
                 if (item != null) {
                     addColoringForNode(item.identifier, item.coloring);
                 }
@@ -722,7 +757,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             if (!isCancelled() && isResolveDeprecatedElements()) {
                 VariableScope variableScope = model.getVariableScope(constantName.getStartOffset());
                 QualifiedName typeFullyQualifiedName = VariousUtils.getFullyQualifiedName(
-                        QualifiedName.create(typeDeclaration.getName()),
+                        QualifiedName.create(typeInfo.getName()),
                         constantName.getStartOffset(),
                         variableScope);
                 for (TypeConstantElement constantElement : getDeprecatedConstants()) {
@@ -832,7 +867,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             @Override
             public void visit(Identifier identifier) {
                 //remove the field, because is used
-                ASTNodeColoring removed = privateFieldsUnused.remove(new UnusedIdentifier(identifier.getName(), typeDeclaration));
+                ASTNodeColoring removed = privateFieldsUnused.remove(new UnusedIdentifier(identifier.getName(), typeInfo));
                 if (removed != null) {
                     // if it was removed, marked as normal field
                     addColoringForNode(removed.identifier, removed.coloring);
@@ -843,18 +878,19 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         private class UnusedIdentifier {
             private final String name;
-            private final TypeDeclaration typeDeclaration;
+            private final TypeInfo typeInfo;
 
-            public UnusedIdentifier(final String name, final TypeDeclaration classDeclaration) {
+
+            UnusedIdentifier(final String name, final TypeInfo typeInfo) {
                 this.name = name;
-                this.typeDeclaration = classDeclaration;
+                this.typeInfo = typeInfo;
             }
 
             @Override
             public int hashCode() {
                 int hash = 5;
                 hash = 29 * hash + (this.name != null ? this.name.hashCode() : 0);
-                hash = 29 * hash + (this.typeDeclaration != null ? this.typeDeclaration.hashCode() : 0);
+                hash = 29 * hash + (this.typeInfo != null ? this.typeInfo.hashCode() : 0);
                 return hash;
             }
 
@@ -870,7 +906,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
                     return false;
                 }
-                if (this.typeDeclaration != other.typeDeclaration && (this.typeDeclaration == null || !this.typeDeclaration.equals(other.typeDeclaration))) {
+                if (this.typeInfo != other.typeInfo && (this.typeInfo == null || !this.typeInfo.equals(other.typeInfo))) {
                     return false;
                 }
                 return true;
@@ -878,4 +914,58 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         }
     }
+
+    private interface TypeInfo {
+
+        Expression getName();
+        boolean isTrait();
+
+    }
+
+    private static final class TypeDeclarationTypeInfo implements TypeInfo {
+
+        private final TypeDeclaration typeDeclaration;
+        private final boolean isTrait;
+
+
+        TypeDeclarationTypeInfo(TypeDeclaration typeDeclaration) {
+            assert typeDeclaration != null;
+            this.typeDeclaration = typeDeclaration;
+            this.isTrait = typeDeclaration instanceof TraitDeclaration;
+        }
+
+        @Override
+        public Expression getName() {
+            return typeDeclaration.getName();
+        }
+
+        @Override
+        public boolean isTrait() {
+            return isTrait;
+        }
+
+    }
+
+    private static final class ClassInstanceCreationTypeInfo implements TypeInfo {
+
+        private final ClassInstanceCreation classInstanceCreation;
+
+
+        ClassInstanceCreationTypeInfo(ClassInstanceCreation classInstanceCreation) {
+            assert classInstanceCreation != null;
+            this.classInstanceCreation = classInstanceCreation;
+        }
+
+        @Override
+        public Expression getName() {
+            return classInstanceCreation.getClassName().getName();
+        }
+
+        @Override
+        public boolean isTrait() {
+            return false;
+        }
+
+    }
+
 }

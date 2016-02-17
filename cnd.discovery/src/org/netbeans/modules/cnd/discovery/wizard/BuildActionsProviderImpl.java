@@ -45,9 +45,9 @@ package org.netbeans.modules.cnd.discovery.wizard;
 import java.awt.event.ActionEvent;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -125,7 +125,7 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
                         execLog = new ExecLogWrapper(null, null);
                     }
                     execLog.setBuildLog(file.getAbsolutePath());
-                    bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
+                    bw = Files.newBufferedWriter(file.toPath(), Charset.forName("UTF-8")); //NOI18N
                 } catch (IOException ex) {
                     execLog.setBuildLog(null);
                     bw = null;

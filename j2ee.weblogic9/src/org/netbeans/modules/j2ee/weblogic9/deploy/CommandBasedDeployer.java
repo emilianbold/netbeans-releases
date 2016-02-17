@@ -51,11 +51,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -103,6 +105,8 @@ public final class CommandBasedDeployer extends AbstractDeployer {
     private static final Logger LOGGER = Logger.getLogger(CommandBasedDeployer.class.getName());
 
     private static final RequestProcessor URL_WAIT_RP = new RequestProcessor("Weblogic URL Wait", 10); // NOI18N
+    
+    private static final RequestProcessor RP = new RequestProcessor(CommandBasedDeployer.class);
 
     private static final Callable<String> NON_PROXY = new Callable<String>() {
 
@@ -118,7 +122,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
 
     public ProgressObject directoryDeploy(final Target target, String name,
             File file, String host, String port, boolean secured, J2eeModule.Type type) {
-        return deploy(createModuleId(target, file, host, port, secured, name, type), file, name);
+        return deploy(createModuleId(target, file, host, port, secured, name, type), file, name, null);
     }
 
     public ProgressObject directoryRedeploy(final TargetModuleID moduleId) {
@@ -126,14 +130,14 @@ public final class CommandBasedDeployer extends AbstractDeployer {
     }
 
     public ProgressObject deploy(Target[] target, final File file, final File plan,
-            String host, String port, boolean secured) {
+            String host, String port, boolean secured, String wlsTarget) {
         // TODO is this correct only first server mentioned
         String name = file.getName();
         if (name.endsWith(".war") || name.endsWith(".ear")) { // NOI18N
             name = name.substring(0, name.length() - 4);
         }
         final TargetModuleID moduleId = createModuleId(target[0], file, host, port, secured, name, null);
-        return deploy(moduleId, file, null);
+        return deploy(moduleId, file, null, wlsTarget);
     }
 
     public ProgressObject redeploy(TargetModuleID[] targetModuleID, File file, File file2) {
@@ -543,10 +547,10 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         return progress;
     }
 
-    private ProgressObject deploy(final TargetModuleID moduleId, final File file, String name) {
+    private ProgressObject deploy(final TargetModuleID moduleId, final File file, final String name, final String wlsTarget) {
         final WLProgressObject progress = new WLProgressObject(moduleId);
 
-        DeployListener listener = new DeployListener() {
+        final DeployListener listener = new DeployListener() {
 
             @Override
             public void onStart() {
@@ -592,9 +596,52 @@ public final class CommandBasedDeployer extends AbstractDeployer {
             }
         };
 
-        WebLogicDeployer deployer = WebLogicDeployer.getInstance(
+        final WebLogicDeployer deployer = WebLogicDeployer.getInstance(
                 getDeploymentManager().getCommonConfiguration(), new File(getJavaBinary()), NON_PROXY);
-        deployer.deploy(file, listener, name);
+        if (wlsTarget == null) {
+            deployer.deploy(file, Collections.<org.netbeans.modules.weblogic.common.api.DeploymentTarget>emptySet(), listener, name);
+            return progress;
+        }
+
+        progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
+                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING,
+                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_SearchingTargets")));
+
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    org.netbeans.modules.weblogic.common.api.DeploymentTarget selected = null;
+                    for (org.netbeans.modules.weblogic.common.api.DeploymentTarget t : deployer.getTargets().get()) {
+                        if ((t.getType() == org.netbeans.modules.weblogic.common.api.DeploymentTarget.Type.SERVER
+                                || t.getType() == org.netbeans.modules.weblogic.common.api.DeploymentTarget.Type.CLUSTER)
+                                && wlsTarget.equals(t.getName())) {
+                            selected = t;
+                            break;
+                        }
+                    }
+                    if (selected == null) {
+                        progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
+                                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deployment_Failed_No_Target", wlsTarget)));
+                        return;
+                    }
+                    deployer.deploy(file, Collections.singleton(selected), listener, name);
+                } catch (InterruptedException ex) {
+                    progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deployment_Failed_Interrupted")));
+                } catch (ExecutionException ex) {
+                    Throwable cause = ex.getCause();
+                    if (cause == null) {
+                        cause = ex;
+                    }
+                    progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deployment_Failed_With_Message", cause.getMessage())));
+                }
+            }
+        });
 
         return progress;
     }

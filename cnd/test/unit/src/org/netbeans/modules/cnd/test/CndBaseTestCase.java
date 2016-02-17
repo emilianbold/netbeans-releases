@@ -46,9 +46,9 @@ package org.netbeans.modules.cnd.test;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -60,7 +60,6 @@ import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
-import org.netbeans.core.startup.Main;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.MockServices;
 import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
@@ -335,7 +334,7 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
         if (diffOutputFile != null && diffOutputFile.exists()) {
             int i = 0;
             try {
-                BufferedReader in = new BufferedReader(new FileReader(diffOutputFile));
+                BufferedReader in = Files.newBufferedReader(diffOutputFile.toPath(), Charset.forName("UTF-8"));
                 while (true) {
                     String line = in.readLine();
                     if (line == null) {

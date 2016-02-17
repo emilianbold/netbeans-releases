@@ -55,13 +55,6 @@ Contributor(s):
                     <file name="org-netbeans-modules-cnd-highlight-error-CppUpToDateStatusProviderFactory.instance">
                     </file>
                 </folder>
-                <folder name="Keybindings">
-                    <folder name="NetBeans">
-                        <folder name="Defaults">
-                            <file name="highlighting-keybindings.xml" url="DefaultKeyBindings.xml"/>
-                        </folder>
-                    </folder>
-                </folder>
                 <folder name="Actions">
                     <file name="org-netbeans-modules-cnd-highlight-semantic-actions-GotoNextOccurrenceAction.instance">
                         <attr name="instanceOf" stringvalue="javax.swing.Action"/>

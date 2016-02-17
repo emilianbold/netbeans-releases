@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.web.clientproject.build.ui;
 
@@ -98,6 +98,8 @@ public final class AdvancedTasksPanel extends JPanel {
 
     // GuardedBy("EDT")
     DialogDescriptor descriptor;
+    // GuardedBy("EDT")
+    private AdvancedTask selectedTask;
 
 
     private AdvancedTasksPanel(String tasksLabel, String buildToolExec, List<String> simpleTasks, List<AdvancedTask> tasks, boolean showSimpleTasks) {
@@ -184,6 +186,12 @@ public final class AdvancedTasksPanel extends JPanel {
                 if (e.getValueIsAdjusting()) {
                     return;
                 }
+                List<AdvancedTask> selectedTasks = new ArrayList<>(tasksList.getSelectedValuesList());
+                if (selectedTasks.size() == 1) {
+                    selectedTask = selectedTasks.get(0);
+                } else {
+                    selectedTask = null;
+                }
                 selectedTasksChanged();
             }
         });
@@ -217,19 +225,10 @@ public final class AdvancedTasksPanel extends JPanel {
         return tasksList.getSelectedIndices();
     }
 
-    List<AdvancedTask> getSelectedTasks() {
-        assert EventQueue.isDispatchThread();
-        return tasksList.getSelectedValuesList();
-    }
-
     @CheckForNull
     AdvancedTask getSelectedTask() {
         assert EventQueue.isDispatchThread();
-        List<AdvancedTask> selectedTasks = getSelectedTasks();
-        if (selectedTasks.size() == 1) {
-            return selectedTasks.get(0);
-        }
-        return null;
+        return selectedTask;
     }
 
     void selectedTasksChanged() {
@@ -240,22 +239,22 @@ public final class AdvancedTasksPanel extends JPanel {
 
     void taskChanged(boolean updateFields) {
         assert EventQueue.isDispatchThread();
-        AdvancedTask selectedTask = getSelectedTask();
-        if (selectedTask == null) {
+        final AdvancedTask selected = getSelectedTask();
+        if (selected == null) {
             clearFields();
             enableFields(false);
             return;
         }
         enableFields(true);
         if (updateFields) {
-            nameTextField.setText(selectedTask.getName());
-            optionsTextField.setText(selectedTask.getOptions());
-            tasksComboBox.setSelectedItem(selectedTask.getTasks());
-            parametersTextField.setText(selectedTask.getParameters());
-            sharedCheckBox.setSelected(selectedTask.isShared());
+            nameTextField.setText(selected.getName());
+            optionsTextField.setText(selected.getOptions());
+            tasksComboBox.setSelectedItem(selected.getTasks());
+            parametersTextField.setText(selected.getParameters());
+            sharedCheckBox.setSelected(selected.isShared());
         }
-        validateTask(selectedTask);
-        setPreview(selectedTask);
+        validateTask(selected);
+        setPreview(selected);
     }
 
     @NbBundle.Messages({

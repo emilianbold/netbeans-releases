@@ -44,17 +44,16 @@ package org.netbeans.modules.web.common.api;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.spi.lexer.MutableTextInput;
+import org.openide.util.Mutex;
 import org.openide.util.Parameters;
 
 /**
@@ -71,10 +70,10 @@ public class LexerUtils {
      * @param doc a swing document
      */
     public  static void rebuildTokenHierarchy(final Document doc) {
-        SwingUtilities.invokeLater(new Runnable() {
+        Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run() {
-                NbEditorDocument nbdoc = (NbEditorDocument) doc;
+                BaseDocument nbdoc = (BaseDocument) doc;
                 nbdoc.runAtomic(new Runnable() {
                     @Override
                     public void run() {

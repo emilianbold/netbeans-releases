@@ -46,9 +46,10 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -573,7 +574,7 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
             BufferedReader in = new BufferedReader(new FileReader(file));
             String firstLine = in.readLine();
             in.close();
-            BufferedWriter out = new BufferedWriter(new FileWriter(file));
+            BufferedWriter out = Files.newBufferedWriter(file.toPath(), Charset.forName("UTF-8")); //NOI18N
             out.write(firstLine);
             out.newLine();
             out.write("cat \"" + file.getAbsolutePath() + LOG_POSTFIX + "\"");
@@ -584,7 +585,7 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
 
     protected static void hackMakefile(File file) {
         try {
-            BufferedWriter out = new BufferedWriter(new FileWriter(file));
+            BufferedWriter out = Files.newBufferedWriter(file.toPath(), Charset.forName("UTF-8")); //NOI18N
             out.write("all:");
             out.newLine();
             out.write("\tcat \"" + file.getAbsolutePath() + LOG_POSTFIX + "\"");

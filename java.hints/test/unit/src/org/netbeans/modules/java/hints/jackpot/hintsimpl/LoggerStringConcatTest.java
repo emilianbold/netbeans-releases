@@ -174,7 +174,7 @@ public class LoggerStringConcatTest extends NbTestCase {
                               "import java.util.logging.Logger;\n" +
                               "public class Test {\n" +
                               "    private void t(Logger l, int a, int b, int c) {\n" +
-                              "        l.log(Level.SEVERE,\"a=\" + \", b=''{0}''.\", b);\n" +
+                              "        l.log(Level.SEVERE, \"a=, b=''{0}''.\", b);\n" +
                               "    }\n" +
                               "}\n");
     }

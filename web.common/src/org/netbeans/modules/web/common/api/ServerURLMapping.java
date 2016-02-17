@@ -51,9 +51,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
-import org.openide.util.Utilities;
 
 /**
  * Provides mapping between project's source file and its location on server
@@ -157,7 +157,7 @@ public final class ServerURLMapping {
                     // #236532 - strip down query part from the URL:
                     serverURI = WebUtils.stringToUrl(WebUtils.urlToString(serverURL, true)).toURI();
                 }
-                File f = FileUtil.normalizeFile(Utilities.toFile(serverURI));
+                File f = FileUtil.normalizeFile(BaseUtilities.toFile(serverURI));
                 return FileUtil.toFileObject(f);
                 //FileObject fo = URLMapper.findFileObject(serverURL);
             } catch (URISyntaxException ex) {

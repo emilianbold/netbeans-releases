@@ -55,9 +55,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JToolTip;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript2.debug.models.ViewModelSupport;
+import org.netbeans.modules.javascript2.debug.NamesTranslator;
+import org.netbeans.modules.javascript2.debug.ui.models.ViewModelSupport;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
-import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
 import org.netbeans.modules.web.javascript.debugger.eval.VarNamesTranslatorFactory;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
@@ -197,7 +197,7 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
             if (frameName.isEmpty()) {
                 frameName = Bundle.LBL_AnonymousFunction();
             } else {
-                MiscEditorUtil.NamesTranslator namesTranslator = VarNamesTranslatorFactory.get(frame, debugger, pc.getProject()).getNamesTranslator();
+                NamesTranslator namesTranslator = VarNamesTranslatorFactory.get(frame, debugger, pc.getProject()).getNamesTranslator();
                 if (namesTranslator != null) {
                     frameName = namesTranslator.translateDeclarationNodeName(frameName);
                 }

@@ -52,7 +52,7 @@ import javax.swing.ImageIcon;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import static org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem.hexColorCode;
-import org.netbeans.modules.web.common.api.FileReferenceCompletion;
+import org.netbeans.modules.web.common.ui.api.FileReferenceCompletion;
 import org.netbeans.spi.editor.completion.LazyCompletionItem;
 import org.openide.filesystems.FileObject;
 

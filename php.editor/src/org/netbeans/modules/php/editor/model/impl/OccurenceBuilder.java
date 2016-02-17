@@ -378,7 +378,11 @@ class OccurenceBuilder {
     void prepare(ClassInstanceCreation node, Scope scope) {
         ASTNodeInfo<ClassInstanceCreation> nodeInfo = ASTNodeInfo.create(node);
         if (canBePrepared(node, scope)) {
-            clasInstanceCreations.put(nodeInfo, scope);
+            if (node.isAnonymous()) {
+                // XXX anonymous class
+            } else {
+                clasInstanceCreations.put(nodeInfo, scope);
+            }
         }
     }
 
@@ -691,7 +695,6 @@ class OccurenceBuilder {
                             : elementInfo.getQualifiedName();
                     final Set<TypeElement> types = index.getTypes(NameKind.exact(qualifiedName));
                     if (elementInfo.setDeclarations(types)) {
-                        buildClassInstanceCreation(elementInfo, fileScope, cachedOccurences);
                         buildClassNames(elementInfo, fileScope, cachedOccurences);
                         buildClassIDs(elementInfo, fileScope, cachedOccurences);
                         buildClassDeclarations(elementInfo, fileScope, cachedOccurences);

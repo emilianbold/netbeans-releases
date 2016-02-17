@@ -100,7 +100,7 @@ import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.lib.api.CssColor;
-import org.netbeans.modules.web.common.api.WebUtils;
+import org.netbeans.modules.web.common.ui.api.WebUIUtils;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.actions.Resource;
 import org.netbeans.modules.web.inspect.ui.DomTC;
@@ -887,7 +887,7 @@ public class CSSStylesSelectionPanel extends JPanel {
                         }
                         if (colorCode.startsWith("#") || (color != null)) { // NOI18N
                             JLabel label = (JLabel)component;
-                            label.setIcon(WebUtils.createColorIcon(colorCode));
+                            label.setIcon(WebUIUtils.createColorIcon(colorCode));
                         }
                     }
                     return component;

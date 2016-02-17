@@ -52,6 +52,7 @@ import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunEar;
 import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunEjb;
 import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunWeb;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.modules.web.common.ui.api.CssPreprocessorsUI;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
@@ -83,7 +84,7 @@ public final class MavenCompositePanelProvider implements ProjectCustomizer.Comp
     
     @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-maven", position = 259)
     public static ProjectCustomizer.CompositeCategoryProvider createCssPreprocessors() {
-        return new FilterProvider(CssPreprocessors.getDefault().createCustomizer());
+        return new FilterProvider(CssPreprocessorsUI.getDefault().createCustomizer());
     }
 
     // We want to create JavaScript libraries customizer/CSS Processors only for Maven Web Project:

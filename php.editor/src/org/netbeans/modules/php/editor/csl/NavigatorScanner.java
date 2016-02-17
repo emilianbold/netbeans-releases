@@ -54,6 +54,7 @@ import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
@@ -412,12 +413,16 @@ public final class NavigatorScanner {
     }
 
     protected void appendName(ModelElement modelElement, HtmlFormatter formatter) {
+        String name = modelElement.getName();
+        if (CodeUtils.isSynteticTypeName(name)) {
+            name = "{}"; // NOI18N
+        }
         if (modelElement.isDeprecated()) {
             formatter.deprecated(true);
-            formatter.appendText(modelElement.getName());
+            formatter.appendText(name);
             formatter.deprecated(false);
         } else {
-            formatter.appendText(modelElement.getName());
+            formatter.appendText(name);
         }
     }
 

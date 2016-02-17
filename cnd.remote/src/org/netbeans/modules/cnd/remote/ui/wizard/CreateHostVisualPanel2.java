@@ -301,7 +301,7 @@ import org.openide.util.RequestProcessor;
         if (data.getCacheManager().getServerUpdateCache() != null && data.getCacheManager().getServerUpdateCache().getHosts() != null) {
             records.addAll(data.getCacheManager().getServerUpdateCache().getHosts());
         } else {
-            records = new ArrayList<>(ServerList.getRecords());
+            records = new ArrayList<ServerRecord>(ServerList.getRecords());
         }
 
         for (ServerRecord record : records) {

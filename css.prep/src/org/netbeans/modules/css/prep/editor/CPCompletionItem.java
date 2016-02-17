@@ -49,7 +49,7 @@ import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.css.editor.module.spi.CssCompletionItem;
 import org.netbeans.modules.css.prep.editor.model.CPElementHandle;
 import static org.netbeans.modules.css.prep.editor.model.CPElementType.VARIABLE_GLOBAL_DECLARATION;
-import org.netbeans.modules.web.common.api.WebUtils;
+import org.netbeans.modules.web.common.ui.api.WebUIUtils;
 import org.netbeans.swing.plaf.LFCustoms;
 
 /**
@@ -76,7 +76,7 @@ public abstract class CPCompletionItem extends CssCompletionItem {
             case VARIABLE_GLOBAL_DECLARATION:
             case MIXIN_DECLARATION:
                 formatter.appendHtml("<font color=");
-                formatter.appendHtml(WebUtils.toHexCode(LFCustoms.shiftColor(COLOR)));
+                formatter.appendHtml(WebUIUtils.toHexCode(LFCustoms.shiftColor(COLOR)));
                 formatter.appendHtml("><b>"); //NOI18N
                 break;
         }
@@ -99,7 +99,7 @@ public abstract class CPCompletionItem extends CssCompletionItem {
             return super.getRhsHtml(formatter);
         } else {
             formatter.appendHtml("<font color=");
-            formatter.appendHtml(WebUtils.toHexCode(LFCustoms.shiftColor(ORIGIN_COLOR)));
+            formatter.appendHtml(WebUIUtils.toHexCode(LFCustoms.shiftColor(ORIGIN_COLOR)));
             formatter.appendHtml(">");
             formatter.appendText(origin);
             formatter.appendHtml("</font>"); //NOI18N

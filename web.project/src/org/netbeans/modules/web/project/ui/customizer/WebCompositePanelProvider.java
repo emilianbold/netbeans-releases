@@ -44,12 +44,11 @@
 
 package org.netbeans.modules.web.project.ui.customizer;
 
-import java.io.File;
 import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.modules.web.common.ui.api.CssPreprocessorsUI;
 import org.netbeans.modules.web.project.ProjectWebModule;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
@@ -57,7 +56,6 @@ import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.spi.project.support.ant.ui.CustomizerUtilities;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -248,7 +246,7 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = "org-netbeans-modules-web-project", position = 375)
     public static ProjectCustomizer.CompositeCategoryProvider createCssPreprocessors() {
-        return CssPreprocessors.getDefault().createCustomizer();
+        return CssPreprocessorsUI.getDefault().createCustomizer();
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(

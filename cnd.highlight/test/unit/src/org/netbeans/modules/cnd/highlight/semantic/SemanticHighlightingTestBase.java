@@ -81,7 +81,7 @@ public abstract class SemanticHighlightingTestBase  extends ProjectBasedTestCase
             FileImpl file = (FileImpl)getCsmFile(getDataFile(testFileName));
             Collection<? extends CsmOffsetable> out = getBlocks(file, offset);
             assertNotNull(out);
-            List<CsmOffsetable> sorted = new ArrayList<>(out);
+            List<? extends CsmOffsetable> sorted = new ArrayList<>(out);
             Collections.sort(sorted, new Comparator<CsmOffsetable>() {
 
                 @Override

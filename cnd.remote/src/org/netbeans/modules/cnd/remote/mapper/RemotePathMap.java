@@ -47,11 +47,11 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.net.ConnectException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -436,7 +436,7 @@ public abstract class RemotePathMap extends PathMap {
                 // create file
                 validationFile = File.createTempFile("cnd", "tmp", path); // NOI18N
                 if (validationFile.exists()) {
-                    out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(validationFile), "UTF-8")); // NOI18N
+                    out = Files.newBufferedWriter(validationFile.toPath(), Charset.forName("UTF-8")); //NOI18N
                     String validationLine = Double.toString(Math.random());
                     out.write(validationLine);
                     out.close();
