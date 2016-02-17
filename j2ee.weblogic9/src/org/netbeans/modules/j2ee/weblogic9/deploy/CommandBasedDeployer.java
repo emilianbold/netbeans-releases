@@ -368,8 +368,9 @@ public final class CommandBasedDeployer extends AbstractDeployer {
                 Character.toUpperCase(moduleDisplayName.charAt(0)) + moduleDisplayName.substring(1);
 
         final WLProgressObject progress = new WLProgressObject(new TargetModuleID[0]);
+        final WebLogicDeployer deployer = getDeploymentManager().createDeployer();
 
-        BatchDeployListener listener = new BatchDeployListener() {
+        final BatchDeployListener listener = new BatchDeployListener() {
 
             @Override
             public void onStepStart(String name) {
@@ -393,9 +394,11 @@ public final class CommandBasedDeployer extends AbstractDeployer {
 
             @Override
             public void onFinish() {
-                progress.fireProgressEvent(null, new WLDeploymentStatus(
-                        ActionType.EXECUTE, CommandType.START, StateType.COMPLETED,
-                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Module_Completed", upperDisplayName)));
+                if (wlsTarget == null || wlsTarget.isEmpty()) {
+                    progress.fireProgressEvent(null, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.START, StateType.COMPLETED,
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Module_Completed", upperDisplayName)));
+                }
             }
 
             @Override
@@ -432,7 +435,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
             }
         };
 
-        List<WebLogicDeployer.Artifact> artifacts = new ArrayList<WebLogicDeployer.Artifact>(modules.size());
+        final List<WebLogicDeployer.Artifact> artifacts = new ArrayList<WebLogicDeployer.Artifact>(modules.size());
         for (WLApplicationModule module : modules) {
             if (module.getOrigin() == null) {
                 LOGGER.log(Level.INFO, "Could not deploy {0}", module.getName());
@@ -441,16 +444,59 @@ public final class CommandBasedDeployer extends AbstractDeployer {
             artifacts.add(new WebLogicDeployer.Artifact(module.getOrigin(), module.getName(), false));
         }
 
-        WebLogicDeployer deployer = getDeploymentManager().createDeployer();
-        deployer.deploy(artifacts, listener);
+        if (wlsTarget == null || wlsTarget.isEmpty()) {
+            deployer.deploy(artifacts, listener);
+            return progress;
+        }
+
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    List<DeploymentTarget> selected = new ArrayList<DeploymentTarget>(wlsTarget.size());
+                    for (DeploymentTarget t : deployer.getTargets().get()) {
+                        if ((t.getType() == DeploymentTarget.Type.SERVER
+                                || t.getType() == DeploymentTarget.Type.CLUSTER)
+                                && wlsTarget.contains(t.getName())) {
+                            selected.add(t);
+                        }
+                    }
+                    if (selected.size() != wlsTarget.size()) {
+                        progress.fireProgressEvent(null, new WLDeploymentStatus(
+                                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Failed_No_Target")));
+                        return;
+                    }
+
+                    deployer.deploy(artifacts, listener).get();
+
+                    progress.fireProgressEvent(null, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Module_Completed")));
+                } catch (InterruptedException ex) {
+                    progress.fireProgressEvent(null, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Module_Failed_Interrupted")));
+                } catch (ExecutionException ex) {
+                    Throwable cause = ex.getCause();
+                    if (cause == null) {
+                        cause = ex;
+                    }
+                    progress.fireProgressEvent(null, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Module_Failed_With_Message", cause.getMessage())));
+                }
+            }
+        });
 
         return progress;
     }
 
     public ProgressObject deployLibraries(final Set<File> libraries, final Set<String> wlsTarget) {
         final WLProgressObject progress = new WLProgressObject(new TargetModuleID[0]);
-
-        BatchDeployListener listener = new BatchDeployListener() {
+        final WebLogicDeployer deployer = getDeploymentManager().createDeployer();
+        
+        final BatchDeployListener listener = new BatchDeployListener() {
 
             @Override
             public void onStepStart(String name) {
@@ -473,9 +519,11 @@ public final class CommandBasedDeployer extends AbstractDeployer {
 
             @Override
             public void onFinish() {
-                progress.fireProgressEvent(null, new WLDeploymentStatus(
-                        ActionType.EXECUTE, CommandType.START, StateType.COMPLETED,
-                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Library_Completed")));
+                if (wlsTarget == null || wlsTarget.isEmpty()) {
+                    progress.fireProgressEvent(null, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.START, StateType.COMPLETED,
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Library_Completed")));
+                }
             }
 
             @Override
@@ -508,13 +556,55 @@ public final class CommandBasedDeployer extends AbstractDeployer {
             }
         };
 
-        List<WebLogicDeployer.Artifact> artifacts = new ArrayList<WebLogicDeployer.Artifact>(libraries.size());
+        final List<WebLogicDeployer.Artifact> artifacts = new ArrayList<WebLogicDeployer.Artifact>(libraries.size());
         for (File lib : libraries) {
             artifacts.add(new WebLogicDeployer.Artifact(lib, null, true));
         }
 
-        WebLogicDeployer deployer = getDeploymentManager().createDeployer();
-        deployer.deploy(artifacts, listener);
+        if (wlsTarget == null || wlsTarget.isEmpty()) {
+            deployer.deploy(artifacts, listener);
+            return progress;
+        }
+
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    List<DeploymentTarget> selected = new ArrayList<DeploymentTarget>(wlsTarget.size());
+                    for (DeploymentTarget t : deployer.getTargets().get()) {
+                        if ((t.getType() == DeploymentTarget.Type.SERVER
+                                || t.getType() == DeploymentTarget.Type.CLUSTER)
+                                && wlsTarget.contains(t.getName())) {
+                            selected.add(t);
+                        }
+                    }
+                    if (selected.size() != wlsTarget.size()) {
+                        progress.fireProgressEvent(null, new WLDeploymentStatus(
+                                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Failed_No_Target")));
+                        return;
+                    }
+
+                    deployer.deploy(artifacts, listener).get();
+
+                    progress.fireProgressEvent(null, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Library_Completed")));
+                } catch (InterruptedException ex) {
+                    progress.fireProgressEvent(null, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Library_Failed_Interrupted")));
+                } catch (ExecutionException ex) {
+                    Throwable cause = ex.getCause();
+                    if (cause == null) {
+                        cause = ex;
+                    }
+                    progress.fireProgressEvent(null, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Library_Failed_With_Message", cause.getMessage())));
+                }
+            }
+        });
 
         return progress;
     }
@@ -596,7 +686,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
                     if (selected.size() != wlsTarget.size()) {
                         progress.fireProgressEvent(moduleId, new WLDeploymentStatus(
                                 ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Deployment_Failed_No_Target")));
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Failed_No_Target")));
                         return;
                     }
                     String result = deployer.deploy(file, selected, listener, name).get();
