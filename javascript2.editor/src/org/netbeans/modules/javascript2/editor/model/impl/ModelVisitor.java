@@ -1029,12 +1029,24 @@ public class ModelVisitor extends PathNodeVisitor {
         
         Block block = inNode.getBody();
         block.accept(new NodeVisitor<LexicalContext>(lc) {
+            
             // only the first statements we want to visit. 
             @Override
             protected boolean enterDefault(Node node) {
                 return false;
             }
+
+            private boolean outerBlock = true;
             
+            @Override
+            public boolean enterBlock(Block block) {
+                if (outerBlock) {
+                    outerBlock = false;
+                    return true;
+                }
+                return false;
+            }
+
             @Override
             public boolean enterVarNode(VarNode varNode) {
                 declared.add(varNode);
