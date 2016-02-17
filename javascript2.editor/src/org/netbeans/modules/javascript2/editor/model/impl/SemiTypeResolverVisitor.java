@@ -55,6 +55,7 @@ import com.oracle.truffle.js.parser.nashorn.internal.ir.TernaryNode;
 import com.oracle.truffle.js.parser.nashorn.internal.ir.UnaryNode;
 import com.oracle.truffle.js.parser.nashorn.internal.ir.visitor.NodeVisitor;
 import com.oracle.truffle.js.parser.nashorn.internal.parser.Lexer;
+import com.oracle.truffle.js.parser.nashorn.internal.parser.Token;
 import com.oracle.truffle.js.parser.nashorn.internal.parser.TokenType;
 import static com.oracle.truffle.js.parser.nashorn.internal.parser.TokenType.ADD;
 import static com.oracle.truffle.js.parser.nashorn.internal.parser.TokenType.DECPOSTFIX;
@@ -160,6 +161,8 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
     @Override
     public Node leaveAccessNode(AccessNode accessNode) {
         exp.add(exp.size() - 1, ST_PRO);
+        exp.add(ST_PRO);
+        exp.add(accessNode.getProperty());
         return super.leaveAccessNode(accessNode);
     }
 
@@ -176,14 +179,13 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
                 exp.remove(size - 2);
             }
         }
-// TRUFFLE
-//        else if (callNode.getFunction() instanceof ReferenceNode) {
-//            FunctionNode function = (FunctionNode) ((ReferenceNode) callNode.getFunction()).getReference();
-//            String name = function.isAnonymous() ? function.getName() : function.getIdent().getName();
-////            String name = function.getIdent().getName();
-//            add(new TypeUsageImpl(ST_CALL + name, function.getStart(), false));
-//            return false;
-//        }
+        else if (callNode.getFunction() instanceof FunctionNode) {
+            FunctionNode function = (FunctionNode) callNode.getFunction();
+            String name = function.isAnonymous() ? function.getName() : function.getIdent().getName();
+//            String name = function.getIdent().getName();
+            add(new TypeUsageImpl(ST_CALL + name, function.getStart(), false));
+            return false;
+        }
         if (exp.isEmpty()) {
             exp.add(ST_CALL);
         } else {
@@ -206,7 +208,7 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
 
     @Override
     public boolean enterUnaryNode(UnaryNode unaryNode) {
-        switch (jdk.nashorn.internal.parser.Token.descType(unaryNode.getToken())) {
+        switch (Token.descType(unaryNode.getToken())) {
             case NEW:
                 exp.add(ST_NEW);
                 SimpleNameResolver snr = new SimpleNameResolver();
@@ -230,22 +232,22 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
     }
 
     
-//    @Override
-//    public Node leave(UnaryNode uNode) {
-//        if (jdk.nashorn.internal.parser.Token.descType(uNode.getToken()) == TokenType.NEW) {
-//            int size = exp.size();
-//            if (size > 1 && ST_CALL.equals(exp.get(size - 2))) {
-//                exp.remove(size - 2);
-//            }
-//            typeOffset = uNode.rhs().getStart();
-//            if (exp.size() > 0) {
-//                exp.add(exp.size() - 1, ST_NEW);
-//            } else {
-//                exp.add(ST_NEW);
-//            }
-//        }
-//        return super.leave(uNode);
-//    }
+    @Override
+    public Node leaveUnaryNode(UnaryNode uNode) {
+        if (Token.descType(uNode.getToken()) == TokenType.NEW) {
+            int size = exp.size();
+            if (size > 1 && ST_CALL.equals(exp.get(size - 2))) {
+                exp.remove(size - 2);
+            }
+            typeOffset = uNode.getExpression().getStart();
+            if (exp.size() > 0) {
+                exp.add(exp.size() - 1, ST_NEW);
+            } else {
+                exp.add(ST_NEW);
+            }
+        }
+        return super.leaveUnaryNode(uNode);
+    }
 
     @Override
     public boolean enterIdentNode(IdentNode iNode) {

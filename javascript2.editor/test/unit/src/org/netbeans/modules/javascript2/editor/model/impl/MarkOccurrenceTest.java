@@ -54,6 +54,13 @@ public class MarkOccurrenceTest extends JsTestBase {
     public MarkOccurrenceTest(String testName) {
         super(testName);
     }
+
+    @Override
+    protected int timeOut() {
+        return 5000;
+    }
+    
+    
     
     public void testSimpleObject01() throws Exception {
         checkOccurrences("testfiles/model/simpleObject.js", "var Car^rot = {", true);
