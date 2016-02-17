@@ -1090,7 +1090,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
     @CheckForNull
     private static EnclosingType findEnclosingType(ParserResult info, int offset) {
         List<ASTNode> nodes = NavUtils.underCaret(info, offset);
-        for (ASTNode node : nodes) {
+        for (int i = nodes.size() - 1; i >= 0; i--) {
+            ASTNode node = nodes.get(i);
             if (node instanceof TypeDeclaration
                     && node.getEndOffset() > offset) {
                 return EnclosingType.forTypeDeclaration((TypeDeclaration) node);
@@ -1114,7 +1115,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
     @CheckForNull
     private static EnclosingClass findEnclosingClass(ParserResult info, int offset) {
         List<ASTNode> nodes = NavUtils.underCaret(info, offset);
-        for (ASTNode node : nodes) {
+        for (int i = nodes.size() - 1; i >= 0; i--) {
+            ASTNode node = nodes.get(i);
             if (node instanceof ClassDeclaration
                     && node.getEndOffset() > offset) {
                 return EnclosingClass.forClassDeclaration((ClassDeclaration) node);
