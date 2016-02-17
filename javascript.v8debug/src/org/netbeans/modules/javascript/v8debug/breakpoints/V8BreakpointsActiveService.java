@@ -53,7 +53,6 @@ import org.netbeans.modules.javascript.v8debug.V8Debugger;
 import org.netbeans.modules.javascript2.debug.ui.JSUtils;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointsInfo;
 import org.netbeans.modules.javascript2.debug.sources.SourceFilesCache;
-import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -70,16 +69,6 @@ public class V8BreakpointsActiveService implements JSBreakpointsInfo {
     public V8BreakpointsActiveService() {
         SessionActiveListener sal = new SessionActiveListener();
         DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_CURRENT_SESSION, sal);
-    }
-
-    @Override
-    public boolean isDefault() {
-        FileObject mostRecentFile = EditorContextDispatcher.getDefault().getMostRecentFile();
-        if (mostRecentFile == null) {
-            return false;
-        }
-        String mimeType = mostRecentFile.getMIMEType();
-        return JSUtils.JS_MIME_TYPE.equals(mimeType);
     }
 
     @Override

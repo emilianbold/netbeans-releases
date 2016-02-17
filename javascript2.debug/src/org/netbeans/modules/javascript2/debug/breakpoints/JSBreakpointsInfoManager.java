@@ -46,9 +46,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -141,15 +138,6 @@ public class JSBreakpointsInfoManager {
             }
         }
         return are;
-    }
-    
-    public boolean isDefault() {
-        for (JSBreakpointsInfo bi : getServices()) {
-            if (bi.isDefault()) {
-                return true;
-            }
-        }
-        return false;
     }
     
     public boolean isAnnotatable(FileObject fo) {
