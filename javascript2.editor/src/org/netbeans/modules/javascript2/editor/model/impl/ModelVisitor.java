@@ -1427,7 +1427,7 @@ public class ModelVisitor extends PathNodeVisitor {
                             } else {
                                 // handling case like property: property
                                 if (modelBuilder.getCurrentObject().getParent() != null) {
-                                    occurrenceBuilder.addOccurrence(name.getName(), new OffsetRange(iNode.getStart(), iNode.getFinish()), modelBuilder.getCurrentDeclarationScope(), modelBuilder.getCurrentObject().getParent(), modelBuilder.getCurrentWith(), false, false);
+                                    occurrenceBuilder.addOccurrence(name.getName(), getOffsetRange(iNode), modelBuilder.getCurrentDeclarationScope(), modelBuilder.getCurrentObject().getParent(), modelBuilder.getCurrentWith(), false, false);
                                 }
                             }
                         }
@@ -1631,7 +1631,7 @@ public class ModelVisitor extends PathNodeVisitor {
                             // it's a parameter
                             addOccurrence((IdentNode)init, variable.getName());
                         } else {
-                            variable.addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
+                            variable.addOccurrence(getOffsetRange(iNode));
                         }
                     }
                     
@@ -1851,8 +1851,7 @@ public class ModelVisitor extends PathNodeVisitor {
         List<Identifier> name = new ArrayList(1);
         if (propertyNode.getKey() instanceof IdentNode) {
             IdentNode ident = (IdentNode) propertyNode.getKey();
-            name.add(new IdentifierImpl(ident.getName(),
-                    new OffsetRange(ident.getStart(), ident.getFinish())));
+            name.add(new IdentifierImpl(ident.getName(), getOffsetRange(ident)));
         } else if (propertyNode.getKey() instanceof LiteralNode){
             LiteralNode lNode = (LiteralNode)propertyNode.getKey();
             name.add(new IdentifierImpl(lNode.getString(),
@@ -1875,8 +1874,7 @@ public class ModelVisitor extends PathNodeVisitor {
             name = getName((AccessNode)lhs, parserResult);
         } else if (lhs instanceof IdentNode) {
             IdentNode ident = (IdentNode) lhs;
-            name.add(new IdentifierImpl(ident.getName(),
-                        new OffsetRange(ident.getStart(), ident.getFinish())));
+            name.add(new IdentifierImpl(ident.getName(), getOffsetRange(ident)));
         } else if (lhs instanceof IndexNode) {
             IndexNode indexNode = (IndexNode)lhs;
             if (indexNode.getBase() instanceof AccessNode) {
@@ -1930,8 +1928,7 @@ public class ModelVisitor extends PathNodeVisitor {
             if (name.size() > 0) {
                 IdentNode ident = (IdentNode) base;
 //                if (!"this".equals(ident.getName())) {
-                    name.add(new IdentifierImpl(ident.getName(),
-                            new OffsetRange(ident.getStart(), ident.getFinish())));
+                    name.add(new IdentifierImpl(ident.getName(), getOffsetRange(ident)));
 //                }
             }
             Collections.reverse(name);
@@ -2109,8 +2106,7 @@ public class ModelVisitor extends PathNodeVisitor {
             }
             IdentNode ident = ((FunctionNode) node).getIdent();
             return Arrays.<Identifier>asList(new IdentifierImpl(
-                    ident.getName(),
-                    new OffsetRange(ident.getStart(), ident.getFinish())));
+                    ident.getName(), getOffsetRange(ident)));
         } else {
             return Collections.<Identifier>emptyList();
         }
@@ -2172,7 +2168,7 @@ public class ModelVisitor extends PathNodeVisitor {
     }
 
     private void addOccurence(IdentNode iNode, boolean leftSite, boolean isFunction) {
-        addOccurrence(iNode.getName(), new OffsetRange(iNode.getStart(), iNode.getFinish()), leftSite, isFunction);
+        addOccurrence(iNode.getName(), getOffsetRange(iNode), leftSite, isFunction);
     }
     
     private void addOccurrence(String name, OffsetRange range, boolean leftSite, boolean isFunction) {
@@ -2252,7 +2248,7 @@ public class ModelVisitor extends PathNodeVisitor {
             JsFunction function = (JsFunction)scope;
             parameter = function.getParameter(iNode.getName());
             if (parameter != null) {
-                parameter.addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
+                parameter.addOccurrence(getOffsetRange(iNode));
             } else {
                 boolean found = false;
                 JsObject jsProperty = ((JsObject)scope).getProperty(valueName);
@@ -2355,6 +2351,11 @@ public class ModelVisitor extends PathNodeVisitor {
             }
         }
         return lObject;
+    }
+    
+    public static OffsetRange getOffsetRange(IdentNode node) {
+        // because the truffle parser doesn't set correctly the finish offset, when there are comments after the indent node
+        return new OffsetRange(node.getStart(), node.getStart() + node.getName().length());
     }
     
     // TODO move this method to the ModelUtils
