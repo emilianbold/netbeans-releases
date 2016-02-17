@@ -109,12 +109,14 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
     private int typeOffset;
 
     private final FinderOffsetTypeVisitor offsetVisitor;
+    private ModelBuilder builder;
     
     public SemiTypeResolverVisitor() {
         offsetVisitor = new FinderOffsetTypeVisitor();
     }
 
-    public Set<TypeUsage> getSemiTypes(Node expression) {
+    public Set<TypeUsage> getSemiTypes(Node expression, ModelBuilder builder) {
+        this.builder = builder;
         exp = new ArrayList<String>();
         result = new HashMap<String, TypeUsage>();
         reset();
@@ -169,7 +171,9 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
     @Override
     public boolean enterCallNode(CallNode callNode) {
         addToPath(callNode);
-        callNode.getFunction().accept(this);
+        if (!(callNode.getFunction() instanceof FunctionNode)) {
+            callNode.getFunction().accept(this);
+        }
         if (exp.size() == 2 && ST_NEW.equals(exp.get(0))) {
             return false;
         }
@@ -181,7 +185,7 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
         }
         else if (callNode.getFunction() instanceof FunctionNode) {
             FunctionNode function = (FunctionNode) callNode.getFunction();
-            String name = function.isAnonymous() ? function.getName() : function.getIdent().getName();
+            String name = builder.getFunctionName(function);
 //            String name = function.getIdent().getName();
             add(new TypeUsageImpl(ST_CALL + name, function.getStart(), false));
             return false;

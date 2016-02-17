@@ -709,7 +709,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 removeFromPathTheLast();
                 return false;
             }
-            String funcName = functionNode.isAnonymous() ? functionNode.getName() : functionNode.getIdent().getName();
+            String funcName = modelBuilder.getFunctionName(functionNode);
 //            String funcName = functionNode.getIdent().getName();            
             name.add(new IdentifierImpl(funcName, new OffsetRange(start, end)));
             if (pathSize > 2 && getPath().get(pathSize - 2) instanceof FunctionNode) {
@@ -727,15 +727,15 @@ public class ModelVisitor extends PathNodeVisitor {
             DeclarationScopeImpl scope = modelBuilder.getCurrentDeclarationFunction();
             boolean isAnonymous = false;
 //            if (getPreviousFromPath(2) instanceof ReferenceNode) {
-//                Node node = getPreviousFromPath(3);
-//                if (node instanceof CallNode || node instanceof ExecuteNode || node instanceof LiteralNode.ArrayLiteralNode) {
-//                    isAnonymous = true;
-//                } else if (node instanceof AccessNode && getPreviousFromPath(4) instanceof CallNode) {
-//                    String methodName = ((AccessNode)node).getProperty().getName();
-//                    if ("call".equals(methodName) || "apply".equals(methodName)) {  //NOI18N
-//                        isAnonymous = true;
-//                    }
-//                } 
+                Node node = getPreviousFromPath(2);
+                if (node instanceof CallNode /*|| node instanceof ExecuteNode*/ || node instanceof LiteralNode.ArrayLiteralNode) {
+                    isAnonymous = true;
+                } else if (node instanceof AccessNode && getPreviousFromPath(3) instanceof CallNode) {
+                    String methodName = ((AccessNode)node).getProperty();
+                    if ("call".equals(methodName) || "apply".equals(methodName)) {  //NOI18N
+                        isAnonymous = true;
+                    }
+                } 
 //            }
             if (canBeSingletonPattern()) {
                 // follow the patter to create new objects via new anonymous function 

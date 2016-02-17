@@ -443,7 +443,7 @@ public class ModelUtils {
         Collection<TypeUsage> result = new HashSet<TypeUsage>();
         SemiTypeResolverVisitor visitor = new SemiTypeResolverVisitor();
         if (expression != null) {
-            result = visitor.getSemiTypes(expression);
+            result = visitor.getSemiTypes(expression, builder);
         }
         if (builder.getCurrentWith()!= null) {
             Collection<TypeUsage> withResult = new HashSet<TypeUsage>();
