@@ -53,7 +53,6 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.debugger.jpda.js.source.Source;
 import org.netbeans.modules.javascript2.debug.EditorLineHandler;
 import org.netbeans.modules.javascript2.debug.EditorLineHandlerFactory;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
@@ -61,12 +60,8 @@ import org.netbeans.modules.javascript2.debug.breakpoints.io.BreakpointsFromGrou
 import org.netbeans.modules.javascript2.debug.breakpoints.io.BreakpointsFromGroup.TestGroupProperties;
 import org.netbeans.modules.javascript2.debug.sources.SourceFilesCache;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
-import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.Line;
 
 /**
  *

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,58 +37,54 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.js.vars.tooltip;
+package org.netbeans.modules.debugger.jpda.jsui.vars.tooltip;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.Closeable;
-import java.io.IOException;
-import org.netbeans.api.debugger.jpda.CallStackFrame;
-import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.modules.javascript2.debug.ui.tooltip.DebuggerTooltipSupport;
+import org.netbeans.modules.debugger.jpda.jsui.vars.models.VariablesJSTreeModel;
+import org.netbeans.modules.javascript2.debug.ui.tooltip.AbstractJSToolTipAnnotation;
+import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.viewmodel.TreeModel;
+import static org.netbeans.spi.viewmodel.TreeModel.ROOT;
+import org.netbeans.spi.viewmodel.TreeModelFilter;
+import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 /**
  *
- * @author Martin Entlicher
+ * @author Martin
  */
-final class JPDADebuggerTooltipSupport implements DebuggerTooltipSupport, PropertyChangeListener {
-    
-    private final JPDADebugger debugger;
-    private final CallStackFrame frame;
-    private Closeable closeable;
-    
-    JPDADebuggerTooltipSupport(JPDADebugger debugger, CallStackFrame frame) {
-        this.debugger = debugger;
-        this.frame = frame;
-    }
+@DebuggerServiceRegistration(path="netbeans-JPDASession/JS/ToolTipView",
+                             types={ TreeModelFilter.class },
+                             position=360)
+public class ToolTipModel extends VariablesJSTreeModel implements TreeModelFilter {
 
-    public JPDADebugger getDebugger() {
-        return debugger;
-    }
-
-    public CallStackFrame getFrame() {
-        return frame;
+    public ToolTipModel(ContextProvider lookupProvider) {
+        super(lookupProvider);
     }
 
     @Override
-    public void addCloseable(Closeable closeable) {
-        this.closeable = closeable;
-        debugger.addPropertyChangeListener(JPDADebugger.PROP_STATE, this);
+    public Object[] getChildren(TreeModel original, Object parent, int from, int to) throws UnknownTypeException {
+        if (parent == ROOT) {
+            Object ttv = AbstractJSToolTipAnnotation.getTooltipVariable();
+            if (ttv != null) {
+                return new Object[] { ttv };
+            } else {
+                return new Object[] { };
+            }
+        } else {
+            return super.getChildren(original, parent, from, to);
+        }
     }
 
     @Override
-    public void removeCloseable(Closeable closeable) {
-        debugger.removePropertyChangeListener(JPDADebugger.PROP_STATE, this);
+    public int getChildrenCount(TreeModel original, Object node) throws UnknownTypeException {
+        if (node == ROOT) {
+            return 1;
+        } else {
+            return super.getChildrenCount(original, node);
+        }
     }
-    
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        try {
-            closeable.close();
-        } catch (IOException ex) {}
-    }
-    
+
 }

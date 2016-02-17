@@ -50,7 +50,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.modules.javascript2.debug.ui.JSUtils;
+import org.netbeans.modules.debugger.jpda.js.JSUtils;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointsInfo;
 import org.netbeans.modules.javascript2.debug.sources.SourceFilesCache;
 import org.openide.filesystems.FileObject;

@@ -39,21 +39,28 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.js;
+package org.netbeans.modules.debugger.jpda.jsui;
+
+import static org.netbeans.modules.debugger.jpda.js.JSUtils.JS_MIME_TYPE;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+import org.openide.filesystems.FileObject;
+import org.openide.text.Line;
 
 /**
  *
  * @author Martin
  */
-public class JSUtils {
+public class JSUIUtils {
     
-    public static final String JS_MIME_TYPE = "text/javascript";    // NOI18N
-    public static final String JS_STRATUM = "JS";                   // NOI18N
-    
-    public static final String NASHORN_SCRIPT = "jdk.nashorn.internal.scripts.Script$";     // NOI18N
-    
-    public static final String VAR_THIS = ":this";     // NOI18N
-    public static final String VAR_SCOPE = ":scope";   // NOI18N
-    public static final String VAR_CALLEE = ":callee"; // NOI18N
+    public static Line getCurrentLine() {
+        FileObject fo = EditorContextDispatcher.getDefault().getCurrentFile();
+        if (fo == null) {
+            return null;
+        }
+        if (!JS_MIME_TYPE.equalsIgnoreCase(fo.getMIMEType())) {
+            return null;
+        }
+        return EditorContextDispatcher.getDefault().getCurrentLine();
+    }
     
 }

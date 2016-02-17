@@ -40,7 +40,7 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.js.frames.models;
+package org.netbeans.modules.debugger.jpda.jsui.frames.models;
 
 import java.awt.event.ActionEvent;
 import java.util.Collections;

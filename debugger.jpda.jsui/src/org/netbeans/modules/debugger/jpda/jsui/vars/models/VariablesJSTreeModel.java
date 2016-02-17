@@ -40,7 +40,7 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.js.vars.models;
+package org.netbeans.modules.debugger.jpda.jsui.vars.models;
 
 import java.util.ArrayList;
 import java.util.Arrays;
