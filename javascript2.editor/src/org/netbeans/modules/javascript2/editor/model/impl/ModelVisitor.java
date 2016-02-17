@@ -48,6 +48,7 @@ import com.oracle.truffle.js.parser.nashorn.internal.ir.Block;
 import com.oracle.truffle.js.parser.nashorn.internal.ir.CallNode;
 import com.oracle.truffle.js.parser.nashorn.internal.ir.CatchNode;
 import com.oracle.truffle.js.parser.nashorn.internal.ir.ClassNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.ExpressionStatement;
 import com.oracle.truffle.js.parser.nashorn.internal.ir.ForNode;
 import com.oracle.truffle.js.parser.nashorn.internal.ir.FunctionNode;
 import com.oracle.truffle.js.parser.nashorn.internal.ir.IdentNode;
@@ -1138,19 +1139,19 @@ public class ModelVisitor extends PathNodeVisitor {
                             || (binNode.lhs() instanceof AccessNode
                             && ((AccessNode) binNode.lhs()).getBase() instanceof IdentNode
                             && ((IdentNode) ((AccessNode) binNode.lhs()).getBase()).getName().equals("this"))) { //NOI18N
-                        /*if (lastVisited instanceof ExecuteNode && !fqName.get(0).getName().equals("this")) { //NOI18N
+                        if (lastVisited instanceof ExpressionStatement && !fqName.get(0).getName().equals("this")) { //NOI18N
                             // try to catch the case: pool = [];
                             List<Identifier> objectName = fqName.size() > 1 ? fqName.subList(0, fqName.size() - 1) : fqName;
                             JsObject existingArray = ModelUtils.getJsObject(modelBuilder, objectName, false);
                             if (existingArray != null) {
                                 existingArray.addOccurrence(fqName.get(fqName.size() - 1).getOffsetRange());
-                                return super.enter(lNode);
+                                return super.enterLiteralNode(lNode);
                             }
-                        } else {*/
+                        } else {
                             isDeclaredInParent = true;
                             if (!(binNode.lhs() instanceof IdentNode)) {
                                 parent = resolveThis(modelBuilder.getCurrentObject());
-//                            }
+                            }
                         }
                     }
                 }
