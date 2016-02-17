@@ -656,7 +656,7 @@ sass_map_pairs
 
 sass_map_pair
     :
-        (property|STRING) ws? COLON ws? cp_expression (ws? prio)?
+        (STRING|((function)=>function)|property) ws? COLON ws? cp_expression (ws? prio)?
     ;
 
 rule
