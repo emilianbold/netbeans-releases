@@ -1,0 +1,23 @@
+Code completion result for source line:
+$anon = new class($|int, foo()) {
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+VARIABLE   int $int                        [PUBLIC]   anonymousClass02.php
+VARIABLE   {} $anon                        [PUBLIC]   anonymousClass02.php
+------------------------------------
+VARIABLE   $GLOBALS                                   PHP Platform
+VARIABLE   $HTTP_RAW_POST_DATA                        PHP Platform
+VARIABLE   $_COOKIE                                   PHP Platform
+VARIABLE   $_ENV                                      PHP Platform
+VARIABLE   $_FILES                                    PHP Platform
+VARIABLE   $_GET                                      PHP Platform
+VARIABLE   $_POST                                     PHP Platform
+VARIABLE   $_REQUEST                                  PHP Platform
+VARIABLE   $_SERVER                                   PHP Platform
+VARIABLE   $_SESSION                                  PHP Platform
+VARIABLE   $argc                                      PHP Platform
+VARIABLE   $argv                                      PHP Platform
+VARIABLE   $http_response_header                      PHP Platform
+VARIABLE   $php_errormsg                              PHP Platform
+VARIABLE   ? $a                            [PUBLIC]   groupUse01.php
+VARIABLE   ? $ab                           [PUBLIC]   groupUse01.php
+VARIABLE   ? $abc                          [PUBLIC]   groupUse01.php

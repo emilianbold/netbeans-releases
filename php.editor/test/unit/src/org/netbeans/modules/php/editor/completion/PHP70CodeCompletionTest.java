@@ -302,6 +302,81 @@ public class PHP70CodeCompletionTest extends PHPCodeCompletionTestBase {
         checkCompletion("testfiles/completion/lib/php70/anonymousClass01.php", "$anon->^testAnon();", false);
     }
 
+    public void testAnonymousClass01c() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/anonymousClass01.php", "$anon = new class ^{", false);
+    }
+
+    public void testAnonymousClass01d() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/anonymousClass01.php", "    p^ublic function testAnon() {", false);
+    }
+
+    public void testAnonymousClass01e() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/anonymousClass01.php", "    public f^unction testAnon() {", false);
+    }
+
+    public void testAnonymousClass01f() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/anonymousClass01.php", "        $thi^s->testBnon();", false);
+    }
+
+    public void testAnonymousClass01g() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/anonymousClass01.php", "        $this->test^Bnon();", false);
+    }
+
+    public void testAnonymousClass01h() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/anonymousClass01.php", "^// magic methods", false);
+    }
+
+    public void testAnonymousClass02a() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/anonymousClass02.php", "$anon = new class(^$int, foo()) {", false);
+    }
+
+    public void testAnonymousClass02b() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/anonymousClass02.php", "$anon = new class($^int, foo()) {", false);
+    }
+
+    public void testAnonymousClass02c() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/anonymousClass02.php", "$anon = new class($int, foo()) ^{", false);
+    }
+
+    public void testAnonymousClass02d() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/anonymousClass02.php", "$anon = new class($int, ^foo()) {", false);
+    }
+
+    public void testAnonymousClass02e() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/anonymousClass02.php", "$anon = new class($int, foo(^)) {", false);
+    }
+
+    public void testAnonymousClass02f() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/anonymousClass02.php", "        $this->pr^op1 = $number;", false);
+    }
+
+    public void testAnonymousClass02g() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/anonymousClass02.php", "        $this->prop1 = $num^ber;", false);
+    }
+
+    public void testAnonymousClass03a() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/anonymousClass03.php", "        return new class($^this->prop) extends Outer {", false);
+    }
+
+    public void testAnonymousClass03b() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/anonymousClass03.php", "        return new class($this->^prop) extends Outer {", false);
+    }
+
+    // XXX $this should be Outer + anonymous class
+    public void testAnonymousClass03c() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/anonymousClass03.php", "                return $this->^prop2 + $this->prop3 + $this->func1();", false);
+    }
+
+    // XXX $this should be Outer + anonymous class
+    public void testAnonymousClass03d() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/anonymousClass03.php", "                return $this->prop2 + $this->^prop3 + $this->func1();", false);
+    }
+
+    // XXX $this should be Outer + anonymous class
+    public void testAnonymousClass03e() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/anonymousClass03.php", "                return $this->prop2 + $this->prop3 + $this->^func1();", false);
+    }
+
     // XXX add tests for CC after NS aliases!
 
 }
