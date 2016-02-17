@@ -595,7 +595,7 @@ public class ModelVisitor extends PathNodeVisitor {
     
     @Override
     public boolean enterFunctionNode(FunctionNode functionNode) {
-        addToPath(functionNode);
+         addToPath(functionNode);
 //        List<FunctionNode> functions = new ArrayList<FunctionNode>(getDeclaredFunction(functionNode));
 
         List<Identifier> name = null;
@@ -622,7 +622,7 @@ public class ModelVisitor extends PathNodeVisitor {
                             name = getName((VarNode)node4, parserResult);
                             // private method
                             // It can be only if it's in a function
-                            isPrivate = functionStack.size() > 1;
+                            isPrivate = !lc.getParentFunction(functionNode).isProgram(); 
                             processAsBinary = false;
                         }
                     }
@@ -645,7 +645,7 @@ public class ModelVisitor extends PathNodeVisitor {
                    name = getName((VarNode)node, parserResult);
                     // private method
                     // It can be only if it's in a function
-                    isPrivate = functionStack.size() > 1;
+                    isPrivate = !lc.getParentFunction(functionNode).isProgram(); 
                 } else if (!functionNode.isAnonymous() && node instanceof CallNode) {
                     // try to handle case like: var MyLib = new function MyLib () {}
                     if (pathSize > 4) {
@@ -653,7 +653,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         Node node4 = getPreviousFromPath(4);
                         if (node3 instanceof UnaryNode && node4 instanceof VarNode) {
                             name = getName((VarNode)node4, parserResult);
-                            isPrivate = functionStack.size() > 1;
+                            isPrivate = !lc.getParentFunction(functionNode).isProgram(); 
                             singletoneConstruction = true;
                         }
                     }
