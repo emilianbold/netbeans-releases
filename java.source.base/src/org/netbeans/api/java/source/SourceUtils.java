@@ -1581,7 +1581,7 @@ public class SourceUtils {
         if (srcRootURLs.isEmpty()) {
             return null;
         }
-        if (srcRootURLs.stream().allMatch((srcRootURL)->JavaIndex.hasSourceCache(srcRootURL,true))) {
+        if (srcRootURLs.stream().allMatch((srcRootURL)->JavaIndex.hasSourceCache(srcRootURL,false))) {
             //scanned
             String moduleName = null;
             for (URL srcRootURL : srcRootURLs) {

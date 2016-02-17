@@ -658,44 +658,6 @@ final class ModuleClassPaths {
 
         @Override
         public void rootsAdded(final RootsEvent event) {
-            ClasspathInfo info;
-            final Collection<? extends File> toInvalidate;
-            synchronized (this) {
-                info = activeProjectSourceRoots;
-                if (info != null) {
-                    if (rootsChanging) {
-                        info = null;
-                    } else {
-                        rootsChanging = true;
-                    }
-                }
-                toInvalidate = info != null ?
-                        moduleInfos :
-                        Collections.emptyList();
-            }
-            if (info != null) {
-                try {
-                    JavaSource.create(info).runWhenScanFinished((cc)->{
-                        LOG.log(
-                            Level.FINER,
-                            "{0} for {1} got class index event: {2}",    //NOI18N
-                            new Object[]{
-                                ModuleInfoClassPathImplementation.class.getSimpleName(),
-                                base,
-                                event
-                            });
-                        for (File f : toInvalidate) {
-                            Optional.ofNullable(FileUtil.toFileObject(f))
-                                    .ifPresent((fo)->SourceUtils.invalidate(fo, false));
-                        }
-                        rootsChanging = false;
-                        CLASS_INDEX_FIRER.execute(()->resetCache(TOMBSTONE, true));
-                        },
-                        true);
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
-            }
         }
 
         @Override
@@ -704,14 +666,61 @@ final class ModuleClassPaths {
 
         @Override
         public void typesAdded(TypesEvent event) {
+            handleModuleChange(event);
         }
 
         @Override
         public void typesRemoved(TypesEvent event) {
+            handleModuleChange(event);
         }
 
         @Override
         public void typesChanged(TypesEvent event) {
+            handleModuleChange(event);
+        }
+
+        private void handleModuleChange(@NonNull final TypesEvent event) {
+            if (event.getModule() != null) {
+                ClasspathInfo info;
+                final Collection<? extends File> toInvalidate;
+                synchronized (this) {
+                    info = activeProjectSourceRoots;
+                    if (info != null) {
+                        if (rootsChanging) {
+                            info = null;
+                        } else {
+                            rootsChanging = true;
+                        }
+                    }
+                    toInvalidate = info != null ?
+                            moduleInfos :
+                            Collections.emptyList();
+                }
+                if (info != null) {
+                    try {
+                        JavaSource.create(info).runWhenScanFinished((cc)->{
+                            LOG.log(
+                                Level.FINER,
+                                "{0} for {1} got class index event due to change of module {2} in {3}",    //NOI18N
+                                new Object[]{
+                                    ModuleInfoClassPathImplementation.class.getSimpleName(),
+                                    base,
+                                    event.getModule().getQualifiedName(),
+                                    event.getRoot()
+                                });
+                            toInvalidate.stream().forEach((f) -> {
+                                Optional.ofNullable(FileUtil.toFileObject(f))
+                                        .ifPresent((fo)->SourceUtils.invalidate(fo, false));
+                            });
+                            rootsChanging = false;
+                            CLASS_INDEX_FIRER.execute(()->resetCache(TOMBSTONE, true));
+                            },
+                            true);
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
+                    }
+                }
+            }
         }
 
         @NonNull

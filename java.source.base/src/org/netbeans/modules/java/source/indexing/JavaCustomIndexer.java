@@ -219,9 +219,10 @@ public class JavaCustomIndexer extends CustomIndexer {
                     JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_DIRTY_ROOT, Boolean.TRUE.toString());
                 }
                 boolean finished = false;
-                final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
-                final Set<File> removedFiles = new HashSet<File> ();
-                final List<CompileTuple> toCompile = new ArrayList<CompileTuple>(javaSources.size()+virtualSourceTuples.size());
+                final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <> ();
+                ElementHandle<ModuleElement> removedModule = null;
+                final Set<File> removedFiles = new HashSet<> ();
+                final List<CompileTuple> toCompile = new ArrayList<>(javaSources.size()+virtualSourceTuples.size());
                 CompileWorker.ParsingOutput compileResult = null;
                 try {
                     if (context.isAllFilesIndexing()) {
@@ -232,6 +233,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                     }
                     javaContext.getClassIndexImpl().setDirty(null);
                     final SourceFileManager.ModifiedFilesTransaction mftx = txCtx.get(SourceFileManager.ModifiedFilesTransaction.class);
+                    final boolean[] isModuleInfo = new boolean[1];
                     for (Indexable i : javaSources) {
                         final CompileTuple tuple = createTuple(context, javaContext, i);
                         if (tuple != null) {
@@ -244,7 +246,13 @@ public class JavaCustomIndexer extends CustomIndexer {
                                 Exceptions.printStackTrace(ex);
                             }
                         }
-                        clear(context, javaContext, i, removedTypes, removedFiles, fmTx, null);
+                        clear(context, javaContext, i, removedTypes, removedFiles, fmTx, isModuleInfo);
+                        if (isModuleInfo[0]) {
+                            final String moduleName = JavaIndex.getAttribute(context.getRootURI(), JavaParsingContext.ATTR_MODULE_NAME, null);
+                            removedModule = moduleName == null ?
+                                    null :
+                                    ElementHandleAccessor.getInstance().create(ElementKind.MODULE, moduleName);
+                        }
                     }
                     for (CompileTuple tuple : virtualSourceTuples) {
                         clear(context, javaContext, tuple.indexable, removedTypes, removedFiles, fmTx, null);
@@ -313,11 +321,14 @@ public class JavaCustomIndexer extends CustomIndexer {
                 }
                 assert compileResult != null;
 
-                Set<ElementHandle<TypeElement>> _at = new HashSet<ElementHandle<TypeElement>> (compileResult.addedTypes); //Added types
-                Set<ElementHandle<TypeElement>> _rt = new HashSet<ElementHandle<TypeElement>> (removedTypes); //Removed types
+                Set<ElementHandle<TypeElement>> _at = new HashSet<> (compileResult.addedTypes); //Added types
+                Set<ElementHandle<TypeElement>> _rt = new HashSet<> (removedTypes); //Removed types
                 _at.removeAll(removedTypes);
                 _rt.removeAll(compileResult.addedTypes);
                 compileResult.addedTypes.retainAll(removedTypes); //Changed types
+                final ElementHandle<ModuleElement> addedModule = compileResult.addedModules.isEmpty() ?
+                        null :
+                        compileResult.addedModules.iterator().next();
 
                 if (!context.isSupplementaryFilesIndexing() && !context.isCancelled()) {
                     compileResult.modifiedTypes.addAll(_rt);
@@ -349,13 +360,13 @@ public class JavaCustomIndexer extends CustomIndexer {
                     final PersistentIndexTransaction piTx = txCtx.get(PersistentIndexTransaction.class);
                     piTx.setBroken();
                 }
-                ciTx.addedTypes(context.getRootURI(), _at);
-                ciTx.removedTypes(context.getRootURI(), _rt);
-                ciTx.changedTypes(context.getRootURI(), compileResult.addedTypes);
+                ciTx.addedTypes(context.getRootURI(), removedModule == null ? addedModule : null,  _at);
+                ciTx.removedTypes(context.getRootURI(), addedModule == null ? removedModule : null, _rt);
+                ciTx.changedTypes(context.getRootURI(), removedModule != null && addedModule != null ? addedModule : null, compileResult.addedTypes);
                 if (!context.checkForEditorModifications()) { // #152222
                     ciTx.addedCacheFiles(context.getRootURI(), compileResult.createdFiles);
                     ciTx.removedCacheFiles(context.getRootURI(), removedFiles);
-                }                
+                }
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
@@ -431,10 +442,15 @@ public class JavaCustomIndexer extends CustomIndexer {
                 final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
                 final Set<File> removedFiles = new HashSet<File> ();
                 final boolean[] isModuleInfo = new boolean[1];
+                ElementHandle<ModuleElement> module = null;
                 for (Indexable i : files) {
                     clear(context, javaContext, i, removedTypes, removedFiles, fmTx, isModuleInfo);
                     if (isModuleInfo[0]) {
-                        //TODO: clear cache
+                        final String moduleName = JavaIndex.getAttribute(context.getRootURI(), JavaParsingContext.ATTR_MODULE_NAME, null);
+                        JavaIndex.setAttribute(context.getRootURI(), JavaParsingContext.ATTR_MODULE_NAME, null);
+                        module = moduleName == null ?
+                                null :
+                                ElementHandleAccessor.getInstance().create(ElementKind.MODULE, moduleName);
                     }
                     ErrorsCache.setErrors(context.getRootURI(), i, Collections.<Diagnostic<?>>emptyList(), ERROR_CONVERTOR);
                     ExecutableFilesIndex.DEFAULT.setMainClass(context.getRootURI(), i.getURL(), false);
@@ -458,7 +474,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                     piTx.setBroken();
                 }
                 ciTx.removedCacheFiles(context.getRootURI(), removedFiles);
-                ciTx.removedTypes(context.getRootURI(), removedTypes);
+                ciTx.removedTypes(context.getRootURI(), module, removedTypes);
             } finally {
                 javaContext.finish();
             }

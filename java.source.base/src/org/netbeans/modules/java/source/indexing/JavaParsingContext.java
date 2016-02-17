@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.element.ModuleElement;
 
 import javax.lang.model.element.TypeElement;
 
@@ -254,10 +255,11 @@ final class JavaParsingContext {
             @NonNull final JavacTaskImpl jt,
             @NonNull final CompileTuple active,
             @NonNull final Set<? super ElementHandle<TypeElement>> newTypes,
+            @NonNull final Set<? super ElementHandle<ModuleElement>> newModules,
             @NonNull /*@Out*/ final boolean[] mainMethod) throws IOException {
         final SourceAnalyzerFactory.StorableAnalyzer analyzer = getSourceAnalyzer();
         assert analyzer != null;
-        analyzer.analyse(trees, jt, active, newTypes, mainMethod);
+        analyzer.analyse(trees, jt, active, newTypes, newModules, mainMethod);
         final Lookup pluginServices = getPluginServices(jt);
         for (CompilationUnitTree cu : trees) {
             for (JavaIndexerPlugin plugin : getPlugins()) {

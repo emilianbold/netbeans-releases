@@ -62,6 +62,7 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
@@ -142,19 +143,20 @@ public final class SourceAnalyzerFactory {
          * @throws IOException in case of IO error
          */
         public void analyse (
-                final Iterable<? extends CompilationUnitTree> data,
-                final JavacTaskImpl jt,
-                final JavaCustomIndexer.CompileTuple tuple,
-                final Set<? super ElementHandle<TypeElement>> newTypes,
+                @NonNull final Iterable<? extends CompilationUnitTree> data,
+                @NonNull final JavacTaskImpl jt,
+                @NonNull final JavaCustomIndexer.CompileTuple tuple,
+                @NullAllowed final /*out*/Set<? super ElementHandle<TypeElement>> newTypes,
+                @NullAllowed final /*out*/Set<? super ElementHandle<ModuleElement>> newModules,
                 final /*out*/boolean[] mainMethod) throws IOException {
             final JavaFileManager manager = jt.getContext().get(JavaFileManager.class);
             final Map<Pair<String, String>,UsagesData<String>> usages = new HashMap<Pair<String,String>,UsagesData<String>>();
             for (CompilationUnitTree cu : data) {
                 try {
-                    UsagesVisitor uv = new UsagesVisitor (jt, cu, manager, tuple.jfo, newTypes, tuple);
+                    UsagesVisitor uv = new UsagesVisitor (jt, cu, manager, tuple.jfo, newTypes, newModules, tuple);
                     uv.scan(cu,usages);
                     mainMethod[0] |= uv.mainMethod;
-                    if (uv.rsList != null && uv.rsList.size()>0) {
+                    if (uv.rsList != null && !uv.rsList.isEmpty()) {
                         String ext;
                         if (tuple.virtual) {
                             ext = FileObjects.getExtension(tuple.indexable.getURL().getPath()) +'.'+ FileObjects.RX;    //NOI18N
@@ -311,6 +313,7 @@ public final class SourceAnalyzerFactory {
         private final boolean signatureFiles;
         private final Set<? super Pair<String,String>> topLevels;
         private final Set<? super ElementHandle<TypeElement>> newTypes;
+        private final Set<? super ElementHandle<ModuleElement>> newModules;
         private final Set<Symbol> imports;
         private final Set<Symbol> staticImports;
         private final Set<Symbol> unusedPkgImports;
@@ -329,11 +332,12 @@ public final class SourceAnalyzerFactory {
 
 
         public UsagesVisitor (
-                JavacTaskImpl jt,
-                CompilationUnitTree cu,
-                JavaFileManager manager,
-                javax.tools.JavaFileObject sibling,
-                Set<? super ElementHandle<TypeElement>> newTypes,
+                @NonNull final JavacTaskImpl jt,
+                @NonNull final CompilationUnitTree cu,
+                @NonNull final JavaFileManager manager,
+                @NonNull final javax.tools.JavaFileObject sibling,
+                @NullAllowed final Set<? super ElementHandle<TypeElement>> newTypes,
+                @NullAllowed final Set<? super ElementHandle<ModuleElement>> newModules,
                 final JavaCustomIndexer.CompileTuple tuple) throws MalformedURLException, IllegalArgumentException {
 
             assert jt != null;
@@ -341,13 +345,13 @@ public final class SourceAnalyzerFactory {
             assert manager != null;
             assert sibling != null;
 
-            this.activeClass = new Stack<Pair<String,String>> ();
-            this.imports = new HashSet<Symbol> ();
-            this.staticImports = new HashSet<Symbol> ();
-            this.unusedPkgImports = new HashSet<Symbol>();
-            this.importIdents = new HashSet<CharSequence>();
-            this.packageAnnotationIdents = new HashSet<CharSequence>();
-            this.packageAnnotations = new HashSet<Pair<Symbol, ClassIndexImpl.UsageType>>();
+            this.activeClass = new Stack<> ();
+            this.imports = new HashSet<> ();
+            this.staticImports = new HashSet<> ();
+            this.unusedPkgImports = new HashSet<>();
+            this.importIdents = new HashSet<>();
+            this.packageAnnotationIdents = new HashSet<>();
+            this.packageAnnotations = new HashSet<>();
             final Names names = Names.instance(jt.getContext());
             this.errorName = names.error;
             this.pkgImportName = names.asterisk;
@@ -359,6 +363,7 @@ public final class SourceAnalyzerFactory {
             this.sourceName = inferBinaryName(manager, sibling);
             this.topLevels = null;
             this.newTypes = newTypes;
+            this.newModules = newModules;
         }
 
         protected UsagesVisitor (
@@ -373,13 +378,13 @@ public final class SourceAnalyzerFactory {
             assert manager != null;
             assert sibling != null;
 
-            this.activeClass = new Stack<Pair<String,String>> ();
-            this.imports = new HashSet<Symbol> ();
-            this.staticImports = new HashSet<Symbol>();
-            this.unusedPkgImports = new HashSet<Symbol>();
-            this.importIdents = new HashSet<CharSequence>();
-            this.packageAnnotationIdents = new HashSet<CharSequence>();
-            this.packageAnnotations = new HashSet<Pair<Symbol, ClassIndexImpl.UsageType>>();
+            this.activeClass = new Stack<> ();
+            this.imports = new HashSet<> ();
+            this.staticImports = new HashSet<>();
+            this.unusedPkgImports = new HashSet<>();
+            this.importIdents = new HashSet<>();
+            this.packageAnnotationIdents = new HashSet<>();
+            this.packageAnnotations = new HashSet<>();
             final Names names = Names.instance(jt.getContext());
             this.errorName = names.error;
             this.pkgImportName = names.asterisk;
@@ -390,16 +395,14 @@ public final class SourceAnalyzerFactory {
             this.sourceName = inferBinaryName(manager, sibling);
             this.topLevels = topLevels;
             this.newTypes = null;
+            this.newModules = null;
             this.virtual = false;
         }
 
 
         @Override
         @CheckForNull
-        public Void scan(@NonNull final Tree node, @NonNull final Map<Pair<String,String>, UsagesData<String>> p) {
-            if (node == null) {
-                return null;
-            }
+        public Void scan(@NullAllowed final Tree node, @NonNull final Map<Pair<String,String>, UsagesData<String>> p) {
             super.scan (node,p);
             return null;
         }
@@ -589,6 +592,21 @@ public final class SourceAnalyzerFactory {
 
         @Override
         @CheckForNull
+        public Void visitModule(
+                @NonNull final ModuleTree node,
+                @NonNull final Map<Pair<String, String>, UsagesData<String>> p) {
+            if (newModules != null && FileObjects.getPackageAndName(sourceName)[0].isEmpty()) {
+                final Symbol.ModuleSymbol sym = ((JCTree.JCModuleDecl)node).sym;
+                newModules.add ((ElementHandle<ModuleElement>)
+                        ElementHandleAccessor.getInstance().create(
+                                ElementKind.MODULE,
+                                sym.getQualifiedName().toString()));
+            }
+            return super.visitModule(node, p);
+        }
+
+        @Override
+        @CheckForNull
         public Void visitClass (@NonNull final ClassTree node, @NonNull final Map<Pair<String,String>, UsagesData<String>> p) {
             final Symbol.ClassSymbol sym = ((JCTree.JCClassDecl)node).sym;
             boolean errorInDecl = false;
@@ -702,7 +720,7 @@ public final class SourceAnalyzerFactory {
                     addUsage (className, name, p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                     // index only simple name, not FQN for classes
                     addIdent(name, simpleName, p, true);
-                    if (newTypes !=null) {
+                    if (newTypes != null) {
                         newTypes.add ((ElementHandle<TypeElement>)ElementHandleAccessor.getInstance().create(ElementKind.OTHER,className));
                     }
                 }

@@ -58,6 +58,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.TypeElement;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldSelector;
@@ -199,16 +200,20 @@ public abstract class ClassIndexImpl {
     }
 
     void typesEvent (
-            @NonNull final Collection<? extends ElementHandle<TypeElement>> added,
-            @NonNull final Collection<? extends ElementHandle<TypeElement>> removed,
-            @NonNull final Collection<? extends ElementHandle<TypeElement>> changed) {
-        final ClassIndexImplEvent a = added == null || added.isEmpty() ? null : new ClassIndexImplEvent(this, added);
-        final ClassIndexImplEvent r = removed == null || removed.isEmpty() ? null : new ClassIndexImplEvent(this, removed);
-        final ClassIndexImplEvent ch = changed == null || changed.isEmpty() ? null : new ClassIndexImplEvent(this, changed);
+            @NonNull final URL root,
+            @NonNull final Pair<ElementHandle<ModuleElement>, Collection<? extends ElementHandle<TypeElement>>> added,
+            @NonNull final Pair<ElementHandle<ModuleElement>, Collection<? extends ElementHandle<TypeElement>>> removed,
+            @NonNull final Pair<ElementHandle<ModuleElement>, Collection<? extends ElementHandle<TypeElement>>> changed) {
+        final ClassIndexImplEvent a = added.first() == null && added.second().isEmpty() ? null : new ClassIndexImplEvent(this, root, added.first(), added.second());
+        final ClassIndexImplEvent r = removed.first() == null && removed.second().isEmpty() ? null : new ClassIndexImplEvent(this, root, removed.first(), removed.second());
+        final ClassIndexImplEvent ch = changed.first() == null && changed.second().isEmpty() ? null : new ClassIndexImplEvent(this, root, changed.first(), changed.second());
         typesEvent(a, r, ch);
     }
 
-    private void typesEvent (final ClassIndexImplEvent added, final ClassIndexImplEvent removed, final ClassIndexImplEvent changed) {
+    private void typesEvent (
+            @NullAllowed final ClassIndexImplEvent added,
+            @NullAllowed final ClassIndexImplEvent removed,
+            @NullAllowed final ClassIndexImplEvent changed) {
         WeakReference<ClassIndexImplListener>[] _listeners;
         synchronized (this.listeners) {
             _listeners = this.listeners.toArray(new WeakReference[this.listeners.size()]);

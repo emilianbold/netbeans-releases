@@ -49,6 +49,30 @@ made subject to such option by the copyright holder.
     <apidef name="javasource_base">Java Source API</apidef>
 </apidefs>
 <changes>
+    <change id="TypesEvent.module">
+        <api name="javasource_base"/>
+        <summary>Added an information about changes in the module-info</summary>
+        <version major="1" minor="2.17"/>
+        <date day="17" month="2" year="2016"/>
+        <author login="tzezula"/>
+        <compatibility addition="yes" binary="compatible" source="compatible"/>
+        <description>
+            Added an information about changes in the module-info.
+        </description>
+        <class name="TypesEvent" package="org.netbeans.api.java.source"/>
+    </change>
+    <change id="SourceUtils.invalidate">
+        <api name="javasource_base"/>
+        <summary>Added a method to invalidate java parser caches</summary>
+        <version major="1" minor="2.16"/>
+        <date day="17" month="2" year="2016"/>
+        <author login="tzezula"/>
+        <compatibility addition="yes" binary="compatible" source="compatible"/>
+        <description>
+            Added a method to invalidate java parser caches in case of non language change.
+        </description>
+        <class name="SourceUtils" package="org.netbeans.api.java.source"/>
+    </change>
     <change id="generator.insert.caretlocation">
         <api name="javasource_base"/>
         <summary>Code Generator uses caret location to insert members</summary>

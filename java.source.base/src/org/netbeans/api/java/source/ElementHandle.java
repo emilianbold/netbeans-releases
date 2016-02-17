@@ -337,7 +337,10 @@ public final class ElementHandle<T extends Element> {
      * isn't created for the {@link TypeElement}.
      */
     public @NonNull String getBinaryName () throws IllegalStateException {
-        if ((this.kind.isClass() && !isArray(signatures[0])) || this.kind.isInterface() || this.kind == ElementKind.OTHER) {
+        if ((this.kind.isClass() && !isArray(signatures[0])) ||
+                this.kind.isInterface() ||
+                this.kind == ElementKind.MODULE ||
+                this.kind == ElementKind.OTHER) {
             return this.signatures[0];
         }
         else {
@@ -355,7 +358,10 @@ public final class ElementHandle<T extends Element> {
      * isn't creatred for the {@link TypeElement}.
      */
     public @NonNull String getQualifiedName () throws IllegalStateException {
-        if ((this.kind.isClass() && !isArray(signatures[0])) || this.kind.isInterface() || this.kind == ElementKind.OTHER) {
+        if ((this.kind.isClass() && !isArray(signatures[0])) ||
+                this.kind.isInterface() ||
+                this.kind == ElementKind.MODULE ||
+                this.kind == ElementKind.OTHER) {
             return this.signatures[0].replace (Target.DEFAULT.syntheticNameChar(),'.');    //NOI18N
         }
         else {
@@ -580,6 +586,7 @@ public final class ElementHandle<T extends Element> {
                         throw new IllegalArgumentException ();
                     }
                     return new ElementHandle<PackageElement> (kind, descriptors);
+                case MODULE:
                 case CLASS:
                 case INTERFACE:
                 case ENUM:

@@ -880,71 +880,75 @@ public final class ClassIndex {
 
         private final AtomicBoolean attached = new AtomicBoolean();
 
-        public void typesAdded (final ClassIndexImplEvent event) {
+        @Override
+        public void typesAdded (@NonNull final ClassIndexImplEvent event) {
             assert event != null;
-            final Runnable action = new Runnable () {
-                public void run() {
-                    assertParserEventThread();
-                    TypesEvent _event = new TypesEvent (ClassIndex.this,event.getTypes());
-                    for (ClassIndexListener l : listeners) {
-                        l.typesAdded(_event);
-                    }
+            fireByWorker(() -> {
+                assertParserEventThread();
+                final TypesEvent _event = new TypesEvent (
+                        ClassIndex.this,
+                        event.getRoot(),
+                        event.getModule(),
+                        event.getTypes());
+                for (ClassIndexListener l : listeners) {
+                    l.typesAdded(_event);
                 }
-            };
-            fireByWorker(action);
+            });
         }
-        
-        public void typesRemoved (final ClassIndexImplEvent event) {
+
+        @Override
+        public void typesRemoved (@NonNull final ClassIndexImplEvent event) {
             assert event != null;
-            final Runnable action = new Runnable() {
-                public void run() {
-                    assertParserEventThread();
-                    TypesEvent _event = new TypesEvent (ClassIndex.this,event.getTypes());
-                    for (ClassIndexListener l : listeners) {
-                        l.typesRemoved(_event);
-                    }
+            fireByWorker(() -> {
+                assertParserEventThread();
+                final TypesEvent _event = new TypesEvent (
+                        ClassIndex.this,
+                        event.getRoot(),
+                        event.getModule(),
+                        event.getTypes());
+                for (ClassIndexListener l : listeners) {
+                    l.typesRemoved(_event);
                 }
-            };
-            fireByWorker(action);
+            });
         }
-        
-        public void typesChanged (final ClassIndexImplEvent event) {
+
+        @Override
+        public void typesChanged (@NonNull final ClassIndexImplEvent event) {
             assert event != null;
-            final Runnable action = new Runnable() {
-                public void run() {
-                    assertParserEventThread();
-                    TypesEvent _event = new TypesEvent (ClassIndex.this,event.getTypes());
-                    for (ClassIndexListener l : listeners) {
-                        l.typesChanged(_event);
-                    }
+            fireByWorker(() -> {
+                assertParserEventThread();
+                final TypesEvent _event = new TypesEvent (
+                        ClassIndex.this,
+                        event.getRoot(),
+                        event.getModule(),
+                        event.getTypes());
+                for (ClassIndexListener l : listeners) {
+                    l.typesChanged(_event);
                 }
-            };
-            fireByWorker(action);
-        }        
-        
+            });
+        }
+
+        @Override
         public void classIndexAdded (final ClassIndexManagerEvent event) {
             assert event != null;
             final Set<? extends URL> roots = event.getRoots();
             assert roots != null;
-            final List<URL> ar = new LinkedList<URL>();
+            final List<URL> ar = new LinkedList<>();
             boolean srcF = containsRoot (sourcePath,roots,ar, false);
             boolean depF = containsRoot (bootPath, roots, ar, true);
             depF |= containsRoot (classPath, roots, ar, true);
             if (srcF || depF) {
                 reset (srcF, depF);
-                final Runnable action = new Runnable() {
-                    public void run() {
-                        assertParserEventThread();
-                        final RootsEvent e = new RootsEvent(ClassIndex.this, ar);
-                        for (ClassIndexListener l : listeners) {
-                            l.rootsAdded(e);
-                        }
+                fireByWorker(() -> {
+                    assertParserEventThread();
+                    final RootsEvent e = new RootsEvent(ClassIndex.this, ar);
+                    for (ClassIndexListener l : listeners) {
+                        l.rootsAdded(e);
                     }
-                };
-                fireByWorker(action);
+                });
             }
         }
-        
+
         public void classIndexRemoved (final ClassIndexManagerEvent event) {
             //Not important handled by propertyChange from ClassPath
         }

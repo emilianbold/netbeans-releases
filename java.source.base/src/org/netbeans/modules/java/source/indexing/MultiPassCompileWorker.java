@@ -118,6 +118,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                     javaContext.getModuleName(),
                     previous.file2FQNs,
                     previous.addedTypes,
+                    previous.addedModules,
                     previous.createdFiles,
                     previous.finishedFiles,
                     previous.modifiedTypes,
@@ -295,14 +296,14 @@ final class MultiPassCompileWorker extends CompileWorker {
                     javaContext.getFQNs().set(types, active.indexable.getURL());
                     boolean[] main = new boolean[1];
                     if (javaContext.getCheckSums().checkAndSet(active.indexable.getURL(), types, jt.getElements()) || context.isSupplementaryFilesIndexing()) {
-                        javaContext.analyze(trees, jt, active, previous.addedTypes, main);
+                        javaContext.analyze(trees, jt, active, previous.addedTypes, previous.addedModules, main);
                     } else {
-                        final Set<ElementHandle<TypeElement>> aTypes = new HashSet<ElementHandle<TypeElement>>();
-                        javaContext.analyze(trees, jt, active, aTypes, main);
+                        final Set<ElementHandle<TypeElement>> aTypes = new HashSet<>();
+                        javaContext.analyze(trees, jt, active, aTypes, previous.addedModules, main);
                         previous.addedTypes.addAll(aTypes);
                         previous.modifiedTypes.addAll(aTypes);
                     }
-                    ExecutableFilesIndex.DEFAULT.setMainClass(context.getRoot().getURL(), active.indexable.getURL(), main[0]);
+                    ExecutableFilesIndex.DEFAULT.setMainClass(context.getRoot().toURL(), active.indexable.getURL(), main[0]);
                     JavaCustomIndexer.setErrors(context, active, diagnosticListener);
                     Iterable<? extends JavaFileObject> generatedFiles = jt.generate(types);
                     if (!active.virtual) {
@@ -375,7 +376,9 @@ final class MultiPassCompileWorker extends CompileWorker {
                                 );
                     JavaIndex.LOG.log(Level.FINEST, message, isp);
                 }
-                return ParsingOutput.failure(moduleName, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
+                return ParsingOutput.failure(moduleName, previous.file2FQNs,
+                        previous.addedTypes, previous.addedModules, previous.createdFiles, previous.finishedFiles,
+                        previous.modifiedTypes, previous.aptGenerated);
             } catch (MissingPlatformError mpe) {
                 //No platform - log & mark files as errornous
                 if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
@@ -392,7 +395,9 @@ final class MultiPassCompileWorker extends CompileWorker {
                     JavaIndex.LOG.log(Level.FINEST, message, mpe);
                 }
                 JavaCustomIndexer.brokenPlatform(context, files, mpe.getDiagnostic());
-                return ParsingOutput.failure(moduleName, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
+                return ParsingOutput.failure(moduleName, previous.file2FQNs,
+                        previous.addedTypes, previous.addedModules, previous.createdFiles, previous.finishedFiles,
+                        previous.modifiedTypes, previous.aptGenerated);
             } catch (Throwable t) {
                 if (t instanceof ThreadDeath) {
                     throw (ThreadDeath) t;
@@ -428,8 +433,12 @@ final class MultiPassCompileWorker extends CompileWorker {
             }
         }
         return (state & MEMORY_LOW) == 0?
-            ParsingOutput.success(moduleName, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated):
-            ParsingOutput.lowMemory(moduleName, previous.file2FQNs, previous.addedTypes, previous.createdFiles, previous.finishedFiles, previous.modifiedTypes, previous.aptGenerated);
+            ParsingOutput.success(moduleName, previous.file2FQNs,
+                    previous.addedTypes, previous.addedModules, previous.createdFiles, previous.finishedFiles,
+                    previous.modifiedTypes, previous.aptGenerated):
+            ParsingOutput.lowMemory(moduleName, previous.file2FQNs,
+                    previous.addedTypes, previous.addedModules, previous.createdFiles, previous.finishedFiles,
+                    previous.modifiedTypes, previous.aptGenerated);
     }
 
     private void dumpSymFiles(

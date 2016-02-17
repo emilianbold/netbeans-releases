@@ -44,9 +44,13 @@
 
 package org.netbeans.api.java.source;
 
+import java.net.URL;
 import java.util.EventObject;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.openide.util.Parameters;
 
 /**
  * Event used to notify the {@link ClassIndexListener} about
@@ -54,26 +58,61 @@ import org.netbeans.api.java.source.ElementHandle;
  * @author Tomas Zezula
  */
 public final class TypesEvent extends EventObject {
-    
+
+    private final URL root;
     private final Iterable<? extends ElementHandle<TypeElement>> types;
-    
-    TypesEvent (final ClassIndex source, final Iterable<? extends ElementHandle<TypeElement>> types) {
+    private final ElementHandle<ModuleElement> module;
+
+    TypesEvent (
+            final ClassIndex source,
+            final URL root,
+            final ElementHandle<ModuleElement> module,
+            final Iterable<? extends ElementHandle<TypeElement>> types) {
         super (source);
-        assert types != null;
+        Parameters.notNull("root", root);   //NOI18N
+        Parameters.notNull("types", types); //NOI18N
+        this.root = root;
+        this.module = module;
         this.types = types;
     }
-    
+
+    /**
+     * Returns an {@link URL} of the affected root.
+     * @return the affected root
+     * @since 2.17
+     */
+    @NonNull
+    public URL getRoot() {
+        return root;
+    }
+
     /**
      * Returns the affected declared types.
      * @return an {@link Iterable} of {@link TypeElement} handles
      */
+    @NonNull
     public Iterable<? extends ElementHandle<TypeElement>> getTypes () {
         return this.types;
     }
-    
+
+    /**
+     * Returns the affected module in case of module-info change.
+     * @return a {@link ModuleElement} handles
+     * @since 2.17
+     */
+    @CheckForNull
+    public ElementHandle<ModuleElement> getModule() {
+        return this.module;
+    }
+
+    @NonNull
     @Override
     public String toString () {
-        return String.format("TypesEvent [%s]", this.types.toString());
+        return String.format(
+                "TypesEvent for root: %s changed module: %s, changed types: %s",    //NOI18N
+                root,
+                module,
+                types);
     }
-    
+
 }
