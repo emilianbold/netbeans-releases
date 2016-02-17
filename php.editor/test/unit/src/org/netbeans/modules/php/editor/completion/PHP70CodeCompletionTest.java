@@ -362,19 +362,23 @@ public class PHP70CodeCompletionTest extends PHPCodeCompletionTestBase {
         checkCompletion("testfiles/completion/lib/php70/anonymousClass03.php", "        return new class($this->^prop) extends Outer {", false);
     }
 
-    // XXX $this should be Outer + anonymous class
+    // XXX $this should be anonymous class not Outer!
     public void testAnonymousClass03c() throws Exception {
         checkCompletion("testfiles/completion/lib/php70/anonymousClass03.php", "                return $this->^prop2 + $this->prop3 + $this->func1();", false);
     }
 
-    // XXX $this should be Outer + anonymous class
+    // XXX $this should be anonymous class not Outer!
     public void testAnonymousClass03d() throws Exception {
         checkCompletion("testfiles/completion/lib/php70/anonymousClass03.php", "                return $this->prop2 + $this->^prop3 + $this->func1();", false);
     }
 
-    // XXX $this should be Outer + anonymous class
+    // XXX $this should be anonymous class not Outer!
     public void testAnonymousClass03e() throws Exception {
         checkCompletion("testfiles/completion/lib/php70/anonymousClass03.php", "                return $this->prop2 + $this->prop3 + $this->^func1();", false);
+    }
+
+    public void testAnonymousClass03f() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/anonymousClass03.php", "                return $t^his->prop2 + $this->prop3 + $this->func1();", false);
     }
 
     // XXX add tests for CC after NS aliases!
