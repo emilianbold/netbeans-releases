@@ -1948,4 +1948,8 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    }\n"
                 + "}");
     }
+    
+    public void testFunctionQuoteInMap() {
+        assertParses("$a: (quote(bgcolor): black)");
+    }
 }
