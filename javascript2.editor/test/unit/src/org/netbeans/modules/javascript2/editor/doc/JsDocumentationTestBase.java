@@ -41,42 +41,43 @@
  */
 package org.netbeans.modules.javascript2.editor.doc;
 
-import jdk.nashorn.internal.ir.AccessNode;
-import jdk.nashorn.internal.ir.BinaryNode;
-import jdk.nashorn.internal.ir.Block;
-import jdk.nashorn.internal.ir.BreakNode;
-import jdk.nashorn.internal.ir.CallNode;
-import jdk.nashorn.internal.ir.CaseNode;
-import jdk.nashorn.internal.ir.CatchNode;
-import jdk.nashorn.internal.ir.ContinueNode;
-import jdk.nashorn.internal.ir.DoWhileNode;
-import jdk.nashorn.internal.ir.EmptyNode;
-import jdk.nashorn.internal.ir.ExecuteNode;
-import jdk.nashorn.internal.ir.ForNode;
-import jdk.nashorn.internal.ir.FunctionNode;
-import jdk.nashorn.internal.ir.IdentNode;
-import jdk.nashorn.internal.ir.IfNode;
-import jdk.nashorn.internal.ir.IndexNode;
-import jdk.nashorn.internal.ir.LabelNode;
-import jdk.nashorn.internal.ir.LabeledNode;
-import jdk.nashorn.internal.ir.LineNumberNode;
-import jdk.nashorn.internal.ir.LiteralNode;
-import jdk.nashorn.internal.ir.Node;
-import jdk.nashorn.internal.ir.ObjectNode;
-import jdk.nashorn.internal.ir.PropertyNode;
-import jdk.nashorn.internal.ir.ReferenceNode;
-import jdk.nashorn.internal.ir.ReturnNode;
-import jdk.nashorn.internal.ir.RuntimeNode;
-import jdk.nashorn.internal.ir.SplitNode;
-import jdk.nashorn.internal.ir.SwitchNode;
-import jdk.nashorn.internal.ir.TernaryNode;
-import jdk.nashorn.internal.ir.ThrowNode;
-import jdk.nashorn.internal.ir.TryNode;
-import jdk.nashorn.internal.ir.UnaryNode;
-import jdk.nashorn.internal.ir.VarNode;
-import jdk.nashorn.internal.ir.WhileNode;
-import jdk.nashorn.internal.ir.WithNode;
-import jdk.nashorn.internal.ir.visitor.NodeVisitor;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.AccessNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.BinaryNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.Block;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.BlockStatement;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.BreakNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.CallNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.CaseNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.CatchNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.ClassNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.ContinueNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.DebuggerNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.EmptyNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.ErrorNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.ExpressionStatement;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.ForNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.FunctionNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.IdentNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.IfNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.IndexNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.JoinPredecessorExpression;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.LabelNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.LexicalContext;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.LiteralNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.Node;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.ObjectNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.PropertyNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.ReturnNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.RuntimeNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.SwitchNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.TernaryNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.ThrowNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.TryNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.UnaryNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.VarNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.WhileNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.WithNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.visitor.NodeVisitor;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
@@ -158,6 +159,7 @@ public abstract class JsDocumentationTestBase extends JsTestBase {
         private final List<Node> nodes = new LinkedList<Node>();
 
         public OffsetVisitor(int offset) {
+            super(new LexicalContext());
             this.offset = offset;
         }
 
@@ -172,201 +174,207 @@ public abstract class JsDocumentationTestBase extends JsTestBase {
         }
 
         @Override
-        public Node enter(AccessNode accessNode) {
-            processNode(accessNode);
-            return super.enter(accessNode);
+        public boolean enterClassNode(ClassNode classNode) {
+            processNode(classNode);
+            return super.enterClassNode(classNode);
         }
 
         @Override
-        public Node enter(Block block) {
-            processNode(block);
-            return super.enter(block);
-        }
-
-        @Override
-        public Node enter(BinaryNode binaryNode) {
-            processNode(binaryNode);
-            return super.enter(binaryNode);
-        }
-
-        @Override
-        public Node enter(BreakNode breakNode) {
-            processNode(breakNode);
-            return super.enter(breakNode);
-        }
-
-        @Override
-        public Node enter(CallNode callNode) {
-            processNode(callNode);
-            return super.enter(callNode);
-        }
-
-        @Override
-        public Node enter(CaseNode caseNode) {
-            processNode(caseNode);
-            return super.enter(caseNode);
-        }
-
-        @Override
-        public Node enter(CatchNode catchNode) {
-            processNode(catchNode);
-            return super.enter(catchNode);
-        }
-
-        @Override
-        public Node enter(ContinueNode continueNode) {
-            processNode(continueNode);
-            return super.enter(continueNode);
-        }
-
-        @Override
-        public Node enter(DoWhileNode doWhileNode) {
-            processNode(doWhileNode);
-            return super.enter(doWhileNode);
-        }
-
-        @Override
-        public Node enter(EmptyNode emptyNode) {
-            processNode(emptyNode);
-            return super.enter(emptyNode);
-        }
-
-        @Override
-        public Node enter(ExecuteNode executeNode) {
-            processNode(executeNode);
-            return super.enter(executeNode);
-        }
-
-        @Override
-        public Node enter(ForNode forNode) {
-            processNode(forNode);
-            return super.enter(forNode);
-        }
-
-        @Override
-        public Node enter(FunctionNode functionNode) {
-            processNode(functionNode);
-            return super.enter(functionNode);
-        }
-
-        @Override
-        public Node enter(IdentNode identNode) {
-            processNode(identNode);
-            return super.enter(identNode);
-        }
-
-        @Override
-        public Node enter(IfNode ifNode) {
-            processNode(ifNode);
-            return super.enter(ifNode);
-        }
-
-        @Override
-        public Node enter(IndexNode indexNode) {
-            processNode(indexNode);
-            return super.enter(indexNode);
-        }
-
-        @Override
-        public Node enter(LabelNode labeledNode) {
-            processNode(labeledNode);
-            return super.enter(labeledNode);
-        }
-
-        @Override
-        public Node enter(LineNumberNode lineNumberNode) {
-            processNode(lineNumberNode);
-            return super.enter(lineNumberNode);
-        }
-
-        @Override
-        public Node enter(LiteralNode literalNode) {
-            processNode(literalNode);
-            return super.enter(literalNode);
-        }
-
-        @Override
-        public Node enter(ObjectNode objectNode) {
-            processNode(objectNode);
-            return super.enter(objectNode);
-        }
-
-        @Override
-        public Node enter(PropertyNode propertyNode) {
-            processNode(propertyNode);
-            return super.enter(propertyNode);
-        }
-
-        @Override
-        public Node enter(ReferenceNode referenceNode) {
-            processNode(referenceNode);
-            return super.enter(referenceNode);
-        }
-
-        @Override
-        public Node enter(ReturnNode returnNode) {
-            processNode(returnNode);
-            return super.enter(returnNode);
-        }
-
-        @Override
-        public Node enter(RuntimeNode runtimeNode) {
-            processNode(runtimeNode);
-            return super.enter(runtimeNode);
-        }
-
-        @Override
-        public Node enter(SplitNode splitNode) {
-            processNode(splitNode);
-            return super.enter(splitNode);
-        }
-
-        @Override
-        public Node enter(SwitchNode switchNode) {
-            processNode(switchNode);
-            return super.enter(switchNode);
-        }
-
-        @Override
-        public Node enter(TernaryNode ternaryNode) {
-            processNode(ternaryNode);
-            return super.enter(ternaryNode);
-        }
-
-        @Override
-        public Node enter(ThrowNode throwNode) {
-            processNode(throwNode);
-            return super.enter(throwNode);
-        }
-
-        @Override
-        public Node enter(TryNode tryNode) {
-            processNode(tryNode);
-            return super.enter(tryNode);
-        }
-
-        @Override
-        public Node enter(UnaryNode unaryNode) {
-            processNode(unaryNode);
-            return super.enter(unaryNode);
-        }
-
-        @Override
-        public Node enter(VarNode varNode) {
-            processNode(varNode);
-            return super.enter(varNode);
-        }
-
-        @Override
-        public Node enter(WhileNode whileNode) {
-            processNode(whileNode);
-            return super.enter(whileNode);
-        }
-
-        @Override
-        public Node enter(WithNode withNode) {
+        public boolean enterWithNode(WithNode withNode) {
             processNode(withNode);
-            return super.enter(withNode);
+            return super.enterWithNode(withNode);
+        }
+
+        @Override
+        public boolean enterWhileNode(WhileNode whileNode) {
+            processNode(whileNode);
+            return super.enterWhileNode(whileNode);
+        }
+
+        @Override
+        public boolean enterVarNode(VarNode varNode) {
+            processNode(varNode);
+            return super.enterVarNode(varNode);
+        }
+
+        @Override
+        public boolean enterJoinPredecessorExpression(JoinPredecessorExpression expr) {
+            processNode(expr);
+            return super.enterJoinPredecessorExpression(expr);
+        }
+
+        @Override
+        public boolean enterUnaryNode(UnaryNode unaryNode) {
+            processNode(unaryNode);
+            return super.enterUnaryNode(unaryNode);
+        }
+
+        @Override
+        public boolean enterTryNode(TryNode tryNode) {
+            processNode(tryNode);
+            return super.enterTryNode(tryNode);
+        }
+
+        @Override
+        public boolean enterThrowNode(ThrowNode throwNode) {
+            processNode(throwNode);
+            return super.enterThrowNode(throwNode);
+        }
+
+        @Override
+        public boolean enterTernaryNode(TernaryNode ternaryNode) {
+            processNode(ternaryNode);
+            return super.enterTernaryNode(ternaryNode);
+        }
+
+        @Override
+        public boolean enterSwitchNode(SwitchNode switchNode) {
+            processNode(switchNode);
+            return super.enterSwitchNode(switchNode);
+        }
+
+        @Override
+        public boolean enterRuntimeNode(RuntimeNode runtimeNode) {
+            processNode(runtimeNode);
+            return super.enterRuntimeNode(runtimeNode);
+        }
+
+        @Override
+        public boolean enterReturnNode(ReturnNode returnNode) {
+            processNode(returnNode);
+            return super.enterReturnNode(returnNode);
+        }
+
+        @Override
+        public boolean enterPropertyNode(PropertyNode propertyNode) {
+            processNode(propertyNode);
+            return super.enterPropertyNode(propertyNode);
+        }
+
+        @Override
+        public boolean enterObjectNode(ObjectNode objectNode) {
+            processNode(objectNode);
+            return super.enterObjectNode(objectNode);
+        }
+
+        @Override
+        public boolean enterLiteralNode(LiteralNode literalNode) {
+            processNode(literalNode);
+            return super.enterLiteralNode(literalNode);
+        }
+
+        @Override
+        public boolean enterLabelNode(LabelNode labelNode) {
+            processNode(labelNode);
+            return super.enterLabelNode(labelNode);
+        }
+
+        @Override
+        public boolean enterIndexNode(IndexNode indexNode) {
+            processNode(indexNode);
+            return super.enterIndexNode(indexNode);
+        }
+
+        @Override
+        public boolean enterIfNode(IfNode ifNode) {
+            processNode(ifNode);
+            return super.enterIfNode(ifNode);
+        }
+
+        @Override
+        public boolean enterIdentNode(IdentNode identNode) {
+            processNode(identNode);
+            return super.enterIdentNode(identNode);
+        }
+
+        @Override
+        public boolean enterFunctionNode(FunctionNode functionNode) {
+            processNode(functionNode);
+            return super.enterFunctionNode(functionNode);
+        }
+
+        @Override
+        public boolean enterForNode(ForNode forNode) {
+            processNode(forNode);
+            return super.enterForNode(forNode);
+        }
+
+        @Override
+        public boolean enterBlockStatement(BlockStatement blockStatement) {
+            processNode(blockStatement);
+            return super.enterBlockStatement(blockStatement);
+        }
+
+        @Override
+        public boolean enterExpressionStatement(ExpressionStatement expressionStatement) {
+            processNode(expressionStatement);
+            return super.enterExpressionStatement(expressionStatement);
+        }
+
+        @Override
+        public boolean enterErrorNode(ErrorNode errorNode) {
+            processNode(errorNode);
+            return super.enterErrorNode(errorNode);
+        }
+
+        @Override
+        public boolean enterEmptyNode(EmptyNode emptyNode) {
+            processNode(emptyNode);
+            return super.enterEmptyNode(emptyNode);
+        }
+
+        @Override
+        public boolean enterDebuggerNode(DebuggerNode debuggerNode) {
+            processNode(debuggerNode);
+            return super.enterDebuggerNode(debuggerNode);
+        }
+
+        @Override
+        public boolean enterContinueNode(ContinueNode continueNode) {
+            processNode(continueNode);
+            return super.enterContinueNode(continueNode);
+        }
+
+        @Override
+        public boolean enterCatchNode(CatchNode catchNode) {
+            processNode(catchNode);
+            return super.enterCatchNode(catchNode);
+        }
+
+        @Override
+        public boolean enterCaseNode(CaseNode caseNode) {
+            processNode(caseNode);
+            return super.enterCaseNode(caseNode);
+        }
+
+        @Override
+        public boolean enterCallNode(CallNode callNode) {
+            processNode(callNode);
+            return super.enterCallNode(callNode);
+        }
+
+        @Override
+        public boolean enterBreakNode(BreakNode breakNode) {
+            processNode(breakNode);
+            return super.enterBreakNode(breakNode);
+        }
+
+        @Override
+        public boolean enterBinaryNode(BinaryNode binaryNode) {
+            processNode(binaryNode);
+            return super.enterBinaryNode(binaryNode);
+        }
+
+        @Override
+        public boolean enterBlock(Block block) {
+            processNode(block);
+            return super.enterBlock(block);
+        }
+
+        @Override
+        public boolean enterAccessNode(AccessNode accessNode) {
+            processNode(accessNode);
+            return super.enterAccessNode(accessNode);
         }
     }
 }
