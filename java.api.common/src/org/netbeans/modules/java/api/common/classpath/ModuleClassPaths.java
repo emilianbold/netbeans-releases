@@ -709,8 +709,10 @@ final class ModuleClassPaths {
                                     event.getRoot()
                                 });
                             toInvalidate.stream().forEach((f) -> {
-                                Optional.ofNullable(FileUtil.toFileObject(f))
-                                        .ifPresent((fo)->SourceUtils.invalidate(fo, false));
+                                final FileObject fo = FileUtil.toFileObject(f);
+                                if (fo != null) {
+                                    SourceUtils.invalidate(fo, false);
+                                }
                             });
                             rootsChanging = false;
                             CLASS_INDEX_FIRER.execute(()->resetCache(TOMBSTONE, true));
