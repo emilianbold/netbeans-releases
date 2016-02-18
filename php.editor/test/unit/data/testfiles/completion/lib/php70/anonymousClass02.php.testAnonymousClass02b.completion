@@ -18,6 +18,12 @@ VARIABLE   $argc                                      PHP Platform
 VARIABLE   $argv                                      PHP Platform
 VARIABLE   $http_response_header                      PHP Platform
 VARIABLE   $php_errormsg                              PHP Platform
-VARIABLE   ? $a                            [PUBLIC]   groupUse01.php
-VARIABLE   ? $ab                           [PUBLIC]   groupUse01.php
-VARIABLE   ? $abc                          [PUBLIC]   groupUse01.php
+VARIABLE   ? $a01                          [PUBLIC]   groupUse01.php
+VARIABLE   ? $a02                          [PUBLIC]   groupUse02.php
+VARIABLE   ? $a03                          [PUBLIC]   groupUse03.php
+VARIABLE   ? $ab01                         [PUBLIC]   groupUse01.php
+VARIABLE   ? $ab02                         [PUBLIC]   groupUse02.php
+VARIABLE   ? $ab03                         [PUBLIC]   groupUse03.php
+VARIABLE   ? $abc01                        [PUBLIC]   groupUse01.php
+VARIABLE   ? $abc02                        [PUBLIC]   groupUse02.php
+VARIABLE   ? $abc03                        [PUBLIC]   groupUse03.php

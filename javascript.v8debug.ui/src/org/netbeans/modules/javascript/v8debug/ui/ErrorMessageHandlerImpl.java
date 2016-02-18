@@ -39,56 +39,30 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.phpunit.annotations.parser;
+package org.netbeans.modules.javascript.v8debug.ui;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
+import org.netbeans.modules.javascript.v8debug.V8Debugger;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.StatusDisplayer;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author Martin
  */
-class ExpectedExceptionLineParser implements AnnotationLineParser {
-
-    static final String ANNOTATION_NAME = "expectedException"; //NOI18N
-
+@ServiceProvider(service = V8Debugger.ErrorMessageHandler.class)
+public class ErrorMessageHandlerImpl implements V8Debugger.ErrorMessageHandler {
 
     @Override
-    public AnnotationParsedLine parse(final String line) {
-        AnnotationParsedLine result = null;
-        String[] tokens = line.split("[ \t]+"); //NOI18N
-        if (tokens.length > 0 && ANNOTATION_NAME.equalsIgnoreCase(tokens[0])) {
-            result = handleAnnotation(line, tokens);
-        }
-        return result;
+    public void errorResponse(String error) {
+        StatusDisplayer.getDefault().setStatusText(error);
     }
 
-    private AnnotationParsedLine handleAnnotation(String line, String[] tokens) {
-        String description = "";
-        Map<OffsetRange, String> types = new HashMap<>();
-        if (tokens.length > 1) {
-            description = line.substring(tokens[0].length()).trim();
-            int start = ANNOTATION_NAME.length() + countSpacesToFirstNonWhitespace(line.substring(ANNOTATION_NAME.length()));
-            int end = start + tokens[1].length();
-            types.put(new OffsetRange(start, end), line.substring(start, end));
-        }
-        return new ParsedLine(ANNOTATION_NAME, types, description, true);
+    @Override
+    public void errorEvent(String error) {
+        NotifyDescriptor nde = new NotifyDescriptor.Message(error, NotifyDescriptor.ERROR_MESSAGE);
+        DialogDisplayer.getDefault().notify(nde);
     }
-
-    private static int countSpacesToFirstNonWhitespace(final String line) {
-        int result = 0;
-        for (int i = 0; i < line.length(); i++) {
-            if (Character.isWhitespace(line.charAt(i))) {
-                result++;
-            } else {
-                break;
-            }
-        }
-        return result;
-    }
-
+    
 }
