@@ -716,7 +716,7 @@ public class ChildFactoryTest extends NbTestCase {
         }
     }
 
-    private static final class DestroyableImpl extends ChildFactory.DestroyableNodes<String> {
+    private static final class DestroyableImpl extends DestroyableNodesFactory<String> {
 
         private boolean empty;
 
