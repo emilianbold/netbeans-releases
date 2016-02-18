@@ -216,7 +216,7 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
             case NEW:
                 exp.add(ST_NEW);
                 SimpleNameResolver snr = new SimpleNameResolver();
-                exp.add(snr.getFQN(unaryNode.getExpression()));
+                exp.add(snr.getFQN(unaryNode.getExpression(), builder));
                 typeOffset = snr.getTypeOffset();
                 return false;
             case NOT:
@@ -431,9 +431,11 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
     private static class SimpleNameResolver extends PathNodeVisitor {
         private List<String> exp = new ArrayList<String>();
         private int typeOffset = -1;
+        private ModelBuilder builder;
         
-        public String getFQN(Node expression) {
+        public String getFQN(Node expression, ModelBuilder builder) {
             exp.clear();
+            this.builder = builder;
             expression.accept(this);
             StringBuilder sb = new StringBuilder();
             for(String part : exp){
@@ -470,7 +472,11 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
 
         @Override
         public boolean enterFunctionNode(FunctionNode functionNode) {
-            functionNode.getIdent().accept(this);
+            String name = builder.getFunctionName(functionNode);
+            exp.add(name);
+            if (typeOffset == -1) {
+                typeOffset = functionNode.getIdent().getStart();
+            }
             return false;
         }
 

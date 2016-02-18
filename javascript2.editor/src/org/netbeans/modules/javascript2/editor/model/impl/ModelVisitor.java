@@ -2442,13 +2442,13 @@ public class ModelVisitor extends PathNodeVisitor {
         // trying to find out that it corresponds with patter, where an object is defined via new function:
         // exp: this.pro = new function () { this.field = "";}
         if (canBeSingletonPattern(pathIndex)) {
-            UnaryNode uNode = (UnaryNode) getPreviousFromPath(pathIndex + 3);
+            UnaryNode uNode = (UnaryNode) getPreviousFromPath(pathIndex + 2);
             if (uNode.tokenType() == TokenType.NEW) {
 
                 String name = null;
                 boolean simpleName = true;
-                if (getPreviousFromPath(pathIndex + 4) instanceof BinaryNode) {
-                    BinaryNode bNode = (BinaryNode) getPreviousFromPath(pathIndex + 4);
+                if (getPreviousFromPath(pathIndex + 3) instanceof BinaryNode) {
+                    BinaryNode bNode = (BinaryNode) getPreviousFromPath(pathIndex + 3);
                     if (bNode.tokenType() == TokenType.ASSIGN) {
                         if (bNode.lhs() instanceof AccessNode) {
                             List<Identifier> identifier = getName((AccessNode) bNode.lhs(), parserResult);
@@ -2471,8 +2471,8 @@ public class ModelVisitor extends PathNodeVisitor {
                             name = ((IdentNode) bNode.lhs()).getName();
                         }
                     }
-                } else if (getPreviousFromPath(pathIndex + 4) instanceof VarNode) {
-                    VarNode vNode = (VarNode)getPreviousFromPath(pathIndex + 4);
+                } else if (getPreviousFromPath(pathIndex + 3) instanceof VarNode) {
+                    VarNode vNode = (VarNode)getPreviousFromPath(pathIndex + 3);
                     name = vNode.getName().getName();
                 }
                 
@@ -2512,15 +2512,12 @@ public class ModelVisitor extends PathNodeVisitor {
     }
     
     private boolean canBeSingletonPattern(int pathIndex) {
-        return false;
-// TRUFFLE
-//       return  (getPath().size() > pathIndex + 4 && getPreviousFromPath(pathIndex) instanceof FunctionNode
-//                    && getPreviousFromPath(pathIndex + 1) instanceof ReferenceNode
-//                    && getPreviousFromPath(pathIndex + 2) instanceof CallNode
-//                    && ((CallNode)getPreviousFromPath(pathIndex + 2)).getFunction().equals(getPreviousFromPath(pathIndex + 1))
-//                    && getPreviousFromPath(pathIndex + 3) instanceof UnaryNode
-//                    && (getPreviousFromPath(pathIndex + 4) instanceof BinaryNode
-//                        || getPreviousFromPath(pathIndex + 4) instanceof VarNode));
+       return  (getPath().size() > pathIndex + 4 && getPreviousFromPath(pathIndex) instanceof FunctionNode
+                    && getPreviousFromPath(pathIndex + 1) instanceof CallNode
+                    && ((CallNode)getPreviousFromPath(pathIndex + 1)).getFunction().equals(getPreviousFromPath(pathIndex))
+                    && getPreviousFromPath(pathIndex + 2) instanceof UnaryNode
+                    && (getPreviousFromPath(pathIndex + 3) instanceof BinaryNode
+                        || getPreviousFromPath(pathIndex + 3) instanceof VarNode));
     }
     
     private boolean isPriviliged(AccessNode aNode) {
