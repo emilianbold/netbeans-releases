@@ -53,7 +53,7 @@ public class LaunchersProjectMetadataFactory implements ProjectMetadataFactory {
     }
 
     @NbBundle.Messages({
-        "illegal.string=Illegal string in the file {0}"
+        "illegal.string=Illegal string in the file {0}.\n{1}"
     })
     private static void reload(FileObject projectDir) {
         LaunchersRegistry launchersRegistry = LaunchersRegistryFactory.getInstance(projectDir);
@@ -75,13 +75,13 @@ public class LaunchersProjectMetadataFactory implements ProjectMetadataFactory {
                 properties.load(inputStream);
             } catch (IOException ex) {
                 //Exceptions.printStackTrace(ex);
-            } catch (IllegalArgumentException ex) {
+            } catch (final IllegalArgumentException ex) {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
                         DialogDisplayer.getDefault().notify(
                                 new NotifyDescriptor.Message(
-                                        Bundle.illegal_string(publicLaunchers.getPath()), NotifyDescriptor.ERROR_MESSAGE));
+                                        Bundle.illegal_string(publicLaunchers.getPath(), ex.getMessage()), NotifyDescriptor.ERROR_MESSAGE));
                     }
                 });
             }
@@ -91,13 +91,13 @@ public class LaunchersProjectMetadataFactory implements ProjectMetadataFactory {
                 properties.load(inputStream);
             } catch (IOException ex) {
                 //Exceptions.printStackTrace(ex);
-            } catch (IllegalArgumentException ex) {
+            } catch (final IllegalArgumentException ex) {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
                         DialogDisplayer.getDefault().notify(
                                 new NotifyDescriptor.Message(
-                                        Bundle.illegal_string(privateLaunchers.getPath()), NotifyDescriptor.ERROR_MESSAGE));
+                                        Bundle.illegal_string(privateLaunchers.getPath(), ex.getMessage()), NotifyDescriptor.ERROR_MESSAGE));
                     }
                 });
             }
