@@ -161,6 +161,12 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
         }
     }
 
+    @Override
+    protected void destroyNodes(Node[] arr) {
+        super.destroyNodes(arr);
+        factory.destroyNodes(arr);
+    }
+
     volatile boolean cancelled = false;
     volatile boolean notified;
     private final Object notifyLock = new Object();
