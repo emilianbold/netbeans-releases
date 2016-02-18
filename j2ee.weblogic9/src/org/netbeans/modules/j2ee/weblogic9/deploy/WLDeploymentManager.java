@@ -48,11 +48,15 @@ import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -64,6 +68,8 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
@@ -89,22 +95,30 @@ import javax.management.ObjectName;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.WebTargetModuleID;
 import org.netbeans.modules.j2ee.weblogic9.ProgressObjectSupport;
 import org.netbeans.modules.j2ee.weblogic9.ServerLogManager;
+import org.netbeans.modules.j2ee.weblogic9.URLWait;
 import org.netbeans.modules.j2ee.weblogic9.VersionBridge;
 import org.netbeans.modules.j2ee.weblogic9.WLConnectionSupport;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLProductProperties;
 import org.netbeans.modules.j2ee.weblogic9.j2ee.WLJ2eePlatformFactory;
+import org.netbeans.modules.j2ee.weblogic9.optional.NonProxyHostsHelper;
 import org.netbeans.modules.weblogic.common.api.WebLogicConfiguration;
 import org.netbeans.modules.weblogic.common.api.WebLogicDeployer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 
 /**
@@ -126,6 +140,8 @@ public class WLDeploymentManager implements DeploymentManager2 {
     private static final Map<ServerProgressObject, DeploymentStatus> OBJECTS_TO_POLL = new HashMap<ServerProgressObject, DeploymentStatus>();
 
     private static final RequestProcessor OBJECT_POLL_RP = new RequestProcessor("ProgressObject Poll", 1);
+    
+    private static final RequestProcessor URL_RESOLVE_RP = new RequestProcessor("URL Resolve", 1);
 
     private static final InstanceProperties EMPTY_PROPERTIES = new InstanceProperties() {
 
@@ -159,6 +175,14 @@ public class WLDeploymentManager implements DeploymentManager2 {
             throw new IllegalStateException("Already removed InstanceProperties");
         }
 
+    };
+
+    private static final Callable<String> NON_PROXY = new Callable<String>() {
+
+        @Override
+        public String call() throws Exception {
+            return NonProxyHostsHelper.getNonProxyHosts();
+        }
     };
 
     static {
@@ -423,7 +447,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
         }
         CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
         return wlDeployer.deploy(target, file, file2, getHost(), getPort(),
-                getCommonConfiguration().isSecured(), getInstanceProperties().getProperty(WLPluginProperties.DEPLOY_TARGET));
+                getCommonConfiguration().isSecured(), getDeployTargets());
     }
 
     @Override
@@ -437,7 +461,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
         CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
         return wlDeployer.deploy(targets, deployment.getModuleFile(), deployment.getDeploymentPlan(),
                 getHost(), getPort(), getCommonConfiguration().isSecured(),
-                getInstanceProperties().getProperty(WLPluginProperties.DEPLOY_TARGET));
+                getDeployTargets());
     }
 
     public ProgressObject distribute(Target[] target, ModuleType moduleType, InputStream inputStream, InputStream inputStream0) throws IllegalStateException {
@@ -458,7 +482,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
         CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
-        return wlDeployer.redeploy(targetModuleID, file, file2);
+        return wlDeployer.redeploy(targetModuleID, file, file2, getDeployTargets());
     }
 
     @Override
@@ -470,7 +494,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
         deployOptionalPackages(deployment.getRequiredLibraries());
 
         CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
-        return wlDeployer.redeploy(tmids, deployment.getModuleFile(), deployment.getDeploymentPlan());
+        return wlDeployer.redeploy(tmids, deployment.getModuleFile(), deployment.getDeploymentPlan(), getDeployTargets());
     }
 
     public ProgressObject redeploy(TargetModuleID[] targetModuleID, InputStream inputStream, InputStream inputStream2) throws  UnsupportedOperationException, IllegalStateException {
@@ -726,39 +750,15 @@ public class WLDeploymentManager implements DeploymentManager2 {
         CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
         if (optionalPackages.length > 0) {
             Set<File> files = new HashSet<File>(Arrays.asList(optionalPackages));
-            ProgressObject po = wlDeployer.deployLibraries(files);
+            ProgressObject po = wlDeployer.deployLibraries(files, getDeployTargets());
             ProgressObjectSupport.waitFor(po);
         }
     }
 
-    private static class InstancePropertiesCredentials implements WebLogicConfiguration.Credentials {
-
-        private final WeakReference<InstanceProperties> ip;
-
-        public InstancePropertiesCredentials(InstanceProperties ip) {
-            this.ip = new WeakReference<InstanceProperties>(ip);
-        }
-
-        @Override
-        public String getUsername() {
-            InstanceProperties real = ip.get();
-            if (real == null) {
-                throw new IllegalStateException("Already removed InstanceProperties");
-            }
-            return real.getProperty(InstanceProperties.USERNAME_ATTR);
-        }
-
-        @Override
-        public String getPassword() {
-            InstanceProperties real = ip.get();
-            if (real == null) {
-                throw new IllegalStateException("Already removed InstanceProperties");
-            }
-            return real.getProperty(InstanceProperties.PASSWORD_ATTR);
-        }
-
+    public WebLogicDeployer createDeployer() {
+        return WebLogicDeployer.getInstance(getCommonConfiguration(), getJavaBinary(), NON_PROXY);
     }
-
+    
     @NonNull
     private WebLogicConfiguration createConfiguration() {
         InstanceProperties ip = getInstanceProperties();
@@ -787,6 +787,34 @@ public class WLDeploymentManager implements DeploymentManager2 {
             config = WebLogicConfiguration.forLocalDomain(new File(serverHome), new File(domainHome), credentials);
         }
         return config;
+    }
+
+    public Set<String> getDeployTargets() {
+        String value = getInstanceProperties().getProperty(WLPluginProperties.DEPLOY_TARGETS);
+        if (value == null || value.isEmpty()) {
+            return Collections.emptySet();
+        }
+        String[] parts = value.split(","); // NOI18N
+        Set<String> ret = new HashSet<String>(parts.length);
+        Collections.addAll(ret, parts);
+        return ret;
+    }
+
+    private File getJavaBinary() {
+        // TODO configurable ? or use the jdk server is running on ?
+        JavaPlatform platform = JavaPlatformManager.getDefault().getDefaultPlatform();
+        Collection<FileObject> folders = platform.getInstallFolders();
+        String javaBinary = Utilities.isWindows() ? "java.exe" : "java"; // NOI18N
+        if (folders.size() > 0) {
+            FileObject folder = folders.iterator().next();
+            File file = FileUtil.toFile(folder);
+            if (file != null) {
+                javaBinary = file.getAbsolutePath() + File.separator
+                        + "bin" + File.separator
+                        + (Utilities.isWindows() ? "java.exe" : "java"); // NOI18N
+            }
+        }
+        return new File(javaBinary);
     }
 
     // XXX these are just temporary methods - should be replaced once we will
@@ -854,13 +882,41 @@ public class WLDeploymentManager implements DeploymentManager2 {
         }
         return po;
     }
-    
+
+    private static class InstancePropertiesCredentials implements WebLogicConfiguration.Credentials {
+
+        private final WeakReference<InstanceProperties> ip;
+
+        public InstancePropertiesCredentials(InstanceProperties ip) {
+            this.ip = new WeakReference<InstanceProperties>(ip);
+        }
+
+        @Override
+        public String getUsername() {
+            InstanceProperties real = ip.get();
+            if (real == null) {
+                throw new IllegalStateException("Already removed InstanceProperties");
+            }
+            return real.getProperty(InstanceProperties.USERNAME_ATTR);
+        }
+
+        @Override
+        public String getPassword() {
+            InstanceProperties real = ip.get();
+            if (real == null) {
+                throw new IllegalStateException("Already removed InstanceProperties");
+            }
+            return real.getProperty(InstanceProperties.PASSWORD_ATTR);
+        }
+
+    }
+
     private static interface Action<T> {
 
          T execute(DeploymentManager manager) throws ExecutionException;
     }
 
-    private class ServerTargetModuleID implements TargetModuleID {
+    private class ServerTargetModuleID implements WebTargetModuleID {
 
         private final TargetModuleID moduleId;
 
@@ -895,6 +951,49 @@ public class WLDeploymentManager implements DeploymentManager2 {
                 }
             //}
             return url;
+        }
+
+        @Override
+        public URL resolveWebURL() {
+            List<URL> candidates = new ArrayList<URL>();
+            String url = getWebURL();
+            if (url != null) {
+                try {
+                    candidates.add(new URL(url));
+                } catch (MalformedURLException ex) {
+                    // just continue
+                }
+            }
+            WebLogicDeployer deployer = createDeployer();
+            String name = getModuleID();
+            WebLogicDeployer.Application found = null;
+            try {
+                for (WebLogicDeployer.Application app : deployer.list(null).get(1, TimeUnit.MINUTES)) {
+                    if (name.equals(app.getName())) {
+                        found = app;
+                        break;
+                    }
+                }
+                if (found != null) {
+                    candidates.addAll(found.getServerUrls());
+                    for (URL c : candidates) {
+                        if (URLWait.waitForUrlReady(null, URL_RESOLVE_RP, c, 1000)) {
+                            // use the first one if it became available as well
+                            if (URLWait.waitForUrlReady(null, URL_RESOLVE_RP, candidates.get(0), 500)) {
+                                return candidates.get(0);
+                            }
+                            return c;
+                        }
+                    }
+                }
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                LOGGER.log(Level.INFO, null, ex);
+            } catch (ExecutionException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            } catch (TimeoutException ex) {
+            }
+            return null;
         }
 
         @Override

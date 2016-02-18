@@ -43,10 +43,12 @@
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,6 +58,7 @@ import javax.enterprise.deploy.spi.exceptions.TargetException;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.RefreshModulesCookie;
 import org.openide.nodes.Node;
+import org.openide.text.Line;
 import org.openide.util.Lookup;
 
 /**
@@ -111,9 +114,19 @@ public class WLModuleChildFactory
                         return o1.getModuleID().compareTo(o2.getModuleID());
                     }
                 });
+                Map<String, List<TargetModuleID>> byName = new HashMap<String, List<TargetModuleID>>();
                 for (TargetModuleID module : modules) {
-                    toPopulate.add(new WLModuleNode(module, lookup, moduleType,
-                            stoppedByName.contains(module.getModuleID())));
+                    String name = module.getModuleID();
+                    List<TargetModuleID> ids = byName.get(name);
+                    if (ids == null) {
+                        ids = new LinkedList<TargetModuleID>();
+                        byName.put(name, ids);
+                    }
+                    ids.add(module);
+                }
+                for (Map.Entry<String, List<TargetModuleID>> e : byName.entrySet()) {
+                    toPopulate.add(new WLModuleNode(e.getKey(), e.getValue(), lookup, moduleType,
+                            stoppedByName.contains(e.getKey())));
                 }
             }
         } catch (IllegalStateException ex) {
