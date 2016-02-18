@@ -45,14 +45,14 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.nodes.ChildFactory;
+import org.openide.nodes.DestroyableNodesFactory;
 import org.openide.nodes.Node;
 
 /**
  *
  * @author Petr Hejl
  */
-public abstract class NodeClosingFactory<T> extends ChildFactory.DestroyableNodes<T> {
+public abstract class NodeClosingFactory<T> extends DestroyableNodesFactory<T> {
 
     private static final Logger LOGGER = Logger.getLogger(NodeClosingFactory.class.getName());
 
