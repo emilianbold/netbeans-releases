@@ -449,6 +449,10 @@ public final class CommandBasedDeployer extends AbstractDeployer {
             return progress;
         }
 
+        progress.fireProgressEvent(null, new WLDeploymentStatus(
+                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING,
+                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_SearchingTargets")));
+
         RP.post(new Runnable() {
             @Override
             public void run() {
@@ -565,6 +569,10 @@ public final class CommandBasedDeployer extends AbstractDeployer {
             deployer.deploy(artifacts, listener);
             return progress;
         }
+
+        progress.fireProgressEvent(null, new WLDeploymentStatus(
+                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING,
+                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_SearchingTargets")));
 
         RP.post(new Runnable() {
             @Override
@@ -812,6 +820,10 @@ public final class CommandBasedDeployer extends AbstractDeployer {
             }
             return progress;
         }
+
+        progress.fireProgressEvent(null, new WLDeploymentStatus(
+                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING,
+                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_SearchingTargets")));
 
         RP.post(new Runnable() {
             @Override
