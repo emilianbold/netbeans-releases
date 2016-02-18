@@ -48,6 +48,7 @@ import java.awt.Image;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -90,16 +91,15 @@ public class WLModuleNode extends AbstractNode {
 
     private final String url;
 
-    private final TargetModuleID module;
-
-    public WLModuleNode(TargetModuleID module, Lookup lookup,
+    public WLModuleNode(String name, List<TargetModuleID> modules, Lookup lookup,
             ModuleType moduleType, boolean stopped) {
         super(Children.LEAF);
-        this.module = module;
+        assert !modules.isEmpty();
         this.moduleType = moduleType;
         this.stopped = stopped;
-        this.url = module.getWebURL();
-        this.name = module.getModuleID();
+        // FIXME reolve url later ?
+        this.url = modules.get(0).getWebURL();
+        this.name = name;
 
         if (stopped) {
             setDisplayName(name + " " + "[" // NOI18N
@@ -112,8 +112,8 @@ public class WLModuleNode extends AbstractNode {
         if (url != null) {
             getCookieSet().add(new OpenModuleUrlCookieImpl(url));
         }
-        getCookieSet().add(new ControlModuleCookieImpl(module, lookup, !stopped));
-        getCookieSet().add(new UndeployModuleCookieImpl(module, lookup));
+        getCookieSet().add(new ControlModuleCookieImpl(modules.get(0), lookup, !stopped));
+        getCookieSet().add(new UndeployModuleCookieImpl(modules.get(0), lookup));
     }
 
     @Override
