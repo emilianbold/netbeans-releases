@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.javascript.v8debug;
 
-import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -62,6 +61,9 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.io.IOProvider;
+import org.netbeans.api.io.InputOutput;
+import org.netbeans.api.io.OutputColor;
 import org.netbeans.lib.v8debug.PropertyBoolean;
 import org.netbeans.lib.v8debug.V8Arguments;
 import org.netbeans.lib.v8debug.V8Breakpoint;
@@ -88,18 +90,12 @@ import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
 import org.netbeans.modules.javascript.v8debug.frames.CallStack;
 import org.netbeans.modules.javascript.v8debug.sources.ChangeLiveSupport;
 import org.netbeans.modules.javascript.v8debug.vars.VarValuesLoader;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.text.Line;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.IOColorPrint;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
 
 /**
  *
@@ -137,6 +133,7 @@ public final class V8Debugger {
     
     private long runToBreakpointId = -1;
     private CommandResponseCallback runToCallBack;
+    private final ErrorMessageHandler errMsgHandler;
     
     public static DebuggerEngine startSession(Connector.Properties properties,
                                               @NullAllowed Runnable finishCallback) throws IOException {
@@ -169,6 +166,7 @@ public final class V8Debugger {
         this.changeLiveSupport = new ChangeLiveSupport(this);
         this.breakpointsHandler = new BreakpointsHandler(this);
         this.finishCallback = finishCallback;
+        errMsgHandler = Lookup.getDefault().lookup(ErrorMessageHandler.class);
     }
 
     public String getHost() {
@@ -540,8 +538,9 @@ public final class V8Debugger {
         }
         String errorMessage = response.getErrorMessage();
         if (errorMessage != null) {
-            //DialogDisplayer.getDefault().notify(null);
-            StatusDisplayer.getDefault().setStatusText(errorMessage);
+            if (errMsgHandler != null) {
+                errMsgHandler.errorResponse(errorMessage);
+            }
             return ;
         }
         if (!response.isSuccess()) {
@@ -565,8 +564,9 @@ public final class V8Debugger {
         PropertyBoolean success = event.getSuccess();
         if (success.hasValue() && !success.getValue() && event.getErrorMessage() != null) {
             // an error is reported
-            NotifyDescriptor error = new NotifyDescriptor.Message(event.getErrorMessage(), NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(error);
+            if (errMsgHandler != null) {
+                errMsgHandler.errorEvent(event.getErrorMessage());
+            }
             return ;
         }
         switch (eventKind) {
@@ -691,9 +691,8 @@ public final class V8Debugger {
         }
     }
     
-    public void runTo(Line currentLine) {
+    public void runTo(FileObject fo, long line) {
         clearRunTo();
-        FileObject fo = currentLine.getLookup().lookup(FileObject.class);
         if (fo == null) {
             return ;
         }
@@ -704,7 +703,7 @@ public final class V8Debugger {
         SetBreakpoint.Arguments args = new SetBreakpoint.Arguments(
                 V8Breakpoint.Type.scriptName,
                 serverPath,
-                (long) currentLine.getLineNumber(), null, true,
+                line, null, true,
                 null, null, null);
         if (runToCallBack == null) {
             runToCallBack = new RunToResponseCallback();
@@ -730,33 +729,25 @@ public final class V8Debugger {
     @NbBundle.Messages("V8DebugProtocolPane=V8 Debug Protocol")
     private final class CommListener implements IOListener {
         
-        private final Color sentColor = Color.GREEN.darker();
-        private final Color receivedColor = Color.BLUE;
+        private final OutputColor sentColor = OutputColor.rgb(0, 178, 0);       //Color.GREEN.darker();
+        private final OutputColor receivedColor = OutputColor.rgb(0, 0, 255);   //Color.BLUE;
         private final InputOutput ioLogger = IOProvider.getDefault().getIO(Bundle.V8DebugProtocolPane(), false);
         private final long startTime = System.currentTimeMillis();
 
         @Override
         public synchronized void sent(String str) {
-            try {
-                long time = System.currentTimeMillis() - startTime;
-                ioLogger.getOut().append("Sent at "+(time/1000.0)+":");
-                IOColorPrint.print(ioLogger, str, sentColor);
-                ioLogger.getOut().println();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            long time = System.currentTimeMillis() - startTime;
+            ioLogger.getOut().append("Sent at "+(time/1000.0)+":");
+            ioLogger.getOut().print(str, sentColor);
+            ioLogger.getOut().println();
         }
 
         @Override
         public synchronized void received(String str) {
-            try {
-                long time = System.currentTimeMillis() - startTime;
-                ioLogger.getOut().append("Got at "+(time/1000.0)+":");
-                IOColorPrint.print(ioLogger, str, receivedColor);
-                ioLogger.getOut().println();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            long time = System.currentTimeMillis() - startTime;
+            ioLogger.getOut().append("Got at "+(time/1000.0)+":");
+            ioLogger.getOut().print(str, receivedColor);
+            ioLogger.getOut().println();
         }
 
         @Override
@@ -786,5 +777,14 @@ public final class V8Debugger {
         void notifyResponse(V8Request request, @NullAllowed V8Response response);
     }
 
-    
+    /**
+     * Register an implementation of this interface into the default lookup
+     * to handle the debugger protocol errors.
+     */
+    public static interface ErrorMessageHandler {
+        
+        void errorResponse(String error);
+        
+        void errorEvent(String error);
+    }
 }

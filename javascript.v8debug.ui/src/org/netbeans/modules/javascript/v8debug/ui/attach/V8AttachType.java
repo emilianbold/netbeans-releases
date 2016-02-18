@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,58 +37,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2016 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.phpunit.annotations.parser;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
+package org.netbeans.modules.javascript.v8debug.ui.attach;
+
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import javax.swing.JComponent;
+import org.netbeans.spi.debugger.ui.AttachType;
+import org.netbeans.spi.debugger.ui.Controller;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author Martin Entlicher
  */
-class ExpectedExceptionLineParser implements AnnotationLineParser {
-
-    static final String ANNOTATION_NAME = "expectedException"; //NOI18N
-
+@NbBundle.Messages("CTL_Connector_name=Node.js Server")
+@AttachType.Registration(displayName="#CTL_Connector_name")
+public class V8AttachType extends AttachType {
+    
+    private Reference<AttachCustomizer> customizerRef = new WeakReference<>(null);
 
     @Override
-    public AnnotationParsedLine parse(final String line) {
-        AnnotationParsedLine result = null;
-        String[] tokens = line.split("[ \t]+"); //NOI18N
-        if (tokens.length > 0 && ANNOTATION_NAME.equalsIgnoreCase(tokens[0])) {
-            result = handleAnnotation(line, tokens);
-        }
-        return result;
+    public JComponent getCustomizer() {
+        AttachCustomizer ac = new AttachCustomizer();
+        customizerRef = new WeakReference<>(ac);
+        return ac;
     }
 
-    private AnnotationParsedLine handleAnnotation(String line, String[] tokens) {
-        String description = "";
-        Map<OffsetRange, String> types = new HashMap<>();
-        if (tokens.length > 1) {
-            description = line.substring(tokens[0].length()).trim();
-            int start = ANNOTATION_NAME.length() + countSpacesToFirstNonWhitespace(line.substring(ANNOTATION_NAME.length()));
-            int end = start + tokens[1].length();
-            types.put(new OffsetRange(start, end), line.substring(start, end));
+    @Override
+    public Controller getController() {
+        AttachCustomizer panel = customizerRef.get();
+        if (panel != null) {
+            return panel.getController();
+        } else {
+            return null;
         }
-        return new ParsedLine(ANNOTATION_NAME, types, description, true);
     }
-
-    private static int countSpacesToFirstNonWhitespace(final String line) {
-        int result = 0;
-        for (int i = 0; i < line.length(); i++) {
-            if (Character.isWhitespace(line.charAt(i))) {
-                result++;
-            } else {
-                break;
-            }
-        }
-        return result;
-    }
-
+    
 }

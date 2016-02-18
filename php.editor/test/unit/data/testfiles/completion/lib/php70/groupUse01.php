@@ -7,9 +7,9 @@ use A\{
     B\C\ClsABC
 };
 
-$a = new ClsA();
-$a->test();
-$ab = new ClsAB();
-$ab->test();
-$abc = new ClsABC();
-$abc->test();
+$a01 = new ClsA();
+$a01->test();
+$ab01 = new ClsAB();
+$ab01->test();
+$abc01 = new ClsABC();
+$abc01->test();

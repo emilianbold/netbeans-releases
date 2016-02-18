@@ -50,7 +50,6 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.javascript.v8debug.V8Debugger;
-import org.netbeans.modules.javascript2.debug.ui.JSUtils;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointsInfo;
 import org.netbeans.modules.javascript2.debug.sources.SourceFilesCache;
 import org.openide.filesystems.FileObject;
@@ -63,6 +62,8 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = JSBreakpointsInfo.class)
 public class V8BreakpointsActiveService implements JSBreakpointsInfo {
     
+    public static final String JS_MIME_TYPE = "text/javascript";    // NOI18N
+    
     private volatile boolean active = true;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     
@@ -74,7 +75,7 @@ public class V8BreakpointsActiveService implements JSBreakpointsInfo {
     @Override
     public boolean isAnnotatable(FileObject fo) {
         String mimeType = fo.getMIMEType();
-        return JSUtils.JS_MIME_TYPE.equals(mimeType);
+        return JS_MIME_TYPE.equals(mimeType);
     }
 
     @Override
