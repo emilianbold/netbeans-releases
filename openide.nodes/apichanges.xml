@@ -49,6 +49,30 @@ made subject to such option by the copyright holder.
 <apidef name="nodes">Nodes API</apidef>
 </apidefs>
 <changes>
+    <change id="ChildFactory.DestroyableNodes">
+        <api name="nodes"/>
+        <summary>Adding ChildFactory.Detachable to allow ChildFactory implementations to
+            attach and detach listeners more easily
+        </summary>
+        <version major="7" minor="44"/>
+        <date day="18" month="2" year="2016"/>
+        <author login="phejl"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible"/>
+        <description>
+            <a href="@TOP@/org/openide/nodes/ChildFactory.html">ChildFactory</a>
+            is useful for creating node children lazily on a background thread,
+            and for simplifying working with Children.Keys.  One oversight in
+            the original API was providing for notification that the nodes created
+            by the ChildFactory are no longer in use and should clean up any
+            resources.
+            <p>
+                ChildFactory.DestroyableNodes is an abstract class which adds
+                destroyNodes methods to ChildFactory.Detachable.
+            </p>
+        </description>
+        <class package="org.openide.nodes" name="ChildFactory"/>
+        <issue number="257941"/>
+    </change>
     <change id="BeanInfoSearchPath">
         <api name="nodes"/>
         <summary>Adding <code>@BeanInfoSearchPath</code> annotation</summary>
