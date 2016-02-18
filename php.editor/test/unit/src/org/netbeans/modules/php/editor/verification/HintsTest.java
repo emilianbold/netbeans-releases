@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.verification;
 
@@ -149,6 +149,10 @@ public class HintsTest extends PHPHintsTestBase {
         checkHints(new AssignVariableSuggestion(), "testAssignVariableSuggestion.php", "exit('message');^");
     }
 
+    public void testAssignVariableSuggestion_04() throws Exception {
+        checkHints(new AssignVariableSuggestion(), "testAssignVariableSuggestion.php", "new class {};^");
+    }
+
     public void testIdenticalComparisonSuggestion() throws Exception {
         checkHints(new IdenticalComparisonSuggestion(), "testIdenticalComparisonSuggestion.php", "if ($a == true)^ {}");
     }
@@ -175,6 +179,10 @@ public class HintsTest extends PHPHintsTestBase {
 
     public void testIntroduceSuggestion_06() throws Exception {
         checkHints(new IntroduceSuggestion(), "testIntroduceSuggestion.php", "Omg::$stFld;^");
+    }
+
+    public void testIntroduceSuggestion_07() throws Exception {
+        checkHints(new IntroduceSuggestion(), "testIntroduceSuggestion.php", "new class {};^");
     }
 
     // #257264
