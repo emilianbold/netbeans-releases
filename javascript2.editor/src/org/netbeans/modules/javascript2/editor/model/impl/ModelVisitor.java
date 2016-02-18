@@ -786,12 +786,15 @@ public class ModelVisitor extends PathNodeVisitor {
 //            }
 //        }
         if (fncScope != null) {
-            if (!functionNode.isAnonymous() && processAsBinary && !functionNode.getName().equals(name.get(name.size() -1 ).getName())) {
+            if (!functionNode.isAnonymous() && processAsBinary) {
                 // here we are handling cases like:
-                // this.myMethod = function myLibMethod() {}
+                // this.method = function method1() {}
+                // or this.method = function method(){}
+                // we are creating reference to the method
                 Identifier refName = ModelElementFactory.create(parserResult, functionNode.getIdent());
-                JsObject newRef = new JsFunctionReference(fncScope.getParent(), refName, fncScope, true, (isPrivilage || isPrivate) ? EnumSet.of(Modifier.PRIVATE) : EnumSet.of(Modifier.PUBLIC));
-                fncScope.getParent().addProperty(newRef.getName(), newRef);
+                JsObject newRef = new JsFunctionReference(fncScope.getParent(), refName, fncScope, true, EnumSet.of(Modifier.PRIVATE));
+                // method1 is available only in method1
+                fncScope.addProperty(newRef.getName(), newRef);
                 newRef.addOccurrence(refName.getOffsetRange());
             }
             // create variables that are declared in the function
