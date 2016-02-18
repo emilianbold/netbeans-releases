@@ -98,7 +98,7 @@ public final class PathRegistry implements Runnable {
 
     // -J-Dorg.netbeans.modules.parsing.impl.indexing.PathRegistry.level=FINE
     private static final Logger LOGGER = Logger.getLogger(PathRegistry.class.getName());
-    private static final Set<String> FAST_HOST_PROTOCOLS = new HashSet<>(Arrays.asList("file", "nbfs", "rfs"));   //NOI18N
+    private static final Set<String> FAST_HOST_PROTOCOLS = new HashSet<>(Arrays.asList("file", "nbfs", "rfs", "memory"));   //NOI18N
     private static final String DIGEST_ALGORITHM = "SHA1";  //NOI18N
     private static final boolean[] BOOLOUT = new boolean[1];
 
