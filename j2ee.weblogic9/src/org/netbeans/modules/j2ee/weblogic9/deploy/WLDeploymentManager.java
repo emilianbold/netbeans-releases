@@ -482,7 +482,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
         CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
-        return wlDeployer.redeploy(targetModuleID, file, file2);
+        return wlDeployer.redeploy(targetModuleID, file, file2, getDeployTargets());
     }
 
     @Override
@@ -494,7 +494,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
         deployOptionalPackages(deployment.getRequiredLibraries());
 
         CommandBasedDeployer wlDeployer = new CommandBasedDeployer(this);
-        return wlDeployer.redeploy(tmids, deployment.getModuleFile(), deployment.getDeploymentPlan());
+        return wlDeployer.redeploy(tmids, deployment.getModuleFile(), deployment.getDeploymentPlan(), getDeployTargets());
     }
 
     public ProgressObject redeploy(TargetModuleID[] targetModuleID, InputStream inputStream, InputStream inputStream2) throws  UnsupportedOperationException, IllegalStateException {

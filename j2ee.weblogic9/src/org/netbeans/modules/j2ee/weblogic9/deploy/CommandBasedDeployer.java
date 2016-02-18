@@ -108,8 +108,8 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         return deploy(createModuleId(target, file, host, port, secured, name, type), file, name, null);
     }
 
-    public ProgressObject directoryRedeploy(final TargetModuleID moduleId) {
-        return redeploy(new TargetModuleID[] {moduleId}, null);
+    public ProgressObject directoryRedeploy(final TargetModuleID moduleId, Set<String> wlsTarget) {
+        return redeploy(new TargetModuleID[] {moduleId}, null, wlsTarget);
     }
 
     public ProgressObject deploy(Target[] target, final File file, final File plan,
@@ -123,8 +123,8 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         return deploy(moduleId, file, null, wlsTarget);
     }
 
-    public ProgressObject redeploy(TargetModuleID[] targetModuleID, File file, File file2) {
-        return redeploy(targetModuleID, file);
+    public ProgressObject redeploy(TargetModuleID[] targetModuleID, File file, File file2, Set<String> wlsTarget) {
+        return redeploy(targetModuleID, file, wlsTarget);
     }
 
     public ProgressObject undeploy(final TargetModuleID[] targetModuleID) {
@@ -729,7 +729,9 @@ public final class CommandBasedDeployer extends AbstractDeployer {
     }
 
     // FIXME we should check the source of module if it differs this should do undeploy/deploy
-    private ProgressObject redeploy(final TargetModuleID[] targetModuleID, final File file) {
+    private ProgressObject redeploy(final TargetModuleID[] targetModuleID, final File file,
+            final Set<String> wlsTarget) {
+
         assert file == null || targetModuleID.length == 1;
         final WLProgressObject progress = new WLProgressObject(targetModuleID);
         final WebLogicDeployer deployer = getDeploymentManager().createDeployer();
@@ -739,7 +741,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
             names.put(id.getModuleID(), id);
         }
 
-        BatchDeployListener listener = new BatchDeployListener() {
+        final BatchDeployListener listener = new BatchDeployListener() {
 
             private TargetModuleID module;
 
@@ -765,9 +767,11 @@ public final class CommandBasedDeployer extends AbstractDeployer {
 
             @Override
             public void onFinish() {
-                progress.fireProgressEvent(null, new WLDeploymentStatus(
-                        ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
-                        NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Completed")));
+                if (wlsTarget == null || wlsTarget.isEmpty()) {
+                    progress.fireProgressEvent(null, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Completed")));
+                }
             }
 
             @Override
@@ -800,11 +804,57 @@ public final class CommandBasedDeployer extends AbstractDeployer {
             }
         };
 
-        if (file != null) {
-            deployer.redeploy(targetModuleID[0].getModuleID(), file, listener);
-        } else {
-            deployer.redeploy(new ArrayList<String>(names.keySet()), listener);
+        if (wlsTarget == null || wlsTarget.isEmpty()) {
+            if (file != null) {
+                deployer.redeploy(targetModuleID[0].getModuleID(), file, listener);
+            } else {
+                deployer.redeploy(new ArrayList<String>(names.keySet()), listener);
+            }
+            return progress;
         }
+
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    List<DeploymentTarget> selected = new ArrayList<DeploymentTarget>(wlsTarget.size());
+                    for (DeploymentTarget t : deployer.getTargets().get()) {
+                        if ((t.getType() == DeploymentTarget.Type.SERVER
+                                || t.getType() == DeploymentTarget.Type.CLUSTER)
+                                && wlsTarget.contains(t.getName())) {
+                            selected.add(t);
+                        }
+                    }
+                    if (selected.size() != wlsTarget.size()) {
+                        progress.fireProgressEvent(null, new WLDeploymentStatus(
+                                ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                                NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Failed_No_Target")));
+                        return;
+                    }
+                    if (file != null) {
+                        deployer.redeploy(targetModuleID[0].getModuleID(), file, listener).get();
+                    } else {
+                        deployer.redeploy(new ArrayList<String>(names.keySet()), listener).get();
+                    }
+
+                    progress.fireProgressEvent(null, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Completed")));
+                } catch (InterruptedException ex) {
+                    progress.fireProgressEvent(null, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Failed_Interrupted")));
+                } catch (ExecutionException ex) {
+                    Throwable cause = ex.getCause();
+                    if (cause == null) {
+                        cause = ex;
+                    }
+                    progress.fireProgressEvent(null, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                            NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Redeployment_Failed_With_Message", cause.getMessage())));
+                }
+            }
+        });
 
         return progress;
     }
