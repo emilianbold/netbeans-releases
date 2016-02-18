@@ -450,6 +450,17 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
         public int getTypeOffset() {
             return typeOffset;
         }
+
+        @Override
+        public boolean enterAccessNode(AccessNode accessNode) {
+            if (typeOffset == -1) {
+                typeOffset = accessNode.getFinish() - accessNode.getProperty().length();
+            }
+            accessNode.getBase().accept(this);
+            exp.add(accessNode.getProperty());
+            return false;
+        }
+        
         
         @Override
         public boolean enterCallNode(CallNode callNode) {
@@ -475,7 +486,9 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
         @Override
         public boolean enterIdentNode(IdentNode identNode) {
             exp.add(identNode.getName());
-            typeOffset = identNode.getStart();
+            if (typeOffset == -1) {
+                typeOffset = identNode.getStart();
+            }
             return super.enterIdentNode(identNode);
         }
 
