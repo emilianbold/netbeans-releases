@@ -56,7 +56,7 @@ public class RemoveInstanceAction extends NodeAction {
     @Override
     protected void performAction(Node[] activatedNodes) {
         for (Node node : activatedNodes) {
-            EnhancedDockerInstance instance = node.getLookup().lookup(EnhancedDockerInstance.class);
+            StatefulDockerInstance instance = node.getLookup().lookup(StatefulDockerInstance.class);
             if (instance != null) {
                 instance.remove();
             }

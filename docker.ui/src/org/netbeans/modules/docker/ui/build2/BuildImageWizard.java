@@ -58,7 +58,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.api.DockerAction;
 import org.netbeans.modules.docker.api.DockerImage;
-import org.netbeans.modules.docker.api.DockerIntegration;
+import org.netbeans.modules.docker.api.DockerSupport;
 import org.netbeans.modules.docker.ui.build2.InputOutputCache.CachedInputOutput;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -312,7 +312,7 @@ public class BuildImageWizard {
             this.listener = new ActionStateListener(this, buildTask.getInstance(), fo);
 
             fo.addFileChangeListener(listener);
-            DockerIntegration.getDefault().addChangeListener(listener);
+            DockerSupport.getDefault().addChangeListener(listener);
 
             listener.refresh();
         }
@@ -325,7 +325,7 @@ public class BuildImageWizard {
             FileObject fo = listener.getFileObject();
 
             fo.removeFileChangeListener(listener);
-            DockerIntegration.getDefault().removeChangeListener(listener);
+            DockerSupport.getDefault().removeChangeListener(listener);
 
             buildTask = null;
             listener = null;
@@ -428,7 +428,7 @@ public class BuildImageWizard {
                 action.detach();
             }
             DockerInstance inst = this.instance.get();
-            DockerIntegration integration = DockerIntegration.getDefault();
+            DockerSupport integration = DockerSupport.getDefault();
             if (inst == null || !integration.getInstances().contains(inst)) {
                 action.detach();
             }

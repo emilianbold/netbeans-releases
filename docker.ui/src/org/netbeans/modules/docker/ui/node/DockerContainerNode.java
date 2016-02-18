@@ -71,7 +71,7 @@ public class DockerContainerNode extends AbstractNode {
     private static final String RUNNING_ICON
             = "org/netbeans/modules/docker/ui/resources/badge_running.png"; // NOI18N
 
-    private final EnhancedDockerContainer container;
+    private final StatefulDockerContainer container;
 
     private final ChangeListener listener = new ChangeListener() {
         @Override
@@ -81,7 +81,7 @@ public class DockerContainerNode extends AbstractNode {
         }
     };
 
-    public DockerContainerNode(EnhancedDockerContainer container) {
+    public DockerContainerNode(StatefulDockerContainer container) {
         super(Children.LEAF, Lookups.fixed(container.getContainer(), container));
         this.container = container;
         DockerContainer dockerContainer = container.getContainer();
