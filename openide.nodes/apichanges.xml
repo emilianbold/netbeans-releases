@@ -54,7 +54,7 @@ made subject to such option by the copyright holder.
         <summary>Adding ChildFactory.Detachable to allow ChildFactory implementations to
             attach and detach listeners more easily
         </summary>
-        <version major="7" minor="44"/>
+        <version major="7" minor="45"/>
         <date day="18" month="2" year="2016"/>
         <author login="phejl"/>
         <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible"/>
@@ -66,11 +66,11 @@ made subject to such option by the copyright holder.
             by the ChildFactory are no longer in use and should clean up any
             resources.
             <p>
-                ChildFactory.DestroyableNodes is an abstract class which adds
+                DestroyableNodesFactory is an abstract class which adds
                 destroyNodes methods to ChildFactory.Detachable.
             </p>
         </description>
-        <class package="org.openide.nodes" name="ChildFactory"/>
+        <class package="org.openide.nodes" name="DestroyableNodesFactory"/>
         <issue number="257941"/>
     </change>
     <change id="BeanInfoSearchPath">
