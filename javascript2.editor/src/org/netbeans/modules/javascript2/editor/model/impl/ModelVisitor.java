@@ -53,6 +53,7 @@ import com.oracle.truffle.js.parser.nashorn.internal.ir.ForNode;
 import com.oracle.truffle.js.parser.nashorn.internal.ir.FunctionNode;
 import com.oracle.truffle.js.parser.nashorn.internal.ir.IdentNode;
 import com.oracle.truffle.js.parser.nashorn.internal.ir.IndexNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.JoinPredecessorExpression;
 import com.oracle.truffle.js.parser.nashorn.internal.ir.LabelNode;
 import com.oracle.truffle.js.parser.nashorn.internal.ir.LexicalContext;
 import com.oracle.truffle.js.parser.nashorn.internal.ir.LiteralNode;
@@ -1236,13 +1237,18 @@ public class ModelVisitor extends PathNodeVisitor {
             boolean isPrivate = false;
             boolean treatAsAnonymous = false;
             
-            Node lastVisited = getPath().get(pathSize - 1);
+            int pathIndex = 1;
+            Node lastVisited = getPath().get(pathSize - pathIndex);
             VarNode varNode = null;
             
+            if (lastVisited instanceof JoinPredecessorExpression) {
+                pathIndex++;
+                lastVisited = getPath().get(pathSize - pathIndex);
+            }
             if (lastVisited instanceof TernaryNode && pathSize > 1) {
-                lastVisited = getPath().get(pathSize - 2);
+                lastVisited = getPath().get(pathSize - pathIndex - 1);
             } 
-            int pathIndex = 1;
+            
             while(lastVisited instanceof BinaryNode 
                     && (pathSize > pathIndex)
                     && ((BinaryNode)lastVisited).tokenType() != TokenType.ASSIGN) {
