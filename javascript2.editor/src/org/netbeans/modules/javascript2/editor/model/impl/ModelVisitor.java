@@ -2062,7 +2062,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         }
                     } else {
                         boolean setDocumentation = false;
-                        if (isPriviliged(accessNode) && getPath().size() > 1 /*&& (getPreviousFromPath(2) instanceof ExecuteNode || getPreviousFromPath(1) instanceof ExecuteNode)*/) {
+                        if (isPriviliged(accessNode) && getPath().size() > 1 && (getPreviousFromPath(2) instanceof ExpressionStatement || getPreviousFromPath(1) instanceof ExpressionStatement)) {
                             // google style declaration of properties:  this.buildingID;    
                             onLeftSite = true;
                             setDocumentation = true;
