@@ -132,6 +132,10 @@ public class WLTargetModuleID implements WebTargetModuleID {
 
         for (URL c : candidates) {
             if (URLWait.waitForUrlReady(null, requestProcessor, c, 1000)) {
+                // use the first one if it became available as well
+                if (URLWait.waitForUrlReady(null, requestProcessor, candidates.get(0), 500)) {
+                    return candidates.get(0);
+                }
                 return c;
             }
         }

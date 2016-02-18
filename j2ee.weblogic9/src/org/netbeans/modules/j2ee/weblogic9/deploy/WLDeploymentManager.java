@@ -978,6 +978,10 @@ public class WLDeploymentManager implements DeploymentManager2 {
                     candidates.addAll(found.getServerUrls());
                     for (URL c : candidates) {
                         if (URLWait.waitForUrlReady(null, URL_RESOLVE_RP, c, 1000)) {
+                            // use the first one if it became available as well
+                            if (URLWait.waitForUrlReady(null, URL_RESOLVE_RP, candidates.get(0), 500)) {
+                                return candidates.get(0);
+                            }
                             return c;
                         }
                     }
