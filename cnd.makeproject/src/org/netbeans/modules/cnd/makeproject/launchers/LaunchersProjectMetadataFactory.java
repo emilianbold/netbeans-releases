@@ -20,6 +20,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -52,7 +53,7 @@ public class LaunchersProjectMetadataFactory implements ProjectMetadataFactory {
     public void write(FileObject projectDir) {
     }
 
-    @NbBundle.Messages({
+    @Messages({
         "illegal.string=Illegal string in the file {0}.\n{1}"
     })
     private static void reload(FileObject projectDir) {
