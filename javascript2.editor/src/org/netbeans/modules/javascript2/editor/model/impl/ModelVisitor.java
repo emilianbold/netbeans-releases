@@ -602,6 +602,7 @@ public class ModelVisitor extends PathNodeVisitor {
         boolean isPrivate = false;
         boolean isStatic = false;
         boolean isPrivilage = false;
+        boolean processAsBinary = false;
         int pathSize = getPath().size();
         if (pathSize > 1 /*&& getPath().get(pathSize - 2) instanceof ReferenceNode*/) {
             // is the function declared as variable or field
@@ -615,7 +616,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (node instanceof PropertyNode) {
                     name = getName((PropertyNode)node);
                 } else if (node instanceof BinaryNode) {
-                    boolean processAsBinary = true;
+                    processAsBinary = true;
                     if (pathSize > 4) {
                         Node node4 = getPreviousFromPath(4);
                         if (node4 instanceof VarNode) {
@@ -785,6 +786,14 @@ public class ModelVisitor extends PathNodeVisitor {
 //            }
 //        }
         if (fncScope != null) {
+            if (!functionNode.isAnonymous() && processAsBinary && !functionNode.getName().equals(name.get(name.size() -1 ).getName())) {
+                // here we are handling cases like:
+                // this.myMethod = function myLibMethod() {}
+                Identifier refName = ModelElementFactory.create(parserResult, functionNode.getIdent());
+                JsObject newRef = new JsFunctionReference(fncScope.getParent(), refName, fncScope, true, (isPrivilage || isPrivate) ? EnumSet.of(Modifier.PRIVATE) : EnumSet.of(Modifier.PUBLIC));
+                fncScope.getParent().addProperty(newRef.getName(), newRef);
+                newRef.addOccurrence(refName.getOffsetRange());
+            }
             // create variables that are declared in the function
             // They has to be created here for tracking occurrences
             if (canBeSingletonPattern()) {
