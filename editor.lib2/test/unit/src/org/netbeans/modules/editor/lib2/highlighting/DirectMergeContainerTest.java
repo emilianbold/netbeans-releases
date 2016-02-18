@@ -43,7 +43,13 @@ package org.netbeans.modules.editor.lib2.highlighting;
 
 import javax.swing.text.AttributeSet;
 import org.junit.Test;
+import static org.junit.Assert.*;
+import org.netbeans.lib.editor.util.ListenerList;
 import org.netbeans.lib.editor.util.random.RandomTestContainer;
+import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
+import org.netbeans.spi.editor.highlighting.HighlightsContainer;
+import org.netbeans.spi.editor.highlighting.HighlightsSequence;
+import org.netbeans.spi.editor.highlighting.ShiftHighlightsSequence;
 
 /**
  *
@@ -95,5 +101,104 @@ public class DirectMergeContainerTest {
 
 //        container.run(0L);
     }
+    
+    @Test
+    public void testShiftHighlights() {
+        AttributeSet attrs0 = HighlightsMergeTesting.attrSets[0];
+        AttributeSet attrs1 = HighlightsMergeTesting.attrSets[1];
+        AttributeSet attrs2 = HighlightsMergeTesting.attrSets[2];
+        AttributeSet attrs3 = HighlightsMergeTesting.attrSets[3];
+        ShiftLayer sl0 = new ShiftLayer(1, 0, 2, 1, attrs0, 4, 2, 4, 5, attrs1);
+        ShiftLayer sl1 = new ShiftLayer(1, 1, 2, 0, attrs2, 3, 1, 4, 3, attrs3);
+        DirectMergeContainer dmc = new DirectMergeContainer(new HighlightsContainer[]{ sl0, sl1 });
+        ShiftHighlightsSequence shs = (ShiftHighlightsSequence) dmc.getHighlights(0, Integer.MAX_VALUE);
+        assertHighlight(shs, 1, 0, 1, 1, attrs0);
+        assertHighlight(shs, 1, 1, 2, 0, attrs2);
+        assertHighlight(shs, 2, 0, 2, 1, attrs0);
+        assertHighlight(shs, 3, 1, 4, 2, attrs3);
+        assertHighlight(shs, 4, 2, 4, 3, attrs3);
+        assertHighlight(shs, 4, 3, 4, 5, attrs1);
+        
+    }
+    
+    private static void assertHighlight(ShiftHighlightsSequence shs, int startOffset, int startShift,
+            int endOffset, int endShift, AttributeSet attrs)
+    {
+        assertTrue(shs.moveNext());
+        assertEquals(startOffset, shs.getStartOffset());
+        assertEquals(startShift, shs.getStartShift());
+        assertEquals(endOffset, shs.getEndOffset());
+        assertEquals(endShift, shs.getEndShift());
+        assertEquals(attrs, shs.getAttributes());
+    }
 
+    private static final class ShiftLayer implements HighlightsContainer {
+        
+        private final ListenerList<HighlightsChangeListener> listenerList = new ListenerList<>();
+        
+        private final Object[] highlights;
+
+        public ShiftLayer(Object... highlights) { // [startOffset, startShift, endOffset, endShift, attrs]...
+            this.highlights = highlights;
+        }
+        
+        @Override
+        public HighlightsSequence getHighlights(int startOffset, int endOffset) {
+            return new HS();
+        }
+
+        @Override
+        public void addHighlightsChangeListener(HighlightsChangeListener listener) {
+            listenerList.add(listener);
+        }
+
+        @Override
+        public void removeHighlightsChangeListener(HighlightsChangeListener listener) {
+            listenerList.remove(listener);
+        }
+        
+        private final class HS implements ShiftHighlightsSequence {
+            
+            private int index = -1;
+
+            @Override
+            public boolean moveNext() {
+                index++;
+                if (5 * index < highlights.length) {
+                    return true;
+                }
+                index--;
+                return false;
+            }
+
+            @Override
+            public int getStartOffset() {
+                return (Integer) highlights[5 * index];
+            }
+
+            @Override
+            public int getStartShift() {
+                return (Integer) highlights[5 * index + 1];
+            }
+
+            @Override
+            public int getEndOffset() {
+                return (Integer) highlights[5 * index + 2];
+            }
+
+            @Override
+            public int getEndShift() {
+                return (Integer) highlights[5 * index + 3];
+            }
+
+            @Override
+            public AttributeSet getAttributes() {
+                return (AttributeSet) highlights[5 * index + 4];
+            }
+            
+            
+        }
+        
+        
+    }
 }

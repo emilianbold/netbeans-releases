@@ -368,6 +368,11 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
             sb.append("endO=").append(endOffset);
             if (finished) {
                 sb.append("; FINISHED");
+            } else {
+                sb.append(" Merged <").append(mergedHighlightStartOffset).append('('). // NOI18N
+                        append(mergedHighlightStartShift).append(// NOI18N
+                        "),").append(mergedHighlightEndOffset).append('('). // NOI18N
+                        append(mergedHighlightEndShift).append(")>"); // NOI18N
             }
             sb.append('\n');
             int digitCount = ArrayUtilities.digitCount(topWrapperIndex + 1);
@@ -586,6 +591,13 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
                     return false;
                 }
                 hlEndOffset = layerSequence.getEndOffset();
+                if (shiftLayerSequence != null) {
+                    hlStartShift = shiftLayerSequence.getStartShift();
+                    hlEndShift = shiftLayerSequence.getEndShift();
+                    // Do not perform extra checking of validity (non-overlapping with previous highlight
+                    //  and validity of shifts since it should not be crucial
+                    //  for proper functioning of updateCurrentState() method.
+                } // else hlStartShift and hlEndShift are always zero in the wrapper
                 if (hlEndOffset <= hlStartOffset) {
                     if (hlEndOffset < hlStartOffset) { // Invalid highlight: end offset before start offset
                         // To prevent infinite loops finish this HL
@@ -595,14 +607,16 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
                         }
                         return false;
                     }
-                    emptyHighlightCount++;
-                    if (emptyHighlightCount >= MAX_EMPTY_HIGHLIGHT_COUNT) {
-                        if (LOG.isLoggable(Level.FINE)) {
-                            LOG.fine("Disabled an invalid highlighting layer: too many empty highlights=" + emptyHighlightCount); // NOI18N
+                    if (hlEndShift <= hlStartShift) { // hlStartOffset == hlEndOffset
+                        emptyHighlightCount++;
+                        if (emptyHighlightCount >= MAX_EMPTY_HIGHLIGHT_COUNT) {
+                            if (LOG.isLoggable(Level.FINE)) {
+                                LOG.fine("Disabled an invalid highlighting layer: too many empty highlights=" + emptyHighlightCount); // NOI18N
+                            }
+                            return false;
                         }
-                        return false;
+                        continue; // Fetch next highlight
                     }
-                    continue; // Fetch next highlight
                 }
                 if (hlEndOffset > endOffset) {
                     if (hlStartOffset >= endOffset) {
@@ -610,13 +624,6 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
                     }
                     hlEndOffset = endOffset; // Limit the highlight to endOffset - it should still remain non-empty
                 }
-                if (shiftLayerSequence != null) {
-                    hlStartShift = shiftLayerSequence.getStartShift();
-                    hlEndShift = shiftLayerSequence.getEndShift();
-                    // Do not perform extra checking of validity (non-overlapping with previous highlight
-                    //  and validity of shifts since it should not be crucial
-                    //  for proper functioning of updateCurrentState() method.
-                } // else hlStartShift and hlEndShift are always zero in the wrapper
                 hlAttrs = layerSequence.getAttributes();
                 if (LOG.isLoggable(Level.FINER)) {
                     LOG.fine("Fetched highlight: <" + hlStartOffset + // NOI18N
@@ -629,9 +636,9 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
 
         @Override
         public String toString() {
-            return  "M[" + mergedNextChangeOffset + ",A=" + mAttrs + // NOI18N
-                    "]  Next[" + nextChangeOffset + ",A=" + currentAttrs + // NOI18N
-                    "]  HL:<" + hlStartOffset + "," + hlEndOffset + ">,A=" + hlAttrs; // NOI18N
+            return  "MergedChangeOffset(Shift)=" + mergedNextChangeOffset + '(' + mergedNextChangeShift + // NOI18N
+                    "), NextCO(S)=" + nextChangeOffset + '(' + nextChangeShift + // NOI18N
+                    "), HL:<" + hlStartOffset + '(' + hlStartShift + ")," + hlEndOffset + '(' + hlEndShift + ")>"; // NOI18N
         }
 
     }
