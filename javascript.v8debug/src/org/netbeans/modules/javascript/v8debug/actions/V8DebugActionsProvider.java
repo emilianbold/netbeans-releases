@@ -57,13 +57,9 @@ import org.netbeans.modules.javascript.v8debug.V8Debugger;
 import org.netbeans.modules.javascript.v8debug.V8DebuggerSessionProvider;
 import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
 import org.netbeans.modules.javascript.v8debug.sources.ChangeLiveSupport;
-import org.netbeans.modules.javascript2.debug.ui.JSUtils;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.spi.debugger.ui.CodeEvaluator;
-import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
-import org.openide.text.Line;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -86,14 +82,11 @@ public class V8DebugActionsProvider extends ActionsProviderSupport implements V8
                         ACTION_STEP_INTO,
                         ACTION_STEP_OVER,
                         ACTION_STEP_OUT,
-                        ACTION_RUN_TO_CURSOR,
-                        ACTION_EVALUATE,
                         ACTION_FIX
                     })));
     
     private final V8Debugger dbg;
     private final RequestProcessor killActionRP = new RequestProcessor(V8DebugActionsProvider.class.getName()+".kill");
-    private final PropertyChangeListener jsFileContextListener = new JSFileContextListener();
     private final PropertyChangeListener changeLiveListener = new ChangeLiveListener();
     
     public V8DebugActionsProvider(ContextProvider contextProvider) {
@@ -120,9 +113,6 @@ public class V8DebugActionsProvider extends ActionsProviderSupport implements V8
                     }
                 }
             });
-        } else if (action == ACTION_EVALUATE) {
-            CodeEvaluator.getDefault().open();
-            actionPerformedNotifier.run();
         } else {
             super.postAction(action, actionPerformedNotifier);
         }
@@ -146,11 +136,6 @@ public class V8DebugActionsProvider extends ActionsProviderSupport implements V8
         } else if (action == ACTION_STEP_OUT) {
             Continue.Arguments ca = new Continue.Arguments(V8StepAction.out);
             dbg.sendCommandRequest(V8Command.Continue, ca);
-        } else if (action == ACTION_RUN_TO_CURSOR) {
-            Line currentLine = JSUtils.getCurrentLine();
-            if (currentLine != null) {
-                dbg.runTo(currentLine);
-            }
         } else if (action == ACTION_FIX) {
             dbg.getChangeLiveSupport().applyChanges();
         }
@@ -168,14 +153,6 @@ public class V8DebugActionsProvider extends ActionsProviderSupport implements V8
         setEnabled(ACTION_STEP_INTO, suspended);
         setEnabled(ACTION_STEP_OVER, suspended);
         setEnabled(ACTION_STEP_OUT, suspended);
-        setEnabled(ACTION_EVALUATE, suspended);
-        if (suspended) {
-            EditorContextDispatcher.getDefault().addPropertyChangeListener(JSUtils.JS_MIME_TYPE, jsFileContextListener);
-            setEnabled(ACTION_RUN_TO_CURSOR, JSUtils.getCurrentLine() != null);
-        } else {
-            EditorContextDispatcher.getDefault().removePropertyChangeListener(jsFileContextListener);
-            setEnabled(ACTION_RUN_TO_CURSOR, false);
-        }
     }
 
     @Override
@@ -184,17 +161,7 @@ public class V8DebugActionsProvider extends ActionsProviderSupport implements V8
     
     @Override
     public void notifyFinished() {
-        EditorContextDispatcher.getDefault().removePropertyChangeListener(jsFileContextListener);
         dbg.getChangeLiveSupport().removePropertyChangeListener(changeLiveListener);
-    }
-    
-    private class JSFileContextListener implements PropertyChangeListener {
-
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            setEnabled(ACTION_RUN_TO_CURSOR, JSUtils.getCurrentLine() != null);
-        }
-        
     }
     
     private class ChangeLiveListener implements PropertyChangeListener {

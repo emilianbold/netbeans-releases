@@ -49,6 +49,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
+import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.platform.Platform;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
@@ -214,7 +215,8 @@ public abstract class LibraryItem implements Cloneable {
                     libSearchPath = libDir;
                     break;
                 case LinkerConfiguration.SEARCH_PATH_RELATIVE_TO_BINARY:{
-                    StringBuilder buf = new StringBuilder("$$ORIGIN/"); // NOI18N
+                    StringBuilder buf = new StringBuilder();
+                    buf.append('$').append(CommonUtilities.ORIGIN).append('/'); // NOI18N
                     buf.append(CndPathUtilities.getRelativePath(CndPathUtilities.getDirName(conf.getAbsoluteOutputValue()), conf.getMakefileConfiguration().getAbsBuildCommandWorkingDir()));
                     buf.append('/'); // NOI18N
                     buf.append(libDir);

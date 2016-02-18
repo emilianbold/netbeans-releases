@@ -64,7 +64,10 @@ import org.openide.util.Exceptions;
  * @author as204739
  */
 public final class CommonUtilities {
-    private static final String ORIGIN = "$ORIGIN"; // NOI18N
+    /**
+     * ld.so expands macros in an rpath specification to the directory containing the program or shared object.
+     */
+    public static final String ORIGIN = "$ORIGIN"; // NOI18N
 
     private CommonUtilities() {
     }

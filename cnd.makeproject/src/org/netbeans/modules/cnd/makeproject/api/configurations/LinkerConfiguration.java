@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.LinkerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration.OptionToString;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
+import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.LibrariesNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
@@ -596,7 +597,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
                     item = CppUtils.normalizeDriveLetter(compilerSet, item);
                 }
                 item = CndPathUtilities.escapeOddCharacters(item);
-                if (item.startsWith("$ORIGIN")) { // NOI18N
+                if (item.startsWith(CommonUtilities.ORIGIN)) {
                     //to prevent macro expansion in make file
                     item = "$"+item; // NOI18N
                 }
