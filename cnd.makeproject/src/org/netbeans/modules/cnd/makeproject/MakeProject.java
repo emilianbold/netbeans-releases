@@ -49,6 +49,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
@@ -397,6 +398,39 @@ public final class MakeProject implements Project, MakeProjectListener {
             }
         }
         return props;
+    }
+
+    public void saveProjectProperties(Properties props, boolean shared) {
+        FileObject propsFO = null;
+        if (shared) {
+            try {
+                propsFO = FileUtil.createData(helper.getProjectDirectory(), MakeProjectHelper.PROJECT_PROPERTIES_PATH);
+            } catch (IOException ex) {
+                ex.printStackTrace(System.err);
+            }
+        } else {
+            try {
+                propsFO = FileUtil.createData(helper.getProjectDirectory(), MakeProjectHelper.PRIVATE_PROPERTIES_PATH);
+            } catch (IOException ex) {
+                ex.printStackTrace(System.err);
+            }
+        }
+        if (propsFO != null && propsFO.isValid()) {
+            OutputStream os = null;
+            try {
+                os = propsFO.getOutputStream();
+                props.store(os, null);
+            } catch (IOException ex) {
+                ex.printStackTrace(System.err);
+            } finally {
+                if (os != null) {
+                    try {
+                        os.close();
+                    } catch (IOException ex) {
+                    }
+                }
+            }
+        }
     }
 
     /**

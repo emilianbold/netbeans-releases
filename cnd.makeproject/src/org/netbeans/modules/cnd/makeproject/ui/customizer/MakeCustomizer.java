@@ -525,7 +525,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
                     if (currentCustomizer != null) {
                         customizerPanel.remove(currentCustomizer);
                     }
-                    JPanel panel = new JPanel();
+                    JComponent panel = new JPanel();
                     panel.setLayout(new java.awt.GridBagLayout());
                     currentConfigurationNode = (PropertyNode) node;
                     if (currentConfigurationNode.customizerStyle() == CustomizerNode.CustomizerStyle.PANEL) {

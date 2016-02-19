@@ -58,7 +58,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -72,6 +71,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectEvent;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectListener;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -89,7 +90,6 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.Mutex.Action;
 import org.openide.util.RequestProcessor;
@@ -114,7 +114,6 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
      */
     static final String PRIVATE_NS = "http://www.netbeans.org/ns/project-private/1"; // NOI18N
 
-    private static final Pattern RELATIVE_SLASH_SEPARATED_PATH = Pattern.compile("[^:/\\\\.][^:/\\\\]*(/[^:/\\\\.][^:/\\\\]*)*"); // NOI18N
     private static final Logger LOG = Logger.getLogger(MakeProjectHelperImpl.class.getName());
     private static RequestProcessor RP;
     /**
@@ -222,20 +221,24 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
     }
     
     @Override
-    public FileObject resolveFileObject(String filename) throws IllegalArgumentException {
+    public FileObject resolveFileObject(String filename) {
+        FSPath resolveFSPath = resolveFSPath(filename);
+        if (resolveFSPath != null) {
+            return resolveFSPath.getFileObject();
+        }
+        return null;
+    }
+
+    @Override
+    public FSPath resolveFSPath(String filename) {
         if (filename == null) {
             throw new NullPointerException("null filename passed to resolveFile"); // NOI18N
         }
-        FileObject f;
-        if (RELATIVE_SLASH_SEPARATED_PATH.matcher(filename).matches()) {
-            return dir.getFileObject(filename);
+        if (CndPathUtilities.isPathAbsolute(fileSystem, filename)) {
+            return new FSPath(fileSystem, filename) ;
         } else {
-            try {
-                return dir.getFileSystem().findResource(filename) ;
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
-            }
+            FSPath root = FSPath.toFSPath(dir);
+            return root.getChild(filename);
         }
     }
 
@@ -243,39 +246,13 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
         if (filename == null) {
             throw new NullPointerException("null filename passed to resolveFile"); // NOI18N
         }
-        String result;
-        if (RELATIVE_SLASH_SEPARATED_PATH.matcher(filename).matches()) {
+        String result = filename;
+        if (!CndPathUtilities.isPathAbsolute(fileSystem, filename)) {
             result = dir.getPath() + CndFileUtils.getFileSeparatorChar(fileSystem) + filename;
-        } else {
-            result = filename;
         }
         return FileSystemProvider.normalizeAbsolutePath(result, fileSystem);
     }
     
-//    //XXX:fullRemote: deprecate and remove
-//    @Override
-//    public File resolveFile(String filename) throws IllegalArgumentException {
-//        Parameters.notNull("filename", filename);
-//        File basedir = new File(dir.getPath());
-//        if (!basedir.isAbsolute()) {
-//            throw new IllegalArgumentException("nonabsolute basedir passed to resolveFile: " + basedir); // NOI18N
-//        }
-//        File f;
-//        if (RELATIVE_SLASH_SEPARATED_PATH.matcher(filename).matches()) {
-//            // Shortcut - simple relative path. Potentially faster.
-//            f = new File(basedir, filename.replace('/', File.separatorChar));
-//        } else {
-//            // All other cases.
-//            String machinePath = filename.replace('/', File.separatorChar).replace('\\', File.separatorChar);
-//            f = new File(machinePath);
-//            if (!f.isAbsolute()) {
-//                f = new File(basedir, machinePath);
-//            }
-//            assert f.isAbsolute();
-//        }
-//        return FileUtil.normalizeFile(f);
-//    }
-
     /**
      * Get the corresponding Make-based project type factory.
      */

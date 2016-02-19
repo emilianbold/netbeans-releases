@@ -127,6 +127,8 @@ public class ProjectNodeFactory {
 
         descriptions.add(createFormattingDescription(lookup));
 
+        descriptions.add(createLicenceDescription(lookup));
+
         CustomizerNode rootDescription = new CustomizerNode(
                 "Configuration Properties", getString("CONFIGURATION_PROPERTIES"), descriptions.toArray(new CustomizerNode[descriptions.size()]), lookup);  // NOI18N
 
@@ -136,7 +138,7 @@ public class ProjectNodeFactory {
             MakeProjectCustomizer makeprojectCustomizer = makeConfigurationDescriptor.getProjectCustomizer();
             rootDescription = makeprojectCustomizer.getRootPropertyNode(rootDescription);
         }
-        
+
         return new PropertyNode(rootDescription);
     }
 
@@ -147,9 +149,14 @@ public class ProjectNodeFactory {
 
     private static CustomizerNode createFormattingDescription(Lookup lookup) {
         return new FormattingCustomizerNode(
-                "Formattinf", getString("LBL_Formatting"), null, lookup); // NOI18N
+                "Formatting", getString("LBL_Formatting"), null, lookup); // NOI18N
     }
 
+    private static CustomizerNode createLicenceDescription(Lookup lookup) {
+        return new LicenseCustomizerNode(
+                "License", getString("LBL_License"), null, lookup); // NOI18N
+    }
+        
     private static CustomizerNode createBuildDescription(Lookup lookup) {
         MakeContext context = lookup.lookup(MakeContext.class);
 
