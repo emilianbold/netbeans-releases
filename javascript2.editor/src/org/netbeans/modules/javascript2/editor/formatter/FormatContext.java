@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.formatter;
 
+import com.oracle.truffle.js.parser.nashorn.internal.ir.FunctionNode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -49,7 +50,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
-import jdk.nashorn.internal.ir.FunctionNode;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
