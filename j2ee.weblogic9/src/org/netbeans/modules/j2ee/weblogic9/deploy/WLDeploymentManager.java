@@ -65,6 +65,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
@@ -722,7 +723,8 @@ public class WLDeploymentManager implements DeploymentManager2 {
         throw new UnsupportedOperationException("This method should never be called!"); // NOI18N
     }
 
-    public ProgressObject redeploy(final TargetModuleID[] targetModuleID) throws UnsupportedOperationException, IllegalStateException {
+    // this is internal method only used from incremental deployment
+    public ProgressObject redeploy(final TargetModuleID targetModuleID) throws UnsupportedOperationException, IllegalStateException {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
@@ -731,8 +733,42 @@ public class WLDeploymentManager implements DeploymentManager2 {
             return executeAction(new Action<ProgressObject>() {
                 @Override
                 public ProgressObject execute(DeploymentManager manager) throws ExecutionException {
-                    return registerProgressObject(new ServerProgressObject(
+                    Set<String> wlsTarget = getDeployTargets();
+                    if (wlsTarget == null || wlsTarget.isEmpty()) {
+                        return registerProgressObject(new ServerProgressObject(
                             manager.redeploy(translateTargetModuleIDsToServer(targetModuleID), (File) null, null)));
+                    }
+
+                    try {
+                        // to be consistent with wldeploy we search TargetModuleIDs with same
+                        // name and on selected targets
+                        TargetModuleID[] all = manager.getAvailableModules(null, manager.getTargets());
+                        List<TargetModuleID> toRedeploy = new ArrayList<TargetModuleID>();
+                        if (all != null) {
+                            for (TargetModuleID id : all) {
+                                if (id.getModuleID().equals(targetModuleID.getModuleID())) {
+                                    for (String name : wlsTarget) {
+                                        if (id.getTarget().getName().startsWith(name + "/") || name.equals(id.getTarget().getName())) {
+                                            toRedeploy.add(id);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            for (TargetModuleID id : toRedeploy) {
+                                LOGGER.log(Level.FINE, "Going to redeploy {0}@{1}", new Object[]{id.getModuleID(), id.getTarget().getName()});
+                            }
+                        }
+                        return registerProgressObject(new ServerProgressObject(
+                                manager.redeploy(toRedeploy.toArray(new TargetModuleID[toRedeploy.size()]), (File) null, null)));
+                    } catch (TargetException ex) {
+                        throw new ExecutionException(ex);
+                    } catch (IllegalStateException ex) {
+                        throw new ExecutionException(ex);
+                    }
+                    
                 }
             });
         } catch (Exception ex) {
@@ -795,7 +831,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
             return Collections.emptySet();
         }
         String[] parts = value.split(","); // NOI18N
-        Set<String> ret = new HashSet<String>(parts.length);
+        Set<String> ret = new TreeSet<String>();
         Collections.addAll(ret, parts);
         return ret;
     }
@@ -835,7 +871,7 @@ public class WLDeploymentManager implements DeploymentManager2 {
         return mapped;
     }
 
-    private TargetModuleID[] translateTargetModuleIDsToServer(TargetModuleID[] ids) {
+    private TargetModuleID[] translateTargetModuleIDsToServer(TargetModuleID... ids) {
         if (ids == null) {
             return null;
         }

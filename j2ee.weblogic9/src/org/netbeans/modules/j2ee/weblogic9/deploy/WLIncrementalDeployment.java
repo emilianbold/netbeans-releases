@@ -236,7 +236,7 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
             return progress;
         }
 
-        return dm.redeploy(new TargetModuleID[] {module});
+        return dm.redeploy(module);
 //        CommandBasedDeployer deployer = new CommandBasedDeployer(WLDeploymentFactory.getInstance(),
 //                dm.getInstanceProperties());
 //        return deployer.directoryRedeploy(module);
