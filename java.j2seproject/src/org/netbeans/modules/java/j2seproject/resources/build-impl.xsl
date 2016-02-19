@@ -1662,7 +1662,7 @@ is divided into following sections:
                 </condition>
             </target>
             
-            <target name="-init-macrodef-debug" depends="-init-debug-args">
+            <target name="-init-macrodef-debug-with-modules" depends="-init-debug-args" if="modules.supported.internal">
                 <macrodef>
                     <xsl:attribute name="name">debug</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
@@ -1687,7 +1687,7 @@ is divided into following sections:
                         <xsl:attribute name="optional">true</xsl:attribute>
                     </element>
                     <sequential>
-                        <j2seproject1:java modulename="@{{modulename}}" classname="@{{classname}}" modulepath="@{{modulepath}}" classpath="@{{classpath}}">
+                        <j2seproject1:java classname="@{{classname}}" modulepath="@{{modulepath}}" classpath="@{{classpath}}">
                             <customize>
                                 <jvmarg line="${{debug-args-line}}"/>
                                 <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
@@ -1697,6 +1697,37 @@ is divided into following sections:
                     </sequential>
                 </macrodef>
             </target>
+
+            <target name="-init-macrodef-debug-without-modules" depends="-init-debug-args" unless="modules.supported.internal">
+                <macrodef>
+                    <xsl:attribute name="name">debug</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">classname</xsl:attribute>
+                        <xsl:attribute name="default">${main.class}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">classpath</xsl:attribute>
+                        <xsl:attribute name="default">${debug.classpath}</xsl:attribute>
+                    </attribute>
+                    <element>
+                        <xsl:attribute name="name">customizeDebuggee</xsl:attribute>
+                        <xsl:attribute name="optional">true</xsl:attribute>
+                    </element>
+                    <sequential>
+                        <j2seproject1:java classname="@{{classname}}" classpath="@{{classpath}}">
+                            <customize>
+                                <jvmarg line="${{debug-args-line}}"/>
+                                <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
+                                <customizeDebuggee/>
+                            </customize>
+                        </j2seproject1:java>
+                    </sequential>
+                </macrodef>
+            </target>
+
+            <target name="-init-macrodef-debug" depends="-init-macrodef-debug-with-modules, -init-macrodef-debug-without-modules"/>
+
             <target name="-init-macrodef-java-with-modules" if="named.module.internal">
                 <macrodef>
                     <xsl:attribute name="name">java</xsl:attribute>
