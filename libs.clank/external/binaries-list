@@ -1,6 +1,6 @@
-#changeset:   16359:bde043dead95
+#changeset:   16686:0996102551bf
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Thu Jan 28 18:36:18 2016 +0300
-#summary:     use  NativeTrace.traceNotImplemented to be able to filter out in tests
-147687C3E91A8E448305A946A9D585F0DB544465 clank_0.3.6.zip
+#date:        Fri Feb 19 00:20:37 2016 +0300
+#summary:     move static methods from interface to be 1.7 compatible
+688488BF9E65AC39749AF959A5653F536EDABACD clank_0.3.6.zip
