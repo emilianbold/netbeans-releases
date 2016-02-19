@@ -615,6 +615,16 @@ public class ModelVisitor extends PathNodeVisitor {
                 boolean singletoneConstruction = false;
                 if (node instanceof PropertyNode) {
                     name = getName((PropertyNode)node);
+                    if (functionNode.getKind() == FunctionNode.Kind.GETTER || functionNode.getKind() == FunctionNode.Kind.SETTER) {
+                        String propertyName = name.get(0).getName();
+                        propertyName = propertyName.substring(propertyName.indexOf(' ') + 1);
+                        JsObject property = modelBuilder.getCurrentObject().getProperty(propertyName);
+                        if ( property == null) {
+                            Identifier propertyIdent = new IdentifierImpl(propertyName, name.get(0).getOffsetRange());
+                            property = new JsObjectImpl(modelBuilder.getCurrentObject(), propertyIdent, propertyIdent.getOffsetRange(), parserResult.getSnapshot().getMimeType(), null);
+                        }
+                        property.addOccurrence(name.get(0).getOffsetRange());
+                    }
                 } else if (node instanceof BinaryNode) {
                     processAsBinary = true;
                     if (pathSize > 4) {
