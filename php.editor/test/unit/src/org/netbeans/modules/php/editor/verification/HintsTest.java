@@ -343,6 +343,22 @@ public class HintsTest extends PHPHintsTestBase {
         checkHints(new InitializeFieldSuggestion(), "testInitializeFieldSuggestion_04.php", "function __construct(\\Bar\\Baz $f^oo) {");
     }
 
+    public void testInitializeFieldSuggestion_05() throws Exception {
+        checkHints(new InitializeFieldSuggestion(), "testInitializeFieldSuggestion_05.php", "    function __construct(\\Bar\\Baz $^foo) {");
+    }
+
+    public void testInitializeFieldSuggestion_06() throws Exception {
+        checkHints(new InitializeFieldSuggestion(), "testInitializeFieldSuggestion_06.php", "    function __construct(\\Bar\\Baz $^foo) {");
+    }
+
+    public void testInitializeFieldSuggestion_07() throws Exception {
+        checkHints(new InitializeFieldSuggestion(), "testInitializeFieldSuggestion_07.php", "    function __construct(\\Bar\\Baz $^foo) {");
+    }
+
+    public void testInitializeFieldSuggestion_08() throws Exception {
+        checkHints(new InitializeFieldSuggestion(), "testInitializeFieldSuggestion_08.php", "    function __construct(\\Bar\\Baz $^foo) {");
+    }
+
     public void testTooManyReturnStatements() throws Exception {
         checkHints(new TooManyReturnStatementsHint(), "testTooManyReturnStatements.php");
     }
