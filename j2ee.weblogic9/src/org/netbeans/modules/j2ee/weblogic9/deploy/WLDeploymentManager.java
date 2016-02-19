@@ -741,17 +741,25 @@ public class WLDeploymentManager implements DeploymentManager2 {
 
                     try {
                         // to be consistent with wldeploy we search TargetModuleIDs with same
-                        // name and on selected targets
-                        TargetModuleID[] all = manager.getAvailableModules(null, manager.getTargets());
+                        // name and on user selected targets
+                        List<TargetModuleID> all = new ArrayList<TargetModuleID>();
+                        // FIXME this is really suboptimal
+                        Set<ModuleType> allType = new HashSet<ModuleType>();
+                        Collections.addAll(allType, ModuleType.CAR, ModuleType.EAR, ModuleType.EJB, ModuleType.RAR, ModuleType.WAR);
+                        for (ModuleType t : allType) {
+                            TargetModuleID[] curr = manager.getAvailableModules(t, manager.getTargets());
+                            if (curr != null) {
+                                Collections.addAll(all, curr);
+                            }
+                        }
+
                         List<TargetModuleID> toRedeploy = new ArrayList<TargetModuleID>();
-                        if (all != null) {
-                            for (TargetModuleID id : all) {
-                                if (id.getModuleID().equals(targetModuleID.getModuleID())) {
-                                    for (String name : wlsTarget) {
-                                        if (id.getTarget().getName().startsWith(name + "/") || name.equals(id.getTarget().getName())) {
-                                            toRedeploy.add(id);
-                                            break;
-                                        }
+                        for (TargetModuleID id : all) {
+                            if (id.getModuleID().equals(targetModuleID.getModuleID())) {
+                                for (String name : wlsTarget) {
+                                    if (id.getTarget().getName().startsWith(name + "/") || name.equals(id.getTarget().getName())) {
+                                        toRedeploy.add(id);
+                                        break;
                                     }
                                 }
                             }
