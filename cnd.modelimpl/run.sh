@@ -41,7 +41,7 @@
 # Version 2 license, then the option applies only if the new code is
 # made subject to such option by the copyright holder.
 
-PARAMS=""
+PARAMS="--laf Metal -J-Xmx3G"
 SUSPEND="n"
 CONSOLE="-J-Dnetbeans.logger.console=true"
 DBGPORT=${DBGPORT-5858}
