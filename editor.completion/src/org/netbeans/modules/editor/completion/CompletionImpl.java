@@ -75,6 +75,8 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.GuardedDocument;
@@ -189,7 +191,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     /* Completion providers registered for the active component (its mime-type). Changed in AWT only. */
     private CompletionProvider[] activeProviders = null;
     
-    /** Mapping of mime-type to array of providers. Changed in AWT only. */
+    /** Mapping of mime-path to array of providers. Changed in AWT only. */
     private HashMap<String, CompletionProvider[]> providersCache = new HashMap<String, CompletionProvider[]>();
 
     /**
@@ -539,8 +541,15 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     }
     
     private boolean ensureActiveProviders() {
-        if (activeProviders != null)
-            return true;
+        if (activeProviders != null) {
+            String mime = getMimePath(getActiveComponent());
+            if (mime == null) {
+                return false;
+            }
+            if (mime.equals(currentMimePath)) {
+                return true;
+            }
+        }
         JTextComponent component = getActiveComponent();
         activeProviders = (component != null)
                 ? getCompletionProvidersForComponent(component, false)
@@ -577,32 +586,128 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         docAutoPopupTimer.restart();
     }
     
+    /**
+     * Gives MimePath of the caret position as String
+     * @param component
+     * @return 
+     */
+    private String getMimePath(JTextComponent component) {
+        final int offset = component.getCaretPosition();
+        final MimePath[] mimePathR = new MimePath[1];
+        final Document doc = component.getDocument();
+        
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                List<TokenSequence<?>> seqs = TokenHierarchy.get(doc).embeddedTokenSequences(offset, true);
+                TokenSequence<?> seq;
+                
+                if (seqs.isEmpty()) {
+                    seq  = TokenHierarchy.get(doc).tokenSequence();
+                } else {
+                    seq = seqs.get(seqs.size() - 1);
+                }
+
+                if (seq != null) {
+                    mimePathR[0] = MimePath.parse(seq.languagePath().mimePath());
+                }
+            }
+        });
+        if (mimePathR[0] != null) {
+            return mimePathR[0].getPath();
+        }
+        // original mimeType code
+        Object mimeTypeObj =  DocumentUtilities.getMimeType(doc);  //NOI18N
+        String mimeType;
+
+        if (mimeTypeObj instanceof String) {
+            mimeType = (String) mimeTypeObj;
+        } else {
+            BaseKit kit = Utilities.getKit(component);
+            
+            if (kit == null) {
+                return null;
+            }
+            
+            mimeType = kit.getContentType();
+        }
+        return mimeType;
+    }
+    
+    private String currentMimePath;
+
+    /**
+     * Gets a complete MIME path for the given offset in the document
+     * @param doc the document
+     * @param offset point of interest
+     * @return MimePath
+     */
+    static MimePath getMimePath(final Document doc, final int offset) {
+        final MimePath[] mimePathR = new MimePath[1];
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                List<TokenSequence<?>> seqs = TokenHierarchy.get(doc).embeddedTokenSequences(offset, true);
+                TokenSequence<?> seq = seqs.isEmpty() ? null : seqs.get(seqs.size() - 1);
+                seq = seq == null ? TokenHierarchy.get(doc).tokenSequence() : seq;
+                mimePathR[0] = seq == null ? MimePath.parse(DocumentUtilities.getMimeType(doc)) : MimePath.parse(seq.languagePath().mimePath());
+            }
+        });
+        return mimePathR[0];
+    }
+    
+    /**
+     * Gives MimeType
+     * @param component
+     * @return 
+     */
+    private String getMimeType(JTextComponent component) {
+        MimePath path = getMimePath(component.getDocument(), component.getCaretPosition());
+        Object mimeTypeObj =  component.getDocument().getProperty("mimeType");  //NOI18N
+        String mimeType;
+
+        if (path != null) {
+            mimeType = path.getPath();
+        } else if (mimeTypeObj instanceof String) {
+            mimeType = (String) mimeTypeObj;
+        } else {
+            BaseKit kit = Utilities.getKit(component);
+            
+            if (kit == null) {
+                return null;
+            }
+            
+            mimeType = kit.getContentType();
+        }
+        return mimeType;
+    }
+    
+    private String currentMimeType;
+
+    /**
+     * Has side effects !
+     * @param component
+     * @param asyncWarmUp
+     * @return 
+     */
     private CompletionProvider[] getCompletionProvidersForComponent(JTextComponent component, boolean asyncWarmUp) {
         assert (SwingUtilities.isEventDispatchThread());
 
         if (component == null)
             return null;
         
-        Object mimeTypeObj = component.getDocument().getProperty("mimeType");  //NOI18N
-        String mimeType;
-        
-        if (mimeTypeObj instanceof String)
-            mimeType = (String) mimeTypeObj;
-        else {
-            BaseKit kit = Utilities.getKit(component);
-            
-            if (kit == null) {
-                return new CompletionProvider[0];
-            }
-            
-            mimeType = kit.getContentType();
+        String mimePath = getMimePath(component);
+
+        if (mimePath == null) {
+            return null;
         }
-        
-        if (providersCache.containsKey(mimeType))
-            return providersCache.get(mimeType);
+        if (providersCache.containsKey(mimePath)) {
+            currentMimePath = mimePath;
+            return providersCache.get(mimePath);
+        }
 
         if (asyncWarmUpTask != null) {
-            if (asyncWarmUp && mimeType != null && mimeType.equals(asyncWarmUpMimeType))
+            if (asyncWarmUp && mimePath != null && mimePath.equals(asyncWarmUpMimeType))
                 return null;
             if (!asyncWarmUpTask.cancel()) {
                 asyncWarmUpTask.waitFinished();
@@ -610,9 +715,9 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             asyncWarmUpTask = null;
             asyncWarmUpMimeType = null;
         }
-        final Lookup lookup = MimeLookup.getLookup(MimePath.get(mimeType));
+        final Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimePath));
         if (asyncWarmUp) {
-            asyncWarmUpMimeType = mimeType;
+            asyncWarmUpMimeType = mimePath;
             asyncWarmUpTask = RequestProcessor.getDefault().post(new Runnable() {
                 @Override
                 public void run() {
@@ -624,7 +729,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         Collection<? extends CompletionProvider> col = lookup.lookupAll(CompletionProvider.class);
         int size = col.size();
         CompletionProvider[] ret = size == 0 ? null : col.toArray(new CompletionProvider[size]);
-        providersCache.put(mimeType, ret);
+        currentMimePath = mimePath;
+        providersCache.put(mimePath, ret);
         return ret;
     }
     
