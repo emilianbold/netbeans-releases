@@ -700,7 +700,7 @@ public class TargetServer {
                     throw new NoArchiveException(NbBundle.getMessage(TargetServer.class, "MSG_NoArchive"));
                 }
 
-                ui.progress(NbBundle.getMessage(TargetServer.class, "MSG_Distributing", application, Arrays.asList(targetz)));
+                ui.progress(NbBundle.getMessage(TargetServer.class, "MSG_Distributing", application));
                 plan = dtarget.getConfigurationFile();
                 DeploymentManager dm = instance.getDeploymentManager();
                 if (dm instanceof DeploymentManager2) {
