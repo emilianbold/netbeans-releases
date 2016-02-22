@@ -988,10 +988,15 @@ public class ModelVisitor extends PathNodeVisitor {
                 fncScope.setJsKind(JsElement.Kind.CONSTRUCTOR);
             }
             
-            if (functionNode.isClassConstructor() || functionNode.isSubclassConstructor()) {
-                fncScope.setJsKind(JsElement.Kind.CONSTRUCTOR);
-            } else if (functionNode.isMethod()) {
-                fncScope.setJsKind(JsElement.Kind.METHOD);
+            if (getPreviousFromPath(2) instanceof PropertyNode) {
+                if (functionNode.isClassConstructor() || functionNode.isSubclassConstructor()) {
+                    fncScope.setJsKind(JsElement.Kind.CONSTRUCTOR);
+                } else if (functionNode.isMethod()) {
+                    fncScope.setJsKind(JsElement.Kind.METHOD);
+                }
+                if (((PropertyNode)getPreviousFromPath(2)).isStatic()) {
+                    fncScope.getModifiers().add(Modifier.STATIC);
+                }
             }
 
             // go through all function statements
