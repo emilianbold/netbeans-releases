@@ -2463,7 +2463,11 @@ public class ModelVisitor extends PathNodeVisitor {
             return where.getParent().getParent();
         }
         if (whereKind == JsElement.Kind.CONSTRUCTOR) {
-            return where;
+            if (parentKind == JsElement.Kind.CLASS) {
+                return parent;
+            } else {
+                return where;
+            }
         }
         if (whereKind.isFunction() && !where.getModifiers().contains(Modifier.PRIVATE) && !where.isAnonymous()) {
             // public or protected method
