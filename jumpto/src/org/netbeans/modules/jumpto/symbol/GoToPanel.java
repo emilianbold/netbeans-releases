@@ -49,8 +49,8 @@ import javax.swing.ListModel;
  */
 interface GoToPanel {
     boolean isCaseSensitive();
-    boolean setModel(ListModel model);
-    boolean revalidateModel();
+    boolean setModel(ListModel model, boolean finished);
+    boolean revalidateModel(boolean finished);
     void setWarning(String warningMessage);
     long getStartTime();
 }

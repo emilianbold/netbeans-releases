@@ -76,6 +76,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.DocumentUtil;
@@ -238,6 +239,9 @@ public class JavaSymbolProvider implements SymbolProvider {
                             }
 
                             final Project project = FileOwnerQuery.getOwner(root);
+                            final ProjectInformation projectInfo = project == null ?
+                                    null :
+                                    project.getLookup().lookup(ProjectInformation.class);   //Intentionally does not use ProjectUtils.getInformation() it does project icon annotation which is expensive
                             final ClassIndexImpl impl = manager.getUsagesQuery(root.toURL(), true);
                             if (impl != null) {
                                 final Map<ElementHandle<TypeElement>,Set<String>> r = new HashMap<>();
@@ -248,7 +252,7 @@ public class JavaSymbolProvider implements SymbolProvider {
                                         for (String symbol : p.getValue()) {
                                             if (matchesRestrictions(owner.getQualifiedName(), symbol, restriction, caseSensitive)) {
                                                 final AsyncJavaSymbolDescriptor d = new AsyncJavaSymbolDescriptor(
-                                                        project,
+                                                        projectInfo,
                                                         root,
                                                         impl,
                                                         owner,
