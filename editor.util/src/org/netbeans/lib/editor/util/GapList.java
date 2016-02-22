@@ -586,8 +586,6 @@ implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
      * @param off offset in the collection pointing to first element to copy.
      * @param len number of elements to copy from the collection.
      * @return <tt>true</tt> if this list changed as a result of the call.
-     * @throws    IndexOutOfBoundsException if index out of range <tt>(index
-     *		  &lt; 0 || index &gt; size())</tt>.
      * @throws    NullPointerException if the specified Collection is null.
      * @since 1.64
      */
