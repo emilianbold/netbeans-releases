@@ -74,21 +74,23 @@ import org.openide.filesystems.JarFileSystem;
  */
 public class WildflyPluginUtils {
 
-    public static final Version JBOSS_7_0_0 = new Version("7.0.0"); // NOI18N
+    public static final Version JBOSS_7_0_0 = new Version("7.0.0", true); // NOI18N
 
-    public static final Version EAP_6_3_0 = new Version("7.4.0"); // NOI18N
+    public static final Version EAP_6_3_0 = new Version("7.4.0", false); // NOI18N
 
-    public static final Version EAP_6_4_0 = new Version("7.5.0"); // NOI18N
-
-    public static final Version WILDFLY_8_0_0 = new Version("8.0.0"); // NOI18N
-
-    public static final Version WILDFLY_8_1_0 = new Version("8.1.0"); // NOI18N
-
-    public static final Version WILDFLY_8_2_0 = new Version("8.2.0"); // NOI18N
-
-    public static final Version WILDFLY_9_0_0 = new Version("9.0.0"); // NOI18N
+    public static final Version EAP_6_4_0 = new Version("7.5.0", false); // NOI18N
     
-    public static final Version WILDFLY_10_0_0 = new Version("10.0.0"); // NOI18N
+    public static final Version EAP_7_0 = new Version("7.0.0", false); // NOI18N
+
+    public static final Version WILDFLY_8_0_0 = new Version("8.0.0", true); // NOI18N
+
+    public static final Version WILDFLY_8_1_0 = new Version("8.1.0", true); // NOI18N
+
+    public static final Version WILDFLY_8_2_0 = new Version("8.2.0", true); // NOI18N
+
+    public static final Version WILDFLY_9_0_0 = new Version("9.0.0", true); // NOI18N
+    
+    public static final Version WILDFLY_10_0_0 = new Version("10.0.0", true); // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(WildflyPluginUtils.class.getName());
 
@@ -173,11 +175,7 @@ public class WildflyPluginUtils {
     }
 
     public static boolean isGoodJBInstanceLocation(File serverDir, File candidate) {
-        Version version = getServerVersion(serverDir);
-        if (version == null || !"8".equals(version.getMajorNumber())) { // NOI18N
-            return WildflyPluginUtils.isGoodJBInstanceLocation8x(serverDir, candidate);
-        }
-        return ("8".equals(version.getMajorNumber()) && WildflyPluginUtils.isGoodJBInstanceLocation8x(serverDir, candidate)); // NOI18N
+       return WildflyPluginUtils.isGoodJBInstanceLocation8x(serverDir, candidate);
     }
 
     private static boolean isGoodJBServerLocation(File candidate, List<String> requirements) {
@@ -196,13 +194,7 @@ public class WildflyPluginUtils {
     }
 
     public static boolean isGoodJBServerLocation(File candidate) {
-        Version version = getServerVersion(candidate);
-        if (version == null || !"8".equals(version.getMajorNumber())) { // NOI18N
-            return WildflyPluginUtils.isGoodJBServerLocation8x(candidate);
-        }
-
-        return ("8".equals(version.getMajorNumber())
-                && WildflyPluginUtils.isGoodJBServerLocation8x(candidate)); // NOI18N
+        return WildflyPluginUtils.isGoodJBServerLocation8x(candidate);
     }
 
     /**
@@ -317,7 +309,12 @@ public class WildflyPluginUtils {
                     File manifestFile = new File(serverPath, getModulesBase(serverPath.getAbsolutePath()) + "org.jboss.as.product".replace('.', separatorChar) + separatorChar + slot + separatorChar + "dir" + separatorChar + "META-INF" + separatorChar + "MANIFEST.MF");
                     InputStream stream = new FileInputStream(manifestFile);
                     Manifest manifest = new Manifest(stream);
-                    return new Version(manifest.getMainAttributes().getValue("JBoss-Product-Release-Version"));
+                    String productName = manifest.getMainAttributes().getValue("JBoss-Product-Release-Name");
+                    if(productName == null || productName.isEmpty()) {
+                        productName = manifest.getMainAttributes().getValue("JBoss-Project-Release-Name");
+                    }
+                    boolean wildfly =  productName == null || !productName.toLowerCase().contains("eap");
+                    return new Version(manifest.getMainAttributes().getValue("JBoss-Product-Release-Version"), wildfly);
                 }
             } catch (Exception e) {
                 // Don't care
@@ -421,7 +418,7 @@ public class WildflyPluginUtils {
             Attributes attributes = systemJar.getManifest().getMainAttributes();
             String version = attributes.getValue("Specification-Version"); // NOI18N
             if (version != null) {
-                return new Version(version);
+                return new Version(version, true);
             }
             return null;
         } catch (IOException | PropertyVetoException ex) {
@@ -446,6 +443,8 @@ public class WildflyPluginUtils {
         private String microNumber = "0";
 
         private String update = "";
+        
+        private boolean wildfly = true;
 
         /**
          * Constructs the version from the spec version string. Expected format
@@ -454,9 +453,9 @@ public class WildflyPluginUtils {
          * @param version spec version string with the following format:
          * <code>MAJOR_NUMBER[.MINOR_NUMBER[.MICRO_NUMBER[.UPDATE]]]</code>
          */
-        public Version(String version) {
+        public Version(String version, boolean wildfly) {            
             assert version != null : "Version can't be null"; // NOI18N
-
+            this.wildfly = wildfly;
             String[] tokens = version.split("\\.");
 
             if (tokens.length >= 4) {
@@ -539,7 +538,14 @@ public class WildflyPluginUtils {
                     && (this.update == null || !this.update.equals(other.update))) {
                 return false;
             }
+            if(this.wildfly != other.wildfly) {
+                return false;
+            }
             return true;
+        }
+
+        public boolean isWidlfy() {
+            return wildfly;
         }
 
         /**
@@ -564,6 +570,7 @@ public class WildflyPluginUtils {
          * Major number is the most significant. Implementation is consistent
          * with {@link #equals(Object)}.
          */
+        @Override
         public int compareTo(Version o) {
             int comparison = compareToIgnoreUpdate(o);
             if (comparison != 0) {
@@ -582,6 +589,10 @@ public class WildflyPluginUtils {
             if (o == null) {
                 return 1;
             }
+            if(this.wildfly != o.wildfly) {
+               return convertEAP(this).compareToIgnoreUpdate(convertEAP(o));
+            
+            }
             int comparison = compare(majorNumber, o.majorNumber);
             if (comparison != 0) {
                 return comparison;
@@ -591,6 +602,16 @@ public class WildflyPluginUtils {
                 return comparison;
             }
             return compare(microNumber, o.microNumber);
+        }
+    
+        private Version convertEAP(Version version) {
+            if (!version.isWidlfy()) {
+                if (version.compareToIgnoreUpdate(EAP_7_0) >= 0) {
+                    return WILDFLY_10_0_0;
+                }
+                return JBOSS_7_0_0;
+            }
+            return version;
         }
 
         private int compare(String number1, String number2) {
@@ -604,6 +625,11 @@ public class WildflyPluginUtils {
                 }
             }
             return number1.compareTo(number2);
+        }
+
+        @Override
+        public String toString() {
+            return "Version{" + (wildfly ? "WILDFLY " : "EAP ") + "majorNumber=" + majorNumber + ", minorNumber=" + minorNumber + ", microNumber=" + microNumber + ", update=" + update + '}';
         }
 
     }
