@@ -216,11 +216,15 @@ public class ProxyLibraryImplementation extends ForwardingLibraryImplementation 
 
     @CheckForNull
     synchronized Map<String,List<URI>> getNewURIContents() {
-        return Collections.unmodifiableMap(newURIContents);
+        return newURIContents == null ?
+                null :
+                Collections.unmodifiableMap(newURIContents);
     }
 
     @CheckForNull
     synchronized Map<String,List<URL>> getNewContents() {
-        return Collections.unmodifiableMap(newContents);
+        return newContents == null ?
+                null :
+                Collections.unmodifiableMap(newContents);
     }
 }

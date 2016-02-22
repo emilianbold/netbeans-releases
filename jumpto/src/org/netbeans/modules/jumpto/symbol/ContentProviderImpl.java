@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -552,7 +551,16 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
         private final Set</*@GuardedBy("resolved")*/SymbolDescriptor> resolved;
 
         SymbolDescriptorAttrCopier() {
-            hasWrongCase = Collections.synchronizedSet(new HashSet<AsyncDescriptor<SymbolDescriptor>>());
+            hasWrongCase = Collections.synchronizedSet(new HashSet<AsyncDescriptor<SymbolDescriptor>>() {
+                @Override
+                public boolean removeAll(Collection<?> c) {
+                    boolean modified = false;
+                    for (Object o : c) {
+                        modified |= remove(o);
+                    }
+                    return modified;
+                }
+            });
             resolved = Collections.synchronizedSet(new HashSet<SymbolDescriptor>());
         }
 
