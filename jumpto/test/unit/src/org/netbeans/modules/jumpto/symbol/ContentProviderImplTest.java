@@ -315,7 +315,9 @@ public class ContentProviderImplTest extends NbTestCase {
         }
 
         @Override
-        public boolean setModel(ListModel model) {
+        public boolean setModel(
+                final ListModel model,
+                final boolean finished) {
             called.incrementAndGet();
             symbols.clear();
             for (int i=0; i< model.getSize(); i++) {
@@ -325,7 +327,7 @@ public class ContentProviderImplTest extends NbTestCase {
         }
 
         @Override
-        public boolean revalidateModel() {
+        public boolean revalidateModel(final boolean finished) {
             return true;
         }
 
