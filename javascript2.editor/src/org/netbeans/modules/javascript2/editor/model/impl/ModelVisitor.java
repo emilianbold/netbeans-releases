@@ -510,11 +510,13 @@ public class ModelVisitor extends PathNodeVisitor {
         VarNode varNode = (lastNode instanceof VarNode) ? (VarNode)lastNode : null;
         JsObject parent = modelBuilder.getCurrentObject();
         JsObjectImpl classObject = null;
-        if (varNode != null  && cnIdent != null && varNode.getName().getName().equals(cnIdent.getName())) {
-            // case1: var name = class name {}
-            // case2: class name {}
+        if ((varNode != null  && cnIdent != null && varNode.getName().getName().equals(cnIdent.getName()))
+            // case1: var Polygon = class Polygone {}
+            // case2: class Polygon {}
+                || (varNode != null && cnIdent == null) ) {
+            // case 3: var Polygon = class{}
             // we create just one object
-            Identifier name = ModelElementFactory.create(parserResult, cnIdent);
+            Identifier name = ModelElementFactory.create(parserResult, varNode.getName());
             classObject = new JsObjectImpl(parent, name, new OffsetRange(node.getStart(), node.getFinish()), true, parent.getMimeType(), parent.getSourceLabel());
             parent.addProperty(name.getName(), classObject);
             classObject.setJsKind(JsElement.Kind.CLASS);
