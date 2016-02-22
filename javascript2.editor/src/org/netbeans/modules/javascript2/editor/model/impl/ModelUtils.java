@@ -467,7 +467,11 @@ public class ModelUtils {
             result.add(type);
         } else if (Type.UNDEFINED.equals(type.getType())) {
             if (object.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
-                result.add(new TypeUsageImpl(object.getFullyQualifiedName(), type.getOffset(), true));
+                if (object.getParent().getJSKind() == JsElement.Kind.CLASS) {
+                    result.add(new TypeUsageImpl(object.getParent().getFullyQualifiedName(), type.getOffset(), true));
+                } else {
+                    result.add(new TypeUsageImpl(object.getFullyQualifiedName(), type.getOffset(), true));
+                }
             } else {
                 result.add(new TypeUsageImpl(Type.UNDEFINED, type.getOffset(), true));
             }

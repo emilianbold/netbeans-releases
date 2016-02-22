@@ -505,22 +505,33 @@ public class ModelVisitor extends PathNodeVisitor {
 
     @Override
     public boolean enterClassNode(ClassNode node) {
-        System.out.println("Classname: " + node.getIdent());
         IdentNode cnIdent = node.getIdent();
         Node lastNode = getPreviousFromPath(1);
         VarNode varNode = (lastNode instanceof VarNode) ? (VarNode)lastNode : null;
         JsObject parent = modelBuilder.getCurrentObject();
+        JsObjectImpl classObject = null;
         if (varNode != null  && cnIdent != null && varNode.getName().getName().equals(cnIdent.getName())) {
             // case1: var name = class name {}
             // case2: class name {}
             // we create just one object
             Identifier name = ModelElementFactory.create(parserResult, cnIdent);
-            JsObjectImpl classObject = new JsObjectImpl(parent, name, new OffsetRange(node.getStart(), node.getFinish()), true, parent.getMimeType(), parent.getSourceLabel());
+            classObject = new JsObjectImpl(parent, name, new OffsetRange(node.getStart(), node.getFinish()), true, parent.getMimeType(), parent.getSourceLabel());
             parent.addProperty(name.getName(), classObject);
             classObject.setJsKind(JsElement.Kind.CLASS);
         }
-        return super.enterClassNode(node); 
+        if (classObject != null) {
+            modelBuilder.setCurrentObject(classObject);
+            // visit constructor
+            node.getConstructor().accept(this);
+            // visit rest of declaration
+            for (PropertyNode element : node.getClassElements()) {
+                element.accept(this);
+            }
+            modelBuilder.reset();
+        }
+        return false;
     }
+    
     
     
     @Override
@@ -973,6 +984,12 @@ public class ModelVisitor extends PathNodeVisitor {
             if (functionNode.getKind() != FunctionNode.Kind.SCRIPT && docHolder.isClass(functionNode)) {
                 // needs to be marked before going through the nodes
                 fncScope.setJsKind(JsElement.Kind.CONSTRUCTOR);
+            }
+            
+            if (functionNode.isClassConstructor() || functionNode.isSubclassConstructor()) {
+                fncScope.setJsKind(JsElement.Kind.CONSTRUCTOR);
+            } else if (functionNode.isMethod()) {
+                fncScope.setJsKind(JsElement.Kind.METHOD);
             }
 
             // go through all function statements
