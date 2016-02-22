@@ -197,7 +197,7 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
 
         if ( text == null ) {
             currentSearch.resetFilter();
-            panel.setModel(new DefaultListModel());
+            panel.setModel(new DefaultListModel(), true);
             return false;
         }
         final boolean exact = text.endsWith(" "); // NOI18N
@@ -205,7 +205,7 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
         text = text.trim();
         if ( text.length() == 0 || !Utils.isValidInput(text)) {
             currentSearch.resetFilter();
-            panel.setModel(new DefaultListModel());
+            panel.setModel(new DefaultListModel(), true);
             return false;
         }
         final SearchType searchType = Utils.getSearchType(text, exact, isCaseSensitive, null, null);
@@ -218,7 +218,7 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
         if (name.length() == 0) {
             //Empty name, wait for next char
             currentSearch.resetFilter();
-            panel.setModel(new DefaultListModel());
+            panel.setModel(new DefaultListModel(), true);
             return false;
         }
         // Compute in other thread
@@ -227,7 +227,7 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
             final boolean correctCase = acp == null || acp.hasCorrectCase();
             if (currentSearch.isNarrowing(searchType, name, scope, correctCase)) {
                 currentSearch.filter(searchType, name, null);
-                enableOK(panel.revalidateModel());
+                enableOK(panel.revalidateModel(true));
                 return false;
             } else {
                 running = new Worker(text, searchType, panel);
@@ -430,7 +430,7 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
                                             nameAndScope.second());
                                 }
                                 if (!isCanceled) {
-                                    enableOK(panel.setModel(model));
+                                    enableOK(panel.setModel(model, done));
                                 }
                             }
                         });
