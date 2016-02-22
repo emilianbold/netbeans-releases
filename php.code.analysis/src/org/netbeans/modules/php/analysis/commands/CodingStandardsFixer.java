@@ -212,6 +212,7 @@ public final class CodingStandardsFixer {
         return new PhpExecutable(codingStandardsFixerPath)
                 .optionsSubcategory(AnalysisOptionsPanelController.OPTIONS_SUB_PATH)
                 .fileOutput(XML_LOG, "UTF-8", false) // NOI18N
+                .redirectErrorStream(false)
                 .displayName(title);
     }
 

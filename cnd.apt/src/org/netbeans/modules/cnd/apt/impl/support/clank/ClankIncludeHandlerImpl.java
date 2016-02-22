@@ -64,6 +64,8 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.FSPath;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
 import org.openide.util.Parameters;
@@ -278,15 +280,15 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
             // rewrite by what we kept, otherwise start entry
             // was responsible to initialize paths correctly
             if (this.cleaned) {
-                assert handler.startFile.equals(this.startFile) :
+                assert areStartEntriesEqual(handler.startFile, this.startFile) :
                         "handler's startFile " + handler.startFile + // NOI18N
                         " vs. state startFile " + this.startFile; // NOI18N
-            } else {
-                handler.userIncludePaths = this.userIncludePaths;
-                handler.userIncludeFilePaths = this.userIncludeFilePaths;
-                handler.systemIncludePaths = this.systemIncludePaths;
-                handler.startFile = this.startFile;
             }
+            
+            handler.userIncludePaths = this.userIncludePaths;
+            handler.userIncludeFilePaths = this.userIncludeFilePaths;
+            handler.systemIncludePaths = this.systemIncludePaths;
+            handler.startFile = this.startFile;
 
             // TODO: if requested we restore (it is different from APT-based state)
             if (this.inclStack.length > 0) {
@@ -304,6 +306,22 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
             }
             handler.inclStackIndex = this.inclStackIndex;
             handler.cachedContent = this.cachedContent;
+        }
+        
+        private static boolean areStartEntriesEqual(StartEntry first, StartEntry second) {
+            try {
+                if (first.equals(second)) {
+                    return true;
+                }
+                FSPath fsFirst = new FSPath(first.getFileSystem(), first.getStartFile().toString());
+                FSPath fsSecond = new FSPath(second.getFileSystem(), second.getStartFile().toString());
+                if (!fsFirst.getFileObject().getCanonicalFileObject().equals(fsSecond.getFileObject().getCanonicalFileObject())) {
+                    return false;
+                }
+            } catch (Throwable ex) {
+                // do nothing
+            }
+            return true;
         }
 
         @Override
