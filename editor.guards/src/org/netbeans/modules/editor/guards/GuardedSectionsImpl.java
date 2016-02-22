@@ -159,10 +159,15 @@ public final class GuardedSectionsImpl {
     public InteriorSection createInteriorSectionObject(String name, PositionBounds header, PositionBounds body, PositionBounds footer) {
         return (InteriorSection) createInteriorSectionImpl(name, header, body, footer).guard;
     }
+    
+    public SimpleSection createSimpleSection(Position pos, Position end, String name) throws BadLocationException {
+        checkNewSection(pos, name);
+        return doCreateSimpleSection(pos, end, name);
+    }
 
     public SimpleSection createSimpleSection(Position pos, String name) throws BadLocationException {
         checkNewSection(pos, name);
-        return doCreateSimpleSection(pos, name);
+        return doCreateSimpleSection(pos, null, name);
     }
 
     public InteriorSection createInteriorSection(Position pos, String name) throws BadLocationException {
@@ -170,7 +175,7 @@ public final class GuardedSectionsImpl {
         return doCreateInteriorSection(pos, name);
     }
     
-    private SimpleSection doCreateSimpleSection(final Position pos, final String name)
+    private SimpleSection doCreateSimpleSection(final Position pos, final Position end, final String name)
         throws /*IllegalArgumentException,*/ BadLocationException  {
         
         StyledDocument loadedDoc = null;
@@ -183,8 +188,17 @@ public final class GuardedSectionsImpl {
             public void run() {
                 try {
                     int where = pos.getOffset();
-                    doc.insertString(where, "\n \n", null); // NOI18N
-                    sect[0] = createSimpleSectionImpl(name, PositionBounds.create(where + 1, where + 2, GuardedSectionsImpl.this));
+                    int offEnd = where +2;
+                    int offStart = where;
+                    if (end != null) {
+                        offEnd = end.getOffset();
+                        offStart = pos.getOffset();
+                    } else {
+                        offStart = where + 1;
+                        offEnd = where + 2;
+                        doc.insertString(where, "\n \n", null); // NOI18N
+                    }
+                    sect[0] = createSimpleSectionImpl(name, PositionBounds.create(offStart, offEnd, GuardedSectionsImpl.this));
                     sect[0].markGuarded(doc);
                 } catch (BadLocationException ex) {
                     blex[0] = ex;
