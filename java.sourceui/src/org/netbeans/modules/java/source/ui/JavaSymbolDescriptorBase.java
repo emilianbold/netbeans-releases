@@ -52,7 +52,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
@@ -69,7 +68,7 @@ import org.openide.util.Exceptions;
 abstract class JavaSymbolDescriptorBase extends SymbolDescriptor {
 
     private final ElementHandle<TypeElement> owner;
-    private final Project project;
+    private final ProjectInformation projectInformation;
     private final FileObject root;
     private final ClassIndexImpl ci;
     private volatile FileObject cachedFo;
@@ -77,14 +76,14 @@ abstract class JavaSymbolDescriptorBase extends SymbolDescriptor {
 
     JavaSymbolDescriptorBase(
         @NonNull final ElementHandle<TypeElement> owner,
-        @NullAllowed final Project project,
+        @NullAllowed final ProjectInformation projectInformation,
         @NonNull final FileObject root,
         @NonNull final ClassIndexImpl ci) {
         assert owner != null;
         assert root != null;
         assert ci != null;
         this.owner = owner;
-        this.project = project;
+        this.projectInformation = projectInformation;
         this.root = root;
         this.ci = ci;
     }
@@ -92,7 +91,7 @@ abstract class JavaSymbolDescriptorBase extends SymbolDescriptor {
     JavaSymbolDescriptorBase(
         @NonNull final JavaSymbolDescriptorBase other) {
         this.owner = other.owner;
-        this.project = other.project;
+        this.projectInformation = other.projectInformation;
         this.root = other.root;
         this.ci = other.ci;
         this.cachedFo = other.cachedFo;
@@ -158,19 +157,17 @@ abstract class JavaSymbolDescriptorBase extends SymbolDescriptor {
     @Override
     @NonNull
     public final String getProjectName() {
-        final ProjectInformation info = getProjectInfo();
-        return info == null ?
+        return projectInformation == null ?
             "" :    //NOI18N
-            info.getDisplayName();
+            projectInformation.getDisplayName();
     }
 
     @Override
     @CheckForNull
     public final Icon getProjectIcon() {
-        final ProjectInformation info = getProjectInfo();
-        return info == null ?
+        return projectInformation == null ?
             null :
-            info.getIcon();
+            projectInformation.getIcon();
     }
 
     @Override
@@ -187,12 +184,5 @@ abstract class JavaSymbolDescriptorBase extends SymbolDescriptor {
     @NonNull
     final ElementHandle<TypeElement> getOwner() {
         return owner;
-    }
-
-    @CheckForNull
-    private ProjectInformation getProjectInfo() {
-        return project == null ?
-            null :
-            project.getLookup().lookup(ProjectInformation.class);   //Intentionally does not use ProjectUtils.getInformation() it does project icon annotation which is expensive
     }
 }
