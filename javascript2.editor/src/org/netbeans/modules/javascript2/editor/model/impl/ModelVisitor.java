@@ -97,6 +97,7 @@ import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.JsWith;
 import org.netbeans.modules.javascript2.editor.model.Model;
+import org.netbeans.modules.javascript2.editor.model.ModelFactory;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
@@ -504,7 +505,21 @@ public class ModelVisitor extends PathNodeVisitor {
 
     @Override
     public boolean enterClassNode(ClassNode node) {
-        return super.enterClassNode(node); //To change body of generated methods, choose Tools | Templates.
+        System.out.println("Classname: " + node.getIdent());
+        IdentNode cnIdent = node.getIdent();
+        Node lastNode = getPreviousFromPath(1);
+        VarNode varNode = (lastNode instanceof VarNode) ? (VarNode)lastNode : null;
+        JsObject parent = modelBuilder.getCurrentObject();
+        if (varNode != null  && cnIdent != null && varNode.getName().getName().equals(cnIdent.getName())) {
+            // case1: var name = class name {}
+            // case2: class name {}
+            // we create just one object
+            Identifier name = ModelElementFactory.create(parserResult, cnIdent);
+            JsObjectImpl classObject = new JsObjectImpl(parent, name, new OffsetRange(node.getStart(), node.getFinish()), true, parent.getMimeType(), parent.getSourceLabel());
+            parent.addProperty(name.getName(), classObject);
+            classObject.setJsKind(JsElement.Kind.CLASS);
+        }
+        return super.enterClassNode(node); 
     }
     
     
@@ -1596,7 +1611,8 @@ public class ModelVisitor extends PathNodeVisitor {
             }
         }
          if (!(init instanceof ObjectNode || rNode != null
-                 || init instanceof LiteralNode.ArrayLiteralNode)) {
+                 || init instanceof LiteralNode.ArrayLiteralNode
+                 || init instanceof ClassNode)) {
             JsObject parent = modelBuilder.getCurrentObject();
             parent = canBeSingletonPattern(1) ? resolveThis(parent) : parent;
             if (parent instanceof CatchBlockImpl) {
