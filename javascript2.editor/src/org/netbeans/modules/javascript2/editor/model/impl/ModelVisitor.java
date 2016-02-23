@@ -1869,7 +1869,7 @@ public class ModelVisitor extends PathNodeVisitor {
         modelBuilder.setCurrentObject(withObject);
         withNode.getBody().accept(this);
         modelBuilder.reset();
-        return true;
+        return false;
     }
 
 //--------------------------------End of visit methods--------------------------------------
