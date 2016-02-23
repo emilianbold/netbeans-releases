@@ -510,16 +510,31 @@ public class ModelVisitor extends PathNodeVisitor {
         VarNode varNode = (lastNode instanceof VarNode) ? (VarNode)lastNode : null;
         JsObject parent = modelBuilder.getCurrentObject();
         JsObjectImpl classObject = null;
+        Identifier className = null;
+        Identifier refName = null;
         if ((varNode != null  && cnIdent != null && varNode.getName().getName().equals(cnIdent.getName()))
-            // case1: var Polygon = class Polygone {}
+            // case1: var Polygon = class Polygon {}
             // case2: class Polygon {}
                 || (varNode != null && cnIdent == null) ) {
             // case 3: var Polygon = class{}
             // we create just one object
-            Identifier name = ModelElementFactory.create(parserResult, varNode.getName());
-            classObject = new JsObjectImpl(parent, name, new OffsetRange(node.getStart(), node.getFinish()), true, parent.getMimeType(), parent.getSourceLabel());
-            parent.addProperty(name.getName(), classObject);
+            className = ModelElementFactory.create(parserResult, varNode.getName());
+        } else if (varNode != null && cnIdent != null && !varNode.getName().getName().equals(cnIdent.getName())) {
+            // case 4: var Polygon = class PolygonOther{}
+            // The PolygonOther is available just for the inside the class. 
+            className = ModelElementFactory.create(parserResult, varNode.getName());
+            refName = ModelElementFactory.create(parserResult, cnIdent);
+        }
+        
+        if (className != null) {
+            classObject = new JsObjectImpl(parent, className, new OffsetRange(node.getStart(), node.getFinish()), true, parent.getMimeType(), parent.getSourceLabel());
+            parent.addProperty(className.getName(), classObject);
             classObject.setJsKind(JsElement.Kind.CLASS);
+            if (refName != null) {
+                JsObjectReference reference = new JsObjectReference(classObject, refName, classObject, true, EnumSet.of(Modifier.PRIVATE));
+                classObject.addProperty(refName.getName(), reference);
+                reference.addOccurrence(refName.getOffsetRange());
+            }
         }
         if (classObject != null) {
             modelBuilder.setCurrentObject(classObject);
