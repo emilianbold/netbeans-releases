@@ -834,6 +834,16 @@ public class WLDeploymentManager implements DeploymentManager2 {
     }
 
     public Set<String> getDeployTargets() {
+        if (!isRemote()) {
+            // FIXME for now we allow this functionality on
+            // remote machines only as
+            // 1) directory deployment can deploy only to one target
+            // 2) it is unclear what should happen when is
+            // directory deployed and later going to be redeployed
+            // to multiple targets
+            return Collections.emptySet();
+        }
+
         String value = getInstanceProperties().getProperty(WLPluginProperties.DEPLOY_TARGETS);
         if (value == null || value.isEmpty()) {
             return Collections.emptySet();

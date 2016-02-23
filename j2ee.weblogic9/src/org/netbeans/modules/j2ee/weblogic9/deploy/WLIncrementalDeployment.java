@@ -68,7 +68,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment2;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.weblogic9.WLConnectionSupport;
-import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -236,9 +235,9 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
             return progress;
         }
 
-//        return dm.redeploy(module);
-        CommandBasedDeployer deployer = new CommandBasedDeployer(dm);
-        return deployer.directoryRedeploy(module, dm.getDeployTargets());
+        return dm.redeploy(module);
+//        CommandBasedDeployer deployer = new CommandBasedDeployer(dm);
+//        return deployer.directoryRedeploy(module, dm.getDeployTargets());
     }
 
     @Override
