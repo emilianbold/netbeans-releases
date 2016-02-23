@@ -472,7 +472,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
                         return;
                     }
 
-                    deployer.deploy(artifacts, listener).get();
+                    deployer.deploy(artifacts, selected, listener).get();
 
                     progress.fireProgressEvent(null, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
@@ -593,7 +593,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
                         return;
                     }
 
-                    deployer.deploy(artifacts, listener).get();
+                    deployer.deploy(artifacts, selected, listener).get();
 
                     progress.fireProgressEvent(null, new WLDeploymentStatus(
                             ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
@@ -844,9 +844,9 @@ public final class CommandBasedDeployer extends AbstractDeployer {
                         return;
                     }
                     if (file != null) {
-                        deployer.redeploy(targetModuleID[0].getModuleID(), file, listener).get();
+                        deployer.redeploy(targetModuleID[0].getModuleID(), file, selected, listener).get();
                     } else {
-                        deployer.redeploy(new ArrayList<String>(names.keySet()), listener).get();
+                        deployer.redeploy(new ArrayList<String>(names.keySet()), selected, listener).get();
                     }
 
                     progress.fireProgressEvent(null, new WLDeploymentStatus(

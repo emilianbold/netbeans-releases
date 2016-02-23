@@ -254,12 +254,25 @@ public final class WebLogicDeployer {
     @NonNull
     public Future<Void> redeploy(@NonNull String name, @NonNull File file,
             @NullAllowed BatchDeployListener listener) {
-        return performRedeploy(Collections.singletonList(name), Collections.singletonList(file), listener);
+        return performRedeploy(Collections.singletonList(name), Collections.singletonList(file),
+                Collections.<DeploymentTarget>emptyList(), listener);
+    }
+    
+    @NonNull
+    public Future<Void> redeploy(@NonNull String name, @NonNull File file, @NonNull Collection<DeploymentTarget> targets,
+            @NullAllowed BatchDeployListener listener) {
+        return performRedeploy(Collections.singletonList(name), Collections.singletonList(file), targets, listener);
     }
 
     @NonNull
     public Future<Void> redeploy(@NonNull List<String> names, @NullAllowed BatchDeployListener listener) {
-        return performRedeploy(names, null, listener);
+        return performRedeploy(names, null, Collections.<DeploymentTarget>emptyList(), listener);
+    }
+    
+    @NonNull
+    public Future<Void> redeploy(@NonNull List<String> names, @NonNull Collection<DeploymentTarget> targets,
+            @NullAllowed BatchDeployListener listener) {
+        return performRedeploy(names, null, targets, listener);
     }
 
     @NonNull
@@ -555,7 +568,7 @@ public final class WebLogicDeployer {
     }
 
     private Future<Void> performRedeploy(@NonNull final List<String> names, @NullAllowed final List<File> files,
-            @NullAllowed final BatchDeployListener listener) {
+            @NonNull final Collection<DeploymentTarget> targets, @NullAllowed final BatchDeployListener listener) {
 
         assert files == null || files.size() == names.size();
 
@@ -580,8 +593,19 @@ public final class WebLogicDeployer {
                     if (files != null) {
                         parameters.add("-source"); // NOI18N
                         parameters.add(files.get(i++).getAbsolutePath());
-
                     }
+                    if (!targets.isEmpty()) {
+                        StringBuilder sb = new StringBuilder();
+                        for (DeploymentTarget t : targets) {
+                            if (sb.length() > 0) {
+                                sb.append(','); // NOI18N
+                            }
+                            sb.append(t.getName());
+                        }
+                        parameters.add("-targets"); // NOI18N
+                        parameters.add(sb.toString());
+                    }
+
                     BaseExecutionService service = createService("-redeploy", // NOI18N
                             lineProcessor, parameters.toArray(new String[parameters.size()]));
                     if (listener != null) {
