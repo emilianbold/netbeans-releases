@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.j2ee.deployment.impl;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.DeploymentManager;
@@ -55,11 +57,13 @@ import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.WebTargetModuleID;
+import org.openide.util.Exceptions;
 
 /**
  * @author  nn136682
  */
-public class TargetModule implements TargetModuleID, java.io.Serializable {
+public class TargetModule implements WebTargetModuleID, java.io.Serializable {
 
     private static final long serialVersionUID = 69446832504L;
 
@@ -206,6 +210,22 @@ public class TargetModule implements TargetModuleID, java.io.Serializable {
     }
     public String getWebURL() {
         return delegate().getWebURL();
+    }
+    @Override
+    public URL resolveWebURL() {
+        TargetModuleID del = delegate();
+        if (del instanceof WebTargetModuleID) {
+            return ((WebTargetModuleID) del).resolveWebURL();
+        }
+        try {
+            String strUrl = getWebURL();
+            if (strUrl == null) {
+                return null;
+            }
+            return new URL(getWebURL());
+        } catch (MalformedURLException ex) {
+            return null;
+        }
     }
     public String toString() {
         if (delegate == null)
