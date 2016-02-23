@@ -252,6 +252,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                             removedModule = moduleName == null ?
                                     null :
                                     ElementHandleAccessor.getInstance().create(ElementKind.MODULE, moduleName);
+                            JavaIndex.setAttribute(context.getRootURI(), JavaParsingContext.ATTR_MODULE_NAME, null);
                         }
                     }
                     for (CompileTuple tuple : virtualSourceTuples) {
