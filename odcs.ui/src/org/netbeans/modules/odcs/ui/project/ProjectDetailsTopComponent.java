@@ -84,7 +84,6 @@ import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
-import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -98,9 +97,6 @@ autostore = false)
 iconBase = "org/netbeans/modules/odcs/ui/resources/odcs.png",
 persistenceType = TopComponent.PERSISTENCE_NEVER)
 @TopComponent.Registration(mode = "editor", openAtStartup = false)
-@Messages({
-    "CTL_ProjectDetailsAction=ProjectDetails",
-})
 public final class ProjectDetailsTopComponent extends TopComponent implements Expandable, PropertyChangeListener {
 
     private static Map<String, ProjectDetailsTopComponent> projectToTC = new HashMap<String, ProjectDetailsTopComponent>();
