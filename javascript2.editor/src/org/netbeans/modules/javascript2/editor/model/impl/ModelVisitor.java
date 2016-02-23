@@ -97,7 +97,6 @@ import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.JsWith;
 import org.netbeans.modules.javascript2.editor.model.Model;
-import org.netbeans.modules.javascript2.editor.model.ModelFactory;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
@@ -2385,14 +2384,6 @@ public class ModelVisitor extends PathNodeVisitor {
                 ((JsObjectImpl)jsObject).addOccurrence(offsetRange);
             }
         }
-    }
-
-    private Node getPreviousFromPath(int back) {
-        int size = getPath().size();
-        if (size >= back) {
-            return getPath().get(size - back);
-        }
-        return null;
     }
 
     private JsObject processLhs(Identifier name, JsObject parent, boolean lastOnLeft) {

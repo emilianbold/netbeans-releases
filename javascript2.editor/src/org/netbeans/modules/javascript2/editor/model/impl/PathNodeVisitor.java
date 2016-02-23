@@ -110,6 +110,14 @@ public class PathNodeVisitor extends NodeVisitor {
         treePath.remove(treePath.size() - 1);
     }
 
+    public Node getPreviousFromPath(int back) {
+        int size = getPath().size();
+        if (size >= back) {
+            return getPath().get(size - back);
+        }
+        return null;
+    }
+    
     @Override
     public Node leaveClassNode(ClassNode classNode) {
         removeFromPathTheLast();

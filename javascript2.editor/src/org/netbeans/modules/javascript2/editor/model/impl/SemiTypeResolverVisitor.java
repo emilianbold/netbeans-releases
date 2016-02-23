@@ -272,18 +272,27 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
     @Override
     public boolean enterLiteralNode(LiteralNode lNode) {
         Object value = lNode.getObject();
+        TypeUsage type = null;
         if (value instanceof Boolean) {
-            add(BOOLEAN_TYPE);
+            type = BOOLEAN_TYPE;
         } else if (value instanceof String) {
-            add(STRING_TYPE);
+            type = STRING_TYPE;
         } else if (value instanceof Integer
                 || value instanceof Float
                 || value instanceof Double) {
-            add(NUMBER_TYPE);
+            type = NUMBER_TYPE;
         } else if (lNode instanceof LiteralNode.ArrayLiteralNode) {
-            add(ARRAY_TYPE);
+            type = ARRAY_TYPE;
         } else if (value instanceof Lexer.RegexToken) {
-            add(REGEXP_TYPE);
+            type = REGEXP_TYPE;
+        }
+        
+        if (type != null) {
+            if (getPath().size() > 1 && getPreviousFromPath(2) instanceof CallNode) {
+                exp.add(type.getType());
+            } else {
+                add(type);
+            }
         }
         return false;
     }
