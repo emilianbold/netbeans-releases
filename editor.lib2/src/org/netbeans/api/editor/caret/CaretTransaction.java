@@ -43,6 +43,7 @@ package org.netbeans.api.editor.caret;
 
 import org.netbeans.spi.editor.caret.CaretMoveHandler;
 import java.awt.Point;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -452,7 +453,7 @@ final class CaretTransaction {
         if (fullResort || true) { // Force full resort
             replaceSortedItems = replaceItems.copy();
             if (newSize > 1) {
-                
+                Collections.sort(replaceSortedItems);
             }
         } else { // Partial resort TODO
             
