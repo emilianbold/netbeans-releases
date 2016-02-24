@@ -57,7 +57,7 @@ public class MuxedStreamResult implements StreamResult {
 
     private static final Logger LOGGER = Logger.getLogger(MuxedStreamResult.class.getName());
 
-    private final Socket s;
+    private final Endpoint s;
 
     private final Charset charset;
 
@@ -71,7 +71,7 @@ public class MuxedStreamResult implements StreamResult {
 
     private StreamItem last = StreamItem.EMPTY;
 
-    public MuxedStreamResult(Socket s, Charset charset, InputStream is) throws IOException {
+    public MuxedStreamResult(Endpoint s, Charset charset, InputStream is) throws IOException {
         this.s = s;
         this.charset = charset;
         this.outputStream = s.getOutputStream();

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.docker.ui.node;
 
+import java.io.Closeable;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,18 +59,18 @@ import org.openide.util.WeakListeners;
  *
  * @author Petr Hejl
  */
-public class EnhancedDockerContainer implements Refreshable {
+public class StatefulDockerContainer implements Refreshable, Closeable {
 
-    private static final Logger LOGGER = Logger.getLogger(EnhancedDockerContainer.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(StatefulDockerContainer.class.getName());
 
-    private static final RequestProcessor RP = new RequestProcessor(EnhancedDockerContainer.class);
+    private static final RequestProcessor RP = new RequestProcessor(StatefulDockerContainer.class);
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     private final DockerEvent.Listener listener = new DockerEvent.Listener() {
         @Override
         public void onEvent(DockerEvent event) {
-            if (event.getId().equals(EnhancedDockerContainer.this.container.getId())
+            if (event.getId().equals(StatefulDockerContainer.this.container.getId())
                     && event.getStatus() != DockerEvent.Status.DESTROY && event.getStatus() != DockerEvent.Status.UNTAG) {
                 DockerContainer.Status fresh = getStatus(event);
                 if (fresh != null) {
@@ -81,15 +82,17 @@ public class EnhancedDockerContainer implements Refreshable {
         }
     };
 
+    private final DockerEvent.Listener weak;
+
     private final DockerContainer container;
 
     private DockerContainerDetail detail;
 
-    public EnhancedDockerContainer(DockerContainer container) {
+    public StatefulDockerContainer(DockerContainer container) {
         this.container = container;
         this.detail = new DockerContainerDetail(container.getName(), container.getStatus(), false, false);
-        container.getInstance().addContainerListener(
-                WeakListeners.create(DockerEvent.Listener.class, listener, container.getInstance()));
+        this.weak = WeakListeners.create(DockerEvent.Listener.class, listener, container.getInstance());
+        container.getInstance().addContainerListener(weak);
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -126,6 +129,11 @@ public class EnhancedDockerContainer implements Refreshable {
     }
 
     @Override
+    public void close() {
+        container.getInstance().removeContainerListener(weak);
+    }
+
+    @Override
     public int hashCode() {
         int hash = 3;
         hash = 71 * hash + Objects.hashCode(this.container);
@@ -143,7 +151,7 @@ public class EnhancedDockerContainer implements Refreshable {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final EnhancedDockerContainer other = (EnhancedDockerContainer) obj;
+        final StatefulDockerContainer other = (StatefulDockerContainer) obj;
         if (!Objects.equals(this.container, other.container)) {
             return false;
         }
