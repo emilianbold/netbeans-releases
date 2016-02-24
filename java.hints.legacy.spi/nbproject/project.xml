@@ -152,6 +152,7 @@ Contributor(s):
                 <friend>org.netbeans.modules.web.beans</friend>
                 <package>org.netbeans.modules.java.hints.spi</package>
                 <package>org.netbeans.modules.java.hints.spi.support</package>
+                <package>org.netbeans.modules.jshell.support</package>
             </friend-packages>
         </data>
     </configuration>
