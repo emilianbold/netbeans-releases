@@ -1455,23 +1455,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         StartEntry startEntry = new StartEntry(getFileSystem(), FileContainer.getFileKey(absPath, true).toString(), getUIDKey());
         return APTHandlersSupport.createEmptyPreprocHandler(startEntry);
     }
-    
-    /**
-     * Remove me!
-     * @param list
-     * @return 
-     */
-    private static  List<FSPath> DEPRECATED_COMVERTOR(List<IncludePath> list) {
-        List<FSPath> res = new ArrayList<>(list.size());
-        for (IncludePath p : list) {
-            if (p.isFramework()) {
-                res.add(new FSPath(p.getFileSystem(), p.getFSPath().getPath()+IncludePath.FRAMEWORK));
-            } else {
-                res.add(p.getFSPath());
-            }
-        }
-        return res;
-    }
 
     protected final PreprocHandler createPreprocHandler(NativeFileItem nativeFile) {
         assert (nativeFile != null);
@@ -1489,14 +1472,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (!isSourceFile(nativeFile)) {
             nativeFile = DefaultFileItem.toDefault(nativeFile);
         }
-        List<FSPath> origUserIncludePaths = DEPRECATED_COMVERTOR(nativeFile.getUserIncludePaths());
+        List<IncludePath> origUserIncludePaths = nativeFile.getUserIncludePaths();
         if (TraceFlags.DUMP_NATIVE_FILE_ITEM_USER_INCLUDE_PATHS) {
             System.err.println("Item "+nativeFile.getAbsolutePath());
-            for(FSPath path : origUserIncludePaths) {
-                System.err.println("\tPath "+path.getPath());
+            for(IncludePath path : origUserIncludePaths) {
+                System.err.println("\tPath "+path.getFSPath().getPath() + (path.isFramework() ? " (framework directory)" : ""));
             }
         }
-        List<FSPath> origSysIncludePaths = DEPRECATED_COMVERTOR(nativeFile.getSystemIncludePaths());
+        List<IncludePath> origSysIncludePaths = nativeFile.getSystemIncludePaths();
         List<IncludeDirEntry> userIncludePaths = userPathStorage.get(origUserIncludePaths.toString(), origUserIncludePaths);
         List<IncludeDirEntry> sysIncludePaths = sysAPTData.getIncludes(origSysIncludePaths.toString(), origSysIncludePaths);
         List<FSPath> includeFileEntries = new ArrayList<>();

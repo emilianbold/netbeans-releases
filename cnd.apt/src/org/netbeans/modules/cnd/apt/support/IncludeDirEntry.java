@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.apt.impl.support.SupportAPIAccessor;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileObject;
@@ -95,7 +96,9 @@ public final class IncludeDirEntry {
         this.hashCode = hashCode;
     }
 
-    public static IncludeDirEntry get(FileSystem fs, String dir) {
+    public static IncludeDirEntry get(FSPath fsPath, boolean framework) {
+        FileSystem fs = fsPath.getFileSystem();
+        String dir = fsPath.getPath();
         CndUtils.assertAbsolutePathInConsole(dir);
         CharSequence key = FilePathCache.getManager().getString(CndFileSystemProvider.toUrl(fs, dir));
         Map<CharSequence, IncludeDirEntry> delegate = storage.getDelegate(key);
@@ -106,10 +109,7 @@ public final class IncludeDirEntry {
         if (out == null) {
             // #196267 -  slow parsing in Full Remote
             // do expensive work out of sync block
-            boolean framework = dir.endsWith("/{framework}"); // NOI18N
-            if (framework) {
-                dir = dir.substring(0, dir.length() - "/{framework}".length()); // NOI18N
-            }
+
             // FIXME XXX:FullRemote
             if (dir.contains(File.separatorChar + "remote-files" + File.separatorChar)) { //XXX:fullRemote //NOI18N
                 fs = CndFileUtils.getLocalFileSystem();
