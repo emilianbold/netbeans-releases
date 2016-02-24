@@ -136,7 +136,7 @@ public class WLDatasourceManager implements DatasourceManager {
         CommandBasedDeployer deployer = new CommandBasedDeployer(manager);
         ProgressObject po = deployer.deployDatasource(toDeploy.values(), manager.getDeployTargets());
         if (!ProgressObjectSupport.waitFor(po) || po.getDeploymentStatus().isFailed()) {
-            String msg = NbBundle.getMessage(WLDatasourceManager.class, "MSG_FailedToDeployDatasource");
+            String msg = NbBundle.getMessage(WLDatasourceManager.class, "MSG_FailedToDeployDatasource", po.getDeploymentStatus().getMessage());
             throw new ConfigurationException(msg);
         }
     }
