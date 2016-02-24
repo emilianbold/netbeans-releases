@@ -124,7 +124,7 @@ public class WLMessageDestinationDeployment implements MessageDestinationDeploym
         CommandBasedDeployer deployer = new CommandBasedDeployer(manager);
         ProgressObject po = deployer.deployMessageDestinations(toDeploy.values(), manager.getDeployTargets());
         if (!ProgressObjectSupport.waitFor(po) || po.getDeploymentStatus().isFailed()) {
-            String msg = NbBundle.getMessage(WLDatasourceManager.class, "MSG_FailedToDeployJMS");
+            String msg = NbBundle.getMessage(WLDatasourceManager.class, "MSG_FailedToDeployJMS", po.getDeploymentStatus().getMessage());
             throw new ConfigurationException(msg);
         }
     }

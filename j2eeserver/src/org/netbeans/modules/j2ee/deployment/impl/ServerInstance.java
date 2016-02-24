@@ -745,6 +745,9 @@ public class ServerInstance implements Node.Cookie, Comparable {
      * with data source(s) already deployed on the server
      */
     public void deployDatasources(Set<Datasource> datasources) throws ConfigurationException, DatasourceAlreadyExistsException {
+        if (datasources.isEmpty()) {
+            return;
+        }
         
         DatasourceManager dsMgr = getDatasourceManager();
 
@@ -803,6 +806,10 @@ public class ServerInstance implements Node.Cookie, Comparable {
     }
 
     public void deployLibraries(Set<ServerLibraryDependency> libraries) throws ConfigurationException {
+        if (libraries.isEmpty()) {
+            return;
+        }
+
         ServerLibraryManager libraryManager = getServerLibraryManager();
 
         if (libraryManager != null) {
@@ -864,8 +871,10 @@ public class ServerInstance implements Node.Cookie, Comparable {
      * @throws ConfigurationException if there is some problem with message destination configuration
      */
     public void deployMessageDestinations(Set<MessageDestination> destinations) throws ConfigurationException {
-    
         Parameters.notNull("destinations", destinations);
+        if (destinations.isEmpty()) {
+            return;
+        }
         
         MessageDestinationDeployment destDepl = getMessageDestinationDeploymentConnected();
         if (destDepl != null) {

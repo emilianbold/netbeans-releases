@@ -218,7 +218,7 @@ public class WLServerLibraryManager implements ServerLibraryManager {
         CommandBasedDeployer deployer = new CommandBasedDeployer(manager);
         ProgressObject po = deployer.deployLibraries(libraries, manager.getDeployTargets());
         if (!ProgressObjectSupport.waitFor(po) || po.getDeploymentStatus().isFailed()) {
-            String msg = NbBundle.getMessage(WLDatasourceManager.class, "MSG_FailedToDeployLibrary");
+            String msg = NbBundle.getMessage(WLDatasourceManager.class, "MSG_FailedToDeployLibrary", po.getDeploymentStatus().getMessage());
             throw new ConfigurationException(msg);
         }
     }
