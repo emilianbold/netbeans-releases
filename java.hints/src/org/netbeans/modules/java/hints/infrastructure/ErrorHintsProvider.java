@@ -63,7 +63,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.PackageElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.text.BadLocationException;
@@ -72,6 +71,7 @@ import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
 import javax.swing.text.StyledDocument;
 import javax.tools.Diagnostic;
+import org.netbeans.api.editor.document.EditorDocumentUtils;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaParserResultTask;
@@ -95,11 +95,11 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
-import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.LazyFixList;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.ErrorManager;
 import org.openide.cookies.LineCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
@@ -141,6 +141,11 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
     ErrorDescription processRule(CompilationInfo info, Integer forPosition, Diagnostic d, String code, Map<String, List<ErrorRule>> code2Rules,
             Map<Class, Data> data, Document doc, boolean processDefault) throws IOException {
         List<ErrorRule> rules = code2Rules.get(code);
+        List<ErrorRule> allRules = rules == null ? new ArrayList<ErrorRule>() : new ArrayList<>(rules);
+        List<ErrorRule> catchAllRules = code2Rules.get("*");
+        if (catchAllRules != null) {
+            allRules.addAll(catchAllRules);
+        }
 
         if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
             ERR.log(ErrorManager.INFORMATIONAL, "code= " + code);
@@ -150,29 +155,31 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
         LazyFixList ehm;
         String desc = d.getMessage(null);
 
-        if (rules != null) {
-            int pos = (int) getPrefferedPosition(info, d);
-            TreePath path = info.getTreeUtilities().pathFor(pos + 1);
-            Data ruleData = new Data();
-            for (ErrorRule r : rules) {
-                if (!(r instanceof OverrideErrorMessage)) {
-                    continue;
-                }
-                OverrideErrorMessage rcm = (OverrideErrorMessage) r;
-                String msg = rcm.createMessage(info, d.getCode(), pos, path, ruleData);
-                if (msg != null) {
-                    if (msg.isEmpty()) {
-                        // ignore the error
-                        return null;
-                    }
-                    desc = msg;
-                    if (ruleData.getData() != null) {
-                        data.put(rcm.getClass(), ruleData);
-                    }
-                    break;
-                }
+        int pos = (int) getPrefferedPosition(info, d);
+        TreePath path = info.getTreeUtilities().pathFor(pos + 1);
+        Data ruleData = new Data();
+        
+        int messageRuleCount = 0;
+        for (ErrorRule r : allRules) {
+            if (!(r instanceof OverrideErrorMessage)) {
+                continue;
             }
-            ehm = new CreatorBasedLazyFixList(info.getFileObject(), code, pos, rules, data);
+            OverrideErrorMessage rcm = (OverrideErrorMessage) r;
+            String msg = rcm.createMessage(info, d, pos, path, ruleData);
+            if (msg != null) {
+                if (msg.isEmpty()) {
+                    // ignore the error
+                    return null;
+                }
+                desc = msg;
+                if (ruleData.getData() != null) {
+                    data.put(rcm.getClass(), ruleData);
+                }
+                break;
+            }
+        }
+        if (messageRuleCount < allRules.size()) {
+            ehm = new CreatorBasedLazyFixList(info.getFileObject(), code, pos, allRules, data);
         } else if (processDefault) {
             ehm = ErrorDescriptionFactory.lazyListForFixes(Collections.<Fix>emptyList());
         } else {
@@ -188,7 +195,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
             return null;
         }
 
-        if (range[0] == null || range[1] == null) {
+        if (range == null || range[0] == null || range[1] == null) {
             return null;
         }
 
@@ -485,15 +492,33 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
         }
         
         private void findText() {
-            LineCookie lc = dobj.getCookie(LineCookie.class);
-            int lineNumber = NbDocument.findLineNumber(sdoc, info.getSnapshot().getOriginalOffset(startOffset));
+            final int lineNumber = NbDocument.findLineNumber(sdoc, info.getSnapshot().getOriginalOffset(startOffset));
             lineOffset = NbDocument.findLineOffset(sdoc, lineNumber);
 
             if (rangePrepared) {
                 return;
             }
-            Line line = lc.getLineSet().getCurrent(lineNumber);
-            text = line.getText();
+            if (dobj == null) {
+                sdoc.render(new Runnable() {
+                    public void run() {
+                        javax.swing.text.Element root = NbDocument.findLineRootElement(sdoc);
+                        if (root.getElementCount() <= lineNumber) {
+                            text = null;
+                        } else{
+                            try {
+                                javax.swing.text.Element line = root.getElement(lineNumber);
+                                text = sdoc.getText(line.getStartOffset(), line.getEndOffset() - line.getStartOffset());
+                            } catch (BadLocationException ex) {
+                                text = null;
+                            }
+                        }
+                    }
+                });
+            } else {
+                LineCookie lc = dobj.getCookie(LineCookie.class);
+                Line line = lc.getLineSet().getCurrent(lineNumber);
+                text = line.getText();
+            }
 
             if (text == null) {
                 //#116560, (according to the javadoc, means the document is closed):
@@ -561,9 +586,13 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
     
     private Position[] getLine(CompilationInfo info, Diagnostic d, final Document doc, int startOffset, int endOffset) throws IOException {
         StyledDocument sdoc = (StyledDocument) doc;
-        DataObject dObj = (DataObject)doc.getProperty(doc.StreamDescriptionProperty );
-        if (dObj == null)
+        FileObject f = EditorDocumentUtils.getFileObject(doc);
+        if (f == null)
             return new Position[] {null, null};
+        
+        Object rawProp = doc.getProperty(doc.StreamDescriptionProperty );
+        DataObject dObj = rawProp instanceof DataObject ? (DataObject)rawProp : null;
+        
         int originalStartOffset = info.getSnapshot().getOriginalOffset(startOffset);
         
         boolean rangePrepared = false;
@@ -625,6 +654,13 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
                     }
                 }
             }
+        }
+        
+        // check that the start offset and end offset map into the document
+        if (!rangePrepared && (info.getSnapshot().getOriginalOffset(startOffset) == -1 ||
+            info.getSnapshot().getOriginalOffset(endOffset) == -1)) {
+            // ignore
+            return null;
         }
         
         PosExtractor ex = new PosExtractor(info, sdoc, startOffset, endOffset, dObj, rangePrepared);
@@ -718,8 +754,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
 
             if (errors == null) //meaning: cancelled
                 return ;
-
-            HintsController.setErrors(doc, ErrorHintsProvider.class.getName(), errors);
+            EmbeddedHintsCollector.setAnnotations(result.getSnapshot(), errors);
 
             ErrorPositionRefresherHelper.setVersion(doc, errors);
             
@@ -776,7 +811,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
             if (el == null || el.asType().getKind() == TypeKind.ERROR) {
                 return d.getStartPosition() - 1;
             }
-            
+            /*
             if (el.asType().getKind() == TypeKind.PACKAGE) {
                 //check if the package does actually exist:
                 String s = ((PackageElement) el).getQualifiedName().toString();
@@ -785,6 +820,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
                     return d.getStartPosition() - 1;
                 }
             }
+                    */
             
             return d.getStartPosition();
         }

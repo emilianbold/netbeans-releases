@@ -42,6 +42,7 @@
 package org.netbeans.modules.java.hints.errors;
 
 import com.sun.source.util.TreePath;
+import javax.tools.Diagnostic;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 
@@ -66,5 +67,5 @@ public interface OverrideErrorMessage<T> extends ErrorRule<T> {
      * @param treePath path to the error, if available
      * @return an override message to be displayed instead of the standard one or {@code null} to use the standard one.
      */
-    public String createMessage(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<T> data);
+    public String createMessage(CompilationInfo info, Diagnostic d, int offset, TreePath treePath, Data<T> data);
 }

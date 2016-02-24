@@ -116,7 +116,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Boolean>, Ov
         "ERR_CannotOverrideAbstractMethods=Inherited abstract methods are not accessible and could not be implemented"
     })
     @Override
-    public String createMessage(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Boolean> data) {
+    public String createMessage(CompilationInfo info, Diagnostic d, int offset, TreePath treePath, Data<Boolean> data) {
         TreePath path = deepTreePath(info, offset);
         Element e = info.getTrees().getElement(path);
         if (e == null || !e.getKind().isClass()) {
