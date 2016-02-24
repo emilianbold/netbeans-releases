@@ -41,6 +41,30 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
+import com.oracle.truffle.js.parser.nashorn.internal.ir.AccessNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.BinaryNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.CallNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.FunctionNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.IdentNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.IndexNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.LexicalContext;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.LiteralNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.Node;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.ObjectNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.TernaryNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.UnaryNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.visitor.NodeVisitor;
+import com.oracle.truffle.js.parser.nashorn.internal.parser.Lexer;
+import com.oracle.truffle.js.parser.nashorn.internal.parser.Token;
+import com.oracle.truffle.js.parser.nashorn.internal.parser.TokenType;
+import static com.oracle.truffle.js.parser.nashorn.internal.parser.TokenType.ADD;
+import static com.oracle.truffle.js.parser.nashorn.internal.parser.TokenType.DECPOSTFIX;
+import static com.oracle.truffle.js.parser.nashorn.internal.parser.TokenType.DECPREFIX;
+import static com.oracle.truffle.js.parser.nashorn.internal.parser.TokenType.INCPOSTFIX;
+import static com.oracle.truffle.js.parser.nashorn.internal.parser.TokenType.INCPREFIX;
+import static com.oracle.truffle.js.parser.nashorn.internal.parser.TokenType.NEW;
+import static com.oracle.truffle.js.parser.nashorn.internal.parser.TokenType.NOT;
+import static com.oracle.truffle.js.parser.nashorn.internal.parser.TokenType.SUB;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,21 +73,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jdk.nashorn.internal.ir.AccessNode;
-import jdk.nashorn.internal.ir.BinaryNode;
-import jdk.nashorn.internal.ir.CallNode;
-import jdk.nashorn.internal.ir.FunctionNode;
-import jdk.nashorn.internal.ir.IdentNode;
-import jdk.nashorn.internal.ir.IndexNode;
-import jdk.nashorn.internal.ir.LiteralNode;
-import jdk.nashorn.internal.ir.Node;
-import jdk.nashorn.internal.ir.ObjectNode;
-import jdk.nashorn.internal.ir.ReferenceNode;
-import jdk.nashorn.internal.ir.TernaryNode;
-import jdk.nashorn.internal.ir.UnaryNode;
-import jdk.nashorn.internal.ir.visitor.NodeVisitor;
-import jdk.nashorn.internal.parser.Lexer;
-import jdk.nashorn.internal.parser.TokenType;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 
@@ -100,12 +109,14 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
     private int typeOffset;
 
     private final FinderOffsetTypeVisitor offsetVisitor;
+    private ModelBuilder builder;
     
     public SemiTypeResolverVisitor() {
         offsetVisitor = new FinderOffsetTypeVisitor();
     }
 
-    public Set<TypeUsage> getSemiTypes(Node expression) {
+    public Set<TypeUsage> getSemiTypes(Node expression, ModelBuilder builder) {
+        this.builder = builder;
         exp = new ArrayList<String>();
         result = new HashMap<String, TypeUsage>();
         reset();
@@ -150,40 +161,48 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
     }
 
     @Override
-    public Node leave(AccessNode accessNode) {
-        exp.add(exp.size() - 1, ST_PRO);
-        return super.leave(accessNode);
+    public Node leaveAccessNode(AccessNode accessNode) {
+        String type = exp.get(exp.size() - 1);
+        if (!ST_THIS.equals(type)) {
+            exp.add(exp.size() - 1, ST_PRO);
+        }
+        exp.add(ST_PRO);
+        exp.add(accessNode.getProperty());
+        return super.leaveAccessNode(accessNode);
     }
 
     @Override
-    public Node enter(CallNode callNode) {
+    public boolean enterCallNode(CallNode callNode) {
         addToPath(callNode);
-        callNode.getFunction().accept(this);
+        if (!(callNode.getFunction() instanceof FunctionNode)) {
+            callNode.getFunction().accept(this);
+        }
         if (exp.size() == 2 && ST_NEW.equals(exp.get(0))) {
-            return null;
+            return false;
         }
         if (callNode.getFunction() instanceof AccessNode) {
             int size = exp.size();
             if (size > 1 && ST_PRO.equals(exp.get(size - 2))) {
                 exp.remove(size - 2);
             }
-        } else if (callNode.getFunction() instanceof ReferenceNode) {
-            FunctionNode function = (FunctionNode) ((ReferenceNode) callNode.getFunction()).getReference();
-            String name = function.isAnonymous() ? function.getName() : function.getIdent().getName();
+        }
+        else if (callNode.getFunction() instanceof FunctionNode) {
+            FunctionNode function = (FunctionNode) callNode.getFunction();
+            String name = builder.getFunctionName(function);
 //            String name = function.getIdent().getName();
             add(new TypeUsageImpl(ST_CALL + name, function.getStart(), false));
-            return null;
+            return false;
         }
         if (exp.isEmpty()) {
             exp.add(ST_CALL);
         } else {
             exp.add(exp.size() - 1, ST_CALL);
         }
-        return null;
+        return false;
     }
 
     @Override
-    public Node leave(CallNode callNode) {
+    public Node leaveCallNode(CallNode callNode) {
         if (callNode.getFunction() instanceof AccessNode) {
             int size = exp.size();
             if (size > 1 && ST_PRO.equals(exp.get(size - 2))) {
@@ -191,21 +210,21 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
             }
         }
         exp.add(exp.size() - 1, ST_CALL);
-        return super.leave(callNode);
+        return super.leaveCallNode(callNode);
     }
 
     @Override
-    public Node enter(UnaryNode unaryNode) {
-        switch (jdk.nashorn.internal.parser.Token.descType(unaryNode.getToken())) {
+    public boolean enterUnaryNode(UnaryNode unaryNode) {
+        switch (Token.descType(unaryNode.getToken())) {
             case NEW:
                 exp.add(ST_NEW);
                 SimpleNameResolver snr = new SimpleNameResolver();
-                exp.add(snr.getFQN(unaryNode.rhs()));
+                exp.add(snr.getFQN(unaryNode.getExpression(), builder));
                 typeOffset = snr.getTypeOffset();
-                return null;
+                return false;
             case NOT:
                 add(BOOLEAN_TYPE);
-                return null;
+                return false;
             case ADD:
             case SUB:
             case DECPREFIX:
@@ -213,32 +232,32 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
             case INCPREFIX:
             case INCPOSTFIX:
                 add(NUMBER_TYPE);
-                return null;
+                return false;
             default:
-                return super.enter(unaryNode);
+                return super.enterUnaryNode(unaryNode);
         }
     }
 
     
-//    @Override
-//    public Node leave(UnaryNode uNode) {
-//        if (jdk.nashorn.internal.parser.Token.descType(uNode.getToken()) == TokenType.NEW) {
-//            int size = exp.size();
-//            if (size > 1 && ST_CALL.equals(exp.get(size - 2))) {
-//                exp.remove(size - 2);
-//            }
-//            typeOffset = uNode.rhs().getStart();
-//            if (exp.size() > 0) {
-//                exp.add(exp.size() - 1, ST_NEW);
-//            } else {
-//                exp.add(ST_NEW);
-//            }
-//        }
-//        return super.leave(uNode);
-//    }
+    @Override
+    public Node leaveUnaryNode(UnaryNode uNode) {
+        if (Token.descType(uNode.getToken()) == TokenType.NEW) {
+            int size = exp.size();
+            if (size > 1 && ST_CALL.equals(exp.get(size - 2))) {
+                exp.remove(size - 2);
+            }
+            typeOffset = uNode.getExpression().getStart();
+            if (exp.size() > 0) {
+                exp.add(exp.size() - 1, ST_NEW);
+            } else {
+                exp.add(ST_NEW);
+            }
+        }
+        return super.leaveUnaryNode(uNode);
+    }
 
     @Override
-    public Node enter(IdentNode iNode) {
+    public boolean enterIdentNode(IdentNode iNode) {
         String name = iNode.getPropertyName();
         if ("this".equals(name)) {  //NOI18N
             exp.add(ST_THIS);
@@ -250,54 +269,63 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
             }
             exp.add(name);
         }
-        return null;
+        return false;
     }
 
     @Override
-    public Node enter(LiteralNode lNode) {
+    public boolean enterLiteralNode(LiteralNode lNode) {
         Object value = lNode.getObject();
+        TypeUsage type = null;
         if (value instanceof Boolean) {
-            add(BOOLEAN_TYPE);
+            type = BOOLEAN_TYPE;
         } else if (value instanceof String) {
-            add(STRING_TYPE);
+            type = STRING_TYPE;
         } else if (value instanceof Integer
                 || value instanceof Float
                 || value instanceof Double) {
-            add(NUMBER_TYPE);
+            type = NUMBER_TYPE;
         } else if (lNode instanceof LiteralNode.ArrayLiteralNode) {
-            add(ARRAY_TYPE);
+            type = ARRAY_TYPE;
         } else if (value instanceof Lexer.RegexToken) {
-            add(REGEXP_TYPE);
+            type = REGEXP_TYPE;
         }
-        return null;
+        
+        if (type != null) {
+            if (getPath().size() > 1 && getPreviousFromPath(2) instanceof CallNode) {
+                exp.add(type.getType());
+            } else {
+                add(type);
+            }
+        }
+        return false;
     }
 
     @Override
-    public Node enter(TernaryNode ternaryNode) {
-        ternaryNode.rhs().accept(this);
-        add(exp, offsetVisitor.findOffset(ternaryNode.rhs()), false);
+    public boolean enterTernaryNode(TernaryNode ternaryNode) {
+        ternaryNode.getTrueExpression().accept(this);
+        add(exp, offsetVisitor.findOffset(ternaryNode.getTrueExpression()), false);
         reset();
-        Node third = ternaryNode.third();
+        Node third = ternaryNode.getFalseExpression();
         third.accept(this);
         int typeStart = offsetVisitor.findOffset(third);
         add(exp, typeStart, false);
         reset();
-        return null;
+        return false;
     }
 
     @Override
-    public Node enter(ObjectNode objectNode) {
+    public boolean enterObjectNode(ObjectNode objectNode) {
         int size = getPath().size();
         if (size > 0 && getPath().get(size - 1) instanceof AccessNode) {
             exp.add(ST_ANONYM + objectNode.getStart());
         } else {
             add(new TypeUsageImpl(ST_ANONYM + objectNode.getStart(), objectNode.getStart(), false));
         }
-        return null;
+        return false;
     }
 
     @Override
-    public Node enter(IndexNode indexNode) {
+    public boolean enterIndexNode(IndexNode indexNode) {
         addToPath(indexNode);
         indexNode.getBase().accept(this);
         int size = exp.size();
@@ -322,19 +350,19 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
         }
         //add(exp, indexNode.getStart(), false);
         //reset();
-        return null;
+        return false;
     }
 
     @Override
-    public Node enter(BinaryNode binaryNode) {
+    public boolean enterBinaryNode(BinaryNode binaryNode) {
         if (!binaryNode.isAssignment()) {
             if (isResultString(binaryNode)) {
                 add(STRING_TYPE);
-                return null;
+                return false;
             }
             if (isResultNumber(binaryNode)) {
                 add(NUMBER_TYPE);
-                return null;
+                return false;
             }
             TokenType tokenType = binaryNode.tokenType();
             if (tokenType == TokenType.EQ || tokenType == TokenType.EQ_STRICT
@@ -344,7 +372,7 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
                 if (getPath().isEmpty()) {
                     add(BOOLEAN_TYPE);
                 }
-                return null;
+                return false;
             }
             binaryNode.lhs().accept(this);
             add(exp, offsetVisitor.findOffset(binaryNode.lhs()), false);
@@ -352,24 +380,25 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
             binaryNode.rhs().accept(this);
             add(exp, offsetVisitor.findOffset(binaryNode.rhs()), false);
             reset();
-            return null;
+            return false;
         }
-        return super.enter(binaryNode);
+        return super.enterBinaryNode(binaryNode);
     }
 
-    @Override
-    public Node enter(ReferenceNode rNode) {
-        List<? extends Node> path = getPath();
-        boolean functionType = true;
-        if (!path.isEmpty()) {
-            Node lastNode = path.get(path.size() - 1);
-            functionType = !(lastNode instanceof CallNode);
-        }
-        if (functionType) {
-            add(new TypeUsageImpl(Type.FUNCTION, rNode.getReference().getStart(), true));
-        }
-        return null;
-    }
+// TRUFFLE
+//    @Override
+//    public Node enter(ReferenceNode rNode) {
+//        List<? extends Node> path = getPath();
+//        boolean functionType = true;
+//        if (!path.isEmpty()) {
+//            Node lastNode = path.get(path.size() - 1);
+//            functionType = !(lastNode instanceof CallNode);
+//        }
+//        if (functionType) {
+//            add(new TypeUsageImpl(Type.FUNCTION, rNode.getReference().getStart(), true));
+//        }
+//        return null;
+//    }
     
     
 
@@ -414,9 +443,11 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
     private static class SimpleNameResolver extends PathNodeVisitor {
         private List<String> exp = new ArrayList<String>();
         private int typeOffset = -1;
+        private ModelBuilder builder;
         
-        public String getFQN(Node expression) {
+        public String getFQN(Node expression, ModelBuilder builder) {
             exp.clear();
+            this.builder = builder;
             expression.accept(this);
             StringBuilder sb = new StringBuilder();
             for(String part : exp){
@@ -433,60 +464,82 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
         public int getTypeOffset() {
             return typeOffset;
         }
+
+        @Override
+        public boolean enterAccessNode(AccessNode accessNode) {
+            if (typeOffset == -1) {
+                typeOffset = accessNode.getFinish() - accessNode.getProperty().length();
+            }
+            accessNode.getBase().accept(this);
+            exp.add(accessNode.getProperty());
+            return false;
+        }
+        
         
         @Override
-        public Node enter(CallNode callNode) {
+        public boolean enterCallNode(CallNode callNode) {
             callNode.getFunction().accept(this);
-            return null;
+            return false;
         }
 
         @Override
-        public Node enter(FunctionNode functionNode) {
-            functionNode.getIdent().accept(this);
-            return null;
+        public boolean enterFunctionNode(FunctionNode functionNode) {
+            String name = builder.getFunctionName(functionNode);
+            exp.add(name);
+            if (typeOffset == -1) {
+                typeOffset = functionNode.getIdent().getStart();
+            }
+            return false;
         }
 
         
         @Override
-        public Node enter(IndexNode indexNode) {
+        public boolean enterIndexNode(IndexNode indexNode) {
             indexNode.getBase().accept(this);
-            return null;
+            return false;
         }
         
         
         
         @Override
-        public Node enter(IdentNode identNode) {
+        public boolean enterIdentNode(IdentNode identNode) {
             exp.add(identNode.getName());
-            typeOffset = identNode.getStart();
-            return super.enter(identNode);
+            if (typeOffset == -1) {
+                typeOffset = identNode.getStart();
+            }
+            return super.enterIdentNode(identNode);
         }
 
-        @Override
-        public Node enter(ReferenceNode referenceNode) {
-            referenceNode.getReference().accept(this);
-            return null;
-        }
+// TRUFFLE
+//        @Override
+//        public Node enter(ReferenceNode referenceNode) {
+//            referenceNode.getReference().accept(this);
+//            return null;
+//        }
     }
     
     private static class FinderOffsetTypeVisitor extends NodeVisitor {
         private int typeOffset = -1;
-        
+
+        public FinderOffsetTypeVisitor() {
+            super(new LexicalContext());
+        }
+
         int findOffset (Node expression) {
             expression.accept(this);
             return typeOffset;
         } 
         
         @Override
-        public Node enter(IdentNode identNode) {
+        public boolean enterIdentNode(IdentNode identNode) {
             typeOffset = identNode.getStart();
-            return null;
+            return false;
         }
 
         @Override
-        public Node enter(AccessNode accessNode) {
+        public boolean enterAccessNode(AccessNode accessNode) {
             typeOffset = accessNode.getStart();
-            return null; 
+            return false; 
         }
     }
 }

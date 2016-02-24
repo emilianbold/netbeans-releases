@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.formatter;
 
-import jdk.nashorn.internal.ir.FunctionNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.FunctionNode;
 import java.util.Collections;
 import java.util.Dictionary;
 import java.util.HashMap;

@@ -166,6 +166,8 @@ public class JsStructureScanner implements StructureScanner {
                     } else {
                         collectedItems.add(new JsObjectStructureItem(child, children, result));
                     }
+            } else if ((child.getJSKind() == JsElement.Kind.CLASS && child.isDeclared())) {
+                collectedItems.add(new JsClassStructureItem(child, children, result));
             }
          }
         
@@ -515,6 +517,28 @@ public class JsStructureScanner implements StructureScanner {
                 }
                 formatter.appendHtml(CLOSE_FONT);
             }
+        }
+        
+    }
+    
+    private class JsClassStructureItem extends JsStructureItem {
+        
+        public JsClassStructureItem(JsObject elementHandle, List<? extends StructureItem> children, JsParserResult parserResult) {
+            super(elementHandle, children, "cl", parserResult); //NOI18N
+        }
+        
+        @Override
+        public String getHtml(HtmlFormatter formatter) {
+            formatter.reset();
+            boolean isDeprecated = getModelElement().isDeprecated();
+            if (isDeprecated) {
+                formatter.deprecated(true);
+            }
+            formatter.appendText(getModelElement().getDeclarationName().getName());
+            if (isDeprecated) {
+                formatter.deprecated(false);
+            }
+            return formatter.getText();
         }
         
     }
