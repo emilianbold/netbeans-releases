@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
+import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -146,9 +147,9 @@ public final class CodeModelDiagnostic {
                             printOut.printf(" from project %s [%s]%n", nativeProject.getProjectDisplayName(), nativeProject.getProjectRoot());// NOI18N
                             printOut.printf("\tLang=%s Flavor=%s excluded=%s%n", item.getLanguage(), item.getLanguageFlavor(), item.isExcluded());// NOI18N
                             printOut.print("\tUser Include Paths:\n");// NOI18N
-                            for (FSPath path : item.getUserIncludePaths()) {
-                                String msg = CndFileUtils.isLocalFileSystem(path.getFileSystem()) ? path.getPath() : path.getURL().toString();
-                                FileObject valid = path.getFileObject();
+                            for (IncludePath path : item.getUserIncludePaths()) {
+                                String msg = CndFileUtils.isLocalFileSystem(path.getFileSystem()) ? path.getFSPath().getPath() : path.getFSPath().getURL().toString();
+                                FileObject valid = path.getFSPath().getFileObject();
                                 if (valid != null && !valid.isValid()) {
                                     valid = null;
                                 }
@@ -181,9 +182,9 @@ public final class CodeModelDiagnostic {
                                 printOut.printf("\t\t%s%n", macro);// NOI18N
                             }
                             printOut.print("\tSystem Include Paths:\n");// NOI18N
-                            for (FSPath path : item.getSystemIncludePaths()) {
-                                String msg = CndFileUtils.isLocalFileSystem(path.getFileSystem()) ? path.getPath() : path.getURL().toString();
-                                FileObject valid = path.getFileObject();
+                            for (IncludePath path : item.getSystemIncludePaths()) {
+                                String msg = CndFileUtils.isLocalFileSystem(path.getFileSystem()) ? path.getFSPath().getPath() : path.getFSPath().getURL().toString();
+                                FileObject valid = path.getFSPath().getFileObject();
                                 if (valid != null && !valid.isValid()) {
                                     valid = null;
                                 }

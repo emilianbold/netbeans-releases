@@ -112,7 +112,7 @@ public interface NativeProject {
      * @return a list <IncludeSearchPath> of compiler defined include paths.
      * A path is always an absolute path.
      */
-    public List<FSPath> getSystemIncludePaths();
+    public List<IncludePath> getSystemIncludePaths();
     
     /**
      * Returns a list <IncludeSearchPath> of user defined include paths used when parsing 'orpan' source files.
@@ -120,7 +120,7 @@ public interface NativeProject {
      * A path is always an absolute path.
      * Include paths are not prefixed with the compiler include path option (usually -I).
      */
-    public List<FSPath> getUserIncludePaths();
+    public List<IncludePath> getUserIncludePaths();
     
     /**
      * Returns a list of system pre-included headers.

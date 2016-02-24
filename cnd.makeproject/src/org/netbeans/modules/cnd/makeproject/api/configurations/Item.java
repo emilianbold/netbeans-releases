@@ -57,6 +57,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
@@ -649,8 +650,8 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     }
 
     @Override
-    public List<FSPath> getSystemIncludePaths() {
-        List<FSPath> vec = new ArrayList<>();
+    public List<IncludePath> getSystemIncludePaths() {
+        List<IncludePath> vec = new ArrayList<>();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         ItemConfiguration itemConfiguration = getItemConfiguration(makeConfiguration);//ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) { // FIXUP: sometimes itemConfiguration is null (should not happen)
@@ -667,10 +668,10 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             if (compiler != null && compiler.getPath() != null && compiler.getPath().length() > 0) {
                 FileSystem fs = FileSystemProvider.getFileSystem(compiler.getExecutionEnvironment());
                 if (makeConfiguration.isMakefileConfiguration()) {
-                    vec.addAll(CndFileUtils.toFSPathList(fs, compiler.getSystemIncludeDirectories(getImportantFlags())));
+                    vec.addAll(IncludePath.toIncludePathList(fs, compiler.getSystemIncludeDirectories(getImportantFlags())));
                 } else {
                     String importantFlags = SPI_ACCESSOR.getImportantFlags(compilerConfiguration, compiler, makeConfiguration);
-                    vec.addAll(CndFileUtils.toFSPathList(fs, compiler.getSystemIncludeDirectories(importantFlags)));
+                    vec.addAll(IncludePath.toIncludePathList(fs, compiler.getSystemIncludeDirectories(importantFlags)));
                 }
             }
         }
@@ -712,15 +713,15 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     }
 
     @Override
-    public List<FSPath> getUserIncludePaths() {
+    public List<IncludePath> getUserIncludePaths() {
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         ItemConfiguration itemConfiguration = getItemConfiguration(makeConfiguration);//ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) { // FIXUP: sometimes itemConfiguration is null (should not happen)
-            return Collections.<FSPath>emptyList();
+            return Collections.<IncludePath>emptyList();
         }
         CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
         if (compilerSet == null) {
-            return Collections.<FSPath>emptyList();
+            return Collections.<IncludePath>emptyList();
         }
         AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
@@ -743,7 +744,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             // Convert all paths to absolute paths
             FileSystem compilerFS = FileSystemProvider.getFileSystem(env);
             FileSystem projectFS = fileSystem;
-            List<FSPath> result = new ArrayList<>();            
+            List<IncludePath> result = new ArrayList<>();            
             for (String p : vec2) {
                 boolean compilerContext = false;
                 if (p.contains("$")) { // NOI18N
@@ -759,22 +760,22 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                     compilerContext = true;
                 }
                 if (compilerContext && CndPathUtilities.isPathAbsolute(compilerFS, p)) {
-                    result.add(new FSPath(compilerFS, p));
+                    result.add(IncludePath.toIncludePath(compilerFS, p));
                     continue;
                 }
                 if (CndPathUtilities.isPathAbsolute(projectFS, p)) {
-                    result.add(new FSPath(projectFS, p));
+                    result.add(IncludePath.toIncludePath(projectFS, p));
                 } else {
                     String absPath = CndPathUtilities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDirFileObject(), p);
-                    result.add(new FSPath(projectFS, absPath));
+                    result.add(IncludePath.toIncludePath(projectFS, absPath));
                 }
             }
-            List<FSPath> vec3 = new ArrayList<>();
+            List<IncludePath> vec3 = new ArrayList<>();
             vec3 = SPI_ACCESSOR.getItemUserIncludePaths(vec3, cccCompilerConfiguration, compiler, makeConfiguration);
             result.addAll(vec3);
             return SPI_ACCESSOR.expandIncludePaths(result, cccCompilerConfiguration, compiler, makeConfiguration);
         }
-        return Collections.<FSPath>emptyList();
+        return Collections.<IncludePath>emptyList();
     }
 
     @Override
@@ -1167,8 +1168,8 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
 
     /*package*/ int getCRC() {
         int res = 0;
-        for(FSPath aPath : getUserIncludePaths()) {
-            res += 37 * aPath.getPath().hashCode();
+        for(IncludePath aPath : getUserIncludePaths()) {
+            res += 37 * aPath.getFSPath().hashCode();
         }
         for(FSPath aPath : getIncludeFiles()) {
             res += 37 * aPath.hashCode();
@@ -1179,8 +1180,8 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         for(String macro: getUndefinedMacros()) {
             res += 37 * macro.hashCode();
         }
-        for(FSPath aPath : getSystemIncludePaths()) {
-            res += 37 * aPath.getPath().hashCode();
+        for(IncludePath aPath : getSystemIncludePaths()) {
+            res += 37 * aPath.getFSPath().hashCode();
         }
         for(FSPath aPath : getSystemIncludeHeaders()) {
             res += 37 * aPath.getPath().hashCode();
@@ -1230,9 +1231,9 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         private SpiAccessor() {
         }
 
-        private List<FSPath> getItemUserIncludePaths(List<FSPath> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
+        private List<IncludePath> getItemUserIncludePaths(List<IncludePath> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
             if(!getUserOptionsProviders().isEmpty()) {
-                List<FSPath> res = new ArrayList<>(includes);
+                List<IncludePath> res = new ArrayList<>(includes);
                 for (UserOptionsProvider provider : getUserOptionsProviders()) {
                     res.addAll(provider.getItemUserIncludePaths(includes, compilerOptions, compiler, makeConfiguration));
                 }
@@ -1280,7 +1281,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             }
         }
         
-        private List<FSPath> expandIncludePaths(List<FSPath> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
+        private List<IncludePath> expandIncludePaths(List<IncludePath> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
             for (IncludePathExpansionProvider provider : getIncludePathExpansionProviders()) {
                 includes = provider.expandIncludePaths(includes, compilerOptions, compiler, makeConfiguration);
             }

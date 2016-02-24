@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
+import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.nativeexecution.api.util.Path;
@@ -405,8 +406,8 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
             if (fileHasUnresolved) {
                 NativeFileItem nativeFileItem = ((ProjectBase) file.getProject()).getNativeFileItem(UIDs.get(file));
                 if (nativeFileItem != null) {
-                    for(FSPath path : nativeFileItem.getUserIncludePaths()) {
-                        System.err.println("\tSearch path "+path.getPath());
+                    for(IncludePath path : nativeFileItem.getUserIncludePaths()) {
+                        System.err.println("\tSearch path "+path.getFSPath().getPath());
                     }
                 }
             }

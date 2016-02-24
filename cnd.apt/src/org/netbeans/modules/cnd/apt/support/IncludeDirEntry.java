@@ -106,7 +106,10 @@ public final class IncludeDirEntry {
         if (out == null) {
             // #196267 -  slow parsing in Full Remote
             // do expensive work out of sync block
-            boolean framework = dir.endsWith("/Frameworks"); // NOI18N
+            boolean framework = dir.endsWith("/{framework}"); // NOI18N
+            if (framework) {
+                dir = dir.substring(0, dir.length() - "/{framework}".length()); // NOI18N
+            }
             // FIXME XXX:FullRemote
             if (dir.contains(File.separatorChar + "remote-files" + File.separatorChar)) { //XXX:fullRemote //NOI18N
                 fs = CndFileUtils.getLocalFileSystem();

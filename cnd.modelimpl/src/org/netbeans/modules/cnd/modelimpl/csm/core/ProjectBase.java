@@ -85,6 +85,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.NameAcceptor;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
+import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -815,7 +816,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     private Set<FileSystem> getIncludesFileSystems(NativeProject nativeProject) {
         Set<FileSystem> fileSystems = new HashSet<>();
-        for (FSPath fsPath : nativeProject.getSystemIncludePaths()) {
+        for (IncludePath fsPath : nativeProject.getSystemIncludePaths()) {
             fileSystems.add(fsPath.getFileSystem());
         }
         return fileSystems;
@@ -1454,6 +1455,23 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         StartEntry startEntry = new StartEntry(getFileSystem(), FileContainer.getFileKey(absPath, true).toString(), getUIDKey());
         return APTHandlersSupport.createEmptyPreprocHandler(startEntry);
     }
+    
+    /**
+     * Remove me!
+     * @param list
+     * @return 
+     */
+    private static  List<FSPath> DEPRECATED_COMVERTOR(List<IncludePath> list) {
+        List<FSPath> res = new ArrayList<>(list.size());
+        for (IncludePath p : list) {
+            if (p.isFramework()) {
+                res.add(new FSPath(p.getFileSystem(), p.getFSPath().getPath()+IncludePath.FRAMEWORK));
+            } else {
+                res.add(p.getFSPath());
+            }
+        }
+        return res;
+    }
 
     protected final PreprocHandler createPreprocHandler(NativeFileItem nativeFile) {
         assert (nativeFile != null);
@@ -1471,14 +1489,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (!isSourceFile(nativeFile)) {
             nativeFile = DefaultFileItem.toDefault(nativeFile);
         }
-        List<FSPath> origUserIncludePaths = nativeFile.getUserIncludePaths();
+        List<FSPath> origUserIncludePaths = DEPRECATED_COMVERTOR(nativeFile.getUserIncludePaths());
         if (TraceFlags.DUMP_NATIVE_FILE_ITEM_USER_INCLUDE_PATHS) {
             System.err.println("Item "+nativeFile.getAbsolutePath());
             for(FSPath path : origUserIncludePaths) {
                 System.err.println("\tPath "+path.getPath());
             }
         }
-        List<FSPath> origSysIncludePaths = nativeFile.getSystemIncludePaths();
+        List<FSPath> origSysIncludePaths = DEPRECATED_COMVERTOR(nativeFile.getSystemIncludePaths());
         List<IncludeDirEntry> userIncludePaths = userPathStorage.get(origUserIncludePaths.toString(), origUserIncludePaths);
         List<IncludeDirEntry> sysIncludePaths = sysAPTData.getIncludes(origSysIncludePaths.toString(), origSysIncludePaths);
         List<FSPath> includeFileEntries = new ArrayList<>();
@@ -3473,11 +3491,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
 
         @Override
-        public List<FSPath> getUserIncludePaths() {
+        public List<IncludePath> getUserIncludePaths() {
             if (project != null) {
                 return project.getUserIncludePaths();
             }
-            return Collections.<FSPath>emptyList();
+            return Collections.<IncludePath>emptyList();
         }
 
         @Override
@@ -3497,11 +3515,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
 
         @Override
-        public List<FSPath> getSystemIncludePaths() {
+        public List<IncludePath> getSystemIncludePaths() {
             if (project != null) {
                 return project.getSystemIncludePaths();
             }
-            return Collections.<FSPath>emptyList();
+            return Collections.<IncludePath>emptyList();
         }
 
         @Override
