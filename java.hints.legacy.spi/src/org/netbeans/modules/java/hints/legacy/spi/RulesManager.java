@@ -226,6 +226,13 @@ public class RulesManager implements FileChangeListener {
 
                 if (map == null) {
                     dest.put(mime, map = new HashMap<String, List<ErrorRule>>());
+                    // first encounter the MIME type; read the 'inherit' rule from
+                    // the rule folder. Further definitions 
+                    FileObject mimeFolder = fo.getParent();
+                    Object o = mimeFolder.getAttribute("inherit.rules");
+                    if (Boolean.TRUE == o) {
+                        map.putAll(dest.get("text/x-java"));
+                    }
                 }
 
                 addRule( (ErrorRule)rule, map );
