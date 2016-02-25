@@ -550,7 +550,7 @@ public final class ProjectPropertiesSupport {
         String stringValue = project.getEvaluator().getProperty(property);
         if (stringValue != null) {
             try {
-                return Integer.valueOf(stringValue);
+                return Integer.parseInt(stringValue);
             } catch (NumberFormatException exc) {
                 // ignored
             }

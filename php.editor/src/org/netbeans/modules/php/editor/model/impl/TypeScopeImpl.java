@@ -158,6 +158,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         return new ArrayList<>(ifaces.keySet());
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "WMI_WRONG_MAP_ITERATOR", justification = "Way too complicated code")
     @Override
     public List<? extends InterfaceScope> getSuperInterfaceScopes() {
         Set<InterfaceScope> retval = new LinkedHashSet<>();

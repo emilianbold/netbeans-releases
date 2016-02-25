@@ -43,6 +43,7 @@
 package org.netbeans.modules.php.twig.editor;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -54,7 +55,7 @@ import java.util.Set;
  */
 public final class TwigSyntax {
     private static final int END_PREFIX_LENGTH = "end".length(); //NOI18N
-    public static final Set<String> BLOCK_MACROS = new HashSet<>(Arrays.asList(
+    public static final Set<String> BLOCK_MACROS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             "if", //NOI18N
             "for", //NOI18N
             "block", //NOI18N
@@ -68,19 +69,19 @@ public final class TwigSyntax {
             "verbatim", //NOI18N
             "sandbox", //NOI18N
             "trans" //NOI18N
-    ));
+    )));
 
-    public static final Set<String> ELSE_MACROS = new HashSet<>(Arrays.asList(
+    public static final Set<String> ELSE_MACROS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             "elseif", //NOI18N
             "else" //NOI18N
-    ));
+    )));
 
-    public static final Map<String, Set<String>> RELATED_MACROS = new HashMap<String, Set<String>>() {
+    public static final Map<String, Set<String>> RELATED_MACROS = Collections.unmodifiableMap(new HashMap<String, Set<String>>() {
         {
             put("if", new HashSet<>(Arrays.asList("else", "elseif"))); //NOI18N
             put("for", new HashSet<>(Arrays.asList("else"))); //NOI18N
         }
-    };
+    });
 
     private TwigSyntax() {
     }

@@ -226,9 +226,6 @@ public class PhpAnnotationsPanel extends JPanel {
     void deleteAnnotations() {
         int[] selectedRows = annotationsTable.getSelectedRows();
         assert selectedRows.length > 0 : "No selected annotations?!";
-        if (selectedRows.length == 0) {
-            return;
-        }
         // delete annotations from the end to avoid ArrayIndexOutOfBoundsException
         Arrays.sort(selectedRows);
         for (int i = selectedRows.length - 1; i >= 0; --i) {

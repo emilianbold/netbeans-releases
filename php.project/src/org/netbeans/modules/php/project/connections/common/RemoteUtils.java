@@ -282,7 +282,7 @@ public final class RemoteUtils {
         if (proxyHost == null) {
             return null;
         }
-        return new ProxyInfo(type, proxyHost, Integer.valueOf(NetworkSettings.getProxyPort(uri)),
+        return new ProxyInfo(type, proxyHost, Integer.parseInt(NetworkSettings.getProxyPort(uri)),
                 NetworkSettings.getAuthenticationUsername(uri), NetworkSettings.getKeyForAuthenticationPassword(uri));
     }
 

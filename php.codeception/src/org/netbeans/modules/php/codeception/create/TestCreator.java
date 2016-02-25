@@ -69,6 +69,7 @@ public final class TestCreator {
     public static final String GENERATE_COMMAND_PARAM = "GENERATE_COMMAND_PARAM"; // NOI18N
     public static final String SUITE_PARAM = "SUITE_PARAM"; // NOI18N
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "MS_MUTABLE_COLLECTION", justification = "It is immutable") // NOI18N
     public static final List<GenerateCommand> TEST_COMMANDS = Arrays.asList(
             GenerateCommand.Test,
             GenerateCommand.Phpunit,

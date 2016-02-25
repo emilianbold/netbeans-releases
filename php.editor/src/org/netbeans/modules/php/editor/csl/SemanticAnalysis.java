@@ -860,7 +860,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
             @Override
             public void visit(ArrayAccess node) {
-                scan(node.getName());
+                super.scan(node.getName());
                 // don't scan(scan(node.getDimension()); issue #194535
             }
 

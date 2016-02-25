@@ -149,7 +149,7 @@ public final class PhpUnitTestingProvider implements PhpTestingProvider {
             if (file.isFile()) {
                 FileObject fo = FileUtil.toFileObject(file);
                 assert fo != null;
-                return new Locations.Line(fo, Integer.valueOf(matcher.group(2)));
+                return new Locations.Line(fo, Integer.parseInt(matcher.group(2)));
             }
         }
         return null;

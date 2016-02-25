@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.latte;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -53,7 +54,7 @@ import java.util.Set;
  */
 public final class LatteSyntax {
 
-    public static final Set<String> BLOCK_MACROS = new HashSet<>(Arrays.asList(
+    public static final Set<String> BLOCK_MACROS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             "if", //NOI18N
             "ifset", //NOI18N
             "ifcurrent", //NOI18N
@@ -69,20 +70,20 @@ public final class LatteSyntax {
             "form", //NOI18N
             "label", //NOI18N
             "snippet" //NOI18N
-    ));
+    )));
 
-    public static final Set<String> ELSE_MACROS = new HashSet<>(Arrays.asList(
+    public static final Set<String> ELSE_MACROS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             "elseif", //NOI18N
             "else", //NOI18N
             "elseifset" //NOI18N
-    ));
+    )));
 
-    public static final Map<String, Set<String>> RELATED_MACROS = new HashMap<String, Set<String>>() {
+    public static final Map<String, Set<String>> RELATED_MACROS = Collections.unmodifiableMap(new HashMap<String, Set<String>>() {
         {
             put("if", new HashSet<>(Arrays.asList("else", "elseif"))); //NOI18N
             put("ifset", new HashSet<>(Arrays.asList("else", "elseifset"))); //NOI18N
         }
-    };
+    });
 
     private LatteSyntax() {
     }

@@ -270,6 +270,7 @@ public class PHPSamplesPanelVisual extends JPanel implements DocumentListener {
         if (testFile.exists()) {     //if default project directory exists, increment number after projectName
 
             File[] files = projectLocation.listFiles();
+            assert files != null : projectLocation;
             HashSet<String> filesSet = new HashSet<String>();
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
