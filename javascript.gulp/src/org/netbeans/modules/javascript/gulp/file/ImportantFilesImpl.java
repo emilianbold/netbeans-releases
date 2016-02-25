@@ -46,10 +46,14 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.common.spi.ImportantFilesImplementation;
 import org.netbeans.modules.web.common.spi.ImportantFilesSupport;
+import org.netbeans.spi.project.LookupProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 
-@ProjectServiceProvider(service = ImportantFilesImplementation.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
+@ProjectServiceProvider(service = ImportantFilesImplementation.class, projectTypes = {
+    @LookupProvider.Registration.ProjectType(id = "org-netbeans-modules-web-clientproject"), // NOI18N
+    @LookupProvider.Registration.ProjectType(id = "org-netbeans-modules-php-project"), // NOI18N
+})
 public final class ImportantFilesImpl implements ImportantFilesImplementation {
 
     private final ImportantFilesSupport support;
