@@ -49,6 +49,24 @@ import java.util.ListIterator;
  * @author Alexander Simon
  */
 public interface Driver {
+    /**
+     * Framework include directory ends with. For example: predefined system
+     * framework "/Library/Frameworks" path or path included by
+     * "-F/Library/Frameworks" will be represented in by string
+     * "/Library/Frameworks/{framework}". For example code model will resolve
+     * directive with "/": #include <GLUT/glut.h>
+     * in the folder the "/System/Library/Frameworks/GLUT.framework/Headers".
+     */
+    public static final String FRAMEWORK = "/{framework}"; //NOI18N
+    
+    /**
+     * Change root of system search paths.
+     * For example: Predefined system framework "/Library/Frameworks" with option
+     * -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk
+     * will fits
+     * /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/Library/Frameworks
+     */
+    public static final String ISYSROOT_FLAG = "-isysroot"; // NOI18N
 
     List<String> splitCommandLine(String line, CompileLineOrigin isScriptOutput);
 
