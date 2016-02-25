@@ -105,6 +105,7 @@ public final class CodingStandardsFixer {
             ANSI_PARAM,
             NO_INTERACTION_PARAM);
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "MS_MUTABLE_COLLECTION", justification = "It is immutable") // NOI18N
     public static final List<String> ALL_LEVEL = Arrays.asList(
             "", // NOI18N
             "psr0", // NOI18N
@@ -113,6 +114,7 @@ public final class CodingStandardsFixer {
             "symfony" // NOI18N
     );
     // XXX get from help?
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "MS_MUTABLE_COLLECTION", justification = "It is immutable") // NOI18N
     public static final List<String> ALL_CONFIG = Arrays.asList(
             "", // NOI18N
             "default", // NOI18N

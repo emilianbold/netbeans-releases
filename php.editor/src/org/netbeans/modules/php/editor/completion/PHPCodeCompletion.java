@@ -1327,6 +1327,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         return Character.isJavaIdentifierPart(c) || c == '@';
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "INT_BAD_COMPARISON_WITH_NONNEGATIVE_VALUE", justification = "Not sure about FB analysis correctness")
     private String getPrefix(ParserResult info, int caretOffset, boolean upToOffset, PrefixBreaker prefixBreaker) {
         try {
             BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);

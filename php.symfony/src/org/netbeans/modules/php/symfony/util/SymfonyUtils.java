@@ -126,6 +126,7 @@ public final class SymfonyUtils {
                 return false;
             }
         });
+        assert fileViews != null : templatesDir;
         for (File view : fileViews) {
             views.add(FileUtil.toFileObject(view));
         }

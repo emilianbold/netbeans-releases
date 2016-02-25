@@ -553,8 +553,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         LocalServer copyTarget = runAsLocalWeb.getLocalServer();
         String sourcesLocation = copyTarget.getSrcRoot();
         File sources = FileUtil.normalizeFile(new File(sourcesLocation));
-        if (sourcesLocation == null
-                || !Utils.isValidFileName(sources)) {
+        if (!Utils.isValidFileName(sources)) {
             return NbBundle.getMessage(RunConfigurationPanel.class, "MSG_IllegalFolderName");
         }
 

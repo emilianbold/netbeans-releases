@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.smarty.editor;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -59,7 +60,7 @@ public class TplSyntax {
     /**
      * List of all tags which introduce block of code.
      */
-    public static final Set<String> BLOCK_TAGS = new HashSet<String>(Arrays.asList(
+    public static final Set<String> BLOCK_TAGS = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
             "block", //NOI18N
             "capture", //NOI18N
             "for", //NOI18N
@@ -72,25 +73,25 @@ public class TplSyntax {
             "section", //NOI18N
             "setfilter", //NOI18N
             "strip", //NOI18N
-            "while")); //NOI18N
+            "while"))); //NOI18N
     /**
      * List of all tags which are else-typed.
      */
-    public static final Set<String> ELSE_TAGS = new HashSet<String>(Arrays.asList(
+    public static final Set<String> ELSE_TAGS = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
             "foreachelse", //NOI18N
             "elseif", //NOI18N
             "else", //NOI18N
-            "sectionelse")); //NOI18N
+            "sectionelse"))); //NOI18N
     /**
      * Mapping of non-else tag to else-like tags. To every else tag must correspond at least one normal tag.
      */
-    public static final Map<String, Set<String>> RELATED_TAGS = new HashMap<String, Set<String>>() {
+    public static final Map<String, Set<String>> RELATED_TAGS = Collections.unmodifiableMap(new HashMap<String, Set<String>>() {
         {
             put("if", new HashSet<String>(Arrays.asList("else", "elseif"))); //NOI18N
             put("foreach", new HashSet<String>(Arrays.asList("foreachelse"))); //NOI18N
             put("section", new HashSet<String>(Arrays.asList("sectionelse"))); //NOI18N
         }
-    };
+    });
 
     /**
      * Gets information whether the given command is block command.

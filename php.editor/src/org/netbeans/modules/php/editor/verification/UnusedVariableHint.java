@@ -164,15 +164,14 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
         private boolean forceVariableAsUsed;
         private boolean forceVariableAsUnused;
 
-        public CheckVisitor(FileObject fileObject, BaseDocument baseDocument) {
+        CheckVisitor(FileObject fileObject, BaseDocument baseDocument) {
             this.fileObject = fileObject;
             this.baseDocument = baseDocument;
             hints = new ArrayList<>();
         }
 
         public List<Hint> getHints() {
-            for (ASTNode scopeNode : unusedVariables.keySet()) {
-                List<HintVariable> scopeVariables = unusedVariables.get(scopeNode);
+            for (List<HintVariable> scopeVariables : unusedVariables.values()) {
                 for (HintVariable variable : scopeVariables) {
                     createHint(variable);
                 }
