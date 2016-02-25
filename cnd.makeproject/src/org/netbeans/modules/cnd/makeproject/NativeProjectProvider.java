@@ -613,7 +613,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.CCCompiler);
             if (compiler != null) {
                 FileSystem compilerFS = FileSystemProvider.getFileSystem(compiler.getExecutionEnvironment());
-                vec.addAll(IncludePath.toIncludePathList(fileSystem, compiler.getSystemIncludeDirectories()));
+                vec.addAll(IncludePath.toIncludePathList(compilerFS, compiler.getSystemIncludeDirectories()));
             }
         }
         return vec;
