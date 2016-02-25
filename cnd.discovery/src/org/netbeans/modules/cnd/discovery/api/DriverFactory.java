@@ -329,12 +329,11 @@ public final class DriverFactory {
                     path = removeQuotes(path);
                     artifacts.userIncludes.add(path);
                 } else if (option.startsWith("-F")) { // NOI18N
-                    String path = option.substring(2);
-                    if (path.length() == 0 && st.hasNext()) {
-                        path = st.next();
+                    if (option.equals("-F") && st.hasNext()) { // NOI18N
+                        String path = st.next();
+                        path = removeQuotes(path)+IncludePath.FRAMEWORK;
+                        artifacts.userIncludes.add(path);
                     }
-                    path = removeQuotes(path)+IncludePath.FRAMEWORK;
-                    artifacts.userIncludes.add(path);
                 } else if (option.startsWith("-isystem")) { // NOI18N
                     String path = option.substring(8);
                     if (path.length() == 0 && st.hasNext()) {
