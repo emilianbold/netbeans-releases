@@ -531,6 +531,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.javawebstart</friend>
                 <friend>org.netbeans.modules.cnd.mixeddev</friend>
                 <friend>org.netbeans.modules.swingapp</friend>
+                <friend>org.netbeans.modules.jshell.support</friend>
                 <package>org.netbeans.modules.java.j2seproject.api</package>
             </friend-packages>
         </data>

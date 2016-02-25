@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-repl">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jshell.resources.Bundle"/>
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jshell.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+                
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-jshell-keybindings.xml" url="DefaultKeyBindings.xml"/> 
+<!--                            <file name="org-netbeans-modules-jshell-keybindings-mac.xml" url="DefaultKeyBindings-Mac.xml"> 
+                                <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                            </file>-->
+                        </folder>
+                    </folder>
+                </folder>
+                
+                <!--
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-jshell-editor.ResetAction.instance">
+                        <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-jshell-editor.ResetAction.instance"/>
+                        <attr name="position" intvalue="20002"/>
+                    </file>
+                </folder>
+                
+                -->
+                <folder name="Toolbars">
+                    <folder name="Default">
+                        <file name="Separator-before-shell-reset.instance">
+                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                            <attr name="position" intvalue="20000"/>
+                        </file>
+                        <file name="jshell-reset">
+                            <attr name="position" intvalue="20002"/>
+                        </file>
+                    </folder>
+                </folder>
+                
+                <folder name="text">
+                    <folder name="x-java">
+                        <folder name="Keybindings">
+                            <folder name="NetBeans">
+                                <folder name="Defaults">
+                                    <file name="org-netbeans-modules-jshell-keybindings.xml" url="DefaultKeyBindings.xml"/> 
+        <!--                            <file name="org-netbeans-modules-jshell-keybindings-mac.xml" url="DefaultKeyBindings-Mac.xml"> 
+                                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                                    </file>-->
+                                </folder>
+                            </folder>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="org-netbeans-modules-java-hints">
+        <folder name="rules">
+            <folder name="errors">
+                <folder name="text">
+                    <folder name="x-repl">
+                        <attr name="inherit.rules" boolvalue="true"/>
+                        <file name="org-netbeans-modules-jshell-support-LocationSuppressRule.instance"/>
+                        <file name="org-netbeans-modules-jshell-support-SemicolonMissingRule.instance"/>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    
+    <folder name="OptionsDialog">
+        <folder name="PreviewExamples">
+            <folder name="text">
+                <file name="x-repl" url="consoleExample.jsh"/>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>

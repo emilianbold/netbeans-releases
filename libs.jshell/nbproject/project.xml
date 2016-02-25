@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+            <code-name-base>org.netbeans.libs.jshell</code-name-base>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.netbeans.libs.javacapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>8.15</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.libs.javacimpl</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>0.42</specification-version>
+                    </run-dependency>
+                </dependency>
+            </module-dependencies>
+            <public-packages>
+                <package>jdk.internal.jshell.debug</package>
+                <package>jdk.jshell</package>
+            </public-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/nb-jshell.jar</runtime-relative-path>
+                <binary-origin>external/jshell.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/nb-jshell-probe.jar</runtime-relative-path>
+                <binary-origin>external/jshell-probe.jar</binary-origin>
+            </class-path-extension>
+        </data>
+    </configuration>
+</project>
