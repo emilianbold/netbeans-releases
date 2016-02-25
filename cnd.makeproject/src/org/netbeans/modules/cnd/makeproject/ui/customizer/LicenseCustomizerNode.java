@@ -52,8 +52,9 @@ import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.LicenseHeadersPanel;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.LicensePanelContentHandler;
 import org.netbeans.modules.cnd.utils.FSPath;
-import org.netbeans.spi.project.support.ant.ui.CustomizerUtilities;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -84,7 +85,7 @@ public class LicenseCustomizerNode extends CustomizerNode implements MakeContext
             String licensePath = projectProperties.getProperty(MakeProjectHelper.PROJECT_LICENSE_PATH_PROPERTY);
             handler =  new LicensePanelContentHandlerImpl(lookup, licensePath, licenseName);
             Category category = Category.create(getName(), getDisplayName(), null);
-            licencePropPanel = CustomizerUtilities.createLicenseHeaderCustomizerPanel(category, handler);
+            licencePropPanel = new LicenseHeadersPanel(category, handler);
             getContext().registerSavable(this);
 
         }
@@ -145,7 +146,7 @@ public class LicenseCustomizerNode extends CustomizerNode implements MakeContext
         project.saveProjectProperties(projectProperties, true);
     }
     
-    private static class LicensePanelContentHandlerImpl implements CustomizerUtilities.LicensePanelContentHandler {
+    private static class LicensePanelContentHandlerImpl implements LicensePanelContentHandler {
 
         private String licensePath;
         private String licenseName;
