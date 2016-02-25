@@ -112,19 +112,19 @@ public interface NativeFileItem {
     public FileObject getFileObject();
 
     /**
-     * Returns a list <IncludeSearchPath> of compiler defined include paths used when parsing 'orpan' source files.
-     * @return a list <IncludeSearchPath> of compiler defined include paths.
+     * Returns a list "Include Search Path" of compiler defined include paths used when parsing 'orpan' source files.
+     * @return a list "Include Search Path" of compiler defined include paths.
      * A path is always an absolute path.
      */
-    public List<FSPath> getSystemIncludePaths();
+    public List<IncludePath> getSystemIncludePaths();
     
     /**
-     * Returns a list <IncludeSearchPath> of user defined include paths used when parsing 'orpan' source files.
-     * @return a list <IncludeSearchPath> of user defined include paths.
+     * Returns a list "Include Search Path" of user defined include paths used when parsing 'orpan' source files.
+     * @return a list "Include Search Path" of user defined include paths.
      * A path is always an absolute path.
      * Include paths are not prefixed with the compiler include path option (usually -I).
      */
-    public List<FSPath> getUserIncludePaths();
+    public List<IncludePath> getUserIncludePaths();
     
     /**
      * Returns a list of system pre-included headers.
@@ -144,16 +144,16 @@ public interface NativeFileItem {
     public List<FSPath> getIncludeFiles();
     
     /**
-     * Returns a list <String> of compiler defined macro definitions used when compiling this file item.
-     * @return a list <String> of compiler defined macro definitions.
+     * Returns a list "String" of compiler defined macro definitions used when compiling this file item.
+     * @return a list "String" of compiler defined macro definitions.
      * Macro definitions are not prefixed with the compiler option (usually -D).
      * It looks like MACRO=VALUE
      */
     public List<String> getSystemMacroDefinitions();
     
     /**
-     * Returns a list <String> of user defined macro definitions used when compiling this file item.
-     * @return a list <String> of user defined macro definitions.
+     * Returns a list "String" of user defined macro definitions used when compiling this file item.
+     * @return a list "String" of user defined macro definitions.
      * Macro definitions are not prefixed with the compiler option (usually -D).
      * It looks like MACRO=VALUE
      */

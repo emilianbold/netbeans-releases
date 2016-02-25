@@ -49,6 +49,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.impl.support.APTMacroCache;
 import org.netbeans.modules.cnd.apt.impl.support.SnapshotHolderCache;
@@ -102,7 +103,7 @@ public final class APTSystemStorage {
 //        return includesStorage.get(sysIncludes);
 //    }
     
-    public List<IncludeDirEntry> getIncludes(CharSequence configID, List<FSPath> sysIncludes) {
+    public List<IncludeDirEntry> getIncludes(CharSequence configID, List<IncludePath> sysIncludes) {
         return includesStorage.get(configID, sysIncludes);
     }   
     

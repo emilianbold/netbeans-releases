@@ -43,7 +43,7 @@
 package org.netbeans.modules.cnd.source;
 
 import java.io.IOException;
-import org.netbeans.modules.cnd.source.spi.CndCookieProvider;
+import org.netbeans.modules.cnd.spi.source.CndCookieProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.SaveAsCapable;

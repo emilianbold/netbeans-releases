@@ -142,6 +142,12 @@ public class DefaultDriver implements Driver {
                     path = st.next();
                 }
                 res.userIncludes.add(removeQuotes(path));
+            } else if (option.startsWith("-F")) { // NOI18N
+                String path = option.substring(2);
+                if (path.length() == 0 && st.hasNext()) {
+                    path = st.next();
+                }
+                res.userIncludes.add(removeQuotes(path)+"/{framework}"); //NOI18N
             } else if (option.startsWith("-U")) { // NOI18N
                 String macro = option.substring(2);
                 if (macro.length() == 0 && st.hasNext()) {
@@ -163,6 +169,12 @@ public class DefaultDriver implements Driver {
                     path = st.next();
                 }
                 res.userIncludes.add(removeQuotes(path));
+            } else if (option.startsWith("-isysroot")) { // NOI18N
+                String path = option.substring(8);
+                if (path.length() == 0 && st.hasNext()) {
+                    path = st.next();
+                }
+                res.userIncludes.add(removeQuotes(path)+"/{sysroot}"); //NOI18N
             } else if (option.startsWith("-include")) { // NOI18N
                 String path = option.substring(8);
                 if (path.length() == 0 && st.hasNext()) {

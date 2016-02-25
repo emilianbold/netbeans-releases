@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
+import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -187,14 +188,14 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
     }
 
     // Says is header standard or not
-    private boolean isStandardHeader(List<FSPath> sysIncsPaths, CsmFile header) {
+    private boolean isStandardHeader(List<IncludePath> sysIncsPaths, CsmFile header) {
         final String path = header.getAbsolutePath().toString();
         String bestSystemPath = getRelativePath(sysIncsPaths, path);
         return standardHeaders.contains(path.substring(bestSystemPath.length() + 1));
     }
     
     // Returns standard header if it exists
-    private CsmFile getStandardHeaderIfExists(CsmFile currentFile, List<FSPath> sysIncsPaths, CsmFile file, HashSet<CsmFile> scannedFiles) {
+    private CsmFile getStandardHeaderIfExists(CsmFile currentFile, List<IncludePath> sysIncsPaths, CsmFile file, HashSet<CsmFile> scannedFiles) {
         if (!file.isValid() || scannedFiles.contains(file) || !isSystemHeader(currentFile, file)) {
             return null;
         }
@@ -322,10 +323,10 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
 
     
     // Returns relative path for file from list of paths
-    private String getRelativePath(List<FSPath> paths, String filePath) {
+    private String getRelativePath(List<IncludePath> paths, String filePath) {
         String goodPath = ""; // NOI18N
-        for (FSPath fsPath : paths) {
-            String path = fsPath.getPath();
+        for (IncludePath fsPath : paths) {
+            String path = fsPath.getFSPath().getPath();
             if (filePath.startsWith(path)) {
                 if (goodPath.length() < path.length()) {
                     goodPath = path;

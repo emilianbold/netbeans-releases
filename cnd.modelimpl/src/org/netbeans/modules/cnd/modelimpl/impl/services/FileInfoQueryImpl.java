@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmCompilationUnit;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectSupport;
@@ -127,17 +128,17 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     }
 
     @Override
-    public List<FSPath> getSystemIncludePaths(CsmFile file) {
+    public List<IncludePath> getSystemIncludePaths(CsmFile file) {
         return getIncludePaths(file, true);
     }
 
     @Override
-    public List<FSPath> getUserIncludePaths(CsmFile file) {
+    public List<IncludePath> getUserIncludePaths(CsmFile file) {
         return getIncludePaths(file, false);
     }
 
-    private List<FSPath> getIncludePaths(CsmFile file, boolean system) {
-        List<FSPath> out = Collections.<FSPath>emptyList();
+    private List<IncludePath> getIncludePaths(CsmFile file, boolean system) {
+        List<IncludePath> out = Collections.<IncludePath>emptyList();
         if (file instanceof FileImpl) {
             NativeFileItem item = Utils.getCompiledFileItem((FileImpl) file);
             if (item != null) {

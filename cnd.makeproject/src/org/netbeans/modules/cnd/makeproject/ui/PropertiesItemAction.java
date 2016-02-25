@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.makeproject.ui;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -121,9 +122,9 @@ public class PropertiesItemAction extends NodeAction {
         }
     }
 
-    private void dumpPathsList(String txt, List<FSPath> list) {
-        for (FSPath s : list) {
-            System.out.println(txt + ":" + s.getURL()); // NOI18N
+    private void dumpPathsList(String txt, List<IncludePath> list) {
+        for (IncludePath s : list) {
+            System.out.println(txt + ":" + s.getFSPath().getURL()); // NOI18N
         }
     }
 
