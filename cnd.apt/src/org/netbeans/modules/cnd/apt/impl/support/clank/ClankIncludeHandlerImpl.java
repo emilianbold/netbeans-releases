@@ -280,18 +280,22 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
             // rewrite by what we kept, otherwise start entry
             // was responsible to initialize paths correctly
             if (this.cleaned) {
+                // keep all settings initialized in handler as is
+                // do not clear them by own cleared empty collections
                 assert areStartEntriesEqual(handler.startFile, this.startFile) :
                         "handler's startFile " + handler.startFile + // NOI18N
                         " vs. state startFile " + this.startFile; // NOI18N
+            } else {
+                handler.userIncludePaths = this.userIncludePaths;
+                handler.userIncludeFilePaths = this.userIncludeFilePaths;
+                handler.systemIncludePaths = this.systemIncludePaths;
+                handler.startFile = this.startFile;
             }
-            
-            handler.userIncludePaths = this.userIncludePaths;
-            handler.userIncludeFilePaths = this.userIncludeFilePaths;
-            handler.systemIncludePaths = this.systemIncludePaths;
-            handler.startFile = this.startFile;
 
             // TODO: if requested we restore (it is different from APT-based state)
             if (this.inclStack.length > 0) {
+                // out stack is valid only in the context of our startFile
+                handler.startFile = this.startFile;
                 handler.inclStack = new LinkedList<IncludeInfo>();
                 handler.inclStack.addAll(Arrays.asList(this.inclStack));
 //                    if (CHECK_INCLUDE_DEPTH < 0) {
