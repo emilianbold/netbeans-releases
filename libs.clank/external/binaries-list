@@ -1,6 +1,6 @@
-#changeset:   16686:0996102551bf
+#changeset:   16761:88d59d5e23f3
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Fri Feb 19 00:20:37 2016 +0300
-#summary:     move static methods from interface to be 1.7 compatible
-688488BF9E65AC39749AF959A5653F536EDABACD clank_0.3.6.zip
+#date:        Thu Feb 25 22:23:38 2016 +0300
+#summary:     fixed #258147 - [regression] system frameworks are not supported anymore
+53764A09B71F2A9EAA6EE262DA9D1F3068105F14 clank_0.3.6.zip
