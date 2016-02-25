@@ -248,7 +248,9 @@ public class PinPanel extends javax.swing.JPanel {
         }
 
         private boolean isValid() {
-            return directoryField.getText().startsWith("/"); //NOI18N
+            String text = directoryField.getText();
+            // The most basic check for path validity
+            return text.startsWith("/") || text.startsWith("~") || text.startsWith("$"); //NOI18N
         }
 
         private void updateText() {

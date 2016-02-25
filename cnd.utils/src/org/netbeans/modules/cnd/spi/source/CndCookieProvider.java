@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.source.spi;
+package org.netbeans.modules.cnd.spi.source;
 
 import java.util.Collection;
 import org.openide.loaders.DataObject;

@@ -46,7 +46,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
-import org.netbeans.modules.cnd.source.spi.CndCookieProvider;
+import org.netbeans.modules.cnd.spi.source.CndCookieProvider;
 import org.openide.loaders.DataObject;
 import org.openide.util.WeakSet;
 import org.openide.util.lookup.InstanceContent;

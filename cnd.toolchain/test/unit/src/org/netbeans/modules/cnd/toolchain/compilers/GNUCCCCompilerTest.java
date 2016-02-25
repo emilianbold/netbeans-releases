@@ -52,6 +52,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
@@ -132,7 +133,7 @@ public class GNUCCCCompilerTest {
         instance.parseCompilerOutput(buf, instance.pair);
         List<String> out = instance.pair.systemIncludeDirectoriesList;
         Collections.<String>sort(out);
-        List<String> golden = new ArrayList<String>();
+        List<String> golden = new ArrayList<>();
         golden.add("/usr/include");
         golden.add("/usr/local/include");
         golden.add("/usr/sfw/include");
@@ -188,10 +189,10 @@ public class GNUCCCCompilerTest {
         instance.parseCompilerOutput(buf, instance.pair);
         List<String> out = instance.pair.systemIncludeDirectoriesList;
         Collections.<String>sort(out);
-        List<String> golden = new ArrayList<String>();
+        List<String> golden = new ArrayList<>();
 
-        golden.add("/Library/Frameworks");
-        golden.add("/System/Library/Frameworks");
+        golden.add("/Library/Frameworks"+IncludePath.FRAMEWORK);
+        golden.add("/System/Library/Frameworks"+IncludePath.FRAMEWORK);
         golden.add("/usr/include");
         golden.add("/usr/include/c++/4.0.0");
         golden.add("/usr/include/c++/4.0.0/backward");
@@ -251,7 +252,7 @@ public class GNUCCCCompilerTest {
         instance.parseCompilerOutput(buf, instance.pair);
         List<String> out = instance.pair.systemIncludeDirectoriesList;
         Collections.<String>sort(out);
-        List<String> golden = new ArrayList<String>();
+        List<String> golden = new ArrayList<>();
         golden.add("C:/MinGW/bin/../lib/gcc/mingw32/3.4.5/../../../../include");
         golden.add("C:/MinGW/bin/../lib/gcc/mingw32/3.4.5/../../../../include/c++/3.4.5");
         golden.add("C:/MinGW/bin/../lib/gcc/mingw32/3.4.5/../../../../include/c++/3.4.5/backward");
@@ -321,7 +322,7 @@ public class GNUCCCCompilerTest {
         instance.parseCompilerOutput(buf, instance.pair);
         List<String> out = instance.pair.systemIncludeDirectoriesList;
         Collections.<String>sort(out);
-        List<String> golden = new ArrayList<String>();
+        List<String> golden = new ArrayList<>();
         golden.add("D:/tec/mingw/include");
         golden.add("D:/tec/mingw/lib/gcc/mingw32/../../../include");
         golden.add("d:/tec/mingw/lib/gcc/../../include");
@@ -383,7 +384,7 @@ public class GNUCCCCompilerTest {
         instance.parseCompilerOutput(buf, instance.pair);
         List<String> out = instance.pair.systemIncludeDirectoriesList;
         Collections.<String>sort(out);
-        List<String> golden = new ArrayList<String>();
+        List<String> golden = new ArrayList<>();
         golden.add("C:/cygwin/lib/gcc/i686-pc-cygwin/3.4.4/../../../../include/w32api");
         golden.add("C:/cygwin/lib/gcc/i686-pc-cygwin/3.4.4/include");
         golden.add("C:/cygwin/lib/gcc/i686-pc-cygwin/3.4.4/include/c++");
@@ -564,7 +565,7 @@ public class GNUCCCCompilerTest {
         MyGNUCCCompiler instance = new MyGNUCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, PredefinedToolKind.CCCompiler, "ICC", "ICC", "/usr/sfw/bin");
         instance.parseCompilerOutput(buf, instance.pair);
         List<String> out = instance.pair.systemIncludeDirectoriesList;
-        List<String> golden = new ArrayList<String>();
+        List<String> golden = new ArrayList<>();
         golden.add("/usr/local/remote/packages/icc_remote/12.0.5.225_fixbug13889838/composerxe-2011.5.225/compiler/include/intel64");
         golden.add("/usr/local/remote/packages/icc_remote/12.0.5.225_fixbug13889838/composerxe-2011.5.225/compiler/include");
         golden.add("/usr/local/include");
@@ -582,7 +583,7 @@ public class GNUCCCCompilerTest {
         
         out = instance.pair.systemPreprocessorSymbolsList;
         Collections.<String>sort(out);
-        golden = new ArrayList<String>();
+        golden = new ArrayList<>();
         golden.add("__SIGNED_CHARS__=1");
         golden.add("__PRAGMA_REDEFINE_EXTNAME=1");
         golden.add("__DATE__=\"Jul 16 2012\"");

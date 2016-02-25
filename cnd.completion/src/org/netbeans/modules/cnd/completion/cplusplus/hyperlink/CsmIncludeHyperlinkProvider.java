@@ -62,11 +62,11 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
+import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -336,20 +336,23 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         }
     }
 
-    private void appendPaths(StringBuilder buf, String title, List<FSPath> includePaths) {
+    private void appendPaths(StringBuilder buf, String title, List<IncludePath> includePaths) {
         if (!includePaths.isEmpty()) {
             buf.append("<i>").append(title).append("</i>\n");  // NOI18N
-            for (FSPath path : includePaths) {
-                FileObject fo = path.getFileObject();
+            for (IncludePath path : includePaths) {
+                FileObject fo = path.getFSPath().getFileObject();
                 if (fo !=  null && fo.isValid() && fo.isFolder()) {
-                    buf.append(path.getPath());
+                    buf.append(path.getFSPath().getPath());
+                    if (path.isFramework()) {
+                        buf.append(" (framework directory)"); // NOI18N
+                    }
                 } else if (fo !=  null && fo.isValid() && fo.isData()) {
                     buf.append("<font color='blue'>");  // NOI18N
-                    buf.append(path.getPath());
+                    buf.append(path.getFSPath().getPath());
                     buf.append("</font>");  // NOI18N
                 } else {
                     buf.append("<font color='red'>");  // NOI18N
-                    buf.append(path.getPath());
+                    buf.append(path.getFSPath().getPath());
                     buf.append("</font>");  // NOI18N
                 }
                 buf.append('\n');

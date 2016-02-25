@@ -45,8 +45,12 @@ package org.netbeans.modules.nativeexecution.api.util;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
+import java.util.Arrays;
+import java.util.Collections;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
@@ -85,6 +89,25 @@ public class PathUtils {
         }
         return null;
     }
+    
+    public static String expandPath(String text, ExecutionEnvironment env) throws IOException, ConnectionManager.CancellationException, ParseException {
+        HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+        
+        text = MacroExpanderFactory.getExpander(env).expandMacros(text, hostInfo.getEnvironment());
+        
+        char fileSeparatorChar = '/'; //NOI18N
+        if (env.isLocal()) {
+            fileSeparatorChar =  File.separatorChar;
+        } 
+        if (text.equals("~")) {//NOI18N
+            return hostInfo.getUserDir();
+        } else if (text.startsWith("~" + fileSeparatorChar)) {//NOI18N
+            return hostInfo.getUserDir() + text.substring(1);
+        } else {
+            return text;
+        }
+    }
+
 
     public static String getExePath(long pid, ExecutionEnvironment execEnv) {
         if (pid > 0) {

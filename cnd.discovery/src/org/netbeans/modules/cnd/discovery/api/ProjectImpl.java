@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
@@ -90,7 +91,7 @@ public final class ProjectImpl implements ProjectProperties {
 
     /**
      * Adds source file in the project
-     * @param sources source file
+     * @param source source file
      */
     public void update(SourceFileProperties source){
         userIncludes.addAll(source.getUserInludePaths());
@@ -108,6 +109,7 @@ public final class ProjectImpl implements ProjectProperties {
     /**
      * Helper method that divides list of source properties by language.
      * @param sources list of source files
+     * @param project
      * @return list of language projects
      */
     public static List<ProjectProperties> divideByLanguage(List<SourceFileProperties> sources, ProjectProxy project) {
@@ -339,13 +341,13 @@ public final class ProjectImpl implements ProjectProperties {
 
         private ItemWrapper(Item item) {
             this.item = item;
-            userIncludePaths = convertFSPaths(item.getUserIncludePaths());
+            userIncludePaths = IncludePath.toStringList(item.getUserIncludePaths());
             userIncludeFiles = convertFSPaths(item.getIncludeFiles());
             userMacroDefinitions =  convertToMap(item.getUserMacroDefinitions());
             userUndefinesMacros =  new ArrayList<>(item.getUndefinedMacros());
             importantFlags = item.getImportantFlags();
         }
-
+ 
         private List<String> convertFSPaths(List<FSPath> list) {
             List<String> res = new ArrayList<>(list.size());
             for(FSPath p : list) {
@@ -353,7 +355,7 @@ public final class ProjectImpl implements ProjectProperties {
             }
             return res;
         }
-
+        
         private Map<String, String> convertToMap(List<String> list) {
             Map<String, String> res = new HashMap<>();
             for(String macro : list){
@@ -404,7 +406,7 @@ public final class ProjectImpl implements ProjectProperties {
 
         @Override
         public List<String> getSystemInludePaths() {
-            return convertFSPaths(item.getSystemIncludePaths());
+            return IncludePath.toStringList(item.getSystemIncludePaths());
         }
 
         @Override
