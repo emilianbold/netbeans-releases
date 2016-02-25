@@ -103,6 +103,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.EventListenerList;
 import javax.swing.text.AttributeSet;
+import javax.swing.text.NavigationFilter;
 import javax.swing.text.Position;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
@@ -1224,42 +1225,12 @@ AtomicLockListener, FoldHierarchyListener {
         
         JTextComponent c = component;
         if (c != null) {
-            BaseDocument doc = (BaseDocument)c.getDocument();
-            boolean dotChanged = false;
-            doc.readLock();
-            try {
-                if (doc != null && offset >= 0 && offset <= doc.getLength()) {
-                    dotChanged = true;
-                    try {
-                        caretPos = doc.createPosition(offset);
-                        markPos = doc.createPosition(offset);
-
-                        Callable<Boolean> cc = (Callable<Boolean>)c.getClientProperty("org.netbeans.api.fold.expander");
-                        if (cc != null && expandFold) {
-                            // the caretPos/markPos were already called.
-                            // nothing except the document is locked at this moment.
-                            try {
-                                cc.call();
-                            } catch (Exception ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        }
-                        if (rectangularSelection) {
-                            setRectangularSelectionToDotAndMark();
-                        }
-                        
-                    } catch (BadLocationException e) {
-                        throw new IllegalStateException(e.toString());
-                        // setting the caret to wrong position leaves it at current position
-                    }
-                }
-            } finally {
-                doc.readUnlock();
-            }
-            
-            if (dotChanged) {
-                fireStateChanged();
-                dispatchUpdate(true);
+            NavigationFilter f = c.getNavigationFilter();
+            if (f == null) {
+                handleSetDot(offset, expandFold);
+            } else {
+                NavBypass bypass = new NavBypass(false);
+                f.setDot(bypass, offset, Position.Bias.Forward);
             }
         }
     }
@@ -1309,9 +1280,90 @@ AtomicLockListener, FoldHierarchyListener {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("moveDot: offset=" + offset); //NOI18N
         }
-
+        
         JTextComponent c = component;
         if (c != null) {
+            NavigationFilter f = c.getNavigationFilter();
+            if (f == null) {
+                handleMoveDot(offset);
+            } else {
+                NavBypass bypass = new NavBypass(false);
+                f.moveDot(bypass, offset, Position.Bias.Forward);
+            }
+        }
+    }
+    
+    private class NavBypass extends NavigationFilter.FilterBypass {
+        private boolean expandFold;
+
+        public NavBypass(boolean expandFold) {
+            this.expandFold = expandFold;
+        }
+        
+        @Override
+        public Caret getCaret() {
+            return BaseCaret.this;
+        }
+
+        @Override
+        public void setDot(int dot, Position.Bias bias) {
+            handleSetDot(dot, expandFold);
+        }
+
+        @Override
+        public void moveDot(int dot, Position.Bias bias) {
+            handleMoveDot(dot);
+        }
+    }
+    
+    private void handleSetDot(int offset, boolean expandFold) {
+        JTextComponent c = component;
+        if (c != null) {
+            c.putClientProperty("navigational.action", null);
+            BaseDocument doc = (BaseDocument)c.getDocument();
+            boolean dotChanged = false;
+            doc.readLock();
+            try {
+                if (doc != null && offset >= 0 && offset <= doc.getLength()) {
+                    dotChanged = true;
+                    try {
+                        caretPos = doc.createPosition(offset);
+                        markPos = doc.createPosition(offset);
+
+                        Callable<Boolean> cc = (Callable<Boolean>)c.getClientProperty("org.netbeans.api.fold.expander");
+                        if (cc != null && expandFold) {
+                            // the caretPos/markPos were already called.
+                            // nothing except the document is locked at this moment.
+                            try {
+                                cc.call();
+                            } catch (Exception ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                        if (rectangularSelection) {
+                            setRectangularSelectionToDotAndMark();
+                        }
+                        
+                    } catch (BadLocationException e) {
+                        throw new IllegalStateException(e.toString());
+                        // setting the caret to wrong position leaves it at current position
+                    }
+                }
+            } finally {
+                doc.readUnlock();
+            }
+            
+            if (dotChanged) {
+                fireStateChanged();
+                dispatchUpdate(true);
+            }
+        }
+    }
+    
+    private void handleMoveDot(int offset) {
+        JTextComponent c = component;
+        if (c != null) {
+            c.putClientProperty("navigational.action", null);
             BaseDocument doc = (BaseDocument)c.getDocument();
             if (doc != null && offset >= 0 && offset <= doc.getLength()) {
                 doc.readLock();

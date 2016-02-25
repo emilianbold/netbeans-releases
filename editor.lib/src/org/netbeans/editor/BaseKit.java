@@ -2230,8 +2230,10 @@ public class BaseKit extends DefaultEditorKit {
                         }
                     }
                     try {
+                        int oldDot = dot;
                         dot = Utilities.getPositionAbove(target, dot, p.x);
                         boolean select = selectionUpAction.equals(getValue(Action.NAME));
+                        target.putClientProperty("navigational.action", SwingConstants.NORTH);
                         if (select) {
                             caret.moveDot(dot);
                             if (RectangularSelectionUtils.isRectangularSelection(target)) {
@@ -2240,6 +2242,22 @@ public class BaseKit extends DefaultEditorKit {
                                 }
                             }
                         } else {
+                            /*
+                            // special case (used in refactoring, in-place rename, javashell)
+                            // 1. if there's an editable region && 
+                            // 2. the region starts at the same visual line as caret &&
+                            // 3. the dot precedes the caret
+                            // THEN update the dot to be the start of editable region.
+                            Object o = target.getClientProperty(PROP_NAVIGATE_BOUNDARIES);
+                            PositionRegion bounds = null;
+                            if (o instanceof PositionRegion) {
+                                bounds = (PositionRegion)o;
+                                int so = bounds.getStartOffset();
+                                if (oldDot > so && dot < so) {
+                                    dot = so;
+                                }
+                            }
+                            */
                             caret.setDot(dot);
                         }
                     } catch (BadLocationException e) {
@@ -2280,8 +2298,10 @@ public class BaseKit extends DefaultEditorKit {
                         }
                     }
                     try {
+                        int oldDot = dot;
                         dot = Utilities.getPositionBelow(target, dot, p.x);
                         boolean select = selectionDownAction.equals(getValue(Action.NAME));
+                        target.putClientProperty("navigational.action", SwingConstants.SOUTH);
                         if (select) {
                             caret.moveDot(dot);
                             if (RectangularSelectionUtils.isRectangularSelection(target)) {
@@ -2290,6 +2310,21 @@ public class BaseKit extends DefaultEditorKit {
                                 }
                             }
                         } else {
+                            // special case (used in refactoring, in-place rename, javashell)
+                            // 1. if there's an editable region && 
+                            // 2. the region starts at the same visual line as caret &&
+                            // 3. the dot precedes the caret
+                            // THEN update the dot to be the start of editable region.
+                            Object o = target.getClientProperty(PROP_NAVIGATE_BOUNDARIES);
+                            PositionRegion bounds = null;
+                            if (o instanceof PositionRegion) {
+                                bounds = (PositionRegion)o;
+                                int so = bounds.getStartOffset();
+                                if (oldDot > so && dot < so) {
+                                    dot = so;
+                                }
+                            }
+                            
                             caret.setDot(dot);
                         }
                     } catch (BadLocationException e) {
@@ -2332,6 +2367,7 @@ public class BaseKit extends DefaultEditorKit {
                     Point magicCaretPosition = caret.getMagicCaretPosition();
                     if (magicCaretPosition == null) {
                         magicCaretPosition = new Point(caretBounds.x, caretBounds.y);
+                        caret.setMagicCaretPosition(magicCaretPosition);
                     }
                     
                     Rectangle visibleBounds = target.getVisibleRect();
@@ -2391,6 +2427,7 @@ public class BaseKit extends DefaultEditorKit {
                     }
 
                     boolean select = selectionPageUpAction.equals(getValue(Action.NAME));
+                    target.putClientProperty("navigational.action", SwingConstants.NORTH);
                     if (select) {
                         caret.moveDot(newCaretOffset);
                     } else {
@@ -2442,6 +2479,7 @@ public class BaseKit extends DefaultEditorKit {
                         pos = caret.getDot();
                     int dot = target.getUI().getNextVisualPositionFrom(target,
                               pos, Position.Bias.Forward, SwingConstants.EAST, null);
+                    target.putClientProperty("navigational.action", SwingConstants.NORTH);
                     if (select) {
                         if (caret instanceof BaseCaret && RectangularSelectionUtils.isRectangularSelection(target)) {
                             ((BaseCaret)caret).extendRectangularSelection(true, false);
@@ -2488,6 +2526,7 @@ public class BaseKit extends DefaultEditorKit {
                     Point magicCaretPosition = caret.getMagicCaretPosition();
                     if (magicCaretPosition == null) {
                         magicCaretPosition = new Point(caretBounds.x, caretBounds.y);
+                        caret.setMagicCaretPosition(magicCaretPosition);
                     }
                     
                     Rectangle visibleBounds = target.getVisibleRect();
@@ -2542,6 +2581,7 @@ public class BaseKit extends DefaultEditorKit {
                     }
 
                     boolean select = selectionPageDownAction.equals(getValue(Action.NAME));
+                    target.putClientProperty("navigational.action", SwingConstants.NORTH);
                     if (select) {
                         caret.moveDot(newCaretOffset);
                     } else {
@@ -2593,6 +2633,7 @@ public class BaseKit extends DefaultEditorKit {
                         pos = caret.getDot();
                     int dot = target.getUI().getNextVisualPositionFrom(target,
                               pos, Position.Bias.Backward, SwingConstants.WEST, null);
+                    target.putClientProperty("navigational.action", SwingConstants.NORTH);
                     if (select) {
                         if (caret instanceof BaseCaret && RectangularSelectionUtils.isRectangularSelection(target)) {
                             ((BaseCaret)caret).extendRectangularSelection(false, false);
@@ -2692,7 +2733,7 @@ public class BaseKit extends DefaultEditorKit {
                         r.x = 0;
                         target.scrollRectToVisible(r);
                     }
-
+                    target.putClientProperty("navigational.action", SwingConstants.NORTH);
                     if (select) {
                         caret.moveDot(dot);
                     } else {
@@ -2744,6 +2785,7 @@ public class BaseKit extends DefaultEditorKit {
                     // For partial view hierarchy check bounds
                     dot = Math.min(dot, target.getUI().getRootView(target).getEndOffset());
                     boolean select = selectionEndLineAction.equals(getValue(Action.NAME));
+                    target.putClientProperty("navigational.action", SwingConstants.NORTH);
                     if (select) {
                         caret.moveDot(dot);
                     } else {
@@ -2781,6 +2823,7 @@ public class BaseKit extends DefaultEditorKit {
                 Caret caret = target.getCaret();
                 int dot = 0; // begin of document
                 boolean select = selectionBeginAction.equals(getValue(Action.NAME));
+                target.putClientProperty("navigational.action", SwingConstants.NORTH);
                 if (select) {
                     caret.moveDot(dot);
                 } else {
@@ -2816,6 +2859,7 @@ public class BaseKit extends DefaultEditorKit {
                 Caret caret = target.getCaret();
                 int dot = target.getDocument().getLength(); // end of document
                 boolean select = selectionEndAction.equals(getValue(Action.NAME));
+                target.putClientProperty("navigational.action", SwingConstants.NORTH);
                 if (select) {
                     caret.moveDot(dot);
                 } else {
@@ -2851,6 +2895,7 @@ public class BaseKit extends DefaultEditorKit {
                 try {
                     int newDotOffset = getNextWordOffset(target);
                     boolean select = selectionNextWordAction.equals(getValue(Action.NAME));
+                    target.putClientProperty("navigational.action", SwingConstants.NORTH);
                     if (select) {
                         if (caret instanceof BaseCaret && RectangularSelectionUtils.isRectangularSelection(target)) {
                             ((BaseCaret) caret).extendRectangularSelection(true, true);
@@ -2936,6 +2981,7 @@ public class BaseKit extends DefaultEditorKit {
                 try {
                     int dot = Utilities.getWordStart(target, caret.getDot());
                     boolean select = selectionBeginWordAction.equals(getValue(Action.NAME));
+                    target.putClientProperty("navigational.action", SwingConstants.NORTH);
                     if (select) {
                         caret.moveDot(dot);
                     } else {
@@ -2967,6 +3013,7 @@ public class BaseKit extends DefaultEditorKit {
                 try {
                     int dot = Utilities.getWordEnd(target, caret.getDot());
                     boolean select = selectionEndWordAction.equals(getValue(Action.NAME));
+                    target.putClientProperty("navigational.action", SwingConstants.NORTH);
                     if (select) {
                         caret.moveDot(dot);
                     } else {
@@ -3016,9 +3063,12 @@ public class BaseKit extends DefaultEditorKit {
                             int bolPos = Utilities.getRowStart(target, dotPos);
                             int eolPos = Utilities.getRowEnd(target, dotPos);
                             eolPos = Math.min(eolPos + 1, doc.getLength()); // include '\n'
+                            target.putClientProperty("navigational.action", SwingConstants.NORTH);
                             caret.setDot(bolPos);
+                            target.putClientProperty("navigational.action", SwingConstants.NORTH);
                             caret.moveDot(eolPos);
                         } catch (BadLocationException e) {
+                            e.printStackTrace();
                             target.getToolkit().beep();
                         } finally {
                             DocumentUtilities.setTypingModification(doc, false);
