@@ -585,7 +585,7 @@ public class FtpClient implements RemoteClient {
             sb.append(rights);
         }
         assert sb.length() == 3 : "Buffer lenght is incorrect: " + sb.length();
-        int rights = Integer.valueOf(sb.toString());
+        int rights = Integer.parseInt(sb.toString());
         return rights;
     }
 

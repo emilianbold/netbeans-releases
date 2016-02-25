@@ -49,6 +49,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -66,14 +67,14 @@ import org.openide.util.Utilities;
 public final class PredefinedSymbols {
     private static final Logger LOGGER = Logger.getLogger(PredefinedSymbols.class.getName());
     // see http://www.php.net/manual/en/reserved.variables.php
-    public static final Collection<String> SUPERGLOBALS = new TreeSet<>(Arrays.asList(
+    public static final Collection<String> SUPERGLOBALS = Collections.unmodifiableSet(new TreeSet<>(Arrays.asList(
             "GLOBALS", "_SERVER", "_GET", "_POST", "_FILES", //NOI18N
             "_COOKIE", "_SESSION", "_REQUEST", "_ENV", "php_errormsg", //NOI18N
-            "HTTP_RAW_POST_DATA", "http_response_header", "argc", "argv")); //NOI18N
+            "HTTP_RAW_POST_DATA", "http_response_header", "argc", "argv"))); //NOI18N
 
 
     public static final List<String> SERVER_ENTRY_CONSTANTS =
-            Arrays.asList(new String[]{
+            Collections.unmodifiableList(Arrays.asList(new String[]{
                 "PHP_SELF",
                 "GATEWAY_INTERFACE",
                 "SERVER_ADDR",
@@ -106,10 +107,10 @@ public final class PredefinedSymbols {
                 "PHP_AUTH_USER",
                 "PHP_AUTH_PW",
                 "AUTH_TYPE"
-            });
+            }));
 
 
-    public static final Set<String> MAGIC_METHODS = new HashSet<>(Arrays.asList(new String[]{
+    public static final Set<String> MAGIC_METHODS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(new String[]{
                 "__callStatic",
                 "__set_state",
                 "__call",
@@ -123,7 +124,7 @@ public final class PredefinedSymbols {
                 "__sleep",
                 "__wakeup",
                 "__toString"
-            }));
+            })));
 
     public static enum VariableKind {
         STANDARD,

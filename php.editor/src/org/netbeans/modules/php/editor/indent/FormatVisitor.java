@@ -1178,6 +1178,7 @@ public class FormatVisitor extends DefaultVisitor {
         scan(node.getRight());
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "BC_IMPOSSIBLE_INSTANCEOF", justification = "Incorrect FB analysis") // NOI18N
     @Override
     public void visit(IfStatement node) {
         addAllUntilOffset(node.getCondition().getStartOffset());
