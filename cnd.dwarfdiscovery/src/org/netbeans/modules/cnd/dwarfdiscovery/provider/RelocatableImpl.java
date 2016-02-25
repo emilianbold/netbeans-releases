@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.RelocatablePathMapper.FS;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.RelocatablePathMapper.ResolvedPath;
+import org.netbeans.modules.cnd.dwarfdump.source.Driver;
 
 /**
  *
@@ -93,8 +94,17 @@ public class RelocatableImpl implements Relocatable {
                         if (resolvedIncluded != null) {
                             newIncl = PathCache.getString(resolvedIncluded.getPath());
                         } else {
-                            if (mapper.discover(fs, root, incl)) {
-                                newIncl = PathCache.getString(mapper.getPath(incl).getPath());
+                            String tmpInkl = incl;
+                            String suffix = "";
+                            if (tmpInkl.endsWith(Driver.FRAMEWORK)) {
+                                suffix = Driver.FRAMEWORK;
+                                tmpInkl = tmpInkl.substring(0, tmpInkl.length()-Driver.FRAMEWORK.length());
+                            }
+                            if (mapper.discover(fs, root, tmpInkl)) {
+                                newIncl = PathCache.getString(mapper.getPath(tmpInkl).getPath());
+                                if (!suffix.isEmpty()) {
+                                    newIncl += Driver.FRAMEWORK;
+                                }
                             }
                         }
                     }

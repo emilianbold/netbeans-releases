@@ -54,7 +54,7 @@ import java.util.Set;
  * @author Alexander Simon
  */
 public class DefaultDriver implements Driver {
-
+    
     public List<String> splitCommandLine(String line, CompileLineOrigin isScriptOutput) {
         List<String> res = new ArrayList<String>();
         int i = 0;
@@ -143,9 +143,9 @@ public class DefaultDriver implements Driver {
                 }
                 res.userIncludes.add(removeQuotes(path));
             } else if (option.startsWith("-F")) { // NOI18N
-                if (option.equals("-F") && st.hasNext()) {
+                if (option.equals("-F") && st.hasNext()) { // NOI18N
                     String path = st.next();
-                    res.userIncludes.add(removeQuotes(path)+"/{framework}"); //NOI18N
+                    res.userIncludes.add(removeQuotes(path)+FRAMEWORK); //NOI18N
                 }
             } else if (option.startsWith("-U")) { // NOI18N
                 String macro = option.substring(2);
@@ -168,12 +168,6 @@ public class DefaultDriver implements Driver {
                     path = st.next();
                 }
                 res.userIncludes.add(removeQuotes(path));
-            } else if (option.startsWith("-isysroot")) { // NOI18N
-                String path = option.substring(8);
-                if (path.length() == 0 && st.hasNext()) {
-                    path = st.next();
-                }
-                res.userIncludes.add(removeQuotes(path)+"/{sysroot}"); //NOI18N
             } else if (option.startsWith("-include")) { // NOI18N
                 String path = option.substring(8);
                 if (path.length() == 0 && st.hasNext()) {

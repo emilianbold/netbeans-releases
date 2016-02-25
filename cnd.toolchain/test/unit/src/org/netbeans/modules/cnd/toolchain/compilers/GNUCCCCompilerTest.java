@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
+import org.netbeans.modules.cnd.dwarfdump.source.Driver;
 import org.netbeans.modules.cnd.toolchain.compilers.CCCCompiler.CompilerDefinitions;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -191,8 +192,8 @@ public class GNUCCCCompilerTest {
         Collections.<String>sort(out);
         List<String> golden = new ArrayList<>();
 
-        golden.add("/Library/Frameworks"+IncludePath.FRAMEWORK);
-        golden.add("/System/Library/Frameworks"+IncludePath.FRAMEWORK);
+        golden.add("/Library/Frameworks"+Driver.FRAMEWORK);
+        golden.add("/System/Library/Frameworks"+Driver.FRAMEWORK);
         golden.add("/usr/include");
         golden.add("/usr/include/c++/4.0.0");
         golden.add("/usr/include/c++/4.0.0/backward");

@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.cnd.dwarfdump.source.Driver;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.filesystems.FileSystem;
 
@@ -56,29 +57,6 @@ import org.openide.filesystems.FileSystem;
  * @author Alexander Simon
  */
 public class IncludePath {
-
-    /**
-     * Framework include directory ends with. For example: predefined system
-     * framework "/Library/Frameworks" path or path included by
-     * "-F/Library/Frameworks" will be represented in by string
-     * "/Library/Frameworks/{framework}". For example code model will resolve
-     * directive with "/": #include <GLUT/glut.h>
-     * in the folder the "/System/Library/Frameworks/GLUT.framework/Headers".
-     */
-    public static final String FRAMEWORK = "/{framework}"; //NOI18N
-
-    /**
-     * Root of system include paths ends with. For example: predefined system
-     * framework "/Library/Frameworks" with option "-isysroot
-     * /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk"
-     * will fit
-     * /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/Library/Frameworks
-     * "-F/Library/Frameworks" will be represented in by string
-     * "/Library/Frameworks/{framework}". In code model include directory will
-     * be
-     * "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/{sysroot}"
-     */
-    public static final String SYS_ROOT = "/{sysroot}"; //NOI18N
 
     private final FSPath fsPath;
     private final boolean isFramework;
@@ -115,15 +93,15 @@ public class IncludePath {
     @Override
     public String toString() {
         if (isFramework()) {
-            return getFSPath().getPath() + IncludePath.FRAMEWORK;
+            return getFSPath().getPath() + Driver.FRAMEWORK;
         } else {
             return getFSPath().getPath();
         }
     }
 
     public static IncludePath toIncludePath(FileSystem fileSystem, String path) {
-        if (path.endsWith(FRAMEWORK)) {
-            return new IncludePath(fileSystem, path.substring(0, path.length()-FRAMEWORK.length()), true);
+        if (path.endsWith(Driver.FRAMEWORK)) {
+            return new IncludePath(fileSystem, path.substring(0, path.length()-Driver.FRAMEWORK.length()), true);
         } else {
             return new IncludePath(fileSystem, path, false);
         }

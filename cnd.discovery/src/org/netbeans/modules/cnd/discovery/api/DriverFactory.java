@@ -106,7 +106,11 @@ public final class DriverFactory {
             if (buf.length() > 0) {
                 buf.append(' ');
             }
-            buf.append(flag);
+            if (flag.indexOf(' ')>0) {
+                buf.append('\'').append(flag).append('\'');
+            } else {
+                buf.append(flag);
+            }
         }
         return buf.toString();
     }
@@ -331,7 +335,7 @@ public final class DriverFactory {
                 } else if (option.startsWith("-F")) { // NOI18N
                     if (option.equals("-F") && st.hasNext()) { // NOI18N
                         String path = st.next();
-                        path = removeQuotes(path)+IncludePath.FRAMEWORK;
+                        path = removeQuotes(path)+Driver.FRAMEWORK;
                         artifacts.userIncludes.add(path);
                     }
                 } else if (option.startsWith("-isystem")) { // NOI18N
@@ -385,13 +389,15 @@ public final class DriverFactory {
                     if (option.equals("-iwithprefixbefore") && st.hasNext()) { // NOI18N
                         st.next();
                     }
-                } else if (option.startsWith("-isysroot")) { // NOI18N
+                } else if (option.startsWith(Driver.ISYSROOT_FLAG)) { // NOI18N
                     String path = option.substring(9);
                     if (path.length() == 0 && st.hasNext()) {
                         path = st.next();
                     }
-                    path = removeQuotes(path)+IncludePath.SYS_ROOT;
-                    artifacts.userIncludes.add(path);
+                    // sure it is an important flag
+                    artifacts.importantFlags.add(option);
+                    path = removeQuotes(path);
+                    artifacts.importantFlags.add(path);
                 } else if (option.startsWith("-iquote")) { // NOI18N
                     //Search dir only for header files requested with "#include " file ""
                     if (option.equals("-iquote") && st.hasNext()) { // NOI18N

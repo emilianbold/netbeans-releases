@@ -150,6 +150,10 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
                                     buf.append(' ');
                                 }
                                 buf.append(s);
+                                if (Driver.ISYSROOT_FLAG.equals(s) && i+1 < split.length) { // NOI18N
+                                    buf.append(' ');
+                                    buf.append(split[i+1]);
+                                }
                             }
                         }
                     }
