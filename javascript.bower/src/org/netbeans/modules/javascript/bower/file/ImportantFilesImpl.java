@@ -60,7 +60,7 @@ public final class ImportantFilesImpl implements ImportantFilesImplementation {
 
     public ImportantFilesImpl(Project project) {
         assert project != null;
-        support = ImportantFilesSupport.create(project.getProjectDirectory(), BowerJson.FILE_NAME, ".bowerrc"); // NOI18N
+        support = ImportantFilesSupport.create(project.getProjectDirectory(), BowerJson.FILE_NAME, BowerrcJson.FILE_NAME);
     }
 
     @Override
