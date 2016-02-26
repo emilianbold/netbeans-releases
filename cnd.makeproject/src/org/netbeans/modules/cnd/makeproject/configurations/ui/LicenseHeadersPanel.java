@@ -56,6 +56,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 
@@ -67,15 +68,9 @@ import org.openide.util.NbBundle.Messages;
  */
 public class LicenseHeadersPanel extends javax.swing.JPanel {
 
-    private static final String defaultProjectLicense = 
-"<#if licenseFirst??>\n" +
-"${licenseFirst}\n" +
-"</#if>\n" +
-"${licensePrefix}Here comes the text of your license\n" +
-"${licensePrefix}Each line should be prefixed with ${licensePrefix}\n" +
-"<#if licenseLast??>\n" +
-"${licenseLast}\n" +
-"</#if>";
+    private static final String LICENSE_PREFIX = "license-"; //NOI18N
+    private static final String TEMPLATES_LICENSES_PATH = "Templates/Licenses"; //NOI18N
+    private static final String DISPLAY_NAME_PROP = "displayName"; //NOI18N
     private final LicensePanelContentHandler handler;
     private final ProjectCustomizer.Category category;
     private final FileChangeAdapter fslistener;
@@ -171,7 +166,7 @@ public class LicenseHeadersPanel extends javax.swing.JPanel {
             }
 
         });
-        FileObject root = FileUtil.getConfigFile("Templates/Licenses");
+        FileObject root = FileUtil.getConfigFile(TEMPLATES_LICENSES_PATH);
         fslistener = new FileChangeAdapter() {
             @Override
             public void fileDataCreated(FileEvent fe) {
@@ -190,7 +185,7 @@ public class LicenseHeadersPanel extends javax.swing.JPanel {
 
             @Override
             public void fileAttributeChanged(FileAttributeEvent fe) {
-                if ("displayName".equals(fe.getName())) {
+                if (DISPLAY_NAME_PROP.equals(fe.getName())) {
                     reloadGlobalTemplatesCombo();
                 }
             }
@@ -209,7 +204,8 @@ public class LicenseHeadersPanel extends javax.swing.JPanel {
     
     @Messages({
         "# {0} - name of license",
-        "ERR_missing_license=The project's license with name \"{0}\" was not found in IDE's license headers."})
+        "ERR_missing_license=The project's license with name \"{0}\" was not found in IDE's license headers."
+    })
     private void reloadGlobalTemplatesCombo() {
         category.setErrorMessage(null);
         GlobalItem item = (GlobalItem) comGlobal.getSelectedItem();
@@ -324,12 +320,12 @@ public class LicenseHeadersPanel extends javax.swing.JPanel {
 
     private void btnGlobalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGlobalActionPerformed
         // TODO add your handling code here:
-        Action action = FileUtil.getConfigObject("Actions/System/org-netbeans-modules-templates-actions-TemplatesAction.instance", Action.class);
+        Action action = FileUtil.getConfigObject("Actions/System/org-netbeans-modules-templates-actions-TemplatesAction.instance", Action.class); //NOI18N
         if (action != null) {
-            System.setProperty("org.netbeans.modules.templates.actions.TemplatesAction.preselect", "Licenses");
-            action.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "perform"));
+            System.setProperty("org.netbeans.modules.templates.actions.TemplatesAction.preselect", "Licenses"); //NOI18N
+            action.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "perform")); //NOI18N
         } else {
-            Exceptions.printStackTrace(new Exception("Actions/System/org-netbeans-modules-templates-actions-TemplatesAction.instance not found"));
+            Exceptions.printStackTrace(new Exception("Actions/System/org-netbeans-modules-templates-actions-TemplatesAction.instance not found")); //NOI18N
         }
     }//GEN-LAST:event_btnGlobalActionPerformed
 
@@ -352,17 +348,17 @@ public class LicenseHeadersPanel extends javax.swing.JPanel {
 
     
     private void loadGlobalLicenses() {
-        FileObject root = FileUtil.getConfigFile("Templates/Licenses");
+        FileObject root = FileUtil.getConfigFile(TEMPLATES_LICENSES_PATH);
         DefaultComboBoxModel model = new DefaultComboBoxModel();
         for (FileObject fo : root.getChildren()) {
-            if (fo.getAttribute("template") == null) {
+            if (fo.getAttribute(DataObject.PROP_TEMPLATE) == null) {
                 continue;
             }
-            String displayName = (String) fo.getAttribute("displayName");
+            String displayName = (String) fo.getAttribute(DISPLAY_NAME_PROP);
             if (displayName == null) {
                 displayName = fo.getName();
-                if (displayName.startsWith("license-")) {
-                   displayName = displayName.substring("license-".length());
+                if (displayName.startsWith(LICENSE_PREFIX)) {
+                   displayName = displayName.substring(LICENSE_PREFIX.length());
                 }
             }
             model.addElement(new GlobalItem(displayName, fo));
@@ -372,7 +368,8 @@ public class LicenseHeadersPanel extends javax.swing.JPanel {
     
     @Messages({
         "# {0} - name of license",
-        "ERR_missing_license_template=<License header template not found for name \"{0}\">"})    
+        "ERR_missing_license_template=<License header template not found for name \"{0}\">"
+    })    
     private void setTextToGlobalLicense() {
         GlobalItem item = (GlobalItem) comGlobal.getSelectedItem();
         if (item == null) {
@@ -392,7 +389,17 @@ public class LicenseHeadersPanel extends javax.swing.JPanel {
     
     @Messages({
         "# {0} - path of license",
-        "ERR_missing_license_path=File at path \"{0}\" doesn't exist."}) 
+        "ERR_missing_license_path=File at path \"{0}\" doesn't exist.",
+        "defaultProjectLicenseText="+
+            "<#if licenseFirst??>\n" +
+            "${licenseFirst}\n" +
+            "</#if>\n" +
+            "${licensePrefix}Here comes the text of your license\n" +
+            "${licensePrefix}Each line should be prefixed with ${licensePrefix}\n" +
+            "<#if licenseLast??>\n" +
+            "${licenseLast}\n" +
+            "</#if>"
+    }) 
     private void setTextToProjectLicense() {
         category.setErrorMessage(null);
         String path = txtProject.getText();
@@ -405,7 +412,7 @@ public class LicenseHeadersPanel extends javax.swing.JPanel {
             }
         } else {
             category.setErrorMessage(ERR_missing_license_path(path));
-            epLicense.setText(defaultProjectLicense);
+            epLicense.setText(defaultProjectLicenseText());
         }
         
     }
@@ -416,7 +423,7 @@ public class LicenseHeadersPanel extends javax.swing.JPanel {
         String name = handler.getGlobalLicenseName();
         String path = handler.getProjectLicenseLocation();
         if (name == null) {
-            name = "default";
+            name = "default"; //NOI18N
         }
         boolean found = selectComboBoxItem(name, true);
         if (path == null) {
@@ -460,7 +467,7 @@ public class LicenseHeadersPanel extends javax.swing.JPanel {
     }
 
     
-    private class GlobalItem {
+    private final class GlobalItem {
         
         final String displayName;
         final FileObject fileObject;
@@ -475,8 +482,8 @@ public class LicenseHeadersPanel extends javax.swing.JPanel {
                 return displayName;
             }
             String name = fileObject.getName();
-            if (name.startsWith("license-")) {
-                name = name.substring("license-".length());
+            if (name.startsWith(LICENSE_PREFIX)) {
+                name = name.substring(LICENSE_PREFIX.length());
             }
             return name;
         }
