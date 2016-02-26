@@ -84,19 +84,21 @@ public final class IncludeDirEntry {
 
     private volatile Boolean exists;
     private final boolean isFramework;
+    private final boolean ignoreSysRoot;
     private final CharSequence asCharSeq;
     private final FileSystem fileSystem;
     private final int hashCode;
 
-    private IncludeDirEntry(boolean exists, boolean framework, FileSystem fileSystem, CharSequence asCharSeq, int hashCode) {
+    private IncludeDirEntry(boolean exists, boolean framework, boolean ignoreSysRoot, FileSystem fileSystem, CharSequence asCharSeq, int hashCode) {
         this.exists = exists;
         this.isFramework = framework;
+        this.ignoreSysRoot = ignoreSysRoot;
         this.fileSystem = fileSystem;
         this.asCharSeq = asCharSeq;
         this.hashCode = hashCode;
     }
 
-    public static IncludeDirEntry get(FSPath fsPath, boolean framework) {
+    public static IncludeDirEntry get(FSPath fsPath, boolean framework, boolean ignoreSysRoot) {
         FileSystem fs = fsPath.getFileSystem();
         String dir = fsPath.getPath();
         CndUtils.assertAbsolutePathInConsole(dir);
@@ -135,7 +137,7 @@ public final class IncludeDirEntry {
             synchronized (delegate) {
                 out = delegate.get(key);
                 if (out == null) {
-                    out = new IncludeDirEntry(exists, framework, entryFS, asCharSeq, key.hashCode());
+                    out = new IncludeDirEntry(exists, framework, ignoreSysRoot, entryFS, asCharSeq, key.hashCode());
                     delegate.put(key, out);
                 } else {
                     resetNonExistanceFlag = true;
@@ -193,6 +195,10 @@ public final class IncludeDirEntry {
 
     public boolean isFramework() {
         return isFramework;
+    }
+
+    public boolean ignoreSysRoot() {
+        return ignoreSysRoot;
     }
 
     public boolean isExistingDirectory() {

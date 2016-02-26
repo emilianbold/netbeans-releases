@@ -51,7 +51,6 @@ import org.clang.frontend.InputKind;
 import org.clang.frontend.LangStandard;
 import org.clang.tools.services.ClankCompilationDataBase;
 import org.clang.tools.services.support.DataBaseEntryBuilder;
-import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
@@ -131,17 +130,18 @@ public final class CsmJClankCompilationDB implements ClankCompilationDataBase {
 
         builder.setLang(getLang(nfi)).setLangStd(getLangStd(nfi));
 
-        for (IncludePath fSPath : nfi.getUserIncludePaths()) {
-            FileObject fileObject = fSPath.getFSPath().getFileObject();
+        // -I or -F
+        for (org.netbeans.modules.cnd.api.project.IncludePath incPath : nfi.getUserIncludePaths()) {
+            FileObject fileObject = incPath.getFSPath().getFileObject();
             if (fileObject != null && fileObject.isFolder()) {
-                builder.addUserIncludePath(fSPath.getFSPath().getURL());
+                builder.addUserIncludePath(incPath.getFSPath().getURL(), incPath.isFramework(), incPath.ignoreSysRoot());
             }
         }
         // -isystem
-        for (IncludePath fSPath : nfi.getSystemIncludePaths()) {
-            FileObject fileObject = fSPath.getFSPath().getFileObject();
+        for (org.netbeans.modules.cnd.api.project.IncludePath incPath : nfi.getSystemIncludePaths()) {
+            FileObject fileObject = incPath.getFSPath().getFileObject();
             if (fileObject != null && fileObject.isFolder()) {
-                builder.addPredefinedSystemIncludePath(fSPath.getFSPath().getURL());
+                builder.addPredefinedSystemIncludePath(incPath.getFSPath().getURL(), incPath.isFramework(), incPath.ignoreSysRoot());
             }
         }
 

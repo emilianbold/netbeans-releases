@@ -68,7 +68,7 @@ public final class APTIncludePathStorage {
             // create new one with light char sequences and put in map
             list = new ArrayList<IncludeDirEntry>(includes.size());
             for (IncludePath cs : includes) {
-                IncludeDirEntry inclEntry = IncludeDirEntry.get(cs.getFSPath(), cs.isFramework());
+                IncludeDirEntry inclEntry = IncludeDirEntry.get(cs.getFSPath(), cs.isFramework(), cs.ignoreSysRoot());
                 list.add(inclEntry);
             }
             List<IncludeDirEntry> old = allIncludes.putIfAbsent(key, list);
