@@ -1,6 +1,6 @@
-#changeset:   16763:efc617acf2d5
+#changeset:   16771:e6b87ec60d1b
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Fri Feb 26 13:58:33 2016 +0300
+#date:        Fri Feb 26 15:55:59 2016 +0300
 #summary:     fixing #255216 - Code assistance not working for QT
-5B18CCB311F983216430157147A112F7D23957BB clank_0.3.6.zip
+DD5ECBE848DDC19E34F4ABB74A7C1950C0F587CA clank_0.3.6.zip
