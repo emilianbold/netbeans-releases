@@ -2889,52 +2889,43 @@ public class BaseKit extends DefaultEditorKit {
 
         public void actionPerformed(ActionEvent evt, final JTextComponent target) {
             if (target != null) {
+                final boolean select = selectionForwardAction.equals(getValue(Action.NAME));
                 Caret caret = target.getCaret();
                 final Document doc = target.getDocument();
                 if (doc != null && caret instanceof EditorCaret) {
                     final EditorCaret editorCaret = (EditorCaret) caret;
-                    editorCaret.moveCarets(new CaretMoveHandler() {
-                        @Override
-                        public void moveCarets(CaretMoveContext context) {
-                            for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
-                                try {
-                                    int offset;
-                                    boolean select = selectionForwardAction.equals(getValue(Action.NAME));
-                                    if (!select && Utilities.isSelectionShowing(editorCaret)) {
-                                        offset = target.getSelectionEnd();
-                                        if (offset != caretInfo.getDot()) {
-                                            offset--;
+                    if (RectangularSelectionUtils.isRectangularSelection(target)) {
+                        RectangularSelectionCaretAccessor.get().extendRectangularSelection(editorCaret, true, false);
+                    } else {
+                        editorCaret.moveCarets(new CaretMoveHandler() {
+                            @Override
+                            public void moveCarets(CaretMoveContext context) {
+                                for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
+                                    try {
+                                        if (!select && caretInfo.isSelection()) {
+                                            int offset = caretInfo.getSelectionEnd();
+                                            context.setDot(caretInfo, doc.createPosition(offset)); // Should destroy the selection
                                         } else {
-                                            // clear the selection, but do not move the cursor
-                                            Position pos = doc.createPosition(offset);
-                                            context.setDot(caretInfo, pos);
-                                            return;
+                                            int offset = caretInfo.getDot();
+                                            offset = target.getUI().getNextVisualPositionFrom(target,
+                                                    offset, Position.Bias.Forward, SwingConstants.EAST, null);
+                                            Position dotPos = doc.createPosition(offset);
+                                            if (select) {
+                                                context.moveDot(caretInfo, dotPos);
+                                            } else {
+                                                context.setDot(caretInfo, dotPos);
+                                            }
                                         }
-                                    } else {
-                                        offset = caretInfo.getDot();
+                                    } catch (BadLocationException ex) {
+                                        target.getToolkit().beep();
                                     }
-                                    int dot = target.getUI().getNextVisualPositionFrom(target,
-                                            offset, Position.Bias.Forward, SwingConstants.EAST, null);
-                                    Position dotPos = doc.createPosition(dot);
-                                    if (select) {
-                                        if (RectangularSelectionUtils.isRectangularSelection(target)) {
-                                            RectangularSelectionCaretAccessor.get().extendRectangularSelection(editorCaret, true, false);
-                                        } else {
-                                            context.moveDot(caretInfo, dotPos);
-                                        }
-                                    } else {
-                                        context.setDot(caretInfo, dotPos);
-                                    }
-                                } catch (BadLocationException ex) {
-                                    target.getToolkit().beep();
                                 }
                             }
-                        }
-                    });
+                        });
+                    }
                 } else {
                 try {
                     int pos;
-                    boolean select = selectionForwardAction.equals(getValue(Action.NAME));
                     if (!select && Utilities.isSelectionShowing(caret))
                     {
                         pos = target.getSelectionEnd(); 
@@ -2951,8 +2942,8 @@ public class BaseKit extends DefaultEditorKit {
                     int dot = target.getUI().getNextVisualPositionFrom(target,
                               pos, Position.Bias.Forward, SwingConstants.EAST, null);
                     if (select) {
-                        if (caret instanceof EditorCaret && RectangularSelectionUtils.isRectangularSelection(target)) {
-                            RectangularSelectionCaretAccessor.get().extendRectangularSelection((EditorCaret)caret, true, false);
+                        if (caret instanceof BaseCaret && RectangularSelectionUtils.isRectangularSelection(target)) {
+                            ((BaseCaret) caret).extendRectangularSelection(true, false);
                         } else {
                             caret.moveDot(dot);
                         }
@@ -3174,47 +3165,43 @@ public class BaseKit extends DefaultEditorKit {
 
         public void actionPerformed(ActionEvent evt, final JTextComponent target) {
             if (target != null) {
+                final boolean select = selectionBackwardAction.equals(getValue(Action.NAME));
                 Caret caret = target.getCaret();
                 final Document doc = target.getDocument();
                 if (doc != null && caret instanceof EditorCaret) {
                     EditorCaret editorCaret = (EditorCaret) caret;
-                    editorCaret.moveCarets(new CaretMoveHandler() {
-                        @Override
-                        public void moveCarets(CaretMoveContext context) {
-                            for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
-                                try {
-                                    int offset;
-                                    boolean select = selectionBackwardAction.equals(getValue(Action.NAME));
-                                    if (!select && caretInfo.isSelectionShowing()) {
-                                        offset = caretInfo.getSelectionStart();
-                                        if (offset != caretInfo.getDot()) {
-                                            offset++;
+                    if (RectangularSelectionUtils.isRectangularSelection(target)) {
+                        RectangularSelectionCaretAccessor.get().extendRectangularSelection(editorCaret, false, false);
+                    } else {
+                        editorCaret.moveCarets(new CaretMoveHandler() {
+                            @Override
+                            public void moveCarets(CaretMoveContext context) {
+                                for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
+                                    try {
+                                        if (!select && caretInfo.isSelection()) {
+                                            int offset = caretInfo.getSelectionStart();
+                                            context.setDot(caretInfo, doc.createPosition(offset)); // Should destroy the selection
                                         } else {
-                                            // clear the selection, but do not move the cursor
-                                            context.setDot(caretInfo, doc.createPosition(offset));
-                                            return;
+                                            int offset = caretInfo.getDot();
+                                            offset = target.getUI().getNextVisualPositionFrom(target,
+                                                    offset, Position.Bias.Backward, SwingConstants.WEST, null);
+                                            Position dotPos = doc.createPosition(offset);
+                                            if (select) {
+                                                context.moveDot(caretInfo, dotPos);
+                                            } else {
+                                                context.setDot(caretInfo, dotPos);
+                                            }
                                         }
-                                    } else {
-                                        offset = caretInfo.getDot();
+                                    } catch (BadLocationException ex) {
+                                        target.getToolkit().beep();
                                     }
-                                    int dot = target.getUI().getNextVisualPositionFrom(target,
-                                            offset, Position.Bias.Backward, SwingConstants.WEST, null);
-                                    Position dotPos = doc.createPosition(dot);
-                                    if (select) {
-                                        context.moveDot(caretInfo, dotPos);
-                                    } else {
-                                        context.setDot(caretInfo, dotPos);
-                                    }
-                                } catch (BadLocationException ex) {
-                                    target.getToolkit().beep();
                                 }
                             }
-                        }
-                    });
+                        });
+                    }
                 } else {
                     try {
                         int pos;
-                        boolean select = selectionBackwardAction.equals(getValue(Action.NAME));
                         if (!select && Utilities.isSelectionShowing(caret)) {
                             pos = target.getSelectionStart();
                             if (pos != caret.getDot()) {
@@ -3230,8 +3217,8 @@ public class BaseKit extends DefaultEditorKit {
                         int dot = target.getUI().getNextVisualPositionFrom(target,
                                 pos, Position.Bias.Backward, SwingConstants.WEST, null);
                         if (select) {
-                            if (caret instanceof EditorCaret && RectangularSelectionUtils.isRectangularSelection(target)) {
-                                RectangularSelectionCaretAccessor.get().extendRectangularSelection((EditorCaret)caret, false, false);
+                            if (caret instanceof BaseCaret && RectangularSelectionUtils.isRectangularSelection(target)) {
+                                ((BaseCaret) caret).extendRectangularSelection(false, false);
                             } else {
                                 caret.moveDot(dot);
                             }
