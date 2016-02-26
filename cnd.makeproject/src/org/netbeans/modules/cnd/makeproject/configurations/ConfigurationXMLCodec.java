@@ -987,7 +987,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 currentLinkerConfiguration.getNorunpathOption().setValue(ds);
             }
         } else if (element.equals(LINKER_DEP_DYN_SERCH_KIND_ELEMENT)) {
-            int kind = Integer.valueOf(currentText);
+            int kind = Integer.parseInt(currentText);
             if (currentLinkerConfiguration != null) {
                 currentLinkerConfiguration.getLibrariesRunTimeSearchPathKind().setValue(kind);
             }
