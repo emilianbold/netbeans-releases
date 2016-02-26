@@ -90,6 +90,12 @@ public class IncludePath {
         return isFramework;
     }
 
+    public boolean ignoreSysRoot() {
+        // all our paths are absolute and already modified based on sysroot prefix;
+        // we ignore any extra work with this include path related to sys roots
+        return true;
+    }
+
     @Override
     public String toString() {
         if (isFramework()) {

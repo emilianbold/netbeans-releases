@@ -1,6 +1,6 @@
-#changeset:   16761:88d59d5e23f3
+#changeset:   16763:efc617acf2d5
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Thu Feb 25 22:23:38 2016 +0300
-#summary:     fixed #258147 - [regression] system frameworks are not supported anymore
-53764A09B71F2A9EAA6EE262DA9D1F3068105F14 clank_0.3.6.zip
+#date:        Fri Feb 26 13:58:33 2016 +0300
+#summary:     fixing #255216 - Code assistance not working for QT
+5B18CCB311F983216430157147A112F7D23957BB clank_0.3.6.zip
