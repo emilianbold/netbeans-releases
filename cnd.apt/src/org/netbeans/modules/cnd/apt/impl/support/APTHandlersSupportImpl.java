@@ -98,7 +98,7 @@ public class APTHandlersSupportImpl {
         // for now prepare IncludeDirEntry for "-include file" elements
         List<IncludeDirEntry> fileEntries = new ArrayList<IncludeDirEntry>(0);
         for (FSPath file : includeFileEntries) {
-            fileEntries.add(IncludeDirEntry.get(file, false));
+            fileEntries.add(IncludeDirEntry.get(file, false, true));
         }
         if (APTTraceFlags.USE_CLANK) {
             return new ClankIncludeHandlerImpl(startFile, sysIncludePaths, userIncludePaths, fileEntries, fileSearch);
