@@ -49,9 +49,7 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.text.Document;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -61,11 +59,9 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.repl.Utils;
 import org.netbeans.modules.jshell.support.ShellSession;
-import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Task;
@@ -88,8 +84,6 @@ public class JShellEnvironment {
      */
     private FileObject        consoleFile;
     
-    private StyledDocument    consoleDocument;
-    
     private ShellSession      shellSession;
     
     private final Project     project;
@@ -100,7 +94,7 @@ public class JShellEnvironment {
     
     private String            displayName;
     
-    private ClassPath         sourcePath;
+    private ClassPath         snippetClassPath;
     
     private PropertyChangeSupport supp = new PropertyChangeSupport(this);
     
@@ -145,9 +139,6 @@ public class JShellEnvironment {
         workRoot.setAttribute("jshell.scratch", true);
         consoleFile = workRoot.createData("console.jsh");
         
-        EditorCookie cake = consoleFile.getLookup().lookup(EditorCookie.class);
-        consoleDocument = cake.openDocument();
-        
         EditorCookie.Observable eob = consoleFile.getLookup().lookup(EditorCookie.Observable.class);
         eob.addPropertyChangeListener(WeakListeners.propertyChange(inst = new L(), eob));
 
@@ -187,35 +178,23 @@ public class JShellEnvironment {
         */
         ClasspathInfo cpi;
         
-        sourcePath = ClassPathSupport.createClassPath(workRoot);
+        snippetClassPath = ClassPathSupport.createClassPath(workRoot);
 
         if (project != null) {
             cpi = ClasspathInfo.create(project.getProjectDirectory());
         } else {
-            cpi = ClasspathInfo.create(
-                    platformTemp.getBootstrapLibraries(),
+            cpi = ClasspathInfo.create(platformTemp.getBootstrapLibraries(),
                     platformTemp.getStandardLibraries(),
-                    sourcePath);
+                    snippetClassPath);
         }
         this.classpathInfo = cpi;
         
-        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] { 
-            sourcePath
-        });
-        
-        URL url = URLMapper.findURL(workRoot, URLMapper.INTERNAL);
-        IndexingManager.getDefault().refreshIndexAndWait(url, null, true);
-        
-        boolean hasIndex = org.netbeans.modules.java.source.indexing.JavaIndex.hasSourceCache(url,true);
-        
+       
         shellSession = ShellSession.createSession(this);
         shellSession.start();
     }
     
     public void reset() {
-        EditorCookie cake = consoleFile.getLookup().lookup(EditorCookie.class);
-        StyledDocument doc = cake.getDocument();
-        this.consoleDocument = doc;
         ShellSession nss = ShellSession.createSession(this);
         nss.start();
         this.shellSession = nss;
@@ -242,8 +221,8 @@ public class JShellEnvironment {
         return cake == null ? null : cake.getDocument();
     }
     
-    public ClassPath getSourcePath() {
-        return sourcePath;
+    public ClassPath getSnippetClassPath() {
+        return snippetClassPath;
     }
 
     /**

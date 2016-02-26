@@ -186,7 +186,7 @@ public class ShellRegistry {
             }
         }
         GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, new ClassPath[] { 
-            env.getSourcePath()
+            env.getSnippetClassPath()
         });
     }
     

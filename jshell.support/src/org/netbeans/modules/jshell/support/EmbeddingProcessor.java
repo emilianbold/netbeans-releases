@@ -111,7 +111,7 @@ public class EmbeddingProcessor {
         
         List<Embedding> embs = new ArrayList<>();
         embs.add(prolog);
-        int l = snapshot.getText().length() + 1;
+        int l = snapshot.getText().length();
         Rng[] fragments = info.getFragments();
         for (int i = 0; i < fragments.length; i++) {
             Rng r = fragments[i];

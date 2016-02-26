@@ -60,6 +60,7 @@ import java.io.PrintStream;
 import java.io.Writer;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
@@ -89,6 +90,7 @@ import org.netbeans.api.editor.guards.GuardedSection;
 import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.api.io.InputOutput;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.openide.execution.ExecutorTask;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -96,11 +98,13 @@ import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.jshell.env.JShellEnvironment;
 import org.netbeans.modules.jshell.model.ConsoleModel.SnippetHandle;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.netbeans.spi.editor.guards.support.AbstractGuardedSectionsProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -521,6 +525,14 @@ public class ShellSession {
             allSessions.put(consoleDocument, new WeakReference<>(this));
         }
         return evaluator.post(() -> {
+            GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] { 
+                env.getSnippetClassPath()
+            });
+
+            URL url = URLMapper.findURL(workRoot, URLMapper.INTERNAL);
+            IndexingManager.getDefault().refreshIndexAndWait(url, null, true);
+            boolean hasIndex = org.netbeans.modules.java.source.indexing.JavaIndex.hasSourceCache(url,true);
+            
             getJShell();
             ModelAccessor.INSTANCE.beforeExecution(model);
             if (isActive()) {
