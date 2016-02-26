@@ -1022,7 +1022,7 @@ public class AstRenderer {
             }
             AST classNode = node;
             while (classNode != null && (isVolatileQualifier(classNode.getType()) 
-                    || isConstQualifier(classNode.getType())) || isAtomicQualifier(classNode.getType())) {
+                    || isConstQualifier(classNode.getType()) || isAtomicQualifier(classNode.getType()))) {
                 classNode = classNode.getNextSibling();
             }
             if (classNode == null) {
