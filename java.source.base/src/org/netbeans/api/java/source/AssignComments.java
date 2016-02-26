@@ -31,6 +31,7 @@
 
 package org.netbeans.api.java.source;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
@@ -40,8 +41,11 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
@@ -177,6 +181,49 @@ class AssignComments extends TreeScanner<Void, Void> {
                 child = ((MemberSelectTree)t).getExpression();
                 break;
                 
+            case VARIABLE: {
+                VariableTree varT = (VariableTree)t;
+                if (varT.getModifiers() != null) {
+                    child = varT.getModifiers();
+                } else {
+                    child = null;
+                }
+                break;
+            }
+            case METHOD: {
+                MethodTree mT = (MethodTree)t;
+                if (mT.getModifiers() != null) {
+                    child = mT.getModifiers();
+                } else {
+                    child = null;
+                }
+                break;
+            }
+            case CLASS: {
+                ClassTree cT = (ClassTree)t;
+                if (cT.getModifiers() != null) {
+                    child = cT.getModifiers();
+                } else {
+                    child = null;
+                }
+                break;
+            }
+                
+            case MODIFIERS: {
+                ModifiersTree modT = (ModifiersTree)t;
+                List<? extends AnnotationTree> annTs = modT.getAnnotations();
+                if (annTs == null || annTs.isEmpty()) {
+                    return pos;
+                }
+                int modPos = ((JCTree)annTs.get(0)).pos;
+                if (modPos < pos) {
+                    child = annTs.get(0);
+                } else {
+                    child = null;
+                }
+                break;
+            }
+                
             default:
                 return pos;
         }
@@ -272,7 +319,11 @@ class AssignComments extends TreeScanner<Void, Void> {
                 }
                 if (cnt == 0) {
                     // look within empty class/interface decls, too
-                    lookWithinEmptyBlock(seq, clazz);
+                    int cPos = ((JCTree)tree).pos;
+                    seq.move(cPos);
+                    if (seq.moveNext()) {
+                        lookWithinEmptyBlock(seq, clazz);
+                    }
                 }
             }
         } else {
@@ -327,7 +378,7 @@ class AssignComments extends TreeScanner<Void, Void> {
             case COMPILATION_UNIT:
                 CompilationUnitTree cut = (CompilationUnitTree) tree;
                 return cut.getPackageName() == null;
-            case MODIFIERS:
+//            case MODIFIERS:
             case PRIMITIVE_TYPE:
                 return true;
             default: return false;
