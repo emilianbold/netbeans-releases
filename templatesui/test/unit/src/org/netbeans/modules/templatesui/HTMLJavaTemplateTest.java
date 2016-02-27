@@ -55,6 +55,7 @@ import net.java.html.json.Property;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.junit.NbTestCase;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -127,6 +128,14 @@ public class HTMLJavaTemplateTest {
             awaitFX();
         }
         assertTrue("error code set to 0", p1.isValid());
+
+        try {
+            System.setProperty("assertgc.paths", "0");
+            NbTestCase.assertGC("Shouldn't GC", it.ref());
+            throw new IllegalStateException("Ref for " + it.data() + " should exist: " + it.ref().get());
+        } catch (AssertionError ex) {
+            // OK
+        }
         
         assertSelectedIndex("Zero th panel is selected", cmp1, 0);
         
