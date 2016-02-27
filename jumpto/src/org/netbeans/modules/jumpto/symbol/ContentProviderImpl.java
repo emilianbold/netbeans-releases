@@ -502,6 +502,11 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
                 }
             }
             if ( !isCanceled ) {
+                if (retry > 0 && message[0] == null) {
+                    //SymbolProvider needs restart but did not provide
+                    //warning message to user, use generic one
+                    message[0] = NbBundle.getMessage(ContentProviderImpl.class, "TXT_PartialResults");
+                }
                 panel.setWarning(message[0]);
                 return new Result (items, nonFinishedProviders, retry);
             } else {
