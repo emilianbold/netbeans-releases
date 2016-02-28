@@ -86,7 +86,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.JumpList;
 import org.netbeans.modules.jumpto.common.AbstractModelFilter;
-import org.netbeans.modules.jumpto.common.Factory;
 import org.netbeans.modules.jumpto.common.ItemRenderer;
 import org.netbeans.modules.jumpto.common.Models;
 import org.netbeans.modules.jumpto.common.Utils;
@@ -137,16 +136,20 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
     private static final Pattern PATTERN_WITH_LINE_NUMBER = Pattern.compile("(.*)"+LINE_NUMBER_SEPARATOR+"(\\d*)");    //NOI18N
 
     private static final ListModel EMPTY_LIST_MODEL = new DefaultListModel();
+    private static final RequestProcessor slidingRp = new RequestProcessor("FileSearchAction-sliding",1);
     //Threading: Throughput 1 required due to inherent sequential code in Work.Request.exclude
-    private static final RequestProcessor rp = new RequestProcessor ("FileSearchAction-RequestProcessor",1);
+    private static final RequestProcessor rp = new RequestProcessor ("FileSearchAction-worker",1);
     private final FilterFactory filterFactory = new FilterFactory();
     private final CurrentSearch<FileDescriptor> currentSearch = new CurrentSearch(filterFactory);
+    private final RequestProcessor.Task slidingTask = slidingRp.create(this::invokeProviders);
     //@GuardedBy("this")
     private FileComarator itemsComparator;
     //@GuardedBy("this")
     private Worker[] running;
     //@GuardedBy("this")
     private RequestProcessor.Task[] scheduledTasks;
+    //@GuardedBy("this")
+    private Request slidingTaskData;
     private Dialog dialog;
     private JButton openBtn;
     private FileSearchPanel panel;
@@ -212,8 +215,11 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         boolean exact = text.endsWith(" "); // NOI18N
         text = text.trim();
         if ( text.length() == 0 || !Utils.isValidInput(text)) {
-            panel.setModel(EMPTY_LIST_MODEL, true);
-            currentSearch.resetFilter();
+            currentSearch.filter(
+                    SearchType.EXACT_NAME,
+                    text,
+                    Collections.singletonMap(AbstractModelFilter.OPTION_CLEAR, Boolean.TRUE));
+            panel.revalidateModel(true);
             return false;
         }
 
@@ -245,73 +251,9 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                 enableOK(panel.searchCompleted(true));
                 return false;
             } else {
-                final String searchText = text;
-                itemsComparator = new FileComarator(
-                        panel.isPreferedProject(),
-                        panel.isCaseSensitive());
-                final Models.MutableListModel baseListModel = Models.mutable(
-                        itemsComparator,
-                        currentSearch.resetFilter(),
-                        null);
-                panel.setModel(Models.refreshable(
-                        baseListModel,
-                        new Factory<FileDescriptor, Pair<FileDescriptor,Runnable>>() {
-                            @Override
-                            public FileDescriptor create(@NonNull final Pair<FileDescriptor,Runnable> param) {
-                                return new AsyncFileDescriptor(param.first(), param.second());
-                            }
-                        }),
-                        false);
-                final Worker.Request request = Worker.newRequest(
-                    searchText,
-                    nameKind,
-                    panel.getCurrentProject(),
-                    lineNr);
-                final Worker.Collector collector = Worker.newCollector(
-                    baseListModel,
-                    new Runnable () {
-                        @Override
-                        public void run() {
-                            SwingUtilities.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    panel.searchProgress();
-                                    enableOK(baseListModel.getSize() > 0);
-                                }
-                            });
-                        }
-                    },
-                    new Runnable () {
-                        @Override
-                        public void run() {
-                            currentSearch.searchCompleted(searchType, searchText, null);
-                            SwingUtilities.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    panel.searchCompleted(true);
-                                }
-                            });
-                        }
-                    },
-                    panel.time);
-                final Worker.Type[] wts = Worker.Type.values();
-                final Worker[] workers = new Worker[wts.length];
-                //Threading: All workers need to be created before they are scheduled
-                for (int i = 0; i < wts.length; i++) {
-                    workers[i] = Worker.newWorker(request, collector, wts[i]);
-                }
-                running = workers;
-                final RequestProcessor.Task[] tasks = new RequestProcessor.Task[workers.length];
-                for (int i = 0; i < workers.length; i++) {
-                    tasks[i] = rp.post(workers[i], 220);
-                }
-                scheduledTasks = tasks;
-                if ( panel.time != -1 ) {
-                    LOGGER.log(
-                        Level.FINE,
-                        "Worker posted after {0} ms.",  //NOI18N
-                        System.currentTimeMillis() - panel.time );
-                }
+                slidingTaskData = new Request(text, nameKind, searchType, lineNr);
+                slidingTask.schedule(500);
+                LOGGER.log(Level.FINE, "Scheduled for text: {0}", text);
                 return true;
             }
         }
@@ -329,6 +271,62 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
     }
 
     // Private methods ---------------------------------------------------------
+
+    private synchronized void invokeProviders() {
+        if (slidingTaskData == null) {
+            return;
+        }
+        final String searchText = slidingTaskData.text;
+        LOGGER.log(Level.FINE, "Calling providers for text: {0}", searchText);
+        itemsComparator = new FileComarator(
+                panel.isPreferedProject(),
+                panel.isCaseSensitive());
+        final Models.MutableListModel baseListModel = Models.mutable(
+                itemsComparator,
+                currentSearch.resetFilter(),
+                null);
+        panel.setModel(Models.refreshable(
+                baseListModel,
+                (@NonNull final Pair<FileDescriptor,Runnable> param) -> new AsyncFileDescriptor(param.first(), param.second())),
+                false);
+        final Worker.Request request = Worker.newRequest(
+            searchText,
+            slidingTaskData.kind,
+            panel.getCurrentProject(),
+            slidingTaskData.lineNo);
+        final Worker.Collector collector = Worker.newCollector(
+                baseListModel,
+                () -> {
+                    SwingUtilities.invokeLater(() -> {
+                        panel.searchProgress();
+                        enableOK(baseListModel.getSize() > 0);
+                    });},
+                () -> {
+                    currentSearch.searchCompleted(slidingTaskData.type, searchText, null);
+                    SwingUtilities.invokeLater(() -> {
+                        panel.searchCompleted(true);
+                    });
+                },
+                panel.time);
+        final Worker.Type[] wts = Worker.Type.values();
+        final Worker[] workers = new Worker[wts.length];
+        //Threading: All workers need to be created before they are scheduled
+        for (int i = 0; i < wts.length; i++) {
+            workers[i] = Worker.newWorker(request, collector, wts[i]);
+        }
+        running = workers;
+        final RequestProcessor.Task[] tasks = new RequestProcessor.Task[workers.length];
+        for (int i = 0; i < workers.length; i++) {
+            tasks[i] = rp.post(workers[i]);
+        }
+        scheduledTasks = tasks;
+        if ( panel.time != -1 ) {
+            LOGGER.log(
+                Level.FINE,
+                "Worker posted after {0} ms.",  //NOI18N
+                System.currentTimeMillis() - panel.time );
+        }
+    }
 
     private void enableOK(final boolean enable) {
         if (openBtn != null) {
@@ -458,6 +456,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
     }
 
     private void cancel() {
+        slidingTask.cancel();
         synchronized (this) {
             if ( running != null ) {
                 for (Worker w : running) {
@@ -502,6 +501,24 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
             if ( e.getSource() == openBtn) {
                 panel.setSelectedFile();
             }
+        }
+    }
+
+    private static final class Request {
+        final String text;
+        final QuerySupport.Kind kind;
+        final SearchType type;
+        final int lineNo;
+
+        Request(
+            @NonNull final String text,
+            @NonNull final QuerySupport.Kind kind,
+            @NonNull final SearchType type,
+            final int lineNo) {
+            this.text = text;
+            this.kind = kind;
+            this.type = type;
+            this.lineNo = lineNo;
         }
     }
 

@@ -49,6 +49,7 @@ package org.netbeans.modules.jumpto.common;
  *
  * @author Petr Hrebejk
  */
+@FunctionalInterface
 public interface Factory<C,P> {
 
     /** Creates new instance of product according to the parameter.

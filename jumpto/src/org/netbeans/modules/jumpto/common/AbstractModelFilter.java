@@ -51,13 +51,14 @@ import org.netbeans.spi.jumpto.support.NameMatcher;
 import org.netbeans.spi.jumpto.support.NameMatcherFactory;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Parameters;
 
 /**
  *
  * @author Tomas Zezula
  */
 public abstract class AbstractModelFilter<T> implements Models.Filter<T> {
+
+    public static final String OPTION_CLEAR = "_clear_content"; //NOI18N
 
     private final ChangeSupport changeSupport;
     //GuardedBy("this")
@@ -89,7 +90,11 @@ public abstract class AbstractModelFilter<T> implements Models.Filter<T> {
             @NullAllowed final Map<String, Object> options) {
         synchronized (this) {
             this.searchText = searchText;
-            this.matcher = createNameMatcher(searchType, searchText, options);
+            if (options != null && options.get(OPTION_CLEAR) == Boolean.TRUE) {
+                this.matcher = NameMatcher.NONE;
+            } else {
+                this.matcher = createNameMatcher(searchType, searchText, options);
+            }
         }
         changeSupport.fireChange();
     }
