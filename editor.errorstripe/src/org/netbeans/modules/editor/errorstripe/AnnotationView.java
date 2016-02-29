@@ -292,11 +292,11 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     }
     
     private int getCurrentLine() {
-        int offset = pane.getCaretPosition(); //TODO: AWT?
         Document doc = pane.getDocument();
         int line = -1;
         
-        if (doc instanceof StyledDocument) {
+        if (doc instanceof StyledDocument && pane.getCaret() != null) {
+            int offset = pane.getCaretPosition(); //TODO: AWT?
             line = NbDocument.findLineNumber((StyledDocument) doc, offset);
         }
         
