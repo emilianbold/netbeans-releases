@@ -937,6 +937,7 @@ public class FormatVisitor extends NodeVisitor {
             Node statement = statements.get(i);
             statement.accept(this);
 
+            int start = getStart(statement);
             int finish = getFinish(statement);
 
             /*
@@ -979,7 +980,7 @@ public class FormatVisitor extends NodeVisitor {
                 }
             }
 
-            FormatToken formatToken = getPreviousToken(finish, null);
+            FormatToken formatToken = getPreviousToken(start < finish ? finish - 1 : finish, null);
             while (formatToken != null && (formatToken.getKind() == FormatToken.Kind.EOL
                     || formatToken.getKind() == FormatToken.Kind.WHITESPACE
                     || formatToken.getKind() == FormatToken.Kind.LINE_COMMENT
