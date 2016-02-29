@@ -206,7 +206,10 @@ is divided into following sections:
                     </filterchain>
                 </loadresource>
                 <condition property="named.module.internal">
-                    <isset property="module.name"/>
+                    <and>
+                        <isset property="module.name"/>
+                        <length length="0" string="${{module.name}}" when="greater"/>
+                    </and>
                 </condition>
                 <condition property="unnamed.module.internal">
                     <not>
@@ -306,7 +309,7 @@ is divided into following sections:
                             <istrue value="${{modules.supported.internal}}"/>
                         </not>
                     </and>
-                </condition>                
+                </condition>
                 <condition property="do.archive+manifest.available">
                     <and>
                         <isset property="manifest.available"/>
@@ -2218,7 +2221,23 @@ is divided into following sections:
                     <path path="${{run.classpath}}"/>
                     <map from="${{build.classes.dir.resolved}}" to="${{dist.jar.resolved}}"/>
                 </pathconvert>
-                <condition property="jar.usage.message" else="" value="To run this application from the command line without Ant, try:${{line.separator}}${{platform.java}} -cp ${{run.classpath.with.dist.jar}} ${{main.class}}">
+                <pathconvert property="run.modulepath.with.dist.jar">
+                    <path path="${{run.modulepath}}"/>
+                    <map from="${{build.classes.dir.resolved}}" to="${{dist.jar.resolved}}"/>
+                </pathconvert>
+                <condition property="jar.usage.message.module.path" value=" -modulepath ${{run.modulepath.with.dist.jar}}" else="">
+                    <and>
+                        <isset property="modules.supported.internal"/>
+                        <length length="0" string="${{run.modulepath.with.dist.jar}}" when="greater"/>
+                    </and>
+                </condition>
+                <condition property="jar.usage.message.class.path" value=" -cp ${{run.classpath.with.dist.jar}}" else="">
+                    <length length="0" string="${{run.classpath.with.dist.jar}}" when="greater"/>
+                </condition>
+                <condition property="jar.usage.message.main.class" value=" -m ${{module.name}}/${{main.class}}" else=" ${{main.class}}">
+                    <isset property="named.module.internal"/>
+                </condition>
+                <condition property="jar.usage.message" else="" value="To run this application from the command line without Ant, try:${{line.separator}}${{platform.java}}${{jar.usage.message.module.path}}${{jar.usage.message.class.path}}${{jar.usage.message.main.class}}">
                     <isset property="main.class.available"/>
                 </condition>
                 <condition property="jar.usage.level" else="debug" value="info">
