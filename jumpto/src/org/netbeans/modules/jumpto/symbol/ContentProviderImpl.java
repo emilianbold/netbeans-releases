@@ -95,57 +95,52 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
 
     private final JButton okButton;
     private final AtomicReference<Collection<? extends SymbolProvider>> typeProviders = new AtomicReference<>();
-    private final CurrentSearch<SymbolDescriptor> currentSearch = new CurrentSearch<>(
-        new Callable<AbstractModelFilter<SymbolDescriptor>>() {
-            @NonNull
-            @Override
-            public AbstractModelFilter<SymbolDescriptor> call() throws Exception {
-                class Filter extends AbstractModelFilter<SymbolDescriptor> implements ChangeListener {
+    private final CurrentSearch<SymbolDescriptor> currentSearch = new CurrentSearch<>(() -> {
+            class Filter extends AbstractModelFilter<SymbolDescriptor> implements ChangeListener {
 
-                    Filter() {
-                        addChangeListener(this);
+                Filter() {
+                    addChangeListener(this);
+                }
+
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    final SymbolDescriptorAttrCopier copier = currentSearch.getAttribute(SymbolDescriptorAttrCopier.class);
+                    if (copier != null) {
+                        copier.clearWrongCase();
                     }
+                }
 
-                    @Override
-                    public void stateChanged(ChangeEvent e) {
-                        final SymbolDescriptorAttrCopier copier = currentSearch.getAttribute(SymbolDescriptorAttrCopier.class);
-                        if (copier != null) {
-                            copier.clearWrongCase();
+                @NonNull
+                @Override
+                protected String getItemValue(@NonNull final SymbolDescriptor item) {
+                    String name = item.getSimpleName();
+                    if (name == null) {
+                        //The SymbolDescriptor does not provide simple name
+                        //the symbol name contains parameter names, so it's needed to strip them
+                        name = item.getSymbolName();
+                        final String[] nameParts = name.split("\\s+|\\(");  //NOI18N
+                        name = nameParts[0];
+                    }
+                    return name;
+                }
+
+                @Override
+                protected void update(@NonNull final SymbolDescriptor item) {
+                    String searchText = getSearchText();
+                    if (searchText == null) {
+                        searchText = "";    //NOI18N
+                    }
+                    SymbolProviderAccessor.DEFAULT.setHighlightText(item, searchText);
+                    final SymbolDescriptorAttrCopier copier = currentSearch.getAttribute(SymbolDescriptorAttrCopier.class);
+                    if (copier != null) {
+                        if (item instanceof AsyncDescriptor && !((AsyncDescriptor<SymbolDescriptor>)item).hasCorrectCase()) {
+                            copier.reportWrongCase((AsyncDescriptor<SymbolDescriptor>)item);
                         }
                     }
-
-                    @NonNull
-                    @Override
-                    protected String getItemValue(@NonNull final SymbolDescriptor item) {
-                        String name = item.getSimpleName();
-                        if (name == null) {
-                            //The SymbolDescriptor does not provide simple name
-                            //the symbol name contains parameter names, so it's needed to strip them
-                            name = item.getSymbolName();
-                            final String[] nameParts = name.split("\\s+|\\(");  //NOI18N
-                            name = nameParts[0];
-                        }
-                        return name;
-                    }
-
-                    @Override
-                    protected void update(@NonNull final SymbolDescriptor item) {
-                        String searchText = getSearchText();
-                        if (searchText == null) {
-                            searchText = "";    //NOI18N
-                        }
-                        SymbolProviderAccessor.DEFAULT.setHighlightText(item, searchText);
-                        final SymbolDescriptorAttrCopier copier = currentSearch.getAttribute(SymbolDescriptorAttrCopier.class);
-                        if (copier != null) {
-                            if (item instanceof AsyncDescriptor && !((AsyncDescriptor<SymbolDescriptor>)item).hasCorrectCase()) {
-                                copier.reportWrongCase((AsyncDescriptor<SymbolDescriptor>)item);
-                            }
-                        }
-                    }
-                };
-                return new Filter();
+                }
             }
-        });
+            return new Filter();
+    });
     //@GuardedBy("this")
     private RequestProcessor.Task task;
     //@GuardedBy("this")
@@ -203,8 +198,11 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
         final boolean isCaseSensitive = panel.isCaseSensitive();
         text = text.trim();
         if ( text.length() == 0 || !Utils.isValidInput(text)) {
-            currentSearch.resetFilter();
-            panel.setModel(new DefaultListModel(), true);
+            currentSearch.filter(
+                    SearchType.EXACT_NAME,
+                    text,
+                    Collections.singletonMap(AbstractModelFilter.OPTION_CLEAR, Boolean.TRUE));
+            panel.revalidateModel(true);
             return false;
         }
         final SearchType searchType = Utils.getSearchType(text, exact, isCaseSensitive, null, null);
@@ -230,7 +228,7 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
                 return false;
             } else {
                 running = new Worker(text, searchType, panel);
-                task = rp.post( running, 220);
+                task = rp.post( running, 500);
                 if ( panel.getStartTime() != -1 ) {
                     LOG.log(
                        Level.FINE,
@@ -414,23 +412,20 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
                             Level.FINE,
                             "Worker for text {0} finished after {1} ms.", //NOI18N
                             new Object[]{text, System.currentTimeMillis() - createTime});
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (done) {
-                                    final Pair<String, String> nameAndScope = Utils.splitNameAndScope(text);
-                                    final SymbolDescriptorAttrCopier oldAttrCopier = currentSearch.setAttribute(SymbolDescriptorAttrCopier.class, attrCopier);
-                                    if (oldAttrCopier != null) {
-                                        oldAttrCopier.clearWrongCase();
-                                    }
-                                    currentSearch.searchCompleted(
-                                            searchType,
-                                            nameAndScope.first(),
-                                            nameAndScope.second());
+                        SwingUtilities.invokeLater(() -> {
+                            if (done) {
+                                final Pair<String, String> nameAndScope = Utils.splitNameAndScope(text);
+                                final SymbolDescriptorAttrCopier oldAttrCopier = currentSearch.setAttribute(SymbolDescriptorAttrCopier.class, attrCopier);
+                                if (oldAttrCopier != null) {
+                                    oldAttrCopier.clearWrongCase();
                                 }
-                                if (!isCanceled) {
-                                    enableOK(panel.setModel(model, done));
-                                }
+                                currentSearch.searchCompleted(
+                                        searchType,
+                                        nameAndScope.first(),
+                                        nameAndScope.second());
+                            }
+                            if (!isCanceled) {
+                                enableOK(panel.setModel(model, done));
                             }
                         });
                     }
