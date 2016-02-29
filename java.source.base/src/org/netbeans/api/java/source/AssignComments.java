@@ -53,10 +53,12 @@ import com.sun.tools.javac.tree.JCTree;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -64,7 +66,6 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.CommentSetImpl;
-import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.query.CommentSet;
 
 import static org.netbeans.modules.java.source.save.PositionEstimator.NOPOS;
@@ -75,6 +76,15 @@ import static org.netbeans.modules.java.source.save.PositionEstimator.NOPOS;
  * @author Pavel Flaska, Rastislav Komara, Jan Lahoda
  */
 class AssignComments extends TreeScanner<Void, Void> {
+    
+    private static final EnumSet<Tree.Kind> JAVADOC_KINDS = EnumSet.of(
+            Tree.Kind.CLASS,
+            Tree.Kind.INTERFACE,
+            Tree.Kind.ENUM,
+
+            Tree.Kind.METHOD,
+            Tree.Kind.VARIABLE
+    );
     
     private final CompilationInfo info;
     private final CompilationUnitTree unit;
@@ -266,7 +276,7 @@ class AssignComments extends TreeScanner<Void, Void> {
                 if (commentMapTarget != null) {
                     mapComments2(tree, false, tree.getKind() != Tree.Kind.BLOCK || parent == null || parent.getKind() != Tree.Kind.METHOD);
                     if (mapComments) {
-                        ((CommentSetImpl) createCommentSet(commentService, tree)).commentsMapped();
+                        ((CommentSetImpl) createCommentSet(tree)).commentsMapped();
                     }
                 }
                 return null;
@@ -347,6 +357,9 @@ class AssignComments extends TreeScanner<Void, Void> {
                     break;
                 }
             } else if (isComment(seq.token().id())) {
+                if (alreadySeenJavadoc(seq.token(), seq)) {
+                    continue;
+                }
                 if (seq.index() > tokenIndexAlreadyAdded)
                     result.add(seq.token());
                 tokenIndexAlreadyAdded = seq.index();
@@ -357,15 +370,16 @@ class AssignComments extends TreeScanner<Void, Void> {
                 break;
             }
         }
-        if (!result.isEmpty()) {
-            CommentSet.RelativePosition position = CommentSet.RelativePosition.INLINE;
-            attachComments(tree, result, position);
-        }
+        attachComments(tree, result, CommentSet.RelativePosition.INLINE);
     }
 
     private void attachComments(Tree tree, CommentsCollection result, CommentSet.RelativePosition position) {
-        if (!mapComments) return;
-        
+        if (!mapComments) {
+            return;
+        }
+        if (result.isEmpty()) {
+            return;
+        }
         CommentSetImpl cs = commentService.getComments(tree);
         for (Token<JavaTokenId> token : result) {
             attachComment(position, cs, token);
@@ -424,6 +438,11 @@ class AssignComments extends TreeScanner<Void, Void> {
         }
         return nl == -1 ? -1 : st - nl;
     }
+    
+    private boolean alreadySeenJavadoc(Token<JavaTokenId> token, TokenSequence<JavaTokenId> seq) {
+        return (token.id() == JavaTokenId.JAVADOC_COMMENT) &&
+               (mixedJDocTokenIndexes.contains(seq.index()));
+    }
 
     private void lookForTrailing(TokenSequence<JavaTokenId> seq, Tree tree) {
         //TODO: [RKo] This does not work correctly... need improvemetns.
@@ -440,6 +459,10 @@ class AssignComments extends TreeScanner<Void, Void> {
                 newlines += nls;
                 // do not map trailing comments for statements enclosed in do/while/if
             } else if (isComment(t.id())) {
+                // TODO: trailing javadocs should be ignored
+                if (alreadySeenJavadoc(t, seq)) {
+                    continue;
+                }
                 if (newlines > 0 && parentEatsTralingComment(seq, tree)) {
                     return;
                 }
@@ -467,7 +490,7 @@ class AssignComments extends TreeScanner<Void, Void> {
 
         for (TrailingCommentsDataHolder h : comments) {
             if (h.newlines < maxLines) {
-                attachComments(Collections.singleton(h.comment), tree, commentService, CommentSet.RelativePosition.TRAILING);
+                attachComments(Collections.singleton(h.comment), tree, CommentSet.RelativePosition.TRAILING);
             } else {
                 index = h.index - 1;
                 break;
@@ -526,15 +549,26 @@ class AssignComments extends TreeScanner<Void, Void> {
         return false;
     }
     
+    /**
+     * Indexes for Javadoc tokens to skip. Sometimes javadocs can be mixed in between preceding 
+     * tree constituents (e.g. between modifiers of a method). In that case, they will be 
+     * assigned to the method before scanning continues to the modifier tree; tokenIndexAlreadyAdded
+     * will not record these commenst scanned "in advance". This Set is a filter so they will
+     * not be added again to nested constituents of the tree.
+     */
+    private Set<Integer>    mixedJDocTokenIndexes = new HashSet<>();
+    
     private void lookForPreceedings(TokenSequence<JavaTokenId> seq, Tree tree) {
         int reset = ((JCTree) tree).pos;
+        int plainCommentLimit = reset;
         if (limit >= 0) {
             // infix and postfix trees must not eat comments up to the symbol, otherwise
             // comments which belong to nested subtrees of operands could be eaten and incorrectly assigned.
-            reset = Math.min(reset, limit);
+            // Javadoc comments will be pushed upwards by individual nodes
+            plainCommentLimit = Math.min(reset, limit);
         }
         CommentsCollection cc = null;
-        while (seq.moveNext() && seq.offset() < reset) {
+        while (seq.moveNext() && seq.offset() < plainCommentLimit) {
             JavaTokenId id = seq.token().id();
             if (isComment(id)) {
                 if (cc == null) {
@@ -544,10 +578,36 @@ class AssignComments extends TreeScanner<Void, Void> {
                 }
             }
         }
-        attachComments(cc, tree, commentService, CommentSet.RelativePosition.PRECEDING);
+        tokenIndexAlreadyAdded = seq.index();
+        if (plainCommentLimit < reset && JAVADOC_KINDS.contains(tree.getKind())) {
+            // look specifically for Javadocs
+
+            // NOTE: local variables and method parameters will be affected by this, too - 
+            // potential javadoc among their modifiers will be assigned to the variable,
+            // rather than to the nearest modifier.
+            int start = reset;
+            int end = 0;
+            CommentsCollection result = new CommentsCollection();
+            while (seq.moveNext() && seq.offset() < reset) {
+                JavaTokenId id = seq.token().id();
+                if (id == JavaTokenId.JAVADOC_COMMENT) {
+                    mixedJDocTokenIndexes.add(seq.index());
+                    start = Math.min(seq.offset(), start);
+                    end = Math.max(seq.offset() + seq.token().length(), end);
+                    result.add(seq.token());
+                }
+            }
+            if (!result.isEmpty()) {
+                if (cc == null) {
+                    cc = result;
+                } else {
+                    cc.merge(result);
+                }
+            }
+        }
+        attachComments(cc, tree, CommentSet.RelativePosition.PRECEDING);
         seq.move(reset);
         seq.moveNext();
-        tokenIndexAlreadyAdded = seq.index();
     }
 
     /**
@@ -584,15 +644,15 @@ class AssignComments extends TreeScanner<Void, Void> {
         return seq.offset() + (tokenIndexAlreadyAdded >= seq.index() ? seq.token().length() : 0);
     }
 
-    private void attachComments(Iterable<? extends Token<JavaTokenId>> foundComments, Tree tree, CommentHandler ch, CommentSet.RelativePosition positioning) {
+    private void attachComments(Iterable<? extends Token<JavaTokenId>> foundComments, Tree tree, CommentSet.RelativePosition positioning) {
         if (foundComments == null || !foundComments.iterator().hasNext() || !mapComments) return;
-        CommentSetImpl set = (CommentSetImpl) createCommentSet(ch, tree);
+        CommentSetImpl set = (CommentSetImpl) createCommentSet(tree);
         if (set.areCommentsMapped()) return ;
         for (Token<JavaTokenId> comment : foundComments) {
             attachComment(positioning, set, comment);
         }
     }
-
+    
     private void attachComment(CommentSet.RelativePosition positioning, CommentSet set, Token<JavaTokenId> comment) {
         Comment c = Comment.create(getStyle(comment.id()), comment.offset(null),
                 getEndPos(comment), NOPOS, getText(comment));
@@ -658,6 +718,11 @@ class AssignComments extends TreeScanner<Void, Void> {
             if (ts.index() < tokenIndexAlreadyAdded) continue;
             t = ts.token();
             if (isComment(t.id())) {
+                if (t.id() == JavaTokenId.JAVADOC_COMMENT &&
+                    mixedJDocTokenIndexes.contains(ts.index())) {
+                    // skip javadocs already added
+                    continue;
+                }
                 result.add(t);
                 start = Math.min(ts.offset(), start);
                 end = Math.max(ts.offset() + t.length(), end);
@@ -679,8 +744,8 @@ class AssignComments extends TreeScanner<Void, Void> {
         return result;
     }
 
-    private CommentSet createCommentSet(CommentHandler ch, Tree lastTree) {
-        return ch.getComments(lastTree);
+    private CommentSet createCommentSet(Tree lastTree) {
+        return commentService.getComments(lastTree);
     }
 
     private boolean isComment(JavaTokenId tid) {

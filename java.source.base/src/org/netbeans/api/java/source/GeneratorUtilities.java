@@ -1412,7 +1412,32 @@ public final class GeneratorUtilities {
                                        : TokenHierarchy.create(unit.getSourceFile().getCharContent(true), JavaTokenId.language());
             TokenSequence<JavaTokenId> seq = tokens.tokenSequence(JavaTokenId.language());
             TreePath tp = TreePath.getPath(cut, original);
-            Tree toMap = (tp != null && original.getKind() != Kind.COMPILATION_UNIT) ? tp.getParentPath().getLeaf() : original;
+            Tree toMap = original;
+            
+            if (tp != null && original.getKind() != Kind.COMPILATION_UNIT) {
+                // find some 'nice' place like method/class/field so the comments get an appropriate contents
+                // Javadocs or other comments may be assigned inappropriately with wider surrounding contents.
+                TreePath p2 = tp;
+                B: while (p2 != null) {
+                    Tree.Kind k = p2.getLeaf().getKind();
+                    toMap = p2.getLeaf();
+                    if (StatementTree.class.isAssignableFrom(k.asInterface())) {
+                        break;
+                    }
+                   switch (p2.getLeaf().getKind()) {
+                       case CLASS: case INTERFACE: case ENUM:
+                       case METHOD:
+                       case BLOCK:
+                       case VARIABLE:
+                           break B;
+                   } 
+                   p2 = p2.getParentPath();
+                }
+                if (toMap == tp.getLeaf()) {
+                    // go at least one level up in a hope it's sufficient.
+                    toMap = tp.getParentPath().getLeaf();
+                }
+            }
             AssignComments translator = new AssignComments(info, original, seq, unit);
             
             translator.scan(toMap, null);
