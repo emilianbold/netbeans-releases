@@ -1757,6 +1757,10 @@ is divided into following sections:
                     <xsl:attribute name="name">java</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
                     <attribute>
+                        <xsl:attribute name="name">modulename</xsl:attribute>
+                        <xsl:attribute name="default"></xsl:attribute>
+                    </attribute>
+                    <attribute>
                         <xsl:attribute name="name">classname</xsl:attribute>
                         <xsl:attribute name="default">${main.class}</xsl:attribute>
                     </attribute>
@@ -1808,8 +1812,16 @@ is divided into following sections:
                     <xsl:attribute name="name">java</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
                     <attribute>
+                        <xsl:attribute name="name">modulename</xsl:attribute>
+                        <xsl:attribute name="default"></xsl:attribute>
+                    </attribute>
+                    <attribute>
                         <xsl:attribute name="name">classname</xsl:attribute>
                         <xsl:attribute name="default">${main.class}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">modulepath</xsl:attribute>
+                        <xsl:attribute name="default"></xsl:attribute>
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">classpath</xsl:attribute>
