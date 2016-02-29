@@ -1315,6 +1315,14 @@ public class FormatVisitor extends NodeVisitor {
             } else {
                 return node.getFinish();
             }
+        } else if (node instanceof Block) {
+            // XXX in truffle the function body finish is at last statement
+            FunctionNode fn = lc.getCurrentFunction();
+            if (fn != null) {
+                if (fn.getBody() == node) {
+                    return getFinish(fn);
+                }
+            }
         } else if (node instanceof VarNode) {
             Token token = getNextNonEmptyToken(getFinishFixed(node) - 1);
             if (token != null && JsTokenId.OPERATOR_SEMICOLON == token.id()) {
