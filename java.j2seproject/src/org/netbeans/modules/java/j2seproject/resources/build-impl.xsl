@@ -212,7 +212,7 @@ is divided into following sections:
                 </condition>
                 <property name="debug.modulepath" value="${{run.modulepath}}"/>
                 <property name="javac.upgrademodulepath" value=""/>
-                <condition property="javac.systemmodulepath.cmd.line.arg" value="-systemmodulepath '${{javac.systemmodulepath}}'" else="">
+                <condition property="javac.systemmodulepath.cmd.line.arg" value="-system '${{javac.systemmodulepath}}'" else="">
                     <and>
                         <isset property="javac.systemmodulepath"/>
                         <length string="${{javac.systemmodulepath}}" when="greater" length="0"/>
