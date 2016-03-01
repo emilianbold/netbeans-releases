@@ -340,7 +340,7 @@ public class FormatVisitor extends NodeVisitor {
         enterBlock(functionNode.getBody());
 
         if (!functionNode.isProgram()) {
-            int start = getFunctionStart(functionNode);
+            int start = getStart(functionNode);
 
             FormatToken leftParen = getNextToken(start, JsTokenId.BRACKET_LEFT_PAREN);
             if (leftParen != null) {
@@ -359,8 +359,7 @@ public class FormatVisitor extends NodeVisitor {
                 assert mark != null && mark.getKind() == FormatToken.Kind.AFTER_LEFT_PARENTHESIS : mark;
                 tokenStream.removeToken(mark);
 
-                // this works if the offset starts with block as it is now
-                FormatToken rightParen = getPreviousToken(getStart(functionNode),
+                FormatToken rightParen = getPreviousToken(getStart(functionNode.getBody()),
                         JsTokenId.BRACKET_RIGHT_PAREN, leftParen.getOffset());
                 if (rightParen != null) {
                     previous = rightParen.previous();
@@ -1277,6 +1276,9 @@ public class FormatVisitor extends NodeVisitor {
         // so string fix would not work
         if (node instanceof BinaryNode) {
             return getStart((BinaryNode) node);
+        }
+        if (node instanceof FunctionNode) {
+            return getFunctionStart((FunctionNode) node);
         }
         // All this magic is because nashorn nodes and tokens don't contain the
         // quotes for string. Due to this we call this method to add 1 to start
