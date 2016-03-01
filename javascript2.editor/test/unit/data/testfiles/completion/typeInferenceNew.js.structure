@@ -1,7 +1,3 @@
-Context:CLASS:[PUBLIC]:ESCAPED{Context}:
-  id:FIELD:[PUBLIC]:ESCAPED{id}<font color="#999999">ESCAPED{ : }Number</font>:
-  user:FIELD:[PUBLIC]:ESCAPED{user}<font color="#999999">ESCAPED{ : }String</font>:
-object:VARIABLE:[PUBLIC]:ESCAPED{object}<font color="#999999">ESCAPED{ : }Car</font>:
 Car:CONSTRUCTOR:[PUBLIC]:ESCAPED{Car}ESCAPED{(}ESCAPED{color}ESCAPED{, }ESCAPED{maker}ESCAPED{)}<font color="#999999">ESCAPED{ : }Car</font>:
   color:FIELD:[PUBLIC]:ESCAPED{color}:
   getColor:METHOD:[PROTECTED]:ESCAPED{getColor}ESCAPED{(}ESCAPED{)}:
@@ -11,3 +7,7 @@ Address:CONSTRUCTOR:[PUBLIC]:ESCAPED{Address}ESCAPED{(}ESCAPED{street}ESCAPED{, 
   country:FIELD:[PUBLIC]:ESCAPED{country}:
   street:FIELD:[PUBLIC]:ESCAPED{street}:
   town:FIELD:[PUBLIC]:ESCAPED{town}:
+Context:CLASS:[PUBLIC]:ESCAPED{Context}:
+  id:FIELD:[PUBLIC]:ESCAPED{id}<font color="#999999">ESCAPED{ : }Number</font>:
+  user:FIELD:[PUBLIC]:ESCAPED{user}<font color="#999999">ESCAPED{ : }String</font>:
+object:VARIABLE:[PUBLIC]:ESCAPED{object}<font color="#999999">ESCAPED{ : }Car</font>:

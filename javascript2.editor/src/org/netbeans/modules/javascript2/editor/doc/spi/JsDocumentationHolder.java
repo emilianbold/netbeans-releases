@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.doc.spi;
 
-import jdk.nashorn.internal.ir.Node;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.Node;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;

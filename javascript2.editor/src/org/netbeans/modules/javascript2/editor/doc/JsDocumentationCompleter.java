@@ -41,13 +41,13 @@
  */
 package org.netbeans.modules.javascript2.editor.doc;
 
-import jdk.nashorn.internal.ir.AccessNode;
-import jdk.nashorn.internal.ir.BinaryNode;
-import jdk.nashorn.internal.ir.FunctionNode;
-import jdk.nashorn.internal.ir.IdentNode;
-import jdk.nashorn.internal.ir.Node;
-import jdk.nashorn.internal.ir.PropertyNode;
-import jdk.nashorn.internal.ir.VarNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.AccessNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.BinaryNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.FunctionNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.IdentNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.Node;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.PropertyNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.VarNode;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -403,35 +403,35 @@ public class JsDocumentationCompleter {
         }
 
         @Override
-        public Node enter(AccessNode accessNode) {
+        public boolean enterAccessNode(AccessNode accessNode) {
             processNode(accessNode);
-            return super.enter(accessNode);
+            return super.enterAccessNode(accessNode);
         }
 
         @Override
-        public Node enter(FunctionNode functionNode) {
+        public boolean enterFunctionNode(FunctionNode functionNode) {
             if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
                 processNode(functionNode);
             }
-            return super.enter(functionNode);
+            return super.enterFunctionNode(functionNode);
         }
 
         @Override
-        public Node enter(PropertyNode propertyNode) {
+        public boolean enterPropertyNode(PropertyNode propertyNode) {
             processNode(propertyNode);
-            return super.enter(propertyNode);
+            return super.enterPropertyNode(propertyNode);
         }
 
         @Override
-        public Node enter(VarNode varNode) {
+        public boolean enterVarNode(VarNode varNode) {
             processNode(varNode);
-            return super.enter(varNode);
+            return super.enterVarNode(varNode);
         }
 
         @Override
-        public Node enter(BinaryNode binaryNode) {
+        public boolean enterBinaryNode(BinaryNode binaryNode) {
             processNode(binaryNode);
-            return super.enter(binaryNode);
+            return super.enterBinaryNode(binaryNode);
         }
     }
 
@@ -441,16 +441,16 @@ public class JsDocumentationCompleter {
         private final StringBuilder farestPath = new StringBuilder();
 
         @Override
-        public Node enter(IdentNode identNode) {
+        public boolean enterIdentNode(IdentNode identNode) {
             farestNode = identNode;
             farestPath.append(".").append(identNode.getName()); //NOI18N
-            return super.enter(identNode);
+            return super.enterIdentNode(identNode);
         }
 
         @Override
-        public Node leave(IdentNode identNode) {
+        public Node leaveIdentNode(IdentNode identNode) {
             farestNode = identNode;
-            return super.leave(identNode);
+            return super.leaveIdentNode(identNode);
         }
 
         public Node getFarestNode() {

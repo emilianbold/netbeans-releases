@@ -41,6 +41,14 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
+import com.oracle.truffle.js.parser.nashorn.internal.ir.Block;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.CallNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.FunctionNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.LexicalContext;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.LiteralNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.Node;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.VarNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.visitor.NodeVisitor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -51,13 +59,6 @@ import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import jdk.nashorn.internal.ir.CallNode;
-import jdk.nashorn.internal.ir.FunctionNode;
-import jdk.nashorn.internal.ir.LiteralNode;
-import jdk.nashorn.internal.ir.Node;
-import jdk.nashorn.internal.ir.ReferenceNode;
-import jdk.nashorn.internal.ir.VarNode;
-import jdk.nashorn.internal.ir.visitor.NodeVisitor;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
@@ -110,28 +111,28 @@ class JsKeyStrokeHandler implements KeystrokeHandler {
             final TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(jsParserResult.getSnapshot(), caretOffset);
             if (root != null && ts != null) {
 
-                root.accept(new NodeVisitor() {
+                root.accept(new NodeVisitor(new LexicalContext()) {
 
                     final HashSet<String> referencedFunction = new HashSet();
 
                     @Override
-                    protected Node enterDefault(Node node) {
+                    protected boolean enterDefault(Node node) {
                         if (node != null && node.getStart() <= caretOffset && caretOffset <= node.getFinish()) {
                             ranges.add(new OffsetRange(node.getStart(), node.getFinish()));
                             return super.enterDefault(node);
                         }
-                        return null;
+                        return false;
                     }
 
                     @Override
-                    public Node enter(FunctionNode node) {
-                        if (node.isScript()) {
+                    public boolean enterFunctionNode(FunctionNode node) {
+                        if (node.isProgram()) {
                             ranges.add(new OffsetRange(0, jsParserResult.getSnapshot().getText().length()));
                             if (node.getStart() <= caretOffset && caretOffset <= node.getFinish()) {
                                 ranges.add(new OffsetRange(node.getStart(), node.getFinish()));
                             }
                             processFunction(node);
-                            return null;
+                            return false;
                         }
                         ts.move(node.getStart());
                         Token<? extends JsTokenId> token = LexUtilities.findPreviousIncluding(ts, Arrays.asList(JsTokenId.KEYWORD_FUNCTION));
@@ -158,53 +159,56 @@ class JsKeyStrokeHandler implements KeystrokeHandler {
                                 processFunction(node);
                             }
                         }
-                        return null;
+                        return false;
                     }
 
                     private void processFunction(FunctionNode node) {
-                        for (Node statement : node.getStatements()) {
+                        Block body = node.getBody();
+                        for (Node statement : body.getStatements()) {
                             statement.accept(this);
                         }
-                        for (Node declaration : node.getDeclarations()) {
-                            declaration.accept(this);
-                        }
-                        for (FunctionNode function : node.getFunctions()) {
-                            if (!referencedFunction.contains(function.getName())) {
-                                function.accept(this);
-                            }
-                        }
+// TRUFFLE                        
+//                        for (Node declaration : node.getDeclarations()) {
+//                            declaration.accept(this);
+//                        }
+//                        for (FunctionNode function : node.getFunctions()) {
+//                            if (!referencedFunction.contains(function.getName())) {
+//                                function.accept(this);
+//                            }
+//                        }
                     }
 
-                    @Override
-                    public Node enter(ReferenceNode node) {
-                        FunctionNode fun = node.getReference();
-                        referencedFunction.add(fun.getName());
-                        fun.accept(this);
-                        return null;
-                    }
+                    // TRUFFLE
+//                    @Override
+//                    public Node enter(ReferenceNode node) {
+//                        FunctionNode fun = node.getReference();
+//                        referencedFunction.add(fun.getName());
+//                        fun.accept(this);
+//                        return null;
+//                    }
 
                     @Override
-                    public Node enter(VarNode node) {
+                    public boolean enterVarNode(VarNode node) {
                         ts.move(node.getStart());
                         Token<? extends JsTokenId> token = LexUtilities.findPreviousIncluding(ts, Arrays.asList(JsTokenId.KEYWORD_VAR));
                         if (token != null && ts.offset() <= caretOffset && caretOffset <= node.getFinish()) {
                             ranges.add(new OffsetRange(ts.offset(), node.getFinish()));
                             return enterDefault(node);
                         }
-                        return null;
+                        return false;
                     }
 
                     @Override
-                    public Node enter(LiteralNode node) {
+                    public boolean enterLiteralNode(LiteralNode node) {
                         if (node.isString() && node.getStart() <= caretOffset && caretOffset <= node.getFinish()) {
                             // include the " or '
                             ranges.add(new OffsetRange(node.getStart() - 1, node.getFinish() + 1));
                         }
-                        return super.enter(node);
+                        return super.enterLiteralNode(node);
                     }
 
                     @Override
-                    public Node enter(CallNode node) {
+                    public boolean enterCallNode(CallNode node) {
                         if (node.getArgs().size() > 1) {
                             if (node.getStart() <= caretOffset && caretOffset <= node.getFinish()) {
                                 ranges.add(new OffsetRange(node.getStart(), node.getFinish()));
@@ -231,9 +235,9 @@ class JsKeyStrokeHandler implements KeystrokeHandler {
                                     arg.accept(this);
                                 }
                             }
-                            return null;
+                            return false;
                         } else {
-                            return super.enter(node);
+                            return super.enterCallNode(node);
                         }
                     }
 

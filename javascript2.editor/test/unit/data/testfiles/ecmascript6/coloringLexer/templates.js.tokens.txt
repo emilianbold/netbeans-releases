@@ -1,0 +1,293 @@
+<Unnamed test>
+TEMPLATE_NOSUBSTITUTION  "`string text`", la=1, st=-1
+EOL             "\n", la=1, st=-1
+EOL             "\n", la=1, st=-1
+TEMPLATE_NOSUBSTITUTION  "`string text line 1\n string text line 2`", la=1, st=-1
+EOL             "\n", la=1, st=-1
+EOL             "\n", la=1, st=-1
+TEMPLATE_HEAD   "`string text ${", la=1, st=-1
+IDENTIFIER      "expression", la=1, st=-1
+TEMPLATE_TAIL   "} string text`", la=1, st=-1
+EOL             "\n", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "console", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "log", la=1, st=-1
+BRACKET_LEFT_PAREN  "(", la=1, st=-1
+TEMPLATE_NOSUBSTITUTION  "`string text line 1\nstring text line 2`", la=1, st=-1
+BRACKET_RIGHT_PAREN  ")", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+LINE_COMMENT    "// "string text line 1", la=1, st=-1
+EOL             "\n", la=1, st=-1
+LINE_COMMENT    "// string text line 2"", la=1, st=-1
+EOL             "\n", la=1, st=-1
+EOL             "\n", la=1, st=-1
+KEYWORD_VAR     "var", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "5", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+KEYWORD_VAR     "var", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+IDENTIFIER      "b", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "10", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "console", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "log", la=1, st=-1
+BRACKET_LEFT_PAREN  "(", la=1, st=-1
+TEMPLATE_HEAD   "`Fifteen is ${", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_PLUS   "+", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+IDENTIFIER      "b", la=1, st=-1
+TEMPLATE_MIDDLE  "} and\\nnot ${", la=1, st=-1
+NUMERIC_DECIMAL  "2", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_MULTIPLICATION  "*", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_PLUS   "+", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+IDENTIFIER      "b", la=1, st=-1
+TEMPLATE_TAIL   "}.`", la=1, st=-1
+BRACKET_RIGHT_PAREN  ")", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+LINE_COMMENT    "// "Fifteen is 15 and", la=1, st=-1
+EOL             "\n", la=1, st=-1
+LINE_COMMENT    "// not 20."", la=1, st=-1
+EOL             "\n", la=1, st=-1
+EOL             "\n", la=1, st=-1
+KEYWORD_VAR     "var", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "5", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+KEYWORD_VAR     "var", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+IDENTIFIER      "b", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "10", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+EOL             "\n", la=1, st=-1
+KEYWORD_FUNCTION  "function", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+IDENTIFIER      "tag", la=1, st=-1
+BRACKET_LEFT_PAREN  "(", la=1, st=-1
+IDENTIFIER      "strings", la=1, st=-1
+OPERATOR_COMMA  ",", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ELLIPSIS  "...", la=1, st=-1
+IDENTIFIER      "values", la=1, st=-1
+BRACKET_RIGHT_PAREN  ")", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+BRACKET_LEFT_CURLY  "{", la=1, st=-1
+EOL             "\n", la=1, st=-1
+WHITESPACE      "  ", la=1, st=-1
+IDENTIFIER      "console", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "log", la=1, st=-1
+BRACKET_LEFT_PAREN  "(", la=1, st=-1
+IDENTIFIER      "strings", la=1, st=-1
+BRACKET_LEFT_BRACKET  "[", la=1, st=-1
+NUMERIC_DECIMAL  "0", la=1, st=-1
+BRACKET_RIGHT_BRACKET  "]", la=1, st=-1
+BRACKET_RIGHT_PAREN  ")", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+LINE_COMMENT    "// "Hello "", la=1, st=-1
+EOL             "\n", la=1, st=-1
+WHITESPACE      "  ", la=1, st=-1
+IDENTIFIER      "console", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "log", la=1, st=-1
+BRACKET_LEFT_PAREN  "(", la=1, st=-1
+IDENTIFIER      "strings", la=1, st=-1
+BRACKET_LEFT_BRACKET  "[", la=1, st=-1
+NUMERIC_DECIMAL  "1", la=1, st=-1
+BRACKET_RIGHT_BRACKET  "]", la=1, st=-1
+BRACKET_RIGHT_PAREN  ")", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+LINE_COMMENT    "// " world "", la=1, st=-1
+EOL             "\n", la=1, st=-1
+WHITESPACE      "  ", la=1, st=-1
+IDENTIFIER      "console", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "log", la=1, st=-1
+BRACKET_LEFT_PAREN  "(", la=1, st=-1
+IDENTIFIER      "values", la=1, st=-1
+BRACKET_LEFT_BRACKET  "[", la=1, st=-1
+NUMERIC_DECIMAL  "0", la=1, st=-1
+BRACKET_RIGHT_BRACKET  "]", la=1, st=-1
+BRACKET_RIGHT_PAREN  ")", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+WHITESPACE      "  ", la=1, st=-1
+LINE_COMMENT    "// 15", la=1, st=-1
+EOL             "\n", la=1, st=-1
+WHITESPACE      "  ", la=1, st=-1
+IDENTIFIER      "console", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "log", la=1, st=-1
+BRACKET_LEFT_PAREN  "(", la=1, st=-1
+IDENTIFIER      "values", la=1, st=-1
+BRACKET_LEFT_BRACKET  "[", la=1, st=-1
+NUMERIC_DECIMAL  "1", la=1, st=-1
+BRACKET_RIGHT_BRACKET  "]", la=1, st=-1
+BRACKET_RIGHT_PAREN  ")", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+WHITESPACE      "  ", la=1, st=-1
+LINE_COMMENT    "// 50", la=1, st=-1
+EOL             "\n", la=1, st=-1
+EOL             "\n", la=1, st=-1
+WHITESPACE      "  ", la=1, st=-1
+KEYWORD_RETURN  "return", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+STRING          ""Bazinga!"", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+BRACKET_RIGHT_CURLY  "}", la=1, st=-1
+EOL             "\n", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "tag", la=1, st=-1
+TEMPLATE_HEAD   "`Hello ${", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_PLUS   "+", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+IDENTIFIER      "b", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+TEMPLATE_MIDDLE  "} world ${", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_MULTIPLICATION  "*", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+IDENTIFIER      "b", la=1, st=-1
+TEMPLATE_TAIL   "}`", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+LINE_COMMENT    "// "Bazinga!"", la=1, st=-1
+EOL             "\n", la=1, st=-1
+EOL             "\n", la=1, st=-1
+KEYWORD_FUNCTION  "function", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+IDENTIFIER      "tag", la=1, st=-1
+BRACKET_LEFT_PAREN  "(", la=1, st=-1
+IDENTIFIER      "strings", la=1, st=-1
+OPERATOR_COMMA  ",", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ELLIPSIS  "...", la=1, st=-1
+IDENTIFIER      "values", la=1, st=-1
+BRACKET_RIGHT_PAREN  ")", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+BRACKET_LEFT_CURLY  "{", la=1, st=-1
+EOL             "\n", la=1, st=-1
+WHITESPACE      "  ", la=1, st=-1
+IDENTIFIER      "console", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "log", la=1, st=-1
+BRACKET_LEFT_PAREN  "(", la=1, st=-1
+IDENTIFIER      "strings", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "raw", la=1, st=-1
+BRACKET_LEFT_BRACKET  "[", la=1, st=-1
+NUMERIC_DECIMAL  "0", la=1, st=-1
+BRACKET_RIGHT_BRACKET  "]", la=1, st=-1
+BRACKET_RIGHT_PAREN  ")", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+EOL             "\n", la=1, st=-1
+WHITESPACE      "  ", la=1, st=-1
+LINE_COMMENT    "// "string text line 1 \\\\n string text line 2"", la=1, st=-1
+EOL             "\n", la=1, st=-1
+BRACKET_RIGHT_CURLY  "}", la=1, st=-1
+EOL             "\n", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "tag", la=1, st=-1
+TEMPLATE_NOSUBSTITUTION  "`string text line 1 \\n string text line 2`", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "String", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "raw", la=1, st=-1
+TEMPLATE_HEAD   "`Hi\\n${", la=1, st=-1
+NUMERIC_DECIMAL  "2", la=1, st=-1
+OPERATOR_PLUS   "+", la=1, st=-1
+NUMERIC_DECIMAL  "3", la=1, st=-1
+TEMPLATE_TAIL   "}!`", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+LINE_COMMENT    "// "Hi\\\\n5!"", la=1, st=-1
+EOL             "\n", la=1, st=-1
+EOL             "\n", la=1, st=-1
+TEMPLATE_HEAD   "`${", la=1, st=-1
+IDENTIFIER      "console", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "warn", la=1, st=-1
+BRACKET_LEFT_PAREN  "(", la=1, st=-1
+STRING          ""this is"", la=1, st=-1
+OPERATOR_COMMA  ",", la=1, st=-1
+KEYWORD_THIS    "this", la=1, st=-1
+BRACKET_RIGHT_PAREN  ")", la=1, st=-1
+TEMPLATE_TAIL   "}`", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+LINE_COMMENT    "// "this is" Window", la=1, st=-1
+EOL             "\n", la=1, st=-1
+EOL             "\n", la=1, st=-1
+RESERVED_LET    "let", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "10", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "console", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "warn", la=1, st=-1
+BRACKET_LEFT_PAREN  "(", la=1, st=-1
+TEMPLATE_HEAD   "`${", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_PLUS_ASSIGNMENT  "+=", la=1, st=-1
+NUMERIC_DECIMAL  "20", la=1, st=-1
+TEMPLATE_TAIL   "}`", la=1, st=-1
+BRACKET_RIGHT_PAREN  ")", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+LINE_COMMENT    "// "30"", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "console", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "warn", la=1, st=-1
+BRACKET_LEFT_PAREN  "(", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+BRACKET_RIGHT_PAREN  ")", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+LINE_COMMENT    "// 30", la=1, st=-1
+----- EOF -----
+
