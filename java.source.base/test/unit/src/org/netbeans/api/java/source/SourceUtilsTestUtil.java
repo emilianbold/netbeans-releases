@@ -244,6 +244,10 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
         if (bootClassPath == null) {
             try {
                 String cp = System.getProperty("sun.boot.class.path");
+                String tools = System.getProperty("tools.jar.location");
+                if (tools != null) {
+                    cp = cp + System.getProperty("path.separator") + tools;
+                }
                 List<URL> urls = new ArrayList<URL>();
                 for (String path : cp.split(Pattern.quote(System.getProperty("path.separator")))) {
                     final File f = new File(path);
@@ -264,7 +268,6 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
                         urls.add(fo.getURL());
                     }
                 }
-                
                 bootClassPath = urls;
             } catch (FileStateInvalidException e) {
                 if (log.isLoggable(Level.SEVERE))
