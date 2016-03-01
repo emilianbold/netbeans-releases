@@ -164,25 +164,15 @@ is divided into following sections:
                 <property file="nbproject/project.properties"/>
             </target>
 
-            <target name="-init-modules-properties">
+            <target name="-init-modules-supported">
                 <condition property="modules.supported.internal" value="true">
                     <not>
                         <matches string="${{javac.source}}" pattern="1\.[0-8](\..*)?"/>
                     </not>
                 </condition>
-                <property name="javac.modulepath" value=""/>
-                <property name="run.modulepath" value="${{javac.modulepath}}:${{build.classes.dir}}"/>
-                <property name="debug.modulepath" value="${{run.modulepath}}"/>
-                <property name="javac.upgrademodulepath" value=""/>
-                <condition property="javac.systemmodulepath.cmd.line.arg" value="-systemmodulepath '${{javac.systemmodulepath}}'" else="">
-                    <and>
-                        <isset property="javac.systemmodulepath"/>
-                        <length string="${{javac.systemmodulepath}}" when="greater" length="0"/>
-                    </and>
-                </condition>
             </target>
 
-            <target name="-init-module-name" depends="-init-modules-properties" if="modules.supported.internal">
+            <target name="-init-modules-properties" depends="-init-modules-supported" if="modules.supported.internal">
                 <loadresource property="module.name" quiet="true">
                     <javaresource>
                         <xsl:attribute name="name">module-info.java</xsl:attribute>
@@ -216,11 +206,23 @@ is divided into following sections:
                         <isset property="named.module.internal"/>
                     </not>
                 </condition>
+                <property name="javac.modulepath" value=""/>
+                <condition property="run.modulepath" value="${{javac.modulepath}}:${{build.classes.dir}}" else="${{javac.modulepath}}">
+                    <isset property="named.module.internal"/>
+                </condition>
+                <property name="debug.modulepath" value="${{run.modulepath}}"/>
+                <property name="javac.upgrademodulepath" value=""/>
+                <condition property="javac.systemmodulepath.cmd.line.arg" value="-systemmodulepath '${{javac.systemmodulepath}}'" else="">
+                    <and>
+                        <isset property="javac.systemmodulepath"/>
+                        <length string="${{javac.systemmodulepath}}" when="greater" length="0"/>
+                    </and>
+                </condition>
                 <property name="module.name" value=""/>
             </target>
 
             <target name="-do-init">
-                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-init-modules-properties,-init-module-name,-init-macrodef-property</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-init-modules-properties,-init-macrodef-property</xsl:attribute>
 
                 <xsl:choose>
                     <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
@@ -482,7 +484,7 @@ is divided into following sections:
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-javac-with-modules" depends="-init-ap-cmdline-properties, -init-module-name" if="modules.supported.internal">
+            <target name="-init-macrodef-javac-with-modules" depends="-init-ap-cmdline-properties, -init-modules-properties" if="modules.supported.internal">
                 <macrodef>
                     <xsl:attribute name="name">javac</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
@@ -1700,7 +1702,8 @@ is divided into following sections:
                     </sequential>
                 </macrodef>
             </target>
-            <target name="-init-macrodef-java-with-modules" if="named.module.internal">
+
+            <target name="-init-macrodef-java-with-modules" if="named.module.internal" depends="-init-modules-properties">
                 <macrodef>
                     <xsl:attribute name="name">java</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
@@ -1755,7 +1758,7 @@ is divided into following sections:
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-java-with-unnamed-module" if="unnamed.module.internal">
+            <target name="-init-macrodef-java-with-unnamed-module" if="unnamed.module.internal" depends="-init-modules-properties">
                 <macrodef>
                     <xsl:attribute name="name">java</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
@@ -1810,7 +1813,7 @@ is divided into following sections:
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-java-without-modules" unless="modules.supported.internal">
+            <target name="-init-macrodef-java-without-modules" unless="modules.supported.internal" depends="-init-modules-properties">
                 <macrodef>
                     <xsl:attribute name="name">java</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
@@ -1862,7 +1865,7 @@ is divided into following sections:
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-java" depends="-init-modules-properties, -init-macrodef-java-with-modules, -init-macrodef-java-with-unnamed-module, -init-macrodef-java-without-modules"/>
+            <target name="-init-macrodef-java" depends="-init-macrodef-java-with-modules, -init-macrodef-java-with-unnamed-module, -init-macrodef-java-without-modules"/>
 
             <target name="-init-macrodef-copylibs">
                 <macrodef>
