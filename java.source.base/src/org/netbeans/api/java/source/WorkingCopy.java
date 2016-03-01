@@ -784,7 +784,7 @@ public class WorkingCopy extends CompilationController {
                     return null;
                 }
 
-            }.scan(new TreePath(diffContext.origUnit), null);
+            }.scan(diffContext.origUnit, null);
         } else {
             TreePath topLevel = new TreePath(diffContext.origUnit);
             
