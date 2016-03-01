@@ -48,6 +48,7 @@ import com.oracle.truffle.js.parser.nashorn.internal.ir.BlockStatement;
 import com.oracle.truffle.js.parser.nashorn.internal.ir.CallNode;
 import com.oracle.truffle.js.parser.nashorn.internal.ir.CaseNode;
 import com.oracle.truffle.js.parser.nashorn.internal.ir.CatchNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.Expression;
 import com.oracle.truffle.js.parser.nashorn.internal.ir.ForNode;
 import com.oracle.truffle.js.parser.nashorn.internal.ir.FunctionNode;
 import com.oracle.truffle.js.parser.nashorn.internal.ir.IdentNode;
@@ -448,8 +449,15 @@ public class FormatVisitor extends NodeVisitor {
 
             // there is -1 as on the finish position may be some outer paren
             // so we really need the position precisely
+            int stopMark = getStart(callNode);
+            // lets calculate stop mark precisely to not to catch on arguments
+            // parens in broken source
+            List<Expression> args = callNode.getArgs();
+            if (!args.isEmpty()) {
+                stopMark = getFinish(args.get(args.size() - 1));
+            }
             FormatToken rightBrace = getPreviousToken(getFinish(callNode) - 1,
-                    JsTokenId.BRACKET_RIGHT_PAREN, getStart(callNode));
+                    JsTokenId.BRACKET_RIGHT_PAREN, stopMark);
             if (rightBrace != null) {
                 previous = findVirtualToken(rightBrace,
                         FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS, true);
