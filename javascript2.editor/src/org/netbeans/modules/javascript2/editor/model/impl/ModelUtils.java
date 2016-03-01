@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import jdk.nashorn.internal.ir.Node;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.Node;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -50,17 +50,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.JsCompletionItem;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
@@ -94,7 +91,7 @@ public class ModelUtils {
 
     public static final String ARGUMENTS = "arguments"; //NOI18N
 
-    private static final String GENERATED_FUNCTION_PREFIX = "_L"; //NOI18N
+    private static final String GENERATED_FUNCTION_PREFIX = "L:"; //NOI18N
     
     private static final String GENERATED_ANONYM_PREFIX = "Anonym$"; //NOI18N
     
@@ -446,7 +443,7 @@ public class ModelUtils {
         Collection<TypeUsage> result = new HashSet<TypeUsage>();
         SemiTypeResolverVisitor visitor = new SemiTypeResolverVisitor();
         if (expression != null) {
-            result = visitor.getSemiTypes(expression);
+            result = visitor.getSemiTypes(expression, builder);
         }
         if (builder.getCurrentWith()!= null) {
             Collection<TypeUsage> withResult = new HashSet<TypeUsage>();
@@ -470,7 +467,11 @@ public class ModelUtils {
             result.add(type);
         } else if (Type.UNDEFINED.equals(type.getType())) {
             if (object.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
-                result.add(new TypeUsageImpl(object.getFullyQualifiedName(), type.getOffset(), true));
+                if (object.getParent().getJSKind() == JsElement.Kind.CLASS) {
+                    result.add(new TypeUsageImpl(object.getParent().getFullyQualifiedName(), type.getOffset(), true));
+                } else {
+                    result.add(new TypeUsageImpl(object.getFullyQualifiedName(), type.getOffset(), true));
+                }
             } else {
                 result.add(new TypeUsageImpl(Type.UNDEFINED, type.getOffset(), true));
             }

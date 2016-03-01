@@ -1,0 +1,10 @@
+<FunctionNode name='import-named-as-specifiers.js' kind='SCRIPT' start='0' end='37'>
+  <isProgram/>
+  <!-- FunctionNode Parameters -->
+  <!-- FunctionNode Body -->
+  <Block start='0' end='36'>
+    <isFunctionBody/>
+    <isSynthetic/>
+    <!-- Block Statements -->
+  </Block>
+</FunctionNode>

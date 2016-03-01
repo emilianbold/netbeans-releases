@@ -37,9 +37,10 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
-import jdk.nashorn.internal.parser.Token;
-import jdk.nashorn.internal.parser.TokenType;
-import jdk.nashorn.internal.runtime.ErrorManager;
+import com.oracle.truffle.js.parser.nashorn.internal.parser.Token;
+import com.oracle.truffle.js.parser.nashorn.internal.parser.TokenType;
+import com.oracle.truffle.js.parser.nashorn.internal.runtime.ErrorManager;
+import com.oracle.truffle.js.parser.nashorn.internal.runtime.ParserException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -51,7 +52,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import jdk.nashorn.internal.runtime.ParserException;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Error;
