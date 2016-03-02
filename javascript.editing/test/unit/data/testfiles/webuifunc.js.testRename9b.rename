@@ -1,8 +1,0 @@
-4:  * @param {Node} |>domNode<| The DOM node to assign properties to.
-14: webui.suntheme4_2.widget.widgetBase.prototype.setCommonProps = function(|>domNode<|, props,
-16:     if (|>domNode<| == null || props == null) {
-20:         |>domNode<|.accessKey = props.accessKey;
-23:         |>domNode<|.dir = props.dir;
-26:         |>domNode<|.lang = props.lang;
-29:         |>domNode<|.tabIndex = props.tabIndex;
-32:         |>domNode<|.title = props.title;
