@@ -1120,7 +1120,6 @@ public class ImportProject implements PropertyChangeListener {
                     done = discoveryByDwarf(done);
                 }
             }
-            switchModel(true);
             postModelDiscovery();
         } catch (Throwable ex) {
             isFinished = true;
@@ -1287,6 +1286,7 @@ public class ImportProject implements PropertyChangeListener {
             };
             CsmListeners.getDefault().addProgressListener(listener);
             ImportProject.listeners.put(p, listener);
+            switchModel(true);
         } else {
             isFinished = true;
         }
