@@ -1,0 +1,10 @@
+<FunctionNode name='import-default-as.js' kind='SCRIPT' start='0' end='36'>
+  <isProgram/>
+  <!-- FunctionNode Parameters -->
+  <!-- FunctionNode Body -->
+  <Block start='0' end='35'>
+    <isFunctionBody/>
+    <isSynthetic/>
+    <!-- Block Statements -->
+  </Block>
+</FunctionNode>

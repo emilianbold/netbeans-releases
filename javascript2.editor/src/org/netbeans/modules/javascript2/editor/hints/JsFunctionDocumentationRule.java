@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.javascript2.editor.hints;
 
-import jdk.nashorn.internal.ir.FunctionNode;
-import jdk.nashorn.internal.ir.IdentNode;
-import jdk.nashorn.internal.ir.Node;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.FunctionNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.IdentNode;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.Node;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -170,11 +170,12 @@ public class JsFunctionDocumentationRule extends JsAstRule {
         }
 
         @Override
-        public Node enter(FunctionNode fn) {
+        public boolean enterFunctionNode(FunctionNode fn) {
             JsDocumentationHolder docHolder = context.getJsParserResult().getDocumentationHolder();
-            if (fn.getParent() == null
+            // TRUFFLE
+            if (fn.isProgram()
                     || docHolder.getCommentForOffset(fn.getStart(), docHolder.getCommentBlocks()) == null) {
-                return super.enter(fn);
+                return super.enterFunctionNode(fn);
             }
 
             List<DocParameter> docParameters = docHolder.getParameters(fn);
@@ -204,7 +205,7 @@ public class JsFunctionDocumentationRule extends JsAstRule {
                         600));
             }
 
-            return super.enter(fn);
+            return super.enterFunctionNode(fn);
         }
 
         private String missingParameters(List<IdentNode> functionParams, List<DocParameter> documentationParams) {
