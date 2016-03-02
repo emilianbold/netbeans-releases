@@ -57,7 +57,9 @@ import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.modules.maven.api.MavenValidators;
 import org.netbeans.modules.maven.api.archetype.Archetype;
-import static org.netbeans.modules.maven.apisupport.Bundle.*;
+import static org.netbeans.modules.maven.apisupport.Bundle.ADD_Module_Name;
+import static org.netbeans.modules.maven.apisupport.Bundle.Handle_Download;
+import static org.netbeans.modules.maven.apisupport.Bundle.NbmWizardPanelVisual_wait;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
@@ -266,6 +268,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
             }
         });
 
+        cbOsgiDeps.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(cbOsgiDeps, org.openide.util.NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.cbOsgiDeps.text")); // NOI18N
         cbOsgiDeps.setEnabled(false);
 

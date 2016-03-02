@@ -31,10 +31,13 @@
 package org.netbeans.modules.java.hints;
 
 import com.sun.source.util.TreePath;
+import java.io.File;
 import java.util.List;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -89,4 +92,19 @@ public class IllegalInstanceOfTest extends TreeRuleTestBase {
         return new IllegalInstanceOf().run(info, path);
     }
 
+    @Override
+    protected FileObject[] extraClassPath() {
+        String s = System.getProperty("hints-tools.jar.location");
+        if (s != null) {
+            File f = new File(s);
+            if (f.canRead()) {
+                FileObject arch = FileUtil.toFileObject(f);
+                FileObject root = FileUtil.getArchiveRoot(arch);
+                return new FileObject[] { root == null ? arch : root };
+            }
+        }
+        return super.extraClassPath();
+    }
+
+    
 }
