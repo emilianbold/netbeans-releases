@@ -46,6 +46,8 @@ package org.netbeans.api.java.source;
 
 import com.sun.source.doctree.DocCommentTree;
 import com.sun.source.doctree.DocTree;
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionStatementTree;
@@ -84,8 +86,10 @@ import javax.tools.JavaFileObject;
 
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ForLoopTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.TreeVisitor;
 import com.sun.source.tree.TryTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.DocTrees;
 import java.util.Collection;
 import java.util.Comparator;
@@ -555,6 +559,38 @@ public class WorkingCopy extends CompilationController {
         }
     }
 
+    /**
+     * Resolves all fields that belong to the same field group. 
+     */
+    private static @NonNull Collection<? extends Tree> collectFieldGroup(@NonNull CompilationInfo info, 
+            @NonNull TreePath parentPath, Tree leaf) {
+        Iterable<? extends Tree> children;
+
+        switch (parentPath.getLeaf().getKind()) {
+            case BLOCK: children = ((BlockTree) parentPath.getLeaf()).getStatements(); break;
+            case ANNOTATION_TYPE:
+            case CLASS:
+            case ENUM:
+            case INTERFACE:
+                children = ((ClassTree) parentPath.getLeaf()).getMembers(); break;
+            case CASE:  children = ((CaseTree) parentPath.getLeaf()).getStatements(); break;
+            default:    children = Collections.singleton(leaf); break;
+        }
+
+        List<Tree> result = new LinkedList<>();
+        ModifiersTree currentModifiers = ((VariableTree) leaf).getModifiers();
+
+        for (Tree c : children) {
+            if (c.getKind() != Kind.VARIABLE) continue;
+
+            if (((VariableTree) c).getModifiers() == currentModifiers) {
+                result.add(c);
+            }
+        }
+        
+        return result;
+    }
+
     private List<Difference> processCurrentCompilationUnit(final DiffContext diffContext, final Map<?, int[]> tag2Span) throws IOException, BadLocationException {
         final Set<TreePath> pathsToRewrite = new LinkedHashSet<TreePath>();
         final Map<TreePath, Map<Tree, Tree>> parent2Rewrites = new IdentityHashMap<TreePath, Map<Tree, Tree>>();
@@ -656,13 +692,44 @@ public class WorkingCopy extends CompilationController {
                     return c;
                 }
 
+                /**
+                 * True, if inside variable type or modifers part of a variable
+                 * or field (not parameter). More efficient detection of field groups.
+                 */
+                private boolean beginVariableDeclarator;
+
+                /**
+                 * Will be set to non-null when traversing through variable, which
+                 * is a part of variable group.
+                 */
+                private TreePath variableParent;
+                
                 @Override
                 public Void scan(Tree tree, Void p) {
+                    boolean saveVarDec = beginVariableDeclarator;
+                    
+                    if (tree != null) {
+                        if (tree.getKind() == Tree.Kind.VARIABLE &&
+                            collectFieldGroup(WorkingCopy.this, 
+                                    getCurrentPath(), tree).size() > 1) {
+                            // start of a variable, which is a part of a variable group
+                            variableParent = getCurrentPath();
+                        } else if (variableParent != null && getCurrentPath().getLeaf().getKind() == Tree.Kind.VARIABLE) {
+                            VariableTree vt = (VariableTree)getCurrentPath().getLeaf();
+                            beginVariableDeclarator = vt.getModifiers() == tree || vt.getType() == tree;
+                        }
+                    }
                     if (changes.containsKey(tree) || docChanges.containsKey(tree)) {
                         if (currentParent == null) {
-                            currentParent = getParentPath(getCurrentPath(), tree);
-                            if (currentParent.getParentPath() != null && currentParent.getParentPath().getLeaf().getKind() == Kind.COMPILATION_UNIT) {
-                                currentParent = currentParent.getParentPath();
+                            if (beginVariableDeclarator) {
+                                // use common variable group parent instead of computed parent,
+                                // if rewriting inside common pat of a field group.
+                                currentParent = variableParent;
+                            } else {
+                                currentParent = getParentPath(getCurrentPath(), tree);
+                                if (currentParent.getParentPath() != null && currentParent.getParentPath().getLeaf().getKind() == Kind.COMPILATION_UNIT) {
+                                    currentParent = currentParent.getParentPath();
+                                }
                             }
                             pathsToRewrite.add(currentParent);
                             if (!parent2Rewrites.containsKey(currentParent)) {
@@ -697,6 +764,7 @@ public class WorkingCopy extends CompilationController {
                     if (currentParent != null && currentParent.getLeaf() == tree) {
                         currentParent = null;
                     }
+                    beginVariableDeclarator = saveVarDec;
                     return null;
                 }
 
