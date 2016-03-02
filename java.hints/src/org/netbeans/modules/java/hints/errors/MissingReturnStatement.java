@@ -102,7 +102,11 @@ public class MissingReturnStatement implements ErrorRule<Void> {
     @Override
     public List<Fix> run(CompilationInfo compilationInfo, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
         TreePath method = null;
-        TreePath tp = compilationInfo.getTreeUtilities().pathFor(offset + 1);
+        if (diagnosticKey != null && diagnosticKey.contains("/compiler.misc.incompatible.ret.type.in.lambda/")) { // NOI18N
+            // PENDING: when issue #258201 is implemented, use the new method instead of this HACK
+            offset++;
+        }
+        TreePath tp = compilationInfo.getTreeUtilities().pathFor(offset);
 
         while (tp != null && !TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
             Kind kind = tp.getLeaf().getKind();
