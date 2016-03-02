@@ -1,7 +1,0 @@
-function |>METHOD:myfunc<|(param1, param2) {
-    param1;
-    |>GLOBAL:param3<|;
-    param2;
-    return 0;
-}
-
