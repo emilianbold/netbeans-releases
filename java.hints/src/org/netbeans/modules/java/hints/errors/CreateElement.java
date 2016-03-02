@@ -209,6 +209,12 @@ public final class CreateElement implements ErrorRule<Void> {
             if (   leafKind == Kind.BLOCK && TreeUtilities.CLASS_TREE_KINDS.contains(path.getParentPath().getLeaf().getKind())
                 && firstMethod == null && firstClass == null)
                 firstInitializer = path;
+            
+            if (leafKind == Kind.ANNOTATION) {
+                // discard any methods, since there cannot be method calls in anno values
+                methodInvocation = null;
+                lookupMethodInvocation = false;
+            }
 
             if (lookupMethodInvocation && leafKind == Kind.METHOD_INVOCATION) {
                 methodInvocation = path;
