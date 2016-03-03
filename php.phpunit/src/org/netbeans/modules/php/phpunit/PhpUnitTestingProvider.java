@@ -45,6 +45,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.phpunit.commands.PhpUnit;
@@ -143,13 +144,19 @@ public final class PhpUnitTestingProvider implements PhpTestingProvider {
 
     @Override
     public Locations.Line parseFileFromOutput(String line) {
-        Matcher matcher = PhpUnit.LINE_PATTERN.matcher(line);
-        if (matcher.matches()) {
-            File file = new File(matcher.group(1));
-            if (file.isFile()) {
-                FileObject fo = FileUtil.toFileObject(file);
-                assert fo != null;
-                return new Locations.Line(fo, Integer.parseInt(matcher.group(2)));
+        Pattern[] patterns = new Pattern[] {
+            PhpUnit.OUT_LINE_PATTERN,
+            PhpUnit.ERR_LINE_PATTERN,
+        };
+        for (Pattern pattern : patterns) {
+            Matcher matcher = pattern.matcher(line);
+            if (matcher.matches()) {
+                File file = new File(matcher.group(1));
+                if (file.isFile()) {
+                    FileObject fo = FileUtil.toFileObject(file);
+                    assert fo != null;
+                    return new Locations.Line(fo, Integer.parseInt(matcher.group(2)));
+                }
             }
         }
         return null;

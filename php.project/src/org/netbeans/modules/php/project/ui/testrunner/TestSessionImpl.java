@@ -85,8 +85,8 @@ public class TestSessionImpl implements TestSession {
         checkFrozen();
         String suiteName = Bundle.TestSessionImpl_suite_name(testingProvider.getDisplayName(), name);
         org.netbeans.modules.gsf.testrunner.api.TestSuite testSuite = new org.netbeans.modules.gsf.testrunner.api.TestSuite(suiteName);
-        manager.displaySuiteRunning(testSession, suiteName);
         testSession.addSuite(testSuite);
+        manager.displaySuiteRunning(testSession, testSuite);
         return new TestSuiteImpl(this, testSuite, location);
     }
 
