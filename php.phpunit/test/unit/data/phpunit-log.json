@@ -1,0 +1,279 @@
+{
+    "event": "suiteStart",
+    "suite": "",
+    "tests": 17
+}{
+    "event": "suiteStart",
+    "suite": "CalculatorTest",
+    "tests": 17
+}{
+    "event": "testStart",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testPlus"
+}{
+    "event": "test",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testPlus",
+    "status": "pass",
+    "time": 0.011131048202515,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testPlus2"
+}{
+    "event": "test",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testPlus2",
+    "status": "fail",
+    "time": 0.019150018692017,
+    "trace": [
+        {
+            "file": "\/home\/gapon\/NetBeansProjects\/Calculator-PHPUnit8\/test\/src\/CalculatorTest.php",
+            "line": 48,
+            "function": "assertEquals",
+            "class": "PHPUnit_Framework_Assert",
+            "type": "::"
+        }
+    ],
+    "message": "Failed asserting that 2 matches expected 1.",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testPlus3"
+}{
+    "event": "test",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testPlus3",
+    "status": "pass",
+    "time": 0.0087080001831055,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testPlus4"
+}{
+    "event": "test",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testPlus4",
+    "status": "pass",
+    "time": 0.0089049339294434,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testMinus"
+}{
+    "event": "test",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testMinus",
+    "status": "error",
+    "time": 0.0093798637390137,
+    "trace": [
+        {
+            "file": "\/home\/gapon\/NetBeansProjects\/Calculator-PHPUnit8\/test\/src\/CalculatorTest.php",
+            "line": 79
+        }
+    ],
+    "message": "hola hoj",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testMinus2"
+}{
+    "event": "test",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testMinus2",
+    "status": "pass",
+    "time": 0.0090160369873047,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testMinus3"
+}{
+    "event": "test",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testMinus3",
+    "status": "pass",
+    "time": 0.0094659328460693,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testMinus4"
+}{
+    "event": "test",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testMinus4",
+    "status": "pass",
+    "time": 0.0089211463928223,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testMultiply"
+}{
+    "event": "test",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testMultiply",
+    "status": "pass",
+    "time": 0.008983850479126,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testMultiply2"
+}{
+    "event": "test",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testMultiply2",
+    "status": "pass",
+    "time": 0.0092828273773193,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testMultiply3"
+}{
+    "event": "test",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testMultiply3",
+    "status": "pass",
+    "time": 0.0091230869293213,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testMultiply4"
+}{
+    "event": "test",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testMultiply4",
+    "status": "pass",
+    "time": 0.0088789463043213,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testMultiply5"
+}{
+    "event": "test",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testMultiply5",
+    "status": "pass",
+    "time": 0.0088980197906494,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testDivide"
+}{
+    "event": "test",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testDivide",
+    "status": "pass",
+    "time": 0.0089738368988037,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testDivide2"
+}{
+    "event": "test",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testDivide2",
+    "status": "pass",
+    "time": 0.0088949203491211,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testDivide3"
+}{
+    "event": "test",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testDivide3",
+    "status": "pass",
+    "time": 0.0088779926300049,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testModulo"
+}{
+    "event": "test",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testModulo",
+    "status": "error",
+    "time": 0.0092868804931641,
+    "trace": [
+        {
+            "file": "\/home\/gapon\/NetBeansProjects\/Calculator-PHPUnit8\/test\/src\/CalculatorTest.php",
+            "line": 214,
+            "function": "markTestIncomplete",
+            "class": "PHPUnit_Framework_Assert",
+            "type": "::"
+        }
+    ],
+    "message": "Incomplete Test: This test has not been implemented yet.",
+    "output": ""
+}

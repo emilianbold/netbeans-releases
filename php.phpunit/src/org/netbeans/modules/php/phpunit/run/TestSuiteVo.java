@@ -45,6 +45,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -52,16 +54,11 @@ public final class TestSuiteVo {
 
     private final List<TestCaseVo> testCases = new ArrayList<>();
     private final String name;
-    private final String file;
-    private final long time;
 
 
-    public TestSuiteVo(String name, String file, long time) {
+    public TestSuiteVo(String name) {
         assert name != null;
-        assert file != null;
         this.name = name;
-        this.file = file;
-        this.time = time;
     }
 
     void addTestCase(TestCaseVo testCase) {
@@ -72,23 +69,19 @@ public final class TestSuiteVo {
         return name;
     }
 
-    public String getFile() {
-        return file;
-    }
-
+    @CheckForNull
     public FileObject getLocation() {
-        if (file == null) {
-            return null;
+        for (TestCaseVo testCase : testCases) {
+            String file = testCase.getFile();
+            if (StringUtils.hasText(file)) {
+                return FileUtil.toFileObject(new File(file));
+            }
         }
-        File f = new File(file);
-        if (!f.isFile()) {
-            return null;
-        }
-        return FileUtil.toFileObject(f);
+        return null;
     }
 
     public List<TestCaseVo> getPureTestCases() {
-        return testCases;
+        return Collections.unmodifiableList(testCases);
     }
 
     public List<TestCaseVo> getTestCases() {
@@ -96,19 +89,23 @@ public final class TestSuiteVo {
     }
 
     public long getTime() {
+        long time = 0;
+        for (TestCaseVo testCase : testCases) {
+            time += testCase.getTime();
+        }
         return time;
     }
 
     private List<TestCaseVo> sanitizedTestCases() {
         if (!testCases.isEmpty()) {
-            return testCases;
+            return Collections.unmodifiableList(testCases);
         }
         return Collections.singletonList(TestCaseVo.skippedTestCase());
     }
 
     @Override
     public String toString() {
-        return String.format("TestSuiteVo{name: %s, file: %s, time: %d, cases: %d}", name, file, time, testCases.size()); // NOI18N
+        return String.format("TestSuiteVo{name: %s, location: %s, time: %d, cases: %d}", name, getLocation(), getTime(), testCases.size()); // NOI18N
     }
 
 }
