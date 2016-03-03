@@ -113,7 +113,7 @@ public class PHPTypeSearcher implements IndexSearcher {
             final NameKind prefix = NameKind.create(query, useKind);
             if (!isVariable) {
                 for (PhpElement indexedElement : index.getTopLevelElements(prefix)) {
-                    if (!CodeUtils.isSynteticTypeName(indexedElement.getName())) {
+                    if (!CodeUtils.isSyntheticTypeName(indexedElement.getName())) {
                         result.add(new PHPTypeDescriptor(indexedElement, helper));
                     }
                 }
@@ -172,7 +172,7 @@ public class PHPTypeSearcher implements IndexSearcher {
             String query = qnk.isUnqualified() ? prepareIdxQuery(textForQuery, regexpKinds, kind).toLowerCase() : textForQuery;
             NameKind nameKind = NameKind.prefix(QualifiedName.create(query));
             for (PhpElement indexedElement : index.getTypes(nameKind)) {
-                if (!CodeUtils.isSynteticTypeName(indexedElement.getName())) {
+                if (!CodeUtils.isSyntheticTypeName(indexedElement.getName())) {
                     result.add(new PHPTypeDescriptor(indexedElement, helper));
                 }
             }

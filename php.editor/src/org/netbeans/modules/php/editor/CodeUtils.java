@@ -162,14 +162,15 @@ public final class CodeUtils {
     }
 
     /**
-     * Checks whether the given name is syntetic name. It means that
+     * Checks whether the given name is synthetic name. It means that
      * the name starts with "#".
      * @param name name to be checked
-     * @return {@code true} if the given name is syntetic
+     * @return {@code true} if the given name is synthetic
      */
-    public static boolean isSynteticTypeName(String name) {
+    public static boolean isSyntheticTypeName(String name) {
         assert name != null;
-        return name.startsWith("#"); // NOI18N
+        return !name.isEmpty()
+                && name.charAt(0) == '#'; // NOI18N
     }
 
     // XXX remove!
