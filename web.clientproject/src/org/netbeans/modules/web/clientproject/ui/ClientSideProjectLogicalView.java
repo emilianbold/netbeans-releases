@@ -774,7 +774,6 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         private static final String SITE_ROOT_FILES_BADGE = "org/netbeans/modules/web/clientproject/ui/resources/siteroot-badge.gif"; // NOI18N
 
         private final BasicNodes nodeType;
-        private final Node iconDelegate;
         private final Node delegate;
 
 
@@ -782,7 +781,6 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             super(folderNode, folderNode.isLeaf() ? Children.LEAF :
                     new FolderFilterChildren(folderNode, ignoreList));
             this.nodeType = nodeType;
-            iconDelegate = DataFolder.findFolder (FileUtil.getConfigRoot()).getNodeDelegate();
             delegate = folderNode;
         }
 
@@ -835,7 +833,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                     assert false : "Unknown nodeType: " + nodeType;
             }
 
-            image = opened ? iconDelegate.getOpenedIcon(type) : iconDelegate.getIcon(type);
+            image = opened ? delegate.getOpenedIcon(type) : delegate.getIcon(type);
             if (badge != null) {
                 image = ImageUtilities.mergeImages(image, ImageUtilities.loadImage(badge, false), 7, 7);
             }

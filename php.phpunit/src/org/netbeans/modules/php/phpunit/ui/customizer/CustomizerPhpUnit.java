@@ -108,6 +108,7 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
         initFile(PhpUnitPreferences.isPhpUnitEnabled(phpModule),
                 PhpUnitPreferences.getPhpUnitPath(phpModule),
                 scriptCheckBox, scriptTextField);
+        runPhpUnitOnlyCheckBox.setSelected(PhpUnitPreferences.getRunPhpUnitOnly(phpModule));
         runTestUsingUnitCheckBox.setSelected(PhpUnitPreferences.getRunAllTestFiles(phpModule));
         askForTestGroupsCheckBox.setSelected(PhpUnitPreferences.getAskForTestGroups(phpModule));
 
@@ -169,6 +170,7 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
         PhpUnitPreferences.setCustomSuitePath(phpModule, suiteTextField.getText());
         PhpUnitPreferences.setPhpUnitEnabled(phpModule, scriptCheckBox.isSelected());
         PhpUnitPreferences.setPhpUnitPath(phpModule, scriptTextField.getText());
+        PhpUnitPreferences.setRunPhpUnitOnly(phpModule, runPhpUnitOnlyCheckBox.isSelected());
         PhpUnitPreferences.setRunAllTestFiles(phpModule, runTestUsingUnitCheckBox.isSelected());
         PhpUnitPreferences.setAskForTestGroups(phpModule, askForTestGroupsCheckBox.isSelected());
     }
@@ -229,6 +231,7 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
                 validateData();
             }
         };
+        runPhpUnitOnlyCheckBox.addItemListener(validateItemListener);
         runTestUsingUnitCheckBox.addItemListener(validateItemListener);
         askForTestGroupsCheckBox.addItemListener(validateItemListener);
     }
@@ -285,6 +288,7 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
         scriptLabel = new JLabel();
         scriptTextField = new JTextField();
         scriptBrowseButton = new JButton();
+        runPhpUnitOnlyCheckBox = new JCheckBox();
         runTestUsingUnitCheckBox = new JCheckBox();
         askForTestGroupsCheckBox = new JCheckBox();
 
@@ -362,23 +366,15 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
             }
         });
 
+        Mnemonics.setLocalizedText(runPhpUnitOnlyCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.runPhpUnitOnlyCheckBox.text")); // NOI18N
+
         Mnemonics.setLocalizedText(runTestUsingUnitCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.runTestUsingUnitCheckBox.text")); // NOI18N
 
         Mnemonics.setLocalizedText(askForTestGroupsCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.askForTestGroupsCheckBox.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(configurationCheckBox)
-                    .addComponent(suiteCheckBox)
-                    .addComponent(bootstrapCheckBox)
-                    .addComponent(runTestUsingUnitCheckBox)
-                    .addComponent(askForTestGroupsCheckBox)
-                    .addComponent(scriptCheckBox))
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(21, 21, 21)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
@@ -418,12 +414,21 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
                         .addComponent(scriptTextField)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(scriptBrowseButton))))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(configurationCheckBox)
+                    .addComponent(suiteCheckBox)
+                    .addComponent(bootstrapCheckBox)
+                    .addComponent(runTestUsingUnitCheckBox)
+                    .addComponent(askForTestGroupsCheckBox)
+                    .addComponent(scriptCheckBox)
+                    .addComponent(runPhpUnitOnlyCheckBox))
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {bootstrapBrowseButton, bootstrapGenerateButton, configurationBrowseButton, configurationGenerateButton, scriptBrowseButton, suiteBrowseButton});
 
-        layout.setVerticalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
+        layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(0, 0, 0)
                 .addComponent(bootstrapCheckBox)
@@ -459,10 +464,13 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
                     .addComponent(scriptLabel)
                     .addComponent(scriptTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(scriptBrowseButton))
-                .addGap(18, 18, 18)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(runPhpUnitOnlyCheckBox)
+                .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(runTestUsingUnitCheckBox)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(askForTestGroupsCheckBox))
+                .addComponent(askForTestGroupsCheckBox)
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         bootstrapLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapLabel.AccessibleContext.accessibleName")); // NOI18N
@@ -585,6 +593,7 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
     private JButton configurationGenerateButton;
     private JLabel configurationLabel;
     private JTextField configurationTextField;
+    private JCheckBox runPhpUnitOnlyCheckBox;
     private JCheckBox runTestUsingUnitCheckBox;
     private JButton scriptBrowseButton;
     private JCheckBox scriptCheckBox;

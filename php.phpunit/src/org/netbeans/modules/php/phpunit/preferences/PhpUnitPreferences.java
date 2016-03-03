@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.phpunit.preferences;
 
@@ -64,6 +64,7 @@ public final class PhpUnitPreferences {
     private static final String CUSTOM_SUITE_PATH = "customSuite.path"; // NOI18N
     private static final String PHP_UNIT_ENABLED = "phpUnit.enabled"; // NOI18N
     private static final String PHP_UNIT_PATH = "phpUnit.path"; // NOI18N
+    private static final String RUN_PHPUNIT_ONLY = "test.run.phpunit.only"; // NOI18N
     private static final String RUN_ALL_TEST_FILES = "test.run.all"; // NOI18N
     private static final String ASK_FOR_TEST_GROUPS = "test.groups.ask"; // NOI18N
     private static final String TEST_GROUPS = "test.groups"; // NOI18N
@@ -143,6 +144,14 @@ public final class PhpUnitPreferences {
 
     public static void setPhpUnitPath(PhpModule phpModule, String phpUnitPath) {
         getPreferences(phpModule).put(PHP_UNIT_PATH, relativizePath(phpModule, phpUnitPath));
+    }
+
+    public static boolean getRunPhpUnitOnly(PhpModule phpModule) {
+        return getPreferences(phpModule).getBoolean(RUN_PHPUNIT_ONLY, false);
+    }
+
+    public static void setRunPhpUnitOnly(PhpModule phpModule, boolean runPhpUnitOnly) {
+        getPreferences(phpModule).putBoolean(RUN_PHPUNIT_ONLY, runPhpUnitOnly);
     }
 
     public static boolean getRunAllTestFiles(PhpModule phpModule) {

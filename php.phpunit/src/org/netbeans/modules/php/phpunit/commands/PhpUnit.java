@@ -419,14 +419,23 @@ public final class PhpUnit {
             // custom suite
             params.add(PhpUnitPreferences.getCustomSuitePath(phpModule));
         } else {
-            // XXX add option to run all tests only using 'phpunit' command
-            // standard suite
-            // #218607 - hotfix
-            //params.add(SUITE_NAME)
-            params.add(getNbSuite().getAbsolutePath());
-            // #254276
-            params.add(PARAM_SEPARATOR);
-            params.add(String.format(SUITE_RUN, joinPaths(runInfo.getStartFiles(), SUITE_PATH_DELIMITER)));
+            boolean useNbSuite = true;
+            List<FileObject> startFiles = runInfo.getStartFiles();
+            if (startFiles.size() == 1
+                    && phpModule.getTestDirectories().contains(startFiles.get(0))
+                    && PhpUnitPreferences.getRunPhpUnitOnly(phpModule)) {
+                // only test dir and use 'phpunit' command only
+                useNbSuite = false;
+            }
+            if (useNbSuite) {
+                // standard suite
+                // #218607 - hotfix
+                //params.add(SUITE_NAME)
+                params.add(getNbSuite().getAbsolutePath());
+                // #254276
+                params.add(PARAM_SEPARATOR);
+                params.add(String.format(SUITE_RUN, joinPaths(startFiles, SUITE_PATH_DELIMITER)));
+            }
         }
         return params;
     }
