@@ -37,9 +37,9 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
+import com.oracle.truffle.js.parser.nashorn.internal.ir.FunctionNode;
 import java.util.Arrays;
 import java.util.Collections;
-import jdk.nashorn.internal.ir.FunctionNode;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -99,7 +99,7 @@ public abstract class SanitizingParser extends Parser {
 
     protected abstract String getDefaultScriptName();
 
-    protected abstract FunctionNode parseSource(Snapshot snapshot, String name, String text, int caretOffset,  JsErrorManager errorManager) throws Exception;
+    protected abstract FunctionNode parseSource(Snapshot snapshot, String name, String text, int caretOffset,  JsErrorManager errorManager, boolean isModule) throws Exception;
 
     protected abstract String getMimeType();
     
@@ -218,7 +218,7 @@ public abstract class SanitizingParser extends Parser {
         
         JsErrorManager current = new JsErrorManager(context.getSnapshot(), language);
         FunctionNode node = parseSource(context.getSnapshot(), context.getName(),
-                context.getSource(), context.getCaretOffset(), current);
+                context.getSource(), context.getCaretOffset(), current, context.isModule());
 
         if (copyErrors) {
             errorManager.fillErrors(current);
@@ -547,6 +547,8 @@ public abstract class SanitizingParser extends Parser {
         private String sanitizedSource;
 
         private Sanitize sanitization;
+        
+        private Boolean isModule = null;
 
         public Context(String name, Snapshot snapshot, int caretOffset) {
             this.name = name;
@@ -596,6 +598,13 @@ public abstract class SanitizingParser extends Parser {
             this.sanitization = sanitization;
         }
 
+        public boolean isModule() {
+            if (isModule == null) {
+                String text = snapshot.getText().toString();
+                isModule = (text.contains("export ") || text.contains("import "));  // TODO terible hack. Needs to be done in proper way
+            }
+            return isModule;
+        }
     }
 
     /** Attempts to sanitize the input buffer */

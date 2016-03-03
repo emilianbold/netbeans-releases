@@ -151,6 +151,9 @@ public class OccurrenceBuilder {
             while (property == null && possibleParent != null) {
                 property = possibleParent.getProperty(name);
                 possibleParent = possibleParent.getParent();
+                if (possibleParent != null && possibleParent.equals(possibleParent.getParent())) {
+                    break;
+                }
             }
         }
         
