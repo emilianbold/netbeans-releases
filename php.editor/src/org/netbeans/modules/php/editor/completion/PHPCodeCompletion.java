@@ -277,7 +277,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         }
 
         CompletionContext context = CompletionContextFinder.findCompletionContext(info, caretOffset);
-        LOGGER.log(Level.FINE, String.format("CC context: %s", context.toString()));
+        LOGGER.log(Level.FINE, "CC context: {0}", context);
 
         if (context == CompletionContext.NONE) {
             return CodeCompletionResult.NONE;
