@@ -71,6 +71,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.text.DefaultEditorKit;
@@ -786,14 +788,22 @@ ExplorerManager.Provider, PropertyChangeListener {
             if (ci < columnsToSet.length && columns[i] == columnsToSet[ci] && i != defaultColumnIndex) {
                 TableColumn tc = allColumns.get(tci); //tcm.getColumn(tci);
                 tableColumns[i] = tc;
-                if (columns[i] instanceof Column && tci < tcm.getColumnCount()) {
+                if (columns[i] instanceof Column) {
                     Column c = (Column) columns[i];
+                    TableCellEditor cellEditor = tc.getCellEditor();
+                    if (cellEditor == null) {
+                        cellEditor = treeTable.getTable().getDefaultEditor(Node.Property.class);
+                    }
                     tc.setCellEditor(new DelegatingCellEditor(
                             c.getName(),
-                            treeTable.getTable().getCellEditor(0, tci)));
+                            cellEditor));
+                    TableCellRenderer cellRenderer = tc.getCellRenderer();
+                    if (cellRenderer == null) {
+                        cellRenderer = treeTable.getTable().getDefaultRenderer(Node.Property.class);
+                    }
                     tc.setCellRenderer(new DelegatingCellRenderer(
                             c.getName(),
-                            treeTable.getTable().getCellRenderer(0, tci)));
+                            cellRenderer));
                     tc.setPreferredWidth(c.getColumnWidth());
                 }
                 if (columns[i].isHidden()) {
