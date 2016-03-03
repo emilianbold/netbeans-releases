@@ -82,6 +82,7 @@ public class TestCaseImpl implements TestCase {
     public void setTime(long time) {
         testSuite.checkFrozen();
         testCase.setTimeMillis(time);
+        testSuite.updateReport(time, false);
     }
 
     @Override
