@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,75 +37,35 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.phpunit.run;
+package org.netbeans.modules.php.editor.completion;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.php.api.util.StringUtils;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
-public final class TestSuiteVo {
+public class PHPCodeCompletion257709Test extends PHPCodeCompletionTestBase {
 
-    private final List<TestCaseVo> testCases = new ArrayList<>();
-    private final String name;
-
-
-    public TestSuiteVo(String name) {
-        assert name != null;
-        this.name = name;
-    }
-
-    void addTestCase(TestCaseVo testCase) {
-        testCases.add(testCase);
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    @CheckForNull
-    public FileObject getLocation() {
-        for (TestCaseVo testCase : testCases) {
-            String file = testCase.getFile();
-            if (StringUtils.hasText(file)) {
-                return FileUtil.toFileObject(new File(file));
-            }
-        }
-        return null;
-    }
-
-    public List<TestCaseVo> getPureTestCases() {
-        return Collections.unmodifiableList(testCases);
-    }
-
-    public List<TestCaseVo> getTestCases() {
-        return sanitizedTestCases();
-    }
-
-    public long getTime() {
-        long time = 0;
-        for (TestCaseVo testCase : testCases) {
-            time += testCase.getTime();
-        }
-        return time;
-    }
-
-    private List<TestCaseVo> sanitizedTestCases() {
-        if (!testCases.isEmpty()) {
-            return Collections.unmodifiableList(testCases);
-        }
-        return Collections.singletonList(TestCaseVo.skippedTestCase());
+    public PHPCodeCompletion257709Test(String name) {
+        super(name);
     }
 
     @Override
-    public String toString() {
-        return String.format("TestSuiteVo{name: %s, location: %s, time: %d, cases: %d}", name, getLocation(), getTime(), testCases.size()); // NOI18N
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+                PhpSourcePath.SOURCE_CP,
+                ClassPathSupport.createClassPath(new FileObject[]{
+            FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/tests257709/"))
+        }));
     }
 
+    public void testVdocWithTab() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests257709/issue257709.php", "$object->^publicMethod();", false);
+    }
 }

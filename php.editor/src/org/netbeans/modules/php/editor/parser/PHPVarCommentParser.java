@@ -68,7 +68,7 @@ public class PHPVarCommentParser {
             }
             int startDocNode;
             int endPosition = 0;
-            String[] parts = definition.split(" +"); //NOI18N
+            String[] parts = definition.split("[ \t]+"); //NOI18N
             if (parts.length == 3 && parts[1].charAt(0) == '$') { //NOI18N
                 //counting types
                 String[] types = parts[2].split("[|]"); //NOI18N
