@@ -557,7 +557,7 @@ public class CompilationUnit implements CompilationUnitInterface{
     }
 
     private void initMacrosTable() throws IOException {
-        Integer macroInfoOffset;
+        Object macroInfoOffset;
         DwarfMacroInfoSection macroInfoSection = (DwarfMacroInfoSection)reader.getSection(SECTIONS.DEBUG_MACINFO);
         boolean isMacro =false;
         if (macroInfoSection == null) {
@@ -565,18 +565,18 @@ public class CompilationUnit implements CompilationUnitInterface{
             if (macroInfoSection == null) {
                 return;
             } else {
-                macroInfoOffset = (Integer)root.getAttributeValue(ATTR.DW_AT_GNU_macros);
+                macroInfoOffset = root.getAttributeValue(ATTR.DW_AT_GNU_macros);
                 isMacro = true;
             }
         } else {
-            macroInfoOffset = (Integer)root.getAttributeValue(ATTR.DW_AT_macro_info);
+            macroInfoOffset = root.getAttributeValue(ATTR.DW_AT_macro_info);
         }
 
-        if (macroInfoOffset == null) {
-            return;
+        if (macroInfoOffset instanceof Integer) {
+            macrosTable = macroInfoSection.getMacinfoTable((Integer)macroInfoOffset);
+        } else if (macroInfoOffset instanceof Long) {
+            macrosTable = macroInfoSection.getMacinfoTable((Long)macroInfoOffset);
         }
-
-        macrosTable = macroInfoSection.getMacinfoTable(macroInfoOffset);
     }
 
     private void initPubnamesTable() throws IOException {
