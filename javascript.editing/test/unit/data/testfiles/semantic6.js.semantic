@@ -1,3 +1,0 @@
-
-if (|>GLOBAL:value<|) |>GLOBAL:result<| += ' ' + |>GLOBAL:attribute<| + '=' + |>GLOBAL:value<|.inspect(true);
-

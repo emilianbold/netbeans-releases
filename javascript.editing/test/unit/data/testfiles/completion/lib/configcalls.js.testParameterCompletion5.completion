@@ -1,5 +1,0 @@
-Code completion result for source line:
-somefunction({}, {f|:1}, {});
-(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-PARAMETER  foo                                        <i>Configuration foo for parameter def</i>
-CALL       somefunction(... , def, ...)               configcalls.js

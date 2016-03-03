@@ -1,2 +1,0 @@
-document.createAttribute("foo").specified.
-
