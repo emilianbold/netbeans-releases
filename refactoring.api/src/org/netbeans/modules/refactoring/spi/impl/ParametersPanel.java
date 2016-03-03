@@ -987,6 +987,9 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     }
 
     private void showProblem(Problem problem) {
+        if(dialog == null) {
+            return;
+        }
         if (problem == null) {
             label.setText(" "); // NOI18N
             innerPanel.setBorder(null);
