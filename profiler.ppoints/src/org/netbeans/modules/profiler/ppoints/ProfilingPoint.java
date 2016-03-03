@@ -236,6 +236,7 @@ public abstract class ProfilingPoint {
         return 
         // CPU profiling
         (((profilingType == ProfilingSettings.PROFILE_CPU_ENTIRE)
+         || (profilingType == ProfilingSettings.PROFILE_CPU_JDBC)
          || (profilingType == ProfilingSettings.PROFILE_CPU_PART)) && ppFactory.supportsCPU())
                || 
         // Memory profiling
