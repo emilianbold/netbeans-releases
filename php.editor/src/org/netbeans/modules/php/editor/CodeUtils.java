@@ -174,7 +174,7 @@ public final class CodeUtils {
 
     // XXX remove!
     public static boolean isLessThanPhp70(FileObject file) {
-        return CodeUtils.isPhpVersionLessThan(file, PhpVersion.PHP_56);
+        return CodeUtils.isPhpVersionGreaterThan(file, PhpVersion.PHP_5);
     }
 
     public static boolean isPhpVersion(FileObject file, PhpVersion version) {
