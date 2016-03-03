@@ -238,7 +238,7 @@ public class RenameTransformer extends RefactoringVisitor {
                     return;
                 }
                 final Name id = ((MemberSelectTree) idTree).getIdentifier();
-                if (id == null || id.contentEquals("*")) { // NOI18N
+                if (id == null || id.contentEquals("*") || !id.contentEquals(elementToFind.getSimpleName())) { // NOI18N
                     // skip import static java.lang.Math.*
                     return;
                 }
