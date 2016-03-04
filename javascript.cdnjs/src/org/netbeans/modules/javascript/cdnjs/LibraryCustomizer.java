@@ -139,7 +139,7 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
 
     /**
      * Returns the library folder for the given project.
-     * 
+     *
      * @param project project whose library folder should be returned.
      * @return library folder for the given project.
      */
@@ -149,7 +149,7 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
 
     /**
      * Store the library folder for the given project.
-     * 
+     *
      * @param project project whose library folder should be stored.
      * @param libraryFolder library folder to store.
      */
@@ -158,6 +158,9 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
     }
 
     static class StoreListener implements ActionListener, Runnable {
+
+        static final Logger LOGGER = Logger.getLogger(StoreListener.class.getName());
+
         private final Project project;
         private final File webRoot;
         private final SelectionPanel customizer;
@@ -446,7 +449,9 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
                             fileName = fileName.substring(0,index);
                         }
                         FileObject fob = FileUtil.copyFile(tmpFob, fileFolder, fileName);
-                        file.delete();
+                        if (!file.delete()) {
+                            LOGGER.log(Level.INFO, "Cannot delete file {0}", file);
+                        }
                         localPath = PropertyUtils.relativizeFile(projectDir, FileUtil.toFile(fob));
                     }
                     fileList.add(filePath);
@@ -540,7 +545,9 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
                     fileFolder = FileUtil.createFolder(fileFolder, path[j]);
                 }
                 FileObject fob = FileUtil.copyFile(tmpFob, fileFolder, path[path.length-1]);
-                libraryFiles[i].delete();
+                if (!libraryFiles[i].delete()) {
+                    LOGGER.log(Level.INFO, "Cannot delete file {0}", libraryFiles[i]);
+                }
                 File file = FileUtil.toFile(fob);
                 localFiles[i] = PropertyUtils.relativizeFile(projectDir, file);
             }

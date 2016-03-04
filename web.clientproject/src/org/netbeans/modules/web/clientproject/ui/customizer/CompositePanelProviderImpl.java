@@ -98,7 +98,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
                     if (actionProvider != null) {
                         List<String> actions = Arrays.asList(actionProvider.getSupportedActions());
                         if (actions.contains(ActionProvider.COMMAND_RUN)
-                                || actions.contains(ActionProvider.COMMAND_RUN)) {
+                                || actions.contains(ActionProvider.COMMAND_DEBUG)) {
                             runSupported = true;
                             break;
                         }

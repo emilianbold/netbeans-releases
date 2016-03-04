@@ -88,6 +88,7 @@ public class Library {
      * 
      * @return versions of the library.
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "EI_EXPOSE_REP", justification = "Internal usage only")
     public Library.Version[] getVersions() {
         return versions;
     }
@@ -142,6 +143,7 @@ public class Library {
      * 
      * @return keywords for this library.
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "EI_EXPOSE_REP", justification = "Internal usage only")
     public String[] getKeywords() {
         return keywords == null ? new String[0] : keywords;
     }

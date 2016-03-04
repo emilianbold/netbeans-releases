@@ -428,7 +428,7 @@ public class DependenciesPanel extends javax.swing.JPanel {
     private boolean checkOtherDependencyTypes(String libraryName) {
         List<Dependency.Type> types = allDependencies.otherDependencyTypes(libraryName, dependencyType);
         if (!types.isEmpty()) {
-            String dependencyTypesMessage = "";
+            StringBuilder dependencyTypesMessage = new StringBuilder();
             for (Dependency.Type type : types) {
                 String dependencyTypeMessage;
                 switch(type) {
@@ -436,7 +436,7 @@ public class DependenciesPanel extends javax.swing.JPanel {
                     case DEVELOPMENT: dependencyTypeMessage = Bundle.DependenciesPanel_otherDevelopmentDependency(); break;
                     default: throw new InternalError();
                 }
-                dependencyTypesMessage += Bundle.DependenciesPanel_alsoDependency(dependencyTypeMessage);
+                dependencyTypesMessage.append(Bundle.DependenciesPanel_alsoDependency(dependencyTypeMessage));
             }
             String message = Bundle.DependenciesPanel_otherDependencyWarning(libraryName, dependencyTypesMessage);
             NotifyDescriptor descriptor = new NotifyDescriptor(
@@ -692,6 +692,8 @@ public class DependenciesPanel extends javax.swing.JPanel {
     /**
      * Comparator of {@code Dependency} objects.
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "SE_COMPARATOR_SHOULD_BE_SERIALIZABLE",
+            justification = "No need to be serializable")
     static class DependencyComparator implements Comparator<Dependency> {
         @Override
         public int compare(Dependency o1, Dependency o2) {

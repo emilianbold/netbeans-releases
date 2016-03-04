@@ -46,11 +46,10 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.ref.WeakReference;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -208,8 +207,10 @@ public class LibraryProvider {
                 result = new HashMap<>();
                 JSONObject dependencies = (JSONObject)json.get("dependencies"); // NOI18N
                 if (dependencies != null) {
-                    for (Object key : dependencies.keySet()) {
-                        Object value = dependencies.get(key);
+                    Set<Map.Entry<Object, Object>> entrySet = dependencies.entrySet();
+                    for (Map.Entry<Object, Object> entry : entrySet) {
+                        Object key = entry.getKey();
+                        Object value = entry.getValue();
                         if (value instanceof JSONObject) {
                             JSONObject libraryInfo = (JSONObject)value;
                             JSONObject metaInfo = (JSONObject)libraryInfo.get("pkgMeta"); // NOI18N
