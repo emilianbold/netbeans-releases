@@ -305,8 +305,15 @@ public final class SemanticHighlighter extends HighlighterBase {
     private void addHighlightsToBag(Document doc, PositionsBag bag, int start, int end, AttributeSet attr, String nameToStateInLog) {
         try {
             if (doc != null) {
-                bag.addHighlight(NbDocument.createPosition(doc, start, Position.Bias.Forward), 
-                                 NbDocument.createPosition(doc, end, Position.Bias.Backward), attr);
+                if (SemanticEntitiesProvider.InactiveCodeProvider.INACTIVE_NAME.equals(nameToStateInLog)) {
+                    // inactive code bias is <-[code]->
+                    bag.addHighlight(NbDocument.createPosition(doc, start, Position.Bias.Backward), 
+                                     NbDocument.createPosition(doc, end, Position.Bias.Forward), attr);
+                } else {
+                    // all others use bias as [-> ID <-]
+                    bag.addHighlight(NbDocument.createPosition(doc, start, Position.Bias.Forward), 
+                                     NbDocument.createPosition(doc, end, Position.Bias.Backward), attr);
+                }
             }
         } catch (BadLocationException ex) {
             LOG.log(Level.FINE, "Can't add highlight <" + start + ", " + end + ", " + nameToStateInLog + ">", ex);

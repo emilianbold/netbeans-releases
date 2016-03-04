@@ -87,12 +87,14 @@ public final class SemanticEntitiesProvider {
         @ServiceProvider(service = SemanticEntity.class, position=100)
     })
     public static final class InactiveCodeProvider extends AbstractSemanticEntity {
+        /*package*/static final String INACTIVE_NAME = "inactive";
+        
         public InactiveCodeProvider() {
             super(FontColorProvider.Entity.INACTIVE_CODE);
         }
         @Override
         public String getName() {
-            return "inactive"; // NOI18N
+            return INACTIVE_NAME; // NOI18N
         }
         @Override
         public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile, Document doc, Interrupter interrupter) {
