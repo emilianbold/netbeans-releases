@@ -61,10 +61,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.fail;
 import oracle.eclipse.tools.cloud.dev.tasks.CloudDevAttribute;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
@@ -73,10 +69,13 @@ import org.eclipse.mylyn.tasks.core.ITask;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.data.AbstractTaskAttachmentHandler;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
-import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.odcs.tasks.issue.IssueField;
 import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
+import static org.netbeans.modules.odcs.client.TestUtils.TEST_USER1;
+import static org.netbeans.modules.odcs.client.TestUtils.TEST_USER2;
+import static junit.framework.Assert.fail;
+import org.eclipse.mylyn.tasks.core.data.TaskData;
 
 /**
  *
@@ -131,11 +130,11 @@ public class ODCSTaskTestCase extends NbTestSuite {
     
     private String getDifferentUser(String user, List<TaskUserProfile> users) {
         for (TaskUserProfile tup : users) {
-            if(tup.getLoginName().toLowerCase().contains(AbstractODCSTestCase.TEST_USER2)) {
+            if(tup.getLoginName().toLowerCase().contains(TEST_USER2)) {
                 return tup.getLoginName();
             }
         }
-        fail("expected to find a user with login " + AbstractODCSTestCase.TEST_USER2);
+        fail("expected to find a user with login " + TEST_USER2);
         return null;
     }
 
@@ -353,7 +352,7 @@ public class ODCSTaskTestCase extends NbTestSuite {
 
         @Override
         protected String getDifferentValue(String value) throws CoreException {
-            RepositoryConfiguration clientData = rc.getCloudDevClientManager().getCloudDevClient(taskRepository).getRepositoryConfiguration(false, nullProgressMonitor);
+            RepositoryConfiguration clientData = rc.getCloudDevClientManager().getCloudDevClient(taskRepository).getRepositoryConfiguration(true, nullProgressMonitor);
             for (Iteration i : clientData.getIterations()) {
                 if(!i.getValue().equals(value)) {
                     return i.getValue();
@@ -592,7 +591,7 @@ public class ODCSTaskTestCase extends NbTestSuite {
             
             assertEquals(1, count);
             assertEquals(comment, commentText);
-            assertEquals(AbstractODCSTestCase.TEST_USER1, author);
+            assertEquals(TEST_USER1, author);
             assertEquals("Tina Testsuite", authorName);
             assertEquals(SimpleDateFormat.getDateInstance().format(now), SimpleDateFormat.getDateInstance().format(d));
         }  
