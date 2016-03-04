@@ -99,6 +99,9 @@ public final class CodeUtils {
     public static final String STATIC_METHOD_TYPE_PREFIX = "@static.mtd:";
     private static final Logger LOGGER = Logger.getLogger(CodeUtils.class.getName());
 
+    private static final boolean PHP7 = Boolean.getBoolean("nb.php7"); // NOI18N
+
+
     private CodeUtils() {
     }
 
@@ -175,7 +178,7 @@ public final class CodeUtils {
 
     // XXX remove!
     public static boolean isLessThanPhp70(FileObject file) {
-        return CodeUtils.isPhpVersionGreaterThan(file, PhpVersion.PHP_5);
+        return !PHP7;
     }
 
     public static boolean isPhpVersion(FileObject file, PhpVersion version) {
