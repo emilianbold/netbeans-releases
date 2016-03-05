@@ -42,8 +42,9 @@
 
 package org.netbeans.modules.odcs.client;
 
-import org.netbeans.modules.odcs.client.api.ODCSFactory;
 import com.tasktop.c2c.server.cloud.domain.ServiceType;
+import com.tasktop.c2c.server.common.service.EntityNotFoundException;
+import com.tasktop.c2c.server.common.service.ValidationException;
 import com.tasktop.c2c.server.common.service.domain.SortInfo;
 import com.tasktop.c2c.server.common.service.domain.criteria.ColumnCriteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
@@ -58,28 +59,21 @@ import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import com.tasktop.c2c.server.tasks.domain.Product;
 import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
-import com.tasktop.c2c.server.tasks.domain.Task;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.net.PasswordAuthentication;
-import java.util.Date;
+import java.net.MalformedURLException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
 import junit.framework.Test;
 import oracle.clouddev.server.profile.activity.client.api.Activity;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import static org.netbeans.modules.odcs.client.TestUtils.MY_PROJECT;
 import org.netbeans.modules.odcs.client.api.ODCSClient;
 import org.netbeans.modules.odcs.client.api.ODCSException;
-
 
 /**
  *
@@ -93,7 +87,6 @@ public class ODCSClientTest extends NbTestCase  {
     private static String proxyHost;
     private static String proxyPort;
     private static String url;
-    private static final String MY_PROJECT = "qa-dev_netbeans-test"; //NOI18N
 
     public static Test suite() {
         return NbModuleSuite
@@ -134,6 +127,7 @@ public class ODCSClientTest extends NbTestCase  {
                 System.out.println(" proxy port: " + proxyPort);
                 System.out.println(" <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< ");
                 
+                TestUtils.ensureTestProject(url, uname, passw);
             }
             if (firstRun) {
                 firstRun = false;
@@ -144,7 +138,7 @@ public class ODCSClientTest extends NbTestCase  {
         }
     }
     
-    public void testGetClient() {
+    public void testGetClient() throws ODCSException, MalformedURLException, EntityNotFoundException, ValidationException, InterruptedException {
         getClient();
     }
     
@@ -153,7 +147,7 @@ public class ODCSClientTest extends NbTestCase  {
         assertNotNull(profile);
         assertEquals(uname, profile.getUsername());
     }
-    
+  
     public void testGetUserInfo () throws Exception {
         ODCSClient client = getClient();
         Profile currentClient = client.getCurrentProfile();
@@ -171,14 +165,13 @@ public class ODCSClientTest extends NbTestCase  {
         List<ProjectService> services = project.getProjectServices();
         Set<ServiceType> expectedServices = EnumSet.of(ServiceType.SCM, ServiceType.TASKS, ServiceType.WIKI, ServiceType.BUILD);
         for (ProjectService s : services) {
-            if (expectedServices.remove(s.getServiceType())) {
-                assertNotNull(s.getUrl());
-                assertTrue(s.getServiceType().name(), s.isAvailable());
-            }
+            assertNotNull(s.getUrl());
+            assertTrue(s.getServiceType().name(), s.isAvailable());
+            expectedServices.remove(s.getServiceType());            
         }
         assertTrue(expectedServices.isEmpty());
     }
-    
+
     public void testGetMyProjects () throws Exception {
         ODCSClient client = getClient();
         List<Project> projects = client.getMyProjects();
@@ -200,7 +193,7 @@ public class ODCSClientTest extends NbTestCase  {
         List<Project> projects = client.searchProjects("blablabla");
         assertNotNull(projects);
         assertTrue(projects.isEmpty());
-        for (String pattern : new String[] { "netbeans", "dummy", "testing", "nb PROJECT" }) {
+        for (String pattern : new String[] { "NetBeans", "dummy", "testing" }) {
             projects = client.searchProjects(pattern);
             assertNotNull(projects);
             assertFalse(projects.isEmpty());
@@ -409,11 +402,9 @@ public class ODCSClientTest extends NbTestCase  {
             fail("TasksClient didn't return just previously save query " + stq.getName());
         }
     }
-    
+
     private ODCSClient getClient() {
-        ODCSClient client = ODCSFactory.getInstance().createClient(url, new PasswordAuthentication(uname, passw.toCharArray()));
-        assertEquals(ODCSClientImpl.class, client.getClass());
-        return client;
+        return TestUtils.getClient(url, uname, passw);
     }    
 
     private void print(ProjectActivity a) {
