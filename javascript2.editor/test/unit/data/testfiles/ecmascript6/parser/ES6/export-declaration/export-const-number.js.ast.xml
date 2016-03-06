@@ -1,4 +1,4 @@
-<FunctionNode name='export-const-number.js' kind='SCRIPT' start='0' end='22'>
+<FunctionNode name='export-const-number.js' kind='MODULE' start='0' end='22'>
   <isProgram/>
   <!-- FunctionNode Parameters -->
   <!-- FunctionNode Body -->

@@ -1,4 +1,4 @@
-<FunctionNode name='import-default-as.js' kind='SCRIPT' start='0' end='36'>
+<FunctionNode name='import-default-as.js' kind='MODULE' start='0' end='36'>
   <isProgram/>
   <!-- FunctionNode Parameters -->
   <!-- FunctionNode Body -->

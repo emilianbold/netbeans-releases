@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import com.oracle.truffle.js.parser.nashorn.internal.ir.Node;
+import com.oracle.js.parser.ir.Node;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;

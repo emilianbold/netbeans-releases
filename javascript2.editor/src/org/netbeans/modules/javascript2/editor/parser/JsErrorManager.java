@@ -37,10 +37,10 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
-import com.oracle.truffle.js.parser.nashorn.internal.parser.Token;
-import com.oracle.truffle.js.parser.nashorn.internal.parser.TokenType;
-import com.oracle.truffle.js.parser.nashorn.internal.runtime.ErrorManager;
-import com.oracle.truffle.js.parser.nashorn.internal.runtime.ParserException;
+import com.oracle.js.parser.Token;
+import com.oracle.js.parser.TokenType;
+import com.oracle.js.parser.ErrorManager;
+import com.oracle.js.parser.ParserException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;

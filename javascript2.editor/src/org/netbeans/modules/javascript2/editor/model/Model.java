@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.javascript2.editor.model;
 
-import com.oracle.truffle.js.parser.nashorn.internal.ir.FunctionNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.Node;
+import com.oracle.js.parser.ir.FunctionNode;
+import com.oracle.js.parser.ir.Node;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.URL;

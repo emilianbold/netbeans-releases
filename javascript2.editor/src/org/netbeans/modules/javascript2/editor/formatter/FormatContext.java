@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.formatter;
 
-import com.oracle.truffle.js.parser.nashorn.internal.ir.FunctionNode;
+import com.oracle.js.parser.ir.FunctionNode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;

@@ -37,11 +37,10 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
-import com.oracle.truffle.js.parser.TruffleParserOptions;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.FunctionNode;
-import com.oracle.truffle.js.parser.nashorn.internal.parser.Parser;
-import com.oracle.truffle.js.parser.nashorn.internal.runtime.ScriptEnvironment;
-import com.oracle.truffle.js.parser.nashorn.internal.runtime.Source;
+import com.oracle.js.parser.ir.FunctionNode;
+import com.oracle.js.parser.Parser;
+import com.oracle.js.parser.ScriptEnvironment;
+import com.oracle.js.parser.Source;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
 
@@ -94,7 +93,8 @@ public class JsParser extends SanitizingParser {
         Source source = Source.sourceFor(name, parsableText);
         errorManager.setLimit(0);
 
-        Parser parser = new Parser(new ScriptEnvironment(null, new TruffleParserOptions()), source, errorManager);
+        ScriptEnvironment.Builder builder = ScriptEnvironment.builder();
+        Parser parser = new Parser(builder.build(), source, errorManager);
         FunctionNode node = null;
         if (isModule) {
             node = parser.parseModule(name);

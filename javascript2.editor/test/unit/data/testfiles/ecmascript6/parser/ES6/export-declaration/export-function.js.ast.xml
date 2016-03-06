@@ -1,4 +1,4 @@
-<FunctionNode name='export-function.js' kind='SCRIPT' start='0' end='26'>
+<FunctionNode name='export-function.js' kind='MODULE' start='0' end='26'>
   <hasDeclaredFunctions/>
   <isProgram/>
   <!-- FunctionNode Parameters -->

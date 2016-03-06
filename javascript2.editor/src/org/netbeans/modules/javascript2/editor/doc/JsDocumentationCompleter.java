@@ -41,13 +41,13 @@
  */
 package org.netbeans.modules.javascript2.editor.doc;
 
-import com.oracle.truffle.js.parser.nashorn.internal.ir.AccessNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.BinaryNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.FunctionNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.IdentNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.Node;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.PropertyNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.VarNode;
+import com.oracle.js.parser.ir.AccessNode;
+import com.oracle.js.parser.ir.BinaryNode;
+import com.oracle.js.parser.ir.FunctionNode;
+import com.oracle.js.parser.ir.IdentNode;
+import com.oracle.js.parser.ir.Node;
+import com.oracle.js.parser.ir.PropertyNode;
+import com.oracle.js.parser.ir.VarNode;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;

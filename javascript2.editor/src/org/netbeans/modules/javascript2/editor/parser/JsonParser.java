@@ -37,7 +37,7 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
-import com.oracle.truffle.js.parser.nashorn.internal.ir.FunctionNode;
+import com.oracle.js.parser.ir.FunctionNode;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
 

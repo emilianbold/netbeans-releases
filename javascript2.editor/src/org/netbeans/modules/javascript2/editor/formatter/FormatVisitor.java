@@ -41,34 +41,34 @@
  */
 package org.netbeans.modules.javascript2.editor.formatter;
 
-import com.oracle.truffle.js.parser.nashorn.internal.ir.AccessNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.BinaryNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.Block;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.BlockStatement;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.CallNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.CaseNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.CatchNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.Expression;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.ForNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.FunctionNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.IdentNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.IfNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.LexicalContext;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.LiteralNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.LoopNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.Node;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.ObjectNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.PropertyNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.Statement;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.SwitchNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.TernaryNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.TryNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.UnaryNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.VarNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.WhileNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.WithNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.visitor.NodeVisitor;
-import com.oracle.truffle.js.parser.nashorn.internal.parser.TokenType;
+import com.oracle.js.parser.ir.AccessNode;
+import com.oracle.js.parser.ir.BinaryNode;
+import com.oracle.js.parser.ir.Block;
+import com.oracle.js.parser.ir.BlockStatement;
+import com.oracle.js.parser.ir.CallNode;
+import com.oracle.js.parser.ir.CaseNode;
+import com.oracle.js.parser.ir.CatchNode;
+import com.oracle.js.parser.ir.Expression;
+import com.oracle.js.parser.ir.ForNode;
+import com.oracle.js.parser.ir.FunctionNode;
+import com.oracle.js.parser.ir.IdentNode;
+import com.oracle.js.parser.ir.IfNode;
+import com.oracle.js.parser.ir.LexicalContext;
+import com.oracle.js.parser.ir.LiteralNode;
+import com.oracle.js.parser.ir.LoopNode;
+import com.oracle.js.parser.ir.Node;
+import com.oracle.js.parser.ir.ObjectNode;
+import com.oracle.js.parser.ir.PropertyNode;
+import com.oracle.js.parser.ir.Statement;
+import com.oracle.js.parser.ir.SwitchNode;
+import com.oracle.js.parser.ir.TernaryNode;
+import com.oracle.js.parser.ir.TryNode;
+import com.oracle.js.parser.ir.UnaryNode;
+import com.oracle.js.parser.ir.VarNode;
+import com.oracle.js.parser.ir.WhileNode;
+import com.oracle.js.parser.ir.WithNode;
+import com.oracle.js.parser.ir.visitor.NodeVisitor;
+import com.oracle.js.parser.TokenType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -102,7 +102,7 @@ public class FormatVisitor extends NodeVisitor {
 
     private final int formatFinish;
 
-    private final Set<Block> caseNodes = new HashSet<Block>();
+    private final Set<List<Statement>> caseNodes = new HashSet<List<Statement>>();
 
     public FormatVisitor(FormatTokenStream tokenStream, TokenSequence<? extends JsTokenId> ts, int formatFinish) {
         super(new LexicalContext());
@@ -152,14 +152,14 @@ public class FormatVisitor extends NodeVisitor {
     public boolean enterCaseNode(CaseNode caseNode) {
         // we need to mark if block is case body as block itself has
         // no reference to case node
-        caseNodes.add(caseNode.getBody());
+        caseNodes.add(caseNode.getStatements());
         return super.enterCaseNode(caseNode);
     }
 
     @Override
     public Node leaveCaseNode(CaseNode caseNode) {
         // we are removing mark
-        caseNodes.remove(caseNode.getBody());
+        caseNodes.remove(caseNode.getStatements());
         return super.leaveCaseNode(caseNode);
     }
 
@@ -405,7 +405,7 @@ public class FormatVisitor extends NodeVisitor {
                     }
                 }
 
-                if (functionNode.isStatement() && !functionNode.isAnonymous() && !functionNode.isProgram()) {
+                if (/*functionNode.isStatement() &&*/ !functionNode.isAnonymous() && !functionNode.isProgram()) {
                     FormatToken rightBrace = getPreviousToken(getFinish(functionNode),
                             JsTokenId.BRACKET_RIGHT_CURLY,
                             leftBrace != null ? leftBrace.getOffset() : start);
@@ -576,7 +576,7 @@ public class FormatVisitor extends NodeVisitor {
         }
 
         for (CaseNode caseNode : nodes) {
-            int start = getStart(caseNode.getBody());
+            int start = getStart(caseNode);
 
             formatToken = getPreviousToken(start, JsTokenId.OPERATOR_COLON);
             if (formatToken != null) {
@@ -1285,7 +1285,7 @@ public class FormatVisitor extends NodeVisitor {
         // in case it is string literal.
         int start = node.getStart();
         long firstToken = node.getToken();
-        TokenType type = com.oracle.truffle.js.parser.nashorn.internal.parser.Token.descType(firstToken);
+        TokenType type = com.oracle.js.parser.Token.descType(firstToken);
         if (type.equals(TokenType.STRING) || type.equals(TokenType.ESCSTRING)) {
             ts.move(start - 1);
             if (ts.moveNext()) {
@@ -1304,7 +1304,7 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     private static int getFunctionStart(FunctionNode node) {
-        return com.oracle.truffle.js.parser.nashorn.internal.parser.Token.descPosition(node.getFirstToken());
+        return com.oracle.js.parser.Token.descPosition(node.getFirstToken());
     }
 
     private int getFinish(Node node) {
@@ -1314,10 +1314,10 @@ public class FormatVisitor extends NodeVisitor {
             FunctionNode function = (FunctionNode) node;
             if (node.getStart() == node.getFinish()) {
                 long lastToken = function.getLastToken();
-                int finish = com.oracle.truffle.js.parser.nashorn.internal.parser.Token.descPosition(lastToken)
-                        + com.oracle.truffle.js.parser.nashorn.internal.parser.Token.descLength(lastToken);
+                int finish = com.oracle.js.parser.Token.descPosition(lastToken)
+                        + com.oracle.js.parser.Token.descLength(lastToken);
                 // check if it is a string
-                if (com.oracle.truffle.js.parser.nashorn.internal.parser.Token.descType(lastToken).equals(TokenType.STRING)) {
+                if (com.oracle.js.parser.Token.descType(lastToken).equals(TokenType.STRING)) {
                     finish++;
                 }
                 return finish;
@@ -1371,7 +1371,7 @@ public class FormatVisitor extends NodeVisitor {
 
     private boolean isVirtual(Block block) {
         return block.getStart() == block.getFinish()
-                    || com.oracle.truffle.js.parser.nashorn.internal.parser.Token.descType(block.getToken()) != TokenType.LBRACE
+                    || com.oracle.js.parser.Token.descType(block.getToken()) != TokenType.LBRACE
                     || block.isCatchBlock();
     }
 

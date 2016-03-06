@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
-import com.oracle.truffle.js.parser.nashorn.internal.ir.FunctionNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.LexicalContext;
+import com.oracle.js.parser.ir.FunctionNode;
+import com.oracle.js.parser.ir.LexicalContext;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;

@@ -1,4 +1,4 @@
-<FunctionNode name='invalid_var_await.js' kind='SCRIPT' start='0' end='18'>
+<FunctionNode name='invalid_var_await.js' kind='MODULE' start='0' end='18'>
   <isProgram/>
   <!-- FunctionNode Parameters -->
   <!-- FunctionNode Body -->

@@ -44,7 +44,7 @@
                   </BinaryNode>
                 </UnaryNode>
                 <!-- BinaryNode rhs -->
-                <UnaryNode type='YIELD_ASTERISK' start='27' end='37'>
+                <UnaryNode type='YIELD_STAR' start='27' end='37'>
                   <!-- UnaryNode Expression -->
                   <BinaryNode type='ASSIGN' start='34' end='37'>
                     <isAssignment/>

@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import com.oracle.truffle.js.parser.nashorn.internal.ir.FunctionNode;
+import com.oracle.js.parser.ir.FunctionNode;
 import java.util.Stack;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;

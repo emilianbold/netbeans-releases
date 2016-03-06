@@ -41,21 +41,21 @@
  */
 package org.netbeans.modules.javascript2.editor.hints;
 
-import com.oracle.truffle.js.parser.nashorn.internal.ir.BinaryNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.Block;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.BlockStatement;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.ForNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.FunctionNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.IfNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.LiteralNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.Node;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.ObjectNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.ReturnNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.ThrowNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.VarNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.WhileNode;
-import static com.oracle.truffle.js.parser.nashorn.internal.parser.TokenType.EQ;
-import static com.oracle.truffle.js.parser.nashorn.internal.parser.TokenType.NE;
+import com.oracle.js.parser.ir.BinaryNode;
+import com.oracle.js.parser.ir.Block;
+import com.oracle.js.parser.ir.BlockStatement;
+import com.oracle.js.parser.ir.ForNode;
+import com.oracle.js.parser.ir.FunctionNode;
+import com.oracle.js.parser.ir.IfNode;
+import com.oracle.js.parser.ir.LiteralNode;
+import com.oracle.js.parser.ir.Node;
+import com.oracle.js.parser.ir.ObjectNode;
+import com.oracle.js.parser.ir.ReturnNode;
+import com.oracle.js.parser.ir.ThrowNode;
+import com.oracle.js.parser.ir.VarNode;
+import com.oracle.js.parser.ir.WhileNode;
+import static com.oracle.js.parser.TokenType.EQ;
+import static com.oracle.js.parser.TokenType.NE;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;

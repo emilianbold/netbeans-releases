@@ -1,4 +1,4 @@
-<FunctionNode name='import-namespace-specifier.js' kind='SCRIPT' start='0' end='28'>
+<FunctionNode name='import-namespace-specifier.js' kind='MODULE' start='0' end='28'>
   <isProgram/>
   <!-- FunctionNode Parameters -->
   <!-- FunctionNode Body -->

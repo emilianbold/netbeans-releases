@@ -41,26 +41,26 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
-import com.oracle.truffle.js.parser.nashorn.internal.ir.AccessNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.BaseNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.BinaryNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.Block;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.CallNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.ClassNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.Expression;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.FunctionNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.IdentNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.IndexNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.LexicalContext;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.LiteralNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.Node;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.ObjectNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.PropertyNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.Symbol;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.UnaryNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.VarNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.visitor.NodeVisitor;
-import com.oracle.truffle.js.parser.nashorn.internal.parser.Token;
+import com.oracle.js.parser.ir.AccessNode;
+import com.oracle.js.parser.ir.BaseNode;
+import com.oracle.js.parser.ir.BinaryNode;
+import com.oracle.js.parser.ir.Block;
+import com.oracle.js.parser.ir.CallNode;
+import com.oracle.js.parser.ir.ClassNode;
+import com.oracle.js.parser.ir.Expression;
+import com.oracle.js.parser.ir.FunctionNode;
+import com.oracle.js.parser.ir.IdentNode;
+import com.oracle.js.parser.ir.IndexNode;
+import com.oracle.js.parser.ir.LexicalContext;
+import com.oracle.js.parser.ir.LiteralNode;
+import com.oracle.js.parser.ir.Node;
+import com.oracle.js.parser.ir.ObjectNode;
+import com.oracle.js.parser.ir.PropertyNode;
+import com.oracle.js.parser.ir.Symbol;
+import com.oracle.js.parser.ir.UnaryNode;
+import com.oracle.js.parser.ir.VarNode;
+import com.oracle.js.parser.ir.visitor.NodeVisitor;
+import com.oracle.js.parser.Token;
 import java.util.List;
 
 /**
@@ -243,7 +243,7 @@ public class AstXmlVisitor extends NodeVisitor {
     private void processAttribute(Expression node) {
         processAttribute(node.isAlwaysFalse(), "isAlwaysFalse");
         processAttribute(node.isAlwaysTrue(), "isAlwaysTrue");
-        processAttribute(node.isOptimistic(), "isOptimistic");
+//        processAttribute(node.isOptimistic(), "isOptimistic");
         processAttribute(node.isSelfModifying(), "isSelfModifying");
         processAttribute((Node)node);
     }
@@ -310,7 +310,7 @@ public class AstXmlVisitor extends NodeVisitor {
     public boolean enterCallNode(CallNode node) {
         createOpenTag(node);
         
-        processAttribute(node.isApplyToCall(), "isApplayToCall");
+//        processAttribute(node.isApplyToCall(), "isApplayToCall");
         processAttribute(node.isEval(), "isEval");
         processAttribute(node.isNew(), "isNew");
         processAttribute(node);
@@ -330,8 +330,8 @@ public class AstXmlVisitor extends NodeVisitor {
                 createTagAttribute("kind", node.getKind().name()));
         
         processAttribute(node.hasDeclaredFunctions(), "hasDeclaredFunctions");
-        processAttribute(node.hasScopeBlock(), "hasScopeBlock");
-        processAttribute(node.inDynamicContext(), "isDynamicContext");
+//        processAttribute(node.hasScopeBlock(), "hasScopeBlock");
+//        processAttribute(node.inDynamicContext(), "isDynamicContext");
         processAttribute(node.isAnonymous(), "isAnonymous");
         processAttribute(node.isClassConstructor(), "isClassConstructor");
         processAttribute(node.isDeclared(), "isDeclared");

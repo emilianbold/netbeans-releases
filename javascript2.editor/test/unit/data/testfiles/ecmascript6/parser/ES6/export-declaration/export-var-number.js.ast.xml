@@ -1,4 +1,4 @@
-<FunctionNode name='export-var-number.js' kind='SCRIPT' start='0' end='20'>
+<FunctionNode name='export-var-number.js' kind='MODULE' start='0' end='20'>
   <isProgram/>
   <!-- FunctionNode Parameters -->
   <!-- FunctionNode Body -->

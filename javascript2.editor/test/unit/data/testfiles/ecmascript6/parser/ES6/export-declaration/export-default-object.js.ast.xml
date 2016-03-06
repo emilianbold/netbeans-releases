@@ -1,4 +1,4 @@
-<FunctionNode name='export-default-object.js' kind='SCRIPT' start='0' end='27'>
+<FunctionNode name='export-default-object.js' kind='MODULE' start='0' end='27'>
   <isProgram/>
   <!-- FunctionNode Parameters -->
   <!-- FunctionNode Body -->

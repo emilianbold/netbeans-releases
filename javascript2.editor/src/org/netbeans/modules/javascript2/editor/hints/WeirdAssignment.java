@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.javascript2.editor.hints;
 
-import com.oracle.truffle.js.parser.nashorn.internal.ir.BinaryNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.FunctionNode;
-import com.oracle.truffle.js.parser.nashorn.internal.parser.TokenType;
+import com.oracle.js.parser.ir.BinaryNode;
+import com.oracle.js.parser.ir.FunctionNode;
+import com.oracle.js.parser.TokenType;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;

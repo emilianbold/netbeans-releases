@@ -1,4 +1,4 @@
-<FunctionNode name='export-named-specifiers.js' kind='SCRIPT' start='0' end='19'>
+<FunctionNode name='export-named-specifiers.js' kind='MODULE' start='0' end='19'>
   <isProgram/>
   <!-- FunctionNode Parameters -->
   <!-- FunctionNode Body -->

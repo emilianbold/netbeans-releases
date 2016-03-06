@@ -25,7 +25,7 @@
           <isFunctionBody/>
           <!-- Block Statements -->
           <ExpressionStatement start='16' end='28'>
-            <UnaryNode type='YIELD_ASTERISK' start='16' end='28'>
+            <UnaryNode type='YIELD_STAR' start='16' end='28'>
               <!-- UnaryNode Expression -->
               <UnaryNode type='YIELD' start='23' end='28'>
                 <!-- UnaryNode Expression -->

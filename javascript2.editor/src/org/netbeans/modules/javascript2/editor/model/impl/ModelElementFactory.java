@@ -41,12 +41,12 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import com.oracle.truffle.js.parser.nashorn.internal.ir.FunctionNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.IdentNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.LiteralNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.ObjectNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.PropertyNode;
-import com.oracle.truffle.js.parser.nashorn.internal.parser.Token;
+import com.oracle.js.parser.ir.FunctionNode;
+import com.oracle.js.parser.ir.IdentNode;
+import com.oracle.js.parser.ir.LiteralNode;
+import com.oracle.js.parser.ir.ObjectNode;
+import com.oracle.js.parser.ir.PropertyNode;
+import com.oracle.js.parser.Token;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;

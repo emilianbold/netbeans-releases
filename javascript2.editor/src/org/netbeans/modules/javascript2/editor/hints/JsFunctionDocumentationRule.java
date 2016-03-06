@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.javascript2.editor.hints;
 
-import com.oracle.truffle.js.parser.nashorn.internal.ir.FunctionNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.IdentNode;
-import com.oracle.truffle.js.parser.nashorn.internal.ir.Node;
+import com.oracle.js.parser.ir.FunctionNode;
+import com.oracle.js.parser.ir.IdentNode;
+import com.oracle.js.parser.ir.Node;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
