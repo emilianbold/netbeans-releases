@@ -1,0 +1,39 @@
+<Unnamed test>
+LINE_COMMENT    "// simple line comment", la=1, st=-1
+EOL             "\n", la=1, st=-1
+KEYWORD_VAR     "var", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+NUMERIC_DECIMAL  "10", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+BLOCK_COMMENT   "/* some \n * block comment\n */", la=1, st=-1
+EOL             "\n", la=1, st=-1
+KEYWORD_VAR     "var", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+IDENTIFIER      "b", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+NUMERIC_DECIMAL  "20", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+DOC_COMMENT     "/** doc comment\n * \n */", la=1, st=-1
+EOL             "\n", la=1, st=-1
+KEYWORD_VAR     "var", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+IDENTIFIER      "c", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+NUMERIC_DECIMAL  "30", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+DOC_COMMENT     "/**/\n/***/", la=1, st=-1
+EOL             "\n", la=1, st=-1
+BLOCK_COMMENT   "/* \\* */", la=1, st=-1
+EOL             "\n", la=1, st=-1
+BLOCK_COMMENT   "/*\\**/", la=1, st=-1
+EOL             "\n", la=1, st=-1
+DOC_COMMENT     "/**\\***/", la=1, st=-1
+EOL             "\n", la=1, st=-1
+BLOCK_COMMENT   "/*\\****/", la=1, st=-1
+----- EOF -----
+

@@ -37,13 +37,7 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
-import jdk.nashorn.internal.ir.FunctionNode;
-import jdk.nashorn.internal.ir.Node;
-import jdk.nashorn.internal.runtime.Source;
-import jdk.nashorn.internal.runtime.options.Options;
-import java.util.Collections;
-import jdk.nashorn.internal.ir.IdentNode;
-import jdk.nashorn.internal.runtime.ParserException;
+import com.oracle.truffle.js.parser.nashorn.internal.ir.FunctionNode;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
 
@@ -63,39 +57,40 @@ public class JsonParser extends SanitizingParser {
     }
 
     @Override
-    protected FunctionNode parseSource(Snapshot snapshot, String name, String text, int caretOffset, JsErrorManager errorManager) throws Exception {
-        Source source = new Source(name, text);
-        Options options = new Options("nashorn");
-        options.process(new String[] {
-            "--parse-only=true", // NOI18N
-            "--empty-statements=true", // NOI18N
-            "--debug-lines=false"}); // NOI18N
-
-        errorManager.setLimit(0);
-        jdk.nashorn.internal.runtime.Context nashornContext = new jdk.nashorn.internal.runtime.Context(options, errorManager, JsonParser.class.getClassLoader());
-        // XXX
-        //jdk.nashorn.internal.runtime.Context.setContext(nashornContext);
-        jdk.nashorn.internal.codegen.Compiler compiler = jdk.nashorn.internal.codegen.Compiler.compiler(source, nashornContext);
-        jdk.nashorn.internal.parser.JSONParser parser = new jdk.nashorn.internal.parser.JSONParser(source, errorManager, nashornContext._strict);
-
-        Node objectNode = null;
-        try {
-            objectNode = parser.parse();
-        } catch (ParserException ex) {
-            // JSON parser has no recovery
-            errorManager.error(ex);
-        }
-
-        // we are doing this as our infrusture requires function node on top
-        // TODO we may get rid of such dep later
-        FunctionNode node = null;
-        if (objectNode != null) {
-            node = new FunctionNode(source, 0, text.length(), compiler, null, null, "runScript"); // NOI18N
-            node.setKind(FunctionNode.Kind.SCRIPT);
-            node.setStatements(Collections.<Node>singletonList(objectNode));
-            node.setIdent(new IdentNode(source, objectNode.getToken(), 0, node.getName()));
-        }
-        return node;
+    protected FunctionNode parseSource(Snapshot snapshot, String name, String text, int caretOffset, JsErrorManager errorManager, boolean isModule) throws Exception {
+        return null;
+//        Source source = new Source(name, text);
+//        Options options = new Options("nashorn");
+//        options.process(new String[] {
+//            "--parse-only=true", // NOI18N
+//            "--empty-statements=true", // NOI18N
+//            "--debug-lines=false"}); // NOI18N
+//
+//        errorManager.setLimit(0);
+//        jdk.nashorn.internal.runtime.Context nashornContext = new jdk.nashorn.internal.runtime.Context(options, errorManager, JsonParser.class.getClassLoader());
+//        // XXX
+//        //jdk.nashorn.internal.runtime.Context.setContext(nashornContext);
+//        jdk.nashorn.internal.codegen.Compiler compiler = jdk.nashorn.internal.codegen.Compiler.compiler(source, nashornContext);
+//        jdk.nashorn.internal.parser.JSONParser parser = new jdk.nashorn.internal.parser.JSONParser(source, errorManager, nashornContext._strict);
+//
+//        Node objectNode = null;
+//        try {
+//            objectNode = parser.parse();
+//        } catch (ParserException ex) {
+//            // JSON parser has no recovery
+//            errorManager.error(ex);
+//        }
+//
+//        // we are doing this as our infrusture requires function node on top
+//        // TODO we may get rid of such dep later
+//        FunctionNode node = null;
+//        if (objectNode != null) {
+//            node = new FunctionNode(source, 0, text.length(), compiler, null, null, "runScript"); // NOI18N
+//            node.setKind(FunctionNode.Kind.SCRIPT);
+//            node.setStatements(Collections.<Node>singletonList(objectNode));
+//            node.setIdent(new IdentNode(source, objectNode.getToken(), 0, node.getName()));
+//        }
+//        return node;
     }
 
     @Override

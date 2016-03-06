@@ -54,6 +54,13 @@ public class MarkOccurrenceTest extends JsTestBase {
     public MarkOccurrenceTest(String testName) {
         super(testName);
     }
+
+    @Override
+    protected int timeOut() {
+        return 5000;
+    }
+    
+    
     
     public void testSimpleObject01() throws Exception {
         checkOccurrences("testfiles/model/simpleObject.js", "var Car^rot = {", true);
@@ -1599,6 +1606,119 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testIssue253129_05() throws Exception {
         checkOccurrences("testfiles/coloring/issue253129.js", "var f3, f4, f^5 = f3 = f4 = function (){", true);
     }
+    
+    public void testClass01_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class01.js", "var p^ = new Polygon (10,20);", true);
+    }
+    
+    public void testClass01_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class01.js", "var p = new Pol^ygon (10,20);", true);
+    }
+    
+    public void testClass01_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class01.js", "console.log(p.wid^th);", true);
+    }
+    
+    public void testClass01_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class01.js", "console.log(p.hei^ght);", true);
+    }
+    
+    public void testClass01_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class01.js", "this.height = hei^ght;", true);
+    }
+    
+    public void testClass01_06() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class01.js", "const^ructor(height, width) {", true);
+    }
+    
+    public void testClass02_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class02.js", "var p^ = new Polygon (10,20);", true);
+    }
+    
+    public void testClass02_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class02.js", "var p = new Pol^ygon (10,20);", true);
+    }
+    
+    public void testClass02_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class02.js", "console.log(p.wid^th);", true);
+    }
+    
+    public void testClass02_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class02.js", "console.log(p.hei^ght);", true);
+    }
+    
+    public void testClass02_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class02.js", "this.height = hei^ght;", true);
+    }
+    
+    public void testClass02_06() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class02.js", "const^ructor(height, width) {", true);
+    }
+    
+    public void testClass03_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class03.js", "var p^ = new Polygon (10, 20);", true);
+    }
+    
+    public void testClass03_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class03.js", "var p = new Poly^gon (10, 20);", true);
+    }
+    
+    public void testClass03_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class03.js", "console.log(p.wid^th);", true);
+    }
+    
+    public void testClass03_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class03.js", "console.log(p.hei^ght);", true);
+    }
+    
+    public void testClass03_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class03.js", "this.height = hei^ght;", true);
+    }
+    
+    public void testClass03_06() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class03.js", "const^ructor(height, width) {", true);
+    }
+    
+    public void testClass03_07() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class03.js", "var p = new Polygo^n2(1,2);", true);
+    }
+    
+    public void testClass04_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class04.js", "const p1 = new Po^int(5, 5);", true);
+    }
+    
+    public void testClass04_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class04.js", "const p^1 = new Point(5, 5);", true);
+    }
+    
+    public void testClass04_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class04.js", "console.log(Point.distan^ce(p1, p2)); ", true);
+    }
+    
+    public void testClass04_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class04.js", "const d^x = a.x - b.x;", true);
+    }
+    
+    public void testClass04_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class04.js", "const dx = a^.x - b.x;", true);
+    }
+    
+    public void testClass04_06() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class04.js", "const dx = a.x^ - b.x;", true);
+    }
+    
+    public void testClass04_07() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class04.js", "const dy = a.y - b.y^;", true);
+    }
+    
+    public void testClass04_08() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class04.js", "this.x^ = x;", true);
+    }
+    
+    public void testClass04_09() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class04.js", "this.x = x^;", true);
+    }
+    
     
     private String getTestName() {
         String name = getName();
