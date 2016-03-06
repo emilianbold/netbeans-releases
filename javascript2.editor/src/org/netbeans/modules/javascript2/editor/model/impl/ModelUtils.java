@@ -91,7 +91,7 @@ public class ModelUtils {
 
     public static final String ARGUMENTS = "arguments"; //NOI18N
 
-    private static final String GENERATED_FUNCTION_PREFIX = "L:"; //NOI18N
+    private static final String GENERATED_FUNCTION_PREFIX = "L$"; //NOI18N
     
     private static final String GENERATED_ANONYM_PREFIX = "Anonym$"; //NOI18N
     
