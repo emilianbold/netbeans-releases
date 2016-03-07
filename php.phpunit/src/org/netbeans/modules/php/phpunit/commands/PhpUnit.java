@@ -421,9 +421,8 @@ public final class PhpUnit {
         } else {
             boolean useNbSuite = true;
             List<FileObject> startFiles = runInfo.getStartFiles();
-            if (startFiles.size() == 1
-                    && phpModule.getTestDirectories().contains(startFiles.get(0))
-                    && PhpUnitPreferences.getRunPhpUnitOnly(phpModule)) {
+            if (PhpUnitPreferences.getRunPhpUnitOnly(phpModule)
+                    && phpModule.getTestDirectories().equals(startFiles)) {
                 // only test dir and use 'phpunit' command only
                 useNbSuite = false;
             }

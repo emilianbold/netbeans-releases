@@ -167,6 +167,8 @@ public class SelectionPanel extends JPanel implements HelpCtx.Provider {
     /**
      * Shows the edit panel.
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "ES_COMPARING_STRINGS_WITH_EQ",
+            justification = "Comparing instances is OK here")
     @NbBundle.Messages({
         "SelectionPanel.editDialog.title=Edit Library",
         "SelectionPanel.editDialog.update=Update",
@@ -532,6 +534,8 @@ public class SelectionPanel extends JPanel implements HelpCtx.Provider {
     /**
      * Comparator of {@code Library.Version}s.
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "SE_COMPARATOR_SHOULD_BE_SERIALIZABLE",
+            justification = "No need to be serializable")
     static class LibraryVersionComparator implements Comparator<Library.Version> {
         @Override
         public int compare(Library.Version o1, Library.Version o2) {
