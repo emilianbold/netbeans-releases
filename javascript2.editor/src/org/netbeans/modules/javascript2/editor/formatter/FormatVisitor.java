@@ -405,7 +405,7 @@ public class FormatVisitor extends NodeVisitor {
                     }
                 }
 
-                if (/*functionNode.isStatement() &&*/ !functionNode.isAnonymous() && !functionNode.isProgram()) {
+                if (functionNode.isStatement() && !functionNode.isAnonymous() && !functionNode.isProgram()) {
                     FormatToken rightBrace = getPreviousToken(getFinish(functionNode),
                             JsTokenId.BRACKET_RIGHT_CURLY,
                             leftBrace != null ? leftBrace.getOffset() : start);
