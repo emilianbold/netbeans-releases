@@ -60,6 +60,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -601,8 +602,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
      * Return C++ settings
      **/
     @Override
-    public List<FSPath> getSystemIncludePaths() {
-        ArrayList<FSPath> vec = new ArrayList<>();
+    public List<IncludePath> getSystemIncludePaths() {
+        ArrayList<IncludePath> vec = new ArrayList<>();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         if (makeConfiguration != null) {
             CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
@@ -612,7 +613,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.CCCompiler);
             if (compiler != null) {
                 FileSystem compilerFS = FileSystemProvider.getFileSystem(compiler.getExecutionEnvironment());
-                vec.addAll(CndFileUtils.toFSPathList(compilerFS, compiler.getSystemIncludeDirectories()));
+                vec.addAll(IncludePath.toIncludePathList(compilerFS, compiler.getSystemIncludeDirectories()));
             }
         }
         return vec;
@@ -652,8 +653,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
      * Return C++ settings
      **/
     @Override
-    public List<FSPath> getUserIncludePaths() {
-        ArrayList<FSPath> vec = new ArrayList<>();
+    public List<IncludePath> getUserIncludePaths() {
+        ArrayList<IncludePath> vec = new ArrayList<>();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         if (makeConfiguration != null) {
             CCCompilerConfiguration cccCompilerConfiguration = makeConfiguration.getCCCompilerConfiguration();
@@ -665,10 +666,10 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             while (iter.hasNext()) {
                 String path = iter.next();
                 if (CndPathUtilities.isPathAbsolute(path)) {
-                    vec.add(new FSPath(fs, path));
+                    vec.add(IncludePath.toIncludePath(fs, path));
                 } else {
                     path = CndPathUtilities.toAbsolutePath(fs, getProjectRoot(), path);
-                    vec.add(new FSPath(fs, path));
+                    vec.add(IncludePath.toIncludePath(fs, path));
                 }
             }
         }

@@ -1,7 +1,0 @@
-Code completion result for source line:
-* @p|aram foo This is my first param
-(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-------------------------------------
-KEYWORD    @param                                     null
-KEYWORD    @private                                   null
-KEYWORD    @property                                  null

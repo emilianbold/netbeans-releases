@@ -176,8 +176,8 @@ public class IntroduceSuggestion extends SuggestionRule {
 
         @Override
         public void visit(ClassInstanceCreation instanceCreation) {
-            // XXX anonymous class
-            if (lineBounds.containsInclusive(instanceCreation.getStartOffset())) {
+            if (!instanceCreation.isAnonymous()
+                    && lineBounds.containsInclusive(instanceCreation.getStartOffset())) {
                 String clzName = CodeUtils.extractClassName(instanceCreation.getClassName());
                 clzName = (clzName != null && clzName.trim().length() > 0) ? clzName : null;
                 ElementQuery.Index index = model.getIndexScope().getIndex();

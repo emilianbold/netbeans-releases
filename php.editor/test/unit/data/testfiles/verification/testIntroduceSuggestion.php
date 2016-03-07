@@ -10,4 +10,4 @@ Omg::CON;
 Omg::stMeth();
 Omg::$stFld;
 
-?>
+new class {};

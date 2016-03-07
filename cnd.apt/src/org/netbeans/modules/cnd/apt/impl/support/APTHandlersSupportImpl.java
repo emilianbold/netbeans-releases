@@ -47,9 +47,9 @@ package org.netbeans.modules.cnd.apt.impl.support;
 import org.netbeans.modules.cnd.apt.impl.support.clank.ClankIncludeHandlerImpl;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.impl.support.APTBaseMacroMap.StateImpl;
 import org.netbeans.modules.cnd.apt.impl.support.APTFileMacroMap.FileStateImpl;
@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.apt.impl.support.clank.ClankFileMacroMap;
 import org.netbeans.modules.cnd.apt.impl.support.clank.ClankMacroMap;
 import org.netbeans.modules.cnd.apt.impl.support.clank.ClankSystemMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTFileSearch;
-import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
@@ -99,7 +98,7 @@ public class APTHandlersSupportImpl {
         // for now prepare IncludeDirEntry for "-include file" elements
         List<IncludeDirEntry> fileEntries = new ArrayList<IncludeDirEntry>(0);
         for (FSPath file : includeFileEntries) {
-            fileEntries.add(IncludeDirEntry.get(file.getFileSystem(), file.getPath()));
+            fileEntries.add(IncludeDirEntry.get(file, false, true));
         }
         if (APTTraceFlags.USE_CLANK) {
             return new ClankIncludeHandlerImpl(startFile, sysIncludePaths, userIncludePaths, fileEntries, fileSearch);

@@ -108,6 +108,18 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="protectRange">
+            <api name="general"/>
+            <summary>Allow to protect existing text</summary>
+            <version major="1" minor="33"/>
+            <date day="17" month="2" year="2016"/>
+            <author login="sdedic"/>
+            <compatibility addition="yes" binary="compatible" source="compatible"/>
+            <description>
+                Added method to create guarded block on top of existing text.
+            </description>
+            <class name="GuardedSectionManager" package="org.netbeans.api.editor.guards"/>
+        </change>
         <change id="DocumentGuards">
             <api name="general"/>
             <summary>DocumentGuards API</summary>

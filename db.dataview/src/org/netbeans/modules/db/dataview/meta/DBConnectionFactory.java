@@ -45,15 +45,13 @@ package org.netbeans.modules.db.dataview.meta;
 
 import java.sql.Connection;
 import java.util.Iterator;
-
+import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.imageio.spi.ServiceRegistry;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.dataview.spi.DBConnectionProvider;
-import org.openide.util.Mutex;
 
 /**
  * DBConnectionFactory is used to serve out DB Session The actual physical
@@ -125,7 +123,7 @@ public final class DBConnectionFactory {
     }
 
     private DBConnectionProvider findDBConnectionProvider() {
-        Iterator<DBConnectionProvider> it = ServiceRegistry.lookupProviders(DBConnectionProvider.class);
+        Iterator<DBConnectionProvider> it = ServiceLoader.load(DBConnectionProvider.class).iterator();
         if (it.hasNext()) {
             return it.next();
         }
@@ -139,7 +137,7 @@ public final class DBConnectionFactory {
          */
         ClassLoader loader = DBConnectionFactory.class.getClassLoader();
 
-        it = ServiceRegistry.lookupProviders(DBConnectionProvider.class, loader);
+        it = ServiceLoader.load(DBConnectionProvider.class, loader).iterator();
         if (it.hasNext()) {
             return it.next();
         }

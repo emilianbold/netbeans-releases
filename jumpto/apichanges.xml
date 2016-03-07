@@ -108,6 +108,19 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="NameMatcher_constants">
+            <api name="general"/>
+            <summary>Added <code>NameMatcher.NONE</code> and <code>NameMatcher.ALL</code></summary>
+            <version major="1" minor="53"/>
+            <date day="29" month="2" year="2016"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes">
+            </compatibility>
+            <description>
+                Added <code>NameMatcher.NONE</code> and <code>NameMatcher.ALL</code> which matches no and all items.
+            </description>
+            <class package="org.netbeans.spi.jumpto.support" name="NameMatcher"/>
+        </change>
         <change id="AsyncDescriptor">
             <api name="general"/>
             <summary>Added <code>AsyncDescriptor</code> which allows descriptor to be fully calculated on background</summary>

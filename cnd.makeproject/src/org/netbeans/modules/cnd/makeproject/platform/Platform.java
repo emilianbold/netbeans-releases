@@ -93,7 +93,7 @@ public abstract class Platform {
         return getLibraryName(baseName) + "." + version; // NOI18N
     }
 
-    public abstract String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet);
+    public abstract String getLibraryLinkOption(String libName, String libDir, String libPath, String libSearchPath, CompilerSet compilerSet);
     
     public LibraryItem.StdLibItem getStandardLibrarie(String name) {
         for (int i = 0; i < getStandardLibraries().length; i++) {

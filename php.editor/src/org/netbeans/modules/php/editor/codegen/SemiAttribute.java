@@ -725,7 +725,7 @@ public class SemiAttribute extends DefaultVisitor {
     public Collection<AttributedElement> getNamedGlobalElements(Kind k, String fName) {
         final List<AttributedElement> retval = new ArrayList<>();
         final Map<String, AttributedElement> name2El = global.name2Writes.get(k);
-        if (global != null && StringUtils.hasText(fName)) {
+        if (StringUtils.hasText(fName)) {
             if (fName.equals("self")) { //NOI18N
                 String ctxName = getContextClassName();
                 if (ctxName != null) {

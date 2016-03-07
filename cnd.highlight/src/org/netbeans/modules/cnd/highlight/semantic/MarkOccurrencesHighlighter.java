@@ -90,6 +90,7 @@ import org.netbeans.modules.parsing.spi.support.CancelSupport;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
 import org.openide.filesystems.FileObject;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -299,17 +300,16 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
                 int startOffset = usages[i][0];
                 int endOffset = usages[i][1];
                 if (startOffset < doc.getLength() && endOffset > 0 && startOffset < endOffset) {
-                    obag.addHighlight(
-                            doc.createPosition((startOffset > 0) ? startOffset : 0),
-                            doc.createPosition((endOffset < doc.getLength()) ? endOffset : doc.getLength()), attrs);
+                    obag.addHighlight(NbDocument.createPosition(doc, (startOffset > 0) ? startOffset : 0, javax.swing.text.Position.Bias.Forward),
+                                     NbDocument.createPosition(doc, (endOffset < doc.getLength()) ? endOffset : doc.getLength(), javax.swing.text.Position.Bias.Backward), attrs);
                 }
             }
         } else {
             int startOffset = getDocumentOffset(doc, csmReference.getStartOffset());
             int endOffset = getDocumentOffset(doc, csmReference.getEndOffset());
             if (startOffset < doc.getLength() && endOffset > 0 && startOffset < endOffset) {
-                obag.addHighlight(doc.createPosition((startOffset > 0) ? startOffset : 0),
-                        doc.createPosition((endOffset < doc.getLength()) ? endOffset : doc.getLength()), attrs);
+                obag.addHighlight(NbDocument.createPosition(doc, (startOffset > 0) ? startOffset : 0, javax.swing.text.Position.Bias.Forward),
+                                  NbDocument.createPosition(doc, (endOffset < doc.getLength()) ? endOffset : doc.getLength(), javax.swing.text.Position.Bias.Backward), attrs);
             }
         }
     }

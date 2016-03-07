@@ -130,17 +130,18 @@ public final class CsmJClankCompilationDB implements ClankCompilationDataBase {
 
         builder.setLang(getLang(nfi)).setLangStd(getLangStd(nfi));
 
-        for (FSPath fSPath : nfi.getUserIncludePaths()) {
-            FileObject fileObject = fSPath.getFileObject();
+        // -I or -F
+        for (org.netbeans.modules.cnd.api.project.IncludePath incPath : nfi.getUserIncludePaths()) {
+            FileObject fileObject = incPath.getFSPath().getFileObject();
             if (fileObject != null && fileObject.isFolder()) {
-                builder.addUserIncludePath(fSPath.getURL());
+                builder.addUserIncludePath(incPath.getFSPath().getURL(), incPath.isFramework(), incPath.ignoreSysRoot());
             }
         }
         // -isystem
-        for (FSPath fSPath : nfi.getSystemIncludePaths()) {
-            FileObject fileObject = fSPath.getFileObject();
+        for (org.netbeans.modules.cnd.api.project.IncludePath incPath : nfi.getSystemIncludePaths()) {
+            FileObject fileObject = incPath.getFSPath().getFileObject();
             if (fileObject != null && fileObject.isFolder()) {
-                builder.addPredefinedSystemIncludePath(fSPath.getURL());
+                builder.addPredefinedSystemIncludePath(incPath.getFSPath().getURL(), incPath.isFramework(), incPath.ignoreSysRoot());
             }
         }
 

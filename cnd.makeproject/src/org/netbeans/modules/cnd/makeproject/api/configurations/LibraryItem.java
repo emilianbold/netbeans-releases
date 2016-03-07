@@ -49,6 +49,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
+import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.platform.Platform;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
@@ -56,8 +57,12 @@ import org.netbeans.modules.cnd.makeproject.platform.StdLibraries;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public abstract class LibraryItem implements Cloneable {
     public static final int PROJECT_ITEM = 0;
@@ -200,10 +205,35 @@ public abstract class LibraryItem implements Cloneable {
         public String getOption(MakeConfiguration conf) {
             CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
             Platform platform = Platforms.getPlatform(conf.getDevelopmentHost().getBuildPlatform());
+            IntConfiguration librariesRunTimeSearchPathKind = conf.getLinkerConfiguration().getLibrariesRunTimeSearchPathKind();
             String libPath = getPath();
             String libDir = CndPathUtilities.getDirName(libPath);
             String libName = CndPathUtilities.getBaseName(libPath);
-            return platform.getLibraryLinkOption(libName, libDir, libPath, compilerSet);
+            String libSearchPath;
+            switch (librariesRunTimeSearchPathKind.getValue()) {
+                case LinkerConfiguration.SEARCH_PATH_RELATIVE_TO_WORKING_DIR:
+                    libSearchPath = libDir;
+                    break;
+                case LinkerConfiguration.SEARCH_PATH_RELATIVE_TO_BINARY:{
+                    StringBuilder buf = new StringBuilder();
+                    buf.append('$').append(CommonUtilities.ORIGIN).append('/'); // NOI18N
+                    buf.append(CndPathUtilities.getRelativePath(CndPathUtilities.getDirName(conf.getAbsoluteOutputValue()), conf.getMakefileConfiguration().getAbsBuildCommandWorkingDir()));
+                    buf.append('/'); // NOI18N
+                    buf.append(libDir);
+                    libSearchPath = CndPathUtilities.normalizeSlashes(buf.toString());
+                    break;}
+                case LinkerConfiguration.SEARCH_PATH_ABSOLUTE:{
+                    StringBuilder buf = new StringBuilder(conf.getMakefileConfiguration().getAbsBuildCommandWorkingDir());
+                    buf.append('/');
+                    buf.append(libDir);
+                    libSearchPath = CndPathUtilities.normalizeUnixPath(CndPathUtilities.normalizeSlashes(buf.toString()));
+                    break;}
+                case LinkerConfiguration.SEARCH_PATH_NONE:
+                default:
+                    libSearchPath = null;
+                    break;
+            }
+            return platform.getLibraryLinkOption(libName, libDir, libPath, libSearchPath, compilerSet);
         }
 
         @Override

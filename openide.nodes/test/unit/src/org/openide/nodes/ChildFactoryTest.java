@@ -278,6 +278,47 @@ public class ChildFactoryTest extends NbTestCase {
         ch = Children.create(b, true);
         assertEquals(4, ch.getNodesCount(true));
     }
+    
+    public void testDestroyNodesSynch() throws Exception {
+        DestroyableImpl r = new DestroyableImpl();
+        Children ch = Children.create(r, false);
+        new AbstractNode (ch);
+        Node[] n = ch.getNodes(true);
+        assertEquals (2, n.length);
+        assertEquals ("foo", n[0].getDisplayName());
+        assertEquals ("bar", n[1].getDisplayName());
+        r.refresh(true);
+        n = ch.getNodes(true);
+        assertEquals (0, n.length);
+        Set<Node> destroyed = r.getDestroyed();
+        Set<String> expected = new HashSet<String>();
+        Collections.addAll(expected, "foo", "bar");
+        for (Node node : destroyed) {
+            assertTrue(node.getDisplayName(), expected.contains(node.getDisplayName()));
+        }
+    }
+
+    public void testDestroyNodesAsynch() throws Exception {
+        DestroyableImpl r = new DestroyableImpl();
+        Children ch = Children.create(r, true);
+        new AbstractNode (ch);
+        Node[] n = ch.getNodes(true);
+        assertEquals (2, n.length);
+        assertEquals ("foo", n[0].getDisplayName());
+        assertEquals ("bar", n[1].getDisplayName());
+        r.refresh(false);
+        synchronized(r) {
+            r.wait(1000);
+        }
+        n = ch.getNodes(true);
+        assertEquals (0, n.length);
+        Set<Node> destroyed = r.getDestroyed();
+        Set<String> expected = new HashSet<String>();
+        Collections.addAll(expected, r.createWaitNode().getDisplayName(), "foo", "bar");
+        for (Node node : destroyed) {
+            assertTrue(node.getDisplayName(), expected.contains(node.getDisplayName()));
+        }
+    }
 
     public void testIncrementalDisplay() throws Exception { // #206556
         final Semaphore s1 = new Semaphore(0);
@@ -672,6 +713,48 @@ public class ChildFactoryTest extends NbTestCase {
 
         void assertRemoved() {
             assertTrue (removed);
+        }
+    }
+
+    private static final class DestroyableImpl extends DestroyableNodesFactory<String> {
+
+        private boolean empty;
+
+        private final Set<Node> destroyed = Collections.synchronizedSet(new HashSet<Node>());
+
+        @Override
+        protected boolean createKeys(List<String> toPopulate) {
+            if (empty) {
+                return true;
+            }
+
+            toPopulate.add("foo");
+            toPopulate.add("bar");
+            synchronized (this) {
+                notifyAll();
+            }
+            empty = true;
+            return true;
+        }
+
+        @Override
+        protected Node createNodeForKey(String key) {
+            AbstractNode nd = new AbstractNode(Children.LEAF);
+            nd.setDisplayName(key);
+            return nd;
+        }
+
+        @Override
+        protected void destroyNodes(Node[] arr) {
+            synchronized (destroyed) {
+                Collections.addAll(destroyed, arr);
+            }
+        }
+
+        public Set<Node> getDestroyed() {
+            synchronized (destroyed) {
+                return new HashSet<Node>(destroyed);
+            }
         }
     }
 }

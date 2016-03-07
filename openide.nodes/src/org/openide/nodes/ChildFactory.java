@@ -220,6 +220,10 @@ public abstract class ChildFactory <T> {
         //do nothing
     }
     
+    void destroyNodes(Node[] arr) {
+        //do nothing
+    }
+
     interface Observer {
         public void refresh(boolean immediate);
     }
@@ -270,4 +274,5 @@ public abstract class ChildFactory <T> {
         }
 
     }
+
 }

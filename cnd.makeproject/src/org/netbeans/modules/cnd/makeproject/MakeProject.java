@@ -49,6 +49,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
@@ -80,6 +81,7 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchListener;
+import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
@@ -397,6 +399,39 @@ public final class MakeProject implements Project, MakeProjectListener {
             }
         }
         return props;
+    }
+
+    public void saveProjectProperties(Properties props, boolean shared) {
+        FileObject propsFO = null;
+        if (shared) {
+            try {
+                propsFO = FileUtil.createData(helper.getProjectDirectory(), MakeProjectHelper.PROJECT_PROPERTIES_PATH);
+            } catch (IOException ex) {
+                ex.printStackTrace(System.err);
+            }
+        } else {
+            try {
+                propsFO = FileUtil.createData(helper.getProjectDirectory(), MakeProjectHelper.PRIVATE_PROPERTIES_PATH);
+            } catch (IOException ex) {
+                ex.printStackTrace(System.err);
+            }
+        }
+        if (propsFO != null && propsFO.isValid()) {
+            OutputStream os = null;
+            try {
+                os = propsFO.getOutputStream();
+                props.store(os, null);
+            } catch (IOException ex) {
+                ex.printStackTrace(System.err);
+            } finally {
+                if (os != null) {
+                    try {
+                        os.close();
+                    } catch (IOException ex) {
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -1474,17 +1509,17 @@ public final class MakeProject implements Project, MakeProjectListener {
                 nativeProject.getSourceRoots(),
                 extensions);
 
-        List<FSPath> sysIncPaths = nativeProject.getSystemIncludePaths();
+        List<IncludePath> sysIncPaths = nativeProject.getSystemIncludePaths();
         if (sysIncPaths != null && !sysIncPaths.isEmpty()) {
             ExecutionEnvironment env = null;
             List<String> paths = new ArrayList<>(sysIncPaths.size());
-            for (FSPath fsp : sysIncPaths) {
+            for (IncludePath fsp : sysIncPaths) {
                 if (env == null) {
                     env = FileSystemProvider.getExecutionEnvironment(fsp.getFileSystem());
                 } else {
                     CndUtils.assertTrue(env.equals(FileSystemProvider.getExecutionEnvironment(fsp.getFileSystem())));
                 }
-                paths.add(fsp.getPath());
+                paths.add(fsp.getFSPath().getPath());
             }
             FileSystemProvider.warmup(FileSystemProvider.WarmupMode.FILES_CONTENT, env, paths, null);
         }        

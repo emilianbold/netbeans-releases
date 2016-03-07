@@ -48,7 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.openide.util.CharSequences;
 
 /**
@@ -61,14 +61,14 @@ public final class APTIncludePathStorage {
     public APTIncludePathStorage() {
     }
 
-    public List<IncludeDirEntry> get(CharSequence configID,  List<FSPath> includes) {
+    public List<IncludeDirEntry> get(CharSequence configID,  List<IncludePath> includes) {
         CharSequence key = CharSequences.create(configID);
         List<IncludeDirEntry> list = allIncludes.get(key);
         if (list == null) {
             // create new one with light char sequences and put in map
             list = new ArrayList<IncludeDirEntry>(includes.size());
-            for (FSPath cs : includes) {
-                IncludeDirEntry inclEntry = IncludeDirEntry.get(cs.getFileSystem(), cs.getPath());
+            for (IncludePath cs : includes) {
+                IncludeDirEntry inclEntry = IncludeDirEntry.get(cs.getFSPath(), cs.isFramework(), cs.ignoreSysRoot());
                 list.add(inclEntry);
             }
             List<IncludeDirEntry> old = allIncludes.putIfAbsent(key, list);

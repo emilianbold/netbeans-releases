@@ -1,4 +1,0 @@
-  var __method = this, args = $A(arguments), object = args.shift();
-                                             ---------------------
-HINT:Variable object hides argument
-FIX:Show more information about this warning

@@ -83,7 +83,7 @@ public class PlatformSolaris  extends Platform {
     }
     
     @Override
-    public String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet) {
+    public String getLibraryLinkOption(String libName, String libDir, String libPath, String libSearchPath, CompilerSet compilerSet) {
         if (libName.endsWith(".so")) { // NOI18N
             int i = libName.indexOf(".so"); // NOI18N
             if (i > 0) {
@@ -92,12 +92,20 @@ public class PlatformSolaris  extends Platform {
             if (libName.startsWith("lib")) { // NOI18N
                 libName = libName.substring(3);
             }
-            return compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getDynamicLibrarySearchFlag()
-                    + CndPathUtilities.escapeOddCharacters(libDir)
-                    + " " + compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibrarySearchFlag() // NOI18N
-                    + CndPathUtilities.escapeOddCharacters(libDir)
-                    + " " + compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibraryFlag() // NOI18N
-                    + CndPathUtilities.escapeOddCharacters(libName);
+            StringBuilder buf = new StringBuilder();
+            if (libSearchPath != null) {
+                buf.append(compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getDynamicLibrarySearchFlag());
+                buf.append('\'');
+                buf.append(CndPathUtilities.escapeOddCharacters(libSearchPath));
+                buf.append('\'');
+                buf.append(' ');
+            }
+            buf.append(compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibrarySearchFlag());
+            buf.append(CndPathUtilities.escapeOddCharacters(libDir));
+            buf.append(' ');
+            buf.append(compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibraryFlag());
+            buf.append(CndPathUtilities.escapeOddCharacters(libName));
+            return buf.toString();
         } else {
             return CndPathUtilities.escapeOddCharacters(libPath);
         }

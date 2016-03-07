@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -208,8 +209,10 @@ public class LibraryProvider {
                 result = new HashMap<>();
                 JSONObject dependencies = (JSONObject)json.get("dependencies"); // NOI18N
                 if (dependencies != null) {
-                    for (Object key : dependencies.keySet()) {
-                        Object value = dependencies.get(key);
+                    Set<Map.Entry<Object, Object>> entrySet = dependencies.entrySet();
+                    for (Map.Entry<Object, Object> entry : entrySet) {
+                        Object key = entry.getKey();
+                        Object value = entry.getValue();
                         if (value instanceof JSONObject) {
                             JSONObject libraryInfo = (JSONObject)value;
                             String versionName = (String)libraryInfo.get("version"); // NOI18N

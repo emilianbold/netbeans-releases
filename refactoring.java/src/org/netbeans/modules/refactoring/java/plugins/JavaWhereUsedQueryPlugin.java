@@ -260,7 +260,9 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                 info.toPhase(JavaSource.Phase.RESOLVED);
                 final Element el = tph.resolveElement(info);
                 if (el == null) {
-                    throw new NullPointerException(String.format("#145291: Cannot resolve handle: %s\n%s", tph, info.getClasspathInfo())); // NOI18N
+                    sourceSet.clear();
+                    LOG.log(Level.INFO, "#250160 #145291: Cannot resolve handle: %s\n%s", new Object[] {tph, info.getClasspathInfo()});
+                    return;
                 }
                 Set<SearchScopeType> searchScopeType = new HashSet<>(1);
                 final Set<String> packageSet = new HashSet<>(packages.size());

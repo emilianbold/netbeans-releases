@@ -70,6 +70,33 @@ public class RenameTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void testStaticImportDoubled() throws Exception {
+        writeFilesAndWaitForScan(src, new File("Test.java", "import static java.util.Objects.requireNonNull;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "\n"
+                + "final int number;\n"
+                + "\n"
+                + "public Test(final Integer number) {\n"
+                + "    this.number = requireNonNull(number);\n"
+                + "}\n"
+                + "\n"
+                + "}"));
+        JavaRenameProperties props = new JavaRenameProperties();
+        performRename(src.getFileObject("Test.java"), 0, -1, "getal", props, true);
+        verifyContent(src, new File("Test.java", "import static java.util.Objects.requireNonNull;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "\n"
+                + "final int getal;\n"
+                + "\n"
+                + "public Test(final Integer number) {\n"
+                + "    this.getal = requireNonNull(number);\n"
+                + "}\n"
+                + "\n"
+                + "}"));
+    }
+    
     public void testMethodChainInTest() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/SampleClass.java", "package t;\n"

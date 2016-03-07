@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
-import javax.swing.JPanel;
+import javax.swing.JComponent;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.openide.nodes.AbstractNode;
@@ -75,7 +75,7 @@ final class PropertyNode extends AbstractNode implements HelpCtx.Provider {
         return description.getSheets(configuration);
     }
 
-    public JPanel getPanel(Configuration configuration) {
+    public JComponent getPanel(Configuration configuration) {
         return description.getPanel(configuration);
     }
 

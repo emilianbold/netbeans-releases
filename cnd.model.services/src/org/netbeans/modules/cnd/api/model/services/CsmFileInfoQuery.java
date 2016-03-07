@@ -53,11 +53,11 @@ import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.support.Interrupter;
-import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.util.CharSequences;
 import org.openide.util.Lookup;
@@ -115,12 +115,12 @@ public abstract class CsmFileInfoQuery {
     /**
      * @return list of system include paths used to parse file
      */
-    public abstract List<FSPath> getSystemIncludePaths(CsmFile file);
+    public abstract List<IncludePath> getSystemIncludePaths(CsmFile file);
     
     /**
      * @return list of user include paths used to parse file
      */
-    public abstract List<FSPath> getUserIncludePaths(CsmFile file);
+    public abstract List<IncludePath> getUserIncludePaths(CsmFile file);
     
     /**
      *
@@ -265,13 +265,13 @@ public abstract class CsmFileInfoQuery {
         }
 
         @Override
-        public List<FSPath> getSystemIncludePaths(CsmFile file) {
-            return Collections.<FSPath>emptyList();
+        public List<IncludePath> getSystemIncludePaths(CsmFile file) {
+            return Collections.<IncludePath>emptyList();
         }
 
         @Override
-        public List<FSPath> getUserIncludePaths(CsmFile file) {
-            return Collections.<FSPath>emptyList();
+        public List<IncludePath> getUserIncludePaths(CsmFile file) {
+            return Collections.<IncludePath>emptyList();
         }
 
         @Override

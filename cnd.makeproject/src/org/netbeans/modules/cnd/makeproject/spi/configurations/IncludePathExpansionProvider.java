@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.makeproject.spi.configurations;
 
 import java.util.List;
+import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -51,5 +52,5 @@ import org.netbeans.modules.cnd.utils.FSPath;
  * @author nick
  */
 public interface IncludePathExpansionProvider {
-    List<FSPath> expandIncludePaths(List<FSPath> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);
+    List<IncludePath> expandIncludePaths(List<IncludePath> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);
 }

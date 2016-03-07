@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.composer.commands;
 
@@ -110,6 +110,7 @@ public final class Composer {
     private static final String DEV_PARAM = "--dev"; // NOI18N
     private static final String NO_DEV_PARAM = "--no-dev"; // NOI18N
     private static final String ONLY_NAME_PARAM = "--only-name"; // NOI18N
+    private static final String ALL_PARAM = "--all"; // NOI18N
     private static final List<String> DEFAULT_PARAMS = Arrays.asList(
         ANSI_PARAM,
         NO_INTERACTION_PARAM
@@ -313,7 +314,7 @@ public final class Composer {
         defaultParams.remove(ANSI_PARAM);
         defaultParams.add(NO_ANSI_PARAM);
         composer = composer
-                .additionalParameters(mergeParameters(SHOW_COMMAND, defaultParams, Collections.singletonList(name)))
+                .additionalParameters(mergeParameters(SHOW_COMMAND, defaultParams, Arrays.asList(ALL_PARAM, name)))
                 // avoid parser confusion
                 .redirectErrorStream(false);
         // descriptor

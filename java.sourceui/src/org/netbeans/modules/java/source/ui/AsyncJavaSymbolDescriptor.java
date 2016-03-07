@@ -75,7 +75,7 @@ import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.CachingArchiveProvider;
@@ -113,13 +113,13 @@ final class AsyncJavaSymbolDescriptor extends JavaSymbolDescriptorBase implement
     private final AtomicBoolean initialized;
 
     AsyncJavaSymbolDescriptor (
-            @NullAllowed final Project project,
+            @NullAllowed final ProjectInformation projectInformation,
             @NonNull final FileObject root,
             @NonNull final ClassIndexImpl ci,
             @NonNull final ElementHandle<TypeElement> owner,
             @NonNull final String ident,
             final boolean caseSensitive) {
-        super(owner, project, root, ci);
+        super(owner, projectInformation, root, ci);
         assert ident != null;
         this.ident = ident;
         this.listeners = new CopyOnWriteArrayList<>();

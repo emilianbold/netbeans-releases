@@ -40,6 +40,7 @@ import java.util.Map;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
+import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -97,11 +98,11 @@ public class CsmIncludeCompletionQuery {
             Exceptions.printStackTrace(ex);
             return results.values();
         }
-        Collection<FSPath> usrPaths = Collections.<FSPath>emptyList();
-        Collection<FSPath> sysPaths = Collections.<FSPath>emptyList();
+        Collection<IncludePath> usrPaths = Collections.<IncludePath>emptyList();
+        Collection<IncludePath> sysPaths = Collections.<IncludePath>emptyList();
         if (CndPathUtilities.isPathAbsolute(childSubDir)) {
             // special handling for absolute paths...
-            addFolderItems(FSPath.toFSPath(docFileSystem.getRoot()),
+            addFolderItems(new IncludePath(FSPath.toFSPath(docFileSystem.getRoot())),
                     "",
                     childSubDir, true, (usrInclude != null ? usrInclude : false),
                     true, substitutionOffset, substitutionDelta);
@@ -114,27 +115,27 @@ public class CsmIncludeCompletionQuery {
         FileObject usrDir = baseFile.getParent();
         if (usrDir != null && usrDir.isValid()) {
             if (usrInclude == null || usrInclude == Boolean.TRUE) {
-                addFolderItems(FSPath.toFSPath(usrDir), ".", childSubDir, false, false, true, substitutionOffset, substitutionDelta); // NOI18N
+                addFolderItems(new IncludePath(FSPath.toFSPath(usrDir)), ".", childSubDir, false, false, true, substitutionOffset, substitutionDelta); // NOI18N
                 if (showAll) {
-                    for (FSPath usrPath : usrPaths) {
-                        addFolderItems(usrPath, usrPath.getPath(), childSubDir, false, false, true, substitutionOffset, substitutionDelta);
+                    for (IncludePath usrPath : usrPaths) {
+                        addFolderItems(usrPath, usrPath.getFSPath().getPath(), childSubDir, false, false, true, substitutionOffset, substitutionDelta);
                     }
-                    for (FSPath sysPath : sysPaths) {
-                        addFolderItems(sysPath, sysPath.getPath(), childSubDir, false, true, false, substitutionOffset, substitutionDelta);
+                    for (IncludePath sysPath : sysPaths) {
+                        addFolderItems(sysPath, sysPath.getFSPath().getPath(), childSubDir, false, true, false, substitutionOffset, substitutionDelta);
                     }
                 }
                 if (usrDir.getParent() != null) {
                     addParentFolder(substitutionOffset, substitutionDelta, childSubDir, false);
                 }
             } else {
-                for (FSPath sysPath : sysPaths) {
-                    addFolderItems(sysPath, sysPath.getPath(), childSubDir, false, true, false, substitutionOffset, substitutionDelta);
+                for (IncludePath sysPath : sysPaths) {
+                    addFolderItems(sysPath, sysPath.getFSPath().getPath(), childSubDir, false, true, false, substitutionOffset, substitutionDelta);
                 }
                 if (showAll) {
-                    for (FSPath usrPath : usrPaths) {
-                        addFolderItems(usrPath, usrPath.getPath(), childSubDir, false, false, true, substitutionOffset, substitutionDelta);
+                    for (IncludePath usrPath : usrPaths) {
+                        addFolderItems(usrPath, usrPath.getFSPath().getPath(), childSubDir, false, false, true, substitutionOffset, substitutionDelta);
                     }
-                    addFolderItems(FSPath.toFSPath(usrDir), ".", childSubDir, false, false, true, substitutionOffset, substitutionDelta); // NOI18N
+                    addFolderItems(new IncludePath(FSPath.toFSPath(usrDir)),".", childSubDir, false, false, true, substitutionOffset, substitutionDelta); // NOI18N
                     if (usrDir.getParent() != null) {
                         addParentFolder(substitutionOffset, substitutionDelta, childSubDir, true);
                     }
@@ -144,17 +145,27 @@ public class CsmIncludeCompletionQuery {
         return results.values();
     }
 
-    private void addFolderItems(FSPath parentFolder, String parentFolderPresentation,
+    private void addFolderItems(IncludePath parentFolder, String parentFolderPresentation,
             String childSubDir, boolean highPriority, boolean system, boolean filtered, int substitutionOffset, int substitutionDelta) {
-        FileObject parentFO = parentFolder.getFileObject();
+        FileObject parentFO = parentFolder.getFSPath().getFileObject();
         if (parentFO != null) {
-            FileObject dir = parentFO.getFileObject(childSubDir);
+            FileObject dir;
+            if (parentFolder.isFramework()) {
+                dir = parentFO.getFileObject(childSubDir.replace("/", ".framework/Headers/")); //NOI18N
+            } else {
+                dir = parentFO.getFileObject(childSubDir);
+            }
             if (dir != null && dir.isValid()) {
                 FileObject[] list = filtered ? listFiles(dir, new HeadersFileFilter()) : listFiles(dir, new DefFileFilter());
                 if (list != null) {
                     String relFileName;
                     for (FileObject curFile : list) {
                         relFileName = curFile.getNameExt();
+                        if (parentFolder.isFramework() && curFile.isFolder()) {
+                            if (relFileName.endsWith(".framework")) { //NOI18N
+                                relFileName = relFileName.substring(0, relFileName.lastIndexOf('.'));
+                            }
+                        }
                         CsmIncludeCompletionItem item = CsmIncludeCompletionItem.createItem(
                                 substitutionOffset, substitutionDelta, relFileName, parentFolderPresentation, childSubDir,
                                 system, highPriority, curFile.isFolder(), true);
@@ -191,7 +202,7 @@ public class CsmIncludeCompletionQuery {
         }
     }
 
-    private Collection<FSPath> getFileIncludes(CsmFile file, boolean system) {        
+    private Collection<IncludePath> getFileIncludes(CsmFile file, boolean system) {        
         CsmFileInfoQuery query = CsmFileInfoQuery.getDefault();
         return system ? query.getSystemIncludePaths(file) : query.getUserIncludePaths(file);
     }

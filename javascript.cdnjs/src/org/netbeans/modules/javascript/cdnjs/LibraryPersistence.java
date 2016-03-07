@@ -167,6 +167,8 @@ public final class LibraryPersistence {
         for (int i=0; i<fileList.getLength(); i++) {
             Element fileElement = (Element)fileList.item(i);
             String path = fileElement.getAttribute(ATTR_FILE_PATH);
+            @org.netbeans.api.annotations.common.SuppressWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
+                    justification = "Not sure about it, really (not my code)")
             String localPath = fileElement.getAttribute(ATTR_FILE_LOCAL_PATH);
             files[i] = path;
             localFiles[i] = (localPath == null) ? path : localPath;
@@ -244,6 +246,8 @@ public final class LibraryPersistence {
     /**
      * Comparator of {@code Library.Version}s.
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "SE_COMPARATOR_SHOULD_BE_SERIALIZABLE",
+            justification = "No need to be serializable")
     static class LibraryVersionComparator implements Comparator<Library.Version> {
         @Override
         public int compare(Library.Version o1, Library.Version o2) {

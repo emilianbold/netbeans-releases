@@ -55,7 +55,6 @@ import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
-import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -236,10 +235,9 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
             return progress;
         }
 
-        return dm.redeploy(new TargetModuleID[] {module});
-//        CommandBasedDeployer deployer = new CommandBasedDeployer(WLDeploymentFactory.getInstance(),
-//                dm.getInstanceProperties());
-//        return deployer.directoryRedeploy(module);
+        return dm.redeploy(module);
+//        CommandBasedDeployer deployer = new CommandBasedDeployer(dm);
+//        return deployer.directoryRedeploy(module, dm.getDeployTargets());
     }
 
     @Override

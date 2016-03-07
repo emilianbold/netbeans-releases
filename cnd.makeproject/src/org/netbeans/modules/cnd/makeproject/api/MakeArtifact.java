@@ -273,7 +273,7 @@ public class MakeArtifact implements Cloneable {
             return parentMakeConfiguration.expandMacros(val);
         }
     }
-    
+
     private void initConfiguration() {
         if (makeConfiguration == null) {
             try {

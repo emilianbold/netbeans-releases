@@ -1119,7 +1119,6 @@ public class ImportProject implements PropertyChangeListener {
                     done = discoveryByDwarf(done);
                 }
             }
-            switchModel(true);
             postModelDiscovery();
         } catch (Throwable ex) {
             isFinished = true;
@@ -1259,25 +1258,18 @@ public class ImportProject implements PropertyChangeListener {
         CsmModel model = CsmModelAccessor.getModel();
         if (model != null && makeProject != null) {
             final NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
-            final CsmProject p = model.getProject(np);
-            if (p == null) {
-                if (TRACE) {
-                    logger.log(Level.INFO, "#discovery cannot be done by model"); // NOI18N
-                }
-                isFinished = true;
-                return;
-            }
             CsmProgressListener listener = new CsmProgressAdapter() {
 
                 @Override
-                public void projectParsingFinished(CsmProject project) {
-                    if (project.equals(p)) {
-                        ImportProject.listeners.remove(p);
+                public void projectParsingFinished(final CsmProject project) {
+                    final Object id = project.getPlatformProject();
+                    if (id != null && id.equals(np)) {
+                        ImportProject.listeners.remove(np);
                         CsmListeners.getDefault().removeProgressListener(this); // ignore java warning "usage of this in anonymous class"
                         RP.post(new Runnable() {
                             @Override
                             public void run() {
-                                postModelDiscovery(np, p);
+                                postModelDiscovery(np, project);
                             }
                         });
                     }
@@ -1285,7 +1277,8 @@ public class ImportProject implements PropertyChangeListener {
 
             };
             CsmListeners.getDefault().addProgressListener(listener);
-            ImportProject.listeners.put(p, listener);
+            ImportProject.listeners.put(np, listener);
+            switchModel(true);
         } else {
             isFinished = true;
         }
@@ -1392,7 +1385,7 @@ public class ImportProject implements PropertyChangeListener {
         }
     }
 
-    private static final Map<CsmProject, CsmProgressListener> listeners = new WeakHashMap<>();
+    private static final Map<NativeProject, CsmProgressListener> listeners = new WeakHashMap<>();
 
     private boolean discoveryByExecLog(DoubleFile execLog, boolean done) {
         final DiscoveryExtensionInterface extension = (DiscoveryExtensionInterface) Lookup.getDefault().lookup(IteratorExtension.class);

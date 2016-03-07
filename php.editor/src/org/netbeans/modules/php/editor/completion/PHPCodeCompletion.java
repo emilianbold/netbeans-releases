@@ -277,7 +277,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         }
 
         CompletionContext context = CompletionContextFinder.findCompletionContext(info, caretOffset);
-        LOGGER.log(Level.FINE, String.format("CC context: %s", context.toString()));
+        LOGGER.log(Level.FINE, "CC context: {0}", context);
 
         if (context == CompletionContext.NONE) {
             return CodeCompletionResult.NONE;
@@ -580,7 +580,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         if (classes.size() == 1) {
             ClassElement clazz = (ClassElement) classes.toArray()[0];
             if (!clazz.isAbstract()
-                    && !CodeUtils.isSynteticTypeName(clazz.getName())) {
+                    && !CodeUtils.isSyntheticTypeName(clazz.getName())) {
                 // if there is only once class find constructors for it
                 query = isCamelCase ? NameKind.create(prefix.toString(), QuerySupport.Kind.CAMEL_CASE) : NameKind.caseInsensitivePrefix(prefix);
                 autoCompleteConstructors(completionResult, request, model, query);
@@ -588,7 +588,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         } else {
             for (ClassElement clazz : classes) {
                 if (!clazz.isAbstract()
-                        && !CodeUtils.isSynteticTypeName(clazz.getName())) {
+                        && !CodeUtils.isSyntheticTypeName(clazz.getName())) {
                     // check whether the prefix is exactly the class
                     NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(request.result.getModel().getFileScope(), request.anchor);
                     String fqPrefixName = VariousUtils.qualifyTypeNames(request.prefix, request.anchor, namespaceScope);
@@ -670,7 +670,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             completionResult.setFilterable(false);
         }
         for (ClassElement clazz : classes) {
-            if (!CodeUtils.isSynteticTypeName(clazz.getName())) {
+            if (!CodeUtils.isSyntheticTypeName(clazz.getName())) {
                 completionResult.add(new PHPCompletionItem.ClassItem(clazz, request, endWithDoubleColon, kind));
             }
         }
@@ -805,7 +805,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             for (PhpElement element : allTopLevel) {
                 if (element instanceof ClassElement) {
                     ClassElement classElement = (ClassElement) element;
-                    if (!CodeUtils.isSynteticTypeName(classElement.getName())) {
+                    if (!CodeUtils.isSyntheticTypeName(classElement.getName())) {
                         completionResult.add(new PHPCompletionItem.ClassItem(classElement, request, endWithDoubleColon, kind));
                     }
                 } else if (element instanceof InterfaceElement) {
@@ -1181,7 +1181,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                 }
             } else if (element instanceof ClassElement) {
                 ClassElement classElement = (ClassElement) element;
-                if (!CodeUtils.isSynteticTypeName(classElement.getName())) {
+                if (!CodeUtils.isSyntheticTypeName(classElement.getName())) {
                     completionResult.add(new PHPCompletionItem.ClassItem(classElement, request, true, null));
                 }
             } else if (element instanceof InterfaceElement) {
@@ -1327,6 +1327,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         return Character.isJavaIdentifierPart(c) || c == '@';
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "INT_BAD_COMPARISON_WITH_NONNEGATIVE_VALUE", justification = "Not sure about FB analysis correctness")
     private String getPrefix(ParserResult info, int caretOffset, boolean upToOffset, PrefixBreaker prefixBreaker) {
         try {
             BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);

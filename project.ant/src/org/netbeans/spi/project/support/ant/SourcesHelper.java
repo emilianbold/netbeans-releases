@@ -214,14 +214,19 @@ public final class SourcesHelper {
                     return false;
                 }
                 Project p = getProject();
-                if (file.isFolder() && file != p.getProjectDirectory() && ProjectManager.getDefault().isProject(file)) {
+                if (file.isFolder() &&
+                        file != p.getProjectDirectory() &&
+                        ProjectManager.getDefault().isProject(file) &&
+                        !ProjectConvertors.isConvertorProject(FileOwnerQuery.getOwner(file))) {
                     // #67450: avoid actually loading the nested project.
                     return false;
                 }
                 if (!(SourceRoot.this instanceof TypedSourceRoot)) {
                     // XXX disabled for typed source roots; difficult to make fast (#97215)
                     Project owner = FileOwnerQuery.getOwner(file);
-                    if (owner != null && owner != p) {
+                    if (owner != null &&
+                            owner != p &&
+                            !ProjectConvertors.isConvertorProject(owner)) {
                         return false;
                     }
                     if (SharabilityQuery.getSharability(file) == SharabilityQuery.Sharability.NOT_SHARABLE) {

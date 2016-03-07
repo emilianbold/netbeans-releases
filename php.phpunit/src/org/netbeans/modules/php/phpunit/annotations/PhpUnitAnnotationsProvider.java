@@ -72,6 +72,8 @@ public class PhpUnitAnnotationsProvider extends AnnotationCompletionTagProvider 
                 new BackupGlobalsTag(),
                 new BackupStaticAttributesTag(),
                 new CodeCoverageIgnoreTag(),
+                new CodeCoverageIgnoreStartTag(),
+                new CodeCoverageIgnoreEndTag(),
                 new RunInSeparateProcessTag(),
                 new TestdoxTag());
     }
@@ -82,8 +84,13 @@ public class PhpUnitAnnotationsProvider extends AnnotationCompletionTagProvider 
                 new BackupGlobalsTag(),
                 new BackupStaticAttributesTag(),
                 new CodeCoverageIgnoreTag(),
+                new CodeCoverageIgnoreStartTag(),
+                new CodeCoverageIgnoreEndTag(),
                 new CoversTag(),
+                new CoversDefaultClassTag(),
+                new CoversNothingTag(),
                 new OutputBufferingTag(),
+                new RequiresTag(),
                 new RunTestsInSeparateProcessesTag(),
                 new TestdoxTag());
     }
@@ -96,22 +103,36 @@ public class PhpUnitAnnotationsProvider extends AnnotationCompletionTagProvider 
     @Override
     public List<AnnotationCompletionTag> getMethodAnnotations() {
         return Arrays.<AnnotationCompletionTag>asList(
+                new AfterClassTag(),
+                new AfterTag(),
                 new AssertTag(),
+                new AuthorTag(),
                 new BackupGlobalsTag(),
                 new BackupStaticAttributesTag(),
+                new BeforeTag(),
+                new BeforeClassTag(),
                 new CodeCoverageIgnoreTag(),
+                new CodeCoverageIgnoreStartTag(),
+                new CodeCoverageIgnoreEndTag(),
                 new CoversTag(),
+                new CoversNothingTag(),
                 new DataProviderTag(),
                 new DependsTag(),
                 new ExpectedExceptionTag(),
                 new ExpectedExceptionCodeTag(),
                 new ExpectedExceptionMessageTag(),
+                new ExpectedExceptionMessageRegExpTag(),
                 new GroupTag(),
+                new LargeTag(),
+                new MediumTag(),
                 new OutputBufferingTag(),
+                new PreserveGlobalStateTag(),
                 new RunInSeparateProcessTag(),
+                new SmallTag(),
                 new TestTag(),
                 new TestdoxTag(),
-                new TicketTag());
+                new TicketTag(),
+                new UsesTag());
     }
 
 }

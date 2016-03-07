@@ -54,6 +54,8 @@ import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.LinkerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration.OptionToString;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
+import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.LibrariesNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
@@ -81,8 +83,20 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
     private BooleanConfiguration nameassignOption;
     private OptionsConfiguration commandLineConfiguration;
     private OptionsConfiguration additionalDependencies;
+    private IntConfiguration runTimeSearchPath;
     private LibrariesConfiguration librariesConfiguration;
     private StringConfiguration tool;
+
+    public static final int SEARCH_PATH_NONE = 0;
+    public static final int SEARCH_PATH_RELATIVE_TO_WORKING_DIR = 1;
+    public static final int SEARCH_PATH_RELATIVE_TO_BINARY = 2;
+    public static final int SEARCH_PATH_ABSOLUTE = 3;
+    private static final String[] SEARCH_PATH_NAMES = {
+        getString("SEARCH_PATH_NONE"),
+        getString("SEARCH_PATH_RELATIVE_TO_WORKING_DIR"),
+        getString("SEARCH_PATH_RELATIVE_TO_BINARY"),
+        getString("SEARCH_PATH_ABSOLUTE"),};
+    
 
     // Constructors
     public LinkerConfiguration(MakeConfiguration makeConfiguration) {
@@ -99,6 +113,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
         additionalDependencies.setPreDefined(getAdditionalDependenciesPredefined());
         librariesConfiguration = new LibrariesConfiguration();
         tool = new StringConfiguration(null, ""); // NOI18N
+        runTimeSearchPath = new IntConfiguration(null, SEARCH_PATH_RELATIVE_TO_WORKING_DIR, SEARCH_PATH_NAMES, null);
     }
 
     public boolean getModified() {
@@ -108,6 +123,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
                 || getStripOption().getModified()
                 || getPICOption().getModified()
                 || getNorunpathOption().getModified()
+                || getLibrariesRunTimeSearchPathKind().getModified()
                 || getNameassignOption().getModified()
                 || getAdditionalDependencies().getModified()
                 || getTool().getModified()
@@ -219,6 +235,15 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
         this.librariesConfiguration = librariesConfiguration;
     }
 
+    // LibrariesConfiguration
+    public IntConfiguration getLibrariesRunTimeSearchPathKind() {
+        return runTimeSearchPath;
+    }
+
+    public void setLibrariesRunTimeSearchPathKind(IntConfiguration runTimeSearchPath) {
+        this.runTimeSearchPath = runTimeSearchPath;
+    }
+
     // Tool
     public void setTool(StringConfiguration tool) {
         this.tool = tool;
@@ -240,6 +265,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
         getStripOption().assign(conf.getStripOption());
         getPICOption().assign(conf.getPICOption());
         getNorunpathOption().assign(conf.getNorunpathOption());
+        getLibrariesRunTimeSearchPathKind().assign(conf.getLibrariesRunTimeSearchPathKind());
         getNameassignOption().assign(conf.getNameassignOption());
         getLibrariesConfiguration().assign(conf.getLibrariesConfiguration());
         getTool().assign(conf.getTool());
@@ -257,6 +283,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
         clone.setStripOption(getStripOption().clone());
         clone.setPICOption(getPICOption().clone());
         clone.setNorunpathOption(getNorunpathOption().clone());
+        clone.setLibrariesRunTimeSearchPathKind(getLibrariesRunTimeSearchPathKind().clone());
         clone.setNameassignOption(getNameassignOption().clone());
         clone.setLibrariesConfiguration(getLibrariesConfiguration().clone());
         clone.setTool(getTool().clone());
@@ -327,7 +354,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
         OptionToString staticSearchVisitor = new OptionToString(cs, linker.getLibrarySearchFlag());
         options += getAdditionalLibs().toString(staticSearchVisitor) + " "; // NOI18N
         if (linker.getDynamicLibrarySearchFlag() != null && linker.getDynamicLibrarySearchFlag().length() > 0) {
-            OptionToString dynamicSearchVisitor = new OptionToString(cs, linker.getDynamicLibrarySearchFlag());
+            SearchOptionToString dynamicSearchVisitor = new SearchOptionToString(cs, linker.getDynamicLibrarySearchFlag());
             options += getDynamicSearch().toString(dynamicSearchVisitor) + " "; // NOI18N
         }
         LibraryToString libVisitor = new LibraryToString(getMakeConfiguration());
@@ -436,6 +463,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
         set5.setDisplayName(getString("LibrariesTxt1"));
         set5.setShortDescription(getString("LibrariesHint"));
         set5.put(new LibrariesNodeProp(getLibrariesConfiguration(), project, conf, getMakeConfiguration().getBaseFSPath(), texts));
+        set5.put(new IntNodeProp(getLibrariesRunTimeSearchPathKind(), true, "RunTimeSerchPath", getString("RunTimeSerchPathTxt"), getString("RunTimeSerchPathHint"))); // NOI18N
         sheet.put(set5);
 
         if (!isQtMode) {
@@ -551,4 +579,33 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
             return item.getOption(conf);
         }
     }
+    
+    public static class SearchOptionToString implements VectorConfiguration.ToString<String> {
+
+        private final CompilerSet compilerSet;
+        private final String prepend;
+
+        public SearchOptionToString(CompilerSet compilerSet, String prepend) {
+            this.compilerSet = compilerSet;
+            this.prepend = prepend;
+        }
+
+        @Override
+        public String toString(String item) {
+            if (0 < item.length()) {
+                if (compilerSet != null) {
+                    item = CppUtils.normalizeDriveLetter(compilerSet, item);
+                }
+                item = CndPathUtilities.escapeOddCharacters(item);
+                if (item.startsWith(CommonUtilities.ORIGIN)) {
+                    //to prevent macro expansion in make file
+                    item = "$"+item; // NOI18N
+                }
+                return prepend == null ? item : prepend + "'" + item + "'"; // NOI18N
+            } else {
+                return ""; // NOI18N
+            }
+        }
+    }
+
 }

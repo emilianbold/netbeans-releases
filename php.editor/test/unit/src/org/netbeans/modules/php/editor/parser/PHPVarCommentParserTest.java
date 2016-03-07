@@ -73,4 +73,22 @@ public class PHPVarCommentParserTest extends PHPTestBase {
         assertEquals(1, varComment.getVariable().getTypes().size());
     }
 
+    public void testIssue257709_01() throws Exception {
+        String comment = " @var $b	Type "; // TAB
+        PHPVarCommentParser parser = new PHPVarCommentParser();
+        PHPVarComment varComment = parser.parse(0, comment.length(), comment);
+        assertEquals(Comment.Type.TYPE_VARTYPE, varComment.getCommentType());
+        assertEquals("$b", varComment.getVariable().getVariable().getValue());
+        assertEquals(1, varComment.getVariable().getTypes().size());
+    }
+
+    public void testIssue257709_02() throws Exception {
+        String comment = " @var 	$b	  Type "; // TAB + space
+        PHPVarCommentParser parser = new PHPVarCommentParser();
+        PHPVarComment varComment = parser.parse(0, comment.length(), comment);
+        assertEquals(Comment.Type.TYPE_VARTYPE, varComment.getCommentType());
+        assertEquals("$b", varComment.getVariable().getVariable().getValue());
+        assertEquals(1, varComment.getVariable().getTypes().size());
+    }
+
 }

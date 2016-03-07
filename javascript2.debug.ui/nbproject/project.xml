@@ -206,6 +206,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.debugger.jpda.jsui</friend>
                 <friend>org.netbeans.modules.debugger.jpda.truffle</friend>
                 <friend>org.netbeans.modules.javascript.v8debug</friend>
+                <friend>org.netbeans.modules.javascript.v8debug.ui</friend>
                 <friend>org.netbeans.modules.web.javascript.debugger</friend>
                 <package>org.netbeans.modules.javascript2.debug.ui</package>
                 <package>org.netbeans.modules.javascript2.debug.ui.breakpoints</package>

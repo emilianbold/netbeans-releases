@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.apt.impl.support.SupportAPIAccessor;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileObject;
@@ -83,19 +84,23 @@ public final class IncludeDirEntry {
 
     private volatile Boolean exists;
     private final boolean isFramework;
+    private final boolean ignoreSysRoot;
     private final CharSequence asCharSeq;
     private final FileSystem fileSystem;
     private final int hashCode;
 
-    private IncludeDirEntry(boolean exists, boolean framework, FileSystem fileSystem, CharSequence asCharSeq, int hashCode) {
+    private IncludeDirEntry(boolean exists, boolean framework, boolean ignoreSysRoot, FileSystem fileSystem, CharSequence asCharSeq, int hashCode) {
         this.exists = exists;
         this.isFramework = framework;
+        this.ignoreSysRoot = ignoreSysRoot;
         this.fileSystem = fileSystem;
         this.asCharSeq = asCharSeq;
         this.hashCode = hashCode;
     }
 
-    public static IncludeDirEntry get(FileSystem fs, String dir) {
+    public static IncludeDirEntry get(FSPath fsPath, boolean framework, boolean ignoreSysRoot) {
+        FileSystem fs = fsPath.getFileSystem();
+        String dir = fsPath.getPath();
         CndUtils.assertAbsolutePathInConsole(dir);
         CharSequence key = FilePathCache.getManager().getString(CndFileSystemProvider.toUrl(fs, dir));
         Map<CharSequence, IncludeDirEntry> delegate = storage.getDelegate(key);
@@ -106,7 +111,7 @@ public final class IncludeDirEntry {
         if (out == null) {
             // #196267 -  slow parsing in Full Remote
             // do expensive work out of sync block
-            boolean framework = dir.endsWith("/Frameworks"); // NOI18N
+
             // FIXME XXX:FullRemote
             if (dir.contains(File.separatorChar + "remote-files" + File.separatorChar)) { //XXX:fullRemote //NOI18N
                 fs = CndFileUtils.getLocalFileSystem();
@@ -132,7 +137,7 @@ public final class IncludeDirEntry {
             synchronized (delegate) {
                 out = delegate.get(key);
                 if (out == null) {
-                    out = new IncludeDirEntry(exists, framework, entryFS, asCharSeq, key.hashCode());
+                    out = new IncludeDirEntry(exists, framework, ignoreSysRoot, entryFS, asCharSeq, key.hashCode());
                     delegate.put(key, out);
                 } else {
                     resetNonExistanceFlag = true;
@@ -190,6 +195,10 @@ public final class IncludeDirEntry {
 
     public boolean isFramework() {
         return isFramework;
+    }
+
+    public boolean ignoreSysRoot() {
+        return ignoreSysRoot;
     }
 
     public boolean isExistingDirectory() {

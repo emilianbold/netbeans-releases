@@ -800,6 +800,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                     parameterInfo.getName(),
                     parameterInfo.getDefaultValue() == null ? "" : parameterInfo.getDefaultValue(),
                     parameterInfo.getOriginalIndex(),
+                    parameterInfo.getOriginalIndex() < 0 ? Boolean.TRUE :
                     newModel.get(parameterInfo.getOriginalIndex())[4]});
             }
             newModel = preModel;

@@ -108,14 +108,14 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
         builder.setLang(getLang(ppHandler.getLanguage(), startEntryFilePath));
         builder.setLangStd(getLangStd(ppHandler.getLanguageFlavor()));
 
-        // -I
+        // -I or -F
         for (IncludeDirEntry incDir : includeHandler.getUserIncludePaths()) {
             if (incDir.isExistingDirectory()) {
                 FSPath fsPath = new FSPath(incDir.getFileSystem(), incDir.getPath());
                 FileObject fileObject = fsPath.getFileObject();
                 if (fileObject != null && fileObject.isFolder()) {
                     CharSequence incPathUrl = fsPath.getURL();
-                    builder.addUserIncludePath(incPathUrl);
+                    builder.addUserIncludePath(incPathUrl, incDir.isFramework(), incDir.ignoreSysRoot());
                 }
             }
         }
@@ -128,7 +128,7 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
                     FileObject fileObject = fsPath.getFileObject();
                     if (fileObject != null && fileObject.isFolder()) {
                         CharSequence incPathUrl = fsPath.getURL();
-                        builder.addPredefinedSystemIncludePath(incPathUrl);
+                        builder.addPredefinedSystemIncludePath(incPathUrl, incDir.isFramework(), incDir.ignoreSysRoot());
                     }
                 }
             }

@@ -618,6 +618,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             };
         }
 
+        @org.netbeans.api.annotations.common.SuppressWarnings(value = "NP_LOAD_OF_KNOWN_NULL_VALUE", justification = "No idea what is wrong here")
         @Override
         public Pair<FileObject, FileObject> instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, ClientSideProject project) throws IOException {
             File projectDir = FileUtil.toFile(project.getProjectDirectory());

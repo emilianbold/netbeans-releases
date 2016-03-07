@@ -283,7 +283,7 @@ public class WildflyDeploymentFactory implements DeploymentFactory {
             if (WildflyPluginUtils.WILDFLY_10_0_0.compareToIgnoreUpdate(version) >= 0) {
                 addUrl(urlList, wildfly, "common" + sep + "main", Pattern.compile("wildfly-common-.*.jar"));
             }
-            boolean shouldPatchXnio = WildflyPluginUtils.WILDFLY_8_0_0.compareToIgnoreUpdate(version) <= 0 && WildflyPluginUtils.isWildFly(serverPath);
+            boolean shouldPatchXnio = WildflyPluginUtils.WILDFLY_8_0_0.compareToIgnoreUpdate(version) <= 0;
             WildFlyClassLoader loader = new WildFlyClassLoader(urlList.toArray(new URL[] {}),
                     WildflyDeploymentFactory.class.getClassLoader(), shouldPatchXnio);
             return loader;

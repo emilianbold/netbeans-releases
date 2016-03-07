@@ -94,6 +94,8 @@ public final class WildflyOutputSupport {
 
     private static final Pattern EAP6_STARTED_ML = Pattern.compile(".*JBAS015874: JBoss EAP 6\\.[0-9]?.[0-9]?\\.GA .* \\d+ms .*");
     private static final Pattern EAP6_STARTING_ML = Pattern.compile(".*JBAS015899: JBoss EAP 6\\.[0-9]?.[0-9]?\\.GA .*");
+    private static final Pattern EAP7_STARTED_ML = Pattern.compile(".*WFLYSRV0025: JBoss EAP 7\\.[0-9]?.[0-9]?\\.GA .* \\d+ms .*");
+    private static final Pattern EAP7_STARTING_ML = Pattern.compile(".*WFLYSRV0049: JBoss EAP 7\\.[0-9]?.[0-9]?\\.GA .*");
 
     private final InstanceProperties props;
 
@@ -336,40 +338,49 @@ public final class WildflyOutputSupport {
                 }
             }
 
-            if (line.indexOf("Starting JBoss (MX MicroKernel)") > -1 // JBoss 4.x message // NOI18N
-                    || line.indexOf("Starting JBoss (Microcontainer)") > -1 // JBoss 5.0 message // NOI18N
-                    || line.indexOf("Starting JBossAS") > -1
-                    || WILDFLY_8_STARTING_ML.matcher(line).matches()
-                    || WILDFLY_STARTING_ML.matcher(line).matches()
-                    || EAP6_STARTING_ML.matcher(line).matches()) { // JBoss 6.0 message // NOI18N
+            if (isStarting(line)) {
                 LOGGER.log(Level.FINER, "STARTING message fired"); // NOI18N
                 //fireStartProgressEvent(StateType.RUNNING, createProgressMessage("MSG_START_SERVER_IN_PROGRESS")); // NOI18N
-            } else if (((line.indexOf("JBoss (MX MicroKernel)") > -1 // JBoss 4.x message // NOI18N
-                    || line.indexOf("JBoss (Microcontainer)") > -1 // JBoss 5.0 message // NOI18N
-                    || line.indexOf("JBossAS") > -1 // JBoss 6.0 message // NOI18N
-                    || line.indexOf("JBoss AS") > -1)// JBoss 7.0 message // NOI18N
-                    && (line.indexOf("Started in") > -1) // NOI18N
-                    || line.indexOf("started in") > -1 // NOI18N
-                    || line.indexOf("started (with errors) in") > -1) // JBoss 7 with some errors (include wrong deployments) // NOI18N
-                    || JBOSS_7_STARTED_ML.matcher(line).matches()
-                    || WILDFLY_8_STARTED_ML.matcher(line).matches()
-                    || WILDFLY_9_STARTED_ML.matcher(line).matches()                    
-                    || WILDFLY_10_STARTED_ML.matcher(line).matches()
-                    || EAP6_STARTED_ML.matcher(line).matches()) {
+            } else if (isStarted(line)) {
                 LOGGER.log(Level.FINER, "STARTED message fired"); // NOI18N
-
                 synchronized (WildflyOutputSupport.this) {
                     started = true;
                     WildflyOutputSupport.this.notifyAll();
                 }
                 check = false;
-            } else if (line.indexOf("Shutdown complete") > -1) { // NOI18N
+            } else if (line.contains("Shutdown complete")) { // NOI18N
                 synchronized (WildflyOutputSupport.this) {
                     failed = true;
                     WildflyOutputSupport.this.notifyAll();
                 }
                 check = false;
             }
+        }
+
+        private boolean isStarting(String line) {
+            return line.contains("Starting JBoss (MX MicroKernel)") // JBoss 4.x message // NOI18N
+                    || line.contains("Starting JBoss (Microcontainer)") // JBoss 5.0 message // NOI18N
+                    || line.contains("Starting JBossAS") // JBoss 6.0 message // NOI18N
+                    || WILDFLY_8_STARTING_ML.matcher(line).matches()
+                    || WILDFLY_STARTING_ML.matcher(line).matches()
+                    || EAP6_STARTING_ML.matcher(line).matches()
+                    || EAP7_STARTING_ML.matcher(line).matches();
+        }
+
+        private boolean isStarted(String line) {
+            return ((line.contains("JBoss (MX MicroKernel)") // JBoss 4.x message // NOI18N
+                    || line.contains("JBoss (Microcontainer)") // JBoss 5.0 message // NOI18N
+                    || line.contains("JBossAS") // JBoss 6.0 message // NOI18N
+                    || line.contains("JBoss AS"))// JBoss 7.0 message // NOI18N
+                    && (line.contains("Started in")) // NOI18N
+                    || line.contains("started in") // NOI18N
+                    || line.contains("started (with errors) in")) // JBoss 7 with some errors (include wrong deployments) // NOI18N
+                    || JBOSS_7_STARTED_ML.matcher(line).matches()
+                    || WILDFLY_8_STARTED_ML.matcher(line).matches()
+                    || WILDFLY_9_STARTED_ML.matcher(line).matches()                    
+                    || WILDFLY_10_STARTED_ML.matcher(line).matches()
+                    || EAP6_STARTED_ML.matcher(line).matches()
+                    || EAP7_STARTED_ML.matcher(line).matches();
         }
 
         @Override
