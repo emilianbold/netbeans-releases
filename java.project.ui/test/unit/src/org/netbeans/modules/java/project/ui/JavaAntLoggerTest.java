@@ -52,13 +52,17 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.Document;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.parsing.impl.indexing.implspi.ActiveDocumentProvider;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
@@ -88,12 +92,22 @@ public final class JavaAntLoggerTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        MockLookup.setInstances(new IOP(), new IFL(), new SFBQ(), new StatusDisplayer() {
-            public String getStatusText() {return "";}
-            public void setStatusText(String text) {}
-            public void addChangeListener(ChangeListener l) {}
-            public void removeChangeListener(ChangeListener l) {}
-        });
+        MockLookup.setInstances(
+                new IOP(),
+                new IFL(),
+                new SFBQ(),
+                new StatusDisplayer() {
+                    @Override public String getStatusText() {return "";}
+                    @Override public void setStatusText(String text) {}
+                    @Override public void addChangeListener(ChangeListener l) {}
+                    @Override public void removeChangeListener(ChangeListener l) {}
+                },
+                new ActiveDocumentProvider() {
+                    @Override public Document getActiveDocument() {return null;}
+                    @Override public Set<? extends Document> getActiveDocuments() {return Collections.emptySet();}
+                    @Override public void addActiveDocumentListener(ActiveDocumentProvider.ActiveDocumentListener listener) {}
+                    @Override public void removeActiveDocumentListener(ActiveDocumentProvider.ActiveDocumentListener listener) {}
+                });
         simpleAppDir = new File(getDataDir(), "simple-app");
         assertTrue("have dir " + simpleAppDir, simpleAppDir.isDirectory());
         Lookup.getDefault().lookup(SFBQ.class).setSimpleAppDir(simpleAppDir);
@@ -129,7 +143,8 @@ public final class JavaAntLoggerTest extends NbTestCase {
     public void testHyperlinkRun() throws Exception {
         FileObject buildXml = FileUtil.toFileObject(new File(simpleAppDir, "build.xml"));
         assertNotNull("have build.xml as a FileObject", buildXml);
-        ActionUtils.runTarget(buildXml, new String[] {"clean", "run"}, props).result();
+        final int res = ActionUtils.runTarget(buildXml, new String[] {"clean", "run"}, props).result();
+        assertEquals(0, res);
         //System.out.println("nonhyperlinkedOut=" + nonhyperlinkedOut + " nonhyperlinkedErr=" + nonhyperlinkedErr + " hyperlinkedOut=" + hyperlinkedOut + " hyperlinkedErr=" + hyperlinkedErr);
         assertTrue("got a hyperlink for Clazz.run NPE", hyperlinkedErr.contains("\tat simpleapp.Clazz.run(Clazz.java:43)"));
     }
