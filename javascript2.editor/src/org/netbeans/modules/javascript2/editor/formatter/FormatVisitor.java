@@ -102,8 +102,6 @@ public class FormatVisitor extends NodeVisitor {
 
     private final int formatFinish;
 
-    private final Set<List<Statement>> caseNodes = new HashSet<List<Statement>>();
-
     public FormatVisitor(FormatTokenStream tokenStream, TokenSequence<? extends JsTokenId> ts, int formatFinish) {
         super(new LexicalContext());
         this.ts = ts;
@@ -113,25 +111,15 @@ public class FormatVisitor extends NodeVisitor {
 
     @Override
     public boolean enterBlock(Block block) {
-        boolean isCaseNode = false;
-        if (isScript(block)
-                || caseNodes.contains(block) || !isVirtual(block)) {
-
-            if (caseNodes.contains(block)) {
-                // if the block is real block it is reused down the ast tree
-                // so we need to remove it to be handled normally later
-                caseNodes.remove(block);
-                isCaseNode = true;
-                handleCaseBlock(block);
-            } else if (isScript(block)) {
+        if (isScript(block) || !isVirtual(block)) {
+            if (isScript(block)) {
                 handleBlockContent(block);
             } else {
                 handleStandardBlock(block);
             }
         }
 
-        if (isScript(block)
-                || isCaseNode || !isVirtual(block)) {
+        if (isScript(block) || !isVirtual(block)) {
             return false;
         } else {
             return super.enterBlock(block);
@@ -150,17 +138,30 @@ public class FormatVisitor extends NodeVisitor {
 
     @Override
     public boolean enterCaseNode(CaseNode caseNode) {
-        // we need to mark if block is case body as block itself has
-        // no reference to case node
-        caseNodes.add(caseNode.getStatements());
-        return super.enterCaseNode(caseNode);
-    }
+        List<Statement> nodes = caseNode.getStatements();
+        if (nodes.size() == 1) {
+            Statement node = nodes.get(0);
+            if (node instanceof BlockStatement) {
+                return super.enterCaseNode(caseNode);
+            }
+        }
 
-    @Override
-    public Node leaveCaseNode(CaseNode caseNode) {
-        // we are removing mark
-        caseNodes.remove(caseNode.getStatements());
-        return super.leaveCaseNode(caseNode);
+        if (nodes.size() >= 1) {
+            // indentation mark
+            FormatToken formatToken = getPreviousToken(getStart(nodes.get(0)), JsTokenId.OPERATOR_COLON, true);
+            if (formatToken != null) {
+                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+            }
+
+            // put indentation mark
+            formatToken = getCaseEndToken(getStart(nodes.get(0)), getFinish(nodes.get(nodes.size() - 1)));
+            if (formatToken != null) {
+                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
+            }
+
+            handleBlockContent(nodes);
+        }
+        return false;
     }
 
     @Override
@@ -576,9 +577,13 @@ public class FormatVisitor extends NodeVisitor {
         }
 
         for (CaseNode caseNode : nodes) {
-            int start = getStart(caseNode);
+            int index = getFinish(caseNode);
+            List<Statement> statements = caseNode.getStatements();
+            if (!statements.isEmpty()) {
+                index = getStart(statements.get(0));
+            }
 
-            formatToken = getPreviousToken(start, JsTokenId.OPERATOR_COLON);
+            formatToken = getPreviousToken(index, JsTokenId.OPERATOR_COLON);
             if (formatToken != null) {
                 appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_CASE));
             }
@@ -825,30 +830,6 @@ public class FormatVisitor extends NodeVisitor {
         }
     }
 
-    private void handleCaseBlock(Block block) {
-        handleBlockContent(block);
-
-        List<Statement> nodes = block.getStatements();
-        if (nodes.size() == 1) {
-            Statement node = nodes.get(0);
-            if (node instanceof BlockStatement) {
-                return;
-            }
-        }
-
-        // indentation mark
-        FormatToken formatToken = getPreviousToken(getStart(block), JsTokenId.OPERATOR_COLON, true);
-        if (formatToken != null) {
-            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
-        }
-
-        // put indentation mark
-        formatToken = getCaseBlockEndToken(block);
-        if (formatToken != null) {
-            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
-        }
-    }
-
     private void handleVirtualBlock(Block block, FormatToken.Kind afterBlock) {
         handleVirtualBlock(block, FormatToken.Kind.INDENTATION_INC, FormatToken.Kind.INDENTATION_DEC,
                 afterBlock);
@@ -929,6 +910,10 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     private void handleBlockContent(Block block) {
+        handleBlockContent(block.getStatements());
+    }
+    
+    private void handleBlockContent(List<Statement> statements) {
         // functions
 // TRUFFLE
 //        if (block instanceof FunctionNode) {
@@ -938,7 +923,7 @@ public class FormatVisitor extends NodeVisitor {
 //        }
 
         // statements
-        List<Statement> statements = block.getStatements();
+        //List<Statement> statements = block.getStatements();
         for (int i = 0; i < statements.size(); i++) {
             Node statement = statements.get(i);
             statement.accept(this);
@@ -1226,9 +1211,7 @@ public class FormatVisitor extends NodeVisitor {
      * @param block case block
      * @return format token
      */
-    private FormatToken getCaseBlockEndToken(Block block) {
-        int start = getStart(block);
-        int finish = getFinish(block) - 1;
+    private FormatToken getCaseEndToken(int start, int finish) {
         ts.move(finish);
 
         if (!ts.moveNext() && !ts.movePrevious()) {
