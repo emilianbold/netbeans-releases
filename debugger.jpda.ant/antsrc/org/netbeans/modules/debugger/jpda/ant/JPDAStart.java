@@ -80,7 +80,6 @@ import org.apache.tools.ant.types.Path;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.jpda.DebuggerStartException;
 
-import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -104,6 +103,7 @@ import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.source.BuildArtifactMapper;
 import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -774,7 +774,7 @@ public class JPDAStart extends Task implements Runnable {
                     }
                 } // for
             } catch (IllegalArgumentException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+                Exceptions.printStackTrace(ex);
                 logger.log(Level.FINE, "Have illegal url! {0}", ex.getLocalizedMessage()); // NOI18N
             }
         }
