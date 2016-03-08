@@ -83,7 +83,7 @@ public class OJETJsCodeCompletion implements CompletionProvider {
                     }
                     break;
                 case COMP_CONF:
-                    result.add(new OJETCodeCompletionItem.OJETComponentOptionItem(new DataItemImpl("component", null), ccContext));
+                    result.add(new OJETCodeCompletionItem.OJETComponentOptionItem(new DataItemImpl("component", null), ccContext)); //NOI18N
                     break;
                 case COMP_CONF_PROP_NAME:
                     String compName = OJETContext.findComponentName(document, dOffset);

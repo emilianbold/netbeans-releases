@@ -64,12 +64,20 @@ public class DataItemImpl implements DataItem {
 
     private final String name;
     private final String docUrl;
+    private final String template;
 
     public DataItemImpl(String name, String docUrl) {
         this.name = name;
         this.docUrl = docUrl;
+        this.template = null;
     }
 
+    public DataItemImpl(String name, String docUrl, String template) {
+        this.name = name;
+        this.docUrl = docUrl;
+        this.template = template;
+    }
+    
     @Override
     public String getName() {
         return name;
@@ -87,7 +95,7 @@ public class DataItemImpl implements DataItem {
 
     @Override
     public String getTemplate() {
-        return null;
+        return template;
     }
 
     public static class DataItemComponent extends DataItemImpl {
