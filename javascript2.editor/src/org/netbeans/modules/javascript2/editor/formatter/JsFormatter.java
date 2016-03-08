@@ -982,6 +982,7 @@ public class JsFormatter implements Formatter {
         for (FormatToken current = next; current != null && current.isVirtual(); current = current.next()) {
             if (current.getKind() == FormatToken.Kind.AFTER_STATEMENT
                     || current.getKind() == FormatToken.Kind.AFTER_PROPERTY
+                    || current.getKind() == FormatToken.Kind.AFTER_ELEMENT
                     || current.getKind() == FormatToken.Kind.AFTER_ARRAY_LITERAL_ITEM
                     || current.getKind() == FormatToken.Kind.AFTER_CASE
                     // do not suppose continuation when indentation is changed
@@ -1053,6 +1054,7 @@ public class JsFormatter implements Formatter {
                     || kind == FormatToken.Kind.TEXT
                     || kind == FormatToken.Kind.AFTER_STATEMENT
                     || kind == FormatToken.Kind.AFTER_PROPERTY
+                    || kind == FormatToken.Kind.AFTER_ELEMENT
                     || kind == FormatToken.Kind.AFTER_ARRAY_LITERAL_ITEM
                     || kind == FormatToken.Kind.AFTER_CASE
                     // do not suppose continuation when indentation is changed
@@ -1064,6 +1066,7 @@ public class JsFormatter implements Formatter {
         if (result == null
                 || result.getKind() == FormatToken.Kind.SOURCE_START
                 || result.getKind() == FormatToken.Kind.AFTER_STATEMENT
+                || result.getKind() == FormatToken.Kind.AFTER_ELEMENT
                 || result.getKind() == FormatToken.Kind.AFTER_ARRAY_LITERAL_ITEM
                 || result.getKind() == FormatToken.Kind.AFTER_CASE
                 // do not suppose continuation when indentation is changed
@@ -1282,8 +1285,13 @@ public class JsFormatter implements Formatter {
                     return null;
                 }
                 return codeStyle.wrapObjects;
+            case AFTER_CLASS_START:
+            case BEFORE_CLASS_END:
+                return codeStyle.wrapClasses;
             case AFTER_PROPERTY:
                 return codeStyle.wrapProperties;
+            case AFTER_ELEMENT:
+                return codeStyle.wrapElements;
             case AFTER_ARRAY_LITERAL_START:
             case BEFORE_ARRAY_LITERAL_END:
                 return codeStyle.wrapArrayInit;

@@ -633,9 +633,19 @@ public final class CodeStyle {
         String wrap = preferences.get(wrapObjects, provider.getDefaultAsString(wrapObjects));
         return WrapStyle.valueOf(wrap);
     }
-
+    
     public WrapStyle wrapProperties() {
         String wrap = preferences.get(wrapProperties, provider.getDefaultAsString(wrapProperties));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapClasses() {
+        String wrap = preferences.get(wrapClasses, provider.getDefaultAsString(wrapClasses));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapElements() {
+        String wrap = preferences.get(wrapElements, provider.getDefaultAsString(wrapElements));
         return WrapStyle.valueOf(wrap);
     }
 
@@ -850,6 +860,10 @@ public final class CodeStyle {
 
         final CodeStyle.WrapStyle wrapProperties;
 
+        final CodeStyle.WrapStyle wrapClasses;
+
+        final CodeStyle.WrapStyle wrapElements;
+
         final boolean placeElseOnNewLine;
         final boolean placeWhileOnNewLine;
         final boolean placeCatchOnNewLine;
@@ -950,6 +964,8 @@ public final class CodeStyle {
             wrapStatementsOnTheSameLine = style.wrapStatementsOnTheSameLine();
             wrapObjects = style.wrapObjects();
             wrapProperties = style.wrapProperties();
+            wrapClasses = style.wrapClasses();
+            wrapElements = style.wrapElements();
 
             placeElseOnNewLine = style.placeElseOnNewLine();
             placeWhileOnNewLine = style.placeWhileOnNewLine();

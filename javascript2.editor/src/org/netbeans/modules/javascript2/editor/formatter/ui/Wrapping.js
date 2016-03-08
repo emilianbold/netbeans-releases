@@ -20,3 +20,7 @@ function computeColor(limit) {
 }
 
 var a, b, c, x = function() {return "yes"}
+
+class Car { constructor(engine) { this.engine = engine; } start() { this.engine.start(); }
+
+}
