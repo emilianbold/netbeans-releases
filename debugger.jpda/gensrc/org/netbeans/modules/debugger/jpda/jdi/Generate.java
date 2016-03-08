@@ -276,7 +276,7 @@ public class Generate {
 
     private static List<Class> getJDIClasses() throws IOException {
         List<Class> classes = new ArrayList<Class>();
-        URL resource = ClassLoader.getSystemClassLoader().getResource("com/sun/jdi/");
+        URL resource = ClassLoader.getSystemClassLoader().getResource("com/sun/jdi/VirtualMachine.class");
         String jarFileName = resource.getFile();
         jarFileName = jarFileName.substring("file:".length(), jarFileName.indexOf('!'));
         ZipFile jar = new ZipFile(jarFileName);
@@ -323,7 +323,7 @@ public class Generate {
         EXCEPTION_WRAPPERS.put(com.sun.jdi.ObjectCollectedException.class, generateWrapperException(dir, com.sun.jdi.ObjectCollectedException.class));
 
         // Add classes and methods that are in JDK 1.6 and higher versions and generate reflection calls
-        String jdkVersion = System.getProperty("java.specification.version");
+        String jdkVersion = System.getProperty("java.version");
         System.err.println("jdkVersion = "+jdkVersion);
         File rootResource;
         try {

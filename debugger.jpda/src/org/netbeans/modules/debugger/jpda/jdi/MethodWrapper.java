@@ -1018,6 +1018,104 @@ public final class MethodWrapper {
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
+    /** Wrapper for method isDefault from JDK 1.8.0_40. */
+    public static boolean isDefault(com.sun.jdi.Method a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.Method",
+                    "isDefault",
+                    "JDI CALL: com.sun.jdi.Method({0}).isDefault()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
+        try {
+            Boolean ret;
+            ret = (Boolean) com.sun.jdi.Method.class.getMethod("isDefault").invoke(a);
+            retValue = ret;
+            return ret;
+        } catch (NoSuchMethodException ex) {
+            retValue = ex;
+            throw new IllegalStateException(ex);
+        } catch (SecurityException ex) {
+            retValue = ex;
+            throw new IllegalStateException(ex);
+        } catch (IllegalAccessException ex) {
+            retValue = ex;
+            throw new IllegalStateException(ex);
+        } catch (IllegalArgumentException ex) {
+            retValue = ex;
+            throw new IllegalStateException(ex);
+        } catch (java.lang.reflect.InvocationTargetException ex) {
+            Throwable t = ex.getTargetException();
+            retValue = t;
+            if (t instanceof com.sun.jdi.InternalException) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
+                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
+            }
+            if (t instanceof com.sun.jdi.VMDisconnectedException) {
+                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
+            }
+            throw new IllegalStateException(t);
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.Method",
+                        "isDefault",
+                        retValue);
+            }
+        }
+    }
+
+    // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
+    /** Wrapper for method isDefault from JDK 1.8.0_40. */
+    public static boolean isDefault0(com.sun.jdi.Method a) {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.Method",
+                    "isDefault",
+                    "JDI CALL: com.sun.jdi.Method({0}).isDefault()",
+                    new Object[] {a});
+        }
+        Object retValue = null;
+        try {
+            Boolean ret;
+            ret = (Boolean) com.sun.jdi.Method.class.getMethod("isDefault").invoke(a);
+            retValue = ret;
+            return ret;
+        } catch (NoSuchMethodException ex) {
+            retValue = ex;
+            throw new IllegalStateException(ex);
+        } catch (SecurityException ex) {
+            retValue = ex;
+            throw new IllegalStateException(ex);
+        } catch (IllegalAccessException ex) {
+            retValue = ex;
+            throw new IllegalStateException(ex);
+        } catch (IllegalArgumentException ex) {
+            retValue = ex;
+            throw new IllegalStateException(ex);
+        } catch (java.lang.reflect.InvocationTargetException ex) {
+            Throwable t = ex.getTargetException();
+            retValue = t;
+            if (t instanceof com.sun.jdi.InternalException) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
+                return false;
+            }
+            if (t instanceof com.sun.jdi.VMDisconnectedException) {
+                return false;
+            }
+            throw new IllegalStateException(t);
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.Method",
+                        "isDefault",
+                        retValue);
+            }
+        }
+    }
+
+    // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static boolean isNative0(com.sun.jdi.Method a) {
         if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
