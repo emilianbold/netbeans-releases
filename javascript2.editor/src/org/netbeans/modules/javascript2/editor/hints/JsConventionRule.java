@@ -43,7 +43,6 @@ package org.netbeans.modules.javascript2.editor.hints;
 
 import com.oracle.js.parser.ir.BinaryNode;
 import com.oracle.js.parser.ir.Block;
-import com.oracle.js.parser.ir.BlockStatement;
 import com.oracle.js.parser.ir.ForNode;
 import com.oracle.js.parser.ir.FunctionNode;
 import com.oracle.js.parser.ir.IfNode;
@@ -56,6 +55,7 @@ import com.oracle.js.parser.ir.VarNode;
 import com.oracle.js.parser.ir.WhileNode;
 import static com.oracle.js.parser.TokenType.EQ;
 import static com.oracle.js.parser.TokenType.NE;
+import com.oracle.js.parser.ir.ExpressionStatement;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -429,7 +429,7 @@ public class JsConventionRule extends JsAstRule {
 
         @Override
         public boolean enterForNode(ForNode forNode) {
-            checkAssignmentInCondition(forNode.getTest());
+            checkAssignmentInCondition(forNode.getTest().getExpression());
             return super.enterForNode(forNode);
         }
 
@@ -441,7 +441,7 @@ public class JsConventionRule extends JsAstRule {
 
         @Override
         public boolean enterWhileNode(WhileNode whileNode) {
-            checkAssignmentInCondition(whileNode.getTest());
+            checkAssignmentInCondition(whileNode.getTest().getExpression());
             return super.enterWhileNode(whileNode);
         }
         
@@ -455,6 +455,12 @@ public class JsConventionRule extends JsAstRule {
 //            return super.enter(executeNode);
 //        }
 
+        @Override
+        public boolean enterExpressionStatement(ExpressionStatement expressionStatement) {
+            checkSemicolon(expressionStatement.getFinish());
+            return super.enterExpressionStatement(expressionStatement);
+        }
+        
         @Override
         public boolean enterThrowNode(ThrowNode throwNode) {
             checkSemicolon(throwNode.getExpression().getFinish());
@@ -542,6 +548,11 @@ public class JsConventionRule extends JsAstRule {
             } else if (previous instanceof ForNode) {
                 check = false;
             }
+            
+            if (varNode.isFunctionDeclaration()) {
+                check = false;
+            }
+            
             if (check) {
                 checkSemicolon(varNode.getFinish());
             }
