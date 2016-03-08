@@ -61,6 +61,7 @@ import com.sun.jdi.connect.Transport;
 import com.sun.jdi.connect.Connector;
 import java.beans.PropertyChangeListener;
 import java.io.FileFilter;
+import java.io.IOException;
 
 import java.lang.ref.WeakReference;
 import java.net.InetAddress;
@@ -82,7 +83,6 @@ import org.apache.tools.ant.types.Path;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.jpda.DebuggerStartException;
 
-import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -106,6 +106,8 @@ import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.source.BuildArtifactMapper;
 import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
+import org.netbeans.api.project.ProjectManager;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -505,7 +507,7 @@ public class JPDAStart extends Task implements Runnable {
                 properties.put ("jdksources", jdkSourcePath); // NOI18N
                 properties.put ("listeningCP", listeningCP); // NOI18N
                 String workDir = getProject().getProperty("work.dir");
-                File baseDir;
+                final File baseDir;
                 if (workDir != null) {
                     baseDir = new File(workDir);
                 } else {
@@ -541,11 +543,24 @@ public class JPDAStart extends Task implements Runnable {
                             listeningStarted[0] = true;
                             listeningStarted.notifyAll();
                         }
+                        Object[] services = null;
+                        try {
+                            FileObject prjRoot = FileUtil.toFileObject(FileUtil.normalizeFile(baseDir));
+                            if (prjRoot != null) {
+                                org.netbeans.api.project.Project prj = ProjectManager.getDefault().findProject(prjRoot);
+                                if (prj != null) {
+                                    services = new Object[] { properties, prj };
+                                }
+                            }
+                        } catch (IOException ioex) {}
+                        if (services == null) {
+                            services = new Object[] { properties };
+                        }
                         try {
                             DebuggerEngine[] engines = JPDADebugger.startListeningAndGetEngines (
                                 flc,
                                 args,
-                                new Object[] { properties }
+                                services
                             );
                             startedSessionRef[0] = new WeakReference(engines[0].lookupFirst(null, Session.class));
                         } catch (DebuggerStartException dsex) {
@@ -842,7 +857,7 @@ public class JPDAStart extends Task implements Runnable {
                     }
                 } // for
             } catch (IllegalArgumentException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+                Exceptions.printStackTrace(ex);
                 logger.log(Level.FINE, "Have illegal url! {0}", ex.getLocalizedMessage()); // NOI18N
             }
         }

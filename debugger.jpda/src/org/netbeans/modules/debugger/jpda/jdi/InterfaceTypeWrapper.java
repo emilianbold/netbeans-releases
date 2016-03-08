@@ -148,6 +148,67 @@ public final class InterfaceTypeWrapper {
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
+    /** Wrapper for method invokeMethod from JDK 1.8.0_40. */
+    public static com.sun.jdi.Value invokeMethod(com.sun.jdi.InterfaceType a, com.sun.jdi.ThreadReference b, com.sun.jdi.Method c, java.util.List<? extends com.sun.jdi.Value> d, int e) throws com.sun.jdi.InvalidTypeException, com.sun.jdi.ClassNotLoadedException, com.sun.jdi.IncompatibleThreadStateException, com.sun.jdi.InvocationException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
+                    "com.sun.jdi.InterfaceType",
+                    "invokeMethod",
+                    "JDI CALL: com.sun.jdi.InterfaceType({0}).invokeMethod({1}, {2}, {3}, {4})",
+                    new Object[] {a, b, c, d, e});
+        }
+        Object retValue = null;
+        try {
+            com.sun.jdi.Value ret;
+            ret = (com.sun.jdi.Value) com.sun.jdi.InterfaceType.class.getMethod("invokeMethod", com.sun.jdi.ThreadReference.class, com.sun.jdi.Method.class, java.util.List.class, int.class).invoke(a, b, c, d, e);
+            retValue = ret;
+            return ret;
+        } catch (NoSuchMethodException ex) {
+            retValue = ex;
+            throw new IllegalStateException(ex);
+        } catch (SecurityException ex) {
+            retValue = ex;
+            throw new IllegalStateException(ex);
+        } catch (IllegalAccessException ex) {
+            retValue = ex;
+            throw new IllegalStateException(ex);
+        } catch (IllegalArgumentException ex) {
+            retValue = ex;
+            throw new IllegalStateException(ex);
+        } catch (java.lang.reflect.InvocationTargetException ex) {
+            Throwable t = ex.getTargetException();
+            retValue = t;
+            if (t instanceof com.sun.jdi.InvalidTypeException) {
+                throw (com.sun.jdi.InvalidTypeException) t;
+            }
+            if (t instanceof com.sun.jdi.ClassNotLoadedException) {
+                throw (com.sun.jdi.ClassNotLoadedException) t;
+            }
+            if (t instanceof com.sun.jdi.IncompatibleThreadStateException) {
+                throw (com.sun.jdi.IncompatibleThreadStateException) t;
+            }
+            if (t instanceof com.sun.jdi.InvocationException) {
+                throw (com.sun.jdi.InvocationException) t;
+            }
+            if (t instanceof com.sun.jdi.InternalException) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
+                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
+            }
+            if (t instanceof com.sun.jdi.VMDisconnectedException) {
+                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
+            }
+            throw new IllegalStateException(t);
+        } finally {
+            if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
+                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallEnd(
+                        "com.sun.jdi.InterfaceType",
+                        "invokeMethod",
+                        retValue);
+            }
+        }
+    }
+
+    // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
     public static java.util.List<com.sun.jdi.InterfaceType> subinterfaces0(com.sun.jdi.InterfaceType a) {
         if (org.netbeans.modules.debugger.jpda.JDIExceptionReporter.isLoggable()) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.logCallStart(
