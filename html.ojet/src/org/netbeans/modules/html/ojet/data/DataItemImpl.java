@@ -92,7 +92,10 @@ public class DataItemImpl implements DataItem {
 
     public static class DataItemComponent extends DataItemImpl {
 
+        private static final String EVENT_NAME_START = "id=\"event:";   // NOI18N
+        
         private List<DataItem> options = null;
+        private List<DataItem> events = null;
 
         public DataItemComponent(String name, String docUrl) {
             super(name, docUrl);
@@ -192,8 +195,45 @@ public class DataItemImpl implements DataItem {
             }
             return Collections.unmodifiableCollection(options);
         }
+        
+        public Collection<DataItem> getEvents() {
+            if (events == null) {
+                events = new ArrayList();
+                InputStream in = null;
+                try {
+                    in = getInputStream(new URL(getDocUrl()));
+                    BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8")); //NOI18N
+                    String line;
+                    boolean inMembers = false;
+                    int ulBalance = 0;
+                    int index = -1;
+                    int end;
+                    while ((line = br.readLine()) != null) {
+                        index = line.indexOf(EVENT_NAME_START);
+                        if (index > -1) {
+                            index += EVENT_NAME_START.length();
+                            end = line.indexOf('"', index);
+                            String name = line.substring(index, end);
+                            events.add(new DataItemEvent(name, getDocUrl()));
+                        }
+                    }
+                    br.close();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } finally {
+                    try {
+                        if (in != null) {
+                            in.close();
+                        }
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+            return Collections.unmodifiableCollection(events);
+        }
     }
-
+    
     public static class DataItemOption extends DataItemImpl {
 
         public DataItemOption(String name, String docUrl) {
@@ -254,6 +294,67 @@ public class DataItemImpl implements DataItem {
             return null;
         }
 
+    }
+    
+    public static class DataItemEvent extends DataItemImpl {
+        
+        public DataItemEvent(String name, String docUrl) {
+            super(name, docUrl);
+        }
+        
+        @Override
+        public String getDocumentation() {
+            InputStream in = null;
+            try {
+                in = getInputStream(new URL(getDocUrl()));
+                BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8")); //NOI18N
+                String line;
+
+                StringBuilder content = new StringBuilder();
+                String startText = "<h4 id=\"event:" + getName() + "\" class=\"name\">";  //NOI18N
+                boolean inSection = false;
+                content.append("<dt>"); //NOI18N
+                int ddCount = 0;
+                while ((line = br.readLine()) != null) {
+                    if (!inSection && line.contains(startText)) {
+                        inSection = true;
+                    }
+                    if (inSection) {
+                        
+//                        if (line.contains("class=\"name\"")) {
+//                            line.replace("class=\"name\"", "style=font-family: Consolas, \"Lucida Console\", Monaco, monospace;");
+//                        }
+                        content.append(line);
+                        if (line.contains("<dd")) { //NOI18N
+                            ddCount++;
+                        }
+                        if (line.contains("</dd")) {    //NOI18N
+                            ddCount--;
+                            if (ddCount == 0) {
+                                break;
+                            }
+                        }
+                    }
+
+                }
+                br.close();
+                String result = content.toString();
+//                result = result.replaceAll("class=\"type-signature\"", "style=\"color: #aaa\"");
+//                result = result.replaceAll("class=\"description\"", "style=\"margin-bottom: 1em; margin-left: -16px; margin-top: 1em;\"");
+                return result;
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                try {
+                    if (in != null) {
+                        in.close();
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            return null;
+        }
     }
 
     private static InputStream getInputStream(URL url) {

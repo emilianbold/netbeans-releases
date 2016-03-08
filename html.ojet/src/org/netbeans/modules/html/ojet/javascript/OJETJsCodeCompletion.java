@@ -92,6 +92,11 @@ public class OJETJsCodeCompletion implements CompletionProvider {
                         for (DataItem option : options) {
                             result.add(new OJETCodeCompletionItem.OJETComponentOptionItem(option, ccContext));
                         }
+                        Collection<DataItem> events = DataProvider.filterByPrefix(DataProviderImpl.getInstance().getComponentEvents(compName), ccContext.getPrefix());
+                        for (DataItem event : events) {
+                            result.add(new OJETCodeCompletionItem.OJETComponentEventItem(event, ccContext));
+                        }
+                        
                     }
                     break;
             }
