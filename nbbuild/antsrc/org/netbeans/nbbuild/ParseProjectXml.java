@@ -60,6 +60,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -1078,16 +1079,16 @@ public final class ParseProjectXml extends Task {
                 deps = entry.getRuntimeDependencies();
             }
         }
+        for (File f : entry.getClassPathExtensions()) {
+            if (!additions.contains(f)) {
+                additions.add(f);
+            }
+        }
         for (String nextModule : deps) {
             log("  Added dep " + nextModule + " due to " + cnb, Project.MSG_DEBUG);
             File depJar = computeClasspathModuleLocation(modules, nextModule, clusterPath, excludedModules, true);
             if (!additions.contains(depJar)) {
                 additions.add(depJar);
-            }
-            for (File f : entry.getClassPathExtensions()) {
-                if (!additions.contains(f)) {
-                    additions.add(f);
-                }
             }
             addRecursiveDeps(additions, modules, nextModule, clusterPath, excludedModules, skipCnb, runtime);
         }
