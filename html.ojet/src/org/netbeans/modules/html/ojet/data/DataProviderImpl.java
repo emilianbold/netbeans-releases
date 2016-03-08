@@ -120,6 +120,15 @@ public class DataProviderImpl extends DataProvider {
     }
 
     @Override
+    public Collection<DataItem> getComponentEvents(String compName) {
+        DataItemImpl.DataItemComponent component = data.get(compName);
+        if (component != null) {
+            return component.getEvents();
+        }
+        return Collections.emptyList();
+    }
+
+    @Override
     public Collection<String> getAvailableVersions() {
         File folder = InstalledFileLocator.getDefault().locate(zipFolder, "org.netbeans.modules.html.ojet", false); //NOI18N
         List<String> versions = new ArrayList();

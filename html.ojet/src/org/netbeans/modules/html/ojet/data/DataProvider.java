@@ -57,6 +57,8 @@ public abstract class DataProvider {
 
     public abstract Collection<DataItem> getComponentOptions(String compName);
     
+    public abstract Collection<DataItem> getComponentEvents(String compName);
+    
     public abstract Collection<String> getAvailableVersions();
     
     public abstract String getCurrentVersion();
