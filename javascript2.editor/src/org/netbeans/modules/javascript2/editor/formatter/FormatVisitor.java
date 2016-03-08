@@ -69,10 +69,10 @@ import com.oracle.js.parser.ir.WhileNode;
 import com.oracle.js.parser.ir.WithNode;
 import com.oracle.js.parser.ir.visitor.NodeVisitor;
 import com.oracle.js.parser.TokenType;
+import com.oracle.js.parser.ir.ClassNode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -497,6 +497,39 @@ public class FormatVisitor extends NodeVisitor {
         handleFunctionCallChain(callNode);
 
         return super.enterCallNode(callNode);
+    }
+
+    @Override
+    public boolean enterClassNode(ClassNode classNode) {
+        // indentation mark
+        FormatToken formatToken = getNextToken(getStart(classNode), JsTokenId.BRACKET_LEFT_CURLY, true);
+        if (formatToken != null) {
+            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_CLASS_START));
+        }
+
+        PropertyNode constructor = classNode.getConstructor();
+        if (constructor != null) {
+            // generated default constructor has range equal to class
+            if (constructor.getStart() != classNode.getStart()
+                    || constructor.getFinish() != classNode.getFinish()) {
+                handleClassElement(constructor, getStart(constructor));
+            }
+        }
+        for (Node property : classNode.getClassElements()) {
+            PropertyNode propertyNode = (PropertyNode) property;
+            handleClassElement(propertyNode, getStart(propertyNode));
+        }
+
+        // put indentation mark after non white token preceeding curly bracket
+        formatToken = getPreviousNonWhiteToken(getFinish(classNode) - 1,
+                getStart(classNode), JsTokenId.BRACKET_RIGHT_CURLY, true);
+        if (formatToken != null) {
+            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.BEFORE_CLASS_END));
+            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
+        }
+
+        return super.enterClassNode(classNode);
     }
 
     @Override
@@ -985,6 +1018,23 @@ public class FormatVisitor extends NodeVisitor {
         }
     }
 
+    private void handleClassElement(PropertyNode property, int start) {
+        property.accept(this);
+
+        PropertyNode propertyNode = (PropertyNode) property;
+        if (propertyNode.getGetter() != null) {
+            FunctionNode getter = (FunctionNode) propertyNode.getGetter();
+            markClassElementFinish(getFinish(getter), start, false);
+        }
+        if (propertyNode.getSetter() != null) {
+            FunctionNode setter = (FunctionNode) propertyNode.getSetter();
+            markClassElementFinish(getFinish(setter), start, false);
+        }
+
+        // mark property end
+        markClassElementFinish(getFinish(property), start, true);
+    }
+
     private void markSpacesWithinParentheses(SwitchNode node) {
         int leftStart = getStart(node);
 
@@ -1063,6 +1113,14 @@ public class FormatVisitor extends NodeVisitor {
         if (formatToken != null) {
             appendTokenAfterLastVirtual(formatToken,
                     FormatToken.forFormat(FormatToken.Kind.AFTER_PROPERTY), checkDuplicity);
+        }
+    }
+
+    private void markClassElementFinish(int finish, int classFinish, boolean checkDuplicity) {
+        FormatToken formatToken = getPreviousToken(finish, JsTokenId.BRACKET_RIGHT_CURLY, classFinish);
+        if (formatToken != null) {
+            appendTokenAfterLastVirtual(formatToken,
+                    FormatToken.forFormat(FormatToken.Kind.AFTER_ELEMENT), checkDuplicity);
         }
     }
 
@@ -1316,6 +1374,10 @@ public class FormatVisitor extends NodeVisitor {
                 }
             }
         } else if (node instanceof VarNode) {
+            VarNode var = (VarNode) node;
+            if (var.getInit() != null && (var.getInit() instanceof ClassNode)) {
+                return getFinish(var.getInit());
+            }
             Token token = getNextNonEmptyToken(getFinishFixed(node) - 1);
             if (token != null && JsTokenId.OPERATOR_SEMICOLON == token.id()) {
                 return ts.offset() + 1;

@@ -1396,6 +1396,30 @@ public class JsFormatterTest extends JsTestBase {
     public void testCatch2Indented() throws Exception {
         reindentFileContents("testfiles/formatter/catch2.js", null);
     }
+    
+    public void testClass1() throws Exception {
+        reformatFileContents("testfiles/formatter/class1.js",new IndentPrefs(4, 4));
+    }
+    
+    public void testClass1Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/class1.js");
+    }
+    
+    public void testClass2() throws Exception {
+        reformatFileContents("testfiles/formatter/class2.js",new IndentPrefs(4, 4));
+    }
+    
+    public void testClass2Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/class2.js");
+    }
+    
+    public void testClass3() throws Exception {
+        reformatFileContents("testfiles/formatter/class3.js",new IndentPrefs(4, 4));
+    }
+    
+    public void testClass3Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/class3.js");
+    }
 
     public void testParentheses1Default() throws Exception {
         reformatFileContents("testfiles/formatter/parentheses1.js",
