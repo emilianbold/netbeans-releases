@@ -97,7 +97,8 @@ public class DataProviderImpl extends DataProvider {
     @Override
     public Collection<DataItem> getBindingOptions() {
         List<DataItem> result = new ArrayList(1);
-        result.add(new DataItemImpl(OJETUtils.OJ_COMPONENT, null));
+        result.add((new DataItemImpl(OJETUtils.OJ_COMPONENT, null, OJETUtils.OJ_COMPONENT + ": {component: }"))); // NOI18N
+        result.add(new DataItemImpl(OJETUtils.OJ_MODULE, null, OJETUtils.OJ_MODULE + ": {name: }"));
         return result;
     }
 
