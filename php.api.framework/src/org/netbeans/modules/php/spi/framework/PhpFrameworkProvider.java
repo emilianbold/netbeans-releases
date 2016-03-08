@@ -50,6 +50,7 @@ import java.lang.annotation.Target;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.php.api.framework.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
@@ -110,6 +111,20 @@ public abstract class PhpFrameworkProvider {
      * @return the name; never <code>null</code>.
      */
     public final String getName() {
+        return name;
+    }
+
+    /**
+     * Returns the <b>localized</b> name of this PHP framework, specific for the given PHP module.
+     * <p>
+     * The default implementation simply returns the {@link #getName() name}.
+     *
+     * @param phpModule the PHP module; never <code>null</code>.
+     * @return the name; never <code>null</code>.
+     * @since 0.27
+     */
+    @NonNull
+    public String getName(PhpModule phpModule) {
         return name;
     }
 

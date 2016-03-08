@@ -160,5 +160,8 @@
                 <package>org.netbeans.modules.php.spi.framework.commands</package>
             </friend-packages>
         </data>
+        <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
+            <word>Symfony</word>
+        </spellchecker-wordlist>
     </configuration>
 </project>
