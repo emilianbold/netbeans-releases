@@ -616,6 +616,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     private static final AtomicInteger warmupReqs = new AtomicInteger();
     private static final AtomicInteger readEntryReqs = new AtomicInteger();
 
+    /** for test purposes */
+    /*package*/ int getReadEntriesCount() {
+        return readEntryReqs.get();
+    }
+
     private Map<String, DirEntry> readEntries(DirectoryStorage oldStorage, boolean forceRefresh, String childName) throws IOException, InterruptedException, ExecutionException, CancellationException {
         if (isProhibited()) {
             return Collections.<String, DirEntry>emptyMap();
