@@ -243,7 +243,7 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
             TimeValue time = new TimeValue(ms/1000, (int) (ms%1000)*1000000);
             int user = 0; // TODO: provide access to user if needed
             int group = 0; // TODO: provide access to group if needed
-            perms permissions = perms.valueOf(perms.all_all); // TODO: get real permissions
+            /*fs.prems*/int permissions = perms.all_all; // TODO: get real permissions
             file_type type;
             // follow links! remote isFolder does
             if (fo.isFolder()) {
