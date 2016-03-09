@@ -67,11 +67,11 @@ public final class CsmJClankSerivicesImpl {
     }
 
     public static void traceCompilationDB(Set<NativeProject> projects,
-            raw_ostream out, raw_ostream err,
+            raw_ostream out, raw_ostream err, boolean useURL,
             ClankProgressHandler handle, final AtomicBoolean cancelled) {
         assert out != null;
         assert err != null;
-        Collection<ClankCompilationDataBase> dbs = CsmJClankCompilationDB.convertProjects(projects);
+        Collection<ClankCompilationDataBase> dbs = CsmJClankCompilationDB.convertProjects(projects, useURL);
         ClankRunSettings settings = new ClankRunSettings();
         settings.out = out;
         settings.err = err;
@@ -90,7 +90,7 @@ public final class CsmJClankSerivicesImpl {
             ClankProgressHandler handle, final AtomicBoolean cancelled) {
         assert out != null;
         assert err != null;
-        Collection<ClankCompilationDataBase> dbs = CsmJClankCompilationDB.convertProjects(projects);
+        Collection<ClankCompilationDataBase> dbs = CsmJClankCompilationDB.convertProjects(projects, true);
         ClankRunPreprocessorSettings settings = new ClankRunPreprocessorSettings();
         settings.out = out;
         settings.err = err;
@@ -134,7 +134,7 @@ public final class CsmJClankSerivicesImpl {
         settings.TraceClankStatistics = printStatistics;
         settings.TraceStatisticsOS = llvm_out;
         settings.IncludeInfoCallbacks = new CollectIncludeInfoCallback(llvm_err);
-        ClankCompilationDataBase db = CsmJClankCompilationDB.convertNativeFileItems(Collections.singletonList(nfi), nfi.getName());
+        ClankCompilationDataBase db = CsmJClankCompilationDB.convertNativeFileItems(Collections.singletonList(nfi), nfi.getName(), true);
         ClankPreprocessorServices.preprocess(Collections.singletonList(db), settings);
     }
 
