@@ -103,30 +103,31 @@ public final class CsmJClankCompilationDB implements ClankCompilationDataBase {
         return srcFiles;
     }
 
-    public static ClankCompilationDataBase convertNativeFileItems(Collection<NativeFileItem> nfis, String dbName) {
+    public static ClankCompilationDataBase convertNativeFileItems(Collection<NativeFileItem> nfis, String dbName, boolean useURL) {
         Collection<ClankCompilationDataBase.Entry> compilations = new ArrayList<>();
         for (NativeFileItem nfi : nfis) {
-            Entry entry = createEntry(nfi);
+            Entry entry = createEntry(nfi, useURL);
             assert entry != null;
             compilations.add(entry);
         }
         return new CsmJClankCompilationDB(dbName, compilations);
     }
 
-    public static ClankCompilationDataBase convertProject(NativeProject prj) {
-        return convertNativeFileItems(getSources(prj), prj.getProjectDisplayName());
+    public static ClankCompilationDataBase convertProject(NativeProject prj, boolean useURL) {
+        return convertNativeFileItems(getSources(prj), prj.getProjectDisplayName(), useURL);
     }
 
-    public static Collection<ClankCompilationDataBase> convertProjects(Collection<NativeProject> prjs) {
+    public static Collection<ClankCompilationDataBase> convertProjects(Collection<NativeProject> prjs, boolean useURL) {
         Collection<ClankCompilationDataBase> out = new ArrayList<>();
         for (NativeProject prj : prjs) {
-            out.add(convertProject(prj));
+            out.add(convertProject(prj, useURL));
         }
         return out;
     }
 
-    public static ClankCompilationDataBase.Entry createEntry(NativeFileItem nfi) {
-        DataBaseEntryBuilder builder = new DataBaseEntryBuilder(CndFileSystemProvider.toUrl(FSPath.toFSPath(nfi.getFileObject())), null);
+    public static ClankCompilationDataBase.Entry createEntry(NativeFileItem nfi, boolean useURL) {
+        CharSequence mainFile = useURL ? CndFileSystemProvider.toUrl(FSPath.toFSPath(nfi.getFileObject())) : nfi.getAbsolutePath();
+        DataBaseEntryBuilder builder = new DataBaseEntryBuilder(mainFile, null);
 
         builder.setLang(getLang(nfi)).setLangStd(getLangStd(nfi));
 
@@ -134,14 +135,16 @@ public final class CsmJClankCompilationDB implements ClankCompilationDataBase {
         for (org.netbeans.modules.cnd.api.project.IncludePath incPath : nfi.getUserIncludePaths()) {
             FileObject fileObject = incPath.getFSPath().getFileObject();
             if (fileObject != null && fileObject.isFolder()) {
-                builder.addUserIncludePath(incPath.getFSPath().getURL(), incPath.isFramework(), incPath.ignoreSysRoot());
+                CharSequence path = useURL ? incPath.getFSPath().getURL() : incPath.getFSPath().getPath();
+                builder.addUserIncludePath(path, incPath.isFramework(), incPath.ignoreSysRoot());
             }
         }
         // -isystem
         for (org.netbeans.modules.cnd.api.project.IncludePath incPath : nfi.getSystemIncludePaths()) {
             FileObject fileObject = incPath.getFSPath().getFileObject();
             if (fileObject != null && fileObject.isFolder()) {
-                builder.addPredefinedSystemIncludePath(incPath.getFSPath().getURL(), incPath.isFramework(), incPath.ignoreSysRoot());
+                CharSequence path = useURL ? incPath.getFSPath().getURL() : incPath.getFSPath().getPath();
+                builder.addPredefinedSystemIncludePath(path, incPath.isFramework(), incPath.ignoreSysRoot());
             }
         }
 
@@ -149,7 +152,8 @@ public final class CsmJClankCompilationDB implements ClankCompilationDataBase {
         for (FSPath fSPath : nfi.getSystemIncludeHeaders()) {
             FileObject fileObject = fSPath.getFileObject();
             if (fileObject != null && fileObject.isData()) {
-                builder.addIncFile(fSPath.getURL().toString());
+                String path = useURL ? fSPath.getURL().toString() : fSPath.getPath();
+                builder.addIncFile(path);
             }
         }
 
@@ -157,7 +161,8 @@ public final class CsmJClankCompilationDB implements ClankCompilationDataBase {
         for (FSPath fSPath : nfi.getIncludeFiles()) {
             FileObject fileObject = fSPath.getFileObject();
             if (fileObject != null && fileObject.isData()) {
-                builder.addIncFile(fSPath.getURL().toString());
+                String path = useURL ? fSPath.getURL().toString() : fSPath.getPath();
+                builder.addIncFile(path);
             }
         }
 
