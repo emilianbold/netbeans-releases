@@ -1401,6 +1401,10 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/class1.js",new IndentPrefs(4, 4));
     }
     
+    public void testClass1Indented() throws Exception {
+        reindentFileContents("testfiles/formatter/class1.js", null);
+    }
+    
     public void testClass1Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/class1.js");
     }
