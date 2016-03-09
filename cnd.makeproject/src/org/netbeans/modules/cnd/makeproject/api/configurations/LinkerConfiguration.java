@@ -85,6 +85,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
     private OptionsConfiguration additionalDependencies;
     private IntConfiguration runTimeSearchPath;
     private LibrariesConfiguration librariesConfiguration;
+    private BooleanConfiguration copyLibrariesConfiguration;
     private StringConfiguration tool;
 
     public static final int SEARCH_PATH_NONE = 0;
@@ -112,6 +113,10 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
         additionalDependencies = new OptionsConfiguration();
         additionalDependencies.setPreDefined(getAdditionalDependenciesPredefined());
         librariesConfiguration = new LibrariesConfiguration();
+        
+        boolean isMac = makeConfiguration.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX;
+        copyLibrariesConfiguration = new BooleanConfiguration(isMac);
+        
         tool = new StringConfiguration(null, ""); // NOI18N
         runTimeSearchPath = new IntConfiguration(null, SEARCH_PATH_RELATIVE_TO_WORKING_DIR, SEARCH_PATH_NAMES, null);
     }
@@ -128,6 +133,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
                 || getAdditionalDependencies().getModified()
                 || getTool().getModified()
                 || getLibrariesConfiguration().getModified()
+                || getCopyLibrariesConfiguration().getModified()
                 || getCommandLineConfiguration().getModified();
     }
 
@@ -235,6 +241,15 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
         this.librariesConfiguration = librariesConfiguration;
     }
 
+    // CopyLibrariesConfiguration
+    public BooleanConfiguration getCopyLibrariesConfiguration() {
+        return copyLibrariesConfiguration;
+    }
+
+    public void setCopyLibrariesConfiguration(BooleanConfiguration copyLibrariesConfiguration) {
+        this.copyLibrariesConfiguration = copyLibrariesConfiguration;
+    }
+
     // LibrariesConfiguration
     public IntConfiguration getLibrariesRunTimeSearchPathKind() {
         return runTimeSearchPath;
@@ -268,6 +283,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
         getLibrariesRunTimeSearchPathKind().assign(conf.getLibrariesRunTimeSearchPathKind());
         getNameassignOption().assign(conf.getNameassignOption());
         getLibrariesConfiguration().assign(conf.getLibrariesConfiguration());
+        getCopyLibrariesConfiguration().assign(conf.getCopyLibrariesConfiguration());
         getTool().assign(conf.getTool());
     }
 
@@ -286,6 +302,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
         clone.setLibrariesRunTimeSearchPathKind(getLibrariesRunTimeSearchPathKind().clone());
         clone.setNameassignOption(getNameassignOption().clone());
         clone.setLibrariesConfiguration(getLibrariesConfiguration().clone());
+        clone.setCopyLibrariesConfiguration(getCopyLibrariesConfiguration().clone());
         clone.setTool(getTool().clone());
         return clone;
     }
@@ -464,6 +481,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
         set5.setShortDescription(getString("LibrariesHint"));
         set5.put(new LibrariesNodeProp(getLibrariesConfiguration(), project, conf, getMakeConfiguration().getBaseFSPath(), texts));
         set5.put(new IntNodeProp(getLibrariesRunTimeSearchPathKind(), true, "RunTimeSerchPath", getString("RunTimeSerchPathTxt"), getString("RunTimeSerchPathHint"))); // NOI18N
+        set5.put(new BooleanNodeProp(getCopyLibrariesConfiguration(), true, "CopyLibraries", getString("CopyLibrariesTxt"), getString("CopyLibrariesHint")));
         sheet.put(set5);
 
         if (!isQtMode) {
@@ -563,6 +581,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
                 " stripOption=" + stripOption + " picOption=" + picOption + " norunpathOption=" + norunpathOption + // NOI18N
                 " nameassignOption=" + nameassignOption + " commandLineConfiguration=" + commandLineConfiguration + // NOI18N
                 " additionalDependencies=" + additionalDependencies + " librariesConfiguration=" + librariesConfiguration + // NOI18N
+                " copyLibrariesConfiguration=" + copyLibrariesConfiguration + // NOI18N
                 " tool=" + tool + '}'; // NOI18N
     }
 
