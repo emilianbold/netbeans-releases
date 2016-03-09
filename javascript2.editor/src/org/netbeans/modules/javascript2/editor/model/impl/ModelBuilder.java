@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
+import com.oracle.js.parser.ir.FunctionNode;
 import java.util.Stack;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
@@ -148,5 +149,13 @@ public final class ModelBuilder {
     
     public JsWith getCurrentWith() {
         return currentWith;
+    }
+    
+    public String getFunctionName(FunctionNode node) {
+        if (node.isAnonymous()) {
+            return globalObject.getName() + node.getName().replace(':', '$');
+        } else {
+            return node.getName();
+        }
     }
 }
