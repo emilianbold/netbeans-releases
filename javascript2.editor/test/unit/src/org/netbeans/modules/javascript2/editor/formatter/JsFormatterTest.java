@@ -1420,6 +1420,20 @@ public class JsFormatterTest extends JsTestBase {
     public void testClass3Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/class3.js");
     }
+    
+    public void testClass4() throws Exception {
+        reformatFileContents("testfiles/formatter/class4.js",new IndentPrefs(4, 4));
+    }
+    
+    public void testClass4BraceIndented() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.classDeclBracePlacement, FmtOptions.OBRACE_NEWLINE_INDENTED);
+        reformatFileContents("testfiles/formatter/class4.js", options, ".braceIndented.formatted");
+    }
+    
+    public void testClass4Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/class4.js");
+    }
 
     public void testParentheses1Default() throws Exception {
         reformatFileContents("testfiles/formatter/parentheses1.js",

@@ -535,6 +535,8 @@ public class FormatVisitor extends NodeVisitor {
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
         }
 
+        markEndCurlyBrace(classNode);
+
         return super.enterClassNode(classNode);
     }
 
