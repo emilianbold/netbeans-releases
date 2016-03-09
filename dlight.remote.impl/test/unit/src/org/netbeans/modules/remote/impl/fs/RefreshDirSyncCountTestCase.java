@@ -116,7 +116,42 @@ public class RefreshDirSyncCountTestCase extends RemoteFileTestBase {
             }
         }        
     }
-    
+
+
+    @ForAllEnvironments
+    public void test_iz_258294() throws Exception {
+        String baseDir = null;
+        try {
+            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv, false);
+            baseDir = mkTempAndRefreshParent(true);
+            String[] struct = new String[] {
+                "- file_1",
+                "- file_2",
+                "d dir_1",
+                "l file_1 dir_1/link_1",
+                "l file_2 dir_1/link_2",
+            };
+            createDirStructure(execEnv, baseDir, struct);
+            RemoteFileObject baseFO = getFileObject(baseDir);
+            baseFO.refresh();
+            recurse(baseFO); // instantiate all file objects
+            FileObject dirFO = getFileObject(baseFO, "dir_1");
+            assertTrue(dirFO instanceof RemoteFileObject);
+            RemoteFileObjectBase impl = ((RemoteFileObject) dirFO).getImplementor();
+            assertTrue(impl instanceof RemoteDirectory);
+            RemoteDirectory RD = (RemoteDirectory) impl;
+
+            int cnt1 = RD.getReadEntriesCount();
+            RD.refresh();
+            int cnt2 = RD.getReadEntriesCount();
+            assertEquals("Wrong dir read count:", 1, cnt2 - cnt1);
+        } finally {
+            if (baseDir != null) {
+                ProcessUtils.ExitStatus res = ProcessUtils.execute(getTestExecutionEnvironment(), "chmod", "-R", "700", baseDir);
+                removeRemoteDirIfNotNull(baseDir);
+            }
+        }
+    }
     private static Collection<RemoteFileObjectBase> filterDirectories(Collection<RemoteFileObjectBase> fileObjects) {
         Collection<RemoteFileObjectBase> result = new HashSet<>();
         for (RemoteFileObjectBase fo : fileObjects) {
