@@ -153,6 +153,8 @@ public final class LibraryPersistence {
      * @param libraryElement element to load information from.
      * @return library version corresponding to the given DOM element.
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
+            justification = "Not sure about it, really (not my code)")
     private Library.Version loadLibrary(Element libraryElement) {
         String libraryName = libraryElement.getAttribute(ATTR_LIBRARY_NAME);
         String versionName = libraryElement.getAttribute(ATTR_VERSION_NAME);
@@ -167,8 +169,6 @@ public final class LibraryPersistence {
         for (int i=0; i<fileList.getLength(); i++) {
             Element fileElement = (Element)fileList.item(i);
             String path = fileElement.getAttribute(ATTR_FILE_PATH);
-            @org.netbeans.api.annotations.common.SuppressWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
-                    justification = "Not sure about it, really (not my code)")
             String localPath = fileElement.getAttribute(ATTR_FILE_LOCAL_PATH);
             files[i] = path;
             localFiles[i] = (localPath == null) ? path : localPath;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.symfony2;
 
@@ -50,6 +50,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.spi.phpmodule.ImportantFilesImplementation;
+import org.netbeans.modules.php.symfony2.preferences.SymfonyPreferences;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -59,7 +60,7 @@ import org.openide.util.ChangeSupport;
 
 public final class ConfigurationFiles extends FileChangeAdapter implements ImportantFilesImplementation {
 
-    private static final String CONFIG_DIRECTORY = "app/config"; // NOI18N
+    private static final String CONFIG_DIRECTORY = "config"; // NOI18N
 
     private final PhpModule phpModule;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -80,13 +81,21 @@ public final class ConfigurationFiles extends FileChangeAdapter implements Impor
             // broken project
             return Collections.emptyList();
         }
-        List<FileInfo> files = new ArrayList<>();
-        FileObject configDir = sourceDir.getFileObject(CONFIG_DIRECTORY);
+        FileObject appDir = sourceDirectory.getFileObject(SymfonyPreferences.getAppDir(phpModule));
+        if (appDir == null) {
+            // app dir not found
+            return Collections.emptyList();
+        }
+        List<FileInfo> files = Collections.emptyList();
+        FileObject configDir = appDir.getFileObject(CONFIG_DIRECTORY);
         if (configDir != null
                 && configDir.isFolder()
                 && configDir.isValid()) {
             for (FileObject child : configDir.getChildren()) {
                 if (child.isData()) {
+                    if (files.isEmpty()) {
+                        files = new ArrayList<>();
+                    }
                     files.add(new FileInfo(child));
                 }
             }
@@ -115,7 +124,7 @@ public final class ConfigurationFiles extends FileChangeAdapter implements Impor
             sourceDirectory = phpModule.getSourceDirectory();
             if (sourceDirectory != null) {
                 File sources = FileUtil.toFile(sourceDirectory);
-                addListener(new File(sources, CONFIG_DIRECTORY));
+                addListener(new File(new File(sources, SymfonyPreferences.getAppDir(phpModule)), CONFIG_DIRECTORY));
             }
         }
         return sourceDirectory;

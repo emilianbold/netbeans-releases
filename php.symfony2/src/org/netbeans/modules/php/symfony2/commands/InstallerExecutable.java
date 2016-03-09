@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.symfony2.commands;
 
@@ -60,9 +60,9 @@ import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.api.validation.ValidationResult;
-import org.netbeans.modules.php.symfony2.options.Symfony2Options;
-import org.netbeans.modules.php.symfony2.options.Symfony2OptionsValidator;
-import org.netbeans.modules.php.symfony2.ui.options.Symfony2OptionsPanelController;
+import org.netbeans.modules.php.symfony2.options.SymfonyOptions;
+import org.netbeans.modules.php.symfony2.options.SymfonyOptionsValidator;
+import org.netbeans.modules.php.symfony2.ui.options.SymfonyOptionsPanelController;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -77,7 +77,7 @@ public final class InstallerExecutable {
     private static final String NEW_PARAM = "new"; // NOI18N
     private static final String LTS_PARAM = "lts"; // NOI18N
 
-    private static final File TMP_DIR = new File(System.getProperty("java.io.tmpdir"), "nb-symfony2"); // NOI18N
+    private static final File TMP_DIR = new File(System.getProperty("java.io.tmpdir"), "nb-symfony23"); // NOI18N
 
     private final PhpModule phpModule;
     private final String installerPath;
@@ -95,16 +95,16 @@ public final class InstallerExecutable {
 
     @CheckForNull
     public static InstallerExecutable getDefault(@NullAllowed PhpModule phpModule, boolean showOptions) {
-        ValidationResult result = new Symfony2OptionsValidator()
+        ValidationResult result = new SymfonyOptionsValidator()
                 .validate()
                 .getResult();
         if (validateResult(result) != null) {
             if (showOptions) {
-                UiUtils.showOptions(Symfony2OptionsPanelController.OPTIONS_SUBPATH);
+                UiUtils.showOptions(SymfonyOptionsPanelController.OPTIONS_SUBPATH);
             }
             return null;
         }
-        return new InstallerExecutable(Symfony2Options.getInstance().getInstaller(), phpModule);
+        return new InstallerExecutable(SymfonyOptions.getInstance().getInstaller(), phpModule);
     }
 
     public Future<Integer> run(boolean lts) {
@@ -140,18 +140,18 @@ public final class InstallerExecutable {
 
     @NbBundle.Messages({
         "# {0} - project name",
-        "InstallerExecutable.run.title=Symfony2 ({0})",
+        "InstallerExecutable.run.title=Symfony 2/3 ({0})",
     })
     private PhpExecutable getExecutable() {
         return new PhpExecutable(installerPath)
                 .workDir(getWorkDir())
                 .displayName(Bundle.InstallerExecutable_run_title(phpModule.getDisplayName()))
-                .optionsSubcategory(Symfony2OptionsPanelController.OPTIONS_SUBPATH);
+                .optionsSubcategory(SymfonyOptionsPanelController.OPTIONS_SUBPATH);
     }
 
     private ExecutionDescriptor getDescriptor() {
         return PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
-                .optionsPath(Symfony2OptionsPanelController.getOptionsPath())
+                .optionsPath(SymfonyOptionsPanelController.getOptionsPath())
                 .rerunCondition(new ExecutionDescriptor.RerunCondition() {
                     @Override
                     public void addChangeListener(ChangeListener listener) {
@@ -171,7 +171,7 @@ public final class InstallerExecutable {
     private synchronized File getWorkDir() {
         if (workDir == null) {
             try {
-                workDir = Files.createTempDirectory("nb-symfony2-").toFile(); // NOI18N
+                workDir = Files.createTempDirectory("nb-symfony23-").toFile(); // NOI18N
             } catch (IOException ex) {
                 LOGGER.log(Level.INFO, null, ex);
                 workDir = new File(TMP_DIR, new BigInteger(130, new SecureRandom()).toString(32));
