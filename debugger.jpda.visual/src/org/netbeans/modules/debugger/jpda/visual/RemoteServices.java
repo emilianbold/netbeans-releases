@@ -290,10 +290,14 @@ public class RemoteServices {
                 }
                 if (basicClass != null) {
                     // Initialize the class:
-                    ClassType theClass = getClass(vm, Class.class.getName());
-                    // Perhaps it's not 100% correct, we should be calling the new class' newInstance() method, not Class.newInstance() method.
-                    Method newInstance = ClassTypeWrapper.concreteMethodByName(theClass, "newInstance", "()Ljava/lang/Object;");
-                    ObjectReference newInstanceOfBasicClass = (ObjectReference) ObjectReferenceWrapper.invokeMethod(basicClass, tawt, newInstance, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                    ClassType bc = ((ClassType) basicClass.reflectedType());
+                    if (!bc.isInitialized()) {
+                        // Trying to initialize the class
+                        ClassType theClass = getClass(vm, Class.class.getName());
+                        // Call some method that will prepare the class:
+                        Method aMethod = ClassTypeWrapper.concreteMethodByName(theClass, "getConstructors", "()[Ljava/lang/reflect/Constructor;");
+                        ObjectReferenceWrapper.invokeMethod(basicClass, tawt, aMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                    }
                 }
             } finally {
                 t.accessLock.writeLock().unlock();
