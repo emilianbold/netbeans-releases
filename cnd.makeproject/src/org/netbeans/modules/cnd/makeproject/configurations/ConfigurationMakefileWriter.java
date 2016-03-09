@@ -564,7 +564,11 @@ public class ConfigurationMakefileWriter {
              oicLibOptionsPrefix = provider.getLibraryOptionsPrefix(projectDescriptor, conf);
              oicLibOptionsPostfix = provider.getLibraryOptionsPostfix(projectDescriptor, conf);
         }
-        bw.write("LDLIBSOPTIONS=" + oicLibOptionsPrefix + conf.getLinkerConfiguration().getLibraryItems() + oicLibOptionsPostfix + "\n"); // NOI18N
+        String explicitDot = "";
+//        if (conf.isLinkerConfiguration() && conf.getLinkerConfiguration().getCopyLibrariesConfiguration().getValue()) {
+//            explicitDot = " -L. -L${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}";
+//        }
+        bw.write("LDLIBSOPTIONS=-Wl,-rpath,'.' " + oicLibOptionsPrefix + conf.getLinkerConfiguration().getLibraryItems() + oicLibOptionsPostfix + explicitDot + "\n"); // NOI18N
         bw.write("\n"); // NOI18N
 
         if (conf.isQmakeConfiguration()) {
@@ -703,8 +707,45 @@ public class ConfigurationMakefileWriter {
         bw.write("# Build Targets\n"); // NOI18N
         bw.write(".build-conf: ${BUILD_SUBPROJECTS}\n"); // NOI18N
         bw.write("\t\"${MAKE}\" " // NOI18N
-                + " -f nbproject/Makefile-"+MakeConfiguration.CND_CONF_MACRO+".mk " // NOI18N
-                + output + "\n\n"); // NOI18N
+                + " -f nbproject/Makefile-" + MakeConfiguration.CND_CONF_MACRO + ".mk " // NOI18N
+                + output + "\n"); // NOI18N
+        Set<String> paths = new HashSet<>();
+
+        LibrariesConfiguration librariesConfiguration;
+        if (conf.isLinkerConfiguration() && conf.getLinkerConfiguration().getCopyLibrariesConfiguration().getValue()) {
+            librariesConfiguration = conf.getLinkerConfiguration().getLibrariesConfiguration();
+
+            for (LibraryItem item : librariesConfiguration.getValue()) {
+                String path = item.getPath();
+                if (path != null && (path.endsWith(".dll") || path.endsWith(".dylib") // NOI18N
+                        || path.endsWith(".so") || 0 <= path.indexOf(".so."))) { // NOI18N
+                    paths.add(path);
+                }
+            }
+        }
+
+        for (LibraryItem.ProjectItem item : conf.getRequiredProjectsConfiguration().getValue()) {
+            int configurationType = item.getMakeArtifact().getConfigurationType();
+            if (configurationType == MakeArtifact.TYPE_DYNAMIC_LIB
+                    || configurationType == MakeArtifact.TYPE_QT_DYNAMIC_LIB) {
+                paths.add(item.getPath());
+            }
+        }
+        if (!paths.isEmpty()) {
+            String outputDir = CndPathUtilities.getDirName(output);
+            boolean isMac = conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX;
+
+            for (String path : paths) {
+                String libPath = CndPathUtilities.escapeOddCharacters(CndPathUtilities.normalizeSlashes(path));
+                bw.write("\t${CP} " + libPath + " " + outputDir + "\n"); //NOI18N
+                if (isMac) {
+                    String baseName = CndPathUtilities.getBaseName(libPath);
+                    outputDir = CndPathUtilities.trimSlashes(outputDir);
+                    bw.write("\t-install_name_tool -change " + baseName + " @rpath/" + outputDir + "/" + baseName + " " + output + "\n"); //NOI18N
+                }
+            }
+        }
+        bw.write("\n"); //NOI18N
     }
 
     public static void writeBuildTestTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
@@ -1465,7 +1506,9 @@ public class ConfigurationMakefileWriter {
         if (conf.isCompileConfiguration()) {
             CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
             bw.write("\t${RM} -r " + MakeConfiguration.CND_BUILDDIR_MACRO + '/'+MakeConfiguration.CND_CONF_MACRO+ "\n"); // UNIX path // NOI18N
-            bw.write("\t${RM} " + getOutput(projectDescriptor, conf, compilerSet) + "\n"); // NOI18N
+            String output = getOutput(projectDescriptor, conf, compilerSet);
+            String outputDir = CndPathUtilities.getDirName(output);
+            bw.write("\t${RM} -r " + outputDir + "\n"); // NOI18N
             if (compilerSet != null
                     && compilerSet.getCompilerFlavor().isSunStudioCompiler()
                     && conf.hasCPPFiles(projectDescriptor)) {

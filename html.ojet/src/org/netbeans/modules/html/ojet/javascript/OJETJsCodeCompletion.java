@@ -51,6 +51,7 @@ import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.ojet.OJETContext;
+import org.netbeans.modules.html.ojet.OJETUtils;
 import org.netbeans.modules.html.ojet.data.DataItem;
 import org.netbeans.modules.html.ojet.data.DataItemImpl;
 import org.netbeans.modules.html.ojet.data.DataProvider;
@@ -97,6 +98,12 @@ public class OJETJsCodeCompletion implements CompletionProvider {
                             result.add(new OJETCodeCompletionItem.OJETComponentEventItem(event, ccContext));
                         }
                         
+                    }
+                    break;
+                case MODULE_PROP_NAME:
+                    Collection<DataItem> options = DataProvider.filterByPrefix(DataProviderImpl.getInstance().getModuleProperties(), ccContext.getPrefix());
+                    for (DataItem option : options) {
+                        result.add(new OJETCodeCompletionItem.OJETComponentOptionItem(option, ccContext));
                     }
                     break;
             }
