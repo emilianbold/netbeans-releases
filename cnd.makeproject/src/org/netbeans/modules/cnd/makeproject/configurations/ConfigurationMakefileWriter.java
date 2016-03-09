@@ -709,21 +709,21 @@ public class ConfigurationMakefileWriter {
         bw.write("\t\"${MAKE}\" " // NOI18N
                 + " -f nbproject/Makefile-" + MakeConfiguration.CND_CONF_MACRO + ".mk " // NOI18N
                 + output + "\n"); // NOI18N
-        List<String> paths = new ArrayList<>();
+        Set<String> paths = new HashSet<>();
 
         LibrariesConfiguration librariesConfiguration;
         if (conf.isLinkerConfiguration() && conf.getLinkerConfiguration().getCopyLibrariesConfiguration().getValue()) {
             librariesConfiguration = conf.getLinkerConfiguration().getLibrariesConfiguration();
 
             for (LibraryItem item : librariesConfiguration.getValue()) {
-                LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) item;
-                int configurationType = projectItem.getMakeArtifact().getConfigurationType();
-                if (configurationType == MakeArtifact.TYPE_DYNAMIC_LIB
-                        || configurationType == MakeArtifact.TYPE_QT_DYNAMIC_LIB) {
-                    paths.add(projectItem.getPath());
+                String path = item.getPath();
+                if (path != null && (path.endsWith(".dll") || path.endsWith(".dylib") // NOI18N
+                        || path.endsWith(".so") || 0 <= path.indexOf(".so."))) { // NOI18N
+                    paths.add(path);
                 }
             }
         }
+
         for (LibraryItem.ProjectItem item : conf.getRequiredProjectsConfiguration().getValue()) {
             int configurationType = item.getMakeArtifact().getConfigurationType();
             if (configurationType == MakeArtifact.TYPE_DYNAMIC_LIB
