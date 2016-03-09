@@ -73,6 +73,10 @@ public enum OJETContext {
      * ojComponent:{component: | }
      */
     COMP_CONF_COMP_NAME,
+    /**
+     * IN configuration object for binding a module: ojModule: {}
+     */
+    MODULE_PROP_NAME,
     UNKNOWN;
 
     private static String COMPONENT = "component"; //NOI18N
@@ -80,6 +84,8 @@ public enum OJETContext {
     public static OJETContext findContext(Document document, int offset) {
         TokenHierarchy th = TokenHierarchy.get(document);
         TokenSequence<HTMLTokenId> ts = LexerUtils.getTokenSequence(th, offset, HTMLTokenId.language(), false);
+        String binding = null;
+        
         if (ts != null) {
             int diff = ts.move(offset);
             if (diff == 0 && ts.movePrevious() || ts.moveNext()) {
@@ -118,12 +124,26 @@ public enum OJETContext {
                         if (etoken.id() == KODataBindTokenId.COMMA) {
                             return DATA_BINDING;
                         }
+                        if (etoken.id() == KODataBindTokenId.COLON) {
+                            etoken = LexerUtils.followsToken(dataBindTs, KODataBindTokenId.KEY, true, true, KODataBindTokenId.COLON);
+                            if (etoken != null && etoken.id() == KODataBindTokenId.KEY) {
+                                String key = etoken.text().toString();
+                                if (OJETUtils.OJ_COMPONENT.equals(key) || OJETUtils.OJ_MODULE.equals(key)) {
+                                    binding = key;
+                                } else {
+                                    // continue only if we are in the value of component or module
+                                    return UNKNOWN;
+                                }
+                            } else {
+                                return UNKNOWN;
+                            }
+                        }
                     }
                 }
             }
         }
         TokenSequence<JsTokenId> jsTs = LexerUtils.getTokenSequence(th, offset, JsTokenId.javascriptLanguage(), false);
-        if (jsTs != null) {
+        if (jsTs != null && binding != null) {
             int diff = jsTs.move(offset);
             if (diff == 0 && jsTs.movePrevious() || jsTs.moveNext()) {
                 Token<JsTokenId> jsToken = jsTs.token();
@@ -137,7 +157,12 @@ public enum OJETContext {
                     return UNKNOWN;
                 }
                 if (jsToken.id() == JsTokenId.BRACKET_LEFT_CURLY) {
-                    return COMP_CONF;
+                    if (OJETUtils.OJ_COMPONENT.equals(binding)) {
+                        return COMP_CONF;
+                    } else {
+                        return MODULE_PROP_NAME;
+                    }
+                    
                 } else if (jsToken.id() == JsTokenId.OPERATOR_COLON) {
                     // we are in the valeu
                     // find the name of property
@@ -149,7 +174,11 @@ public enum OJETContext {
                     }
                 }
                 if (jsToken != null && jsToken.id() == JsTokenId.OPERATOR_COMMA) {
-                    return COMP_CONF_PROP_NAME;
+                    if (OJETUtils.OJ_COMPONENT.equals(binding)) {
+                        return COMP_CONF_PROP_NAME;
+                    } else {
+                        return MODULE_PROP_NAME;
+                    }
                 }
             }
 
