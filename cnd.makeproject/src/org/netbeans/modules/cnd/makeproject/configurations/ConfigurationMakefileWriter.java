@@ -745,7 +745,7 @@ public class ConfigurationMakefileWriter {
                 }
             }
         }
-        bw.write("\n");
+        bw.write("\n"); //NOI18N
     }
 
     public static void writeBuildTestTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
