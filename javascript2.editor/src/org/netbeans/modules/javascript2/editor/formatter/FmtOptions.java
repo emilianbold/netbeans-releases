@@ -103,6 +103,7 @@ public class FmtOptions {
     public static final String initialIndent = "init.indent"; //NOI18N
 
     public static final String functionDeclBracePlacement = "functionDeclBracePlacement"; //NOI18N
+    public static final String classDeclBracePlacement = "classDeclBracePlacement"; //NOI18N
     public static final String ifBracePlacement = "ifBracePlacement"; //NOI18N
     public static final String forBracePlacement = "forBracePlacement"; //NOI18N
     public static final String whileBracePlacement = "whileBracePlacement"; //NOI18N
@@ -284,6 +285,7 @@ public class FmtOptions {
             { initialIndent, "0"}, //NOI18N
 
 	    { functionDeclBracePlacement, OBRACE_PRESERVE },
+            { classDeclBracePlacement, OBRACE_PRESERVE },
 	    { ifBracePlacement, OBRACE_PRESERVE },
 	    { forBracePlacement, OBRACE_PRESERVE },
 	    { whileBracePlacement, OBRACE_PRESERVE },

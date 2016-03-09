@@ -148,6 +148,11 @@ public final class CodeStyle {
         return BracePlacement.valueOf(placement);
     }
 
+    public BracePlacement getClassDeclBracePlacement() {
+        String placement = preferences.get(classDeclBracePlacement, provider.getDefaultAsString(classDeclBracePlacement));
+        return BracePlacement.valueOf(placement);
+    }
+
     public BracePlacement getIfBracePlacement() {
         String placement = preferences.get(ifBracePlacement, provider.getDefaultAsString(ifBracePlacement));
         return BracePlacement.valueOf(placement);
@@ -698,6 +703,8 @@ public final class CodeStyle {
 
         final CodeStyle.BracePlacement functionDeclBracePlacement;
 
+        final CodeStyle.BracePlacement classDeclBracePlacement;
+
         final CodeStyle.BracePlacement ifBracePlacement;
 
         final CodeStyle.BracePlacement forBracePlacement;
@@ -881,6 +888,7 @@ public final class CodeStyle {
             rightMargin = style.getRightMargin();
 
             functionDeclBracePlacement = style.getFunctionDeclBracePlacement();
+            classDeclBracePlacement = style.getClassDeclBracePlacement();
             ifBracePlacement = style.getIfBracePlacement();
             forBracePlacement = style.getForBracePlacement();
             whileBracePlacement = style.getWhileBracePlacement();

@@ -506,6 +506,12 @@ public class FormatVisitor extends NodeVisitor {
         if (formatToken != null) {
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_CLASS_START));
+
+            FormatToken previous = formatToken.previous();
+            if (previous != null) {
+                appendToken(previous, FormatToken.forFormat(
+                        FormatToken.Kind.BEFORE_CLASS_DECLARATION_BRACE));
+            }
         }
 
         PropertyNode constructor = classNode.getConstructor();

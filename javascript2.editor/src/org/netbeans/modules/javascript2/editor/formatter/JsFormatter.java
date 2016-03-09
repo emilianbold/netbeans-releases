@@ -1306,6 +1306,8 @@ public class JsFormatter implements Formatter {
         switch (token.getKind()) {
             case BEFORE_FUNCTION_DECLARATION_BRACE:
                 return codeStyle.functionDeclBracePlacement;
+            case BEFORE_CLASS_DECLARATION_BRACE:
+                return codeStyle.classDeclBracePlacement;
             case BEFORE_IF_BRACE:
             case BEFORE_ELSE_BRACE:
                 return codeStyle.ifBracePlacement;
@@ -1491,6 +1493,8 @@ public class JsFormatter implements Formatter {
                 return codeStyle.spaceBeforeWithLeftBrace;
             case BEFORE_FUNCTION_DECLARATION_BRACE:
                 return codeStyle.spaceBeforeMethodDeclLeftBrace;
+            case BEFORE_CLASS_DECLARATION_BRACE:
+                return codeStyle.spaceBeforeClassDeclLeftBrace;
             case AFTER_ARRAY_LITERAL_BRACKET:
                 return codeStyle.spaceWithinArrayBrackets;
             case BEFORE_ARRAY_LITERAL_BRACKET:

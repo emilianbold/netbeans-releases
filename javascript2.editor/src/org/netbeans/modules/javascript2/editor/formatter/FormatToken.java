@@ -670,6 +670,13 @@ public final class FormatToken {
                 return true;
             }
         },
+        
+        BEFORE_CLASS_DECLARATION_BRACE {
+            @Override
+            public boolean isBraceMarker() {
+                return true;
+            }
+        },
 
         BEFORE_IF_BRACE {
             @Override
