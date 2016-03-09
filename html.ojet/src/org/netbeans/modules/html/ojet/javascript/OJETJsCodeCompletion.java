@@ -83,7 +83,7 @@ public class OJETJsCodeCompletion implements CompletionProvider {
                     }
                     break;
                 case COMP_CONF:
-                    result.add(new OJETCodeCompletionItem.OJETComponentOptionItem(new DataItemImpl("component", null), ccContext));
+                    result.add(new OJETCodeCompletionItem.OJETComponentOptionItem(new DataItemImpl("component", null), ccContext)); //NOI18N
                     break;
                 case COMP_CONF_PROP_NAME:
                     String compName = OJETContext.findComponentName(document, dOffset);
@@ -92,6 +92,11 @@ public class OJETJsCodeCompletion implements CompletionProvider {
                         for (DataItem option : options) {
                             result.add(new OJETCodeCompletionItem.OJETComponentOptionItem(option, ccContext));
                         }
+                        Collection<DataItem> events = DataProvider.filterByPrefix(DataProviderImpl.getInstance().getComponentEvents(compName), ccContext.getPrefix());
+                        for (DataItem event : events) {
+                            result.add(new OJETCodeCompletionItem.OJETComponentEventItem(event, ccContext));
+                        }
+                        
                     }
                     break;
             }

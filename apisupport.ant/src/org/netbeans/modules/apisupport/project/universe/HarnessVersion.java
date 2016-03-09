@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -73,7 +73,8 @@ public enum HarnessVersion {
     V73("1.32"),
     V74("1.35"),
     V80("1.37"),
-    V81("1.40");
+    V81("1.40"),
+    V82("1.42");
 
     /** spec version of org-netbeans-modules-apisupport-harness.jar */
     private final String minimumSpecVersion;
@@ -100,6 +101,7 @@ public enum HarnessVersion {
         "LBL_harness_version_7.4=7.4",
         "LBL_harness_version_8.0=8.0",
         "LBL_harness_version_8.1=8.1",
+        "LBL_harness_version_8.2=8.2",
         "LBL_harness_version_unknown=unknown"
     })
     public String getDisplayName() {
@@ -136,6 +138,8 @@ public enum HarnessVersion {
                 return LBL_harness_version_8_0();
             case V81:
                 return LBL_harness_version_8_1();
+            case V82:
+                return LBL_harness_version_8_2();
             default:
                 assert this == UNKNOWN;
         }

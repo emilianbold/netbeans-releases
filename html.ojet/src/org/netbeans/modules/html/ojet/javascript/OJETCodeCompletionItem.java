@@ -60,6 +60,7 @@ import org.netbeans.modules.html.ojet.data.DataItem;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -265,7 +266,25 @@ public class OJETCodeCompletionItem implements CompletionProposal {
         
         @Override
         public String getCustomInsertTemplate() {
-            return option.getName() + ": ";
+            return option.getName() + ": "; //NOI18N
         }
+    }
+    
+    public static class OJETComponentEventItem extends OJETComponentOptionItem {
+        private static  ImageIcon eventIcon = null;
+        
+        public OJETComponentEventItem(DataItem option, CodeCompletionContext ccContext) {
+            super(option, ccContext);
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            if (eventIcon == null) {
+                eventIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/html/ojet/ui/resources/ojetEvent-icon.png")); //NOI18N
+            }
+            return eventIcon;
+        }
+        
+        
     }
 }
