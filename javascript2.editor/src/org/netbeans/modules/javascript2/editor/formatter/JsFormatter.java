@@ -1288,6 +1288,8 @@ public class JsFormatter implements Formatter {
             case AFTER_CLASS_START:
             case BEFORE_CLASS_END:
                 return codeStyle.wrapClasses;
+            case BEFORE_CLASS_EXTENDS:
+                return codeStyle.wrapClassExtends;
             case AFTER_PROPERTY:
                 return codeStyle.wrapProperties;
             case AFTER_ELEMENT:

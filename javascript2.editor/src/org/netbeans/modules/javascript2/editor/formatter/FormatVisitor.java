@@ -501,6 +501,17 @@ public class FormatVisitor extends NodeVisitor {
 
     @Override
     public boolean enterClassNode(ClassNode classNode) {
+        Expression heritage = classNode.getClassHeritage();
+        if (heritage != null) {
+            FormatToken extendsToken = getPreviousToken(getStart(heritage), JsTokenId.KEYWORD_EXTENDS, getStart(classNode));
+            if (extendsToken != null) {
+                FormatToken token = extendsToken.previous();
+                if (token != null) {
+                    appendToken(token, FormatToken.forFormat(FormatToken.Kind.BEFORE_CLASS_EXTENDS));
+                }
+            }
+        }
+
         // indentation mark
         FormatToken formatToken = getNextToken(getStart(classNode), JsTokenId.BRACKET_LEFT_CURLY, true);
         if (formatToken != null) {
