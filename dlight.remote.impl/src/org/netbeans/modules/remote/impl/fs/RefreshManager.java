@@ -79,7 +79,7 @@ public class RefreshManager {
 
     private static final boolean REFRESH_ON_FOCUS = RemoteFileSystemUtils.getBoolean("cnd.remote.refresh.on.focus", true); //NOI18N
     public static final boolean REFRESH_ON_CONNECT = RemoteFileSystemUtils.getBoolean("cnd.remote.refresh.on.connect", true); //NOI18N
-    private static final int REPORT_LONG_REFRESH = Integer.getInteger("cnd.remote.report.long.refresh", 5000);
+    private static final int REPORT_LONG_REFRESH = Integer.getInteger("cnd.remote.report.long.refresh", 5000); //NOI18N
 
     private final class RefreshWorker implements Runnable {
         private final boolean expected;
@@ -107,7 +107,7 @@ public class RefreshManager {
                         continue;
                     }
                     String oldThreadName = Thread.currentThread().getName();
-                    Thread.currentThread().setName("Remote File System RefreshManager: refreshing " + fo);
+                    Thread.currentThread().setName("Remote File System RefreshManager: refreshing " + fo); //NOI18N
                     long time2 = System.currentTimeMillis();
                     try {
                         fo.refreshImpl(false, null, expected, RemoteFileObjectBase.RefreshMode.DEFAULT);
