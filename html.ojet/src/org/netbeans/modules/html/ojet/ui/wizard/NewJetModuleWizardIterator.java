@@ -66,42 +66,6 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
-@TemplateRegistrations({
-    @TemplateRegistration(
-            folder = "ClientSide/OJET",
-            content = "../resources/EmptyJETModule-js",
-            scriptEngine = "freemarker",
-            position = 100,
-            displayName = "#Templates/ClientSide/OJET/EmptyJETModule-js",
-            iconBase = "org/netbeans/modules/html/ojet/ui/resources/ojet-icon.png"),
-    @TemplateRegistration(
-            folder = "ClientSide/OJET",
-            content = "../resources/EmptyJETModule-html",
-            scriptEngine = "freemarker",
-            position = 101,
-            displayName = "#Templates/ClientSide/OJET/EmptyJETModule-html",
-            iconBase = "org/netbeans/modules/html/ojet/ui/resources/ojet-icon.png"),
-    @TemplateRegistration(
-            folder = "ClientSide/OJET",
-            content = "../resources/KnockoutJETModule-js",
-            scriptEngine = "freemarker",
-            position = 200,
-            displayName = "#Templates/ClientSide/OJET/KnockoutJETModule-js",
-            iconBase = "org/netbeans/modules/html/ojet/ui/resources/ojet-icon.png"),
-    @TemplateRegistration(
-            folder = "ClientSide/OJET",
-            content = "../resources/KnockoutJETModule-html",
-            scriptEngine = "freemarker",
-            position = 201,
-            displayName = "#Templates/ClientSide/OJET/KnockoutJETModule-html",
-            iconBase = "org/netbeans/modules/html/ojet/ui/resources/ojet-icon.png"),
-})
-@NbBundle.Messages({
-    "Templates/ClientSide/OJET/EmptyJETModule-js=Empty JET Module (JavaScript)",
-    "Templates/ClientSide/OJET/EmptyJETModule-html=Empty JET Module (HTML)",
-    "Templates/ClientSide/OJET/KnockoutJETModule-js=Knockout JET Module (JavaScript)",
-    "Templates/ClientSide/OJET/KnockoutJETModule-html=Knockout JET Module (HTML)",
-})
 public final class NewJetModuleWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor> {
 
     private static final Logger LOGGER = Logger.getLogger(NewJetModuleWizardIterator.class.getName());
@@ -113,19 +77,55 @@ public final class NewJetModuleWizardIterator implements WizardDescriptor.Asynch
     private int index;
 
 
-    // constructor only for templates registration
-    public NewJetModuleWizardIterator() {
-        throw new UnsupportedOperationException();
-    }
-
     private NewJetModuleWizardIterator(Type type) {
+        assert type != null;
         this.type = type;
     }
 
+    @TemplateRegistrations({
+        @TemplateRegistration(
+                folder = "ClientSide/OJET",
+                content = "../resources/EmptyJETModule-js",
+                scriptEngine = "freemarker",
+                position = 100,
+                displayName = "#Templates/ClientSide/OJET/EmptyJETModule-js",
+                iconBase = "org/netbeans/modules/html/ojet/ui/resources/ojet-icon.png"),
+        @TemplateRegistration(
+                folder = "ClientSide/OJET",
+                content = "../resources/EmptyJETModule-html",
+                scriptEngine = "freemarker",
+                position = 101,
+                displayName = "#Templates/ClientSide/OJET/EmptyJETModule-html",
+                iconBase = "org/netbeans/modules/html/ojet/ui/resources/ojet-icon.png"),
+    })
+    @NbBundle.Messages({
+        "Templates/ClientSide/OJET/EmptyJETModule-js=Empty JET Module (JavaScript)",
+        "Templates/ClientSide/OJET/EmptyJETModule-html=Empty JET Module (HTML)",
+    })
     public static NewJetModuleWizardIterator empty() {
         return new NewJetModuleWizardIterator(Type.EMPTY);
     }
 
+    @TemplateRegistrations({
+        @TemplateRegistration(
+                folder = "ClientSide/OJET",
+                content = "../resources/KnockoutJETModule-js",
+                scriptEngine = "freemarker",
+                position = 200,
+                displayName = "#Templates/ClientSide/OJET/KnockoutJETModule-js",
+                iconBase = "org/netbeans/modules/html/ojet/ui/resources/ojet-icon.png"),
+        @TemplateRegistration(
+                folder = "ClientSide/OJET",
+                content = "../resources/KnockoutJETModule-html",
+                scriptEngine = "freemarker",
+                position = 201,
+                displayName = "#Templates/ClientSide/OJET/KnockoutJETModule-html",
+                iconBase = "org/netbeans/modules/html/ojet/ui/resources/ojet-icon.png"),
+    })
+    @NbBundle.Messages({
+        "Templates/ClientSide/OJET/KnockoutJETModule-js=Knockout JET Module (JavaScript)",
+        "Templates/ClientSide/OJET/KnockoutJETModule-html=Knockout JET Module (HTML)",
+    })
     public static NewJetModuleWizardIterator knockout() {
         return new NewJetModuleWizardIterator(Type.KNOCKOUT);
     }
