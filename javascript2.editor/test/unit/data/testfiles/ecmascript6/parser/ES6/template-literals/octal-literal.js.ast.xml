@@ -6,7 +6,7 @@
     <isFunctionBody/>
     <isSynthetic/>
     <!-- Block Statements -->
-    <ExpressionStatement start='1' end='4'>
+    <ExpressionStatement start='1' end='6'>
       <NullLiteralNode start='1' end='4'/>
     </ExpressionStatement>
   </Block>

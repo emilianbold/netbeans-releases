@@ -6,7 +6,7 @@
     <isFunctionBody/>
     <isSynthetic/>
     <!-- Block Statements -->
-    <ExpressionStatement start='0' end='223'>
+    <ExpressionStatement start='0' end='224'>
       <CallNode start='1' end='222'>
         <!-- CallNode Arguments -->
         <FunctionNode name='L:2' kind='NORMAL' start='23' end='221'>

@@ -62,7 +62,7 @@
             <Block start='19' end='33'>
               <isFunctionBody/>
               <!-- Block Statements -->
-              <ExpressionStatement start='21' end='31'>
+              <ExpressionStatement start='21' end='33'>
                 <StringLiteralNode value='use strict' start='21' end='31'/>
               </ExpressionStatement>
             </Block>

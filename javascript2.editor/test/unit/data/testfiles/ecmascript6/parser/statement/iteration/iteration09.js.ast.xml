@@ -16,6 +16,8 @@
           <Block start='7' end='8'>
             <isSynthetic/>
             <!-- Block Statements -->
+            <EmptyNode start='7' end='8'>
+            </EmptyNode>
           </Block>
         </ForNode>
       </Block>

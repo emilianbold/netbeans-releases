@@ -10,6 +10,8 @@
       <ErrorNode start='21' end='22'>
       </ErrorNode>
     </ExpressionStatement>
+    <EmptyNode start='22' end='23'>
+    </EmptyNode>
     <ExpressionStatement start='23' end='27'>
       <ErrorNode start='23' end='27'>
       </ErrorNode>

@@ -13,7 +13,7 @@
       <Block start='13' end='27'>
         <isSynthetic/>
         <!-- Block Statements -->
-        <ExpressionStatement start='13' end='26'>
+        <ExpressionStatement start='13' end='27'>
           <CallNode start='13' end='26'>
             <!-- CallNode Arguments -->
             <!-- CallNode Function -->

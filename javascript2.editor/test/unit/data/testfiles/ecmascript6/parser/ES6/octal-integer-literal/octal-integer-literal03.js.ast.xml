@@ -24,10 +24,10 @@
         <Block start='16' end='35'>
           <isFunctionBody/>
           <!-- Block Statements -->
-          <ExpressionStatement start='18' end='28'>
+          <ExpressionStatement start='18' end='30'>
             <StringLiteralNode value='use strict' start='18' end='28'/>
           </ExpressionStatement>
-          <ExpressionStatement start='31' end='34'>
+          <ExpressionStatement start='31' end='35'>
             <NumberLiteralNode value='0' start='31' end='34'/>
           </ExpressionStatement>
         </Block>

@@ -18,7 +18,7 @@
           </IdentNode>
           <CaseNode start='18' end='39'>
             <NumberLiteralNode value='42' start='23' end='25'/>
-            <ExpressionStatement start='27' end='31'>
+            <ExpressionStatement start='27' end='32'>
               <CallNode start='27' end='31'>
                 <!-- CallNode Arguments -->
                 <!-- CallNode Function -->

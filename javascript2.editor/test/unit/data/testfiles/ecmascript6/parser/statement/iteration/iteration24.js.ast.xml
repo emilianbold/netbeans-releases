@@ -54,7 +54,7 @@
           <Block start='53' end='64'>
             <isSynthetic/>
             <!-- Block Statements -->
-            <ExpressionStatement start='53' end='63'>
+            <ExpressionStatement start='53' end='64'>
               <CallNode start='53' end='63'>
                 <!-- CallNode Arguments -->
                 <IdentNode start='61' end='62'>

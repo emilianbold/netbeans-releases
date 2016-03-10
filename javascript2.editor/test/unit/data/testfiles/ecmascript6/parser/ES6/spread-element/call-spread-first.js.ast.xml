@@ -6,7 +6,7 @@
     <isFunctionBody/>
     <isSynthetic/>
     <!-- Block Statements -->
-    <ExpressionStatement start='0' end='13'>
+    <ExpressionStatement start='0' end='14'>
       <CallNode start='0' end='13'>
         <!-- CallNode Arguments -->
         <UnaryNode type='SPREAD_ARGUMENT' start='2' end='6'>

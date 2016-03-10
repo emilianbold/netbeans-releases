@@ -31,6 +31,8 @@
           <Block start='16' end='17'>
             <isSynthetic/>
             <!-- Block Statements -->
+            <EmptyNode start='16' end='17'>
+            </EmptyNode>
           </Block>
         </ForNode>
       </Block>

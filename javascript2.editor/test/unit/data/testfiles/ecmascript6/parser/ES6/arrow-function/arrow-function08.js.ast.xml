@@ -20,7 +20,7 @@
         <Block start='10' end='15'>
           <isFunctionBody/>
           <!-- Block Statements -->
-          <ExpressionStatement start='12' end='14'>
+          <ExpressionStatement start='12' end='15'>
             <NumberLiteralNode value='42' start='12' end='14'/>
           </ExpressionStatement>
         </Block>

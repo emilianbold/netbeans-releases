@@ -40,7 +40,7 @@
             <Block start='38' end='56'>
               <isFunctionBody/>
               <!-- Block Statements -->
-              <ExpressionStatement start='48' end='55'>
+              <ExpressionStatement start='48' end='56'>
                 <CallNode start='48' end='55'>
                   <!-- CallNode Arguments -->
                   <!-- CallNode Function -->

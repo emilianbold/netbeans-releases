@@ -24,7 +24,7 @@
             <Block start='10' end='21'>
               <isFunctionBody/>
               <!-- Block Statements -->
-              <ExpressionStatement start='12' end='20'>
+              <ExpressionStatement start='12' end='21'>
                 <UnaryNode type='YIELD_STAR' start='12' end='20'>
                   <!-- UnaryNode Expression -->
                   <NumberLiteralNode value='3' start='19' end='20'/>

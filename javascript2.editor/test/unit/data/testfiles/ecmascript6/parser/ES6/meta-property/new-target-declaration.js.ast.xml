@@ -24,7 +24,7 @@
         <Block start='13' end='30'>
           <isFunctionBody/>
           <!-- Block Statements -->
-          <ExpressionStatement start='19' end='29'>
+          <ExpressionStatement start='19' end='30'>
             <IdentNode start='19' end='29'>
               <name>new.target</name>
             </IdentNode>

@@ -16,5 +16,7 @@
         </ExpressionStatement>
       </Block>
     </BlockStatement>
+    <EmptyNode start='10' end='11'>
+    </EmptyNode>
   </Block>
 </FunctionNode>

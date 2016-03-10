@@ -24,7 +24,7 @@
         <Block start='13' end='34'>
           <isFunctionBody/>
           <!-- Block Statements -->
-          <ExpressionStatement start='19' end='33'>
+          <ExpressionStatement start='19' end='34'>
             <UnaryNode type='NEW' start='19' end='33'>
               <!-- UnaryNode Expression -->
               <CallNode start='23' end='33'>

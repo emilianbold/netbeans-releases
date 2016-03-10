@@ -10,7 +10,7 @@
       <Block start='3' end='10'>
         <isSynthetic/>
         <!-- Block Statements -->
-        <ExpressionStatement start='3' end='9'>
+        <ExpressionStatement start='3' end='10'>
           <CallNode start='3' end='9'>
             <!-- CallNode Arguments -->
             <!-- CallNode Function -->

@@ -9,7 +9,7 @@
     <WhileNode start='0' end='31'>
       <Block start='3' end='16'>
         <!-- Block Statements -->
-        <ExpressionStatement start='5' end='8'>
+        <ExpressionStatement start='5' end='9'>
           <UnaryNode type='INCPOSTFIX' start='5' end='8'>
             <isAssignment/>
             <!-- UnaryNode Expression -->
@@ -18,7 +18,7 @@
             </IdentNode>
           </UnaryNode>
         </ExpressionStatement>
-        <ExpressionStatement start='10' end='13'>
+        <ExpressionStatement start='10' end='14'>
           <UnaryNode type='DECPOSTFIX' start='10' end='13'>
             <isAssignment/>
             <!-- UnaryNode Expression -->

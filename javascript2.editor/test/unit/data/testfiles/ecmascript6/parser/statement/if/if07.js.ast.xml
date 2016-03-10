@@ -11,7 +11,7 @@
       <Block start='10' end='17'>
         <isSynthetic/>
         <!-- Block Statements -->
-        <ExpressionStatement start='10' end='16'>
+        <ExpressionStatement start='10' end='17'>
           <CallNode start='10' end='16'>
             <!-- CallNode Arguments -->
             <!-- CallNode Function -->
@@ -24,6 +24,8 @@
       <Block start='22' end='23'>
         <isSynthetic/>
         <!-- Block Statements -->
+        <EmptyNode start='22' end='23'>
+        </EmptyNode>
       </Block>
     </IfNode>
   </Block>

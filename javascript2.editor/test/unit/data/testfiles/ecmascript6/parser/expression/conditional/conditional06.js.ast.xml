@@ -6,7 +6,7 @@
     <isFunctionBody/>
     <isSynthetic/>
     <!-- Block Statements -->
-    <ExpressionStatement start='1' end='37'>
+    <ExpressionStatement start='1' end='39'>
       <TernaryNode start='16' end='37'>
         <BinaryNode type='EQ_STRICT' start='1' end='15'>
           <isComparison/>

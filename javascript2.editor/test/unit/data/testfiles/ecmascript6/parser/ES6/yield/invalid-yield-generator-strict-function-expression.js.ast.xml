@@ -28,10 +28,12 @@
             <ErrorNode start='46' end='55'>
             </ErrorNode>
           </ExpressionStatement>
+          <EmptyNode start='55' end='56'>
+          </EmptyNode>
         </Block>
       </FunctionNode>
     </VarNode>
-    <ExpressionStatement start='1' end='11'>
+    <ExpressionStatement start='1' end='13'>
       <StringLiteralNode value='use strict' start='1' end='11'/>
     </ExpressionStatement>
   </Block>

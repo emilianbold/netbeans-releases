@@ -13,7 +13,7 @@
       <Block start='9' end='19'>
         <isSynthetic/>
         <!-- Block Statements -->
-        <ExpressionStatement start='9' end='18'>
+        <ExpressionStatement start='9' end='19'>
           <BinaryNode type='ASSIGN' start='9' end='18'>
             <isAssignment/>
             <!-- BinaryNode lhs -->

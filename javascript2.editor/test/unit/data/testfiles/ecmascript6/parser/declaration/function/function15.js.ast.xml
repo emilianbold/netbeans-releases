@@ -24,7 +24,7 @@
         <Block start='16' end='36'>
           <isFunctionBody/>
           <!-- Block Statements -->
-          <ExpressionStatement start='19' end='35'>
+          <ExpressionStatement start='19' end='36'>
             <BinaryNode type='ADD' start='19' end='35'>
               <!-- BinaryNode lhs -->
               <StringLiteralNode value='use strict' start='19' end='29'/>

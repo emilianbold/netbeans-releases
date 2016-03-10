@@ -24,7 +24,7 @@
         <Block start='14' end='28'>
           <isFunctionBody/>
           <!-- Block Statements -->
-          <ExpressionStatement start='16' end='27'>
+          <ExpressionStatement start='16' end='28'>
             <CallNode start='16' end='27'>
               <!-- CallNode Arguments -->
               <!-- CallNode Function -->

@@ -23,7 +23,7 @@
         <Block start='20' end='31'>
           <isFunctionBody/>
           <!-- Block Statements -->
-          <ExpressionStatement start='22' end='30'>
+          <ExpressionStatement start='22' end='31'>
             <UnaryNode type='YIELD_STAR' start='22' end='30'>
               <!-- UnaryNode Expression -->
               <IdentNode start='29' end='30'>

@@ -21,7 +21,7 @@
       </JoinPredecessorExpression>
       <Block start='15' end='28'>
         <!-- Block Statements -->
-        <ExpressionStatement start='17' end='20'>
+        <ExpressionStatement start='17' end='21'>
           <UnaryNode type='INCPOSTFIX' start='17' end='20'>
             <isAssignment/>
             <!-- UnaryNode Expression -->
@@ -30,7 +30,7 @@
             </IdentNode>
           </UnaryNode>
         </ExpressionStatement>
-        <ExpressionStatement start='22' end='25'>
+        <ExpressionStatement start='22' end='26'>
           <UnaryNode type='DECPOSTFIX' start='22' end='25'>
             <isAssignment/>
             <!-- UnaryNode Expression -->

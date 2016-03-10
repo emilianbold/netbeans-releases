@@ -13,7 +13,7 @@
         <TryNode start='0' end='38'>
           <Block start='4' end='17'>
             <!-- Block Statements -->
-            <ExpressionStatement start='6' end='14'>
+            <ExpressionStatement start='6' end='15'>
               <CallNode start='6' end='14'>
                 <!-- CallNode Arguments -->
                 <!-- CallNode Function -->

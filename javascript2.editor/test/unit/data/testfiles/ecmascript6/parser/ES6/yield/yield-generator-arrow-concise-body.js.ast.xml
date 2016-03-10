@@ -24,7 +24,7 @@
         <Block start='14' end='33'>
           <isFunctionBody/>
           <!-- Block Statements -->
-          <ExpressionStatement start='16' end='32'>
+          <ExpressionStatement start='16' end='33'>
             <FunctionNode name='g$=>:1' kind='ARROW' start='16' end='32'>
               <isAnonymous/>
               <!-- FunctionNode Parameters -->

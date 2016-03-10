@@ -6,7 +6,7 @@
     <isFunctionBody/>
     <isSynthetic/>
     <!-- Block Statements -->
-    <ExpressionStatement start='0' end='84'>
+    <ExpressionStatement start='0' end='85'>
       <BinaryNode type='ASSIGN' start='1' end='83'>
         <isAssignment/>
         <!-- BinaryNode lhs -->

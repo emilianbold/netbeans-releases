@@ -24,7 +24,7 @@
         <Block start='14' end='32'>
           <isFunctionBody/>
           <!-- Block Statements -->
-          <ExpressionStatement start='16' end='31'>
+          <ExpressionStatement start='16' end='32'>
             <UnaryNode type='YIELD' start='16' end='31'>
               <!-- UnaryNode Expression -->
               <AccessNode property='yield' start='22' end='31'>

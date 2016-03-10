@@ -6,7 +6,7 @@
     <isFunctionBody/>
     <isSynthetic/>
     <!-- Block Statements -->
-    <ExpressionStatement start='0' end='8'>
+    <ExpressionStatement start='0' end='9'>
       <ArrayLiteralNode start='0' end='8'>
         <BinaryNode type='ASSIGN' start='1' end='7'>
           <isAssignment/>
@@ -19,7 +19,7 @@
         </BinaryNode>
       </ArrayLiteralNode>
     </ExpressionStatement>
-    <ExpressionStatement start='10' end='17'>
+    <ExpressionStatement start='10' end='18'>
       <ArrayLiteralNode start='10' end='17'>
         <BinaryNode type='ASSIGN' start='11' end='16'>
           <isAssignment/>

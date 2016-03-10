@@ -6,7 +6,7 @@
     <isFunctionBody/>
     <isSynthetic/>
     <!-- Block Statements -->
-    <ExpressionStatement start='0' end='3'>
+    <ExpressionStatement start='0' end='4'>
       <IdentNode start='0' end='3'>
         <name>let</name>
         <isFutureStrictName/>

@@ -10,6 +10,8 @@
       <Block start='3' end='4'>
         <isSynthetic/>
         <!-- Block Statements -->
+        <EmptyNode start='3' end='4'>
+        </EmptyNode>
       </Block>
       <JoinPredecessorExpression start='12' end='18'>
         <AccessNode property='test' start='12' end='18'>
@@ -33,5 +35,7 @@
         </BlockStatement>
       </Block>
     </BlockStatement>
+    <EmptyNode start='37' end='38'>
+    </EmptyNode>
   </Block>
 </FunctionNode>

@@ -6,7 +6,7 @@
     <isFunctionBody/>
     <isSynthetic/>
     <!-- Block Statements -->
-    <ExpressionStatement start='1' end='11'>
+    <ExpressionStatement start='1' end='13'>
       <StringLiteralNode value='use strict' start='1' end='11'/>
     </ExpressionStatement>
     <ExpressionStatement start='16' end='27'>
