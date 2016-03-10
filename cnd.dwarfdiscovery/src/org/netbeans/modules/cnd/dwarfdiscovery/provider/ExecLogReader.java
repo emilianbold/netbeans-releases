@@ -693,8 +693,11 @@ public final class ExecLogReader {
                     // probably it is just created binary. Try to refresh folder.
                     FileObject folder = fileSystem.findResource(compilePath);
                     if (folder != null && folder.isValid() && folder.isFolder()) {
-                        folder.refresh();
-                        f = fileSystem.findResource(fullName);
+                        if (!refresedFolders.contains(folder)) {
+                            folder.refresh();
+                            refresedFolders.add(folder);
+                            f = fileSystem.findResource(fullName);
+                        }
                     }
                 }
                 if (f != null && f.isValid() && f.isData()) {
@@ -708,6 +711,8 @@ public final class ExecLogReader {
             }
         }
     }
+    
+    private Set<FileObject> refresedFolders = new HashSet<FileObject>();
     
     private static final class ExecSource extends RelocatableImpl implements SourceFileProperties {
 
