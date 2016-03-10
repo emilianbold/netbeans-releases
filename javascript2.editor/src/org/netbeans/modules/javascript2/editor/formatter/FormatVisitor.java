@@ -340,7 +340,7 @@ public class FormatVisitor extends NodeVisitor {
     public boolean enterFunctionNode(FunctionNode functionNode) {
         enterBlock(functionNode.getBody());
 
-        if (!functionNode.isProgram()) {
+        if (!functionNode.isProgram() && functionNode.getKind() != FunctionNode.Kind.ARROW) {
             int start = getStart(functionNode);
 
             FormatToken leftParen = getNextToken(start, JsTokenId.BRACKET_LEFT_PAREN);
