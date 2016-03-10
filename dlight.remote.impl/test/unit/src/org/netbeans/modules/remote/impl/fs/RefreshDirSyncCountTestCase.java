@@ -46,6 +46,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
@@ -119,7 +121,7 @@ public class RefreshDirSyncCountTestCase extends RemoteFileTestBase {
 
 
     @ForAllEnvironments
-    public void test_iz_258294() throws Exception {
+    public void test_iz_258294_a() throws Exception {
         String baseDir = null;
         try {
             RemoteFileSystemManager.getInstance().resetFileSystem(execEnv, false);
@@ -128,22 +130,17 @@ public class RefreshDirSyncCountTestCase extends RemoteFileTestBase {
                 "- file_1",
                 "- file_2",
                 "d dir_1",
-                "l file_1 dir_1/link_1",
-                "l file_2 dir_1/link_2",
+                "l ../file_1 dir_1/link_1",
+                "l ../file_2 dir_1/link_2",
             };
             createDirStructure(execEnv, baseDir, struct);
             RemoteFileObject baseFO = getFileObject(baseDir);
             baseFO.refresh();
             recurse(baseFO); // instantiate all file objects
             FileObject dirFO = getFileObject(baseFO, "dir_1");
-            assertTrue(dirFO instanceof RemoteFileObject);
-            RemoteFileObjectBase impl = ((RemoteFileObject) dirFO).getImplementor();
-            assertTrue(impl instanceof RemoteDirectory);
-            RemoteDirectory RD = (RemoteDirectory) impl;
-
-            int cnt1 = RD.getReadEntriesCount();
-            RD.refresh();
-            int cnt2 = RD.getReadEntriesCount();
+            int cnt1 = getReadEntriesCount(dirFO);
+            dirFO.refresh();
+            int cnt2 = getReadEntriesCount(dirFO);
             assertEquals("Wrong dir read count:", 1, cnt2 - cnt1);
         } finally {
             if (baseDir != null) {
@@ -152,6 +149,53 @@ public class RefreshDirSyncCountTestCase extends RemoteFileTestBase {
             }
         }
     }
+
+    private int getReadEntriesCount(FileObject dirFO) {
+        assertTrue(dirFO instanceof RemoteFileObject);
+        RemoteFileObjectBase impl = ((RemoteFileObject) dirFO).getImplementor();
+        assertTrue(impl instanceof RemoteDirectory);
+        RemoteDirectory RD = (RemoteDirectory) impl;
+        return RD.getReadEntriesCount();
+    }
+
+    @ForAllEnvironments
+    public void test_iz_258294_b() throws Exception {
+        String baseDir = null;
+        try {
+            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv, false);
+            baseDir = mkTempAndRefreshParent(true);
+            String[] struct = new String[] {
+                "d d1",
+                "- d1/f1",
+                "- d1/f2",
+                "d d2",
+                "l ../d1 d2/d1.lnk",
+                "- d2/f3",
+                "- d2/f4",
+            };
+            createDirStructure(execEnv, baseDir, struct);
+            RemoteFileObject baseFO = getFileObject(baseDir);
+            baseFO.refresh();
+            recurse(baseFO); // instantiate all file objects
+            FileObject d2 = getFileObject(baseFO, "d2");
+            FileObject f1 = getFileObject(baseFO, "d1/f1");
+            int rc = CommonTasksSupport.rmFile(execEnv, f1.getPath(), null).get();
+            assertEquals("Error removing file " + f1, 0, rc);
+            assertTrue(f1.isValid());
+            //int cnt1 = getReadEntriesCount(d2);
+            d2.refresh();
+            //int cnt2 = getReadEntriesCount(d2);
+            assertFalse("Error in test? File " + f1 + " should not exist!", HostInfoUtils.fileExists(execEnv, f1.getPath()));
+            assertFalse("File " + f1 + " should be invalid", f1.isValid());
+            //assertEquals("Wrong dir read count:", 2, cnt2 - cnt1);
+        } finally {
+            if (baseDir != null) {
+                ProcessUtils.ExitStatus res = ProcessUtils.execute(getTestExecutionEnvironment(), "chmod", "-R", "700", baseDir);
+                removeRemoteDirIfNotNull(baseDir);
+            }
+        }
+    }
+
     private static Collection<RemoteFileObjectBase> filterDirectories(Collection<RemoteFileObjectBase> fileObjects) {
         Collection<RemoteFileObjectBase> result = new HashSet<>();
         for (RemoteFileObjectBase fo : fileObjects) {
