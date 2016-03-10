@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 
+import com.oracle.js.parser.Token;
 import com.oracle.js.parser.ir.AccessNode;
 import com.oracle.js.parser.ir.BinaryNode;
 import com.oracle.js.parser.ir.Block;
@@ -2955,6 +2956,11 @@ public class ModelVisitor extends PathNodeVisitor {
     
     public static OffsetRange getOffsetRange(Node node) {
         return new OffsetRange(node.getStart(), node.getFinish());
+    }
+    
+    public static OffsetRange getOffsetRange(FunctionNode node) {
+        return new OffsetRange(Token.descPosition(node.getFirstToken()),
+                Token.descPosition(node.getLastToken()) + Token.descLength(node.getLastToken()));
     }
     
     // TODO move this method to the ModelUtils
