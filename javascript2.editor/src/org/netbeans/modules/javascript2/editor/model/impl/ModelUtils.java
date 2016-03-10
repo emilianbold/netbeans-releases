@@ -88,6 +88,8 @@ import org.openide.filesystems.FileObject;
 public class ModelUtils {
       
     public static final String PROTOTYPE = "prototype"; //NOI18N
+    
+    public static final String THIS = "this"; //NOI18N
 
     public static final String ARGUMENTS = "arguments"; //NOI18N
 
@@ -175,6 +177,12 @@ public class ModelUtils {
     public static JsObject findJsObject(JsObject object, int offset) {
         HashSet<String> visited = new HashSet<String>();
         return findJsObject(object, offset, visited);
+    }
+
+    public static void copyOccurrences(JsObject from, JsObject to) {
+        for (Occurrence oc : from.getOccurrences()) {
+            to.addOccurrence(oc.getOffsetRange());
+        }
     }
     
     public static JsObject findJsObject(JsObject object, int offset, Set<String> visited) {

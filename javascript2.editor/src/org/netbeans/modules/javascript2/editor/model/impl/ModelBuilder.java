@@ -152,10 +152,13 @@ public final class ModelBuilder {
     }
     
     public String getFunctionName(FunctionNode node) {
-        if (node.isAnonymous()) {
+        if (node.isAnonymous() ) {
             return globalObject.getName() + node.getName().replace(':', '$');
         } else {
-            return node.getName();
+            if (node.isNamedFunctionExpression()) {
+                return node.getName();
+            }
+            return node.getIdent().getName();
         }
     }
 }

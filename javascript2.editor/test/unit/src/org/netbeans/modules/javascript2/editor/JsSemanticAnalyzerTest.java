@@ -516,4 +516,9 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
     public void testClass04() throws Exception {
         checkSemantic("testfiles/markoccurences/classes/class04.js");
     }
+    
+    public void testFunctionDeclaration05() throws Exception {
+        checkSemantic("testfiles/markoccurences/functionDeclaration/functionDeclaration05.js");
+    }
+    
 }
