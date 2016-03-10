@@ -653,6 +653,11 @@ public final class CodeStyle {
         String wrap = preferences.get(wrapElements, provider.getDefaultAsString(wrapElements));
         return WrapStyle.valueOf(wrap);
     }
+    
+    public WrapStyle wrapClassExtends() {
+        String wrap = preferences.get(wrapClassExtends, provider.getDefaultAsString(wrapClassExtends));
+        return WrapStyle.valueOf(wrap);
+    }
 
     // Uses
 
@@ -870,6 +875,8 @@ public final class CodeStyle {
         final CodeStyle.WrapStyle wrapClasses;
 
         final CodeStyle.WrapStyle wrapElements;
+        
+        final CodeStyle.WrapStyle wrapClassExtends;
 
         final boolean placeElseOnNewLine;
         final boolean placeWhileOnNewLine;
@@ -974,6 +981,7 @@ public final class CodeStyle {
             wrapProperties = style.wrapProperties();
             wrapClasses = style.wrapClasses();
             wrapElements = style.wrapElements();
+            wrapClassExtends = style.wrapClassExtends();
 
             placeElseOnNewLine = style.placeElseOnNewLine();
             placeWhileOnNewLine = style.placeWhileOnNewLine();

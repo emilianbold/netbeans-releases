@@ -1438,6 +1438,27 @@ public class JsFormatterTest extends JsTestBase {
     public void testClass4Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/class4.js");
     }
+    
+    public void testClass5Default() throws Exception {
+        reformatFileContents("testfiles/formatter/class5.js",
+                Collections.<String, Object>emptyMap(), ".default.formatted");
+    }
+
+    public void testClass5Always() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapClassExtends, FmtOptions.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/class5.js", options, ".wrapAlways.formatted");
+    }
+    
+    public void testClass5IfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapClassExtends, FmtOptions.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatter/class5.js", options, ".wrapIfLong.formatted");
+    }
+
+    public void testClass5Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/class5.js");
+    }
 
     public void testParentheses1Default() throws Exception {
         reformatFileContents("testfiles/formatter/parentheses1.js",
