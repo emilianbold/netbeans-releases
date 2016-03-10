@@ -1161,6 +1161,12 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (init instanceof FunctionNode && !((FunctionNode)init).isNamedFunctionExpression()) {
                     // case: var f1 = function () {}
                     // the function here is already, need to be just fixed the name offsets
+                } else if (init instanceof BinaryNode
+                        && ((BinaryNode)init).isLogical()
+                        && ( (((BinaryNode)init).rhs() instanceof JoinPredecessorExpression && ((JoinPredecessorExpression)((BinaryNode)init).rhs()).getExpression()  instanceof FunctionNode) 
+                        ||   (((BinaryNode)init).lhs() instanceof JoinPredecessorExpression && ((JoinPredecessorExpression)((BinaryNode)init).lhs()).getExpression()  instanceof FunctionNode) )) {
+                    // case: var f1 = xxx || function () {}
+                    // the function here is already, need to be just fixed the name offsets
                 } else if (parentFn.getProperty(varNode.getName().getName()) != null) {
                     // the name is already used by a function. 
                     if (init instanceof CallNode) {
@@ -1238,6 +1244,12 @@ public class ModelVisitor extends PathNodeVisitor {
             } else if ((lastVisited instanceof VarNode) && fn.isAnonymous()) {
                 VarNode vNode = (VarNode)lastVisited;
                 newIdentifier = new IdentifierImpl(vNode.getName().getName(), getOffsetRange(vNode.getName()));
+            } else if (fn.isAnonymous() && lastVisited instanceof JoinPredecessorExpression
+                    && getPreviousFromPath(3) instanceof BinaryNode 
+                    && getPreviousFromPath(4) instanceof VarNode) {
+                // case var f1 = xxx || function () {}
+                VarNode vNode = (VarNode)getPreviousFromPath(4);
+                newIdentifier = new IdentifierImpl(vNode.getName().getName(), getOffsetRange(vNode.getName()));
             }
         }
         if (newIdentifier != null) {
@@ -1311,6 +1323,13 @@ public class ModelVisitor extends PathNodeVisitor {
     private void setParent(JsFunctionImpl jsFunction, FunctionNode fn) {
         Node lastVisited = getPreviousFromPath(2);
         JsObject parent = jsFunction.getParent();
+        if (lastVisited instanceof JoinPredecessorExpression
+                && getPreviousFromPath(3) instanceof BinaryNode 
+                && getPreviousFromPath(4) instanceof VarNode) {
+            // this handle case var f1 = xxx || function () {}
+            // just skip the binary node and continue like in case var f1 = function (){}
+            lastVisited = getPreviousFromPath(4);           
+        }
         if (lastVisited instanceof PropertyNode) {
             // the parent of the function is the literal object
             parent = modelBuilder.getCurrentObject();
