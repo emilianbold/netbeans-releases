@@ -93,6 +93,10 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         doWhileStatementCombo.addFocusListener(this);
         withStatementCombo.putClientProperty(OPTION_ID, wrapWithStatement);
         withStatementCombo.addFocusListener(this);
+        classesCombo.putClientProperty(OPTION_ID, wrapClasses);
+        classesCombo.addFocusListener(this);
+        elementsCombo.putClientProperty(OPTION_ID, wrapElements);
+        elementsCombo.addFocusListener(this);
         objectsCombo.putClientProperty(OPTION_ID, wrapObjects);
         objectsCombo.addFocusListener(this);
         propertiesCombo.putClientProperty(OPTION_ID, wrapProperties);
@@ -177,6 +181,10 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         propertiesCombo = new javax.swing.JComboBox();
         arrayInitItemsLabel = new javax.swing.JLabel();
         arrayInitItemsCombo = new javax.swing.JComboBox();
+        classesLabel = new javax.swing.JLabel();
+        classesCombo = new javax.swing.JComboBox();
+        elementsLabel = new javax.swing.JLabel();
+        elementsCombo = new javax.swing.JComboBox();
 
         setName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_Wrapping")); // NOI18N
         setOpaque(false);
@@ -411,6 +419,16 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
 
             arrayInitItemsCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
+            classesLabel.setLabelFor(classesCombo);
+            org.openide.awt.Mnemonics.setLocalizedText(classesLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.classesLabel.text")); // NOI18N
+
+            classesCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+            elementsLabel.setLabelFor(elementsCombo);
+            org.openide.awt.Mnemonics.setLocalizedText(elementsLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.elementsLabel.text")); // NOI18N
+
+            elementsCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
             javax.swing.GroupLayout panel1Layout = new javax.swing.GroupLayout(panel1);
             panel1.setLayout(panel1Layout);
             panel1Layout.setHorizontalGroup(
@@ -466,6 +484,14 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                             .addComponent(withStatementLabel)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(withStatementCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panel1Layout.createSequentialGroup()
+                            .addComponent(classesLabel)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(classesCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panel1Layout.createSequentialGroup()
+                            .addComponent(elementsLabel)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(elementsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(panel1Layout.createSequentialGroup()
                             .addComponent(objectsLabel)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -483,15 +509,15 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(ternaryOpsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(panel1Layout.createSequentialGroup()
+                            .addComponent(assignOpsLabel)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(assignOpsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(panel1Layout.createSequentialGroup()
                             .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                 .addComponent(afterDotCheckBox)
                                 .addComponent(afterBinaryOpsCheckBox)
                                 .addComponent(afterTernaryOpsCheckBox))
-                            .addGap(0, 12, Short.MAX_VALUE))
-                        .addGroup(panel1Layout.createSequentialGroup()
-                            .addComponent(assignOpsLabel)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(assignOpsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGap(0, 12, Short.MAX_VALUE)))
                     .addContainerGap())
             );
             panel1Layout.setVerticalGroup(
@@ -547,6 +573,14 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                     .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(withStatementLabel)
                         .addComponent(withStatementCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(classesCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(classesLabel))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(elementsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(elementsLabel))
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                     .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(objectsLabel)
@@ -675,8 +709,12 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
     private javax.swing.JLabel binaryOpsLabel;
     private javax.swing.JComboBox chainedMethodCallsCombo;
     private javax.swing.JLabel chainedMethodCallsLabel;
+    private javax.swing.JComboBox classesCombo;
+    private javax.swing.JLabel classesLabel;
     private javax.swing.JComboBox doWhileStatementCombo;
     private javax.swing.JLabel doWhileStatementLabel;
+    private javax.swing.JComboBox elementsCombo;
+    private javax.swing.JLabel elementsLabel;
     private javax.swing.JComboBox forCombo;
     private javax.swing.JLabel forLabel;
     private javax.swing.JComboBox forStatementCombo;

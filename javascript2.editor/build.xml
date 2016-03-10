@@ -14,7 +14,7 @@
     <target name="-bundle-domstubs">
         <copy file="external/js-domstubs.zip" tofile="${cluster}/jsstubs/domstubs.zip"/>
     </target>
-    <target name="release" depends="projectized.release,-bundle-corestubs,-bundle-domstubs,-bundle-reststubs,-verify-bootclasspath"/>
+    <target name="release" depends="projectized.release,-bundle-corestubs,-bundle-domstubs,-bundle-reststubs"/>
 
     <!-- JFlex 1.4.3 handling (download and taskdef) -->
     <target name="-prepare-jflex" depends="build-init">
@@ -66,7 +66,7 @@
     </target>
     <target name="gen-sdoc-lexer" depends="-gen-sdoc-lexer,-patch-sdoc-lexer"/>-->
 
-    <target name="-verify-bootclasspath" depends="build-init">
+<!--    <target name="-verify-bootclasspath" depends="build-init">
         <fail message="Nashorn is not on a bootclasspath">
             <condition>
                 <not>
@@ -74,6 +74,6 @@
                 </not>
             </condition>
         </fail>
-    </target>
+    </target>-->
 </project>
 

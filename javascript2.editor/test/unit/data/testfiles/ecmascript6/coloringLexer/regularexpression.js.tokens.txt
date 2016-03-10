@@ -1,0 +1,11 @@
+<Unnamed test>
+KEYWORD_VAR     "var", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+IDENTIFIER      "patt", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+REGEXP          "/w3schools/i", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+----- EOF -----
+
