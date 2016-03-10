@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 
+import com.oracle.js.parser.Token;
 import com.oracle.js.parser.ir.AccessNode;
 import com.oracle.js.parser.ir.BinaryNode;
 import com.oracle.js.parser.ir.Block;
@@ -1155,11 +1156,39 @@ public class ModelVisitor extends PathNodeVisitor {
         for (VarNode varNode : getDeclaredVar(fnParent)) {
             LOGGER.log(Level.FINEST, "       " + debugInfo(varNode));
             Expression init = varNode.getInit();
-           
+            boolean createVariable = true;
             if (!varNode.isFunctionDeclaration()) { // we skip syntetic variables created from case: function f1(){}
                 if (init instanceof FunctionNode && !((FunctionNode)init).isNamedFunctionExpression()) {
                     // case: var f1 = function () {}
                     // the function here is already, need to be just fixed the name offsets
+                    createVariable = false;
+                } else if (init instanceof BinaryNode) {
+                    BinaryNode bNode = (BinaryNode) init;
+                    if (bNode.isLogical()
+                            && ((bNode.rhs() instanceof JoinPredecessorExpression && ((JoinPredecessorExpression) bNode.rhs()).getExpression() instanceof FunctionNode)
+                            || (bNode.lhs() instanceof JoinPredecessorExpression && ((JoinPredecessorExpression) bNode.lhs()).getExpression() instanceof FunctionNode))) {
+                        // case: var f1 = xxx || function () {}
+                        // the function here is already, need to be just fixed the name offsets
+                        createVariable = false;
+                    } else if (bNode.isAssignment()) {
+                        while (bNode.rhs() instanceof BinaryNode && bNode.rhs().isAssignment()) {
+                            // the cycle is trying to find out a FunctionNode at the end of assignements
+                            // case var f1 = f2 = f3 = f4 = function () {}
+                            bNode = (BinaryNode)bNode.rhs();
+                        }
+                        if (bNode.rhs() instanceof FunctionNode) {    
+                            // case var f1 = f2 = function (){};
+                            // -> the variable will be reference fo the function
+                            createVariable = false;
+                            FunctionNode fNode = (FunctionNode)bNode.rhs();
+                            JsObject original = parentFn.getProperty(modelBuilder.getFunctionName(fNode));
+                            Identifier varName = new IdentifierImpl(varNode.getName().getName(), getOffsetRange(varNode.getName()));
+                            OffsetRange range = varName.getOffsetRange();
+                            JsFunctionReference variable = new JsFunctionReference(parentFn, varName, (JsFunction)original, true, original.getModifiers());
+                            variable.addOccurrence(varName.getOffsetRange());
+                            parentFn.addProperty(varName.getName(), variable);
+                        }
+                    }
                 } else if (parentFn.getProperty(varNode.getName().getName()) != null) {
                     // the name is already used by a function. 
                     if (init instanceof CallNode) {
@@ -1206,7 +1235,9 @@ public class ModelVisitor extends PathNodeVisitor {
                         // with the same name
                         parentFn.getProperty(varNode.getName().getName()).addOccurrence(getOffsetRange(varNode.getName()));
                     }
-                } else {
+                    createVariable = false;
+                } 
+                if (createVariable) {
                     // skip the variables that are syntetic 
                     Identifier varName = new IdentifierImpl(varNode.getName().getName(), getOffsetRange(varNode.getName()));
                     OffsetRange range = varNode.getInit() instanceof ObjectNode ? new OffsetRange(varNode.getName().getStart(), ((ObjectNode)varNode.getInit()).getFinish()) 
@@ -1236,6 +1267,12 @@ public class ModelVisitor extends PathNodeVisitor {
                 newIdentifier = new IdentifierImpl(pNode.getKeyName(), getOffsetRange(pNode.getKey()));
             } else if ((lastVisited instanceof VarNode) && fn.isAnonymous()) {
                 VarNode vNode = (VarNode)lastVisited;
+                newIdentifier = new IdentifierImpl(vNode.getName().getName(), getOffsetRange(vNode.getName()));
+            } else if (fn.isAnonymous() && lastVisited instanceof JoinPredecessorExpression
+                    && getPreviousFromPath(3) instanceof BinaryNode 
+                    && getPreviousFromPath(4) instanceof VarNode) {
+                // case var f1 = xxx || function () {}
+                VarNode vNode = (VarNode)getPreviousFromPath(4);
                 newIdentifier = new IdentifierImpl(vNode.getName().getName(), getOffsetRange(vNode.getName()));
             }
         }
@@ -1310,6 +1347,13 @@ public class ModelVisitor extends PathNodeVisitor {
     private void setParent(JsFunctionImpl jsFunction, FunctionNode fn) {
         Node lastVisited = getPreviousFromPath(2);
         JsObject parent = jsFunction.getParent();
+        if (lastVisited instanceof JoinPredecessorExpression
+                && getPreviousFromPath(3) instanceof BinaryNode 
+                && getPreviousFromPath(4) instanceof VarNode) {
+            // this handle case var f1 = xxx || function () {}
+            // just skip the binary node and continue like in case var f1 = function (){}
+            lastVisited = getPreviousFromPath(4);           
+        }
         if (lastVisited instanceof PropertyNode) {
             // the parent of the function is the literal object
             parent = modelBuilder.getCurrentObject();
@@ -2955,6 +2999,11 @@ public class ModelVisitor extends PathNodeVisitor {
     
     public static OffsetRange getOffsetRange(Node node) {
         return new OffsetRange(node.getStart(), node.getFinish());
+    }
+    
+    public static OffsetRange getOffsetRange(FunctionNode node) {
+        return new OffsetRange(Token.descPosition(node.getFirstToken()),
+                Token.descPosition(node.getLastToken()) + Token.descLength(node.getLastToken()));
     }
     
     // TODO move this method to the ModelUtils
