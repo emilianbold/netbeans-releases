@@ -1156,17 +1156,39 @@ public class ModelVisitor extends PathNodeVisitor {
         for (VarNode varNode : getDeclaredVar(fnParent)) {
             LOGGER.log(Level.FINEST, "       " + debugInfo(varNode));
             Expression init = varNode.getInit();
-           
+            boolean createVariable = true;
             if (!varNode.isFunctionDeclaration()) { // we skip syntetic variables created from case: function f1(){}
                 if (init instanceof FunctionNode && !((FunctionNode)init).isNamedFunctionExpression()) {
                     // case: var f1 = function () {}
                     // the function here is already, need to be just fixed the name offsets
-                } else if (init instanceof BinaryNode
-                        && ((BinaryNode)init).isLogical()
-                        && ( (((BinaryNode)init).rhs() instanceof JoinPredecessorExpression && ((JoinPredecessorExpression)((BinaryNode)init).rhs()).getExpression()  instanceof FunctionNode) 
-                        ||   (((BinaryNode)init).lhs() instanceof JoinPredecessorExpression && ((JoinPredecessorExpression)((BinaryNode)init).lhs()).getExpression()  instanceof FunctionNode) )) {
-                    // case: var f1 = xxx || function () {}
-                    // the function here is already, need to be just fixed the name offsets
+                    createVariable = false;
+                } else if (init instanceof BinaryNode) {
+                    BinaryNode bNode = (BinaryNode) init;
+                    if (bNode.isLogical()
+                            && ((bNode.rhs() instanceof JoinPredecessorExpression && ((JoinPredecessorExpression) bNode.rhs()).getExpression() instanceof FunctionNode)
+                            || (bNode.lhs() instanceof JoinPredecessorExpression && ((JoinPredecessorExpression) bNode.lhs()).getExpression() instanceof FunctionNode))) {
+                        // case: var f1 = xxx || function () {}
+                        // the function here is already, need to be just fixed the name offsets
+                        createVariable = false;
+                    } else if (bNode.isAssignment()) {
+                        while (bNode.rhs() instanceof BinaryNode && bNode.rhs().isAssignment()) {
+                            // the cycle is trying to find out a FunctionNode at the end of assignements
+                            // case var f1 = f2 = f3 = f4 = function () {}
+                            bNode = (BinaryNode)bNode.rhs();
+                        }
+                        if (bNode.rhs() instanceof FunctionNode) {    
+                            // case var f1 = f2 = function (){};
+                            // -> the variable will be reference fo the function
+                            createVariable = false;
+                            FunctionNode fNode = (FunctionNode)bNode.rhs();
+                            JsObject original = parentFn.getProperty(modelBuilder.getFunctionName(fNode));
+                            Identifier varName = new IdentifierImpl(varNode.getName().getName(), getOffsetRange(varNode.getName()));
+                            OffsetRange range = varName.getOffsetRange();
+                            JsFunctionReference variable = new JsFunctionReference(parentFn, varName, (JsFunction)original, true, original.getModifiers());
+                            variable.addOccurrence(varName.getOffsetRange());
+                            parentFn.addProperty(varName.getName(), variable);
+                        }
+                    }
                 } else if (parentFn.getProperty(varNode.getName().getName()) != null) {
                     // the name is already used by a function. 
                     if (init instanceof CallNode) {
@@ -1213,7 +1235,9 @@ public class ModelVisitor extends PathNodeVisitor {
                         // with the same name
                         parentFn.getProperty(varNode.getName().getName()).addOccurrence(getOffsetRange(varNode.getName()));
                     }
-                } else {
+                    createVariable = false;
+                } 
+                if (createVariable) {
                     // skip the variables that are syntetic 
                     Identifier varName = new IdentifierImpl(varNode.getName().getName(), getOffsetRange(varNode.getName()));
                     OffsetRange range = varNode.getInit() instanceof ObjectNode ? new OffsetRange(varNode.getName().getStart(), ((ObjectNode)varNode.getInit()).getFinish()) 
