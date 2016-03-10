@@ -258,9 +258,6 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     @Override
     public final void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode, int timeoutMillis)
             throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
-        if (refreshMode == RefreshMode.FROM_PARENT) {
-            return;
-        }
         if (antiLoop == null) {
             antiLoop = new HashSet<>();
         }
@@ -271,7 +268,9 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
         }
         RemoteFileObjectBase delegate = getCanonicalDelegate();
         // For link we need to refresh both delegate and link metadata itself
-        refreshThisFileMetadataImpl(recursive, antiLoop, expected, refreshMode, timeoutMillis);
+        if (refreshMode != RefreshMode.FROM_PARENT) {
+            refreshThisFileMetadataImpl(recursive, antiLoop, expected, refreshMode, timeoutMillis);
+        }
         if (delegate != null) {
             delegate.refreshImpl(recursive, antiLoop, expected, refreshMode, timeoutMillis);
         } else {
