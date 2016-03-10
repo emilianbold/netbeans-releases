@@ -127,7 +127,7 @@ public final class OffsetRegion {
 
     /**
      * Return union of this region with the given region.
-     * <br/>
+     * <br>
      * If the given region is empty then return "this" region.
      * 
      * @param doc non-null document to which the offsets relate.
@@ -164,7 +164,7 @@ public final class OffsetRegion {
     
     /**
      * Return union of this region with the given region.
-     * <br/>
+     * <br>
      * If the given region is empty then return "this" region.
      * 
      * @param region region to union with.

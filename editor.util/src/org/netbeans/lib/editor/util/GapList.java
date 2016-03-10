@@ -122,6 +122,12 @@ implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
         this.gapLength = elementData.length - size;
     }
     
+    private GapList(E[] data, int gapStart, int gapLength) {
+        this.elementData = data;
+        this.gapStart = gapStart;
+        this.gapLength = gapLength;
+    }
+    
     /**
      * Trims the capacity of this <tt>GapList</tt> instance to be the
      * list's current size.  An application can use this operation to minimize
@@ -314,7 +320,19 @@ implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
             throw new InternalError();
         }
     }
-
+    
+    /**
+     * Create shallow copy of this gap list.
+     * @return copy of this gap list with zero extra capacity.
+     * @since 1.63
+     */
+    public GapList<E> copy() {
+        int size = size();
+        E[] data = allocateElementsArray(size);
+        copyAllData(data);
+        return new GapList<E>(data, size, 0);
+    }
+    
     /**
      * @deprecated use {@link #copyElements(int, int, Object[], int)} which performs the same operation
      */
@@ -556,6 +574,26 @@ implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
     }
     
     /**
+     * Appends elements from the specified collection to the end of
+     * this list, in the order that they are returned by the
+     * specified collection's iterator.  The behavior of this operation is
+     * undefined if the specified Collection is modified while the operation
+     * is in progress.  (This implies that the behavior of this call is
+     * undefined if the specified Collection is this list, and this
+     * list is nonempty.)
+     *
+     * @param c collection containing the elements to be inserted into this list.
+     * @param off offset in the collection pointing to first element to copy.
+     * @param len number of elements to copy from the collection.
+     * @return <tt>true</tt> if this list changed as a result of the call.
+     * @throws    NullPointerException if the specified Collection is null.
+     * @since 1.64
+     */
+    public boolean addAll(Collection<? extends E> c, int off, int len) {
+        return addArray(size(), c.toArray(), off, len);
+    }
+
+    /**
      * Inserts all of the elements in the specified Collection into this
      * list, starting at the specified position.  Shifts the element
      * currently at that position (if any) and any subsequent elements to
@@ -575,12 +613,47 @@ implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
         return addArray(index, c.toArray());
     }
 
-    /*
+    /**
+     * Inserts elements in the specified Collection into this
+     * list, starting at the specified position.  Shifts the element
+     * currently at that position (if any) and any subsequent elements to
+     * the right (increases their indices).  The new elements will appear
+     * in the list in the order that they are returned by the
+     * specified Collection's iterator.
+     *
+     * @param index index at which to insert first element
+     *		    from the specified collection.
+     * @param c collection containing the elements to be inserted into this list.
+     * @param off offset in the collection pointing to first element to copy.
+     * @param len number of elements to copy from the collection.
+     * @return <tt>true</tt> if this list changed as a result of the call.
+     * @throws    IndexOutOfBoundsException if index out of range <tt>(index
+     *		  &lt; 0 || index &gt; size())</tt>.
+     * @throws    NullPointerException if the specified Collection is null.
+     * @since 1.64
+     */
+    public boolean addAll(int index, Collection<? extends E> c, int off, int len) {
+        return addArray(index, c.toArray(), off, len);
+    }
+
+    /**
+     * Inserts all elements of the given array at the end of this list.
+     *
+     * @param elements array of elements to insert.
+     * @return <tt>true</tt> if this list changed as a result of the call.
+     * @since 1.64
+     */
+    public boolean addArray(Object[] elements) {
+        return addArray(size(), elements, 0, elements.length);
+    }
+
+    /**
      * Inserts all elements from the given array into this list, starting
      * at the given index.
      *
      * @param index index at which to insert first element from the array.
      * @param elements array of elements to insert.
+     * @return <tt>true</tt> if this list changed as a result of the call.
      */
     public boolean addArray(int index, Object[] elements) {
         return addArray(index, elements, 0, elements.length);
@@ -594,6 +667,7 @@ implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
      * @param elements array of elements from which to insert elements.
      * @param off offset in the elements pointing to first element to copy.
      * @param len number of elements to copy from the elements array.
+     * @return <tt>true</tt> if this list changed as a result of the call.
      */
     public boolean addArray(int index, Object[] elements, int off, int len) {
         int size = size();
@@ -646,7 +720,7 @@ implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
         
         return oldValue;
     }
-
+    
     /**
      * Removes elements at the given index.
      *

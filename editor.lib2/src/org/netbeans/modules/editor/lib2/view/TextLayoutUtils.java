@@ -136,7 +136,7 @@ final class TextLayoutUtils {
     
     /**
      * Get real allocation (possibly not rectangular) of a part of layout.
-     * <br/>
+     * <br>
      * It's used when rendering the text layout for filling background highlights of the view.
      *
      * @param length Total number of characters for which the allocation is computed.

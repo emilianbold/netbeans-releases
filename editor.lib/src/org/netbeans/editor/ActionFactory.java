@@ -46,6 +46,7 @@ package org.netbeans.editor;
 
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -56,6 +57,7 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
@@ -87,9 +89,12 @@ import javax.swing.undo.UndoableEdit;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.View;
 import javax.swing.undo.UndoManager;
+import org.netbeans.api.editor.caret.CaretInfo;
 import org.netbeans.api.editor.EditorActionNames;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
+import org.netbeans.api.editor.EditorUtilities;
+import org.netbeans.api.editor.caret.EditorCaret;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.progress.ProgressUtils;
@@ -98,6 +103,8 @@ import org.netbeans.lib.editor.util.swing.PositionRegion;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.api.editor.NavigationHistory;
+import org.netbeans.api.editor.caret.CaretMoveContext;
+import org.netbeans.spi.editor.caret.CaretMoveHandler;
 import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
 import org.netbeans.modules.editor.lib2.view.DocumentView;
 import org.netbeans.spi.editor.typinghooks.CamelCaseInterceptor;
@@ -105,6 +112,7 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.actions.Presenter;
 
 /**
@@ -854,8 +862,9 @@ public class ActionFactory {
         }
     }
 
-    /** Switch to overwrite mode or back to insert mode */
-    @EditorActionRegistration(name = BaseKit.toggleTypingModeAction)
+    /** Switch to overwrite mode or back to insert mode
+     * @deprecated Replaced by ToggleTypingModeAction in editor.actions module
+     */
     public static class ToggleTypingModeAction extends LocalBaseAction {
 
         static final long serialVersionUID =-2431132686507799723L;
@@ -866,12 +875,11 @@ public class ActionFactory {
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
-                EditorUI editorUI = Utilities.getEditorUI(target);
-                Boolean overwriteMode = (Boolean)editorUI.getProperty(EditorUI.OVERWRITE_MODE_PROPERTY);
+                Boolean overwriteMode = (Boolean) target.getClientProperty(EditorUtilities.CARET_OVERWRITE_MODE_PROPERTY);
                 // Now toggle
                 overwriteMode = (overwriteMode == null || !overwriteMode.booleanValue())
                                 ? Boolean.TRUE : Boolean.FALSE;
-                editorUI.putProperty(EditorUI.OVERWRITE_MODE_PROPERTY, overwriteMode);
+                target.putClientProperty(EditorUtilities.CARET_OVERWRITE_MODE_PROPERTY, overwriteMode);
             }
         }
     }

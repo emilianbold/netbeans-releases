@@ -58,7 +58,7 @@ public final class ParagraphViewDescriptor {
     
     /**
      * Get start offset of the paragraph view represented by this descriptor.
-     * <br/>
+     * <br>
      * When a LockedViewHierarchy that provided this paragraph view descriptor
      * is unlocked then operation of this method is undefined.
      *
@@ -70,7 +70,7 @@ public final class ParagraphViewDescriptor {
 
     /**
      * Get textual length of the paragraph view represented by this descriptor.
-     * <br/>
+     * <br>
      * When a LockedViewHierarchy that provided this paragraph view descriptor
      * is unlocked then operation of this method is undefined.
      *
@@ -82,7 +82,7 @@ public final class ParagraphViewDescriptor {
     
     /**
      * Get visual allocation of the whole paragraph view (represented by this descriptor).
-     * <br/>
+     * <br>
      * When a LockedViewHierarchy that provided this paragraph view descriptor
      * is unlocked then operation of this method is undefined.
      *
@@ -95,11 +95,11 @@ public final class ParagraphViewDescriptor {
     /**
      * Get ascent (useful for text rendering using a particular font)
      * of the paragraph view represented by this descriptor.
-     * <br/>
+     * <br>
      * This method is useful when a tool (such as a side bar performing rendering of a line
      * number) wants to render a text that should vertically match the text
      * rendered by the paragraph view.
-     * <br/>
+     * <br>
      * When a LockedViewHierarchy that provided this paragraph view descriptor
      * is unlocked then operation of this method is undefined.
      *

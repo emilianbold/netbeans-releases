@@ -74,38 +74,38 @@ import org.openide.util.actions.Presenter;
 /**
  * Base class for editor actions that should be used together with
  * {@link EditorActionRegistration} annotation.
- * <br/>
+ * <br>
  * It may be constructed and used in two ways: direct construction or construction
  * upon invocation by a wrapper action:
  * <ul>
  *   <li> Direct construction - action is created directly when an editor kit
  *        gets constructed (its <code>kit.getActions()</code> gets used).
- *        <br/>
+ *        <br>
  *        Advantages: Action controls all its behavior and properties (including enabled status)
  *        since the begining.
- *        <br/>
+ *        <br>
  *        Disadvantages: Action's class is loaded by classloader at editor kit's construction.
- *        <br/>
+ *        <br>
  *        Example of registration:
- *        <br/>
+ *        <br>
  * <code>
- * public static final class MyAction extends AbstractEditorAction {<br/>
- *<br/>
- *     &#64;EditorActionRegistration(name = "my-action")<br/>
- *     public static MyAction create(Map&lt;String,?&gt; attrs) {<br/>
- *         return new MyAction(attrs);<br/>
- *     }<br/>
- * <br/>
- *     private MyAction(Map&lt;String,?&gt; attrs) {<br/>
- *         super(attrs);<br/>
- *         ...<br/>
- *     }<br/>
- * <br/>
- *     protected void actionPerformed(ActionEvent evt, JTextComponent component) {<br/>
- *         ...<br/>
- *     }<br/>
- * <br/>
- * }<br/>
+ * public static final class MyAction extends AbstractEditorAction {<br>
+ *<br>
+ *     &#64;EditorActionRegistration(name = "my-action")<br>
+ *     public static MyAction create(Map&lt;String,?&gt; attrs) {<br>
+ *         return new MyAction(attrs);<br>
+ *     }<br>
+ * <br>
+ *     private MyAction(Map&lt;String,?&gt; attrs) {<br>
+ *         super(attrs);<br>
+ *         ...<br>
+ *     }<br>
+ * <br>
+ *     protected void actionPerformed(ActionEvent evt, JTextComponent component) {<br>
+ *         ...<br>
+ *     }<br>
+ * <br>
+ * }<br>
  * </code>
  *   </li>
  * 
@@ -115,33 +115,33 @@ import org.openide.util.actions.Presenter;
  *        (upon {@link Action#actionPerformed(java.awt.event.ActionEvent)} call).
  *        Existing properties of the wrapper action (including <code>Action.NAME</code> property)
  *        get transferred into delegate action.
- *        <br/>
+ *        <br>
  *        Advantages: Action's class is only loaded upon action's execution.
- *        <br/>
+ *        <br>
  *        Disadvantages: Only a limited set of action's properties gets populated
  *        (those defined by {@link EditorActionRegistration}).
- *        <br/>
+ *        <br>
  *        Example of registration:
- *        <br/>
+ *        <br>
  * <code>
- * &#64;EditorActionRegistration(name = "my-action")<br/>
- * public static final class MyAction extends AbstractEditorAction {<br/>
- *<br/>
- *     public MyAction() {<br/>
- *         // Here the properties are not yet set.<br/>
- *     }<br/>
- * <br/>
- *     &#64;Override<br/>
- *     protected void valuesUpdated() {<br/>
- *         // Here the wrapper action has transferred all its properties into this action<br/>
- *         // so properties like Action.NAME etc. are now populated.<br/>
- *     }<br/>
- * <br/>
- *     protected void actionPerformed(ActionEvent evt, JTextComponent component) {<br/>
- *         ...<br/>
- *     }<br/>
- * <br/>
- * }<br/>
+ * &#64;EditorActionRegistration(name = "my-action")<br>
+ * public static final class MyAction extends AbstractEditorAction {<br>
+ *<br>
+ *     public MyAction() {<br>
+ *         // Here the properties are not yet set.<br>
+ *     }<br>
+ * <br>
+ *     &#64;Override<br>
+ *     protected void valuesUpdated() {<br>
+ *         // Here the wrapper action has transferred all its properties into this action<br>
+ *         // so properties like Action.NAME etc. are now populated.<br>
+ *     }<br>
+ * <br>
+ *     protected void actionPerformed(ActionEvent evt, JTextComponent component) {<br>
+ *         ...<br>
+ *     }<br>
+ * <br>
+ * }<br>
  * </code>
  *   </li>
  * </ul>
@@ -155,23 +155,23 @@ public abstract class AbstractEditorAction extends TextAction implements
     
     /**
      * Key of {@link String} property containing a localized display name of the action.
-     * <br/>
+     * <br>
      * It may be passed to {@link #getValue(java.lang.String) } to obtain the property value.
      */
     public static final String DISPLAY_NAME_KEY = "displayName"; // (named in sync with AlwaysEnabledAction) NOI18N
 
     /**
      * Key of {@link String} property containing a localized text to be displayed in a main menu for this action.
-     * <br/>
+     * <br>
      * It may be passed to {@link #getValue(java.lang.String) } to obtain the property value.
      */
     public static final String MENU_TEXT_KEY = "menuText"; // (named in sync with AlwaysEnabledAction) NOI18N
 
     /**
      * Key of {@link String} property containing a localized text to be displayed in a popup menu for this action.
-     * <br/>
+     * <br>
      * If this property is not set then {@link #MENU_TEXT_KEY} is attempted.
-     * <br/>
+     * <br>
      * It may be passed to {@link #getValue(java.lang.String) } to obtain the property value.
      */
     public static final String POPUP_TEXT_KEY = "popupText"; // (named in sync with AlwaysEnabledAction) NOI18N
@@ -184,7 +184,7 @@ public abstract class AbstractEditorAction extends TextAction implements
     /**
      * Key of {@link Boolean} property which determines whether icon of this action should be
      * displayed in menu (false or unset) or not (true).
-     * <br/>
+     * <br>
      * It may be passed to {@link #getValue(java.lang.String) } to obtain the property value.
      * @since 1.74
      */
@@ -193,7 +193,7 @@ public abstract class AbstractEditorAction extends TextAction implements
     /**
      * Key of {@link Boolean} property which determines if this action should be
      * displayed in key binding customizer (false or unset) or not (true).
-     * <br/>
+     * <br>
      * It may be passed to {@link #getValue(java.lang.String) } to obtain the property value.
      * @since 1.74
      */
@@ -202,7 +202,7 @@ public abstract class AbstractEditorAction extends TextAction implements
     /**
      * Key of property containing a <code>List &lt; List &lt; {@link KeyStroke} &gt; &gt;</code>
      * listing all multi-key bindings by which the action may be invoked.
-     * <br/>
+     * <br>
      * There may be multiple multi-key bindings to invoke a single action e.g. a code completion
      * may be invoked by Ctrl+SPACE and also Ctrl+'\'
      * (in fact each of these bindings could also consist of multiple keystrokes).
@@ -219,11 +219,11 @@ public abstract class AbstractEditorAction extends TextAction implements
     /**
      * Key of {@link String} property containing a mime type for which this action
      * is registered.
-     * <br/>
+     * <br>
      * Note: action's mime-type is not necessarily the same like <code>EditorKit.getContentType()</code>
      * for which the action was created because the kit may inherit some actions
      * from a global mime-type "".
-     * <br/>
+     * <br>
      * Value of this property is checked at action's initialization
      * (it needs to be passed as part of 'attrs' parameter to constructor).
      * Subsequent modifications of this property should be avoided and they will likely not affect its behavior.
@@ -238,7 +238,7 @@ public abstract class AbstractEditorAction extends TextAction implements
     /**
      * Key of {@link String} property containing a name of a boolean key in preferences in which this action changes settings
      * (according to {@link #PREFERENCES_NODE_KEY} property).
-     * <br/>
+     * <br>
      * Once this property is set then it's expected that {@link #PREFERENCES_NODE_KEY} is also set
      * to a valid value and checkbox menu presenter will be used automatically.
      */
@@ -253,7 +253,7 @@ public abstract class AbstractEditorAction extends TextAction implements
      * Key of {@link Boolean} property determining whether this is just a wrapper action
      * that is being used until the action needs to be executed. Then the target action
      * gets created and run.
-     * <br/>
+     * <br>
      * Value of this property is checked at action's initialization
      * (it needs to be passed as part of 'attrs' parameter to constructor).
      * Subsequent modifications of this property should be avoided and they will likely not affect its behavior.
@@ -290,27 +290,27 @@ public abstract class AbstractEditorAction extends TextAction implements
      * Constructor that takes a map of attributes that are typically obtained
      * from an xml layer when an action's creation method is annotated with
      * <code>@EditorActionRegistration</code>.
-     * <br/>
+     * <br>
      * Example:
-     * <br/>
+     * <br>
      * <code>
-     * public static final class MyAction extends AbstractEditorAction {<br/>
-     *<br/>
-     *     &#64;EditorActionRegistration(name = "my-action")<br/>
-     *     public static MyAction create(Map&lt;String,?&gt; attrs) {<br/>
-     *         return new MyAction(attrs);<br/>
-     *     }<br/>
-     * <br/>
-     *     private MyAction(Map&lt;String,?&gt; attrs) {<br/>
-     *         super(attrs);<br/>
-     *         ...<br/>
-     *     }<br/>
-     * <br/>
-     *     protected void actionPerformed(ActionEvent evt, JTextComponent component) {<br/>
-     *         ...<br/>
-     *     }<br/>
-     * <br/>
-     * }<br/>
+     * public static final class MyAction extends AbstractEditorAction {<br>
+     *<br>
+     *     &#64;EditorActionRegistration(name = "my-action")<br>
+     *     public static MyAction create(Map&lt;String,?&gt; attrs) {<br>
+     *         return new MyAction(attrs);<br>
+     *     }<br>
+     * <br>
+     *     private MyAction(Map&lt;String,?&gt; attrs) {<br>
+     *         super(attrs);<br>
+     *         ...<br>
+     *     }<br>
+     * <br>
+     *     protected void actionPerformed(ActionEvent evt, JTextComponent component) {<br>
+     *         ...<br>
+     *     }<br>
+     * <br>
+     * }<br>
      * </code>
      *
      * @param attrs non-null attributes that hold action's properties.
@@ -330,28 +330,28 @@ public abstract class AbstractEditorAction extends TextAction implements
      * Constructor typically used when action is constructed lazily
      * upon its performing (the action is always enabled and its properties
      * are declared in xml layer by annotation processor for <code>@EditorActionRegistration</code>).
-     * <br/>
+     * <br>
      * Example:
-     * <br/>
+     * <br>
      * <code>
-     * &#64;EditorActionRegistration(name = "my-action")<br/>
-     * public static final class MyAction extends AbstractEditorAction {<br/>
-     *<br/>
-     *     public MyAction() {<br/>
-     *         // Here the properties are not yet set.<br/>
-     *     }<br/>
-     * <br/>
-     *     &#64;Override<br/>
-     *     protected void valuesUpdated() {<br/>
-     *         // Here the wrapper action has transferred all its properties into this action<br/>
-     *         // so properties like Action.NAME etc. are now populated.<br/>
-     *     }<br/>
-     * <br/>
-     *     protected void actionPerformed(ActionEvent evt, JTextComponent component) {<br/>
-     *         ...<br/>
-     *     }<br/>
-     * <br/>
-     * }<br/>
+     * &#64;EditorActionRegistration(name = "my-action")<br>
+     * public static final class MyAction extends AbstractEditorAction {<br>
+     *<br>
+     *     public MyAction() {<br>
+     *         // Here the properties are not yet set.<br>
+     *     }<br>
+     * <br>
+     *     &#64;Override<br>
+     *     protected void valuesUpdated() {<br>
+     *         // Here the wrapper action has transferred all its properties into this action<br>
+     *         // so properties like Action.NAME etc. are now populated.<br>
+     *     }<br>
+     * <br>
+     *     protected void actionPerformed(ActionEvent evt, JTextComponent component) {<br>
+     *         ...<br>
+     *     }<br>
+     * <br>
+     * }<br>
      * </code>
      */
     protected AbstractEditorAction() {
@@ -388,7 +388,7 @@ public abstract class AbstractEditorAction extends TextAction implements
 
     /**
      * Reset caret's magic position.
-     * <br/>
+     * <br>
      * Magic caret position is useful when going through empty lines with Down/Up arrow
      * then the caret returns on original horizontal column when a particular line has sufficient
      * number of characters.
@@ -401,11 +401,11 @@ public abstract class AbstractEditorAction extends TextAction implements
 
     /**
      * Get presenter of this action in main menu.
-     * <br/>
+     * <br>
      * Default implementation uses {@link #MENU_TEXT_KEY} for menu item's text
      * and the presenter is placed in the menu according to rules
      * given in the corresponding {@link EditorActionRegistration}.
-     * <br/>
+     * <br>
      * Moreover the default presenter is sensitive to currently active text component
      * and if the active editor kit has that action redefined it uses the active action's
      * properties for this presenter.
@@ -420,7 +420,7 @@ public abstract class AbstractEditorAction extends TextAction implements
 
     /**
      * Get presenter of this action in popup menu.
-     * <br/>
+     * <br>
      * Default implementation uses {@link #POPUP_TEXT_KEY} for popup menu item's text
      * and the presenter is placed in the popup menu according to rules
      * given in the corresponding {@link EditorActionRegistration}.
@@ -563,12 +563,12 @@ public abstract class AbstractEditorAction extends TextAction implements
     /**
      * This method is called when a value for the given property
      * was not yet populated.
-     * <br/>
+     * <br>
      * This method is only called once for the given property. Even if this method
      * returns null for the given property the infrastructure remembers the
      * returned value and no longer queries this method (the property can still
      * be modified by {@link #putValue(java.lang.String, java.lang.Object) }.)
-     * <br/>
+     * <br>
      * Calling of this method and remembering of the returned value does not trigger
      * {@link #firePropertyChange(java.lang.String, java.lang.Object, java.lang.Object) }.
      *

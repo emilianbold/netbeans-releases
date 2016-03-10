@@ -643,11 +643,11 @@ public abstract class AbstractOffsetGapList<E> extends GapList<E> {
     /**
      * This method updates element's offset (shifts it below offset gap if necessary)
      * before (or after) the element gets removed from the list.
-     * <br/>
+     * <br>
      * This method should be called after the element is physically removed
      * from the list and it's desired that it retains its natural offset
      * (not possibly shifted by the offset gap length).
-     * <br/>
+     * <br>
      * If the element was located below the offset gap prior removal
      * then calling of this method is not necessary.
      */

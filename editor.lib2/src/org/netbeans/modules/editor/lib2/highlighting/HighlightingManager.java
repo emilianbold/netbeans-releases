@@ -81,10 +81,10 @@ import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Highlighting manager maintains all the highlighting layers instances.
- * <br/>
+ * <br>
  * It divides them into two groups according to their z-order and fixedSize attributes.
  * Top layers that have fixedSize set to true are one group. The rest is the other group.
- * <br/>
+ * <br>
  * View hierarchy only rebuilds views if the second group of layers (bottom ones) changes.
  * If the top group changes the view hierarchy only triggers repaint of affected part.
  *

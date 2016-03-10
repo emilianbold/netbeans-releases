@@ -48,7 +48,7 @@ import org.openide.util.Lookup;
 /**
  * Serves for adding an additonal content to the context which is passed
  * as a parameter to the {@link CodeGenerator.Factory#create(org.openide.util.Lookup)}
- * method.<br/> Instances of this interface are looked up by the
+ * method.<br> Instances of this interface are looked up by the
  * {@link org.netbeans.api.editor.mimelookup.MimeLookup} so they should be
  * registered in an xml-layer in
  * <i>Editors/&lt;mime-type&gt;/CodeGeneratorContextProviders</i> directory.

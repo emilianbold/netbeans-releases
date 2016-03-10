@@ -129,6 +129,8 @@ made subject to such option by the copyright holder.
     <bind actionName="paste-from-clipboard" key="D-V"/>
     <bind actionName="paste-from-clipboard" key="S-INSERT"/>
     <bind actionName="clipboard-history" key="DS-D"/>
+    <bind actionName="addCaretSelectNext" key="D-D"/>
+    <bind actionName="addCaretSelectAll" key="O-F3"/>
     <bind actionName="redo" key="D-Y"/>
     <bind actionName="redo" key="DS-Z"/>
     <bind actionName="remove-line" key="D-E"/>
@@ -138,6 +140,9 @@ made subject to such option by the copyright holder.
     <bind actionName="move-selection-else-line-up" key="OS-KP_UP"/>
     <bind actionName="move-selection-else-line-down" key="OS-DOWN"/>
     <bind actionName="move-selection-else-line-down" key="OS-KP_DOWN"/>
+    <bind actionName="add-selection-else-caret-up" key="OS-OPEN_BRACKET"/>
+    <bind actionName="add-selection-else-caret-down" key="OS-CLOSE_BRACKET"/>
+    <bind actionName="remove-last-caret" key="OS-U"/>
     <bind actionName="move-code-element-up" key="OS-PAGE_UP"/>
     <bind actionName="move-code-element-down" key="OS-PAGE_DOWN"/>
     <bind actionName="copy-selection-else-line-up" key="DS-UP"/>

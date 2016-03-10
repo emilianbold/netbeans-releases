@@ -50,12 +50,12 @@ import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 
 /**
  * Special highlights sequence used for painting of individual views.
- * <br/>
+ * <br>
  * It merges together highlights contained in views (as attributes) together
  * with extra painting highlights (from highlighting layers that do not change metrics).
- * <br/>
+ * <br>
  * It "covers" even non-highlighted areas by returning null from {@link #getAttributes()}.
- * <br/>
+ * <br>
  * The instance can only be used by a single thread.
  *
  * @author mmetelka

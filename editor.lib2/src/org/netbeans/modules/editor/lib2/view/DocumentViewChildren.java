@@ -63,11 +63,11 @@ import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 
 /**
  * Class that manages children of {@link EditorBoxView}.
- * <br/>
+ * <br>
  * The class can manage offsets of children in case {@link #rawEndOffsetManaged()}
  * returns true. In such case each child must properly implement {@link EditorView#getRawEndOffset()}
  * and the maintained raw offsets are relative to corresponding box view's getStartOffset().
- * <br/>
+ * <br>
  * Generally children of {@link #ParagraphView} manage their raw end offsets
  * while children of {@link #DocumentView} do not manage them (they use Position objects
  * to manage its start).
@@ -125,7 +125,7 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
     
     /**
      * Replace paragraph views inside DocumentView.
-     * <br/>
+     * <br>
      * In case both removeCount == 0 and addedViews is empty this method does not need to be called.
      *
      * @param docView
@@ -242,7 +242,7 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
     /**
      * Get view index of first view that "contains" the offset (starts with it or it's inside)
      * by examining child views' absolute start offsets.
-     * <br/>
+     * <br>
      * This is suitable for document view where start offsets of paragraph views
      * are maintained as positions.
      * 

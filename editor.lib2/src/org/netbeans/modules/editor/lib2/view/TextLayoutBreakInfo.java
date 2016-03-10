@@ -45,7 +45,7 @@ import java.awt.font.TextLayout;
 
 /**
  * Info about last successful breaking of the view.
- * <br/>
+ * <br>
  * Since TextLayout creation is expensive this should speed up breaking of the views
  * (used in line wrap) considerably.
  *

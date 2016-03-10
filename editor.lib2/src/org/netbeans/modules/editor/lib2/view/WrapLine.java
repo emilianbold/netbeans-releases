@@ -68,7 +68,7 @@ final class WrapLine {
 
     /**
      * Index of a first view located at this line.
-     * <br/>
+     * <br>
      * Logically if there's a non-null startPart then it comes from view
      * at (firstViewIndex - 1).
      */
@@ -76,7 +76,7 @@ final class WrapLine {
 
     /**
      * Index that follows last view located at this line.
-     * <br/>
+     * <br>
      * It should be >= firstViewIndex.
      */
     int endViewIndex;

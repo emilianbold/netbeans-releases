@@ -56,7 +56,7 @@ public final class HighlightsList {
     
     /**
      * List of highlight items. First highlights item starts at startOffset.
-     * <br/>
+     * <br>
      * GapList is used due to its copyElements() method.
      */
     private HighlightItem[] highlightItems;
@@ -128,7 +128,7 @@ public final class HighlightsList {
      * Create attribute set covering {@link #startOffset()} till maxEndOffset
      * or lower offset if font would differ for the particular attribute set
      * of an item.
-     * <br/>
+     * <br>
      * The list must cover cutEndOffset otherwise the behavior is undefined.
      *
      * @param defaultFont default font to which the attributes in highlight items
@@ -251,7 +251,7 @@ public final class HighlightsList {
     
     /**
      * Create attribute set covering single character at {@link #startOffset()}.
-     * <br/>
+     * <br>
      * The list must cover {@link #startOffset()} otherwise the behavior is undefined.
      *
      * @return attribute set.

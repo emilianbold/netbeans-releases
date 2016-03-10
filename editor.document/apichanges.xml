@@ -112,6 +112,24 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="ShiftPositions">
+          <api name="api"/>
+          <summary>Added ShiftPositions</summary>
+          <version major="1" minor="7"/>
+          <date day="22" month="2" year="2016"/>
+          <author login="mmetelka"/>
+          <compatibility source="compatible" binary="compatible" semantic="compatible" addition="yes"/>
+          <description>
+              <p>
+                  Added ShiftPositions class to create and read ShiftPositions.
+                  The implementation ShiftPos is a position together with a 
+                  shift of extra columns. This allows for positions behind
+                  line's last character (newline) or within a tab character.
+              </p>
+          </description>
+          <class name="ShiftPositions" package="org.netbeans.api.editor.document"/>
+          <issue number="257889"/>
+      </change>
       <change id="TextSearchUtils-getPreviousWordStart">
           <api name="api"/>
           <summary>Added TextSearchUtils.getPreviousWordStart() method</summary>

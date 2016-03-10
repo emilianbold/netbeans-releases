@@ -106,7 +106,7 @@ public final class PresenterUpdater implements PropertyChangeListener, ActionLis
 
     /**
      * For menu presenters hold action of last focused editor component.
-     * <br/>
+     * <br>
      * Hold reference strongly but may be changed to weak reference in case
      * even actions of last activated text component are desired to be released.
      */

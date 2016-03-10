@@ -52,7 +52,7 @@ import java.lang.annotation.Target;
 /**
  * Annotation allowing to annotate one action class by multiple
  * {@link EditorActionRegistration} annotations.
- * <br/>
+ * <br>
  * Example:
  * <pre>
  * @EditorActionRegistrations({ @EditorActionRegistration(name = "name1", ...),

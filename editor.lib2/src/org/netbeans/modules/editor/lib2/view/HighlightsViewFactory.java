@@ -67,7 +67,7 @@ import org.openide.util.WeakListeners;
 /**
  * View factory returning highlights views. It is specific in that it always
  * covers the whole document area by views even if there are no particular highlights
- * <br/>
+ * <br>
  * Currently the factory coalesces highlights change requests from non-AWT thread.
  *
  * @author Miloslav Metelka
@@ -94,7 +94,7 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
      * then the infrastructure will attempt to end current long view creation
      * at a given nextOrigViewOffset parameter in order to save views creation and reuse
      * existing text layouts (and their slit text layouts for line wrapping).
-     * <br/>
+     * <br>
      * The user would have to insert or remove LONG_VIEW_TOLERANCE of characters into long view
      * in order to force the factory to not match to the given nextOrigViewOffset.
      */

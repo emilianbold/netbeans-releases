@@ -68,7 +68,7 @@ public interface OnSaveTask extends Cancellable {
      * Perform the given runnable under a lock specific for this task.
      * The runnable will include a call to {@link #performTask() } but it may
      * also call other tasks if there are multiple ones.
-     * <br/>
+     * <br>
      * For multiple task factories registered their {@link #runLocked(java.lang.Runnable) }
      * methods will be called subsequently (according to their registration order) in a nested way.
      *
@@ -87,8 +87,8 @@ public interface OnSaveTask extends Cancellable {
 
     /**
      * Factory for creation of on-save task.
-     * It should be registered in MimeLookup by using mime registration e.g.<br/>
-     * <code>@MimeRegistration(mimeType="", service=OnSaveTask.Factory.class, position=300)</code><br/>
+     * It should be registered in MimeLookup by using mime registration e.g.<br>
+     * <code>@MimeRegistration(mimeType="", service=OnSaveTask.Factory.class, position=300)</code><br>
      * Optional 'position' parameter may be used to force an order of tasks.
      * Currently there are two default global factories:
      * <ul>
@@ -139,10 +139,10 @@ public interface OnSaveTask extends Cancellable {
 
         /**
          * Task may add a custom undoable edit related to its operation by using this method.
-         * <br/>
+         * <br>
          * When undo would be performed after the save then this edit would be undone
          * (together with any possible modification changes performed by the task on the underlying document).
-         * <br/>
+         * <br>
          * Note: this method should only be called during {@link OnSaveTask#performTask() }.
          * 
          * @param edit a custom undoable edit provided by the task.
@@ -159,9 +159,9 @@ public interface OnSaveTask extends Cancellable {
         /**
          * Get a root element with zero or more child elements each designating a modified region
          * of a document.
-         * <br/>
+         * <br>
          * Tasks may use this information to work on modified document parts only.
-         * <br/>
+         * <br>
          * Note: unlike in some other root element implementations here the child elements
          * do not fully cover the root element's offset space.
          *

@@ -52,10 +52,10 @@ import org.netbeans.lib.editor.util.GapList;
 
 /**
  * Class that manages children of either DocumentView or ParagraphView.
- * <br/>
+ * <br>
  * For document view the class manages visual spans (end visual offsets).
  * For paragraphs the class manages end offsets of children as well as their end visual offsets.
- * <br/>
+ * <br>
  * Generally children of {@link #ParagraphView} manage their raw end offsets
  * while children of {@link #DocumentView} do not manage them (they use Position objects
  * to manage its start).
@@ -95,7 +95,7 @@ class ViewChildren<V extends EditorView> extends GapList<V> {
     /**
      * Get view index of first view that "contains" the given offset (starts with it or it's inside)
      * by examining child views' raw end offsets.
-     * <br/>
+     * <br>
      * This is suitable for paragraph view which manages its views' raw end offsets.
      * 
      * @param offset offset to search for.

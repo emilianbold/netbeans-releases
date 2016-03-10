@@ -79,7 +79,7 @@ import org.openide.util.WeakListeners;
 
 /**
  * The syntax coloring layer.
- * <br/>
+ * <br>
  * It excludes newline chars from any colorings so that if e.g. a whitespace highlighting is set
  * the rest of line after newline is not colored.
  * 

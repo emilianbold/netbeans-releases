@@ -60,7 +60,7 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 
 /**
  * View with highlights. This is the most used view.
- * <br/>
+ * <br>
  * It can either have no highlights (attributes == null) or simple attributes
  * (attributes == non-
  *

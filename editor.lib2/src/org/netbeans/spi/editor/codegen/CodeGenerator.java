@@ -73,7 +73,7 @@ public interface CodeGenerator {
     public void invoke();
     
     /**
-     * Factory creating code generators.<br/> The factory instances are looked up
+     * Factory creating code generators.<br> The factory instances are looked up
      * by the {@link org.netbeans.api.editor.mimelookup.MimeLookup} so they
      * should be registered in an xml-layer in
      * <i>Editors/&lt;mime-type&gt;/CodeGenerators</i> directory.
