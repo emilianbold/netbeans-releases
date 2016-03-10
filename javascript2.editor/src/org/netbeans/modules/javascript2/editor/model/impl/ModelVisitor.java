@@ -1419,6 +1419,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     JsObject variable = handleArrayCreation(varNode.getInit(), parent, varName);
                     if (variable == null) {
                         JsObjectImpl newObject = new JsObjectImpl(parent, varName, range, parserResult.getSnapshot().getMimeType(), null);
+                        newObject.setDeclared(true);
                         variable = newObject;
                     }
                     variable.addOccurrence(varName.getOffsetRange());
