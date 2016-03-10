@@ -99,7 +99,7 @@ import org.openide.util.Exceptions;
  * Common subclass to ConfigurationXMLCodec and AuxConfigurationXMLCodec.
  * 
  * Change History:
- * V98 - NB 8.2
+ * V99 - NB 8.2
  *    Added copying of dependent shared libraries to a binary's output directory (LINKER_COPY_SHARED_LIBS_ELEMENT)
  * V98 - NB 8.2
  *    Added type of run time search path of dependant projects with shared libraries (LINKER_DEP_DYN_SERCH_KIND_ELEMENT)
