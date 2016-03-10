@@ -144,7 +144,7 @@ AtomicLockListener, FoldHierarchyListener {
     public static final String THICK_LINE_CARET = EditorPreferencesDefaults.THICK_LINE_CARET; // NOI18N
 
     /** Default caret type */
-    public static final String LINE_CARET = THICK_LINE_CARET; // NOI18N
+    public static final String LINE_CARET = "line-caret"; // NOI18N
 
     /** Boolean property defining whether selection is being rectangular in a particular text component. */
     private static final String RECTANGULAR_SELECTION_PROPERTY = "rectangular-selection"; // NOI18N
