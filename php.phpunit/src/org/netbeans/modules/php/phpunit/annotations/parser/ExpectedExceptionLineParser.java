@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.phpunit.annotations.parser;
 
@@ -55,21 +55,19 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
 class ExpectedExceptionLineParser implements AnnotationLineParser {
 
     static final String ANNOTATION_NAME = "expectedException"; //NOI18N
-    private String line;
-    private String[] tokens;
+
 
     @Override
     public AnnotationParsedLine parse(final String line) {
-        this.line = line;
         AnnotationParsedLine result = null;
-        tokens = line.split("[ \t]+"); //NOI18N
+        String[] tokens = line.split("[ \t]+"); //NOI18N
         if (tokens.length > 0 && ANNOTATION_NAME.equalsIgnoreCase(tokens[0])) {
-            result = handleAnnotation();
+            result = handleAnnotation(line, tokens);
         }
         return result;
     }
 
-    private AnnotationParsedLine handleAnnotation() {
+    private AnnotationParsedLine handleAnnotation(String line, String[] tokens) {
         String description = "";
         Map<OffsetRange, String> types = new HashMap<>();
         if (tokens.length > 1) {

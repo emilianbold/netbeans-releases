@@ -146,7 +146,7 @@ public final class InternalWebServer implements PropertyChangeListener {
             // wait for shutdown
             RunConfigInternal runConfig = RunConfigInternal.forProject(instance.project);
             String host = runConfig.getHostname();
-            int port = Integer.valueOf(runConfig.getPort());
+            int port = Integer.parseInt(runConfig.getPort());
             for (int i = 0; i < 20; ++i) {
                 try {
                     Socket socket = new Socket(host, port);

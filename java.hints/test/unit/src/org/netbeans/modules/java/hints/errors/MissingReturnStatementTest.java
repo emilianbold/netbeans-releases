@@ -135,9 +135,27 @@ public class MissingReturnStatementTest extends ErrorHintsTestBase {
                        "package test; import java.util.Collection; import java.util.List; public class Test { public static Collection<String> join(String[] arr1, String[] arr2) { List<String> result; return null; } } ");
     }
     
+    public void testMissingLambdaReturn() throws Exception {
+        diagKey = "compiler.err.prob.found.req/compiler.misc.incompatible.ret.type.in.lambda/compiler.misc.missing.ret.val"; // NOI18N
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "import java.util.Collection;\n" +
+                       "import java.util.concurrent.Callable;\n" +
+                       "public class Test {\n" +
+                       "    public static void test() {\n" +
+                       "        Callable<String> c = |() -> {" +
+                       "        };\n" +
+                       "    }\n" +
+                       "}\n",
+                       "FIX_AddReturnStatement",
+                       "package test; import java.util.Collection; import java.util.concurrent.Callable; public class Test { public static void test() { Callable<String> c = () -> {return null; }; } } ");
+    }
+    
+    private String diagKey = "compiler.err.missing.ret.stmt"; // NOI18N
+
     @Override
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
-        return new MissingReturnStatement().run(info, null, pos, path, null);
+        return new MissingReturnStatement().run(info, diagKey, pos, path, null);
     }
 
     @Override

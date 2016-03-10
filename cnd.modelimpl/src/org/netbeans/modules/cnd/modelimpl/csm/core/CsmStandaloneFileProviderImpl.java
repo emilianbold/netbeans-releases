@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
 import org.netbeans.modules.cnd.api.project.DefaultSystemSettings;
+import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
@@ -331,8 +332,8 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
     /*package*/ static final class NativeProjectImpl implements NativeProject, ChangeListener, FileChangeListener {
 
-        private final List<FSPath> sysIncludes;
-        private final List<FSPath> usrIncludes;
+        private final List<IncludePath> sysIncludes;
+        private final List<IncludePath> usrIncludes;
         private final List<FSPath> sysIncludeHeaders;
         private final List<FSPath> usrFiles;
         private final List<String> sysMacros;
@@ -367,8 +368,8 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 }
             }
             CsmModel model = ModelImpl.instance();
-            List<FSPath> sysIncludes = new ArrayList<>();
-            List<FSPath> usrIncludes = new ArrayList<>();
+            List<IncludePath> sysIncludes = new ArrayList<>();
+            List<IncludePath> usrIncludes = new ArrayList<>();
             List<FSPath> sysIncludeHeaders = new ArrayList<>();
             List<FSPath> usrFiles = new ArrayList<>();
             List<String> sysMacros = new ArrayList<>();
@@ -430,7 +431,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 usrFiles.addAll(prototype.getIncludeFiles());
                 usrMacros.addAll(prototype.getUserMacroDefinitions());
             } else  {
-                sysIncludes.addAll(CndFileUtils.toFSPathList(fs, DefaultSystemSettings.getDefault().getSystemIncludes(lang, impl)));
+                sysIncludes.addAll(IncludePath.toIncludePathList(fs, DefaultSystemSettings.getDefault().getSystemIncludes(lang, impl)));
                 sysIncludeHeaders.addAll(CndFileUtils.toFSPathList(fs, DefaultSystemSettings.getDefault().getSystemIncludeHeaders(lang, impl)));
                 sysMacros.addAll(DefaultSystemSettings.getDefault().getSystemMacros(lang, impl));
             }
@@ -517,7 +518,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
 
         private NativeProjectImpl(FileObject projectRoot,
-                List<FSPath> sysIncludes, List<FSPath> usrIncludes,  List<FSPath> sysIncludeHeaders, List<FSPath> usrFiles,
+                List<IncludePath> sysIncludes, List<IncludePath> usrIncludes,  List<FSPath> sysIncludeHeaders, List<FSPath> usrFiles,
                 List<String> sysMacros, List<String> usrMacros, List<String> undefinedMacros) {
 
             this.projectRoot = projectRoot;
@@ -544,11 +545,11 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             check(usrIncludes);
         }
 
-        private void check(List<FSPath> list) {
-            for(Iterator<FSPath> it = list.iterator(); it.hasNext();){
-                FSPath path = it.next();
-                if (!CndPathUtilities.isPathAbsolute(path.getPath())) {
-                    CndUtils.assertTrueInConsole(false, "Can not convert "+path.getPath()); //NOI18N
+        private void check(List<IncludePath> list) {
+            for(Iterator<IncludePath> it = list.iterator(); it.hasNext();){
+                IncludePath path = it.next();
+                if (!CndPathUtilities.isPathAbsolute(path.getFSPath().getPath())) {
+                    CndUtils.assertTrueInConsole(false, "Can not convert "+path.getFSPath().getPath()); //NOI18N
                     it.remove();
                 }
             }
@@ -651,12 +652,12 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
 
         @Override
-        public List<FSPath> getSystemIncludePaths() {
+        public List<IncludePath> getSystemIncludePaths() {
             return this.sysIncludes;
         }
 
         @Override
-        public List<FSPath> getUserIncludePaths() {
+        public List<IncludePath> getUserIncludePaths() {
             return this.usrIncludes;
         }
 
@@ -805,16 +806,16 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
 
         @Override
-        public List<FSPath> getSystemIncludePaths() {
-            List<FSPath> result = project.getSystemIncludePaths();
-            checkAbsolute(result);
+        public List<IncludePath> getSystemIncludePaths() {
+            List<IncludePath> result = project.getSystemIncludePaths();
+            checkAbsoluteItemPath(result);
             return result;
         }
 
         @Override
-        public List<FSPath> getUserIncludePaths() {
-            List<FSPath> result = project.getUserIncludePaths();
-            checkAbsolute(result);
+        public List<IncludePath> getUserIncludePaths() {
+            List<IncludePath> result = project.getUserIncludePaths();
+            checkAbsoluteItemPath(result);
             return result;
         }
 
@@ -833,6 +834,12 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         private void checkAbsolute(List<FSPath> orig) {
             for (FSPath path : orig) {
                 CndUtils.assertAbsolutePathInConsole(path.getPath());
+            }
+        }
+
+        private void checkAbsoluteItemPath(List<IncludePath> orig) {
+            for (IncludePath path : orig) {
+                CndUtils.assertAbsolutePathInConsole(path.getFSPath().getPath());
             }
         }
 

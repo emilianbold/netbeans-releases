@@ -72,13 +72,14 @@ public class RefreshManager {
 
     /** one the task was scheduled, this should be true */
     private volatile long updateTaskScheduled = 0;
-    
+
     private final LinkedList<String> queue = new LinkedList<>();
     private final Set<String> set = new HashSet<>();
     private final Object queueLock = new Object();
 
     private static final boolean REFRESH_ON_FOCUS = RemoteFileSystemUtils.getBoolean("cnd.remote.refresh.on.focus", true); //NOI18N
     public static final boolean REFRESH_ON_CONNECT = RemoteFileSystemUtils.getBoolean("cnd.remote.refresh.on.connect", true); //NOI18N
+    private static final int REPORT_LONG_REFRESH = Integer.getInteger("cnd.remote.report.long.refresh", 5000);
 
     private final class RefreshWorker implements Runnable {
         private final boolean expected;
@@ -105,6 +106,9 @@ public class RefreshManager {
                         RemoteLogger.finest("RefreshManager: skipping dead file object {0} @ {1}", path, env);
                         continue;
                     }
+                    String oldThreadName = Thread.currentThread().getName();
+                    Thread.currentThread().setName("Remote File System RefreshManager: refreshing " + fo);
+                    long time2 = System.currentTimeMillis();
                     try {
                         fo.refreshImpl(false, null, expected, RemoteFileObjectBase.RefreshMode.DEFAULT);
                     } catch (ConnectException ex) {
@@ -120,15 +124,21 @@ public class RefreshManager {
                         System.err.println("Exception on file "+fo.getPath());
                             ex.printStackTrace(System.err);
                         }
+                    } finally {
+                        Thread.currentThread().setName(oldThreadName);
+                        time2 = System.currentTimeMillis() - time2;
+                        if (time2 > REPORT_LONG_REFRESH) {
+                            RemoteLogger.getInstance().log(Level.WARNING, "Refreshing {0} took {1} ms\n", new Object[]{fo, time2});
+                        }
                     }
-                }                
+                }
                 time = System.currentTimeMillis() - time;
                 if (cnt > 0) {
                     RemoteLogger.getInstance().log(Level.FINEST, "RefreshManager: refreshing {0} directories took {1} ms on {2}", new Object[] {cnt, time, env});
                 }
             }
         }
-    
+
     private boolean permissionDenied(ExecutionException e) {
         Throwable ex = e;
         while (ex != null) {
@@ -156,9 +166,9 @@ public class RefreshManager {
         this.env = env;
         this.factory = factory;
         updateTask = new RequestProcessor("Remote File System RefreshManager " + env.getDisplayName(), 1).create(new RefreshWorker(false)); //NOI18N
-    }        
-    
-    public void scheduleRefreshOnFocusGained() {        
+    }
+
+    public void scheduleRefreshOnFocusGained() {
         if (REFRESH_ON_FOCUS) {
             if (RemoteFileSystemTransport.needsClientSidePollingRefresh(env)) {
                 Collection<RemoteFileObjectBase> fileObjects = factory.getCachedFileObjects();
@@ -190,23 +200,23 @@ public class RefreshManager {
         }
         return result;
     }
-    
+
     private static boolean isDirectory(RemoteFileObjectBase fo) {
         return fo != null && (/*(fo instanceof RemoteLinkBase) || */ (fo instanceof RemoteDirectory));
     }
-    
+
     private static class PathComparator implements Comparator<RemoteFileObjectBase>  {
         private final boolean childrenFirst;
         public PathComparator(boolean childrenFirst) {
             this.childrenFirst = childrenFirst;
-        }        
+        }
         @Override
         public int compare(RemoteFileObjectBase o1, RemoteFileObjectBase o2) {
             int result = o1.getPath().compareTo(o2.getPath());
             return childrenFirst ? -result : result;
-        }        
+        }
     }
-    
+
     public void scheduleRefreshExistent(Collection<String> paths, boolean addExistingChildren) {
         Collection<RemoteFileObjectBase> fileObjects = new ArrayList<>(paths.size());
         for (String path : paths) {
@@ -217,7 +227,7 @@ public class RefreshManager {
         }
         scheduleRefresh(fileObjects, addExistingChildren);
         }
-       
+
     public void scheduleRefresh(Collection<RemoteFileObjectBase> fileObjects, boolean addExistingChildren) {
         if (addExistingChildren) {
             Collection<RemoteFileObjectBase> toRefresh = new TreeSet<>(new PathComparator(false));
@@ -229,7 +239,7 @@ public class RefreshManager {
             scheduleRefreshImpl(fileObjects, true);
         }
     }
-    
+
     public void removeFromRefresh(String path) {
         synchronized (queueLock) {
             if (set.contains(path)) {
@@ -247,7 +257,7 @@ public class RefreshManager {
             }
         }
     }
-    
+
     private void scheduleRefreshImpl(Collection<RemoteFileObjectBase> fileObjects, boolean toTheHead) {
         if ( ! ConnectionManager.getInstance().isConnectedTo(env)) {
             RemoteLogger.getInstance().warning("scheduleRefresh(Collection<FileObject>) is called while host is not connected");
@@ -279,7 +289,7 @@ public class RefreshManager {
                     Thread.sleep(100);
                 } catch (InterruptedException ex) {
                 }
-            }            
+            }
         }
         if (updateTaskScheduled > 0) {
             updateTask.waitFinished();

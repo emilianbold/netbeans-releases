@@ -52,6 +52,7 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -386,13 +387,13 @@ public final class NativeProjectProvider {
         }
 
         @Override
-        public List<FSPath> getSystemIncludePaths() {
-            return CndFileUtils.toFSPathList(CndFileUtils.getLocalFileSystem(), this.sysIncludes);
+        public List<IncludePath> getSystemIncludePaths() {
+            return IncludePath.toIncludePathList(CndFileUtils.getLocalFileSystem(), this.sysIncludes);
         }
 
         @Override
-        public List<FSPath> getUserIncludePaths() {
-            return CndFileUtils.toFSPathList(CndFileUtils.getLocalFileSystem(), this.usrIncludes);
+        public List<IncludePath> getUserIncludePaths() {
+            return IncludePath.toIncludePathList(CndFileUtils.getLocalFileSystem(), this.usrIncludes);
         }
 
         @Override
@@ -491,15 +492,15 @@ public final class NativeProjectProvider {
         }
 
         @Override
-        public List<FSPath> getSystemIncludePaths() {
-	    List<FSPath> result = project.getSystemIncludePaths();
-	    return project.pathsRelCurFile ? toAbsolute(result) : result;
+        public List<IncludePath> getSystemIncludePaths() {
+	    List<IncludePath> result = project.getSystemIncludePaths();
+	    return project.pathsRelCurFile ? toAbsoluteItemPath(result) : result;
         }
 
         @Override
-        public List<FSPath> getUserIncludePaths() {
-	    List<FSPath> result = project.getUserIncludePaths();
-            return project.pathsRelCurFile ? toAbsolute(result) : result;
+        public List<IncludePath> getUserIncludePaths() {
+	    List<IncludePath> result = project.getUserIncludePaths();
+            return project.pathsRelCurFile ? toAbsoluteItemPath(result) : result;
         }
 
         @Override
@@ -524,6 +525,21 @@ public final class NativeProjectProvider {
 		else {
 		    pathFile = new File(base, path.getPath());
 		    result.add(new FSPath(CndFileUtils.getLocalFileSystem(), pathFile.getAbsolutePath()));
+		}
+	    }
+	    return result;
+	}
+
+        private List<IncludePath> toAbsoluteItemPath(List<IncludePath> orig) {
+	    File base = file.getParentFile();
+	    List<IncludePath> result = new ArrayList<>(orig.size());
+	    for( IncludePath path : orig ) {
+		File pathFile = new File(path.getFSPath().getPath());
+		if( pathFile.isAbsolute() ) {
+		    result.add(path);
+		} else {
+		    pathFile = new File(base, path.getFSPath().getPath());
+		    result.add(new IncludePath(CndFileUtils.getLocalFileSystem(), pathFile.getAbsolutePath(), path.isFramework()));
 		}
 	    }
 	    return result;

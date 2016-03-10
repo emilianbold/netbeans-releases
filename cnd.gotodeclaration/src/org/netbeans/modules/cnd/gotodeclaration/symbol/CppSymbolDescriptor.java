@@ -196,4 +196,46 @@ public class CppSymbolDescriptor extends SymbolDescriptor implements Runnable {
     public void run() {
         CsmUtilities.openSource(getFileObject(), offset);
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 41 * hash + (this.project != null ? this.project.hashCode() : 0);
+        hash = 41 * hash + (this.filePath != null ? this.filePath.hashCode() : 0);
+        hash = 41 * hash + this.offset;
+        hash = 41 * hash + (this.ownerName != null ? this.ownerName.hashCode() : 0);
+        hash = 41 * hash + (this.name != null ? this.name.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CppSymbolDescriptor other = (CppSymbolDescriptor) obj;
+        if (this.offset != other.offset) {
+            return false;
+        }
+        if (this.project != other.project && (this.project == null || !this.project.equals(other.project))) {
+            return false;
+        }
+        if (this.filePath != other.filePath && (this.filePath == null || !this.filePath.equals(other.filePath))) {
+            return false;
+        }
+        if (this.ownerName != other.ownerName && (this.ownerName == null || !this.ownerName.equals(other.ownerName))) {
+            return false;
+        }
+        if (this.name != other.name && (this.name == null || !this.name.equals(other.name))) {
+            return false;
+        }
+        return true;
+    }
+    
 }

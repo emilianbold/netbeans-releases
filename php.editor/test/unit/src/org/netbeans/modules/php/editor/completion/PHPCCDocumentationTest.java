@@ -125,6 +125,57 @@ public class PHPCCDocumentationTest extends PHPCodeCompletionTestBase {
         checkCompletionDocumentation("testfiles/completion/documentation/issue245158.php", "$this->b_with^out;", false, "");
     }
 
+    // {@inheritdoc} tag
+    public void testInheritdocClassOnlyTag() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/inheritdoc.php", "class GrandchildClass extends ChildC^lass implements ChildInterface {", false, "");
+    }
+
+    public void testInheritdocClassWithInlineTag() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/inheritdoc.php", "class GrandchildInlineTagClass extends ChildInlineTagC^lass {", false, "");
+    }
+
+    public void testInheritdocInterfaceOnlyTag() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/inheritdoc.php", "class GrandchildClass extends ChildClass implements ChildInterf^ace {", false, "");
+    }
+
+    public void testInheritdocInterfaceWithInlineTag() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/inheritdoc.php", "interface GrandchildInlineTagInterface extends ChildInlineTagI^nterface {", false, "");
+    }
+
+    public void testInheritdocChildMethodOnlyTag() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/inheritdoc.php", "$childClass->testOnlyT^ag($param1, $param2);", false, "");
+    }
+
+    public void testInheritdocGrandchildMethodOnlyTag_01() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/inheritdoc.php", "$grandchildClass->testOnlyT^ag($param1, $param2);", false, "");
+    }
+
+    public void testInheritdocGrandchildMethodOnlyTag_02() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/inheritdoc.php", "$grandchildClass->childInterfaceM^ethod();", false, "");
+    }
+
+    public void testInheritdocNoDocMethod() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/inheritdoc.php", "$childClass->testNoD^oc();", false, "");
+    }
+
+    public void testInheritdocNoTagMethod() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/inheritdoc.php", "$childClass->testNoI^nheritdoc();", false, "");
+    }
+
+    public void testInheritdocMethodWithInlineTag() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/inheritdoc.php", "$grandchildClass->testInlin^e($param1, $param2);", false, "");
+    }
+
+    public void testInheritdocMethodWithMissingParam() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/inheritdoc.php", "$childClass->testMissing^Param($param1);", false, "");
+    }
+
+    public void testInheritdocMethodWithInvalidTag() throws Exception {
+        // not {@inheritdoc} but @inheritdoc
+        // the same result as the normal tag
+        checkCompletionDocumentation("testfiles/completion/documentation/inheritdoc.php", "$childClass->testInvalidT^ag();", false, "");
+    }
+
     @Override
     protected String alterDocumentationForTest(String documentation) {
         int start = documentation.indexOf("file:");

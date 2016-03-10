@@ -45,6 +45,7 @@ package org.netbeans.modules.php.spi.framework;
 import java.util.EnumSet;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.openide.util.HelpCtx;
 
@@ -91,7 +92,21 @@ public abstract class PhpModuleCustomizerExtender {
      * {@link PhpFramewor Provider#getName()} (which is used if {@code null} is returned).
      * @return display name of the category, can be {@code null}.
      */
+    @CheckForNull
     public abstract String getDisplayName();
+
+    /**
+     * Returns the display name of this extender specific for the given PHP module.
+     * <p>
+     * The default implementation returns {@link #getDisplayName() display name}.
+     * @param phpModule PHP module; never {@code null}
+     * @return display name of the category, can be {@code null}.
+     * @since 0.27
+     */
+    @CheckForNull
+    public String getDisplayName(PhpModule phpModule) {
+        return getDisplayName();
+    }
 
     /**
      * Attaches a change listener that is to be notified of changes

@@ -55,6 +55,7 @@ public abstract class BaseParsedLine implements AnnotationParsedLine {
     private final String description;
     private final Map<OffsetRange, String> types;
 
+
     public BaseParsedLine(final String description, final Map<OffsetRange, String> types) {
         assert description != null;
         assert types != null;

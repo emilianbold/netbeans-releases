@@ -95,6 +95,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
@@ -706,21 +707,21 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
                             file = null;
                         }
                     }
-                    List<FSPath> list = CsmFileInfoQuery.getDefault().getUserIncludePaths(file);
+                    List<IncludePath> list = CsmFileInfoQuery.getDefault().getUserIncludePaths(file);
                     if (list.size() > 0) {
                         buf.append(i18n("SourceUserPaths"));  // NOI18N
-                        for (FSPath fsPath : list) {
+                        for (IncludePath fsPath : list) {
                             buf.append("\n<br>&nbsp;&nbsp;&nbsp;&nbsp;");  // NOI18N
-                            FileObject fo = fsPath.getFileObject();
+                            FileObject fo = fsPath.getFSPath().getFileObject();
                             if (fo != null && fo.isValid() && fo.isFolder()) {
-                                buf.append(fsPath.getPath());
+                                buf.append(fsPath.getFSPath().getPath());
                             } else if (fo != null && fo.isValid() && fo.isData()) {
                                 buf.append("<font color='green'>");  // NOI18N
-                                buf.append(fsPath.getPath());
+                                buf.append(fsPath.getFSPath().getPath());
                                 buf.append("</font>");  // NOI18N
                             } else {
                                 buf.append("<font color='red'>");  // NOI18N
-                                buf.append(fsPath.getPath());
+                                buf.append(fsPath.getFSPath().getPath());
                                 buf.append("</font>");  // NOI18N
                             }
                         }
@@ -729,18 +730,18 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
                     list = CsmFileInfoQuery.getDefault().getSystemIncludePaths(file);
                     if (list.size() > 0) {
                         buf.append(i18n("SourceSystemPaths"));  // NOI18N
-                        for (FSPath fsPath : list) {
+                        for (IncludePath fsPath : list) {
                             buf.append("\n<br>&nbsp;&nbsp;&nbsp;&nbsp;");  // NOI18N
-                            FileObject fo = fsPath.getFileObject();
+                            FileObject fo = fsPath.getFSPath().getFileObject();
                             if (fo != null && fo.isValid() && fo.isFolder()) {
-                                buf.append(fsPath.getPath());
+                                buf.append(fsPath.getFSPath().getPath());
                             } else if (fo != null && fo.isValid() && fo.isData()) {
                                 buf.append("<font color='green'>");  // NOI18N
-                                buf.append(fsPath.getPath());
+                                buf.append(fsPath.getFSPath().getPath());
                                 buf.append("</font>");  // NOI18N
                             } else {
                                 buf.append("<font color='red'>");  // NOI18N
-                                buf.append(fsPath.getPath());
+                                buf.append(fsPath.getFSPath().getPath());
                                 buf.append("</font>");  // NOI18N
                             }
                         }

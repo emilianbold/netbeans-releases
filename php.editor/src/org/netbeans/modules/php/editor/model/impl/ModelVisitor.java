@@ -155,6 +155,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.Variadic;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.project.api.PhpEditorExtender;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
@@ -545,6 +546,15 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             markerBuilder.prepare(node, modelBuilder.getCurrentScope());
             scan(node.getFunction().getReturnType());
             checkComments(node);
+            // scan all anonymous classes
+            Block body = node.getFunction().getBody();
+            if (body != null) {
+                AnonymousClassesVisitor anonymousClassesVisitor = new AnonymousClassesVisitor();
+                anonymousClassesVisitor.visit(body);
+                for (ClassInstanceCreation classInstanceCreation : anonymousClassesVisitor.getAnonymousClasses()) {
+                    scan(classInstanceCreation);
+                }
+            }
         }
         try {
             if (!lazyScan) {
@@ -1479,6 +1489,27 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         if (singleUseStatementPart.getAlias() != null) {
             occurencesBuilder.prepare(Kind.USE_ALIAS, singleUseStatementPart.getAlias(), currentScope);
         }
+    }
+
+    //~ Inner classes
+
+    private static final class AnonymousClassesVisitor extends DefaultVisitor {
+
+        private final List<ClassInstanceCreation> anonymousClasses = new ArrayList<>();
+
+
+        @Override
+        public void visit(ClassInstanceCreation node) {
+            if (node.isAnonymous()) {
+                anonymousClasses.add(node);
+                super.visit(node);
+            }
+        }
+
+        public List<ClassInstanceCreation> getAnonymousClasses() {
+            return Collections.unmodifiableList(anonymousClasses);
+        }
+
     }
 
 }

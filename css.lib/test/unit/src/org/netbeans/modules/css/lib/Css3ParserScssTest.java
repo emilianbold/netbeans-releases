@@ -1938,4 +1938,18 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "}");
         
     }
+    
+    public void testPseudoWithWhitespaceOnEnd() {
+        assertParses("#test\n"
+                + "{\n"
+                + "    &:not( .active )\n"
+                + "    {\n"
+                + "        background-color: #E1E1E1;\n"
+                + "    }\n"
+                + "}");
+    }
+    
+    public void testFunctionQuoteInMap() {
+        assertParses("$a: (quote(bgcolor): black)");
+    }
 }

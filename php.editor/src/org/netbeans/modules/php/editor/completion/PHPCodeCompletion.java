@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.completion;
 
@@ -59,6 +59,7 @@ import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -127,7 +128,9 @@ import org.netbeans.modules.php.editor.options.CodeCompletionPanel.VariablesScop
 import org.netbeans.modules.php.editor.options.OptionsUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
@@ -274,7 +277,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         }
 
         CompletionContext context = CompletionContextFinder.findCompletionContext(info, caretOffset);
-        LOGGER.log(Level.FINE, String.format("CC context: %s", context.toString()));
+        LOGGER.log(Level.FINE, "CC context: {0}", context);
 
         if (context == CompletionContext.NONE) {
             return CodeCompletionResult.NONE;
@@ -326,9 +329,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                 for (ConstantElement constant : forName.filter(constants)) {
                     completionResult.add(new PHPCompletionItem.ConstantItem(constant, request));
                 }
-                final ClassDeclaration enclosingClass = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
+                final EnclosingClass enclosingClass = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
                 if (enclosingClass != null) {
-                    String clsName = enclosingClass.getName().getName();
+                    String clsName = enclosingClass.getClassName();
                     for (String classKeyword : PHP_STATIC_CLASS_KEYWORDS) {
                         if (classKeyword.toLowerCase().startsWith(request.prefix)) { //NOI18N
                             completionResult.add(new PHPCompletionItem.ClassScopeKeywordItem(clsName, classKeyword, request));
@@ -356,6 +359,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                 completionResult.add(new PHPCompletionItem.TagItem("<?=", 2, request)); //NOI18N
                 break;
             case NEW_CLASS:
+                autoCompleteKeywords(completionResult, request, Arrays.asList("class")); //NOI18N
                 autoCompleteNamespaces(completionResult, request);
                 autoCompleteNewClass(completionResult, request);
                 break;
@@ -417,9 +421,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                 completionResult.addAll(getVariableProposals(request, null));
                 // are we in class?
                 if (request.prefix.length() == 0 || startsWith(PHP_CLASS_KEYWORD_THIS, request.prefix)) {
-                    final ClassDeclaration classDecl = findEnclosingClass(info, caretOffset);
-                    if (classDecl != null) {
-                        final String className = CodeUtils.extractClassName(classDecl);
+                    final EnclosingClass enclosingCls = findEnclosingClass(info, caretOffset);
+                    if (enclosingCls != null) {
+                        final String className = enclosingCls.extractClassName();
                         if (className != null) {
                             completionResult.add(new PHPCompletionItem.ClassScopeKeywordItem(className, PHP_CLASS_KEYWORD_THIS, request));
                         }
@@ -496,14 +500,14 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         return completionResult;
     }
 
-    private List<ElementFilter> createTypeFilter(final ClassDeclaration enclosingClass) {
+    private List<ElementFilter> createTypeFilter(final EnclosingClass enclosingClass) {
         List<ElementFilter> superTypeIndices = new ArrayList<>();
         Expression superClass = enclosingClass.getSuperClass();
         if (superClass != null) {
-            String superClsName = CodeUtils.extractUnqualifiedSuperClassName(enclosingClass);
+            String superClsName = enclosingClass.extractUnqualifiedSuperClassName();
             superTypeIndices.add(ElementFilter.forSuperClassName(QualifiedName.create(superClsName)));
         }
-        List<Expression> interfaces = enclosingClass.getInterfaes();
+        List<Expression> interfaces = enclosingClass.getInterfaces();
         Set<QualifiedName> superIfaceNames = new HashSet<>();
         for (Expression identifier : interfaces) {
             String ifaceName = CodeUtils.extractUnqualifiedName(identifier);
@@ -519,10 +523,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
 
     private void autoCompleteMethodName(ParserResult info, int caretOffset, final PHPCompletionResult completionResult,
             PHPCompletionItem.CompletionRequest request) {
-        ClassDeclaration enclosingClass = findEnclosingClass(info, lexerToASTOffset(info, caretOffset));
+        EnclosingClass enclosingClass = findEnclosingClass(info, lexerToASTOffset(info, caretOffset));
         if (enclosingClass != null) {
             List<ElementFilter> superTypeIndices = createTypeFilter(enclosingClass);
-            String clsName = enclosingClass.getName().getName();
+            String clsName = enclosingClass.getClassName();
             NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(request.result.getModel().getFileScope(), request.anchor);
             String fullyQualifiedClassName = VariousUtils.qualifyTypeNames(clsName, request.anchor, namespaceScope);
             if (fullyQualifiedClassName != null) {
@@ -575,14 +579,16 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         final NameKind query;
         if (classes.size() == 1) {
             ClassElement clazz = (ClassElement) classes.toArray()[0];
-            if (!clazz.isAbstract()) {
+            if (!clazz.isAbstract()
+                    && !CodeUtils.isSyntheticTypeName(clazz.getName())) {
                 // if there is only once class find constructors for it
                 query = isCamelCase ? NameKind.create(prefix.toString(), QuerySupport.Kind.CAMEL_CASE) : NameKind.caseInsensitivePrefix(prefix);
                 autoCompleteConstructors(completionResult, request, model, query);
             }
         } else {
             for (ClassElement clazz : classes) {
-                if (!clazz.isAbstract()) {
+                if (!clazz.isAbstract()
+                        && !CodeUtils.isSyntheticTypeName(clazz.getName())) {
                     // check whether the prefix is exactly the class
                     NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(request.result.getModel().getFileScope(), request.anchor);
                     String fqPrefixName = VariousUtils.qualifyTypeNames(request.prefix, request.anchor, namespaceScope);
@@ -664,7 +670,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             completionResult.setFilterable(false);
         }
         for (ClassElement clazz : classes) {
-            completionResult.add(new PHPCompletionItem.ClassItem(clazz, request, endWithDoubleColon, kind));
+            if (!CodeUtils.isSyntheticTypeName(clazz.getName())) {
+                completionResult.add(new PHPCompletionItem.ClassItem(clazz, request, endWithDoubleColon, kind));
+            }
         }
     }
 
@@ -796,7 +804,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             Collection<PhpElement> allTopLevel = request.index.getTopLevelElements(NameKind.empty(), aliasedNames, Trait.ALIAS);
             for (PhpElement element : allTopLevel) {
                 if (element instanceof ClassElement) {
-                    completionResult.add(new PHPCompletionItem.ClassItem((ClassElement) element, request, endWithDoubleColon, kind));
+                    ClassElement classElement = (ClassElement) element;
+                    if (!CodeUtils.isSyntheticTypeName(classElement.getName())) {
+                        completionResult.add(new PHPCompletionItem.ClassItem(classElement, request, endWithDoubleColon, kind));
+                    }
                 } else if (element instanceof InterfaceElement) {
                     completionResult.add(new PHPCompletionItem.InterfaceItem((InterfaceElement) element, request, kind, endWithDoubleColon));
                 }
@@ -861,10 +872,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
 
         autoCompleteKeywords(completionResult, request, CLASS_CONTEXT_KEYWORD_PROPOSAL);
         if (offerMagicAndInherited) {
-            ClassDeclaration enclosingClass = findEnclosingClass(info, lexerToASTOffset(info, caretOffset));
+            EnclosingClass enclosingClass = findEnclosingClass(info, lexerToASTOffset(info, caretOffset));
             if (enclosingClass != null) {
                 List<ElementFilter> superTypeIndices = createTypeFilter(enclosingClass);
-                String clsName = enclosingClass.getName().getName();
+                String clsName = enclosingClass.getClassName();
                 NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(request.result.getModel().getFileScope(), request.anchor);
                 String fullyQualifiedClassName = VariousUtils.qualifyTypeNames(clsName, request.anchor, namespaceScope);
                 if (fullyQualifiedClassName != null) {
@@ -1044,8 +1055,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
     }
 
     private TypeElement getEnclosingType(CompletionRequest request, Collection<? extends TypeScope> types) {
-        final TypeDeclaration enclosingType = findEnclosingType(request.info, lexerToASTOffset(request.result, request.anchor));
-        final String enclosingTypeName = (enclosingType != null) ? CodeUtils.extractTypeName(enclosingType) : null;
+        final EnclosingType enclosingType = findEnclosingType(request.info, lexerToASTOffset(request.result, request.anchor));
+        final String enclosingTypeName = enclosingType != null ? enclosingType.extractTypeName() : null;
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(request.result.getModel().getFileScope(), request.anchor);
         final String enclosingFQTypeName = VariousUtils.qualifyTypeNames(enclosingTypeName, request.anchor, namespaceScope);
         final NameKind enclosingTypeNameKind = (enclosingFQTypeName != null && !enclosingFQTypeName.trim().isEmpty()) ? NameKind.exact(enclosingFQTypeName) : null;
@@ -1076,21 +1087,51 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         return (enclosingTypes == null || enclosingTypes.isEmpty()) ? null : enclosingTypes.iterator().next();
     }
 
-    private static TypeDeclaration findEnclosingType(ParserResult info, int offset) {
+    @CheckForNull
+    private static EnclosingType findEnclosingType(ParserResult info, int offset) {
         List<ASTNode> nodes = NavUtils.underCaret(info, offset);
-        for (ASTNode node : nodes) {
-            if (node instanceof TypeDeclaration && node.getEndOffset() != offset) {
-                return (TypeDeclaration) node;
+        for (int i = nodes.size() - 1; i >= 0; i--) {
+            ASTNode node = nodes.get(i);
+            if (node instanceof TypeDeclaration
+                    && node.getEndOffset() > offset) {
+                return EnclosingType.forTypeDeclaration((TypeDeclaration) node);
+            }
+            if (node instanceof ClassInstanceCreation
+                    && node.getEndOffset() > offset) {
+                ClassInstanceCreation classInstanceCreation = (ClassInstanceCreation) node;
+                if (classInstanceCreation.isAnonymous()) {
+                    Block body = classInstanceCreation.getBody();
+                    if (body != null
+                            && body.getStartOffset() <= offset
+                            && body.getEndOffset() >= offset) {
+                        return EnclosingType.forClassInstanceCreation(classInstanceCreation);
+                    }
+                }
             }
         }
         return null;
     }
 
-    private static ClassDeclaration findEnclosingClass(ParserResult info, int offset) {
+    @CheckForNull
+    private static EnclosingClass findEnclosingClass(ParserResult info, int offset) {
         List<ASTNode> nodes = NavUtils.underCaret(info, offset);
-        for (ASTNode node : nodes) {
-            if (node instanceof ClassDeclaration && node.getEndOffset() != offset) {
-                return (ClassDeclaration) node;
+        for (int i = nodes.size() - 1; i >= 0; i--) {
+            ASTNode node = nodes.get(i);
+            if (node instanceof ClassDeclaration
+                    && node.getEndOffset() > offset) {
+                return EnclosingClass.forClassDeclaration((ClassDeclaration) node);
+            }
+            if (node instanceof ClassInstanceCreation
+                    && node.getEndOffset() > offset) {
+                ClassInstanceCreation classInstanceCreation = (ClassInstanceCreation) node;
+                if (classInstanceCreation.isAnonymous()) {
+                    Block body = classInstanceCreation.getBody();
+                    if (body != null
+                            && body.getStartOffset() <= offset
+                            && body.getEndOffset() >= offset) {
+                        return EnclosingClass.forClassInstanceCreation((ClassInstanceCreation) node);
+                    }
+                }
             }
         }
         return null;
@@ -1139,7 +1180,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                     completionResult.add(functionItem);
                 }
             } else if (element instanceof ClassElement) {
-                completionResult.add(new PHPCompletionItem.ClassItem((ClassElement) element, request, true, null));
+                ClassElement classElement = (ClassElement) element;
+                if (!CodeUtils.isSyntheticTypeName(classElement.getName())) {
+                    completionResult.add(new PHPCompletionItem.ClassItem(classElement, request, true, null));
+                }
             } else if (element instanceof InterfaceElement) {
                 completionResult.add(new PHPCompletionItem.InterfaceItem((InterfaceElement) element, request, true));
             } else if (offerGlobalVariables && element instanceof VariableElement) {
@@ -1153,15 +1197,14 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         completionResult.addAll(getVariableProposals(request, forCurrentFile.reverseFilter(globalVariables)));
 
         // Special keywords applicable only inside a class or trait
-        final TypeDeclaration typeDecl = findEnclosingType(request.info, lexerToASTOffset(request.result, request.anchor));
-        if (typeDecl != null) {
-            if (typeDecl instanceof ClassDeclaration || typeDecl instanceof TraitDeclaration) {
-                final String typeName = CodeUtils.extractTypeName(typeDecl);
-                if (typeName != null) {
-                    for (final String keyword : PHP_CLASS_KEYWORDS) {
-                        if (startsWith(keyword, request.prefix)) {
-                            completionResult.add(new PHPCompletionItem.ClassScopeKeywordItem(typeName, keyword, request));
-                        }
+        final EnclosingType enclosingType = findEnclosingType(request.info, lexerToASTOffset(request.result, request.anchor));
+        if (enclosingType != null
+                && (enclosingType.isClassDeclaration() || enclosingType.isTraitDeclaration())) {
+            final String typeName = enclosingType.extractTypeName();
+            if (typeName != null) {
+                for (final String keyword : PHP_CLASS_KEYWORDS) {
+                    if (startsWith(keyword, request.prefix)) {
+                        completionResult.add(new PHPCompletionItem.ClassScopeKeywordItem(typeName, keyword, request));
                     }
                 }
             }
@@ -1284,6 +1327,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         return Character.isJavaIdentifierPart(c) || c == '@';
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "INT_BAD_COMPARISON_WITH_NONNEGATIVE_VALUE", justification = "Not sure about FB analysis correctness")
     private String getPrefix(ParserResult info, int caretOffset, boolean upToOffset, PrefixBreaker prefixBreaker) {
         try {
             BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);
@@ -1611,4 +1655,131 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
     private static boolean isCamelCaseForTypeNames(final String query) {
         return false;
     }
+
+    private interface EnclosingType {
+
+        boolean isClassDeclaration();
+
+        boolean isTraitDeclaration();
+
+        String extractTypeName();
+
+        //~ Factories
+
+        static EnclosingType forTypeDeclaration(final TypeDeclaration typeDeclaration) {
+            return new EnclosingType() {
+                @Override
+                public boolean isClassDeclaration() {
+                    return typeDeclaration instanceof ClassDeclaration;
+                }
+
+                @Override
+                public boolean isTraitDeclaration() {
+                    return typeDeclaration instanceof TraitDeclaration;
+                }
+
+                @Override
+                public String extractTypeName() {
+                    return CodeUtils.extractTypeName(typeDeclaration);
+                }
+            };
+        }
+
+        static EnclosingType forClassInstanceCreation(final ClassInstanceCreation classInstanceCreation) {
+            assert classInstanceCreation.isAnonymous() : classInstanceCreation;
+            return new EnclosingType() {
+                @Override
+                public boolean isClassDeclaration() {
+                    return true;
+                }
+
+                @Override
+                public boolean isTraitDeclaration() {
+                    return false;
+                }
+
+                @Override
+                public String extractTypeName() {
+                    return CodeUtils.extractClassName(classInstanceCreation);
+                }
+            };
+        }
+
+    }
+
+    private interface EnclosingClass {
+
+        String getClassName();
+
+        Expression getSuperClass();
+
+        List<Expression> getInterfaces();
+
+        String extractClassName();
+
+        String extractUnqualifiedSuperClassName();
+
+        //~ Factories
+
+        static EnclosingClass forClassDeclaration(final ClassDeclaration classDeclaration) {
+            return new EnclosingClass() {
+                @Override
+                public String getClassName() {
+                    return classDeclaration.getName().getName();
+                }
+
+                @Override
+                public Expression getSuperClass() {
+                    return classDeclaration.getSuperClass();
+                }
+
+                @Override
+                public List<Expression> getInterfaces() {
+                    return classDeclaration.getInterfaes();
+                }
+
+                @Override
+                public String extractClassName() {
+                    return CodeUtils.extractClassName(classDeclaration);
+                }
+
+                @Override
+                public String extractUnqualifiedSuperClassName() {
+                    return CodeUtils.extractUnqualifiedSuperClassName(classDeclaration);
+                }
+            };
+        }
+
+        static EnclosingClass forClassInstanceCreation(final ClassInstanceCreation classInstanceCreation) {
+            assert classInstanceCreation.isAnonymous() : classInstanceCreation;
+            return new EnclosingClass() {
+                @Override
+                public String getClassName() {
+                    return CodeUtils.extractClassName(classInstanceCreation);
+                }
+
+                @Override
+                public Expression getSuperClass() {
+                    return classInstanceCreation.getSuperClass();
+                }
+
+                @Override
+                public List<Expression> getInterfaces() {
+                    return classInstanceCreation.getInterfaces();
+                }
+
+                @Override
+                public String extractClassName() {
+                    return CodeUtils.extractClassName(classInstanceCreation);
+                }
+
+                @Override
+                public String extractUnqualifiedSuperClassName() {
+                    return CodeUtils.extractUnqualifiedSuperClassName(classInstanceCreation);
+                }
+            };
+        }
+
+    }
+
 }

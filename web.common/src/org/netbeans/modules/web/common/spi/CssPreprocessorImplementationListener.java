@@ -70,8 +70,8 @@ public interface CssPreprocessorImplementationListener extends EventListener {
 
     /**
      * This method is called when processing error occurs.
-     * @param project project where processing error occured
-     * @param cssPreprocessor CSS preprocessor where processing error occured
+     * @param project project where processing error occurred
+     * @param cssPreprocessor CSS preprocessor where processing error occurred
      * @param error error message
      * @since 1.45
      */

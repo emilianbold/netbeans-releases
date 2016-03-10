@@ -55,24 +55,50 @@ public class PhpUnitTest extends NbTestCase {
         super(name);
     }
 
-    public void testLinePatternTestRunner() {
-        Matcher matcher = PhpUnit.LINE_PATTERN.matcher("/home/gapon/test/Calculator.php:635");
+    public void testOutLinePatternTestRunner() {
+        Matcher matcher = PhpUnit.OUT_LINE_PATTERN.matcher("/home/gapon/test/Calculator.php:635");
         assertTrue(matcher.matches());
         assertEquals("/home/gapon/test/Calculator.php", matcher.group(1));
         assertEquals("635", matcher.group(2));
-        assertTrue(PhpUnit.LINE_PATTERN.matcher("/h o m e/gapon/test/Calculator.php:635").matches());
-        assertTrue(PhpUnit.LINE_PATTERN.matcher("C:\\home\\gapon\\test\\Calculator.php:635").matches());
+        assertTrue(PhpUnit.OUT_LINE_PATTERN.matcher("/h o m e/gapon/test/Calculator.php:635").matches());
+        assertTrue(PhpUnit.OUT_LINE_PATTERN.matcher("C:\\home\\gapon\\test\\Calculator.php:635").matches());
 
-        assertFalse(PhpUnit.LINE_PATTERN.matcher("").matches());
+        assertFalse(PhpUnit.OUT_LINE_PATTERN.matcher("").matches());
     }
 
-    public void testLinePatternOutput() {
-        assertTrue(PhpUnit.LINE_PATTERN.matcher("/home/gapon/test/Calculator.php:635").matches());
-
-        Matcher matcher = PhpUnit.LINE_PATTERN.matcher("0.1077    6609264   6. PHPUnit_Util_Fileloader::checkAndLoad() /usr/share/php/PHPUnit/Framework/TestSuite.php:385");
+    public void testOutLinePatternOutput() {
+        Matcher matcher = PhpUnit.OUT_LINE_PATTERN.matcher("0.1077    6609264   6. PHPUnit_Util_Fileloader::checkAndLoad() /usr/share/php/PHPUnit/Framework/TestSuite.php:385");
         assertTrue(matcher.matches());
         assertEquals("/usr/share/php/PHPUnit/Framework/TestSuite.php", matcher.group(1));
         assertEquals("385", matcher.group(2));
+
+        assertFalse(PhpUnit.ERR_LINE_PATTERN.matcher("").matches());
+    }
+
+    public void testErrLineNumberPatternOutput() {
+        Matcher matcher = PhpUnit.ERR_LINE_PATTERN.matcher("#0 /home/gapon/NetBeansProjects/Calculator-PHPUnit1/vendor/phpunit/phpunit/src/Util/Fileloader.php(56):"
+                + " include_once()");
+        assertTrue(matcher.matches());
+        assertEquals("/home/gapon/NetBeansProjects/Calculator-PHPUnit1/vendor/phpunit/phpunit/src/Util/Fileloader.php", matcher.group(1));
+        assertEquals("56", matcher.group(2));
+
+        assertTrue(PhpUnit.ERR_LINE_PATTERN.matcher("#0 /h o m e/gapon/NetBeansProjects/Calculator-PHPUnit1/vendor/phpunit/phpunit/src/Util/Fileloader.php(56):"
+                + " include_once() and once more").matches());
+        assertTrue(PhpUnit.ERR_LINE_PATTERN.matcher("#0 C:\\home\\gapon\\NetBeansProjects\\Calculator-PHPUnit1\\vendor\\phpunit\\phpunit\\src\\Util\\"
+                + "Fileloader.php(56): include_once()").matches());
+    }
+
+    public void testErrLineInPatternOutput() {
+        Matcher matcher = PhpUnit.ERR_LINE_PATTERN.matcher("# in /home/gapon/NetBeansProjects/Calculator-PHPUnit1/vendor/phpunit/phpunit/tests/Regression/GitHub/"
+                + "873/Issue873Test.php on line 7");
+        assertTrue(matcher.matches());
+        assertEquals("/home/gapon/NetBeansProjects/Calculator-PHPUnit1/vendor/phpunit/phpunit/tests/Regression/GitHub/873/Issue873Test.php", matcher.group(1));
+        assertEquals("7", matcher.group(2));
+
+        assertTrue(PhpUnit.ERR_LINE_PATTERN.matcher("# in /h o m e/gapon/NetBeansProjects/Calculator-PHPUnit1/vendor/phpunit/phpunit/tests/Regression/GitHub/"
+                + "873/Issue873Test.php on line 7").matches());
+        assertTrue(PhpUnit.ERR_LINE_PATTERN.matcher("# in C:\\home\\gapon\\NetBeansProjects\\Calculator-PHPUnit1\\vendor\\phpunit\\phpunit\\tests\\Regression\\GitHub\\"
+                + "873\\Issue873Test.php on line 7").matches());
     }
 
     public void testRelPath() {

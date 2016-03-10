@@ -83,7 +83,7 @@ import org.openide.windows.TopComponent;
 
 /**
  * Folder rename refactoring is enabled by the
- * org.netbeans.modules.web.common.refactoring.FolderActionsImplementationProvider
+ * org.netbeans.modules.web.common.ui.refactoring.FolderActionsImplementationProvider
  *
  * The css refactoring just provides the rename plugin which handles css links
  * possibly affected by the folder rename.

@@ -2652,7 +2652,7 @@ public class ETable extends JTable {
                         boolean clear = ((me.getModifiers() & InputEvent.SHIFT_MASK) != InputEvent.SHIFT_MASK);
                         etcm.toggleSortedColumn(etc, clear);
                         resetPermutation ();
-                        ETable.super.tableChanged(new TableModelEvent(getModel(), 0, getRowCount()));
+                        ETable.super.tableChanged(new TableModelEvent(getModel(), 0, getRowCount() - 1));
                         if (selectedRows != null) {
                             changeSelectionInModel(selectedRows, wasSelectedColumn);
                         }

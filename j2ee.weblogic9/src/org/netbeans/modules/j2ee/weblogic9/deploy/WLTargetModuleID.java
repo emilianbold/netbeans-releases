@@ -44,16 +44,23 @@
 package org.netbeans.modules.j2ee.weblogic9.deploy;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.WebTargetModuleID;
+import org.netbeans.modules.j2ee.weblogic9.URLWait;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author whd
  */
-public class WLTargetModuleID implements TargetModuleID {
+public class WLTargetModuleID implements WebTargetModuleID {
+
+    private final RequestProcessor requestProcessor = new RequestProcessor(WLTargetModuleID.class);
 
     private final Target target;
 
@@ -66,6 +73,8 @@ public class WLTargetModuleID implements TargetModuleID {
     private List children = new ArrayList();
 
     private TargetModuleID  parent;
+
+    private List<URL> serverUrls = new ArrayList<URL>();
 
     public WLTargetModuleID(Target target) {
         this(target, "");
@@ -100,6 +109,37 @@ public class WLTargetModuleID implements TargetModuleID {
 
     public synchronized TargetModuleID[] getChildTargetModuleID(){
         return (TargetModuleID[]) children.toArray(new TargetModuleID[children.size()]);
+    }
+    
+    public synchronized void addUrl(URL url) {
+        serverUrls.add(url);
+    }
+
+    @Override
+    public URL resolveWebURL() {
+        List<URL> candidates;
+        synchronized (this) {
+            candidates = new ArrayList<URL>(serverUrls);
+        }
+        String web = getWebURL();
+        if (web != null) {
+            try {
+                candidates.add(new URL(web));
+            } catch (MalformedURLException ex) {
+                // just continue
+            }
+        }
+
+        for (URL c : candidates) {
+            if (URLWait.waitForUrlReady(null, requestProcessor, c, 1000)) {
+                // use the first one if it became available as well
+                if (URLWait.waitForUrlReady(null, requestProcessor, candidates.get(0), 500)) {
+                    return candidates.get(0);
+                }
+                return c;
+            }
+        }
+        return null;
     }
 
     public String getModuleID() {

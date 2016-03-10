@@ -1,2 +1,0 @@
-function myfunc(|>MARK_OCCURRENCES:p^aram1<|, param2) {
-    |>MARK_OCCURRENCES:param1<|;

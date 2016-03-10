@@ -42,6 +42,9 @@
 package org.netbeans.modules.cordova;
 
 import java.io.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -60,7 +63,7 @@ public class CordovaPlatform {
     
     private static String CORDOVA_SDK_ROOT_PREF = "cordova.home";//NOI18N
 
-    private Version version;
+    private final Map<String, Version> versions = Collections.synchronizedMap(new HashMap<>());
     private boolean isGitReady;
 
     private transient final java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
@@ -77,25 +80,52 @@ public class CordovaPlatform {
     
     private static Pattern versionPattern = Pattern.compile("[0-9]+\\.[0-9]+\\.[0-9]+.*");
     
-    public Version getVersion() {
+    public Version getVersion(String path) {
+        if(path.length() > 0 ) { 
+            if( !(new File(path).isFile() && path.endsWith("cordova")) ) {
+                if(File.separatorChar != path.charAt(path.length() -1)) {
+                    path += File.separatorChar;
+                } 
+                path = path + "cordova";
+            }
+        } else {
+            path = path + "cordova";
+        }
+        
+        Version version = versions.get(path);
         if (version == null) {
-            try {
-                String v;
-                if (Utilities.isWindows()) {
-                    v = ProcessUtilities.callProcess("cmd", true, 60*1000, "/C cordova -v");
-                } else if (Utilities.isMac()) {
-                    v = ProcessUtilities.callProcess("/bin/bash", true, 60*1000, "-lc", "cordova -v");
-                } else {
-                    v = ProcessUtilities.callProcess("cordova", true, 60*1000, "-v");
-                }
-                if (versionPattern.matcher(v.trim()).matches()) {
-                    version = new Version(v.trim());
-                }
-            } catch (IOException ex) {
-                Version.LOG.log(Level.INFO, "Could not find cordova on PATH."); //NOI18N
+            version = loadVersionIntern(path);
+            if(version != null) {
+                versions.put(path, version);
             }
         }
         return version;
+    }
+    
+    public Version getVersion() {
+        return getVersion("");
+    }
+
+    protected Version loadVersionIntern(String path) {     
+        
+        Version.LOG.log(Level.INFO, "loading cordova version for path {0}", path);
+        
+        try {
+            String v;
+            if (Utilities.isWindows()) {
+                v = ProcessUtilities.callProcess("cmd", true, 60*1000, "/C " + path + " -v");
+            } else if (Utilities.isMac()) {
+                v = ProcessUtilities.callProcess("/bin/bash", true, 60*1000, "-lc", path + " -v");
+            } else {
+                v = ProcessUtilities.callProcess(path, true, 60*1000, "-v");
+            }
+            if (versionPattern.matcher(v.trim()).matches()) {
+                return new Version(v.trim());
+            }
+        } catch (IOException ex) {
+            Version.LOG.log(Level.INFO, "Could not find cordova on PATH."); //NOI18N
+        }
+        return null;
     }
     
 

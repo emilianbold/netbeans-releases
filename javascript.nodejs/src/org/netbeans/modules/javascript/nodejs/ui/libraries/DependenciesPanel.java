@@ -432,7 +432,7 @@ public class DependenciesPanel extends javax.swing.JPanel {
     private boolean checkOtherDependencyTypes(String libraryName) {
         List<Dependency.Type> types = allDependencies.otherDependencyTypes(libraryName, dependencyType);
         if (!types.isEmpty()) {
-            String dependencyTypesMessage = "";
+            StringBuilder dependencyTypesMessage = new StringBuilder();
             for (Dependency.Type type : types) {
                 String dependencyTypeMessage;
                 switch(type) {
@@ -441,7 +441,7 @@ public class DependenciesPanel extends javax.swing.JPanel {
                     case OPTIONAL: dependencyTypeMessage = Bundle.DependenciesPanel_otherOptionalDependency(); break;
                     default: throw new InternalError();
                 }
-                dependencyTypesMessage += Bundle.DependenciesPanel_alsoDependency(dependencyTypeMessage);
+                dependencyTypesMessage.append(Bundle.DependenciesPanel_alsoDependency(dependencyTypeMessage));
             }
             String message = Bundle.DependenciesPanel_otherDependencyWarning(libraryName, dependencyTypesMessage);
             NotifyDescriptor descriptor = new NotifyDescriptor(
@@ -458,7 +458,7 @@ public class DependenciesPanel extends javax.swing.JPanel {
             );
             DialogDisplayer.getDefault().notify(descriptor);
             Object retVal = descriptor.getValue();
-            if (Bundle.DependenciesPanel_addAndKeep().equals(retVal)){
+            if (Bundle.DependenciesPanel_addAndKeep().equals(retVal)) {
                 return true;
             } else if (Bundle.DependenciesPanel_addAndRemove().equals(retVal)) {
                 allDependencies.removeOtherDependencies(libraryName, dependencyType);
@@ -713,6 +713,7 @@ public class DependenciesPanel extends javax.swing.JPanel {
     /**
      * Comparator of {@code Dependency} objects.
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "SE_COMPARATOR_SHOULD_BE_SERIALIZABLE", justification = "No need to be serializable")
     static class DependencyComparator implements Comparator<Dependency> {
         @Override
         public int compare(Dependency o1, Dependency o2) {

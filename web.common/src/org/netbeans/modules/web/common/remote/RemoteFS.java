@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.web.common.remote;
 
-import java.awt.Image;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,8 +54,9 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.web.common.spi.RemoteFSDecorator;
 import org.openide.filesystems.*;
-import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -76,7 +76,13 @@ public class RemoteFS extends AbstractFileSystem {
         list = new RemoteList();
         info = new RemoteInfo();
         attr = new RemoteAttributes();
-        status = new RemoteStatus();
+        RemoteFSDecorator rfsd = Lookup.getDefault().lookup(RemoteFSDecorator.class);
+        if (rfsd != null) {
+            rfsd.setDefaultDecorator(new RemoteStatus());
+            status = rfsd;
+        } else {
+            status = new RemoteStatus();
+        }
     }
     
     /*
@@ -315,7 +321,7 @@ public class RemoteFS extends AbstractFileSystem {
     }
 
     @NbBundle.Messages("LBL_RemoteFiles=Remote Files")
-    private class RemoteStatus implements StatusDecorator, ImageDecorator {
+    private class RemoteStatus implements StatusDecorator {
 
         RemoteStatus() {}
 
@@ -363,19 +369,7 @@ public class RemoteFS extends AbstractFileSystem {
                 return name;
             }
         }
-
-        @Override
-        public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
-            int n = files.size();
-            if (n == 1) {
-                FileObject fo = files.iterator().next();
-                if (fo.isRoot()) {
-                    return ImageUtilities.loadImage(
-                            "org/netbeans/modules/web/clientproject/ui/resources/remotefiles.png"); //NOI18N
-                }
-            }
-            return icon;
-        }
+        
     }
     
 }

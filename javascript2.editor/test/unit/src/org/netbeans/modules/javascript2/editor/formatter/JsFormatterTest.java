@@ -1611,6 +1611,10 @@ public class JsFormatterTest extends JsTestBase {
         options.put(FmtOptions.wrapVariables, CodeStyle.WrapStyle.WRAP_IF_LONG);
         reformatFileContents("testfiles/formatter/var2.js", options, ".wrapIfLong.formatted");
     }
+    
+    public void testVar2Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/var2.js");
+    }
 
     public void testVar3Always() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
@@ -1628,6 +1632,10 @@ public class JsFormatterTest extends JsTestBase {
         HashMap<String, Object> options = new HashMap<String, Object>();
         options.put(FmtOptions.wrapVariables, CodeStyle.WrapStyle.WRAP_IF_LONG);
         reformatFileContents("testfiles/formatter/var3.js", options, ".wrapIfLong.formatted");
+    }
+    
+    public void testVar3Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/var3.js");
     }
 
     public void testVar4() throws Exception {
@@ -1672,6 +1680,10 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testIssue220920() throws Exception {
         reformatFileContents("testfiles/formatter/issue220920.js",new IndentPrefs(4, 4));
+    }
+
+    public void testIssue220920Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/issue220920.js");
     }
 
     public void testIssue221293() throws Exception {

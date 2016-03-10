@@ -59,6 +59,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.*;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -348,12 +349,12 @@ public class ModelSupport implements PropertyChangeListener {
     public static void dumpNativeProject(NativeProject nativeProject) {
         System.err.println("\n\n\nDumping project " + nativeProject.getProjectDisplayName());
         System.err.println("\nSystem include paths");
-        for (Iterator<FSPath> it = nativeProject.getSystemIncludePaths().iterator(); it.hasNext();) {
-            System.err.println("    " + it.next());
+        for (Iterator<IncludePath> it = nativeProject.getSystemIncludePaths().iterator(); it.hasNext();) {
+            System.err.println("    " + it.next().getFSPath().getPath());
         }
         System.err.println("\nUser include paths");
-        for (Iterator<FSPath> it = nativeProject.getUserIncludePaths().iterator(); it.hasNext();) {
-            System.err.println("    " + it.next());
+        for (Iterator<IncludePath> it = nativeProject.getUserIncludePaths().iterator(); it.hasNext();) {
+            System.err.println("    " + it.next().getFSPath().getPath());
         }
         System.err.println("\nSystem macros");
         for (Iterator<String> it = nativeProject.getSystemMacroDefinitions().iterator(); it.hasNext();) {

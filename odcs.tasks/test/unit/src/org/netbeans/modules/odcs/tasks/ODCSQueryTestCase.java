@@ -54,7 +54,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
-import static junit.framework.Assert.assertEquals;
 import junit.framework.Test;
 import oracle.eclipse.tools.cloud.dev.tasks.CloudDevConstants;
 import org.eclipse.core.runtime.CoreException;
@@ -67,6 +66,9 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.odcs.tasks.query.QueryParameters;
+import static org.netbeans.modules.odcs.client.TestUtils.TEST_COMPONENT2;
+import static org.netbeans.modules.odcs.client.TestUtils.TEST_COMPONENT3;
+import static org.netbeans.modules.odcs.client.TestUtils.TEST_PRODUCT;
 
 /**
  *

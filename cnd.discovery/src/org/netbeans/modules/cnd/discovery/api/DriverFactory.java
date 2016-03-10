@@ -51,6 +51,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
@@ -69,22 +70,34 @@ public final class DriverFactory {
     }
     
     public static ItemProperties.LanguageStandard getLanguageStandard(ItemProperties.LanguageStandard standard, Artifacts artifacts) {
+        ItemProperties.LanguageStandard res = standard;
         for (String lang : artifacts.getLanguageArtifacts()) {
-            if ("c89".equals(lang)) { //NOI18N
-                standard = ItemProperties.LanguageStandard.C89;
-            } else if ("c99".equals(lang)) { //NOI18N
-                standard = ItemProperties.LanguageStandard.C99;
-            } else if ("c11".equals(lang)) { //NOI18N
-                standard = ItemProperties.LanguageStandard.C11;
-            } else if ("c++98".equals(lang)) { //NOI18N
-                standard = ItemProperties.LanguageStandard.CPP;
-            } else if ("c++11".equals(lang)) { //NOI18N
-                standard = ItemProperties.LanguageStandard.CPP11;
-            } else if ("c++14".equals(lang)) { //NOI18N
-                standard = ItemProperties.LanguageStandard.CPP14;
+            if (null != lang) {
+                switch (lang) {
+                    case "c89": //NOI18N
+                        res = ItemProperties.LanguageStandard.C89;
+                        break;
+                    case "c99": //NOI18N
+                        res = ItemProperties.LanguageStandard.C99;
+                        break;
+                    case "c11": //NOI18N
+                        res = ItemProperties.LanguageStandard.C11;
+                        break;
+                    case "c++98": //NOI18N
+                        res = ItemProperties.LanguageStandard.CPP;
+                        break;
+                    case "c++11": //NOI18N
+                        res = ItemProperties.LanguageStandard.CPP11;
+                        break;
+                    case "c++14": //NOI18N
+                        res = ItemProperties.LanguageStandard.CPP14;
+                        break;
+                    default:
+                        break;
+                }
             }
         }
-        return standard;
+        return res;
     }
     
     public static String importantFlagsToString(Artifacts artifacts) {
@@ -93,7 +106,11 @@ public final class DriverFactory {
             if (buf.length() > 0) {
                 buf.append(' ');
             }
-            buf.append(flag);
+            if (flag.indexOf(' ')>0) {
+                buf.append('\'').append(flag).append('\'');
+            } else {
+                buf.append(flag);
+            }
         }
         return buf.toString();
     }
@@ -119,7 +136,7 @@ public final class DriverFactory {
 
         @Override
         public List<String> splitCommandLine(String line, CompileLineOrigin isScriptOutput) {
-            List<String> res = new ArrayList<String>();
+            List<String> res = new ArrayList<>();
             int i = 0;
             StringBuilder current = new StringBuilder();
             boolean isSingleQuoteMode = false;
@@ -197,7 +214,7 @@ public final class DriverFactory {
                 }
             }
             if (hasQuotes) {
-                List<String> newList = new ArrayList<String>();
+                List<String> newList = new ArrayList<>();
                 for (int i = 0; i < list.size();) {
                     String s = list.get(i);
                     if (s.startsWith("-D") && s.endsWith("=") && i + 1 < list.size() && list.get(i + 1).startsWith("\"")) { // NOI18N
@@ -233,7 +250,7 @@ public final class DriverFactory {
             String option;
             ArtifactsImpl artifacts = new ArtifactsImpl();
             List<String> what = artifacts.input;
-            List<String> importantCandidates = new ArrayList<String>();
+            List<String> importantCandidates = new ArrayList<>();
             while (st.hasNext()) {
                 option = st.next();
                 boolean isQuote = false;
@@ -315,6 +332,12 @@ public final class DriverFactory {
                     }
                     path = removeQuotes(path);
                     artifacts.userIncludes.add(path);
+                } else if (option.startsWith("-F")) { // NOI18N
+                    if (option.equals("-F") && st.hasNext()) { // NOI18N
+                        String path = st.next();
+                        path = removeQuotes(path)+Driver.FRAMEWORK;
+                        artifacts.userIncludes.add(path);
+                    }
                 } else if (option.startsWith("-isystem")) { // NOI18N
                     String path = option.substring(8);
                     if (path.length() == 0 && st.hasNext()) {
@@ -366,11 +389,15 @@ public final class DriverFactory {
                     if (option.equals("-iwithprefixbefore") && st.hasNext()) { // NOI18N
                         st.next();
                     }
-                } else if (option.startsWith("-isysroot")) { // NOI18N
-                    //This option is like the --sysroot option, but applies only to header files.
-                    if (option.equals("-isysroot") && st.hasNext()) { // NOI18N
-                        st.next();
+                } else if (option.startsWith(Driver.ISYSROOT_FLAG)) { // NOI18N
+                    String path = option.substring(9);
+                    if (path.length() == 0 && st.hasNext()) {
+                        path = st.next();
                     }
+                    // sure it is an important flag
+                    artifacts.importantFlags.add(option);
+                    path = removeQuotes(path);
+                    artifacts.importantFlags.add(path);
                 } else if (option.startsWith("-iquote")) { // NOI18N
                     //Search dir only for header files requested with "#include " file ""
                     if (option.equals("-iquote") && st.hasNext()) { // NOI18N
@@ -605,14 +632,14 @@ public final class DriverFactory {
     
     
     private static final class ArtifactsImpl implements Artifacts {
-        public final List<String> input = new ArrayList<String>();
-        public final List<String> userIncludes = new ArrayList<String>();
-        public final List<String> userFiles = new ArrayList<String>();
-        public final Map<String, String> userMacros = new HashMap<String,String>();
-        public final List<String> undefinedMacros = new ArrayList<String>();
-        public final Set<String> libraries = new HashSet<String>();
-        public final List<String> languageArtifacts = new ArrayList<String>();
-        public final List<String> importantFlags = new ArrayList<String>();
+        public final List<String> input = new ArrayList<>();
+        public final List<String> userIncludes = new ArrayList<>();
+        public final List<String> userFiles = new ArrayList<>();
+        public final Map<String, String> userMacros = new HashMap<>();
+        public final List<String> undefinedMacros = new ArrayList<>();
+        public final Set<String> libraries = new HashSet<>();
+        public final List<String> languageArtifacts = new ArrayList<>();
+        public final List<String> importantFlags = new ArrayList<>();
         public String output;
 
         @Override

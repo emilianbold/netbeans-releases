@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,33 +37,17 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.phpunit.run;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.phpunit.commands.PhpUnit;
-import org.netbeans.modules.php.phpunit.preferences.PhpUnitPreferences;
-import org.netbeans.modules.php.spi.testing.locate.Locations;
-import org.netbeans.modules.php.spi.testing.run.TestCase;
 import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
 import org.netbeans.modules.php.spi.testing.run.TestSession;
-import org.netbeans.modules.php.spi.testing.run.TestSuite;
 
 public final class TestRunner {
-
-    private static final Logger LOGGER = Logger.getLogger(TestRunner.class.getName());
 
     private final PhpModule phpModule;
 
@@ -78,96 +62,10 @@ public final class TestRunner {
         if (phpUnit == null) {
             throw new TestRunException();
         }
-        Integer result = phpUnit.runTests(phpModule, runInfo);
+        Integer result = phpUnit.runTests(phpModule, runInfo, testSession);
         if (result == null) { // do NOT check 0 since phpunit returns 1 if any test fails
             // some error
             throw new TestRunException();
-        }
-        TestSessionVo sessionVo = createTestSession(PhpUnit.XML_LOG);
-        if (sessionVo != null) {
-            map(sessionVo, testSession);
-        }
-    }
-
-    @CheckForNull
-    private TestSessionVo createTestSession(File xmlLog) throws TestRunException {
-        Reader reader;
-        try {
-            // #163633 - php unit always uses utf-8 for its xml logs
-            reader = new BufferedReader(new InputStreamReader(new FileInputStream(xmlLog), "UTF-8")); // NOI18N
-        } catch (UnsupportedEncodingException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-            return null;
-        } catch (FileNotFoundException ex) {
-            processPhpUnitError(ex);
-            return null;
-        }
-        TestSessionVo session = new TestSessionVo(getCustomTestSuite());
-        boolean parsed = PhpUnitLogParser.parse(reader, session);
-        if (!parsed) {
-            processPhpUnitError(null);
-            return null;
-        }
-        return session;
-    }
-
-    private String getCustomTestSuite() {
-        if (PhpUnitPreferences.isCustomSuiteEnabled(phpModule)) {
-            return PhpUnitPreferences.getCustomSuitePath(phpModule);
-        }
-        return null;
-    }
-
-
-    private void processPhpUnitError(Exception cause) throws TestRunException {
-        LOGGER.info(String.format("File %s not found or cannot be parsed. If there are no errors in PHPUnit output (verify in Output window), "
-                + "please report an issue (http://www.netbeans.org/issues/).", PhpUnit.XML_LOG));
-        throw new TestRunException(cause);
-    }
-
-    //~ Mappers
-
-    private void map(TestSessionVo sessionVo, TestSession testSession) {
-        testSession.setOutputLineHandler(sessionVo.getOutputLineHandler());
-        String initMessage = sessionVo.getInitMessage();
-        if (initMessage != null) {
-            testSession.printMessage(initMessage, false);
-            testSession.printMessage("", false); // NOI18N
-        }
-        for (TestSuiteVo suiteVo : sessionVo.getTestSuites()) {
-            TestSuite testSuite = testSession.addTestSuite(suiteVo.getName(), suiteVo.getLocation());
-            for (TestCaseVo caseVo : suiteVo.getTestCases()) {
-                TestCase testCase = testSuite.addTestCase(caseVo.getName(), caseVo.getType());
-                String className = caseVo.getClassName();
-                if (className != null) {
-                    testCase.setClassName(className);
-                }
-                Locations.Line location = caseVo.getLocation();
-                if (location != null) {
-                    testCase.setLocation(location);
-                }
-                testCase.setStatus(caseVo.getStatus());
-                boolean error = caseVo.isError();
-                if (error
-                        || caseVo.isFailure()) {
-                    String[] stackTrace = caseVo.getStackTrace();
-                    // #251749
-                    String[] tmp;
-                    if (stackTrace.length == 1) {
-                        tmp = new String[0];
-                    } else {
-                        tmp = new String[stackTrace.length - 1];
-                        System.arraycopy(stackTrace, 1, tmp, 0, stackTrace.length - 1);
-                    }
-                    testCase.setFailureInfo(stackTrace[0], tmp, error, caseVo.getDiff());
-                }
-                testCase.setTime(caseVo.getTime());
-            }
-            testSuite.finish(suiteVo.getTime());
-        }
-        String finishMessage = sessionVo.getFinishMessage();
-        if (finishMessage != null) {
-            testSession.printMessage(finishMessage, false);
         }
     }
 

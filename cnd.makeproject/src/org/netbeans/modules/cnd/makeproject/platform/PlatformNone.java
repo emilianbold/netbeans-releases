@@ -77,7 +77,7 @@ public class PlatformNone extends Platform {
     }
     
     @Override
-    public String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet) {
+    public String getLibraryLinkOption(String libName, String libDir, String libPath, String libSearchPath, CompilerSet compilerSet) {
         if (libName.endsWith(".so")) { // NOI18N
             int i = libName.indexOf(".so"); // NOI18N
             if (i > 0) {

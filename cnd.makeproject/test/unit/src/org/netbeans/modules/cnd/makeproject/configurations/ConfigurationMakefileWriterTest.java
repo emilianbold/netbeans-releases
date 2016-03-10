@@ -393,7 +393,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
     @Test
     public void testMain_SunStudio_Solaris_Intel() {
         StringBuilder golden = new StringBuilder();
-        golden.append("LDLIBSOPTIONS=../hello1lib/dist/Debug/.../libhello1lib.a -R../hello3lib/dist/Debug/... -L../hello3lib/dist/Debug/... -lhello3lib\n");
+        golden.append("LDLIBSOPTIONS=../hello1lib/dist/Debug/.../libhello1lib.a -R'../hello3lib/dist/Debug/...' -L../hello3lib/dist/Debug/... -lhello3lib\n");
         golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/xxx: ../hello1lib/dist/Debug/.../libhello1lib.a\n");
         golden.append("\n");
         golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/xxx: ../hello3lib/dist/Debug/.../libhello3lib.so\n");
@@ -407,7 +407,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
     @Test
     public void testMain_GNU_Solaris_Intel() {
         StringBuilder golden = new StringBuilder();
-        golden.append("LDLIBSOPTIONS=../hello1lib/dist/Debug/.../libhello1lib.a -R../hello3lib/dist/Debug/... -L../hello3lib/dist/Debug/... -lhello3lib\n");
+        golden.append("LDLIBSOPTIONS=../hello1lib/dist/Debug/.../libhello1lib.a -R'../hello3lib/dist/Debug/...' -L../hello3lib/dist/Debug/... -lhello3lib\n");
         golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/xxx: ../hello1lib/dist/Debug/.../libhello1lib.a\n");
         golden.append("\n");
         golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/xxx: ../hello3lib/dist/Debug/.../libhello3lib.so\n");

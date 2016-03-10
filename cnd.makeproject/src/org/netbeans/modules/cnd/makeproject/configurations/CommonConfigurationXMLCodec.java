@@ -99,7 +99,10 @@ import org.openide.util.Exceptions;
  * Common subclass to ConfigurationXMLCodec and AuxConfigurationXMLCodec.
  * 
  * Change History:
- * 
+ * V98 - NB 8.2
+ *    Added copying of dependent shared libraries to a binary's output directory (LINKER_COPY_SHARED_LIBS_ELEMENT)
+ * V98 - NB 8.2
+ *    Added type of run time search path of dependant projects with shared libraries (LINKER_DEP_DYN_SERCH_KIND_ELEMENT)
  * V97 - NB 8.1
  *    Store target platform in public configurations.xml
  *    if configuration is marked as platform specific.
@@ -298,7 +301,7 @@ public abstract class CommonConfigurationXMLCodec
         implements XMLEncoder {
     
     public final static int VERSION_WITH_INVERTED_SERIALIZATION = 88;
-    public final static int CURRENT_VERSION = 97;
+    public final static int CURRENT_VERSION = 99;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
@@ -431,6 +434,8 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String LINKER_ASSIGN_ELEMENT = "linkerAssign"; // NOI18N
     protected final static String LINKER_ADD_LIB_ELEMENT = "linkerAddLib"; // NOI18N
     protected final static String LINKER_DYN_SERCH_ELEMENT = "linkerDynSerch"; // NOI18N
+    protected final static String LINKER_DEP_DYN_SERCH_KIND_ELEMENT = "linkerDepDynSerchKind"; // NOI18N
+    protected final static String LINKER_COPY_SHARED_LIBS_ELEMENT = "linkerCopySharedLibs"; // NOI18N
     protected final static String LINKER_LIB_ELEMENT = "linkerLib"; // NOI18N
     protected final static String LINKER_LIB_ITEMS_ELEMENT = "linkerLibItems"; // NOI18N
     protected final static String LINKER_LIB_PROJECT_ITEM_ELEMENT = "linkerLibProjectItem"; // NOI18N
@@ -1352,6 +1357,12 @@ public abstract class CommonConfigurationXMLCodec
         }
         if (linkerConfiguration.getNorunpathOption().getModified()) {
             xes.element(LINKER_NORUNPATH_ELEMENT, "" + linkerConfiguration.getNorunpathOption().getValue()); // NOI18N
+        }
+        if (linkerConfiguration.getLibrariesRunTimeSearchPathKind().getModified()) {
+            xes.element(LINKER_DEP_DYN_SERCH_KIND_ELEMENT, "" + linkerConfiguration.getLibrariesRunTimeSearchPathKind().getValue());
+        }
+        if (linkerConfiguration.getCopyLibrariesConfiguration().getModified()) {
+            xes.element(LINKER_COPY_SHARED_LIBS_ELEMENT, "" + linkerConfiguration.getCopyLibrariesConfiguration().getValue());
         }
         if (linkerConfiguration.getNameassignOption().getModified()) {
             xes.element(LINKER_ASSIGN_ELEMENT, "" + linkerConfiguration.getNameassignOption().getValue()); // NOI18N

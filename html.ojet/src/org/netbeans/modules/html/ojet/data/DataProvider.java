@@ -52,10 +52,14 @@ import java.util.List;
 public abstract class DataProvider {
 
     public abstract Collection<DataItem> getBindingOptions();
+    
+    public abstract Collection<DataItem> getModuleProperties();
 
     public abstract Collection<DataItem> getComponents();
 
     public abstract Collection<DataItem> getComponentOptions(String compName);
+    
+    public abstract Collection<DataItem> getComponentEvents(String compName);
     
     public abstract Collection<String> getAvailableVersions();
     

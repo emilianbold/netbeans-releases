@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.web.common.api;
 
-import java.awt.EventQueue;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -61,7 +60,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -70,14 +68,14 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.base.ProcessBuilder;
 import org.netbeans.api.extexecution.base.input.InputProcessor;
 import org.netbeans.api.extexecution.base.input.InputProcessors;
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.BaseProgressUtils;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.modules.web.common.spi.ExternalExecutableUserWarning;
+import org.openide.util.BaseUtilities;
+import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
-import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
 /**
@@ -115,7 +113,7 @@ public final class ExternalExecutable {
     private String executableName = null;
     private String displayName = null;
     private String optionsPath = null;
-    private boolean redirectErrorStream = true;
+    private boolean redirectErrorStream = false;
     private File workDir = null;
     private boolean warnUser = true;
     private List<String> additionalParameters = Collections.<String>emptyList();
@@ -149,7 +147,7 @@ public final class ExternalExecutable {
             LOGGER.log(Level.FINE, "Only program given (no parameters): {0}", command);
             return Pair.of(tokens[0].trim(), Collections.<String>emptyList());
         }
-        Pair<String, List<String>> parsedCommand = Pair.of(tokens[0].trim(), Arrays.asList(Utilities.parseParameters(tokens[1].trim())));
+        Pair<String, List<String>> parsedCommand = Pair.of(tokens[0].trim(), Arrays.asList(BaseUtilities.parseParameters(tokens[1].trim())));
         LOGGER.log(Level.FINE, "Parameters parsed: {0} {1}", new Object[] {parsedCommand.first(), parsedCommand.second()});
         return parsedCommand;
     }
@@ -219,7 +217,7 @@ public final class ExternalExecutable {
     /**
      * Set error stream redirection.
      * <p>
-     * The default value is {@code true} (it means that the error stream is redirected to the standard output).
+     * The default value is {@code false} (it means that the error stream is not redirected to the standard output).
      * @param redirectErrorStream {@code true} if error stream should be redirected, {@code false} otherwise
      * @return the external executable instance itself
      */
@@ -421,7 +419,7 @@ public final class ExternalExecutable {
             return null;
         }
         final AtomicReference<ExecutionException> executionException = new AtomicReference<>();
-        if (SwingUtilities.isEventDispatchThread()) {
+        if (Mutex.EVENT.isReadAccess()) {   // Is EDT
             if (!result.isDone()) {
                 try {
                     // let's wait in EDT to avoid flashing dialogs
@@ -452,15 +450,12 @@ public final class ExternalExecutable {
         final String error = ExternalExecutableValidator.validateCommand(executable, executableName);
         if (error != null) {
             if (warnUser) {
-                EventQueue.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(error, NotifyDescriptor.ERROR_MESSAGE));
-                        if (optionsPath != null) {
-                            OptionsDisplayer.getDefault().open(optionsPath);
-                        }
-                    }
-                });
+                ExternalExecutableUserWarning euw = Lookup.getDefault().lookup(ExternalExecutableUserWarning.class);
+                if (euw == null) {
+                    LOGGER.info("No implementation of "+ExternalExecutableUserWarning.class);
+                } else {
+                    euw.displayError(error, optionsPath);
+                }
             }
             return null;
         }

@@ -206,7 +206,12 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
         searchHistory.saveHistory();
         super.removeNotify();
     }
-  
+
+
+    void revalidateModel(final boolean done) {
+        setModel(resultList.getModel(), done);
+    }
+
     //Good for setting model form any thread
     void setModel(
             @NonNull final ListModel model,

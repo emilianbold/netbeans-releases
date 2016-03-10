@@ -281,7 +281,7 @@ public final class TapParser {
         assert file != null : line;
         testCase.setFile(file);
         assert fileLine != null : line;
-        testCase.setLine(Integer.valueOf(fileLine));
+        testCase.setLine(Integer.parseInt(fileLine));
         return true;
     }
 

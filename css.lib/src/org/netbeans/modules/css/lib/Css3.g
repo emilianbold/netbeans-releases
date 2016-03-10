@@ -416,7 +416,8 @@ mediaBodyItem
     //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c12 -- class selector in selector group recognized as mixin call -- workarounded by adding the ws? SEMI to the predicate
     | (cp_mixin_call (ws? IMPORTANT_SYM)? ws? SEMI)=> {isLessSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
     | (cp_mixin_call)=> {isScssSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
-    |( ~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI)+ SEMI )=>propertyDeclaration
+    | (((SASS_AT_ROOT (ws selectorsGroup)? ) | (SASS_AT_ROOT ws LPAREN ws? IDENT ws? COLON ws? IDENT ws? RPAREN) | selectorsGroup) ws? LBRACE)=>rule
+    | (propertyDeclaration)=>propertyDeclaration
     | {isScssSource()}? sass_debug
     | {isScssSource()}? sass_control
     | {isScssSource()}? sass_content
@@ -656,7 +657,7 @@ sass_map_pairs
 
 sass_map_pair
     :
-        (property|STRING) ws? COLON ws? cp_expression (ws? prio)?
+        (STRING|((function)=>function)|property) ws? COLON ws? cp_expression (ws? prio)?
     ;
 
 rule
@@ -847,7 +848,7 @@ pseudo
                 )
                 | {isScssSource()}? sass_interpolation_expression_var
                 |
-                ( NOT ws? LPAREN ws? simpleSelectorSequence? RPAREN )
+                ( NOT ws? LPAREN ws? (simpleSelectorSequence ws?)? RPAREN )
                 | 
                 ({isLessSource()}? {tokenNameEquals("extend")}? IDENT ws? LPAREN ws? selectorsGroup? RPAREN)
              ) 

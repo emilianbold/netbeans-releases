@@ -49,8 +49,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import javax.swing.ImageIcon;
-import org.netbeans.modules.web.common.api.FileReferenceCompletion;
 import org.netbeans.modules.web.common.api.ValueCompletion;
+import org.netbeans.modules.web.common.ui.api.FileReferenceCompletion;
 import org.openide.filesystems.FileObject;
 
 /**

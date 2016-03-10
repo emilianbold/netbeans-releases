@@ -153,6 +153,8 @@ public final class LibraryPersistence {
      * @param libraryElement element to load information from.
      * @return library version corresponding to the given DOM element.
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
+            justification = "Not sure about it, really (not my code)")
     private Library.Version loadLibrary(Element libraryElement) {
         String libraryName = libraryElement.getAttribute(ATTR_LIBRARY_NAME);
         String versionName = libraryElement.getAttribute(ATTR_VERSION_NAME);
@@ -244,6 +246,8 @@ public final class LibraryPersistence {
     /**
      * Comparator of {@code Library.Version}s.
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "SE_COMPARATOR_SHOULD_BE_SERIALIZABLE",
+            justification = "No need to be serializable")
     static class LibraryVersionComparator implements Comparator<Library.Version> {
         @Override
         public int compare(Library.Version o1, Library.Version o2) {

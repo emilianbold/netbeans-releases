@@ -102,9 +102,9 @@ import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
-import org.netbeans.modules.web.common.api.FileReferenceCompletion;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
+import org.netbeans.modules.web.common.ui.api.FileReferenceCompletion;
 import org.openide.filesystems.FileObject;
 
 /**

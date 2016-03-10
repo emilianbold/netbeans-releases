@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.odcs.tasks;
 
+import com.tasktop.c2c.server.common.service.EntityNotFoundException;
+import com.tasktop.c2c.server.common.service.ValidationException;
 import com.tasktop.c2c.server.tasks.domain.Component;
 import com.tasktop.c2c.server.tasks.domain.Iteration;
 import com.tasktop.c2c.server.tasks.domain.Product;
@@ -63,12 +65,14 @@ import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
-import org.eclipse.mylyn.tasks.core.TaskRepositoryLocationFactory;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.odcs.client.TestUtils;
 import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
 import org.openide.util.Exceptions;
+import static org.netbeans.modules.odcs.client.TestUtils.TEST_USER1;
+import org.netbeans.modules.odcs.client.api.ODCSException;
 
 /**
  *
@@ -80,13 +84,6 @@ public abstract class AbstractODCSTestCase extends NbTestCase  {
     protected static String proxyHost = null;
     protected static String proxyPort = null;
     
-    protected static String TEST_PRODUCT = "Unit Test Product";
-    protected static final String TEST_COMPONENT1 = "Component1";
-    protected static final String TEST_COMPONENT2 = "Component2";
-    protected static final String TEST_COMPONENT3 = "Component3";
-    
-    protected static final String TEST_USER1 = "tina.testsuite";
-    protected static final String TEST_USER2 = "tom.testsuite";
     private static String username;
     private static String url;
             
@@ -94,6 +91,7 @@ public abstract class AbstractODCSTestCase extends NbTestCase  {
     protected CloudDevRepositoryConnector rc;
     protected TaskRepositoryManager trm;
     protected NullProgressMonitor nullProgressMonitor = new NullProgressMonitor();
+    protected static final String TASKS_SUFIX = "s/qa-dev_netbeans-test/tasks";
     
     static {
         if (passw == null) {
@@ -116,7 +114,7 @@ public abstract class AbstractODCSTestCase extends NbTestCase  {
 
                 url = br.readLine();
                 assert url != null && !url.trim().isEmpty();
-                url = url.endsWith("/") ? url + "s/qa-dev_netbeans-test/tasks" : url + "/s/qa-dev_netbeans-test/tasks";
+                url = url.endsWith("/") ? url + TASKS_SUFIX : url + "/" + TASKS_SUFIX;
                 br.close();
                 
                 if(proxyPort != null && proxyHost != null) {
@@ -127,7 +125,7 @@ public abstract class AbstractODCSTestCase extends NbTestCase  {
                 Exceptions.printStackTrace(ex);
             } 
         }
-            
+        
     }
 
     public AbstractODCSTestCase(String arg0) {
@@ -163,6 +161,19 @@ public abstract class AbstractODCSTestCase extends NbTestCase  {
         trm.addRepositoryConnector(rc);
         trm.addRepository(taskRepository);
 
+        try {
+            TestUtils.ensureTestProject(url.substring(0, url.length() - TASKS_SUFIX.length()), username, passw);
+        } catch (ODCSException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (EntityNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ValidationException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         //        System.setProperty("httpclient.wire.level", "-1");
         
     }
@@ -208,10 +219,10 @@ public abstract class AbstractODCSTestCase extends NbTestCase  {
         ta.setValue(ODCSUtil.getStatusByValue(conf, "UNCONFIRMED").getValue());
         
         ta = rta.getMappedAttribute(TaskAttribute.USER_ASSIGNED);
-        ta.setValue(component.getInitialOwner().getLoginName());
+        ta.setValue(TEST_USER1);
         
         ta = rta.getMappedAttribute(CloudDevAttribute.REPORTER.getTaskName());
-        ta.setValue(component.getInitialOwner().getLoginName());
+        ta.setValue(TEST_USER1);
         
         RepositoryResponse rr = ODCSUtil.postTaskData(rc, taskRepository, data);
         assertEquals(RepositoryResponse.ResponseKind.TASK_CREATED, rr.getReposonseKind());

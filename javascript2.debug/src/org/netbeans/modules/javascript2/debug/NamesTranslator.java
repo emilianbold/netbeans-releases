@@ -45,8 +45,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.document.LineDocument;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
@@ -59,7 +62,6 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.web.common.sourcemap.SourceMapsTranslator;
 import org.openide.filesystems.FileObject;
-import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 
 /**
@@ -104,11 +106,14 @@ public final class NamesTranslator {
             return null;
         }
         // Check lineNumber:
-        int lastLine = NbDocument.findLineNumber((StyledDocument) doc, doc.getLength()-1);
-        if (lineNumber > lastLine) {
-            lineNumber = lastLine;
-        }
-        int offset = NbDocument.findLineOffset((StyledDocument) doc, lineNumber) + columnNumber;
+        
+        try {
+            int lastLine = LineDocumentUtils.getLineIndex((LineDocument) doc, doc.getLength()-1);
+            if (lineNumber > lastLine) {
+                lineNumber = lastLine;
+            }
+        } catch (BadLocationException blex) {}
+        int offset = LineDocumentUtils.getLineStartFromIndex((LineDocument) doc, lineNumber) + columnNumber;
 
         return new NamesTranslator(smt, fileObject, source, offset);
     }
@@ -158,8 +163,9 @@ public final class NamesTranslator {
                     for (JsObject var : variables) {
                         int voffset = var.getOffset();
                         Document doc = source.getDocument(true);
-                        int line = NbDocument.findLineNumber((StyledDocument) doc, voffset);
-                        int column = NbDocument.findLineColumn((StyledDocument) doc, voffset);
+                        int line = LineDocumentUtils.getLineIndex((LineDocument) doc, voffset);
+                        //int column = NbDocument.findLineColumn((StyledDocument) doc, voffset);
+                        int column = voffset - LineDocumentUtils.getLineStart((LineDocument) doc, voffset);
                         SourceMapsTranslator.Location loc = new SourceMapsTranslator.Location(fileObject, line, column);
                         loc = smt.getSourceLocation(loc);
                         String tname = loc.getName();
@@ -190,8 +196,8 @@ public final class NamesTranslator {
                         Identifier declarationName = declarationObject.getDeclarationName();
                         int doffset = declarationName.getOffsetRange().getStart();
                         Document doc = source.getDocument(true);
-                        int line = NbDocument.findLineNumber((StyledDocument) doc, doffset);
-                        int column = NbDocument.findLineColumn((StyledDocument) doc, doffset);
+                        int line = LineDocumentUtils.getLineIndex((LineDocument) doc, doffset);
+                        int column = doffset - LineDocumentUtils.getLineStart((LineDocument) doc, doffset);
                         SourceMapsTranslator.Location loc = new SourceMapsTranslator.Location(fileObject, line, column);
                         loc = smt.getSourceLocation(loc);
                         namePtr[0] = loc.getName();

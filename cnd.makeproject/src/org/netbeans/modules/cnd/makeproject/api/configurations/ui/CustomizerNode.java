@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations.ui;
 
-import javax.swing.JPanel;
+import javax.swing.JComponent;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeContext;
 import org.openide.nodes.Sheet;
@@ -81,7 +81,7 @@ public class CustomizerNode {
         return null;
     }
     
-    public JPanel getPanel(Configuration configuration) {
+    public JComponent getPanel(Configuration configuration) {
         return null;
     }
 

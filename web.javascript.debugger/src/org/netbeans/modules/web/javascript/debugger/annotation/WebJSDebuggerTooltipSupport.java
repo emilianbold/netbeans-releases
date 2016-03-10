@@ -45,7 +45,7 @@ package org.netbeans.modules.web.javascript.debugger.annotation;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
-import org.netbeans.modules.javascript2.debug.tooltip.DebuggerTooltipSupport;
+import org.netbeans.modules.javascript2.debug.ui.tooltip.DebuggerTooltipSupport;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.openide.util.Exceptions;

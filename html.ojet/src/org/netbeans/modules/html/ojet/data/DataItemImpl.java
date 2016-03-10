@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.html.ojet.OJETUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -64,12 +65,20 @@ public class DataItemImpl implements DataItem {
 
     private final String name;
     private final String docUrl;
+    private final String template;
 
     public DataItemImpl(String name, String docUrl) {
         this.name = name;
         this.docUrl = docUrl;
+        this.template = null;
     }
 
+    public DataItemImpl(String name, String docUrl, String template) {
+        this.name = name;
+        this.docUrl = docUrl;
+        this.template = template;
+    }
+    
     @Override
     public String getName() {
         return name;
@@ -87,12 +96,85 @@ public class DataItemImpl implements DataItem {
 
     @Override
     public String getTemplate() {
-        return null;
+        return template;
     }
 
+    public static class DataItemModule extends DataItemImpl {
+    
+        private static String NAME_RECOGNIZER_TEXT = "class=\"name\"><code>"; //NOI18N
+        private static String START_DESCRIPTION_RECOGNIZER_TEXT = "<td class=\"description last\">"; //NOI18N
+        private static String END_DESCRIPTION_RECOGNIZER_TEXT = "</td>"; //NOI18N
+        private static String PROPERTIES_RECOGNIZER_TEXT = "Properties:"; //NOI18N
+        private List<DataItem> properties = null;
+        
+        public DataItemModule(String docUrl) {
+            super(OJETUtils.OJ_MODULE, docUrl);
+        }
+    
+        public Collection<DataItem> getProperies() {
+            if (properties == null) {
+                properties = new ArrayList();
+                InputStream in = null;
+                try {
+                    in = getInputStream(new URL(getDocUrl()));
+                    BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8")); //NOI18N
+                    String line;
+                    boolean inProperties = false;
+                    boolean inDescription = false;
+
+                    String name = "";
+                    String description = "";
+                    while ((line = br.readLine()) != null) {
+                        if (!inProperties && line.contains(PROPERTIES_RECOGNIZER_TEXT)) { //NOI18N
+                            inProperties = true;
+                        }
+                        if (inProperties) {
+                            if (inDescription) {
+                                int index = line.indexOf(END_DESCRIPTION_RECOGNIZER_TEXT);
+                                if (index > -1) {
+                                    description = description + "\n" + line.substring(0, index);
+                                    inDescription = false;
+                                    properties.add(new DataItemModuleProperty(name, description, getDocUrl()));
+                                } else {
+                                    description = description + "\n" + line;
+                                }
+                            } else {
+                                if (line.contains(NAME_RECOGNIZER_TEXT)) { //NOI18N
+                                    int index = line.indexOf(NAME_RECOGNIZER_TEXT) + NAME_RECOGNIZER_TEXT.length();
+                                    name = line.substring(index, line.indexOf('<', index));
+                                }
+                                if (line.contains(START_DESCRIPTION_RECOGNIZER_TEXT)) {
+                                    inDescription = true;
+                                    description = line.substring(line.indexOf(START_DESCRIPTION_RECOGNIZER_TEXT) + START_DESCRIPTION_RECOGNIZER_TEXT.length());
+                                }
+                            }
+                        }
+                    }
+                    br.close();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } finally {
+                    try {
+                        if (in != null) {
+                            in.close();
+                        }
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+            return Collections.unmodifiableCollection(properties);
+        }
+        
+        
+    }
+    
     public static class DataItemComponent extends DataItemImpl {
 
+        private static final String EVENT_NAME_START = "id=\"event:";   // NOI18N
+        
         private List<DataItem> options = null;
+        private List<DataItem> events = null;
 
         public DataItemComponent(String name, String docUrl) {
             super(name, docUrl);
@@ -192,8 +274,45 @@ public class DataItemImpl implements DataItem {
             }
             return Collections.unmodifiableCollection(options);
         }
+        
+        public Collection<DataItem> getEvents() {
+            if (events == null) {
+                events = new ArrayList();
+                InputStream in = null;
+                try {
+                    in = getInputStream(new URL(getDocUrl()));
+                    BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8")); //NOI18N
+                    String line;
+                    boolean inMembers = false;
+                    int ulBalance = 0;
+                    int index = -1;
+                    int end;
+                    while ((line = br.readLine()) != null) {
+                        index = line.indexOf(EVENT_NAME_START);
+                        if (index > -1) {
+                            index += EVENT_NAME_START.length();
+                            end = line.indexOf('"', index);
+                            String name = line.substring(index, end);
+                            events.add(new DataItemEvent(name, getDocUrl()));
+                        }
+                    }
+                    br.close();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } finally {
+                    try {
+                        if (in != null) {
+                            in.close();
+                        }
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+            return Collections.unmodifiableCollection(events);
+        }
     }
-
+    
     public static class DataItemOption extends DataItemImpl {
 
         public DataItemOption(String name, String docUrl) {
@@ -255,7 +374,85 @@ public class DataItemImpl implements DataItem {
         }
 
     }
+    
+    public static class DataItemEvent extends DataItemImpl {
+        
+        public DataItemEvent(String name, String docUrl) {
+            super(name, docUrl);
+        }
+        
+        @Override
+        public String getDocumentation() {
+            InputStream in = null;
+            try {
+                in = getInputStream(new URL(getDocUrl()));
+                BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8")); //NOI18N
+                String line;
 
+                StringBuilder content = new StringBuilder();
+                String startText = "<h4 id=\"event:" + getName() + "\" class=\"name\">";  //NOI18N
+                boolean inSection = false;
+                content.append("<dt>"); //NOI18N
+                int ddCount = 0;
+                while ((line = br.readLine()) != null) {
+                    if (!inSection && line.contains(startText)) {
+                        inSection = true;
+                    }
+                    if (inSection) {
+                        
+//                        if (line.contains("class=\"name\"")) {
+//                            line.replace("class=\"name\"", "style=font-family: Consolas, \"Lucida Console\", Monaco, monospace;");
+//                        }
+                        content.append(line);
+                        if (line.contains("<dd")) { //NOI18N
+                            ddCount++;
+                        }
+                        if (line.contains("</dd")) {    //NOI18N
+                            ddCount--;
+                            if (ddCount == 0) {
+                                break;
+                            }
+                        }
+                    }
+
+                }
+                br.close();
+                String result = content.toString();
+//                result = result.replaceAll("class=\"type-signature\"", "style=\"color: #aaa\"");
+//                result = result.replaceAll("class=\"description\"", "style=\"margin-bottom: 1em; margin-left: -16px; margin-top: 1em;\"");
+                return result;
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                try {
+                    if (in != null) {
+                        in.close();
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            return null;
+        }
+    }
+    
+    
+    public static class DataItemModuleProperty extends DataItemImpl {
+        
+        private final String description;
+        
+        public DataItemModuleProperty(String name, String description, String docUrl) {
+            super(name, docUrl);
+            this.description = description;
+        }
+
+        @Override
+        public String getDocumentation() {
+            return description;
+        }
+        
+    }
+    
     private static InputStream getInputStream(URL url) {
         URL rootURL = FileUtil.getArchiveFile(url);
         FileObject rootFO = FileUtil.toFileObject(FileUtil.archiveOrDirForURL(rootURL));

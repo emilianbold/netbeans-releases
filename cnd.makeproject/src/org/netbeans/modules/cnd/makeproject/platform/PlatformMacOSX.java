@@ -87,7 +87,7 @@ public class PlatformMacOSX extends Platform {
     }
 
     @Override
-    public String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet) {
+    public String getLibraryLinkOption(String libName, String libDir, String libPath, String libSearchPath, CompilerSet compilerSet) {
         if (libName.endsWith(LIBRARY_SUFFIX)) {
             int i = libName.indexOf(LIBRARY_SUFFIX);
             if (i > 0) {

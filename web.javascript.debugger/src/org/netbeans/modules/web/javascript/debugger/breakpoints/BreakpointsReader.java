@@ -50,6 +50,7 @@ import java.util.Set;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
+import org.netbeans.modules.javascript2.debug.ui.JSUtils;
 import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
@@ -95,7 +96,7 @@ public class BreakpointsReader implements Properties.Reader {
             if (line == null) {
                 return null;
             }
-            JSLineBreakpoint breakpoint = new JSLineBreakpoint(line);
+            JSLineBreakpoint breakpoint = JSUtils.createLineBreakpoint(line);
             readGeneralProperties(properties, breakpoint);
             return breakpoint;
         }

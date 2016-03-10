@@ -7,8 +7,8 @@ class StaticAccessTest
     private static $privateStaticSAField = "\$privateStaticSAField";
 
     public $publicSAField = "\$publicSAField";
-    public $protectedSAField = "\$protectedSAField";
-    public $privateSAField = "\$privateSAField";
+    protected $protectedSAField = "\$protectedSAField";
+    private $privateSAField = "\$privateSAField";
 
     public static function publicStaticSAMethod() {
         $enclosedAccess = new StaticAccessTest();
@@ -38,11 +38,11 @@ class StaticAccessTest
         return "publicSAMethod()";
     }
 
-    public function protectedSAMethod() {
+    protected function protectedSAMethod() {
         return "protectedSAMethod()";
     }
 
-    public function privateSAMethod() {
+    private function privateSAMethod() {
         return "privateSAMethod()";
     }
 
@@ -54,8 +54,8 @@ trait BaseTrait
     protected static $protectedStaticBaseTraitField = "\$protectedStaticBaseTraitField";
     private static $privateStaticBaseTraitField = "\$privateStaticBaseTraitField";
     public $publicBaseTraitField = "\$publicBaseTraitField";
-    public $protectedBaseTraitField = "\$protectedBaseTraitField";
-    public $privateBaseTraitField = "\$privateBaseTraitField";
+    protected $protectedBaseTraitField = "\$protectedBaseTraitField";
+    private $privateBaseTraitField = "\$privateBaseTraitField";
 
     public static function publicStaticBaseTraitMethod() {
         return "publicStaticBaseTraitMethod()";
@@ -73,11 +73,11 @@ trait BaseTrait
         return "publicBaseTraitMethod()";
     }
 
-    public function protectedBaseTraitMethod() {
+    protected function protectedBaseTraitMethod() {
         return "protectedBaseTraitMethod()";
     }
 
-    public function privateBaseTraitMethod() {
+    private function privateBaseTraitMethod() {
         return "privateBaseTraitMethod()";
     }
 }
@@ -92,8 +92,8 @@ class ExClass extends StaticAccessTest
     private static $privateStaticExField = "\$privateStaticExField";
 
     public $publicExField = "\$publicExField";
-    public $protectedExField = "\$protectedExField";
-    public $privateExField = "\$privateExField";
+    protected $protectedExField = "\$protectedExField";
+    private $privateExField = "\$privateExField";
 
     public static function newInstance() {
         return new ExClass();
@@ -146,11 +146,11 @@ class ExClass extends StaticAccessTest
         return "publicExMethod()";
     }
 
-    public function protectedExMethod() {
+    protected function protectedExMethod() {
         return "protectedExMethod()";
     }
 
-    public function privateExMethod() {
+    private function privateExMethod() {
         return "privateExMethod()";
     }
 
@@ -193,19 +193,7 @@ echo $pre . $extendedClass::newInstance()->publicStaticSAMethod(). PHP_EOL;
 echo $pre . $extendedClass::newInstance()->publicExMethod(). PHP_EOL;
 echo $pre . $extendedClass::newInstance()->publicBaseTraitMethod(). PHP_EOL;
 echo $pre . $extendedClass::newInstance()->publicSAMethod(). PHP_EOL;
-echo $pre . $extendedClass::newInstance()->privateExMethod(). PHP_EOL;
-echo $pre . $extendedClass::newInstance()->privateBaseTraitMethod(). PHP_EOL;
-echo $pre . $extendedClass::newInstance()->privateSAMethod(). PHP_EOL;
-echo $pre . $extendedClass::newInstance()->protectedExMethod(). PHP_EOL;
-echo $pre . $extendedClass::newInstance()->protectedBaseTraitMethod(). PHP_EOL;
-echo $pre . $extendedClass::newInstance()->protectedSAMethod(). PHP_EOL;
 
 echo $pre . $extendedClass::newInstance()->publicExField. PHP_EOL;
 echo $pre . $extendedClass::newInstance()->publicBaseTraitField. PHP_EOL;
 echo $pre . $extendedClass::newInstance()->publicSAField. PHP_EOL;
-echo $pre . $extendedClass::newInstance()->privateExField. PHP_EOL;
-echo $pre . $extendedClass::newInstance()->privateBaseTraitField. PHP_EOL;
-echo $pre . $extendedClass::newInstance()->privateSAField. PHP_EOL;
-echo $pre . $extendedClass::newInstance()->protectedExField. PHP_EOL;
-echo $pre . $extendedClass::newInstance()->protectedBaseTraitField. PHP_EOL;
-echo $pre . $extendedClass::newInstance()->protectedSAField. PHP_EOL;

@@ -414,7 +414,7 @@ public final class NavigatorScanner {
 
     protected void appendName(ModelElement modelElement, HtmlFormatter formatter) {
         String name = modelElement.getName();
-        if (CodeUtils.isSynteticTypeName(name)) {
+        if (CodeUtils.isSyntheticTypeName(name)) {
             name = "{}"; // NOI18N
         }
         if (modelElement.isDeprecated()) {

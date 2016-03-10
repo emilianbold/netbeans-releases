@@ -1,5 +1,0 @@
-Code completion result for source line:
-var total=order.i|tem.qty * order.item.price
-(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-------------------------------------
-TAG        item                                       null

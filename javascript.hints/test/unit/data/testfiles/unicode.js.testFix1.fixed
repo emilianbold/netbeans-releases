@@ -1,3 +1,0 @@
-function foo() {
-    var x = "x\u201a†”y"
-}

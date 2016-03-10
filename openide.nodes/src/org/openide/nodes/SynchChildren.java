@@ -79,6 +79,13 @@ final class SynchChildren<T> extends Children.Keys<T> implements ChildFactory.Ob
     protected Node[] createNodes(T key) {
         return factory.createNodesForKey(key);
     }
+
+    @Override
+    protected void destroyNodes(Node[] arr) {
+        super.destroyNodes(arr);
+        factory.destroyNodes(arr);
+    }
+    
     
     public void refresh(boolean immediate) {
         if (active) {

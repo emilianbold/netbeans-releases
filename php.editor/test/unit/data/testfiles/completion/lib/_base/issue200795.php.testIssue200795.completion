@@ -86,3 +86,4 @@ CLASS      pupil140784                     [PUBLIC]   issue140784.php
 CLASS      sfWidgetFormSchema              [PUBLIC]   issue197571.php
 CLASS      teacher140784                   [PUBLIC]   issue140784.php
 CLASS      test                            [PUBLIC]   issue194300.php
+KEYWORD    class                                      null

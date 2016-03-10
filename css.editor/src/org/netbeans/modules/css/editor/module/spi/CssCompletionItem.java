@@ -42,7 +42,6 @@
 package org.netbeans.modules.css.editor.module.spi;
 
 import java.awt.Color;
-import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collections;
@@ -71,7 +70,7 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.web.common.api.WebUtils;
+import org.netbeans.modules.web.common.ui.api.WebUIUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -339,7 +338,7 @@ public abstract class CssCompletionItem extends DefaultCompletionProposal {
         @Override
         public ImageIcon getIcon() {
             CssColor color = CssColor.getColor(getName());
-            return WebUtils.createColorIcon(color == null ? null : color.colorCode());
+            return WebUIUtils.createColorIcon(color == null ? null : color.colorCode());
         }
     }
 
@@ -362,7 +361,7 @@ public abstract class CssCompletionItem extends DefaultCompletionProposal {
 
         @Override
         public ImageIcon getIcon() {
-            return WebUtils.createColorIcon(getName().substring(1)); //strip off the hash
+            return WebUIUtils.createColorIcon(getName().substring(1)); //strip off the hash
         }
 
         @Override
@@ -462,13 +461,13 @@ public abstract class CssCompletionItem extends DefaultCompletionProposal {
         @Override
         public ImageIcon getIcon() {
             Color c = getColorChooser().getColor();
-            String colorCode = c == null ? "ffffff" : WebUtils.toHexCode(c).substring(1); //strip off the hash
-            return WebUtils.createColorIcon(colorCode);
+            String colorCode = c == null ? "ffffff" : WebUIUtils.toHexCode(c).substring(1); //strip off the hash
+            return WebUIUtils.createColorIcon(colorCode);
         }
 
         @Override
         public String getName() {
-            return color == null ? "$color_chooser" : (WebUtils.toHexCode(color) + (addSemicolon ? ";" : "")); //NOI18N
+            return color == null ? "$color_chooser" : (WebUIUtils.toHexCode(color) + (addSemicolon ? ";" : "")); //NOI18N
         }
 
         @Override
@@ -650,7 +649,7 @@ public abstract class CssCompletionItem extends DefaultCompletionProposal {
                 boolean addSemicolon) {
             super(element, value, anchorOffset, false);
             this.icon = icon;
-            this.colorCode = color == null ? null : WebUtils.toHexCode(color).substring(1);
+            this.colorCode = color == null ? null : WebUIUtils.toHexCode(color).substring(1);
             this.addQuotes = addQuotes;
             this.addSemicolon = addSemicolon;
         }

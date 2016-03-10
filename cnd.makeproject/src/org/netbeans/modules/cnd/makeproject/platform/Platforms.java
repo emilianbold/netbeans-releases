@@ -43,13 +43,6 @@
  */
 package org.netbeans.modules.cnd.makeproject.platform;
 
-import org.netbeans.modules.cnd.makeproject.platform.PlatformMacOSX;
-import org.netbeans.modules.cnd.makeproject.platform.PlatformNone;
-import org.netbeans.modules.cnd.makeproject.platform.PlatformLinux;
-import org.netbeans.modules.cnd.makeproject.platform.PlatformWindows;
-import org.netbeans.modules.cnd.makeproject.platform.PlatformSolarisIntel;
-import org.netbeans.modules.cnd.makeproject.platform.PlatformGeneric;
-import org.netbeans.modules.cnd.makeproject.platform.PlatformSolarisSparc;
 import java.util.ArrayList;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 

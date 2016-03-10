@@ -133,15 +133,14 @@ public class ImmutableVariablesHint extends HintRule implements CustomisableRule
         private boolean variableAssignment;
         private final int numberOfAllowedAssignments;
 
-        public CheckVisitor(FileObject fileObject, BaseDocument baseDocument) {
+        CheckVisitor(FileObject fileObject, BaseDocument baseDocument) {
             this.fileObject = fileObject;
             this.baseDocument = baseDocument;
             this.numberOfAllowedAssignments = getNumberOfAllowedAssignments(preferences);
         }
 
         public List<Hint> getHints() {
-            for (ASTNode scopeNode : assignments.keySet()) {
-                Map<String, List<Variable>> names = assignments.get(scopeNode);
+            for (Map<String, List<Variable>> names : assignments.values()) {
                 checkNamesInScope(names);
             }
             return hints;

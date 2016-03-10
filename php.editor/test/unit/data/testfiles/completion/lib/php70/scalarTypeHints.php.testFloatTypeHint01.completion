@@ -25,6 +25,7 @@ CLASS      Comment                         [PUBLIC]   returnTypesTyping10.php
 CLASS      Comment                         [PUBLIC]   returnTypesTyping11.php
 CLASS      Comment                         [PUBLIC]   returnTypesTyping12.php
 CLASS      CommentsIterator                [PUBLIC]   My\Firm
+CLASS      Outer                           [PUBLIC]   My
 KEYWORD    array                                      null
 KEYWORD    bool                                       null
 KEYWORD    callable                                   null

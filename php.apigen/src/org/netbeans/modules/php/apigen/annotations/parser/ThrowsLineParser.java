@@ -55,21 +55,18 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
 class ThrowsLineParser implements AnnotationLineParser {
 
     static final String ANNOTATION_NAME = "throws"; //NOI18N
-    private String line;
-    private String[] tokens;
 
     @Override
     public AnnotationParsedLine parse(final String line) {
-        this.line = line;
         AnnotationParsedLine result = null;
-        tokens = line.split("[ \t]+"); //NOI18N
+        String[] tokens = line.split("[ \t]+"); //NOI18N
         if (tokens.length > 0 && ANNOTATION_NAME.equals(tokens[0])) {
-            result = handleAnnotation();
+            result = handleAnnotation(line, tokens);
         }
         return result;
     }
 
-    private AnnotationParsedLine handleAnnotation() {
+    private AnnotationParsedLine handleAnnotation(final String line, String[] tokens) {
         String description = "";
         Map<OffsetRange, String> types = new HashMap<>();
         if (tokens.length > 1) {

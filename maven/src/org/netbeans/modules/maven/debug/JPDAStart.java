@@ -203,7 +203,7 @@ public class JPDAStart implements Runnable {
                     public void run() {
                         try {
                             JPDADebugger.startListening(flc, args,
-                                                        new Object[]{properties});
+                                                        new Object[]{properties, project});
                         }
                         catch (DebuggerStartException ex) {
                             io.getErr().println("Debugger Start Error."); //NOI18N

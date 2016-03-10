@@ -7,14 +7,20 @@ package org.netbeans.modules.cnd.makeproject.launchers;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.ProjectMetadataFactory;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.Notification;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -47,6 +53,9 @@ public class LaunchersProjectMetadataFactory implements ProjectMetadataFactory {
     public void write(FileObject projectDir) {
     }
 
+    @Messages({
+        "illegal.string=Illegal string in the file {0}.\n{1}"
+    })
     private static void reload(FileObject projectDir) {
         LaunchersRegistry launchersRegistry = LaunchersRegistryFactory.getInstance(projectDir);
         Properties properties = new Properties();
@@ -54,26 +63,47 @@ public class LaunchersProjectMetadataFactory implements ProjectMetadataFactory {
         if (nbProjectFolder == null || !nbProjectFolder.isValid()) {  // LaunchersRegistry shouldn't be updated in case the project has been deleted.
             return;
         }
-        FileObject publicLaunchers = nbProjectFolder.getFileObject(NAME);
+        final FileObject publicLaunchers = nbProjectFolder.getFileObject(NAME);
         final FileObject privateNbFolder = projectDir.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER);
-        FileObject privateLaunchers = null;
+        final FileObject privateLaunchers;
         if (privateNbFolder != null && privateNbFolder.isValid()) {
             privateLaunchers = privateNbFolder.getFileObject(NAME);
+        } else {
+            privateLaunchers = null;
         }
-        try {
-            if (publicLaunchers != null && publicLaunchers.isValid()) {
-                final InputStream inputStream = publicLaunchers.getInputStream();
+        if (publicLaunchers != null && publicLaunchers.isValid()) {
+            try (InputStream inputStream = publicLaunchers.getInputStream()) {
                 properties.load(inputStream);
-                inputStream.close();
+            } catch (IOException ex) {
+                //Exceptions.printStackTrace(ex);
+            } catch (final IllegalArgumentException ex) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        DialogDisplayer.getDefault().notify(
+                                new NotifyDescriptor.Message(
+                                        Bundle.illegal_string(publicLaunchers.getPath(), ex.getMessage()), NotifyDescriptor.ERROR_MESSAGE));
+                    }
+                });
             }
-            if (privateLaunchers != null && privateLaunchers.isValid()) {
-                final InputStream inputStream = privateLaunchers.getInputStream();
-                properties.load(inputStream);
-                inputStream.close();
-            }
-        } catch (IOException ex) {
-            //Exceptions.printStackTrace(ex);
         }
+        if (privateLaunchers != null && privateLaunchers.isValid()) {
+            try (InputStream inputStream = privateLaunchers.getInputStream()) {
+                properties.load(inputStream);
+            } catch (IOException ex) {
+                //Exceptions.printStackTrace(ex);
+            } catch (final IllegalArgumentException ex) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        DialogDisplayer.getDefault().notify(
+                                new NotifyDescriptor.Message(
+                                        Bundle.illegal_string(privateLaunchers.getPath(), ex.getMessage()), NotifyDescriptor.ERROR_MESSAGE));
+                    }
+                });
+            }
+        }
+        
         if (launchersRegistry.load(properties)) {
             UIGesturesSupport.submit(USG_CND_LAUNCHERS, launchersRegistry.getLaunchers().size());
         }

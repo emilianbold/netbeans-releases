@@ -237,7 +237,7 @@ public class RemoteAWTScreenshot {
         }
 
         final JPDADebugger debugger = ((JPDAThreadImpl) t).getDebugger();
-        ClassObjectReference serviceClassObject = RemoteServices.getServiceClass(debugger);
+        ClassObjectReference serviceClassObject = RemoteServices.getServiceClass(debugger, ServiceType.AWT);
         final ClassType serviceClass;
         try {
             serviceClass = (ClassType) ClassObjectReferenceWrapper.reflectedType(serviceClassObject);

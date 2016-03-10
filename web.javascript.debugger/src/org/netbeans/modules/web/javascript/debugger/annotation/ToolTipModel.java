@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.web.javascript.debugger.annotation;
 
-import org.netbeans.modules.javascript2.debug.tooltip.AbstractJSToolTipAnnotation;
+import org.netbeans.modules.javascript2.debug.ui.tooltip.AbstractJSToolTipAnnotation;
 import org.netbeans.modules.web.javascript.debugger.locals.VariablesModel;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;

@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.makeproject.api.support;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.project.NativeProjectType;
 import org.netbeans.modules.cnd.makeproject.MakeBasedProjectFactorySingleton;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.filesystems.FileObject;
@@ -63,6 +64,10 @@ public interface MakeProjectHelper {
      * Relative path from project directory to the customary private properties file.
      */
     public static final String PRIVATE_PROPERTIES_PATH = "nbproject/private/private.properties"; // NOI18N
+    
+    public static final String PROJECT_LICENSE_NAME_PROPERTY = "project.license"; // NOI18N
+    public static final String PROJECT_LICENSE_PATH_PROPERTY = "project.licensePath"; // NOI18N
+
     /**
      * Relative path from project directory to the required shared project metadata file.
      */
@@ -218,4 +223,6 @@ public interface MakeProjectHelper {
     SharabilityQueryImplementation2 createSharabilityQuery(String[] sourceRoots, String[] buildDirectories);
     
     FileObject resolveFileObject(String filename);
+    
+    FSPath resolveFSPath(String filename);
 }

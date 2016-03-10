@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.html.editor.refactoring;
 
-import org.netbeans.modules.web.common.refactoring.RenameRefactoringUI;
+import org.netbeans.modules.web.common.ui.refactoring.RenameRefactoringUI;
 import java.util.Arrays;
 import java.util.Collection;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;

@@ -52,6 +52,7 @@ import org.netbeans.modules.editor.guards.GuardedSectionsImpl;
 import org.netbeans.modules.editor.guards.GuardsAccessor;
 import org.netbeans.modules.editor.guards.InteriorSectionImpl;
 import org.netbeans.modules.editor.guards.SimpleSectionImpl;
+import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 
 /**
  * This is the entry point for clients to manipulate guarded sections
@@ -109,7 +110,30 @@ public final class GuardedSectionManager {
             throws IllegalArgumentException, BadLocationException {
         return impl.createSimpleSection(pos, name);
     }
-
+    
+    /**
+     * Creates a simple section from a region of code. The code region will become
+     * guarded as in the case of `initComponents' method in forms. The section name
+     * can be used to find the section and if the section is persisted, will be written
+     * into the output file. Unline {@link #createSimpleSection}, this method is
+     * intended for marking existing text protected/guarded.
+     * <p/>
+     * Use {@link GuardedSection#removeSection()} to remove the protection.
+     * 
+     * @param start start of the protected text
+     * @param end  end of text, exclusive.
+     * @param name name for the guarded section
+     * @return SimpleSection instance, to allow further manipulation with the 
+     * protected content.
+     * @throws IllegalArgumentException
+     * @throws BadLocationException 
+     * @since 1.33
+     */
+    public SimpleSection protectSimpleRegion(Position start, Position end, String name) 
+            throws IllegalArgumentException, BadLocationException {
+        return impl.createSimpleSection(start, end, name);
+    }
+    
     /**
      * Creates an empty interior section at the given position.
      * The position must not be within any existing guarded section

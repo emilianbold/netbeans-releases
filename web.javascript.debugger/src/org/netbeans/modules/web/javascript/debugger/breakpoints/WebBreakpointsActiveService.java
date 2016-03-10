@@ -52,10 +52,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointsInfo;
 import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
-import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
-import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -85,20 +82,6 @@ public class WebBreakpointsActiveService implements JSBreakpointsInfo {
         }
     }
     
-    @Override
-    public boolean isDefault() {
-        Node node = Utilities.actionsGlobalContext().lookup(Node.class);
-        if (node != null) {
-            return false;
-        }
-        FileObject mostRecentFile = EditorContextDispatcher.getDefault().getMostRecentFile();
-        if (mostRecentFile == null) {
-            return false;
-        }
-        String mimeType = mostRecentFile.getMIMEType();
-        return MiscEditorUtil.isJSOrWrapperMIMEType(mimeType);
-    }
-
     @Override
     public boolean isAnnotatable(FileObject fo) {
         String mimeType = fo.getMIMEType();

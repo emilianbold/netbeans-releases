@@ -330,16 +330,18 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
         private Image annotateImage(Image image) {
             Image badged = image;
             boolean first = true;
+            PhpModule phpModule = project.getPhpModule();
             for (PhpFrameworkProvider frameworkProvider : project.getFrameworks()) {
                 BadgeIcon badgeIcon = frameworkProvider.getBadgeIcon();
+                final String frameworkName = frameworkProvider.getName(phpModule);
                 if (badgeIcon != null) {
-                    badged = ImageUtilities.addToolTipToImage(badged, String.format(TOOLTIP, badgeIcon.getUrl(), frameworkProvider.getName()));
+                    badged = ImageUtilities.addToolTipToImage(badged, String.format(TOOLTIP, badgeIcon.getUrl(), frameworkName));
                     if (first) {
                         badged = ImageUtilities.mergeImages(badged, badgeIcon.getImage(), 15, 0);
                         first = false;
                     }
                 } else {
-                    badged = ImageUtilities.addToolTipToImage(badged, String.format(TOOLTIP, Utils.PLACEHOLDER_BADGE_URL, frameworkProvider.getName()));
+                    badged = ImageUtilities.addToolTipToImage(badged, String.format(TOOLTIP, Utils.PLACEHOLDER_BADGE_URL, frameworkName));
                 }
             }
             return badged;

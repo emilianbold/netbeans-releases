@@ -66,7 +66,7 @@ import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.PopupManager;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ToolTipSupport;
-import org.netbeans.modules.javascript2.debug.tooltip.AbstractJSToolTipAnnotation;
+import org.netbeans.modules.javascript2.debug.ui.tooltip.AbstractJSToolTipAnnotation;
 import org.netbeans.modules.web.javascript.debugger.eval.Evaluator;
 import org.netbeans.modules.web.javascript.debugger.locals.VariablesModel;
 import org.netbeans.modules.web.javascript.debugger.locals.VariablesModel.ScopedRemoteObject;

@@ -90,6 +90,8 @@ public final class CustomizerPanel extends JPanel implements ChangeListener {
         init();
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
+            justification = "It is SPI, so no real control over the returned value")
     private void init() {
         assignLabel.setText(customizerSupport.getHeader());
         buildTasks.add(new BuildTask(ActionProvider.COMMAND_BUILD, "build", buildCheckBox, buildTextField)); // NOI18N

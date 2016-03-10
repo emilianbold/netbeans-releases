@@ -224,6 +224,36 @@ public class PHPDocCommentParserTest extends PHPTestBase {
         assertNotNull(block);
     }
 
+    public void testIssue257977() throws Exception {
+        /**
+         * @since 2012-02-14
+         * @since 2012-02-15
+         *
+         * Test
+         */
+        String comment =
+                  " * @since 2012-02-14\n"
+                + " * @since 2012-02-15\n"
+                + " *\n"
+                + " * Test";
+        PHPDocCommentParser parser = new PHPDocCommentParser();
+        PHPDocBlock block = parser.parse(-3, comment.length(), comment);
+        List<PHPDocTag> tags = block.getTags();
+        assertEquals(2, tags.size());
+
+        PHPDocTag firstTag = tags.get(0);
+        AnnotationParsedLine firstLine = firstTag.getKind();
+        assertTrue(firstLine instanceof UnknownAnnotationLine);
+        assertEquals("2012-02-14", firstLine.getDescription());
+        assertEquals(" 2012-02-14", firstTag.getDocumentation());
+
+        PHPDocTag secondTag = tags.get(1);
+        AnnotationParsedLine secondLine = secondTag.getKind();
+        assertTrue(secondLine instanceof UnknownAnnotationLine);
+        assertEquals("2012-02-15", secondLine.getDescription());
+        assertEquals(" 2012-02-15\n\nTest", secondTag.getDocumentation());
+    }
+
     public void testProperty01() throws Exception {
         String comment = " * PHP Template.\n" +
                 " * @property string $name\n" +
@@ -340,6 +370,12 @@ public class PHPDocCommentParserTest extends PHPTestBase {
                 " * ....\n" +
                 " */\n";
         perform(comment, "Issue197946");
+    }
+
+    public void testIssue257953() throws Exception {
+        // types should be an empty list
+        String comment = " * @param";
+        perform(comment, "testIssue257953");
     }
 
     public void perform(String comment, String filename) throws Exception {

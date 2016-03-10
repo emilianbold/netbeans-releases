@@ -45,20 +45,15 @@ package org.netbeans.modules.javascript2.debug.breakpoints;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
-import java.util.List;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.modules.javascript2.debug.JSUtils;
-import org.openide.cookies.LineCookie;
+import org.netbeans.modules.javascript2.debug.EditorLineHandler;
+import org.netbeans.modules.javascript2.debug.EditorLineHandlerFactory;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.Line;
 import org.openide.util.WeakListeners;
 
 /**
@@ -70,8 +65,9 @@ public class JSLineBreakpoint extends Breakpoint {
     public static final String PROP_URL = "url";
     /**
      * This property is fired when a new Line object is set to this breakpoint.
-     */
+     *
     public static final String PROP_LINE = "line";      // NOI18N
+    */
     /**
      * This property is fired when a line number of the breakpoint's Line object changes.
      * It's the same as listening on the current Line object's {@link Line#PROP_LINE_NUMBER} events.
@@ -84,7 +80,7 @@ public class JSLineBreakpoint extends Breakpoint {
     public static final String PROP_FILE = "fileChanged";           // NOI18N
     public static final String PROP_CONDITION = "condition";
     
-    private Line line;
+    private EditorLineHandler line;
     private boolean isEnabled = true;
     private volatile String condition;
     private final FileRemoveListener myListener = new FileRemoveListener();
@@ -92,11 +88,11 @@ public class JSLineBreakpoint extends Breakpoint {
     private final LineChangesListener lineChangeslistener = new LineChangesListener();
     private PropertyChangeListener lineChangesWeak;
     
-    public JSLineBreakpoint(Line line) {
+    public JSLineBreakpoint(EditorLineHandler line) {
         this.line = line;
         lineChangesWeak = WeakListeners.propertyChange(lineChangeslistener, line);
         line.addPropertyChangeListener(lineChangesWeak);
-        FileObject fileObject = line.getLookup().lookup(FileObject.class);
+        FileObject fileObject = line.getFileObject();
         if( fileObject != null ){
             myWeakListener = WeakListeners.create( 
                     FileChangeListener.class, myListener, fileObject);
@@ -104,10 +100,27 @@ public class JSLineBreakpoint extends Breakpoint {
         }
     }
     
-    public Line getLine() {
+    public EditorLineHandler getLineHandler() {
         return line;
     }
     
+    public void setLineHandler(EditorLineHandler line) {
+        dispose();
+        EditorLineHandler oldLine = this.line;
+        this.line = line;
+        lineChangesWeak = WeakListeners.propertyChange(lineChangeslistener, line);
+        line.addPropertyChangeListener(lineChangesWeak);
+        FileObject fileObject = line.getFileObject();
+        if (fileObject != null) {
+            myWeakListener = WeakListeners.create(
+                    FileChangeListener.class, myListener, fileObject);
+            fileObject.addFileChangeListener(myWeakListener);
+        }
+        firePropertyChange(PROP_FILE, oldLine.getFileObject(), line.getFileObject());
+        firePropertyChange(PROP_LINE_NUMBER, oldLine.getLineNumber(), line.getLineNumber());
+    }
+
+    /*
     public void setLine(Line line) {
         dispose();
         Line oldLine = this.line;
@@ -122,70 +135,34 @@ public class JSLineBreakpoint extends Breakpoint {
         }
         firePropertyChange(PROP_LINE, oldLine, line);
     }
+    */
     
     /**
      * Set a 1-based line number to this breakpoint.
      * @param lineNumber the line number.
      */
     public void setLine(int lineNumber) {
-        lineNumber--; // Line works with 0-based lines.
         if (line.getLineNumber() == lineNumber) {
             return ;
         }
-        LineCookie lineCookie = line.getLookup().lookup(LineCookie.class);
-        Line.Set lineSet = lineCookie.getLineSet();
-        List<? extends Line> lines = lineSet.getLines();
-        if (lines.size() > 0) {
-            int lastLineNumber = lines.get(lines.size() - 1).getLineNumber();
-            if (lineNumber > lastLineNumber) {
-                lineNumber = lastLineNumber;
-            }
-        }
-        Line cline;
-        try {
-            cline = lineSet.getCurrent(lineNumber);
-        } catch (IndexOutOfBoundsException ioobex) {
-            cline = lineSet.getCurrent(0);
-        }
-        setLine(cline);
+        line.setLineNumber(lineNumber);
     }
-
+    
     /**
      * Get the 1-based line number of this breakpoint.
      * 
      * @return the line number.
      */
     public int getLineNumber() {
-        return line.getLineNumber() + 1;
+        return line.getLineNumber();
     }
     
     public FileObject getFileObject() {
-        if (line instanceof FutureLine) {
-            URL url = getURL();
-            FileObject fo = URLMapper.findFileObject(url);
-            if (fo != null) {
-                try {
-                    DataObject dobj = DataObject.find(fo);
-                    LineCookie lineCookie = dobj.getLookup().lookup(LineCookie.class);
-                    if (lineCookie == null) {
-                        return null;
-                    }
-                    Line l = lineCookie.getLineSet().getCurrent(getLineNumber() - 1);
-                    setLine(l);
-                } catch (DataObjectNotFoundException ex) {
-                }
-            }
-            return fo;
-        } else {
-            return line.getLookup().lookup(FileObject.class);
-        }
+        return line.getFileObject();
     }
     
     public URL getURL() {
-        if (line instanceof FutureLine) {
-            return ((FutureLine) line).getURL();
-        }
-        return line.getLookup().lookup(FileObject.class).toURL();
+        return line.getURL();
     }
     
     @Override
@@ -216,10 +193,8 @@ public class JSLineBreakpoint extends Breakpoint {
     @Override
     protected void dispose() {
         super.dispose();
-        Line line = getLine();
-        line.removePropertyChangeListener(lineChangesWeak);
-        lineChangesWeak = null;
-        FileObject fileObject = line.getLookup().lookup(FileObject.class);
+        line.dispose();
+        FileObject fileObject = line.getFileObject();
         if( fileObject != null ){
             fileObject.removeFileChangeListener( myWeakListener );
             myWeakListener = null;
@@ -274,12 +249,12 @@ public class JSLineBreakpoint extends Breakpoint {
         @Override
         public void fileRenamed(FileRenameEvent fe) {
             FileObject renamedFo = fe.getFile();
-            Line newLine = JSUtils.getLine(renamedFo, getLine().getLineNumber() + 1);
-            if (!newLine.equals(getLine())) {
-                setLine(newLine);
-            } else {
-                firePropertyChange(PROP_FILE, fe.getName(), fe.getFile().getName());
-            }
+            int oldLineNumber = line.getLineNumber();
+            EditorLineHandler newLine = EditorLineHandlerFactory.getHandler(renamedFo, oldLineNumber);
+            int newLineNumber = newLine.getLineNumber();
+            JSLineBreakpoint.this.line = newLine;
+            firePropertyChange(PROP_LINE_NUMBER, oldLineNumber, newLineNumber);
+            firePropertyChange(PROP_FILE, fe.getName(), renamedFo.getName());
         }
 
     }
@@ -288,7 +263,7 @@ public class JSLineBreakpoint extends Breakpoint {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (Line.PROP_LINE_NUMBER.equals(evt.getPropertyName())) {
+            if (EditorLineHandler.PROP_LINE_NUMBER.equals(evt.getPropertyName())) {
                 firePropertyChange(PROP_LINE_NUMBER, evt.getOldValue(), evt.getNewValue());
             }
         }

@@ -106,6 +106,7 @@ public class TakeScreenshotActionProvider extends ActionsProviderSupport {
             ProgressHandle ph = createProgress();
             
             RemoteScreenshot[] screenshots = null;
+            boolean taken = false;
             try {
                 screenshots = RemoteAWTScreenshot.takeCurrent(debugger);
                 for (int i = 0; i < screenshots.length; i++) {
@@ -124,14 +125,9 @@ public class TakeScreenshotActionProvider extends ActionsProviderSupport {
                 }
                 if (screenshots != null && screenshots.length != 0) {
                     GestureSubmitter.logSnapshotTaken("Swing", debugger);
-                    return;
+                    taken = true;
                 }
-            } finally {
-                ph.finish();
-            }
-            
-            ph = createProgress();
-            try {
+
                 screenshots = RemoteFXScreenshot.takeCurrent(debugger);
                 for (int i = 0; i < screenshots.length; i++) {
                     final RemoteScreenshot screenshot = screenshots[i];
@@ -141,12 +137,14 @@ public class TakeScreenshotActionProvider extends ActionsProviderSupport {
                 
                 if (screenshots != null && screenshots.length != 0) {
                     GestureSubmitter.logSnapshotTaken("JavaFX", debugger);
-                    return;
+                    taken = true;
                 }
             } finally {
                 ph.finish();
             }
-            msg = NbBundle.getMessage(TakeScreenshotActionProvider.class, "MSG_NoScreenshots");
+            if (!taken) {
+                msg = NbBundle.getMessage(TakeScreenshotActionProvider.class, "MSG_NoScreenshots");
+            }
         } catch (RetrievalException ex) {
             msg = ex.getLocalizedMessage();
             if (ex.getCause() != null) {

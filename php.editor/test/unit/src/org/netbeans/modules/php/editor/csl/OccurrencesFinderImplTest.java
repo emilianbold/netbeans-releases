@@ -1462,29 +1462,25 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
         checkOccurrences(getTestPath(), "        return new class($this->prop) extends Out^er {", true);
     }
 
-    // XXX
-//    public void testAnonymousClasses03_08() throws Exception {
-//        checkOccurrences(getTestPath(), "            private $pro^p3;", true);
-//    }
+    public void testAnonymousClasses03_08() throws Exception {
+        checkOccurrences(getTestPath(), "            private $pro^p3;", true);
+    }
 
-    // XXX
-//    public void testAnonymousClasses03_09() throws Exception {
-//        checkOccurrences(getTestPath(), "                $this->pro^p3 = $prop;", true);
-//    }
+    public void testAnonymousClasses03_09() throws Exception {
+        checkOccurrences(getTestPath(), "                $this->pro^p3 = $prop;", true);
+    }
 
-    // XXX
-//    public void testAnonymousClasses03_10() throws Exception {
-//        checkOccurrences(getTestPath(), "            public function fun^c3() {", true);
-//    }
+    public void testAnonymousClasses03_10() throws Exception {
+        checkOccurrences(getTestPath(), "            public function fun^c3() {", true);
+    }
 
     public void testAnonymousClasses03_11() throws Exception {
         checkOccurrences(getTestPath(), "                return $this->pr^op2 + $this->prop3 + $this->func1();", true);
     }
 
-    // XXX
-//    public void testAnonymousClasses03_12() throws Exception {
-//        checkOccurrences(getTestPath(), "                return $this->prop2 + $this->pr^op3 + $this->func1();", true);
-//    }
+    public void testAnonymousClasses03_12() throws Exception {
+        checkOccurrences(getTestPath(), "                return $this->prop2 + $this->pr^op3 + $this->func1();", true);
+    }
 
     public void testAnonymousClasses03_13() throws Exception {
         checkOccurrences(getTestPath(), "                return $this->prop2 + $this->prop3 + $this->fun^c1();", true);
@@ -1498,10 +1494,9 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
         checkOccurrences(getTestPath(), "echo (new Outer)->fu^nc2()->func3() . PHP_EOL;", true);
     }
 
-    // XXX
-//    public void testAnonymousClasses03_16() throws Exception {
-//        checkOccurrences(getTestPath(), "echo (new Outer)->func2()->fu^nc3() . PHP_EOL;", true);
-//    }
+    public void testAnonymousClasses03_16() throws Exception {
+        checkOccurrences(getTestPath(), "echo (new Outer)->func2()->fu^nc3() . PHP_EOL;", true);
+    }
 
     public void testAnonymousClasses04_01() throws Exception {
         checkOccurrences(getTestPath(), "        $this->tes^tB();", true);

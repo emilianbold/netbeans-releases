@@ -450,14 +450,20 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
         }
         ClassType cType;
+        InterfaceType iType = null;
         if (type instanceof ArrayType) {
             Assert.error(arg0, "methOnArray");
             return null;
         } else if (type instanceof ClassType) {
             cType = (ClassType) type;
         } else {
-            Assert.error(arg0, "methOnInterface");
-            return null;
+            if (JPDAUtils.IS_JDK_180_40 && (type instanceof InterfaceType) && isStatic) {
+                cType = null;
+                iType = (InterfaceType) type;
+            } else {
+                Assert.error(arg0, "methOnInterface");
+                return null;
+            }
         }
         if (method == null) {
             method = getConcreteMethodAndReportProblems(arg0, type, methodName, null, paramTypes, argTypes);
@@ -465,7 +471,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         if (isVarArgs) {
             transformVarArgsValues(arg0, argVals, paramTypes, evaluationContext);
         }
-        return invokeMethod(arg0, method, isStatic, cType, objectReference, argVals, evaluationContext, preferredType != null);
+        if (cType != null) {
+            return invokeMethod(arg0, method, isStatic, cType, objectReference, argVals, evaluationContext, preferredType != null);
+        } else {
+            return invokeMethod(arg0, method, iType, argVals, evaluationContext);
+        }
     }
 
     /**
@@ -3779,6 +3789,84 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         } finally {
             if (loggerMethod.isLoggable(Level.FINE)) {
                 loggerMethod.log(Level.FINE, "FINISHED: {0}.{1} ({2}) in thread {3}", new Object[]{objectReference, method, argVals, evaluationThread});
+            }
+            try {
+                evaluationContext.methodInvokeDone();
+            } catch (IncompatibleThreadStateException itsex) {
+                InvalidExpressionException ieex = new InvalidExpressionException (itsex);
+                throw new IllegalStateException(ieex);
+            }
+        }
+    }
+
+    private Value invokeMethod(Tree arg0, Method method, InterfaceType type,
+                               List<Value> argVals,
+                               EvaluationContext evaluationContext) {
+        if (!evaluationContext.canInvokeMethods()) {
+            Assert.error(arg0, "canNotInvokeMethods");
+        }
+        ThreadReference evaluationThread = null;
+        try {
+            evaluationThread = evaluationContext.getFrame().thread();
+            if (loggerMethod.isLoggable(Level.FINE)) {
+                loggerMethod.log(Level.FINE, "STARTED : {0}.{1} ({2}) in thread {3}", new Object[]{type, method, argVals, evaluationThread});
+            }
+            evaluationContext.methodToBeInvoked();
+            Value value;
+            try {
+                autoboxArguments(method.argumentTypes(), argVals, evaluationThread, evaluationContext);
+            } catch (ClassNotLoadedException cnlex) {
+                // TODO: Try to autobox/unbox arguments based on string types...
+            }
+            value = InterfaceTypeWrapper.invokeMethod(type, evaluationThread,
+                                                      method, argVals,
+                                                      ObjectReference.INVOKE_SINGLE_THREADED);
+            if (value instanceof ObjectReference) {
+                //evaluationContext.disableCollectionOf((ObjectReference) value); - Not necessary, values returned from methods are not collected!
+            }
+            if (loggerMethod.isLoggable(Level.FINE)) {
+                loggerMethod.log(Level.FINE, "   return = {0}", value);
+            }
+            return value;
+        } catch (VMDisconnectedExceptionWrapper vmdw) {
+            throw vmdw.getCause();
+        } catch (InvalidTypeException itex) {
+            throw new IllegalStateException(new InvalidExpressionException (itex));
+        } catch (ClassNotLoadedException cnlex) {
+            throw new IllegalStateException(cnlex);
+        } catch (IncompatibleThreadStateException itsex) {
+            String message = Bundle.MSG_IncompatibleThreadStateMessage();
+            InvalidExpressionException ieex = new InvalidExpressionException(message, itsex);
+            throw new IllegalStateException(ieex);
+        } catch (InvalidStackFrameException isfex) {
+            InvalidExpressionException ieex = new InvalidExpressionException (isfex);
+            throw new IllegalStateException(ieex);
+        } catch (InvocationException iex) {
+            loggerMethod.info("InvocationException has occured when there were following VMs:\n"+
+                    "evaluationThread VM: "+InvocationExceptionTranslated.printVM(evaluationThread.virtualMachine())+"\n"+
+                    ("objectReference = null")+"\n"+
+                    "method VM: "+InvocationExceptionTranslated.printVM(method.virtualMachine())+"\n"+
+                    ("type VM: "+InvocationExceptionTranslated.printVM(type.virtualMachine()))+"\n");
+            for (Value v : argVals) {
+                if (v != null) {
+                    loggerMethod.info(" arg value VM: "+InvocationExceptionTranslated.printVM(v.virtualMachine()));
+                }
+            }
+            Throwable ex = new InvocationExceptionTranslated(iex, evaluationContext.getDebugger());
+            InvalidExpressionException ieex = new InvalidExpressionException (ex);
+            throw new IllegalStateException(iex.getLocalizedMessage(), ieex);
+        } catch (UnsupportedOperationException uoex) {
+            InvalidExpressionException ieex = new InvalidExpressionException (uoex);
+            throw new IllegalStateException(ieex);
+        } catch (InternalExceptionWrapper inexw) {
+            InternalException inex = inexw.getCause();
+            if (inex.errorCode() == 502) {
+                inex = (com.sun.jdi.InternalException) org.openide.util.Exceptions.attachLocalizedMessage(inex, org.openide.util.NbBundle.getMessage(org.netbeans.modules.debugger.jpda.JPDADebuggerImpl.class, "JDWPError502"));
+            }
+            throw inex;
+        } finally {
+            if (loggerMethod.isLoggable(Level.FINE)) {
+                loggerMethod.log(Level.FINE, "FINISHED: {0}.{1} ({2}) in thread {3}", new Object[]{type, method, argVals, evaluationThread});
             }
             try {
                 evaluationContext.methodInvokeDone();

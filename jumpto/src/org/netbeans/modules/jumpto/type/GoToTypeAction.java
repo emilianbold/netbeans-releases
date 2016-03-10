@@ -150,24 +150,19 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         this.typeFilter = typeFilter;
         this.implicitTypeProviders = typeProviders.length == 0 ? null : Collections.unmodifiableCollection(Arrays.asList(typeProviders));
         this.multiSelection = multiSelection;
-        this.currentSearch = new CurrentSearch(new Callable<AbstractModelFilter<TypeDescriptor>>() {
+        this.currentSearch = new CurrentSearch(() -> new AbstractModelFilter<TypeDescriptor>() {
             @Override
-            public AbstractModelFilter<TypeDescriptor> call() throws Exception {
-                return new AbstractModelFilter<TypeDescriptor>() {
-                    @Override
-                    @NonNull
-                    protected String getItemValue(@NonNull final TypeDescriptor item) {
-                        return item.getSimpleName();
-                    }
-                    @Override
-                    protected void update(@NonNull final TypeDescriptor item) {
-                        String searchText = getSearchText();
-                        if (searchText == null) {
-                            searchText = "";    //NOI18N
-                        }
-                        TypeProviderAccessor.DEFAULT.setHighlightText(item, searchText);
-                    }
-                };
+            @NonNull
+            protected String getItemValue(@NonNull final TypeDescriptor item) {
+                return item.getSimpleName();
+            }
+            @Override
+            protected void update(@NonNull final TypeDescriptor item) {
+                String searchText = getSearchText();
+                if (searchText == null) {
+                    searchText = "";    //NOI18N
+                }
+                TypeProviderAccessor.DEFAULT.setHighlightText(item, searchText);
             }
         });
     }
@@ -283,8 +278,11 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         text = text.trim();
 
         if ( text.length() == 0 || !Utils.isValidInput(text)) {
-            currentSearch.resetFilter();
-            panel.setModel(EMPTY_LIST_MODEL);
+            currentSearch.filter(
+                    SearchType.EXACT_NAME,
+                    text,
+                    Collections.singletonMap(AbstractModelFilter.OPTION_CLEAR, Boolean.TRUE));
+            panel.revalidateModel();
             return false;
         }
 
@@ -310,7 +308,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             return false;
         } else {
             running = new Worker(text, panel.isCaseSensitive());
-            task = rp.post( running, 220);
+            task = rp.post( running, 500);
             if ( panel.time != -1 ) {
                 LOGGER.log( Level.FINE, "Worker posted after {0} ms.", System.currentTimeMillis() - panel.time ); //NOI18N
             }
@@ -414,16 +412,13 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 running = null;
             }
             //2nd do clean up in the same thread as init to prevent races
-            rp.submit(new Runnable(){
-                @Override
-                public void run() {
-                    assert rp.isRequestProcessorThread();
-                    if (typeProviders != null) {
-                        for (TypeProvider provider : typeProviders) {
-                            provider.cleanup();
-                        }
-                        typeProviders = null;
+            rp.submit(() -> {
+                assert rp.isRequestProcessorThread();
+                if (typeProviders != null) {
+                    for (TypeProvider provider : typeProviders) {
+                        provider.cleanup();
                     }
+                    typeProviders = null;
                 }
             });
         }
@@ -504,21 +499,15 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             final Future<?> f = OpenProjects.getDefault().openProjects();
             if (!f.isDone()) {
                 try {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            panel.updateMessage(NbBundle.getMessage(GoToTypeAction.class, "TXT_LoadingProjects"));
-                        }
+                    SwingUtilities.invokeLater(() -> {
+                        panel.updateMessage(NbBundle.getMessage(GoToTypeAction.class, "TXT_LoadingProjects"));
                     });
                     f.get();
                 } catch (InterruptedException | ExecutionException ex) {
                     LOGGER.fine(ex.getMessage());
                 } finally {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            panel.updateMessage(NbBundle.getMessage(GoToTypeAction.class, "TXT_Searching"));
-                        }
+                    SwingUtilities.invokeLater(() -> {
+                        panel.updateMessage(NbBundle.getMessage(GoToTypeAction.class, "TXT_Searching"));
                     });
                 }
             }
@@ -563,16 +552,13 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                         if (isCanceled) {
                             return;
                         }
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (done) {
-                                    final Pair<String, String> nameAndScope = Utils.splitNameAndScope(text);
-                                    currentSearch.searchCompleted(nameKind, nameAndScope.first(), nameAndScope.second());
-                                }
-                                if (fmodel != null && !isCanceled) {
-                                    enableOK(panel.setModel(fmodel));
-                                }
+                        SwingUtilities.invokeLater(() -> {
+                            if (done) {
+                                final Pair<String, String> nameAndScope = Utils.splitNameAndScope(text);
+                                currentSearch.searchCompleted(nameKind, nameAndScope.first(), nameAndScope.second());
+                            }
+                            if (fmodel != null && !isCanceled) {
+                                enableOK(panel.setModel(fmodel));
                             }
                         });
                     }
@@ -648,7 +634,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                         });
             }
             if ( !isCanceled ) {
-                final ArrayList<TypeDescriptor> result = new ArrayList<TypeDescriptor>(items);
+                final ArrayList<TypeDescriptor> result = new ArrayList<>(items);
                 Collections.sort(result, new TypeComparator(caseSensitive));
                 panel.setWarning(message[0]);
                 return result;

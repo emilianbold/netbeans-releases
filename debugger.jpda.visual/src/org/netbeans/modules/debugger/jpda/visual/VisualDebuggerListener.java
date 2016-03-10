@@ -169,7 +169,7 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
         logger.log(Level.FINE, "engineAdded({0}), debugger = {1}, uploadAgent = {2}", new Object[]{engine, debugger, uploadAgent});
         Collection<Breakpoint> helperComponentBreakpoints = new ArrayList<Breakpoint>();
         if (debugger != null && uploadAgent) {
-            final AtomicBoolean inited = new AtomicBoolean(false);
+            final AtomicBoolean[] inited = new AtomicBoolean[] { new AtomicBoolean(false), new AtomicBoolean(false) };
             final MethodBreakpoint[] mb = new MethodBreakpoint[2];
             mb[0] = MethodBreakpoint.create("java.awt.EventQueue", "getNextEvent");
             mb[1] = MethodBreakpoint.create("com.sun.javafx.tk.quantum.QuantumToolkit", "pulse");
@@ -181,15 +181,13 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
                 public void breakpointReached(JPDABreakpointEvent event) {
                     if (debugger.equals(event.getDebugger())) {
                         DebuggerManager.getDebuggerManager().removeBreakpoint(mb[0]);
-                        DebuggerManager.getDebuggerManager().removeBreakpoint(mb[1]);
-                        if (inited.compareAndSet(false, true)) {
+                        if (inited[0].compareAndSet(false, true)) {
                             RemoteServiceInit initRet =
                                     initDebuggerRemoteService(event.getThread(),
                                                               RemoteServices.ServiceType.AWT);
                             if (initRet.equals(RemoteServiceInit.FAIL_RETRY)) {
-                                DebuggerManager.getDebuggerManager().removeBreakpoint(mb[0]);
-                                DebuggerManager.getDebuggerManager().removeBreakpoint(mb[1]);
-                                inited.set(false);
+                                DebuggerManager.getDebuggerManager().addBreakpoint(mb[0]);
+                                inited[0].set(false);
                             }
                         }
                     }
@@ -203,16 +201,14 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
                 @Override
                 public void breakpointReached(JPDABreakpointEvent event) {
                     if (debugger.equals(event.getDebugger())) {
-                        DebuggerManager.getDebuggerManager().removeBreakpoint(mb[0]);
                         DebuggerManager.getDebuggerManager().removeBreakpoint(mb[1]);
-                        if (inited.compareAndSet(false, true)) {
+                        if (inited[1].compareAndSet(false, true)) {
                             RemoteServiceInit initRet =
                                     initDebuggerRemoteService(event.getThread(),
                                                               RemoteServices.ServiceType.FX);
                             if (initRet.equals(RemoteServiceInit.FAIL_RETRY)) {
-                                DebuggerManager.getDebuggerManager().removeBreakpoint(mb[0]);
-                                DebuggerManager.getDebuggerManager().removeBreakpoint(mb[1]);
-                                inited.set(false);
+                                DebuggerManager.getDebuggerManager().addBreakpoint(mb[1]);
+                                inited[1].set(false);
                             }
                         }
                     }
@@ -403,7 +399,7 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
     }
     
     private void stopDebuggerRemoteService(JPDADebugger d) {
-        ClassObjectReference serviceClass = RemoteServices.getServiceClass(d);
+        ClassObjectReference serviceClass = RemoteServices.getServiceClass(d, RemoteServices.ServiceType.AWT);
         if (serviceClass == null) {
             return ;
         }

@@ -35,7 +35,11 @@ package org.netbeans.spi.jumpto.support;
  * Used for encapsulation of the  different matching algorithms
  * (such as String.equals, String.equalsIgnoreCase, String.startWith, etc)
  */
+@FunctionalInterface
 public interface NameMatcher {
+
+    public static final NameMatcher NONE = (name) -> false;
+    public static final NameMatcher ALL = (name) -> true;
 
     /**
      * Determine whether the name matches a pattern or not

@@ -234,7 +234,7 @@ public final class VariousUtils {
         if (returnType != null) {
             QualifiedName name = QualifiedName.create(returnType);
             assert name != null : returnType;
-            return name.getName();
+            return name.toString();
         }
         return getReturnTypeFromPHPDoc(root, functionDeclaration);
     }

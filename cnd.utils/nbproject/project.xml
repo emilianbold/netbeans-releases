@@ -55,11 +55,11 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.util.ui</code-name-base>
+                    <code-name-base>org.openide.loaders</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>9.3</specification-version>
+                        <specification-version>7.66</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -76,6 +76,14 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>8.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util.ui</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>9.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -245,6 +253,7 @@
                 <friend>org.netbeans.modules.dlight.uncover</friend>
                 <package>org.netbeans.modules.cnd.debug</package>
                 <package>org.netbeans.modules.cnd.spi.editor</package>
+                <package>org.netbeans.modules.cnd.spi.source</package>
                 <package>org.netbeans.modules.cnd.spi.utils</package>
                 <package>org.netbeans.modules.cnd.support</package>
                 <package>org.netbeans.modules.cnd.utils</package>

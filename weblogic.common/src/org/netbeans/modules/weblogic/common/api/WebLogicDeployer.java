@@ -68,8 +68,11 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
+import javax.management.ReflectionException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.base.BaseExecutionDescriptor;
@@ -81,6 +84,7 @@ import org.netbeans.api.extexecution.base.input.LineProcessors;
 import org.netbeans.modules.weblogic.common.ProxyUtils;
 import org.netbeans.modules.weblogic.common.spi.WebLogicTrustHandler;
 import org.openide.util.BaseUtilities;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
@@ -123,16 +127,16 @@ public final class WebLogicDeployer {
      * @since 1.14
      */
     @NonNull
-    public Future<Collection<Target>> getTargets() {
-        return DEPLOYMENT_RP.submit(new Callable<Collection<Target>>() {
+    public Future<Collection<DeploymentTarget>> getTargets() {
+        return DEPLOYMENT_RP.submit(new Callable<Collection<DeploymentTarget>>() {
 
             @Override
-            public Collection<Target> call() throws Exception {
-                return config.getRemote().executeAction(new WebLogicRemote.JmxAction<Collection<Target>>() {
+            public Collection<DeploymentTarget> call() throws Exception {
+                return config.getRemote().executeAction(new WebLogicRemote.JmxAction<Collection<DeploymentTarget>>() {
 
                     @Override
-                    public Collection<Target> execute(MBeanServerConnection connection) throws Exception {
-                        List<Target> result = new ArrayList<>();
+                    public Collection<DeploymentTarget> execute(MBeanServerConnection connection) throws Exception {
+                        List<DeploymentTarget> result = new ArrayList<>();
                         ObjectName service = new ObjectName("com.bea:Name=DomainRuntimeService," // NOI18N
                                 + "Type=weblogic.management.mbeanservers.domainruntime.DomainRuntimeServiceMBean"); // NOI18N
                         ObjectName domainPending = (ObjectName) connection.getAttribute(service, "DomainPending"); // NOI18N
@@ -141,9 +145,9 @@ public final class WebLogicDeployer {
                             if (domainTargets != null) {
                                 for (ObjectName singleTarget : domainTargets) {
                                     String strType = (String) connection.getAttribute(singleTarget, "Type"); // NOI18N
-                                    Target.Type type = Target.Type.parse(strType);
+                                    DeploymentTarget.Type type = DeploymentTarget.Type.parse(strType);
                                     if (type != null) {
-                                        result.add(new Target((String) connection.getAttribute(singleTarget, "Name"), type)); // NOI18N
+                                        result.add(new DeploymentTarget((String) connection.getAttribute(singleTarget, "Name"), type)); // NOI18N
                                     } else {
                                         LOGGER.log(Level.INFO, "Unknown target type {0}", strType);
                                     }
@@ -179,24 +183,33 @@ public final class WebLogicDeployer {
                             if ("AppDeployment".equals(type)) { // NOI18N
                                 String moduleType = (String) connection.getAttribute(bean, "ModuleType"); // NOI18N
                                 String contextRoot = null;
+                                List<URL> urls = new ArrayList<>();
                                 ObjectName[] targets = (ObjectName[]) connection.getAttribute(bean, "Targets"); // NOI18N
                                 if (targets != null && targets.length > 0) {
-                                    String server = (String) connection.getAttribute(targets[0], "Name"); // NOI18N
-                                    ObjectName serverRuntime = (ObjectName) connection.invoke(
-                                            service, "lookupServerRuntime", new Object[]{server}, new String[] {"java.lang.String"}); // NOI18N
-                                    if (serverRuntime != null) {
-                                        ObjectName appRuntime = (ObjectName) connection.invoke(
-                                                serverRuntime, "lookupApplicationRuntime", new Object[]{name}, new String[] {"java.lang.String"}); // NOI18N
-                                        if (appRuntime != null) {
-                                            ObjectName[] runtimes = (ObjectName[]) connection.getAttribute(appRuntime, "ComponentRuntimes"); // NOI18N
-                                            if (runtimes != null) {
-                                                for (ObjectName runtime : runtimes) {
-                                                    String runtimeType = (String) connection.getAttribute(runtime, "Type"); // NOI18N
-                                                    if ("WebAppComponentRuntime".equals(runtimeType)) { // NOI18N
-                                                        contextRoot = (String) connection.getAttribute(runtime, "ContextRoot"); // NOI18N
-                                                        if (contextRoot != null) {
-                                                            // XXX may there be multiple web apps in ear?
-                                                            break;
+                                    // FIXME should the Application include all DeploymentTargets
+                                    for (int i = 0; i < targets.length; i++) {
+                                        String server = (String) connection.getAttribute(targets[i], "Name"); // NOI18N
+                                        ObjectName serverRuntime = (ObjectName) connection.invoke(
+                                                service, "lookupServerRuntime", new Object[]{server}, new String[]{"java.lang.String"}); // NOI18N
+                                        if (serverRuntime != null) {
+                                            ObjectName appRuntime = (ObjectName) connection.invoke(
+                                                    serverRuntime, "lookupApplicationRuntime", new Object[]{name}, new String[]{"java.lang.String"}); // NOI18N
+                                            if (appRuntime != null) {
+                                                ObjectName[] runtimes = (ObjectName[]) connection.getAttribute(appRuntime, "ComponentRuntimes"); // NOI18N
+                                                if (runtimes != null) {
+                                                    for (ObjectName runtime : runtimes) {
+                                                        String runtimeType = (String) connection.getAttribute(runtime, "Type"); // NOI18N
+                                                        if ("WebAppComponentRuntime".equals(runtimeType)) { // NOI18N
+                                                            String contextRootCurrent = (String) connection.getAttribute(runtime, "ContextRoot"); // NOI18N
+                                                            if (contextRootCurrent != null) {
+                                                                urls.addAll(getServerUrls(connection, serverRuntime, contextRootCurrent));
+                                                                if (contextRoot == null) {
+                                                                    // XXX may there be multiple web apps in ear?
+                                                                    // XXX may there be different context root on different servers ?
+                                                                    // hope not
+                                                                    contextRoot = contextRootCurrent;
+                                                                }
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -211,9 +224,9 @@ public final class WebLogicDeployer {
                                     } else {
                                         url = new URL("http://" + config.getHost() + ":" + config.getPort() + contextRoot); // NOI18N
                                     }
-                                    result.add(new Application(name, moduleType, url, contextRoot));
+                                    result.add(new Application(name, moduleType, url, contextRoot, urls));
                                 } else {
-                                    result.add(new Application(name, moduleType, null, null));
+                                    result.add(new Application(name, moduleType, null, null, Collections.<URL>emptyList()));
                                 }
                             }
                         }
@@ -228,11 +241,11 @@ public final class WebLogicDeployer {
     public Future<String> deploy(@NonNull File file, @NullAllowed DeployListener listener,
             @NullAllowed String name) {
 
-        return performDeploy(file, Collections.<Target>emptyList(), listener, name);
+        return performDeploy(file, Collections.<DeploymentTarget>emptyList(), listener, name);
     }
 
     @NonNull
-    public Future<String> deploy(@NonNull File file, @NonNull Collection<Target> targets, @NullAllowed DeployListener listener,
+    public Future<String> deploy(@NonNull File file, @NonNull Collection<DeploymentTarget> targets, @NullAllowed DeployListener listener,
             @NullAllowed String name) {
 
         return performDeploy(file, targets, listener, name);
@@ -241,12 +254,25 @@ public final class WebLogicDeployer {
     @NonNull
     public Future<Void> redeploy(@NonNull String name, @NonNull File file,
             @NullAllowed BatchDeployListener listener) {
-        return performRedeploy(Collections.singletonList(name), Collections.singletonList(file), listener);
+        return performRedeploy(Collections.singletonList(name), Collections.singletonList(file),
+                Collections.<DeploymentTarget>emptyList(), listener);
+    }
+    
+    @NonNull
+    public Future<Void> redeploy(@NonNull String name, @NonNull File file, @NonNull Collection<DeploymentTarget> targets,
+            @NullAllowed BatchDeployListener listener) {
+        return performRedeploy(Collections.singletonList(name), Collections.singletonList(file), targets, listener);
     }
 
     @NonNull
     public Future<Void> redeploy(@NonNull List<String> names, @NullAllowed BatchDeployListener listener) {
-        return performRedeploy(names, null, listener);
+        return performRedeploy(names, null, Collections.<DeploymentTarget>emptyList(), listener);
+    }
+    
+    @NonNull
+    public Future<Void> redeploy(@NonNull List<String> names, @NonNull Collection<DeploymentTarget> targets,
+            @NullAllowed BatchDeployListener listener) {
+        return performRedeploy(names, null, targets, listener);
     }
 
     @NonNull
@@ -448,7 +474,7 @@ public final class WebLogicDeployer {
         });
     }
 
-    private Future<String> performDeploy(@NonNull final File file, final @NonNull Collection<Target> targets,
+    private Future<String> performDeploy(@NonNull final File file, final @NonNull Collection<DeploymentTarget> targets,
             @NullAllowed final DeployListener listener, @NullAllowed final String name) {
 
         if (listener != null) {
@@ -476,7 +502,7 @@ public final class WebLogicDeployer {
 
                 if (!targets.isEmpty()) {
                     StringBuilder sb = new StringBuilder();
-                    for (Target t : targets) {
+                    for (DeploymentTarget t : targets) {
                         if (sb.length() > 0) {
                             sb.append(','); // NOI18N
                         }
@@ -542,7 +568,7 @@ public final class WebLogicDeployer {
     }
 
     private Future<Void> performRedeploy(@NonNull final List<String> names, @NullAllowed final List<File> files,
-            @NullAllowed final BatchDeployListener listener) {
+            @NonNull final Collection<DeploymentTarget> targets, @NullAllowed final BatchDeployListener listener) {
 
         assert files == null || files.size() == names.size();
 
@@ -567,8 +593,19 @@ public final class WebLogicDeployer {
                     if (files != null) {
                         parameters.add("-source"); // NOI18N
                         parameters.add(files.get(i++).getAbsolutePath());
-
                     }
+                    if (!targets.isEmpty()) {
+                        StringBuilder sb = new StringBuilder();
+                        for (DeploymentTarget t : targets) {
+                            if (sb.length() > 0) {
+                                sb.append(','); // NOI18N
+                            }
+                            sb.append(t.getName());
+                        }
+                        parameters.add("-targets"); // NOI18N
+                        parameters.add(sb.toString());
+                    }
+
                     BaseExecutionService service = createService("-redeploy", // NOI18N
                             lineProcessor, parameters.toArray(new String[parameters.size()]));
                     if (listener != null) {
@@ -625,6 +662,12 @@ public final class WebLogicDeployer {
 
     public Future<Void> deploy(@NonNull final List<Artifact> artifacts,
             @NullAllowed final BatchDeployListener listener) {
+        return deploy(artifacts, Collections.<DeploymentTarget>emptyList(), listener);
+    }
+
+    public Future<Void> deploy(@NonNull final List<Artifact> artifacts,
+            @NonNull final Collection<DeploymentTarget> targets,
+            @NullAllowed final BatchDeployListener listener) {
 
         if (listener != null) {
             listener.onStart();
@@ -640,6 +683,17 @@ public final class WebLogicDeployer {
                     parameters.add("-upload"); // NOI18N
                     if (config.isRemote()) {
                         parameters.add("-remote"); // NOI18N
+                    }
+                    if (!targets.isEmpty()) {
+                        StringBuilder sb = new StringBuilder();
+                        for (DeploymentTarget t : targets) {
+                            if (sb.length() > 0) {
+                                sb.append(','); // NOI18N
+                            }
+                            sb.append(t.getName());
+                        }
+                        parameters.add("-targets"); // NOI18N
+                        parameters.add(sb.toString());
                     }
                     String name = getName(artifact.getFile(), artifact.getName());
                     parameters.add("-name"); // NOI18N
@@ -830,6 +884,46 @@ public final class WebLogicDeployer {
         return BaseUtilities.isWindows() ? "java.exe" : "java"; // NOI18N
     }
 
+    private static List<URL> getServerUrls(MBeanServerConnection connection,
+            ObjectName serverRuntime, String contextRoot) {
+
+        assert contextRoot != null;
+
+        List<URL> ret = new ArrayList<>();
+        URL url = getServerUrl(connection, serverRuntime, "getIPv4URL", "http", contextRoot); // NOI18N
+        if (url != null) {
+            ret.add(url);
+        }
+        url = getServerUrl(connection, serverRuntime, "getIPv4URL", "https", contextRoot); // NOI18N
+        if (url != null) {
+            ret.add(url);
+        }
+        url = getServerUrl(connection, serverRuntime, "getIPv6URL", "http", contextRoot); // NOI18N
+        if (url != null) {
+            ret.add(url);
+        }
+        url = getServerUrl(connection, serverRuntime, "getIPv6URL", "https", contextRoot); // NOI18N
+        if (url != null) {
+            ret.add(url);
+        }
+        return ret;
+    }
+
+    private static URL getServerUrl(MBeanServerConnection connection,
+            ObjectName serverRuntime, String method, String protocol, String contextRoot) {
+        try {
+            String url = (String) connection.invoke(
+                    serverRuntime, method, new Object[]{protocol}, new String[]{"java.lang.String"}); // NOI18N
+            if (url == null) {
+                return null;
+            }
+            return new URL(url + contextRoot);
+        } catch (InstanceNotFoundException | MBeanException | ReflectionException | IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return null;
+    }
+
     private static String getName(File file, String name) {
         // #249066
         // during the remote deployment from windows to linux file is
@@ -889,11 +983,15 @@ public final class WebLogicDeployer {
 
         private final String webContext;
 
-        private Application(String id, String type, URL url, String webContext) {
+        private final List<URL> serverUrls;
+
+        private Application(String id, String type, URL url, String webContext, List<URL> serverUrls) {
             this.name = id;
             this.type = type;
             this.url = url;
             this.webContext = webContext;
+
+            this.serverUrls = new ArrayList<>(serverUrls);
         }
 
         public String getName() {
@@ -910,6 +1008,15 @@ public final class WebLogicDeployer {
 
         public String getWebContext() {
             return webContext;
+        }
+
+        /**
+         * 
+         * @return 
+         * @since 1.15
+         */
+        public List<URL> getServerUrls() {
+            return Collections.unmodifiableList(serverUrls);
         }
     }
 
