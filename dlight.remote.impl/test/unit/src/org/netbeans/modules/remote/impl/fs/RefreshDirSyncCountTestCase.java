@@ -47,6 +47,7 @@ import java.util.HashSet;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
@@ -178,14 +179,13 @@ public class RefreshDirSyncCountTestCase extends RemoteFileTestBase {
             recurse(baseFO); // instantiate all file objects
             FileObject d2 = getFileObject(baseFO, "d2");
             FileObject f1 = getFileObject(baseFO, "d1/f1");
-
-            CommonTasksSupport.rmFile(execEnv, f1.getPath(), null);
+            int rc = CommonTasksSupport.rmFile(execEnv, f1.getPath(), null).get();
+            assertEquals("Error removing file " + f1, 0, rc);
             assertTrue(f1.isValid());
-
-            int cnt1 = getReadEntriesCount(d2);
+            //int cnt1 = getReadEntriesCount(d2);
             d2.refresh();
-            int cnt2 = getReadEntriesCount(d2);
-
+            //int cnt2 = getReadEntriesCount(d2);
+            assertFalse("Error in test? File " + f1 + " should not exist!", HostInfoUtils.fileExists(execEnv, f1.getPath()));
             assertFalse("File " + f1 + " should be invalid", f1.isValid());
             //assertEquals("Wrong dir read count:", 2, cnt2 - cnt1);
         } finally {
