@@ -343,7 +343,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
         fireFileRenamedEvent(getListeners(), (FileRenameEvent)transform(fe));
     }
 
-    public boolean isCyclicLink() {
+    private boolean isCyclicLink() {
         Set<RemoteFileObjectBase> antiCycle = new HashSet<>();
         RemoteFileObjectBase delegate = getCanonicalDelegate();
         if (delegate == null && getPath() != null) {

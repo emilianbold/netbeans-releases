@@ -85,7 +85,10 @@ public class RemoteLinkChild extends RemoteLinkBase {
     
     @Override
     public boolean isValid() {
-        return super.isValid() && delegate.isValid();
+        if (isValidFastWithParents()) {
+            return delegate.isValid();
+        }
+        return false;
     }
     
     @Override

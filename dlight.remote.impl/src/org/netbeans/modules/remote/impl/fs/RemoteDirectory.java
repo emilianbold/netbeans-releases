@@ -575,16 +575,16 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
     }
 
-    @Override
-    public RemoteDirectory getParent() {
-        return (RemoteDirectory) super.getParent(); // see constructor
+    /** just a conveniency shortcut that allows not to cast each time */
+    private RemoteDirectory getParentImpl() {
+        return (RemoteDirectory) getParent(); // see constructor
     }
 
     private boolean isFlaggedForWarmup() {
         if(getFlag(MASK_WARMUP)) {
             return true;
         } else {
-            RemoteDirectory p = getParent();
+            RemoteDirectory p = getParentImpl();
             if (p != null) {
                 return p.isFlaggedForWarmup();
             }
@@ -595,7 +595,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     private RemoteFileSystemTransport.Warmup getWarmup() {
         RemoteFileSystemTransport.Warmup w = warmup;
         if (w == null) {
-            RemoteDirectory p = getParent();
+            RemoteDirectory p = getParentImpl();
             if (p != null) {
                 return p.getWarmup();
             }
@@ -1526,7 +1526,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 return ok;
             }
         } else {
-            RemoteDirectory parent = getParent();
+            RemoteDirectory parent = getParentImpl();
             if (parent != null) {
                 return parent.ensureChildSyncFromZip(child);
             }
@@ -1699,7 +1699,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 }
             }
         } catch (FileNotFoundException ex) {
-            final RemoteDirectory parent = getParent();
+            final RemoteDirectory parent = getParentImpl();
             if (parent != null) {
                 parent.refreshImpl(false, antiLoop, expected, refreshMode);
             } else {
