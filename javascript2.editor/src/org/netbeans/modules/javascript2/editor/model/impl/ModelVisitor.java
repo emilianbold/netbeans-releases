@@ -1304,7 +1304,19 @@ public class ModelVisitor extends PathNodeVisitor {
             isPrivate = true;
         }
         if (lastVisited instanceof PropertyNode) {
-            isStatic = ((PropertyNode)lastVisited).isStatic();
+            PropertyNode pNode = (PropertyNode)lastVisited;
+            isStatic = pNode.isStatic();
+            if (fn.isClassConstructor() || fn.isSubclassConstructor()) {
+                jsFunction.setJsKind(JsElement.Kind.CONSTRUCTOR);
+            } else if (fn.isMethod()) {
+                if (fn.equals(pNode.getGetter())) {
+                    jsFunction.setJsKind(JsElement.Kind.PROPERTY_GETTER);
+                } else if (fn.equals(pNode.getSetter())) {
+                    jsFunction.setJsKind(JsElement.Kind.PROPERTY_SETTER);
+                } else {
+                    jsFunction.setJsKind(JsElement.Kind.METHOD);
+                }
+            }
         } else if (lastVisited instanceof BinaryNode) {
             BinaryNode bNode = (BinaryNode)lastVisited;
             if (bNode.getAssignmentDest() instanceof AccessNode) {
