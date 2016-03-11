@@ -81,7 +81,7 @@ public final class ConfigurationFiles extends FileChangeAdapter implements Impor
             // broken project
             return Collections.emptyList();
         }
-        FileObject appDir = sourceDirectory.getFileObject(SymfonyPreferences.getAppDir(phpModule));
+        FileObject appDir = sourceDir.getFileObject(SymfonyPreferences.getAppDir(phpModule));
         if (appDir == null) {
             // app dir not found
             return Collections.emptyList();
