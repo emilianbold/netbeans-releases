@@ -130,7 +130,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
     @Override
     public String getItemImportantFlags(AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
         if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE) {
-            if (compiler != null) {
+            if (compiler != null && compiler.getDescriptor() != null) {
                 String importantFlags = compiler.getDescriptor().getImportantFlags();
                 if (importantFlags != null && importantFlags.length() > 0) {
                     StringBuilder buf = new StringBuilder();

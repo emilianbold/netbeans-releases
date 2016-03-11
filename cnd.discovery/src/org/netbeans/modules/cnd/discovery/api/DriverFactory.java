@@ -51,7 +51,6 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
-import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
@@ -596,7 +595,7 @@ public final class DriverFactory {
                     AbstractCompiler compiler;
                     if (compilerSet != null) {
                         compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
-                        if (compiler != null) {
+                        if (compiler != null && compiler.getDescriptor() != null) {
                             String importantFlags = compiler.getDescriptor().getImportantFlags();
                             if (importantFlags != null && importantFlags.length() > 0) {
                                 cppPattern = Pattern.compile(importantFlags);
@@ -613,7 +612,7 @@ public final class DriverFactory {
                     AbstractCompiler compiler;
                     if (compilerSet != null) {
                         compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
-                        if (compiler != null) {
+                        if (compiler != null && compiler.getDescriptor() != null) {
                             String importantFlags = compiler.getDescriptor().getImportantFlags();
                             if (importantFlags != null && importantFlags.length() > 0) {
                                 cPattern = Pattern.compile(importantFlags);
