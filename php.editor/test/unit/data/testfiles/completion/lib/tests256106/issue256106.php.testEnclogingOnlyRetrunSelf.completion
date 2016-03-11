@@ -1,0 +1,16 @@
+Code completion result for source line:
+$this->protectedParentMethod()->protectedTraitOnlyReturnSelfMethod()->|privateTraitMethod(); // test self
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+METHOD     privateStaticTraitMethod()      [PRIVATE,  \Issue256106\BaseTrait
+METHOD     privateTraitMethod()            [PRIVATE]  \Issue256106\BaseTrait
+METHOD     privateTraitOnlyReturnStaticMe  [PRIVATE]  \Issue256106\BaseTrait
+METHOD     protectedStaticTraitMethod()    [PROTECTE  \Issue256106\BaseTrait
+METHOD     protectedTraitMethod()          [PROTECTE  \Issue256106\BaseTrait
+METHOD     protectedTraitOnlyReturnSelfMe  [PROTECTE  \Issue256106\BaseTrait
+METHOD     publicStaticTraitMethod()       [STATIC]   \Issue256106\BaseTrait
+METHOD     publicTraitMethod()             [PUBLIC]   \Issue256106\BaseTrait
+METHOD     publicTraitOnlyReturnSelfMetho  [PUBLIC]   \Issue256106\BaseTrait
+METHOD     publicTraitOnlyReturnStaticMet  [PUBLIC]   \Issue256106\BaseTrait
+VARIABLE   ? privateTraitField             [PRIVATE]  \Issue256106\BaseTrait
+VARIABLE   ? protectedTraitField           [PROTECTE  \Issue256106\BaseTrait
+VARIABLE   ? publicTraitField              [PUBLIC]   \Issue256106\BaseTrait

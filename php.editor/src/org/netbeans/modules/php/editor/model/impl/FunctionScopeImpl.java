@@ -63,7 +63,6 @@ import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.elements.ParameterElementImpl;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
-import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
@@ -235,7 +234,8 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
                     }
                 }
             }
-            if (getInScope() instanceof ClassScope && containsSelfDependentType(typeNames)) {
+            Arrays.sort(typeNames); // must sort
+            if (getInScope() instanceof TypeScope && containsSelfDependentType(typeNames)) {
                 retval.add(((TypeScope) getInScope()));
             }
 

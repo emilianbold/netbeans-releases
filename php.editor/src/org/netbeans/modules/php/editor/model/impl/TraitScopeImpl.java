@@ -47,9 +47,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
+import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.TraitElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
@@ -88,7 +91,20 @@ class TraitScopeImpl extends TypeScopeImpl implements TraitScope, VariableNameFa
 
     @Override
     public Collection<? extends MethodScope> getInheritedMethods() {
-        return Collections.EMPTY_SET;
+        Set<MethodScope> allMethods = new HashSet<>();
+        IndexScope indexScope = ModelUtils.getIndexScope(this);
+        ElementQuery.Index index = indexScope.getIndex();
+        Set<TraitScope> traitScopes = new HashSet<>(getTraits());
+        for (TraitScope traitScope : traitScopes) {
+            Set<MethodElement> indexedMethods = index.getAllMethods(traitScope);
+            for (MethodElement methodElement : indexedMethods) {
+                TypeElement type = methodElement.getType();
+                if (type.isTrait()) {
+                    allMethods.add(new MethodScopeImpl(new TraitScopeImpl(indexScope, (TraitElement) type), methodElement));
+                }
+            }
+        }
+        return allMethods;
     }
 
     @Override
@@ -119,6 +135,12 @@ class TraitScopeImpl extends TypeScopeImpl implements TraitScope, VariableNameFa
             indexDocument.addPair(PHPIndexer.FIELD_USED_TRAIT, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
         }
         for (MethodScope methodScope : getDeclaredMethods()) {
+            if (methodScope instanceof LazyBuild) {
+                LazyBuild lazyMethod = (LazyBuild) methodScope;
+                if (!lazyMethod.isScanned()) {
+                    lazyMethod.scan();
+                }
+            }
             methodScope.addSelfToIndex(indexDocument);
         }
         for (FieldElement fieldElement : getDeclaredFields()) {
