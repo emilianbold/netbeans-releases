@@ -211,6 +211,76 @@ public class HintsTest extends PHPHintsTestBase {
         applyHint(new IntroduceSuggestion(), "testIntroduceSuggestion.php", "Omg::$stFld;^", "Create Field");
     }
 
+    // #257296
+    public void testIntroduceSuggestionForTraitField() throws Exception {
+        checkHints(new IntroduceSuggestion(), "testIntroduceSuggestionTrait.php", "$this->field;^");
+    }
+
+    public void testIntroduceSuggestionForTraitStaticField_01() throws Exception {
+        checkHints(new IntroduceSuggestion(), "testIntroduceSuggestionTrait.php", "self::$staticField1;^");
+    }
+
+    public void testIntroduceSuggestionForTraitStaticField_02() throws Exception {
+        checkHints(new IntroduceSuggestion(), "testIntroduceSuggestionTrait.php", "TraitA::$staticField2;^");
+    }
+
+    public void testIntroduceSuggestionForTraitMethod() throws Exception {
+        checkHints(new IntroduceSuggestion(), "testIntroduceSuggestionTrait.php", "$this->method();^");
+    }
+
+    public void testIntroduceSuggestionForTraitConstant() throws Exception {
+        // don't show the hint because a trait can't have constants
+        checkHints(new IntroduceSuggestion(), "testIntroduceSuggestionTrait.php", "TraitA::CONSTANT^");
+    }
+
+    public void testIntroduceSuggestionForTraitStaticMethod_01() throws Exception {
+        checkHints(new IntroduceSuggestion(), "testIntroduceSuggestionTrait.php", "self::staticMethod1();^");
+    }
+
+    public void testIntroduceSuggestionForTraitStaticMethod_02() throws Exception {
+        checkHints(new IntroduceSuggestion(), "testIntroduceSuggestionTrait.php", "TraitA::staticMethod2();^");
+    }
+
+    public void testIntroduceSuggestionFixForTraitField() throws Exception {
+        applyHint(new IntroduceSuggestion(), "testIntroduceSuggestionTrait.php", "$this->field;^", "Create Field");
+    }
+
+    public void testIntroduceSuggestionFixForTraitStaticField_01() throws Exception {
+        applyHint(new IntroduceSuggestion(), "testIntroduceSuggestionTrait.php", "self::$staticField1;^", "Create Field");
+    }
+
+    public void testIntroduceSuggestionFixForTraitStaticField_02() throws Exception {
+        applyHint(new IntroduceSuggestion(), "testIntroduceSuggestionTrait.php", "TraitA::$staticField2;^", "Create Field");
+    }
+
+    public void testIntroduceSuggestionFixForTraitStaticField_03() throws Exception {
+        applyHint(new IntroduceSuggestion(), "testIntroduceSuggestionTrait.php", "TraitB::$staticTraitBField;^", "Create Field");
+    }
+
+    public void testIntroduceSuggestionFixForTraitStaticField_04() throws Exception {
+        applyHint(new IntroduceSuggestion(), "testIntroduceSuggestionTrait.php", "TraitC::$staticTraitCField;^", "Create Field");
+    }
+
+    public void testIntroduceSuggestionFixForTraitMethod() throws Exception {
+        applyHint(new IntroduceSuggestion(), "testIntroduceSuggestionTrait.php", "$this->method();^", "Create Method");
+    }
+
+    public void testIntroduceSuggestionFixForTraitStaticMethod_01() throws Exception {
+        applyHint(new IntroduceSuggestion(), "testIntroduceSuggestionTrait.php", "self::staticMethod1();^", "Create Method");
+    }
+
+    public void testIntroduceSuggestionFixForTraitStaticMethod_02() throws Exception {
+        applyHint(new IntroduceSuggestion(), "testIntroduceSuggestionTrait.php", "TraitA::staticMethod2();^", "Create Method");
+    }
+
+    public void testIntroduceSuggestionFixForTraitStaticMethod_03() throws Exception {
+        applyHint(new IntroduceSuggestion(), "testIntroduceSuggestionTrait.php", "TraitB::staticTraitBMethod();^", "Create Method");
+    }
+
+    public void testIntroduceSuggestionFixForTraitStaticMethod_04() throws Exception {
+        applyHint(new IntroduceSuggestion(), "testIntroduceSuggestionTrait.php", "TraitC::staticTraitCMethod();^", "Create Method");
+    }
+
     public void testAddUseImportSuggestion_01() throws Exception {
         checkHints(new AddUseImportSuggestion(), "testAddUseImportSuggestion_01.php", "new Foo\\Bar();^");
     }

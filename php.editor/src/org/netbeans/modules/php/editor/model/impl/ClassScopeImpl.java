@@ -290,8 +290,8 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         }
         Set<TraitScope> traitScopes = new HashSet<>(getTraits());
         for (TraitScope traitScope : traitScopes) {
-            Set<MethodElement> indexedMethods =
-                    org.netbeans.modules.php.editor.api.elements.ElementFilter.forPrivateModifiers(false).filter(index.getAllMethods(traitScope));
+            // don't filter private methods because it can be used in a class
+            Set<MethodElement> indexedMethods = index.getAllMethods(traitScope);
             for (MethodElement methodElement : indexedMethods) {
                 TypeElement type = methodElement.getType();
                 if (type.isTrait()) {

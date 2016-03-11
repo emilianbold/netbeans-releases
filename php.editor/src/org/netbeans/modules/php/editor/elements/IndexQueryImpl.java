@@ -1264,8 +1264,11 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
         final Set<TypeMemberElement> allTypeMembers = getAllTypeMembers(typeElement);
         Collection<TypeElement> subTypes = Collections.emptySet();
-        if (calledFromEnclosingType != null && ElementFilter.forEqualTypes(typeElement).isAccepted(calledFromEnclosingType)) {
-            subTypes = toTypes(allTypeMembers);
+        if (calledFromEnclosingType != null) {
+            if (typeElement instanceof TraitElement
+                    || ElementFilter.forEqualTypes(typeElement).isAccepted(calledFromEnclosingType)) {
+                subTypes = toTypes(allTypeMembers);
+            }
         }
         final ElementFilter filterForAccessible = forAccessibleTypeMembers(calledFromEnclosingType, subTypes);
         Set<TypeMemberElement> retval  = new HashSet<>();

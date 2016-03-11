@@ -88,7 +88,7 @@ public abstract class SymfonyVersion {
     @CheckForNull
     public abstract FileObject getTests();
 
-    @NonNull
+    @CheckForNull
     public abstract File getCacheDir();
 
     /**
