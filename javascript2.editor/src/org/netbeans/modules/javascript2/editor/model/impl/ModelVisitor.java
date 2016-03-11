@@ -679,6 +679,12 @@ public class ModelVisitor extends PathNodeVisitor {
             node.accept(this);
         }
         
+        // seting undefinded return type
+        if (fncScope.areReturnTypesEmpty()) {
+            // the function doesn't have return statement -> returns undefined
+            fncScope.addReturnType(new TypeUsageImpl(Type.UNDEFINED, -1, false));
+        }
+        
         if (!functionNode.isProgram()) {
             modelBuilder.reset();
         }
