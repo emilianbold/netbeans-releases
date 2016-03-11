@@ -117,7 +117,7 @@ import org.openide.filesystems.FileObject;
  */
 public class ModelVisitor extends PathNodeVisitor {
 
-    private static final Logger LOGGER = Logger.getLogger(ModelVisitor.class.getSimpleName());
+    private static final Logger LOGGER = Logger.getLogger(ModelVisitor.class.getName());
     private static final boolean log = true;
     
     private final ModelBuilder modelBuilder;
@@ -1171,22 +1171,24 @@ public class ModelVisitor extends PathNodeVisitor {
                         // the function here is already, need to be just fixed the name offsets
                         createVariable = false;
                     } else if (bNode.isAssignment()) {
-                        while (bNode.rhs() instanceof BinaryNode && bNode.rhs().isAssignment()) {
-                            // the cycle is trying to find out a FunctionNode at the end of assignements
-                            // case var f1 = f2 = f3 = f4 = function () {}
-                            bNode = (BinaryNode)bNode.rhs();
-                        }
-                        if (bNode.rhs() instanceof FunctionNode) {    
-                            // case var f1 = f2 = function (){};
-                            // -> the variable will be reference fo the function
-                            createVariable = false;
-                            FunctionNode fNode = (FunctionNode)bNode.rhs();
-                            JsObject original = parentFn.getProperty(modelBuilder.getFunctionName(fNode));
-                            Identifier varName = new IdentifierImpl(varNode.getName().getName(), getOffsetRange(varNode.getName()));
-                            OffsetRange range = varName.getOffsetRange();
-                            JsFunctionReference variable = new JsFunctionReference(parentFn, varName, (JsFunction)original, true, original.getModifiers());
-                            variable.addOccurrence(varName.getOffsetRange());
-                            parentFn.addProperty(varName.getName(), variable);
+                        createVariable = false;
+                        if (parentFn.getProperty(varNode.getName().getName()) == null) {
+                            while (bNode.rhs() instanceof BinaryNode && bNode.rhs().isAssignment()) {
+                                // the cycle is trying to find out a FunctionNode at the end of assignements
+                                // case var f1 = f2 = f3 = f4 = function () {}
+                                bNode = (BinaryNode)bNode.rhs();
+                            }
+                            if (bNode.rhs() instanceof FunctionNode) {    
+                                // case var f1 = f2 = function (){};
+                                // -> the variable will be reference fo the function
+                                FunctionNode fNode = (FunctionNode)bNode.rhs();
+                                JsObject original = parentFn.getProperty(modelBuilder.getFunctionName(fNode));
+                                Identifier varName = new IdentifierImpl(varNode.getName().getName(), getOffsetRange(varNode.getName()));
+                                OffsetRange range = varName.getOffsetRange();
+                                JsFunctionReference variable = new JsFunctionReference(parentFn, varName, (JsFunction)original, true, original.getModifiers());
+                                variable.addOccurrence(varName.getOffsetRange());
+                                parentFn.addProperty(varName.getName(), variable);
+                            }
                         }
                     }
                 } else if (parentFn.getProperty(varNode.getName().getName()) != null) {
@@ -1365,16 +1367,15 @@ public class ModelVisitor extends PathNodeVisitor {
                 // fx will be feference of f1
                 parent.getProperties().remove(modelBuilder.getFunctionName(fn));
                 JsObject variable = parent.getProperty(varNode.getName().getName());
+                IdentifierImpl refName = new IdentifierImpl(fn.getIdent().getName(), new OffsetRange(fn.getIdent().getStart(), fn.getIdent().getFinish()));
+                JsFunctionReference jsRef = new JsFunctionReference(jsFunction, refName, jsFunction, true,  EnumSet.of(Modifier.PRIVATE));
+                jsRef.addOccurrence(jsRef.getDeclarationName().getOffsetRange());
+                jsFunction.setDeclarationName(new IdentifierImpl(varNode.getName().getName(), getOffsetRange(varNode.getName())));
                 if (variable != null) {
-                    IdentifierImpl refName = new IdentifierImpl(fn.getIdent().getName(), new OffsetRange(fn.getIdent().getStart(), fn.getIdent().getFinish()));
-                    JsFunctionReference jsRef = new JsFunctionReference(jsFunction, refName, jsFunction, true,  EnumSet.of(Modifier.PRIVATE));
-                    jsRef.addOccurrence(jsRef.getDeclarationName().getOffsetRange());
-                    jsFunction.setDeclarationName(variable.getDeclarationName());
                     ModelUtils.copyOccurrences(variable, jsFunction);
-                    parent.addProperty(jsFunction.getName(), jsFunction);
-                    jsFunction.addProperty(jsRef.getName(), jsRef);
                 }
-                
+                parent.addProperty(jsFunction.getName(), jsFunction);
+                jsFunction.addProperty(jsRef.getName(), jsRef);
             } else if ((varNode.isFunctionDeclaration() || fn.isAnonymous())) {
 //                if (!fn.getName().equals(fn.getIdent().getName())) {
                     // correct key name of properties in cases
