@@ -97,4 +97,5 @@ public abstract class ProjectClassPathModifierAccessor {
 
     public abstract boolean addProjects(Project[] projects, ProjectClassPathModifierImplementation pcmi, SourceGroup sg, String classPathType) throws IOException, UnsupportedOperationException;
 
+    public abstract boolean removeProjects(Project[] projects, ProjectClassPathModifierImplementation pcmi, SourceGroup sg, String classPathType) throws IOException, UnsupportedOperationException;
 }

@@ -120,6 +120,8 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
             documentNameTextField.getDocument().addDocumentListener( this );
         } else if (type == Type.PKG_INFO) {
             documentNameTextField.setEditable (false);
+        } else if (type == Type.MODULE_INFO) {
+            documentNameTextField.setEditable (false);
         }
         else {
             packageComboBox.getEditor().addActionListener( this );

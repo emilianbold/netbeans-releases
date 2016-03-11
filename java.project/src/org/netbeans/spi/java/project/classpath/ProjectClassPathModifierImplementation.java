@@ -311,6 +311,36 @@ public abstract class ProjectClassPathModifierImplementation {
     }
 
     /**
+     * Removes dependent projects from project's classpath if they are included on it.
+     * The default behaviour will behave as {@link ProjectClassPathModifierImplementation#removeAntArtifacts(org.netbeans.api.project.ant.AntArtifact[], java.net.URI[], org.netbeans.api.project.SourceGroup, java.lang.String)}
+     * Other project types can override the behaviour.
+     * @param projects to be removed
+     * (must be owned by the artifact and be relative to it)
+     * @param sourceGroup of type {@link JavaProjectConstants#SOURCES_TYPE_JAVA}
+     * identifying the compilation unit to change
+     * @param type the type of the classpath the dependent projects should be added to,
+     * e.g. {@link ClassPath#COMPILE}
+     * @return true in case the classpath was changed, (at least one project was removed from the classpath),
+     * the value false is returned when none of the projects was included on the classpath.
+     * @exception IOException in case the project metadata cannot be changed
+     * @exception UnsupportedOperationException is thrown when the project does not support
+     * removing of a dependent project from the classpath of the given type.
+     * @since org.netbeans.modules.java.project/1 1.66
+     */
+    protected boolean removeProjects(Project[] projects, SourceGroup sourceGroup, String type) throws IOException, UnsupportedOperationException {
+        List<AntArtifact> ants = new ArrayList<AntArtifact>();
+        List<URI> antUris = new ArrayList<URI>();
+        for (Project prj : projects) {
+            AntArtifact[] antArtifacts = AntArtifactQuery.findArtifactsByType(prj, JavaProjectConstants.ARTIFACT_TYPE_JAR);
+            for (AntArtifact aa : antArtifacts) {
+                ants.add(aa);
+                antUris.add(aa.getArtifactLocations()[0]);
+            }
+        }
+        return removeAntArtifacts(ants.toArray(new AntArtifact[0]), antUris.toArray(new URI[0]), sourceGroup, type);
+    }
+
+    /**
      * Takes a classpath root and tries to figure the best way to reference that file for that particular project.
      * The possible actions include relativization of path, copying to sharable libraries folder etc.
      * @param classpathRoot passed in through the <code>addRoots()</code> and <code>removeRoots()</code> methods
@@ -454,6 +484,11 @@ public abstract class ProjectClassPathModifierImplementation {
         public boolean addProjects(Project[] projects, ProjectClassPathModifierImplementation pcmi, SourceGroup sg, String classPathType) throws IOException, UnsupportedOperationException {
             assert pcmi != null;
             return pcmi.addProjects(projects, sg, classPathType);
+        }
+
+        public boolean removeProjects(Project[] projects, ProjectClassPathModifierImplementation pcmi, SourceGroup sg, String classPathType) throws IOException, UnsupportedOperationException {
+            assert pcmi != null;
+            return pcmi.removeProjects(projects, sg, classPathType);
         }
     }
 }

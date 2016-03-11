@@ -1010,6 +1010,15 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         if (ClassPath.EXECUTE.equals(type)) {
             return getRunTimeClasspath(0);
         }
+        if (JavaClassPathConstants.MODULE_BOOT_PATH.equals(type)) {
+            return getModuleBootPath();
+        }
+        if (JavaClassPathConstants.MODULE_COMPILE_PATH.equals(type)) {
+            return getModuleCompilePath(0);
+        }
+        if (JavaClassPathConstants.MODULE_CLASS_PATH.equals(type)) {
+            return getModuleLegacyClassPath(0);
+        }
         assert false : "Unknown classpath type: " + type;   //NOI18N
         return null;
     }
@@ -1024,8 +1033,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             }
             else if (ClassPath.EXECUTE.equals(type)) {
                 return runTestClasspath;
-            } else if (JavaClassPathConstants.PROCESSOR_PATH.equals(type)) {
+            }
+            else if (JavaClassPathConstants.PROCESSOR_PATH.equals(type)) {
                 return processorTestClasspath;
+            }
+            else if (JavaClassPathConstants.MODULE_COMPILE_PATH.equals(type)) {
+                return testModulePath;
             }
             else {
                 return null;
@@ -1040,6 +1053,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             }
             else if (JavaClassPathConstants.PROCESSOR_PATH.equals(type)) {
                 return processorClasspath;
+            }
+            else if (JavaClassPathConstants.MODULE_COMPILE_PATH.equals(type)) {
+                return modulePath;
             }
             else {
                 return null;
@@ -1064,6 +1080,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 else if (JavaClassPathConstants.PROCESSOR_PATH.equals(type)) {
                     return processorClasspath;
                 }
+                else if (JavaClassPathConstants.MODULE_COMPILE_PATH.equals(type)) {
+                    return modulePath;
+                }
                 else {
                     return null;
                 }
@@ -1077,6 +1096,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 }
                 else if (ClassPath.EXECUTE.equals(type)) {
                     return runTestClasspath;
+                }
+                else if (JavaClassPathConstants.PROCESSOR_PATH.equals(type)) {
+                    return processorTestClasspath;
+                }
+                else if (JavaClassPathConstants.MODULE_COMPILE_PATH.equals(type)) {
+                    return testModulePath;
                 }
                 else {
                     return null;

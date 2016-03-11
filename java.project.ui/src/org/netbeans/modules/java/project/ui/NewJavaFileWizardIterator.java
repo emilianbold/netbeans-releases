@@ -45,22 +45,39 @@
 package org.netbeans.modules.java.project.ui;
 
 import java.awt.Component;
+import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.api.project.ant.AntArtifactQuery;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.api.templates.TemplateRegistrations;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
@@ -68,6 +85,7 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -170,9 +188,32 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
                     new JavaTargetChooserPanel(project, groups, null, Type.PKG_INFO, true),
                 };
             } else if (type == Type.MODULE_INFO) {
-                return new WizardDescriptor.Panel[] {
-                    new JavaTargetChooserPanel(project, groups, null, Type.MODULE_INFO, false),
-                };
+                List<WizardDescriptor.Panel> pnls = new ArrayList<>();
+                pnls.add(new JavaTargetChooserPanel(project, groups, null, Type.MODULE_INFO, false));
+                Map<FileObject, Set<ClassPathItem>> group2items = new HashMap<>();
+                for (SourceGroup group : groups) {
+                    try {
+                        ProjectClassPathModifier.removeLibraries(new Library[0], group.getRootFolder(), ClassPath.COMPILE);
+                        ProjectClassPathModifier.removeLibraries(new Library[0], group.getRootFolder(), JavaClassPathConstants.MODULE_COMPILE_PATH);
+                        ClassPath cp = ClassPath.getClassPath(group.getRootFolder(), ClassPath.COMPILE);
+                        if (cp != null) {
+                            Set<ClassPathItem> cpRoots = new LinkedHashSet<>();
+                            for (ClassPath.Entry entry : cp.entries()) {
+                                ClassPathItem cpi = ClassPathItem.create(project, entry.getURL());
+                                if (cpi != null) {
+                                    cpRoots.add(cpi);
+                                }
+                            }
+                            if (!cpRoots.isEmpty()) {
+                                group2items.put(group.getRootFolder(), cpRoots);
+                            }
+                        }
+                    } catch (Exception ex) {}
+                }
+                if (!group2items.isEmpty()) {
+                    pnls.add(new MoveToModulePathPanel(group2items));
+                }
+                return pnls.toArray(new WizardDescriptor.Panel[pnls.size()]);
             } else {
                 assert type == Type.PACKAGE;
                 SourceGroup[] groovySourceGroups = sources.getSourceGroups(SOURCE_TYPE_GROOVY);
@@ -232,6 +273,8 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
     @Override
     public Set<FileObject> instantiate () throws IOException {
         FileObject dir = Templates.getTargetFolder( wiz );
+        moveCPItems((Iterable<ClassPathItem>) wiz.getProperty(MoveToModulePathPanel.CP_ITEMS_TO_MOVE), dir);
+        
         String targetName = Templates.getTargetName( wiz );
         
         DataFolder df = DataFolder.findFolder( dir );
@@ -251,6 +294,55 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
         return Collections.singleton( createdFile );
     }
     
+    private void moveCPItems(Iterable<ClassPathItem> cpItemsToMove, FileObject folder) {
+        if (cpItemsToMove != null && cpItemsToMove.iterator().hasNext()) {
+            List<URL> cpRoots2Remove = new ArrayList<>();
+            List<URL> cpRoots2Move = new ArrayList<>();
+            List<AntArtifact> artifacts2Move = new ArrayList<>();
+            List<URI> artifactElements2Move = new ArrayList<>();
+            List<Project> projects2Move = new ArrayList<>();
+            List<Library> libraries2Move = new ArrayList<>();
+            for (ClassPathItem item : cpItemsToMove) {
+                AntArtifact artifact = item.asAntArtifact();
+                if (artifact != null) {
+                    artifacts2Move.add(artifact);
+                    artifactElements2Move.add(artifact.getArtifactLocation());
+                    cpRoots2Remove.add(item.getURL());
+                } else {
+                    Project p = item.asProject();
+                    if (p != null) {
+                        projects2Move.add(p);
+                        cpRoots2Remove.add(item.getURL());
+                    } else {
+                        Library l = item.asLibrary();
+                        if (l != null) {
+                            libraries2Move.add(l);
+                            cpRoots2Remove.add(item.getURL());
+                        } else {
+                            cpRoots2Move.add(item.getURL());
+                        }
+                    }
+                }
+            }
+            URL[] cpRootsToMove = cpRoots2Move.toArray(new URL[cpRoots2Move.size()]);
+            AntArtifact[] artifactsToMove = artifacts2Move.toArray(new AntArtifact[artifacts2Move.size()]);
+            URI[] artifactElementsToMove = artifactElements2Move.toArray(new URI[artifactElements2Move.size()]);
+            URL[] cpRootsToRemove = cpRoots2Remove.toArray(new URL[cpRoots2Remove.size()]);
+            Project[] projectsToMove = projects2Move.toArray(new Project[projects2Move.size()]);
+            Library[] librariesToMove = libraries2Move.toArray(new Library[libraries2Move.size()]);
+            try {
+                ProjectClassPathModifier.removeRoots(cpRootsToMove, folder, ClassPath.COMPILE);
+                ProjectClassPathModifier.removeAntArtifacts(artifactsToMove, artifactElementsToMove, folder, ClassPath.COMPILE);
+                ProjectClassPathModifier.removeProjects(projectsToMove, folder, ClassPath.COMPILE);
+                ProjectClassPathModifier.removeLibraries(librariesToMove, folder, ClassPath.COMPILE);
+                ProjectClassPathModifier.removeRoots(cpRootsToRemove, folder, ClassPath.COMPILE);
+                ProjectClassPathModifier.addRoots(cpRootsToMove, folder, JavaClassPathConstants.MODULE_COMPILE_PATH);
+                ProjectClassPathModifier.addAntArtifacts(artifactsToMove, artifactElementsToMove, folder, JavaClassPathConstants.MODULE_COMPILE_PATH);
+                ProjectClassPathModifier.addProjects(projectsToMove, folder, JavaClassPathConstants.MODULE_COMPILE_PATH);
+                ProjectClassPathModifier.addLibraries(librariesToMove, folder, JavaClassPathConstants.MODULE_COMPILE_PATH);
+            } catch (Exception ex) {}
+        }        
+    }
         
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
@@ -351,6 +443,98 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
             l.stateChanged(ev);
         }
     }
-     
     
+    public static final class ClassPathItem {
+
+        private static ClassPathItem create(Project project, URL url) {
+            File f = FileUtil.archiveOrDirForURL(url);
+            AntArtifact artifact = f != null ? AntArtifactQuery.findArtifactFromFile(f) : null;
+            if (artifact != null) {
+                return new ClassPathItem(url, artifact);
+            }
+            try {
+                Project p = FileOwnerQuery.getOwner(url.toURI());
+                if (p == project) {
+                    return null;
+                }
+                SourceForBinaryQuery.Result sfbResult = SourceForBinaryQuery.findSourceRoots(url);
+                if (sfbResult.getRoots().length > 0 && p == FileOwnerQuery.getOwner(sfbResult.getRoots()[0])) {
+                    Sources sources = ProjectUtils.getSources(p);
+                    for (SourceGroup sg : sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+                        for (FileObject root : sfbResult.getRoots()) {
+                            if (root.equals(sg.getRootFolder())) {                                
+                                return new ClassPathItem(url, p);
+                            }
+                        }
+                    }
+                }
+            } catch (URISyntaxException ex) {}
+            FileObject fo = URLMapper.findFileObject(url);
+            if (fo != null) {
+                for (LibraryManager openManager : LibraryManager.getOpenManagers()) {
+                    for (Library library : openManager.getLibraries()) {
+                        for (URL contentUrl : library.getContent("classpath")) {
+                            if (fo == URLMapper.findFileObject(contentUrl)) { //NOI18N
+                                return new ClassPathItem(url, library);
+                            }
+                        }
+                    }
+                }
+            }
+            return new ClassPathItem(url, f);
+        }
+
+        private final URL url;
+        private final Object value;
+
+        private ClassPathItem(URL url, Object value) {
+            this.url = url;
+            this.value = value;
+        }        
+        
+        public AntArtifact asAntArtifact() {
+            return value instanceof AntArtifact ? (AntArtifact)value : null;
+        }
+        
+        public Project asProject() {
+            return value instanceof Project ? (Project)value : null;
+        }
+
+        public Library asLibrary() {
+            return value instanceof Library ? (Library)value : null;            
+        }
+        
+        public File asFile() {
+            return value instanceof File ? (File)value : null;
+        }
+        
+        public URL getURL() {
+            return url;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 11 * hash + Objects.hashCode(this.url);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final ClassPathItem other = (ClassPathItem) obj;
+            if (!Objects.equals(this.url, other.url)) {
+                return false;
+            }
+            return true;
+        }
+    }
 }

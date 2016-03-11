@@ -189,6 +189,13 @@ public class ClassPathModifierLookupMerger implements LookupMerger<ProjectClassP
             });
         }
 
+        @Override protected boolean removeProjects(final Project[] projects, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
+            return run(new Op() {
+                @Override public boolean run(ProjectClassPathModifierImplementation impl) throws IOException, UnsupportedOperationException {
+                    return ProjectClassPathModifierAccessor.INSTANCE.removeProjects(projects, impl, sourceGroup, type);
+                }
+            });
+        }
     }
     
 }

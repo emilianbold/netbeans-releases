@@ -319,6 +319,35 @@ public class ProjectClassPathModifier {
     }
     
     /**
+     * Removes projects from project's classpath if the
+     * projects are included on it.
+     * <p>
+     * It's not guaranteed that the source and target project will connect in cases when each is of different class of project. Eg.
+     * Ant-based vs Maven project types. A way to check is to attempt to retrieve AntArtifact from the source and target projects..
+     *
+     * @param projects to be removed
+     * @param projectArtifact a file from whose classpath the dependent projects should be removed
+     * @param classPathType the type of classpath to be modified, see {@link org.netbeans.api.java.classpath.ClassPath}
+     * @return true in case the classpath was changed, (at least one project was removed from the classpath),
+     * the value false is returned when non of the projects was included on the classpath.
+     * @exception IOException in case the project metadata cannot be changed
+     * @exception UnsupportedOperationException is thrown when the project does not support
+     * removing of a dependent project from the classpath of the given type.
+     * @since org.netbeans.modules.java.project/1 1.66
+     */
+    public static boolean removeProjects (final Project[] projects,
+            final FileObject projectArtifact, final String classPathType) throws IOException, UnsupportedOperationException {
+        final Extensible extensible = findExtensible (projectArtifact, classPathType);
+        if (extensible.pcmi != null) {
+            assert extensible.sg != null;
+            assert extensible.classPathType != null;
+            return ProjectClassPathModifierAccessor.INSTANCE.removeProjects (projects, extensible.pcmi, extensible.sg, extensible.classPathType);
+        } else {
+            throw new UnsupportedOperationException("Cannot remove project as dependency. Missing ProjectClassPathModifierImplementation service in project type.");
+        }
+    }
+    
+    /**
      * Removes artifacts (e.g. subprojects) from project's classpath if the
      * artifacts are included on it.
      * @param artifacts to be added

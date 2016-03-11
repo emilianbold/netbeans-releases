@@ -287,10 +287,9 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
             }
             Templates.setTargetFolder(wizard, getTargetFolderFromGUI(wizard));
             Templates.setTargetName(wizard, gui.getTargetName());
-        }
-        wizard.putProperty("NewFileWizard_Title", null); // NOI18N
-        
+        }        
         if (WizardDescriptor.FINISH_OPTION.equals(value)) {
+            wizard.putProperty("NewFileWizard_Title", null); // NOI18N
             wizard.putProperty(FOLDER_TO_DELETE, null);
         }
     }
