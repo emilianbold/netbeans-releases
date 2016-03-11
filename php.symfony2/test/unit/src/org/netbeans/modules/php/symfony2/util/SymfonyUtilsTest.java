@@ -39,72 +39,29 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.ui.actions;
+package org.netbeans.modules.php.symfony2.util;
 
-import java.util.Arrays;
-import java.util.List;
-import javax.swing.Action;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
-import org.netbeans.modules.php.spi.framework.actions.GoToActionAction;
-import org.netbeans.modules.php.spi.framework.actions.GoToViewAction;
-import org.netbeans.modules.php.spi.framework.actions.RunCommandAction;
-import org.netbeans.modules.php.symfony2.util.SymfonyUtils;
-import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle.Messages;
+import org.netbeans.junit.NbTestCase;
 
-/**
- * Symfony 2/3 actions extender.
- */
-public final class SymfonyPhpModuleActionsExtender extends PhpModuleActionsExtender {
+public class SymfonyUtilsTest extends NbTestCase {
 
-    private static final List<Action> ACTIONS = Arrays.<Action>asList(
-            CacheClearAction.getInstance(),
-            CacheWarmupAction.getInstance());
-
-    private final PhpModule phpModule;
-
-
-    public SymfonyPhpModuleActionsExtender(PhpModule phpModule) {
-        assert phpModule != null;
-        this.phpModule = phpModule;
+    public SymfonyUtilsTest(String name) {
+        super(name);
     }
 
-
-    @Messages("SymfonyPhpModuleActionsExtender.menu.name=Symfony")
-    @Override
-    public String getMenuName() {
-        return Bundle.SymfonyPhpModuleActionsExtender_menu_name();
+    public void testCapitalize() {
+        assertEquals("Test", SymfonyUtils.capitalize("test", true));
+        assertEquals("test", SymfonyUtils.capitalize("test", false));
+        assertEquals("MyTest", SymfonyUtils.capitalize("my_test", true));
+        assertEquals("myTest", SymfonyUtils.capitalize("my_test", false));
+        assertEquals("MyLongTest", SymfonyUtils.capitalize("my_long_test", true));
+        assertEquals("myLongTest", SymfonyUtils.capitalize("my_long_test", false));
     }
 
-    @Override
-    public RunCommandAction getRunCommandAction() {
-        return SymfonyRunCommandAction.getInstance();
-    }
-
-    @Override
-    public List<? extends Action> getActions() {
-        return ACTIONS;
-    }
-
-    @Override
-    public boolean isViewWithAction(FileObject fo) {
-        return SymfonyUtils.isViewWithAction(fo);
-    }
-
-    @Override
-    public boolean isActionWithView(FileObject fo) {
-        return SymfonyUtils.isController(fo);
-    }
-
-    @Override
-    public GoToActionAction getGoToActionAction(FileObject fo, int offset) {
-        return new SymfonyGoToActionAction(phpModule, fo);
-    }
-
-    @Override
-    public GoToViewAction getGoToViewAction(FileObject fo, int offset) {
-        return new SymfonyGoToViewAction(phpModule, fo, offset);
+    public void testDecapitalize() {
+        assertEquals("test", SymfonyUtils.decapitalize("Test"));
+        assertEquals("my_test", SymfonyUtils.decapitalize("MyTest"));
+        assertEquals("my_long_test", SymfonyUtils.decapitalize("myLongTest"));
     }
 
 }
