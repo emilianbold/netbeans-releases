@@ -147,7 +147,7 @@ public class JPDATruffleAccessor extends Object {
         Debugger debugger = execEvent.getDebugger();
         PolyglotEngine tvm;
         try {
-            Field vmField = debugger.getClass().getDeclaredField("vm");
+            Field vmField = debugger.getClass().getDeclaredField("engine");
             vmField.setAccessible(true);
             tvm = (PolyglotEngine) vmField.get(debugger);
         } catch (IllegalAccessException | IllegalArgumentException |
