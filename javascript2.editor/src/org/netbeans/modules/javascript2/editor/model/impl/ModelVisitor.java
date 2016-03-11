@@ -1510,6 +1510,14 @@ public class ModelVisitor extends PathNodeVisitor {
                 // needs to be marked before going through the nodes
                 jsFunction.setJsKind(JsElement.Kind.CONSTRUCTOR);
             }
+            
+            jsFunction.setDeprecated(docHolder.isDeprecated(fn));
+            List<Type> types = docHolder.getReturnType(fn);
+            if (types != null && !types.isEmpty()) {
+                for(Type type : types) {
+                    jsFunction.addReturnType(new TypeUsageImpl(type.getType(), type.getOffset(), ModelUtils.isKnownGLobalType(type.getType())));
+                }
+            }
         }
         // look for the type defined through comment like @typedef
         Map<Integer, ? extends JsComment> commentBlocks = docHolder.getCommentBlocks();
