@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
 import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem.OptionItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
@@ -485,11 +486,31 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         return buf.toString();
     }
 
-    protected abstract String getUserIncludeFlag(CompilerSet cs);
+    protected abstract ToolchainManager.CompilerDescriptor getCompilerDescriptor(CompilerSet cs);
+    
+    protected String getUserIncludeFlag(CompilerSet cs){
+        ToolchainManager.CompilerDescriptor compilerDescriptor = getCompilerDescriptor(cs);
+        if (compilerDescriptor != null) {
+            return compilerDescriptor.getUserIncludeFlag();
+        }
+        return ""; //broken tool collection
+    }
 
-    protected abstract String getUserFileFlag(CompilerSet cs);
+    protected String getUserFileFlag(CompilerSet cs){
+        ToolchainManager.CompilerDescriptor compilerDescriptor = getCompilerDescriptor(cs);
+        if (compilerDescriptor != null) {
+            return getCompilerDescriptor(cs).getUserFileFlag();
+        }
+        return ""; //broken tool collection
+    }
 
-    protected abstract String getUserMacroFlag(CompilerSet cs);
+    protected String getUserMacroFlag(CompilerSet cs){
+        ToolchainManager.CompilerDescriptor compilerDescriptor = getCompilerDescriptor(cs);
+        if (compilerDescriptor != null) {
+            return getCompilerDescriptor(cs).getUserMacroFlag();
+        }
+        return ""; //broken tool collection
+    }
 
     public static class OptionToString implements VectorConfiguration.ToString<String> {
 
