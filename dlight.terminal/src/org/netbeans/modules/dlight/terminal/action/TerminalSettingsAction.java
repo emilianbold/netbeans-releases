@@ -62,12 +62,12 @@ import org.openide.util.actions.Presenter;
 @ActionRegistration(iconInMenu = true, displayName = "#TerminalOptionsShortDescr", iconBase = TerminalSettingsAction.SETTINGS_ICON)
 @ActionReference(path = TerminalAction.TERMINAL_ACTIONS_PATH, name = "org-netbeans-modules-dlight-terminal-action-TerminalSettingsAction", position = 300)
 public class TerminalSettingsAction extends AbstractAction implements Presenter.Toolbar {
-    public static final String SETTINGS_ICON = "org/netbeans/modules/dlight/terminal/action/terminal_options.png";
+    public static final String SETTINGS_ICON = "org/netbeans/modules/dlight/terminal/action/terminal_options.png"; //NOI18N
 
     public TerminalSettingsAction() {
         putValue(Action.NAME, "TerminalSettingsAction"); //NOI18N
         putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(TerminalSettingsAction.class, "TerminalOptionsShortDescr")); //NOI18N
-        putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon(SETTINGS_ICON, false)); //NOI18N
+        putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon(SETTINGS_ICON, false));
     }
 
     @Override
