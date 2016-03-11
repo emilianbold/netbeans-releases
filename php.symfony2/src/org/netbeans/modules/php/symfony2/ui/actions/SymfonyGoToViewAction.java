@@ -41,70 +41,58 @@
  */
 package org.netbeans.modules.php.symfony2.ui.actions;
 
-import java.util.Arrays;
-import java.util.List;
-import javax.swing.Action;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.csl.api.UiUtils;
+import org.netbeans.modules.php.api.editor.EditorSupport;
+import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
-import org.netbeans.modules.php.spi.framework.actions.GoToActionAction;
 import org.netbeans.modules.php.spi.framework.actions.GoToViewAction;
-import org.netbeans.modules.php.spi.framework.actions.RunCommandAction;
+import org.netbeans.modules.php.symfony2.preferences.SymfonyPreferences;
 import org.netbeans.modules.php.symfony2.util.SymfonyUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle.Messages;
+import org.openide.util.Lookup;
 
-/**
- * Symfony 2/3 actions extender.
- */
-public final class SymfonyPhpModuleActionsExtender extends PhpModuleActionsExtender {
+final class SymfonyGoToViewAction extends GoToViewAction {
 
-    private static final List<Action> ACTIONS = Arrays.<Action>asList(
-            CacheClearAction.getInstance(),
-            CacheWarmupAction.getInstance());
+    private static final Logger LOGGER = Logger.getLogger(SymfonyGoToViewAction.class.getName());
 
     private final PhpModule phpModule;
+    private final FileObject controller;
+    private final int offset;
 
 
-    public SymfonyPhpModuleActionsExtender(PhpModule phpModule) {
+    SymfonyGoToViewAction(PhpModule phpModule, FileObject controller, int offset) {
         assert phpModule != null;
+        assert controller != null;
         this.phpModule = phpModule;
-    }
-
-
-    @Messages("SymfonyPhpModuleActionsExtender.menu.name=Symfony")
-    @Override
-    public String getMenuName() {
-        return Bundle.SymfonyPhpModuleActionsExtender_menu_name();
+        this.controller = controller;
+        this.offset = offset;
     }
 
     @Override
-    public RunCommandAction getRunCommandAction() {
-        return SymfonyRunCommandAction.getInstance();
-    }
-
-    @Override
-    public List<? extends Action> getActions() {
-        return ACTIONS;
-    }
-
-    @Override
-    public boolean isViewWithAction(FileObject fo) {
-        return SymfonyUtils.isViewWithAction(fo);
-    }
-
-    @Override
-    public boolean isActionWithView(FileObject fo) {
-        return SymfonyUtils.isController(fo);
-    }
-
-    @Override
-    public GoToActionAction getGoToActionAction(FileObject fo, int offset) {
-        return new SymfonyGoToActionAction(phpModule, fo);
-    }
-
-    @Override
-    public GoToViewAction getGoToViewAction(FileObject fo, int offset) {
-        return new SymfonyGoToViewAction(phpModule, fo, offset);
+    public boolean goToView() {
+        FileObject sources = phpModule.getSourceDirectory();
+        if (sources == null) {
+            LOGGER.log(Level.INFO, "No Source Files for project {0}", phpModule.getDisplayName());
+            return false;
+        }
+        FileObject appDir = sources.getFileObject(SymfonyPreferences.getAppDir(phpModule));
+        if (appDir == null) {
+            LOGGER.log(Level.INFO, "No App dir for project {0}", phpModule.getDisplayName());
+            return false;
+        }
+        EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
+        PhpBaseElement phpElement = editorSupport.getElement(controller, offset);
+        if (phpElement == null) {
+            return false;
+        }
+        FileObject view = SymfonyUtils.getView(controller, appDir, phpElement);
+        if (view != null) {
+            UiUtils.open(view, DEFAULT_OFFSET);
+            return true;
+        }
+        return false;
     }
 
 }

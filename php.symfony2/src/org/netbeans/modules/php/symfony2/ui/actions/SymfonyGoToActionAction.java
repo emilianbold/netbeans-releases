@@ -41,70 +41,68 @@
  */
 package org.netbeans.modules.php.symfony2.ui.actions;
 
-import java.util.Arrays;
-import java.util.List;
-import javax.swing.Action;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.csl.api.UiUtils;
+import org.netbeans.modules.php.api.editor.EditorSupport;
+import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
 import org.netbeans.modules.php.spi.framework.actions.GoToActionAction;
-import org.netbeans.modules.php.spi.framework.actions.GoToViewAction;
-import org.netbeans.modules.php.spi.framework.actions.RunCommandAction;
 import org.netbeans.modules.php.symfony2.util.SymfonyUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle.Messages;
+import org.openide.util.Lookup;
 
-/**
- * Symfony 2/3 actions extender.
- */
-public final class SymfonyPhpModuleActionsExtender extends PhpModuleActionsExtender {
+final class SymfonyGoToActionAction extends GoToActionAction {
 
-    private static final List<Action> ACTIONS = Arrays.<Action>asList(
-            CacheClearAction.getInstance(),
-            CacheWarmupAction.getInstance());
+    private static final Logger LOGGER = Logger.getLogger(SymfonyGoToActionAction.class.getName());
 
     private final PhpModule phpModule;
+    private final FileObject view;
 
 
-    public SymfonyPhpModuleActionsExtender(PhpModule phpModule) {
+    SymfonyGoToActionAction(PhpModule phpModule, FileObject view) {
         assert phpModule != null;
+        assert view != null;
         this.phpModule = phpModule;
-    }
-
-
-    @Messages("SymfonyPhpModuleActionsExtender.menu.name=Symfony")
-    @Override
-    public String getMenuName() {
-        return Bundle.SymfonyPhpModuleActionsExtender_menu_name();
+        this.view = view;
     }
 
     @Override
-    public RunCommandAction getRunCommandAction() {
-        return SymfonyRunCommandAction.getInstance();
+    public boolean goToAction() {
+        FileObject sources = phpModule.getSourceDirectory();
+        if (sources == null) {
+            LOGGER.log(Level.INFO, "No Source Files for project {0}", phpModule.getDisplayName());
+            return false;
+        }
+        FileObject controller = SymfonyUtils.getController(sources, view);
+        if (controller != null) {
+            UiUtils.open(controller, getActionMethodOffset(controller));
+            return true;
+        }
+        return false;
     }
 
-    @Override
-    public List<? extends Action> getActions() {
-        return ACTIONS;
-    }
-
-    @Override
-    public boolean isViewWithAction(FileObject fo) {
-        return SymfonyUtils.isViewWithAction(fo);
-    }
-
-    @Override
-    public boolean isActionWithView(FileObject fo) {
-        return SymfonyUtils.isController(fo);
-    }
-
-    @Override
-    public GoToActionAction getGoToActionAction(FileObject fo, int offset) {
-        return new SymfonyGoToActionAction(phpModule, fo);
-    }
-
-    @Override
-    public GoToViewAction getGoToViewAction(FileObject fo, int offset) {
-        return new SymfonyGoToViewAction(phpModule, fo, offset);
+    private int getActionMethodOffset(FileObject controller) {
+        String actionMethodName = SymfonyUtils.getActionMethodName(view.getName());
+        EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
+        int firstClassOffset = -1;
+        for (PhpClass phpClass : editorSupport.getClasses(controller)) {
+            if (phpClass.getName().equals(controller.getName())) {
+                for (PhpClass.Method method : phpClass.getMethods()) {
+                    if (actionMethodName.equals(method.getName())) {
+                        return method.getOffset();
+                    }
+                }
+                return phpClass.getOffset();
+            }
+            if (firstClassOffset == -1) {
+                firstClassOffset = phpClass.getOffset();
+            }
+        }
+        if (firstClassOffset != -1) {
+            return firstClassOffset;
+        }
+        return DEFAULT_OFFSET;
     }
 
 }

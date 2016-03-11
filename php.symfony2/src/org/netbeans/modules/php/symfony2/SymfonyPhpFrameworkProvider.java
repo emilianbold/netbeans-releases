@@ -154,7 +154,7 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public PhpModuleActionsExtender getActionsExtender(PhpModule phpModule) {
-        return new SymfonyPhpModuleActionsExtender();
+        return new SymfonyPhpModuleActionsExtender(phpModule);
     }
 
     @Override
