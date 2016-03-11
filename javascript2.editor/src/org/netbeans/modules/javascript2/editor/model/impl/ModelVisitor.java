@@ -664,10 +664,10 @@ public class ModelVisitor extends PathNodeVisitor {
         processDeclarations(fncScope, functionNode);
         
         if (!functionNode.isProgram()) {
-            // set modifiers for the processed function
-            setModifiers(fncScope, functionNode);
             correctNameAndOffsets(fncScope, functionNode);
             setParent(fncScope, functionNode);
+            // set modifiers for the processed function
+            setModifiers(fncScope, functionNode);
             modelBuilder.setCurrentObject(fncScope);
         }
         
@@ -1314,7 +1314,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (ModelUtils.THIS.equals(name.get(0).getName())) {
                     isPrivilage = true;
                 } else {
-                    if (!ModelUtils.PROTOTYPE.equals(aNode.getProperty())) {
+                    if (!ModelUtils.PROTOTYPE.equals(aNode.getProperty()) && jsFunction.getParent().getJSKind().isFunction()) {
                         if (aNode.getBase() instanceof AccessNode) {
                             if (!ModelUtils.PROTOTYPE.equals(((AccessNode)aNode.getBase()).getProperty())) {
                                 // case like A.B.f1 = function () {}
