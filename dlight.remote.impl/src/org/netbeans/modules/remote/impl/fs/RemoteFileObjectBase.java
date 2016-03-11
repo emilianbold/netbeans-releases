@@ -182,7 +182,7 @@ public abstract class RemoteFileObjectBase {
         setFlag(BEING_UPLOADED, value);
     }
     
-    public ExecutionEnvironment getExecutionEnvironment() {
+    public final ExecutionEnvironment getExecutionEnvironment() {
         return fileSystem.getExecutionEnvironment();
     }
 
@@ -198,7 +198,7 @@ public abstract class RemoteFileObjectBase {
         return cache != null && cache.exists();
     }
 
-    public String getPath() {
+    public final String getPath() {
         return this.remotePath;
     }
 
@@ -397,7 +397,7 @@ public abstract class RemoteFileObjectBase {
         return new RemoteFileObjectBase[0];
     }
 
-    public RemoteFileObjectBase getParent() {
+    public final RemoteFileObjectBase getParent() {
         return parent;
     }
 
@@ -595,6 +595,24 @@ public abstract class RemoteFileObjectBase {
     }
     
     public boolean isRoot() {
+        return false;
+    }
+
+    protected final boolean isValidFast() {
+        return getFlag(MASK_VALID);
+    }
+
+    protected final boolean isValidFastWithParents() {
+        if (getFlag(MASK_VALID)) {
+            RemoteFileObjectBase p = parent;
+            while (p != null) {
+                if (!p.getFlag(MASK_VALID)) {
+                    return false;
+                }
+                p = p.parent;
+            }
+            return true;
+        }
         return false;
     }
 

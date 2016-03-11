@@ -1202,11 +1202,6 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }
 
         @Override
-        public RemoteDirectory getParent() {
-            return null;
-        }
-
-        @Override
         public Object getAttribute(String attrName) {
             if (FileOperationsProvider.ATTRIBUTE.equals(attrName)) {
                 if (USE_VCS) {
