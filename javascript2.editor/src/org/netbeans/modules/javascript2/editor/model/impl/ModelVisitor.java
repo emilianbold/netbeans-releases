@@ -1346,10 +1346,10 @@ public class ModelVisitor extends PathNodeVisitor {
         if (isStatic) {
             modifiers.add(Modifier.STATIC);
         }
-//        // setting whether the function is anonymous
-//        if (fn.isAnonymous() && !(lastVisited instanceof PropertyNode)) {
-//            jsFunction.setAnonymous(true);
-//        }
+        // setting whether the function is anonymous
+        if (isFunctionAnonymous(fn)) {
+            jsFunction.setAnonymous(true);
+        }
     }
     
     private void setParent(JsFunctionImpl jsFunction, FunctionNode fn) {
@@ -1461,6 +1461,16 @@ public class ModelVisitor extends PathNodeVisitor {
         DeclarationScopeImpl fnScope = (DeclarationScopeImpl)jsFunction;
         DeclarationScope parentScope = fnScope.getParentScope();
         parentScope.addDeclaredScope(fnScope);
+    }
+    
+    private boolean isFunctionAnonymous(FunctionNode fn) {
+        boolean result = false;
+        if (fn.isAnonymous() 
+                // XXX this depends on the implemenation of parser. Find the better way
+                && fn.getIdent().getName().startsWith("L:")) { //NOI8N
+            result = true;
+        }
+        return result;
     }
     
     private void processJsDoc(JsFunctionImpl jsFunction, FunctionNode fn, JsDocumentationHolder docHolder) {
