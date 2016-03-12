@@ -58,7 +58,7 @@ public class RemoteLinkChild extends RemoteLinkBase {
 
     private final RemoteFileObjectBase delegate;
 
-    private static final boolean NO_CYCLIC_LINKS = RemoteFileSystemUtils.getBoolean("remote.allow.cyclic.links", true);
+    private static final boolean NO_CYCLIC_LINKS = RemoteFileSystemUtils.getBoolean("remote.block.cyclic.links", true);
 
     /*package*/ RemoteLinkChild(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, RemoteLinkBase parent, String remotePath, RemoteFileObjectBase delegate) {
         super(wrapper, fileSystem, execEnv, parent, remotePath);
