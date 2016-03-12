@@ -1,6 +1,7 @@
-#changeset:   16984:fb7cadcf5252
+#changeset:   17024:81525eeefdc5
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Thu Mar 10 02:06:29 2016 +0300
-#summary:     clean up
-85FD696298AA716201A72AC1FBABCE838702FE33 clank_0.3.6.zip
+#date:        Sat Mar 12 12:38:50 2016 +0300
+#summary:     fixed #258316: ArrayIndexOutOfBoundsException: -2
+83DB4623F3B6A93E0B36BC341C3C1B926749ED67 clank_0.3.6.zip
+
