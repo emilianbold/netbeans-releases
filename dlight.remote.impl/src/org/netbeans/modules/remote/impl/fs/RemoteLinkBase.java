@@ -79,9 +79,22 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     protected RemoteLinkBase(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, RemoteFileObjectBase parent, String remotePath) {
         super(wrapper, fileSystem, execEnv, parent, remotePath, null);
     }
-    
+
+    /**
+     * That's a kind of addition to constructor.
+     * It will be called each time the instance is created *and* used
+     * (i.e. not thrown away - see RemoteFileObjectFactor.putIfAbsent())
+     * RemoteFileObjectFactory creates an instance each time before calling putIfAbsent,
+     * so constructor should be very lightweight.
+     *
+     * It is also called after changing link target
+     */
+    protected void init() {
+    }
+
     protected final void initListeners(boolean add) {
         if (add) {
+            init();
             getFileSystem().getFactory().addFileChangeListener(getDelegateNormalizedPath(), this);
         } else {
             getFileSystem().getFactory().removeFileChangeListener(getDelegateNormalizedPath(), this);
