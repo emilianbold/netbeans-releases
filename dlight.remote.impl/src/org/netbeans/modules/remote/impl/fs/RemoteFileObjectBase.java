@@ -106,6 +106,7 @@ public abstract class RemoteFileObjectBase {
     private static final byte BEING_UPLOADED = 4;
     protected static final byte CONNECTION_ISSUES = 8;
     protected static final byte MASK_WARMUP = 16;
+    protected static final byte MASK_CYCLIC_LINK = 32;
     
     protected RemoteFileObjectBase(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             RemoteFileObjectBase parent, String remotePath, File cache) {

@@ -58,10 +58,49 @@ public class RemoteLinkChild extends RemoteLinkBase {
 
     private final RemoteFileObjectBase delegate;
 
+    private static final boolean NO_CYCLIC_LINKS = RemoteFileSystemUtils.getBoolean("remote.allow.cyclic.links", true);
+
     /*package*/ RemoteLinkChild(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, RemoteLinkBase parent, String remotePath, RemoteFileObjectBase delegate) {
         super(wrapper, fileSystem, execEnv, parent, remotePath);
         Parameters.notNull("delegate", delegate);
         this.delegate = delegate;
+    }
+
+    @Override
+    protected void init() {
+        if (NO_CYCLIC_LINKS && hasCycle()) {
+            setFlag(MASK_CYCLIC_LINK, true);
+        }
+    }
+
+    private boolean hasCycle() {
+        RemoteFileObjectBase dlg = getCanonicalDelegate();
+        RemoteFileObjectBase p = getParent();
+        while (p instanceof RemoteLinkChild) {
+            if( ((RemoteLinkChild) p).delegate == dlg) {
+                return true;
+            }
+            p = p.getParent();
+        }
+        return false;
+    }
+
+    @Override
+    public RemoteFileObject[] getChildren() {
+        if (getFlag(MASK_CYCLIC_LINK)) {
+            return new RemoteFileObject[0];
+        } else {
+            return super.getChildren();
+        }
+    }
+
+    @Override
+    public RemoteFileObject getFileObject(String relativePath, Set<String> antiLoop) {
+        if (getFlag(MASK_CYCLIC_LINK)) {
+            return null;
+        } else {
+            return super.getFileObject(relativePath, antiLoop);
+        }
     }
 
     @Override
