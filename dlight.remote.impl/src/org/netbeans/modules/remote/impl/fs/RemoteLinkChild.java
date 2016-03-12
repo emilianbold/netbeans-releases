@@ -106,13 +106,20 @@ public class RemoteLinkChild extends RemoteLinkBase {
 
     @Override
     public RemoteFileObjectBase getCanonicalDelegate() {
-        // We previously returned just a delegate.
-        // In the case of links to links or cyclic links this leads to too deep delegation
-        RemoteFileObjectBase d = delegate;
-        while (d instanceof RemoteLinkChild) {
-            d = ((RemoteLinkChild) d).delegate;
-        }
-        return d;
+// It seems that the fix below is not complete and leads to inconsistency.
+// Soon after I wrote it I got exception
+// IllegalArgumentException: All children must have the same parent - see
+// http://statistics.netbeans.org/analytics/exception.do?id=812814
+// This should be moved into constructor or factory method,
+// but this needs RemoteFileObjectFactory top be refactored
+//        // We previously returned just a delegate.
+//        // In the case of links to links or cyclic links this leads to too deep delegation
+//        RemoteFileObjectBase d = delegate;
+//        while (d instanceof RemoteLinkChild) {
+//            d = ((RemoteLinkChild) d).delegate;
+//        }
+//        return d;
+        return delegate;
     }
 
     @Override
