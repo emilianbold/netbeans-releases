@@ -108,7 +108,10 @@ public final class RemoteLink extends RemoteLinkBase {
 
     @Override
     protected void postDeleteOrCreateChild(RemoteFileObject child, DirEntryList entryList) {
-        getCanonicalDelegate().postDeleteOrCreateChild(child, entryList);
+        RemoteFileObjectBase canonicalDelegate = getCanonicalDelegate();
+        if (canonicalDelegate != null) {
+            canonicalDelegate.postDeleteOrCreateChild(child, entryList);
+        }
     }
 
     @Override

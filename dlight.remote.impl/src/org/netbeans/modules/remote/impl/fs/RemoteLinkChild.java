@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
@@ -93,12 +94,20 @@ public class RemoteLinkChild extends RemoteLinkBase {
     
     @Override
     protected void postDeleteOrCreateChild(RemoteFileObject child, DirEntryList entryList) {
-        getCanonicalDelegate().postDeleteOrCreateChild(child, entryList);
+        RemoteFileObjectBase canonicalDelegate = getCanonicalDelegate();
+        if (canonicalDelegate != null) {
+            canonicalDelegate.postDeleteOrCreateChild(child, entryList);
+        }
     }
 
     @Override
     protected DirEntryList deleteImpl(FileLock lock) throws IOException {
-        return getCanonicalDelegate().deleteImpl(lock);
+        RemoteFileObjectBase canonicalDelegate = getCanonicalDelegate();
+        if (canonicalDelegate != null) {
+            return canonicalDelegate.deleteImpl(lock);
+        } else {
+            throw new FileNotFoundException(getDisplayName() + " does not exist"); //NOI18Ns
+        }
     }
 
     protected void renameImpl(FileLock lock, String name, String ext, RemoteFileObjectBase orig) throws IOException {
