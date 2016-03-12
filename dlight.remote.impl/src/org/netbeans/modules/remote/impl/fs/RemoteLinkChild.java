@@ -66,7 +66,13 @@ public class RemoteLinkChild extends RemoteLinkBase {
 
     @Override
     public RemoteFileObjectBase getCanonicalDelegate() {
-        return delegate;
+        // We previously returned just a delegate.
+        // In the case of links to links or cyclic links this leads to too deep delegation
+        RemoteFileObjectBase d = delegate;
+        while (d instanceof RemoteLinkChild) {
+            d = ((RemoteLinkChild) d).delegate;
+        }
+        return d;
     }
 
     @Override
