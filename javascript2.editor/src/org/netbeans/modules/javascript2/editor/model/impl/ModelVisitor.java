@@ -86,6 +86,7 @@ import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.csl.api.Documentation;
+import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
@@ -117,7 +118,7 @@ import org.openide.filesystems.FileObject;
  */
 public class ModelVisitor extends PathNodeVisitor {
 
-    private static final Logger LOGGER = Logger.getLogger(ModelVisitor.class.getSimpleName());
+    private static final Logger LOGGER = Logger.getLogger(ModelVisitor.class.getName());
     private static final boolean log = true;
     
     private final ModelBuilder modelBuilder;
@@ -664,10 +665,10 @@ public class ModelVisitor extends PathNodeVisitor {
         processDeclarations(fncScope, functionNode);
         
         if (!functionNode.isProgram()) {
-            // set modifiers for the processed function
-            setModifiers(fncScope, functionNode);
             correctNameAndOffsets(fncScope, functionNode);
             setParent(fncScope, functionNode);
+            // set modifiers for the processed function
+            setModifiers(fncScope, functionNode);
             modelBuilder.setCurrentObject(fncScope);
         }
         
@@ -677,6 +678,12 @@ public class ModelVisitor extends PathNodeVisitor {
         // visit all statements of the function
         for (Node node : functionNode.getBody().getStatements()) {
             node.accept(this);
+        }
+        
+        // seting undefinded return type
+        if (fncScope.areReturnTypesEmpty()) {
+            // the function doesn't have return statement -> returns undefined
+            fncScope.addReturnType(new TypeUsageImpl(Type.UNDEFINED, -1, false));
         }
         
         if (!functionNode.isProgram()) {
@@ -1171,22 +1178,24 @@ public class ModelVisitor extends PathNodeVisitor {
                         // the function here is already, need to be just fixed the name offsets
                         createVariable = false;
                     } else if (bNode.isAssignment()) {
-                        while (bNode.rhs() instanceof BinaryNode && bNode.rhs().isAssignment()) {
-                            // the cycle is trying to find out a FunctionNode at the end of assignements
-                            // case var f1 = f2 = f3 = f4 = function () {}
-                            bNode = (BinaryNode)bNode.rhs();
-                        }
-                        if (bNode.rhs() instanceof FunctionNode) {    
-                            // case var f1 = f2 = function (){};
-                            // -> the variable will be reference fo the function
-                            createVariable = false;
-                            FunctionNode fNode = (FunctionNode)bNode.rhs();
-                            JsObject original = parentFn.getProperty(modelBuilder.getFunctionName(fNode));
-                            Identifier varName = new IdentifierImpl(varNode.getName().getName(), getOffsetRange(varNode.getName()));
-                            OffsetRange range = varName.getOffsetRange();
-                            JsFunctionReference variable = new JsFunctionReference(parentFn, varName, (JsFunction)original, true, original.getModifiers());
-                            variable.addOccurrence(varName.getOffsetRange());
-                            parentFn.addProperty(varName.getName(), variable);
+                        createVariable = false;
+                        if (parentFn.getProperty(varNode.getName().getName()) == null) {
+                            while (bNode.rhs() instanceof BinaryNode && bNode.rhs().isAssignment()) {
+                                // the cycle is trying to find out a FunctionNode at the end of assignements
+                                // case var f1 = f2 = f3 = f4 = function () {}
+                                bNode = (BinaryNode)bNode.rhs();
+                            }
+                            if (bNode.rhs() instanceof FunctionNode) {    
+                                // case var f1 = f2 = function (){};
+                                // -> the variable will be reference fo the function
+                                FunctionNode fNode = (FunctionNode)bNode.rhs();
+                                JsObject original = parentFn.getProperty(modelBuilder.getFunctionName(fNode));
+                                Identifier varName = new IdentifierImpl(varNode.getName().getName(), getOffsetRange(varNode.getName()));
+                                OffsetRange range = varName.getOffsetRange();
+                                JsFunctionReference variable = new JsFunctionReference(parentFn, varName, (JsFunction)original, true, original.getModifiers());
+                                variable.addOccurrence(varName.getOffsetRange());
+                                parentFn.addProperty(varName.getName(), variable);
+                            }
                         }
                     }
                 } else if (parentFn.getProperty(varNode.getName().getName()) != null) {
@@ -1296,7 +1305,19 @@ public class ModelVisitor extends PathNodeVisitor {
             isPrivate = true;
         }
         if (lastVisited instanceof PropertyNode) {
-            isStatic = ((PropertyNode)lastVisited).isStatic();
+            PropertyNode pNode = (PropertyNode)lastVisited;
+            isStatic = pNode.isStatic();
+            if (fn.isClassConstructor() || fn.isSubclassConstructor()) {
+                jsFunction.setJsKind(JsElement.Kind.CONSTRUCTOR);
+            } else if (fn.isMethod()) {
+                if (fn.equals(pNode.getGetter())) {
+                    jsFunction.setJsKind(JsElement.Kind.PROPERTY_GETTER);
+                } else if (fn.equals(pNode.getSetter())) {
+                    jsFunction.setJsKind(JsElement.Kind.PROPERTY_SETTER);
+                } else {
+                    jsFunction.setJsKind(JsElement.Kind.METHOD);
+                }
+            }
         } else if (lastVisited instanceof BinaryNode) {
             BinaryNode bNode = (BinaryNode)lastVisited;
             if (bNode.getAssignmentDest() instanceof AccessNode) {
@@ -1306,7 +1327,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (ModelUtils.THIS.equals(name.get(0).getName())) {
                     isPrivilage = true;
                 } else {
-                    if (!ModelUtils.PROTOTYPE.equals(aNode.getProperty())) {
+                    if (!ModelUtils.PROTOTYPE.equals(aNode.getProperty()) && jsFunction.getParent().getJSKind().isFunction()) {
                         if (aNode.getBase() instanceof AccessNode) {
                             if (!ModelUtils.PROTOTYPE.equals(((AccessNode)aNode.getBase()).getProperty())) {
                                 // case like A.B.f1 = function () {}
@@ -1338,10 +1359,10 @@ public class ModelVisitor extends PathNodeVisitor {
         if (isStatic) {
             modifiers.add(Modifier.STATIC);
         }
-//        // setting whether the function is anonymous
-//        if (fn.isAnonymous() && !(lastVisited instanceof PropertyNode)) {
-//            jsFunction.setAnonymous(true);
-//        }
+        // setting whether the function is anonymous
+        if (isFunctionAnonymous(fn)) {
+            jsFunction.setAnonymous(true);
+        }
     }
     
     private void setParent(JsFunctionImpl jsFunction, FunctionNode fn) {
@@ -1365,22 +1386,24 @@ public class ModelVisitor extends PathNodeVisitor {
                 // fx will be feference of f1
                 parent.getProperties().remove(modelBuilder.getFunctionName(fn));
                 JsObject variable = parent.getProperty(varNode.getName().getName());
+                IdentifierImpl refName = new IdentifierImpl(fn.getIdent().getName(), new OffsetRange(fn.getIdent().getStart(), fn.getIdent().getFinish()));
+                JsFunctionReference jsRef = new JsFunctionReference(jsFunction, refName, jsFunction, true,  EnumSet.of(Modifier.PRIVATE));
+                jsRef.addOccurrence(jsRef.getDeclarationName().getOffsetRange());
+                jsFunction.setDeclarationName(new IdentifierImpl(varNode.getName().getName(), getOffsetRange(varNode.getName())));
                 if (variable != null) {
-                    IdentifierImpl refName = new IdentifierImpl(fn.getIdent().getName(), new OffsetRange(fn.getIdent().getStart(), fn.getIdent().getFinish()));
-                    JsFunctionReference jsRef = new JsFunctionReference(jsFunction, refName, jsFunction, true,  EnumSet.of(Modifier.PRIVATE));
-                    jsRef.addOccurrence(jsRef.getDeclarationName().getOffsetRange());
-                    jsFunction.setDeclarationName(variable.getDeclarationName());
                     ModelUtils.copyOccurrences(variable, jsFunction);
-                    parent.addProperty(jsFunction.getName(), jsFunction);
-                    jsFunction.addProperty(jsRef.getName(), jsRef);
                 }
-                
+                parent.addProperty(jsFunction.getName(), jsFunction);
+                jsFunction.addProperty(jsRef.getName(), jsRef);
             } else if ((varNode.isFunctionDeclaration() || fn.isAnonymous())) {
 //                if (!fn.getName().equals(fn.getIdent().getName())) {
                     // correct key name of properties in cases
                     // var f1 = function () {}
                     // var f1 = function f1() {}
                     parent.getProperties().remove(modelBuilder.getFunctionName(fn));
+                    if (canBeSingletonPattern()) {
+                        parent = resolveThis(jsFunction);
+                    }
                     parent.addProperty(fn.getIdent().getName(), jsFunction);
                     //jsFunction.setDeclarationName(new IdentifierImpl(fn.getIdent().getName(), jsFunction.getDeclarationName().getOffsetRange()));
 //                }
@@ -1389,11 +1412,23 @@ public class ModelVisitor extends PathNodeVisitor {
             // case like A.f1 = function () {}
             BinaryNode bNode = (BinaryNode)lastVisited;
             List<Identifier> name = getName(bNode, parserResult);
+            boolean isPriviliged = false;
+            
             if (ModelUtils.THIS.equals(name.get(0).getName())) {
                 name.remove(0);
+                isPriviliged = true;
+                parent = (JsObjectImpl)resolveThis(parent);
+                JsObject hParent = parent;
+                while(hParent.getKind() != ElementKind.FILE) {
+                    name.add(0, hParent.getDeclarationName());
+                    hParent = hParent.getParent();
+                }
             } 
+            
             JsObjectImpl jsObject = ModelUtils.getJsObject(modelBuilder, name, true);
-            parent = jsObject.getParent();
+            if (!isPriviliged) {
+                parent = jsObject.getParent();
+            }
             if (fn.isNamedFunctionExpression()) {
                 // case like A.f1 = function f1(){}
                 IdentifierImpl refName = new IdentifierImpl(fn.getIdent().getName(), new OffsetRange(fn.getIdent().getStart(), fn.getIdent().getFinish()));
@@ -1419,6 +1454,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     JsObject variable = handleArrayCreation(varNode.getInit(), parent, varName);
                     if (variable == null) {
                         JsObjectImpl newObject = new JsObjectImpl(parent, varName, range, parserResult.getSnapshot().getMimeType(), null);
+                        newObject.setDeclared(true);
                         variable = newObject;
                     }
                     variable.addOccurrence(varName.getOffsetRange());
@@ -1455,6 +1491,16 @@ public class ModelVisitor extends PathNodeVisitor {
         parentScope.addDeclaredScope(fnScope);
     }
     
+    private boolean isFunctionAnonymous(FunctionNode fn) {
+        boolean result = false;
+        if (fn.isAnonymous() 
+                // XXX this depends on the implemenation of parser. Find the better way
+                && fn.getIdent().getName().startsWith("L:")) { //NOI8N
+            result = true;
+        }
+        return result;
+    }
+    
     private void processJsDoc(JsFunctionImpl jsFunction, FunctionNode fn, JsDocumentationHolder docHolder) {
         if (!fn.isProgram()) {
             // parameters
@@ -1479,6 +1525,14 @@ public class ModelVisitor extends PathNodeVisitor {
             if (docHolder.isClass(fn)) {
                 // needs to be marked before going through the nodes
                 jsFunction.setJsKind(JsElement.Kind.CONSTRUCTOR);
+            }
+            
+            jsFunction.setDeprecated(docHolder.isDeprecated(fn));
+            List<Type> types = docHolder.getReturnType(fn);
+            if (types != null && !types.isEmpty()) {
+                for(Type type : types) {
+                    jsFunction.addReturnType(new TypeUsageImpl(type.getType(), type.getOffset(), ModelUtils.isKnownGLobalType(type.getType())));
+                }
             }
         }
         // look for the type defined through comment like @typedef
