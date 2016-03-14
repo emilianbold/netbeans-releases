@@ -597,10 +597,12 @@ public final class SourceAnalyzerFactory {
                 @NonNull final Map<Pair<String, String>, UsagesData<String>> p) {
             if (newModules != null && FileObjects.getPackageAndName(sourceName)[0].isEmpty()) {
                 final Symbol.ModuleSymbol sym = ((JCTree.JCModuleDecl)node).sym;
-                newModules.add ((ElementHandle<ModuleElement>)
-                        ElementHandleAccessor.getInstance().create(
-                                ElementKind.MODULE,
-                                sym.getQualifiedName().toString()));
+                if (sym != null) {
+                    newModules.add ((ElementHandle<ModuleElement>)
+                            ElementHandleAccessor.getInstance().create(
+                                    ElementKind.MODULE,
+                                    sym.getQualifiedName().toString()));
+                }
             }
             return super.visitModule(node, p);
         }
