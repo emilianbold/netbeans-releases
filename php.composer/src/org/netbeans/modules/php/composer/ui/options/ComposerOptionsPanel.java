@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,13 +37,15 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.composer.ui.options;
 
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -53,6 +55,7 @@ import java.util.List;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -89,8 +92,6 @@ import org.openide.util.NbBundle;
 }, location=UiUtils.OPTIONS_PATH, tabTitle= "#ComposerOptionsPanel.keywords.TabTitle")
 public class ComposerOptionsPanel extends JPanel {
 
-    private static final long serialVersionUID = 871513576876878676L;
-
     private static final String COMPOSER_LAST_FOLDER_SUFFIX = ".composer"; // NOI18N
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -116,6 +117,7 @@ public class ComposerOptionsPanel extends JPanel {
         vendorTextField.getDocument().addDocumentListener(documentListener);
         authorNameTextField.getDocument().addDocumentListener(documentListener);
         authorEmailTextField.getDocument().addDocumentListener(documentListener);
+        ignoreVendorCheckBox.addItemListener(new DefaultItemListener());
     }
 
     public String getComposerPath() {
@@ -148,6 +150,14 @@ public class ComposerOptionsPanel extends JPanel {
 
     public void setAuthorEmail(String authorEmail) {
         authorEmailTextField.setText(authorEmail);
+    }
+
+    public boolean isIgnoreVendor() {
+        return ignoreVendorCheckBox.isSelected();
+    }
+
+    public void setIgnoreVendor(boolean ignoreVendor) {
+        ignoreVendorCheckBox.setSelected(ignoreVendor);
     }
 
     public void setError(String message) {
@@ -193,29 +203,42 @@ public class ComposerOptionsPanel extends JPanel {
         authorNameTextField = new JTextField();
         authorEmailLabel = new JLabel();
         authorEmailTextField = new JTextField();
+        ignoreVendorCheckBox = new JCheckBox();
         noteLabel = new JLabel();
         installationInstructionsLabel = new JLabel();
         learnMoreLabel = new JLabel();
         errorLabel = new JLabel();
+
         Mnemonics.setLocalizedText(composerLabel, NbBundle.getMessage(ComposerOptionsPanel.class, "ComposerOptionsPanel.composerLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(browseButton, NbBundle.getMessage(ComposerOptionsPanel.class, "ComposerOptionsPanel.browseButton.text")); // NOI18N
         browseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 browseButtonActionPerformed(evt);
             }
         });
+
         Mnemonics.setLocalizedText(searchButton, NbBundle.getMessage(ComposerOptionsPanel.class, "ComposerOptionsPanel.searchButton.text")); // NOI18N
         searchButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 searchButtonActionPerformed(evt);
             }
         });
+
         Mnemonics.setLocalizedText(hintLabel, "HINT"); // NOI18N
+
         Mnemonics.setLocalizedText(vendorLabel, NbBundle.getMessage(ComposerOptionsPanel.class, "ComposerOptionsPanel.vendorLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(authorNameLabel, NbBundle.getMessage(ComposerOptionsPanel.class, "ComposerOptionsPanel.authorNameLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(authorEmailLabel, NbBundle.getMessage(ComposerOptionsPanel.class, "ComposerOptionsPanel.authorEmailLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(ignoreVendorCheckBox, NbBundle.getMessage(ComposerOptionsPanel.class, "ComposerOptionsPanel.ignoreVendorCheckBox.text")); // NOI18N
+
         Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(ComposerOptionsPanel.class, "ComposerOptionsPanel.noteLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(installationInstructionsLabel, NbBundle.getMessage(ComposerOptionsPanel.class, "ComposerOptionsPanel.installationInstructionsLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(learnMoreLabel, NbBundle.getMessage(ComposerOptionsPanel.class, "ComposerOptionsPanel.learnMoreLabel.text")); // NOI18N
         learnMoreLabel.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent evt) {
@@ -225,46 +248,46 @@ public class ComposerOptionsPanel extends JPanel {
                 learnMoreLabelMousePressed(evt);
             }
         });
+
         Mnemonics.setLocalizedText(errorLabel, "ERROR"); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
+        layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addComponent(errorLabel)
+                .addGroup(layout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                        .addComponent(installationInstructionsLabel)
+                        .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                .addGroup(layout.createSequentialGroup()
+                    .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                        .addComponent(composerLabel)
+                        .addComponent(authorNameLabel)
+                        .addComponent(authorEmailLabel)
+                        .addComponent(vendorLabel))
+                    .addPreferredGap(ComponentPlacement.RELATED)
+                    .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(hintLabel)
+                            .addGap(0, 0, Short.MAX_VALUE))
+                        .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+                            .addGroup(layout.createParallelGroup(Alignment.TRAILING)
+                                .addComponent(vendorTextField, Alignment.LEADING)
+                                .addComponent(authorEmailTextField, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 145, Short.MAX_VALUE)
+                                .addComponent(composerTextField, Alignment.LEADING)
+                                .addComponent(authorNameTextField, Alignment.LEADING))
+                            .addPreferredGap(ComponentPlacement.RELATED)
+                            .addComponent(browseButton)
+                            .addPreferredGap(ComponentPlacement.RELATED)
+                            .addComponent(searchButton)))))
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(errorLabel)
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(installationInstructionsLabel)
-                            .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(composerLabel)
-                            .addComponent(authorNameLabel)
-                            .addComponent(authorEmailLabel)
-                            .addComponent(vendorLabel))
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(hintLabel)
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
-                                    .addComponent(vendorTextField, Alignment.LEADING)
-                                    .addComponent(authorEmailTextField, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 145, Short.MAX_VALUE)
-                                    .addComponent(composerTextField, Alignment.LEADING)
-                                    .addComponent(authorNameTextField, Alignment.LEADING))
-                                .addPreferredGap(ComponentPlacement.RELATED)
-                                .addComponent(browseButton)
-                                .addPreferredGap(ComponentPlacement.RELATED)
-                                .addComponent(searchButton)))))
-                .addGap(0, 0, 0))
+                .addComponent(ignoreVendorCheckBox)
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
+        layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(composerTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
@@ -285,6 +308,8 @@ public class ComposerOptionsPanel extends JPanel {
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(authorEmailTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(authorEmailLabel))
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(ignoreVendorCheckBox)
                 .addGap(18, 18, 18)
                 .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(ComponentPlacement.RELATED)
@@ -364,6 +389,7 @@ public class ComposerOptionsPanel extends JPanel {
     private JTextField composerTextField;
     private JLabel errorLabel;
     private JLabel hintLabel;
+    private JCheckBox ignoreVendorCheckBox;
     private JLabel installationInstructionsLabel;
     private JLabel learnMoreLabel;
     private JLabel noteLabel;
@@ -392,6 +418,15 @@ public class ComposerOptionsPanel extends JPanel {
         }
 
         private void processUpdate() {
+            fireChange();
+        }
+
+    }
+
+    private final class DefaultItemListener implements ItemListener {
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
             fireChange();
         }
 

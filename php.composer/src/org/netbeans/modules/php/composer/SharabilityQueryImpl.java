@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,26 +37,30 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.composer;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URI;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.php.composer.files.ComposerJson;
+import org.netbeans.modules.php.composer.options.ComposerOptions;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
-public final class SharabilityQueryImpl implements SharabilityQueryImplementation2, PropertyChangeListener {
+public final class SharabilityQueryImpl implements SharabilityQueryImplementation2, PropertyChangeListener, PreferenceChangeListener {
 
     final ComposerJson composerJson;
 
     private volatile URI vendorDir = null;
+    private volatile Boolean versioningIgnored;
 
 
     private SharabilityQueryImpl(Project project) {
@@ -68,12 +72,15 @@ public final class SharabilityQueryImpl implements SharabilityQueryImplementatio
     public static SharabilityQueryImplementation2 create(Project project) {
         SharabilityQueryImpl sharabilityQuery = new SharabilityQueryImpl(project);
         sharabilityQuery.composerJson.addPropertyChangeListener(WeakListeners.propertyChange(sharabilityQuery, sharabilityQuery.composerJson));
+        ComposerOptions composerOptions = ComposerOptions.getInstance();
+        composerOptions.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, sharabilityQuery, composerOptions));
         return sharabilityQuery;
     }
 
     @Override
     public SharabilityQuery.Sharability getSharability(URI uri) {
-        if (uri.equals(getVendorDir())) {
+        if (isVersioningIgnored()
+                && uri.equals(getVendorDir())) {
             return SharabilityQuery.Sharability.NOT_SHARABLE;
         }
         return SharabilityQuery.Sharability.UNKNOWN;
@@ -91,6 +98,20 @@ public final class SharabilityQueryImpl implements SharabilityQueryImplementatio
             vendorDir = Utilities.toURI(composerJson.getVendorDir());
         }
         return vendorDir;
+    }
+
+    public boolean isVersioningIgnored() {
+        if (versioningIgnored == null) {
+            versioningIgnored = ComposerOptions.getInstance().isIgnoreVendor();
+        }
+        return versioningIgnored;
+    }
+
+    @Override
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        if (ComposerOptions.IGNORE_VENDOR.equals(evt.getKey())) {
+            versioningIgnored = null;
+        }
     }
 
 }
