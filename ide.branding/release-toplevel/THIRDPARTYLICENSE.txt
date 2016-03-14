@@ -84,6 +84,7 @@ ide/docs/html5doc.zip                                                 HTML5DOC
 ide/docs/jquery-api.xml                                               MIT-jquery
 ide/jsstubs/corestubs.zip                                             BSD-ecmascript
 ide/jsstubs/domstubs.zip                                              W3C (the original at http://www.w3.org/TR/#tr_DOM)
+ide/modules/com-google-guava.jar                                      Apache-2.0-guava
 ide/modules/com-googlecode-javaewah-JavaEWAH.jar                      Apache-2.0
 ide/modules/com-jcraft-jsch.jar                                       BSD-jsch
 ide/modules/com-jcraft-jzlib.jar                                      BSD-jzlib
@@ -91,6 +92,7 @@ ide/modules/dict/ispell-enwl-3.1.20.zip                               BSD-ispell
 ide/modules/ext/antlr-runtime-3.4.jar                                 BSD-antlr-runtime
 ide/modules/ext/asm-all-4.0.jar                                       BSD-ASM40
 ide/modules/ext/bytelist-0.1.jar                                      LGPL-2.1
+ide/modules/ext/commons-compress-1.8.1.jar                            Apache-2.0
 ide/modules/ext/commons-net-3.3.jar                                   Apache-2.0
 ide/modules/ext/freemarker-2.3.19.jar                                 freemarker
 ide/modules/ext/html5-datatypes.jar                                   MIT-html5-datatypes
@@ -114,7 +116,7 @@ ide/modules/ext/log4j-1.2.15.jar                                      Apache-2.0
 ide/modules/ext/lucene-core-3.5.0.jar                                 Apache-2.0
 ide/modules/ext/non-schema.jar                                        MIT-non-schema
 ide/modules/ext/postgresql-9.2-1002.jdbc4.jar                         BSD-postgresql
-ide/modules/ext/processtreekiller-1.0.5.jar                           MIT-processtreekiller
+ide/modules/ext/processtreekiller-1.0.7.jar                           MIT-processtreekiller
 ide/modules/ext/resolver-1.2.jar                                      Apache-2.0
 ide/modules/ext/saxon9B.jar                                           MPL-1.0
 ide/modules/ext/servlet-2.2.jar                                       Apache-1.1
@@ -240,8 +242,8 @@ platform/docs/swing-layout-1.0.4-src.zip                              LGPL-2.1
 platform/docs/testng-6.8.1-javadoc.zip                                Apache-2.0
 platform/modules/ext/felix-4.2.1.jar                                  Apache-2.0
 platform/modules/ext/hamcrest-core-1.3.jar                            BSD-hamcrest
-platform/modules/ext/jna-4.1.0.jar                                    Apache-2.0
-platform/modules/ext/jna-platform-4.1.0.jar                           Apache-2.0
+platform/modules/ext/jna-4.2.1.jar                                    Apache-2.0-JNA
+platform/modules/ext/jna-platform-4.2.1.jar                           Apache-2.0-JNA
 platform/modules/ext/junit-4.12.jar                                   EPL-v10
 platform/modules/ext/nsProxyAutoConfig.js                             LGPL-2.1
 platform/modules/ext/org.eclipse.osgi_3.9.1.v20140110-1610.jar        OSGi-LICENSE
@@ -253,7 +255,6 @@ webcommon/bin/ios-sim                                                 MIT-sim
 webcommon/bin/libimobiledevice.4.dylib                                LGPL-2.1
 webcommon/bin/libplist.1.dylib                                        LGPL-2.1
 webcommon/bin/libusbmuxd.2.dylib                                      LGPL-2.1
-webcommon/modules/ext/commons-compress-1.8.1.jar                      Apache-2.0
 webcommon/modules/ext/dd-plist.jar                                    MIT-plist
 
 
@@ -313,6 +314,66 @@ This software consists of voluntary contributions made by many
 individuals on behalf of the Apache Software Foundation.  For more
 information on the Apache Software Foundation, please see
 <http://www.apache.org/>.
+
+
+===
+======
+========================= Apache-2.0-guava =========================
+
+
+  Copyright (C) 2007 The Guava Authors
+ 
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+ 
+  http://www.apache.org/licenses/LICENSE-2.0
+ 
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+
+===
+======
+========================= Apache-2.0-JNA =========================
+
+
+Oracle elects to have this file available under and governed by the Apache 2.0
+License (see below for full license text) since JNA v.4.0.0 is dual licensed
+under the Apache 2.0 and LGPLv2.1 licenses.
+
+The following notice accompanied the original version of this file:
+
+--------------------------------------------------
+JNA is dual-licensed under 2 alternative Open Source/Free 
+licenses: LGPL 2.1 and Apache License 2.0. (starting with
+JNA version 4.0.0). 
+
+What this means is that one can choose either one of these
+licenses (for purposes of re-distributing JNA; usually by
+including it as one of jars another application or
+library uses) by downloading corresponding jar file,
+using it, and living happily everafter. 
+
+You may obtain a copy of the LGPL License at:
+
+http://www.gnu.org/licenses/licenses.html
+
+A copy is also included in the downloadable source code package
+containing JNA, in file "LGPL2.1", under the same directory
+as this file.
+
+You may obtain a copy of the ASL License at:
+
+http://www.apache.org/licenses/
+
+A copy is also included in the downloadable source code package
+containing JNA, in file "ASL2.0", under the same directory
+as this file.
+--------------------------------------------------
 
 
 ===
