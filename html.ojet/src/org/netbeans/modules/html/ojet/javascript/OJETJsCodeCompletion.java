@@ -51,6 +51,7 @@ import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.ojet.OJETContext;
+import org.netbeans.modules.html.ojet.OJETUtils;
 import org.netbeans.modules.html.ojet.data.DataItem;
 import org.netbeans.modules.html.ojet.data.DataItemImpl;
 import org.netbeans.modules.html.ojet.data.DataProvider;
@@ -83,7 +84,7 @@ public class OJETJsCodeCompletion implements CompletionProvider {
                     }
                     break;
                 case COMP_CONF:
-                    result.add(new OJETCodeCompletionItem.OJETComponentOptionItem(new DataItemImpl("component", null), ccContext));
+                    result.add(new OJETCodeCompletionItem.OJETComponentOptionItem(new DataItemImpl("component", null), ccContext)); //NOI18N
                     break;
                 case COMP_CONF_PROP_NAME:
                     String compName = OJETContext.findComponentName(document, dOffset);
@@ -92,6 +93,17 @@ public class OJETJsCodeCompletion implements CompletionProvider {
                         for (DataItem option : options) {
                             result.add(new OJETCodeCompletionItem.OJETComponentOptionItem(option, ccContext));
                         }
+                        Collection<DataItem> events = DataProvider.filterByPrefix(DataProviderImpl.getInstance().getComponentEvents(compName), ccContext.getPrefix());
+                        for (DataItem event : events) {
+                            result.add(new OJETCodeCompletionItem.OJETComponentEventItem(event, ccContext));
+                        }
+                        
+                    }
+                    break;
+                case MODULE_PROP_NAME:
+                    Collection<DataItem> options = DataProvider.filterByPrefix(DataProviderImpl.getInstance().getModuleProperties(), ccContext.getPrefix());
+                    for (DataItem option : options) {
+                        result.add(new OJETCodeCompletionItem.OJETComponentOptionItem(option, ccContext));
                     }
                     break;
             }
