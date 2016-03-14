@@ -1340,7 +1340,12 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
             }
         } else if (lastVisited instanceof CallNode) {
-            if (getPreviousFromPath(3) instanceof UnaryNode) {
+            if (canBeSingletonPattern()) {
+                isPrivate = true;
+                if (fn.isAnonymous()) {
+                    jsFunction.setAnonymous(true);
+                }
+            } else if (getPreviousFromPath(3) instanceof UnaryNode) {
                 if (getPreviousFromPath(4) instanceof VarNode) {
                     isPrivate = true;
                 }
@@ -1453,7 +1458,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     
                     JsObject variable = handleArrayCreation(varNode.getInit(), parent, varName);
                     if (variable == null) {
-                        JsObjectImpl newObject = new JsObjectImpl(parent, varName, range, parserResult.getSnapshot().getMimeType(), null);
+                        JsObjectImpl newObject = new JsObjectImpl(parent, varName, range, jsFunction.getMimeType(), jsFunction.getSourceLabel());
                         newObject.setDeclared(true);
                         variable = newObject;
                     }
@@ -1472,7 +1477,35 @@ public class ModelVisitor extends PathNodeVisitor {
                         ModelUtils.copyOccurrences(jsFunction, variable);
                     }
                     parent = variable;
-                }
+                } /*else if (getPreviousFromPath(4) instanceof BinaryNode) {
+                    // case MyLib = new function XXX? () {}
+                    BinaryNode bNode = (BinaryNode) getPreviousFromPath(4);
+                    Expression init = bNode.rhs();
+                    List<Identifier> name = getName(bNode, parserResult);
+                    Identifier varName = name.get(name.size() - 1);
+                    
+                    JsObject variable = ModelUtils.getJsObject(modelBuilder, name, true);
+                    if (variable == null) {
+                        JsObjectImpl newObject = new JsObjectImpl(parent, varName, getOffsetRange(bNode.rhs()), jsFunction.getMimeType(), jsFunction.getSourceLabel());
+                        newObject.setDeclared(true);
+                        variable = newObject;
+                    }
+                    variable.addOccurrence(varName.getOffsetRange());
+                    parent.getProperties().remove(jsFunction.getName());
+                    parent.addProperty(varName.getName(), variable);
+                    variable.addProperty(jsFunction.getName(), jsFunction);
+                    jsFunction.setParent(variable);
+//                    Collection<TypeUsage> returns = ModelUtils.resolveSemiTypeOfExpression(modelBuilder, init);
+//                    for (TypeUsage type : returns) {
+                    variable.addAssignment(new TypeUsageImpl(SemiTypeResolverVisitor.ST_NEW + variable.getName() + '.' + jsFunction.getName(), jsFunction.getDeclarationName().getOffsetRange().getStart()), init.getStart());
+//                    }
+                    if (fn.isNamedFunctionExpression() && fn.getName().equals(varName.getName())) {
+                        // the name of function is the same as the variable
+                        // var MyLib = new function MyLib() {};
+                        ModelUtils.copyOccurrences(jsFunction, variable);
+                    }
+                    parent = variable;
+                }*/
             }
         }
         
