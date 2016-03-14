@@ -91,7 +91,9 @@ final class CaretTransaction {
     
     private boolean addOrRemove;
     
-    private boolean dotOrMarkChanged;
+    private boolean anyDotChanged;
+
+    private boolean anyMarkChanged;
     
     private GapList<CaretItem> replaceItems;
     
@@ -132,7 +134,15 @@ final class CaretTransaction {
     }
     
     boolean isAnyChange() {
-        return addOrRemove || dotOrMarkChanged;
+        return addOrRemove || anyDotChanged || anyMarkChanged;
+    }
+    
+    boolean isAnyDotChanged() {
+        return anyDotChanged;
+    }
+    
+    boolean isAnyMarkChanged() {
+        return anyMarkChanged;
     }
     
     boolean moveDot(@NonNull CaretItem caret, @NonNull Position dotPos) {
@@ -156,14 +166,15 @@ final class CaretTransaction {
                 editorCaret.ensureValidInfo(caretItem);
                 if (dotChanged) {
                     caretItem.setDotPos(dotPos);
+                    anyDotChanged = true;
                 }
                 if (markChanged) {
                     caretItem.setMarkPos(markPos);
+                    anyMarkChanged = true;
                 }
                 updateAffectedIndexes(index, index + 1);
                 caretItem.markUpdateVisualBounds();
                 caretItem.markInfoObsolete();
-                dotOrMarkChanged = true;
                 return true;
             }
             return false;
@@ -318,7 +329,7 @@ final class CaretTransaction {
     void removeOverlappingRegions(int startIndex, int stopOffset) {
         if (addOrRemove) {
             initReplaceItems();
-        } else if (dotOrMarkChanged) {
+        } else if (anyDotChanged || anyMarkChanged) {
             initReplaceItems(); // TODO optimize for low number of changed items
         }
         GapList<CaretItem> origSortedItems = (replaceSortedItems != null)
