@@ -72,6 +72,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.text.Collator;
@@ -89,7 +90,6 @@ import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.modules.java.api.common.project.ui.ProjectUISupport;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
-import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.java.j2seproject.api.J2SERuntimePlatformProvider;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Parameters;
@@ -355,6 +355,11 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         jTextVMOptions.setColumns(20);
         jTextVMOptions.setLineWrap(true);
         jTextVMOptions.setRows(5);
+        jTextVMOptions.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                jTextVMOptionsKeyPressed(evt);
+            }
+        });
         jScrollPane1.setViewportView(jTextVMOptions);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -652,6 +657,20 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             }
         }
     }//GEN-LAST:event_platformActionPerformed
+
+    private void jTextVMOptionsKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextVMOptionsKeyPressed
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
+            evt.consume();
+        }
+        if (evt.getKeyCode() == KeyEvent.VK_TAB) {
+            if (evt.getModifiers() > 0) {
+                jTextVMOptions.transferFocusBackward();
+            } else {
+                jTextVMOptions.transferFocus();
+            }
+            evt.consume();
+        }
+    }//GEN-LAST:event_jTextVMOptionsKeyPressed
 
     private void configChanged(String activeConfig) {
         DefaultComboBoxModel model = new DefaultComboBoxModel();
