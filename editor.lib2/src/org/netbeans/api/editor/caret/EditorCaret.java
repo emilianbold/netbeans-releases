@@ -1034,10 +1034,11 @@ public final class EditorCaret implements Caret {
                 }
 
             } else { // With Ctrl
+                LineDocument lineDoc = LineDocumentUtils.asRequired(doc, LineDocument.class);
                 int numVirtualChars = 8; // Number of virtual characters per one Ctrl+Shift+Arrow press
                 if (toRight) {
                     if (rsDotRect.x < newlineRect.x) {
-//[TODO] fix                        newDotOffset = Math.min(Utilities.getNextWord(c, dotOffset), lineElement.getEndOffset() - 1);
+                        newDotOffset = Math.min(LineDocumentUtils.getNextWordStart(lineDoc, dotOffset), lineElement.getEndOffset() - 1);
                     } else { // Extend virtually
                         rsDotRect.x += numVirtualChars * charWidth;
                     }
@@ -1048,7 +1049,7 @@ public final class EditorCaret implements Caret {
                             newDotOffset = newlineOffset;
                         }
                     } else {
-//[TODO] fix                        newDotOffset = Math.max(Utilities.getPreviousWord(c, dotOffset), lineElement.getStartOffset());
+                        newDotOffset = Math.max(LineDocumentUtils.getPreviousWordStart(lineDoc, dotOffset), lineElement.getStartOffset());
                     }
                 }
             }
@@ -1138,6 +1139,25 @@ public final class EditorCaret implements Caret {
                                 sortedCaretInfos = null;
                             }
                         }
+                        // Possibly update RS
+                        if (rectangularSelection) {
+                            if (activeTransaction.isAnyMarkChanged()) { // Was setDot() performed i.e. mark was reset?
+                                setRectangularSelectionToDotAndMark();
+                            } else {
+                                try {
+                                    Rectangle r = c.modelToView(getLastCaretItem().getDot());
+                                    if (rsDotRect != null) {
+                                        rsDotRect.y = r.y;
+                                        rsDotRect.height = r.height;
+                                    } else {
+                                        rsDotRect = r;
+                                    }
+                                    updateRectangularSelectionPaintRect();
+                                } catch (BadLocationException ex) {
+                                    // Do not update RS dot rect
+                                }
+                            }
+                        }
                         pendingRepaintRemovedItemsList = activeTransaction.
                                 addRemovedItems(pendingRepaintRemovedItemsList);
                         pendingUpdateVisualBoundsItemsList = activeTransaction.
@@ -1149,7 +1169,7 @@ public final class EditorCaret implements Caret {
                             pendingRepaintRemovedItemsList = null;
                             pendingUpdateVisualBoundsItemsList = null;
                         }
-                        return diffCount;
+                    return diffCount;
                     } finally {
                         activeTransaction = null;
                     }

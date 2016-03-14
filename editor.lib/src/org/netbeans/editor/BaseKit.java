@@ -2894,7 +2894,7 @@ public class BaseKit extends DefaultEditorKit {
                 final Document doc = target.getDocument();
                 if (doc != null && caret instanceof EditorCaret) {
                     final EditorCaret editorCaret = (EditorCaret) caret;
-                    if (RectangularSelectionUtils.isRectangularSelection(target)) {
+                    if (select && RectangularSelectionUtils.isRectangularSelection(target)) {
                         RectangularSelectionCaretAccessor.get().extendRectangularSelection(editorCaret, true, false);
                     } else {
                         editorCaret.moveCarets(new CaretMoveHandler() {
@@ -3170,7 +3170,7 @@ public class BaseKit extends DefaultEditorKit {
                 final Document doc = target.getDocument();
                 if (doc != null && caret instanceof EditorCaret) {
                     EditorCaret editorCaret = (EditorCaret) caret;
-                    if (RectangularSelectionUtils.isRectangularSelection(target)) {
+                    if (select && RectangularSelectionUtils.isRectangularSelection(target)) {
                         RectangularSelectionCaretAccessor.get().extendRectangularSelection(editorCaret, false, false);
                     } else {
                         editorCaret.moveCarets(new CaretMoveHandler() {
