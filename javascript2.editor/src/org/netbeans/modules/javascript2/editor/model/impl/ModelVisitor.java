@@ -1477,6 +1477,15 @@ public class ModelVisitor extends PathNodeVisitor {
                         ModelUtils.copyOccurrences(jsFunction, variable);
                     }
                     parent = variable;
+                    int index = getPath().size() - 5;
+                    while ( index > -1 && !(getPath().get(index) instanceof FunctionNode)) {
+                        index--;
+                    }   
+                    if(index > 0) {
+                        // the variable is defined in a function -> the object is private
+                        variable.getModifiers().remove(Modifier.PUBLIC);
+                        variable.getModifiers().add(Modifier.PRIVATE);
+                    }
                 } /*else if (getPreviousFromPath(4) instanceof BinaryNode) {
                     // case MyLib = new function XXX? () {}
                     BinaryNode bNode = (BinaryNode) getPreviousFromPath(4);
