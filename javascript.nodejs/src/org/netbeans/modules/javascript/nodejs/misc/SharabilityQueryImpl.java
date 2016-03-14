@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,29 +37,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript.nodejs.misc;
 
 import java.net.URI;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.javascript.nodejs.file.PackageJson;
+import org.netbeans.modules.javascript.nodejs.options.NodeJsOptions;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 
-public final class SharabilityQueryImpl implements SharabilityQueryImplementation2 {
+public final class SharabilityQueryImpl implements SharabilityQueryImplementation2, PreferenceChangeListener {
 
-    private final URI nodeModulesUri;
+    private final PackageJson packageJson;
+
+    private volatile URI nodeModulesUri;
+    private volatile Boolean versioningIgnored;
 
 
     private SharabilityQueryImpl(Project project) {
-        nodeModulesUri = Utilities.toURI(new PackageJson(project.getProjectDirectory()).getNodeModulesDir());
+        assert project != null;
+        packageJson = new PackageJson(project.getProjectDirectory());
     }
 
     private static SharabilityQueryImplementation2 create(Project project) {
-        return new SharabilityQueryImpl(project);
+        SharabilityQueryImpl sharabilityQuery = new SharabilityQueryImpl(project);
+        NodeJsOptions nodeJsOptions = NodeJsOptions.getInstance();
+        nodeJsOptions.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, sharabilityQuery, nodeJsOptions));
+        return sharabilityQuery;
     }
 
     @ProjectServiceProvider(service = SharabilityQueryImplementation2.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
@@ -84,10 +95,32 @@ public final class SharabilityQueryImpl implements SharabilityQueryImplementatio
 
     @Override
     public SharabilityQuery.Sharability getSharability(URI uri) {
-        if (uri.equals(nodeModulesUri)) {
+        if (isVersioningIgnored()
+                && uri.equals(getNodeModulesUri())) {
             return SharabilityQuery.Sharability.NOT_SHARABLE;
         }
         return SharabilityQuery.Sharability.UNKNOWN;
+    }
+
+    public URI getNodeModulesUri() {
+        if (nodeModulesUri == null) {
+            nodeModulesUri = Utilities.toURI(packageJson.getNodeModulesDir());
+        }
+        return nodeModulesUri;
+    }
+
+    public boolean isVersioningIgnored() {
+        if (versioningIgnored == null) {
+            versioningIgnored = NodeJsOptions.getInstance().isNpmIgnoreNodeModules();
+        }
+        return versioningIgnored;
+    }
+
+    @Override
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        if (NodeJsOptions.NPM_IGNORE_NODE_MODULES.equals(evt.getKey())) {
+            versioningIgnored = null;
+        }
     }
 
 }
