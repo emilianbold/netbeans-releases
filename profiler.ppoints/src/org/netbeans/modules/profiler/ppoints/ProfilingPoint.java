@@ -230,17 +230,21 @@ public abstract class ProfilingPoint {
     }
 
     public boolean supportsProfilingSettings(ProfilingSettings profilingSettings) {
+        final int profilingType = profilingSettings.getProfilingType();
+        final ProfilingPointFactory ppFactory = getFactory();
+
         return 
         // CPU profiling
-        (((profilingSettings.getProfilingType() == ProfilingSettings.PROFILE_CPU_ENTIRE)
-         || (profilingSettings.getProfilingType() == ProfilingSettings.PROFILE_CPU_PART)) && getFactory().supportsCPU())
+        (((profilingType == ProfilingSettings.PROFILE_CPU_ENTIRE)
+         || (profilingType == ProfilingSettings.PROFILE_CPU_JDBC)
+         || (profilingType == ProfilingSettings.PROFILE_CPU_PART)) && ppFactory.supportsCPU())
                || 
         // Memory profiling
-        (((profilingSettings.getProfilingType() == ProfilingSettings.PROFILE_MEMORY_ALLOCATIONS)
-         || (profilingSettings.getProfilingType() == ProfilingSettings.PROFILE_MEMORY_LIVENESS)) && getFactory().supportsMemory())
+        (((profilingType == ProfilingSettings.PROFILE_MEMORY_ALLOCATIONS)
+         || (profilingType == ProfilingSettings.PROFILE_MEMORY_LIVENESS)) && ppFactory.supportsMemory())
                || 
         // Monitoring
-        ((profilingSettings.getProfilingType() == ProfilingSettings.PROFILE_MONITOR) && getFactory().supportsMonitor());
+        ((profilingType == ProfilingSettings.PROFILE_MONITOR) && ppFactory.supportsMonitor());
     }
 
     public String toString() {
