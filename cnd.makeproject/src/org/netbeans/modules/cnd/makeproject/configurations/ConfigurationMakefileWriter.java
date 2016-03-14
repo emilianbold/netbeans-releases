@@ -709,39 +709,21 @@ public class ConfigurationMakefileWriter {
         bw.write("\t\"${MAKE}\" " // NOI18N
                 + " -f nbproject/Makefile-" + MakeConfiguration.CND_CONF_MACRO + ".mk " // NOI18N
                 + output + "\n"); // NOI18N
-        Set<String> paths = new HashSet<>();
 
-        LibrariesConfiguration librariesConfiguration;
         if (conf.isLinkerConfiguration() && conf.getLinkerConfiguration().getCopyLibrariesConfiguration().getValue()) {
-            librariesConfiguration = conf.getLinkerConfiguration().getLibrariesConfiguration();
+            Set<String> paths = conf.getLinkerConfiguration().getLibrariesConfiguration().getSharedLibraries();
+            if (!paths.isEmpty()) {
+                String outputDir = CndPathUtilities.getDirName(output);
+                boolean isMac = conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX;
 
-            for (LibraryItem item : librariesConfiguration.getValue()) {
-                String path = item.getPath();
-                if (path != null && (path.endsWith(".dll") || path.endsWith(".dylib") // NOI18N
-                        || path.endsWith(".so") || 0 <= path.indexOf(".so."))) { // NOI18N
-                    paths.add(path);
-                }
-            }
-        }
-
-        for (LibraryItem.ProjectItem item : conf.getRequiredProjectsConfiguration().getValue()) {
-            int configurationType = item.getMakeArtifact().getConfigurationType();
-            if (configurationType == MakeArtifact.TYPE_DYNAMIC_LIB
-                    || configurationType == MakeArtifact.TYPE_QT_DYNAMIC_LIB) {
-                paths.add(item.getPath());
-            }
-        }
-        if (!paths.isEmpty()) {
-            String outputDir = CndPathUtilities.getDirName(output);
-            boolean isMac = conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX;
-
-            for (String path : paths) {
-                String libPath = CndPathUtilities.escapeOddCharacters(CndPathUtilities.normalizeSlashes(path));
-                bw.write("\t${CP} " + libPath + " " + outputDir + "\n"); //NOI18N
-                if (isMac) {
-                    String baseName = CndPathUtilities.getBaseName(libPath);
-                    outputDir = CndPathUtilities.trimSlashes(outputDir);
-                    bw.write("\t-install_name_tool -change " + baseName + " @rpath/" + outputDir + "/" + baseName + " " + output + "\n"); //NOI18N
+                for (String path : paths) {
+                    String libPath = CndPathUtilities.escapeOddCharacters(CndPathUtilities.normalizeSlashes(path));
+                    bw.write("\t${CP} " + libPath + " " + outputDir + "\n"); //NOI18N
+                    if (isMac) {
+                        String baseName = CndPathUtilities.getBaseName(libPath);
+                        outputDir = CndPathUtilities.trimSlashes(outputDir);
+                        bw.write("\t-install_name_tool -change " + baseName + " @rpath/" + outputDir + "/" + baseName + " " + output + "\n"); //NOI18N
+                    }
                 }
             }
         }
