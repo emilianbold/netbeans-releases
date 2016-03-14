@@ -136,7 +136,11 @@ final class CaretTransaction {
     }
     
     boolean moveDot(@NonNull CaretItem caret, @NonNull Position dotPos) {
-        return setDotAndMark(caret, dotPos, caret.getMarkPosition());
+        Position markPos = caret.getMarkPosition();
+        if (markPos == null) {
+            markPos = dotPos;
+        }
+        return setDotAndMark(caret, dotPos, markPos);
     }
 
     boolean setDotAndMark(@NonNull CaretItem caretItem, @NonNull Position dotPos, @NonNull Position markPos) {
