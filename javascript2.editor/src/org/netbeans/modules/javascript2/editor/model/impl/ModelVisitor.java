@@ -86,6 +86,7 @@ import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.csl.api.Documentation;
+import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
@@ -1400,6 +1401,9 @@ public class ModelVisitor extends PathNodeVisitor {
                     // var f1 = function () {}
                     // var f1 = function f1() {}
                     parent.getProperties().remove(modelBuilder.getFunctionName(fn));
+                    if (canBeSingletonPattern()) {
+                        parent = resolveThis(jsFunction);
+                    }
                     parent.addProperty(fn.getIdent().getName(), jsFunction);
                     //jsFunction.setDeclarationName(new IdentifierImpl(fn.getIdent().getName(), jsFunction.getDeclarationName().getOffsetRange()));
 //                }
@@ -1408,11 +1412,23 @@ public class ModelVisitor extends PathNodeVisitor {
             // case like A.f1 = function () {}
             BinaryNode bNode = (BinaryNode)lastVisited;
             List<Identifier> name = getName(bNode, parserResult);
+            boolean isPriviliged = false;
+            
             if (ModelUtils.THIS.equals(name.get(0).getName())) {
                 name.remove(0);
+                isPriviliged = true;
+                parent = (JsObjectImpl)resolveThis(parent);
+                JsObject hParent = parent;
+                while(hParent.getKind() != ElementKind.FILE) {
+                    name.add(0, hParent.getDeclarationName());
+                    hParent = hParent.getParent();
+                }
             } 
+            
             JsObjectImpl jsObject = ModelUtils.getJsObject(modelBuilder, name, true);
-            parent = jsObject.getParent();
+            if (!isPriviliged) {
+                parent = jsObject.getParent();
+            }
             if (fn.isNamedFunctionExpression()) {
                 // case like A.f1 = function f1(){}
                 IdentifierImpl refName = new IdentifierImpl(fn.getIdent().getName(), new OffsetRange(fn.getIdent().getStart(), fn.getIdent().getFinish()));
