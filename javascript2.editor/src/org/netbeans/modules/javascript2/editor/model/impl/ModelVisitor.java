@@ -1577,6 +1577,25 @@ public class ModelVisitor extends PathNodeVisitor {
             }
             
             jsFunction.setDeprecated(docHolder.isDeprecated(fn));
+            
+            Set<JsModifier> modifiers = docHolder.getModifiers(fn);
+            if (modifiers != null && !modifiers.isEmpty()) {
+                Set<Modifier> fnModifiers = jsFunction.getModifiers();
+                if (modifiers.contains(JsModifier.PRIVATE)) {
+                    fnModifiers.remove(Modifier.PUBLIC);
+                    fnModifiers.remove(Modifier.PROTECTED);
+                    fnModifiers.add(Modifier.PRIVATE);
+                }
+                if (modifiers.contains(JsModifier.PUBLIC)) {
+                    fnModifiers.remove(Modifier.PRIVATE);
+                    fnModifiers.remove(Modifier.PROTECTED);
+                    fnModifiers.add(Modifier.PUBLIC);
+                }
+                if (modifiers.contains(JsModifier.STATIC)) {
+                    fnModifiers.add(Modifier.STATIC);
+                }
+            }
+            
             List<Type> types = docHolder.getReturnType(fn);
             if (types != null && !types.isEmpty()) {
                 for(Type type : types) {
