@@ -1159,6 +1159,7 @@ public class ModelVisitor extends PathNodeVisitor {
             }
         }
         // the variables marked isFunctionDeclaration() are syntetic and represensts just simple function declaration
+        JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
         LOGGER.log(Level.FINEST, "    variables: ");
         for (VarNode varNode : getDeclaredVar(fnParent)) {
             LOGGER.log(Level.FINEST, "       " + debugInfo(varNode));
@@ -1259,6 +1260,12 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                     variable.addOccurrence(varName.getOffsetRange());
                     parentFn.addProperty(varName.getName(), variable);
+                    variable.addOccurrence(varName.getOffsetRange());
+
+                    if (docHolder != null) {
+                        ((JsObjectImpl)variable).setDocumentation(docHolder.getDocumentation(varNode));
+                        ((JsObjectImpl)variable).setDeprecated(docHolder.isDeprecated(varNode));
+                    }
                 }
             }
         }
