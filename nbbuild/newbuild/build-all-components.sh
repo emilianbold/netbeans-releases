@@ -163,6 +163,7 @@ fi
 
 mv ${DIST}/odcs/extra/org-netbeans-modules-odcs* ${DIST}/uc2/extra/
 mv ${DIST}/odcs/extra/org-netbeans-modules-team-server* ${DIST}/uc2/extra/
+rm -rf ${DIST}/odcs
 
 cd $NB_ALL
 
