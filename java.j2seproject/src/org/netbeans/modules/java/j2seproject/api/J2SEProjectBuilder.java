@@ -104,7 +104,7 @@ public class J2SEProjectBuilder {
 
     private static final Logger LOG = Logger.getLogger(J2SEProjectBuilder.class.getName());
     private static final String DEFAULT_PLATFORM_ID = "default_platform";   //NOI18N
-    
+
     private final File projectDirectory;
     private final String name;
     private final Collection<File> sourceRoots;
@@ -112,7 +112,7 @@ public class J2SEProjectBuilder {
     private final Collection<Library> compileLibraries;
     private final Collection<Library> runtimeLibraries;
     private final StringBuilder jvmArgs;
-    
+
     private boolean hasDefaultRoots;
     private boolean skipTests;
     private SpecificationVersion defaultSourceLevel;
@@ -123,7 +123,7 @@ public class J2SEProjectBuilder {
     private String distFolder;
     private String mainClassTemplate;
     private JavaPlatform platform;
-    
+
     /**
      * Creates a new instance of {@link J2SEProjectBuilder}
      * @param projectDirectory the directory in which the project should be created
@@ -143,11 +143,11 @@ public class J2SEProjectBuilder {
         this.runtimeLibraries = new ArrayList<Library>();
         this.platform = JavaPlatformManager.getDefault().getDefaultPlatform();
     }
-    
+
     /**
      * Adds the default source roots, "src" and "test".
      * @return the builder
-     */    
+     */
     public J2SEProjectBuilder addDefaultSourceRoots() {
         this.hasDefaultRoots = true;
         return this;
@@ -162,7 +162,7 @@ public class J2SEProjectBuilder {
         this.skipTests = skipTests;
         return this;
     }
-    
+
     /**
      * Adds source roots into the project
      * @param sourceRoots the roots to be added
@@ -173,7 +173,7 @@ public class J2SEProjectBuilder {
         this.sourceRoots.addAll(Arrays.asList(sourceRoots));
         return this;
     }
-    
+
     /**
      * Adds test roots into the project
      * @param testRoots the roots to be added
@@ -184,7 +184,7 @@ public class J2SEProjectBuilder {
         this.testRoots.addAll(Arrays.asList(testRoots));
         return this;
     }
-    
+
     /**
      * Adds compile time libraries
      * @param libraries the libraries to be added to compile classpath.
@@ -195,7 +195,7 @@ public class J2SEProjectBuilder {
         this.compileLibraries.addAll(Arrays.asList(libraries));
         return this;
     }
-    
+
     /**
      * Adds runtime libraries
      * @param libraries the libraries to be added to runtime classpath.
@@ -206,7 +206,7 @@ public class J2SEProjectBuilder {
         this.runtimeLibraries.addAll(Arrays.asList(libraries));
         return this;
     }
-    
+
     /**
      * Sets a main class
      * @param mainClass the fully qualified name of the main class,
@@ -217,7 +217,7 @@ public class J2SEProjectBuilder {
         this.mainClass = mainClass;
         return this;
     }
-    
+
     /**
      * Sets a path to manifest file
      * @param manifest the name (path) to manifest file,
@@ -228,7 +228,7 @@ public class J2SEProjectBuilder {
         this.manifest = manifest;
         return this;
     }
-    
+
     /**
      * Sets a library definition file for per project libraries,
      * @param librariesDefinition the name (path) to libraries definition file,
@@ -239,7 +239,7 @@ public class J2SEProjectBuilder {
         this.librariesDefinition = librariesDefinition;
         return this;
     }
-    
+
     /**
      * Sets a source level of the project
      * @param sourceLevel the source level,
@@ -255,7 +255,7 @@ public class J2SEProjectBuilder {
         this.defaultSourceLevel = sourceLevel;
         return this;
     }
-    
+
     /**
      * Sets a name of build.xml file
      * @param name the name of build.xml file,
@@ -290,7 +290,7 @@ public class J2SEProjectBuilder {
         this.mainClassTemplate = mainClassTemplatePath;
         return this;
     }
-    
+
     /**
      * Adds a JVM arguments
      * @param jvmArgs the arguments to be added
@@ -304,7 +304,7 @@ public class J2SEProjectBuilder {
         this.jvmArgs.append(jvmArgs);
         return this;
     }
-    
+
     /**
      * Sets a platform to be used for a new project
      * @param platform to be used
@@ -319,7 +319,7 @@ public class J2SEProjectBuilder {
         this.platform = platform;
         return this;
     }
-    
+
     /**
      * Creates the J2SEProject
      * @return the {@link AntProjectHelper} of the created project
@@ -327,14 +327,14 @@ public class J2SEProjectBuilder {
      */
     public AntProjectHelper build() throws IOException {
         final FileObject dirFO = FileUtil.createFolder(this.projectDirectory);
-        final AntProjectHelper[] h = new AntProjectHelper[1];        
+        final AntProjectHelper[] h = new AntProjectHelper[1];
         dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             @Override
             public void run() throws IOException {
                 final SpecificationVersion sourceLevel = getSourceLevel();
                 h[0] = createProject(
                         dirFO,
-                        name, 
+                        name,
                         sourceLevel,
                         hasDefaultRoots ? "src" : null,     //NOI18N
                         hasDefaultRoots ? "test" : null,    //NOI18N
@@ -347,7 +347,7 @@ public class J2SEProjectBuilder {
                         librariesDefinition,
                         jvmArgs.toString(),
                         toClassPathElements(compileLibraries),
-                        toClassPathElements(runtimeLibraries, "${javac.classpath}:", "${build.classes.dir}"),
+                        toClassPathElements(runtimeLibraries, ref(ProjectProperties.JAVAC_CLASSPATH,false), ref(ProjectProperties.BUILD_CLASSES_DIR,true)),
                         platform.getProperties().get(J2SEProjectProperties.PROP_PLATFORM_ANT_NAME));   //NOI18N
                 final J2SEProject p = (J2SEProject) ProjectManager.getDefault().findProject(dirFO);
                 ProjectManager.getDefault().saveProject(p);
@@ -363,15 +363,15 @@ public class J2SEProjectBuilder {
                             libsToCopy.addAll(getMandatoryLibraries(skipTests));
                             libsToCopy.addAll(compileLibraries);
                             libsToCopy.addAll(runtimeLibraries);
-                            copyRequiredLibraries(h[0], refHelper, libsToCopy);                                                                                    
-                            ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);                            
+                            copyRequiredLibraries(h[0], refHelper, libsToCopy);
+                            ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
                             return null;
                         }
                     });
                 } catch (MutexException ex) {
                     Exceptions.printStackTrace(ex.getException());
                 }
-                
+
                 FileObject srcFolder = null;
                 if (hasDefaultRoots) {
                     srcFolder = dirFO.createFolder("src") ; // NOI18N
@@ -385,10 +385,57 @@ public class J2SEProjectBuilder {
                     createMainClass(mainClass, srcFolder, mainClassTemplate);
                 }
             }
-        });        
+        });
         return h[0];
     }
-    
+
+    /**
+     * Sets default module system properties if they are not set.
+     * @param ep the {@link EditableProperties} to write the properties into.
+     * @param hasUnitTests true if the project has unit tests
+     */
+    public static void createDefaultModuleProperties(
+            @NonNull final EditableProperties ep,
+            final boolean hasUnitTests) {
+        if (ep.getProperty(ProjectProperties.JAVAC_MODULEPATH) == null) {
+            ep.setProperty(ProjectProperties.JAVAC_MODULEPATH, new String[0]);
+        }
+        if (ep.getProperty(ProjectProperties.RUN_MODULEPATH) == null) {
+            ep.setProperty(ProjectProperties.RUN_MODULEPATH, new String[] {
+                ref(ProjectProperties.JAVAC_MODULEPATH, false),
+                ref(ProjectProperties.BUILD_CLASSES_DIR, true)
+            });
+        }
+        if (ep.getProperty(ProjectProperties.DEBUG_MODULEPATH) == null) {
+            ep.setProperty(ProjectProperties.DEBUG_MODULEPATH, new String[] {
+                ref(ProjectProperties.RUN_MODULEPATH, true)
+            });
+        }
+        if (ep.getProperty(ProjectProperties.JAVAC_TEST_MODULEPATH) == null) {
+            ep.setProperty(ProjectProperties.JAVAC_TEST_MODULEPATH,
+               hasUnitTests ?
+                    new String[] {
+                        ref(ProjectProperties.JAVAC_MODULEPATH, false),
+                        ref(ProjectProperties.BUILD_CLASSES_DIR, false),
+                        ref("libs.junit.classpath", false), // NOI18N
+                        ref("libs.junit_4.classpath", true)  //NOI18N
+                    } :
+                    new String[] {
+                        ref(ProjectProperties.JAVAC_MODULEPATH, false),
+                        ref(ProjectProperties.BUILD_CLASSES_DIR, true)
+                    });
+        }
+        if (ep.getProperty(ProjectProperties.RUN_TEST_MODULEPATH) == null) {
+            ep.setProperty(ProjectProperties.RUN_TEST_MODULEPATH, new String[] {
+                ref(ProjectProperties.JAVAC_TEST_MODULEPATH, false),
+                ref(ProjectProperties.BUILD_TEST_CLASSES_DIR, true)
+            });
+        }
+        if (ep.getProperty(ProjectProperties.DEBUG_TEST_MODULEPATH) == null) {
+            ep.setProperty(ProjectProperties.DEBUG_TEST_MODULEPATH, new String[] {ref(ProjectProperties.RUN_TEST_MODULEPATH, true)});
+        }
+    }
+
     private static AntProjectHelper createProject(
             FileObject dirFO,
             String name,
@@ -407,7 +454,7 @@ public class J2SEProjectBuilder {
             String[] runtimeClassPath,
             @NonNull final String platformId
             ) throws IOException {
-        
+
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, J2SEProject.TYPE, librariesDefinition);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -449,13 +496,13 @@ public class J2SEProjectBuilder {
         ep.setComment("dist.dir", new String[] {"# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_dist.dir")}, false); // NOI18N
         ep.setProperty("dist.jar", "${dist.dir}/" + PropertyUtils.getUsablePropertyName(name) + ".jar"); // NOI18N
         ep.setProperty("javac.classpath", compileClassPath); // NOI18N
-        ep.setProperty(ProjectProperties.JAVAC_PROCESSORPATH, new String[] {"${javac.classpath}"}); // NOI18N
-        ep.setProperty("javac.test.processorpath", new String[] {"${javac.test.classpath}"}); // NOI18N
+        ep.setProperty(ProjectProperties.JAVAC_PROCESSORPATH, new String[] {ref(ProjectProperties.JAVAC_CLASSPATH, true)}); // NOI18N
+        ep.setProperty("javac.test.processorpath", new String[] {ref(ProjectProperties.JAVAC_TEST_CLASSPATH,true)}); // NOI18N
         ep.setProperty("build.sysclasspath", "ignore"); // NOI18N
         ep.setComment("build.sysclasspath", new String[] {"# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_build.sysclasspath")}, false); // NOI18N
         ep.setProperty("run.classpath", runtimeClassPath);
         ep.setProperty("debug.classpath", new String[] { // NOI18N
-            "${run.classpath}", // NOI18N
+            ref(ProjectProperties.RUN_CLASSPATH,true)
         });
         ep.setComment("debug.classpath", new String[] { // NOI18N
             "# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_debug.transport"),
@@ -467,7 +514,7 @@ public class J2SEProjectBuilder {
         } else if (!isLibrary) {
             ep.setProperty("main.class", ""); // NOI18N
         }
-        
+
         ep.setProperty("javac.compilerargs", ""); // NOI18N
         ep.setComment("javac.compilerargs", new String[] {
             "# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_javac.compilerargs"), // NOI18N
@@ -476,25 +523,25 @@ public class J2SEProjectBuilder {
         ep.setProperty("javac.target", sourceLevel.toString()); // NOI18N
         ep.setProperty("javac.deprecation", "false"); // NOI18N
         ep.setProperty("javac.test.classpath", skipTests ? new String[] { // NOI18N
-            "${javac.classpath}:", // NOI18N
-            "${build.classes.dir}", // NOI18N
+            ref(ProjectProperties.JAVAC_CLASSPATH, false),
+            ref(ProjectProperties.BUILD_CLASSES_DIR, true)
         } : new String[] { // NOI18N
-            "${javac.classpath}:", // NOI18N
-            "${build.classes.dir}:", // NOI18N
-            "${libs.junit.classpath}:", // NOI18N
-            "${libs.junit_4.classpath}",  //NOI18N
+            ref(ProjectProperties.JAVAC_CLASSPATH, false),
+            ref(ProjectProperties.BUILD_CLASSES_DIR, false),
+            ref("libs.junit.classpath", false), // NOI18N
+            ref("libs.junit_4.classpath", true)  //NOI18N
         });
         ep.setProperty("run.test.classpath", new String[] { // NOI18N
-            "${javac.test.classpath}:", // NOI18N
-            "${build.test.classes.dir}", // NOI18N
+            ref(ProjectProperties.JAVAC_TEST_CLASSPATH, false),
+            ref(ProjectProperties.BUILD_TEST_CLASSES_DIR, true)
         });
         ep.setProperty("debug.test.classpath", new String[] { // NOI18N
-            "${run.test.classpath}", // NOI18N
+            ref(ProjectProperties.RUN_TEST_CLASSPATH, true)
         });
 
         ep.setProperty("build.generated.dir", "${build.dir}/generated"); // NOI18N
         ep.setProperty("meta.inf.dir", "${src.dir}/META-INF"); // NOI18N
-        
+
         ep.setProperty("build.dir", "build"); // NOI18N
         ep.setComment("build.dir", new String[] {"# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_build.dir")}, false); // NOI18N
         ep.setProperty("build.classes.dir", "${build.dir}/classes"); // NOI18N
@@ -539,6 +586,8 @@ public class J2SEProjectBuilder {
                 },
                 false);
         ep.setProperty(J2SEProjectProperties.JAVAC_EXTERNAL_VM, "true");    //NOI18N
+        //Modules
+        createDefaultModuleProperties(ep, !skipTests);
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE, "true"); // NOI18N
@@ -546,7 +595,7 @@ public class J2SEProjectBuilder {
         logUsage();
         return h;
     }
-    
+
     private static void registerRoots(
             final AntProjectHelper helper,
             final ReferenceHelper refHelper,
@@ -587,13 +636,13 @@ public class J2SEProjectBuilder {
             props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             props.put(propName,srcReference);
             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
-        }                                                            
+        }
         helper.putPrimaryConfigurationData(data,true);
     }
-    
+
     private static final String loggerName = "org.netbeans.ui.metrics.j2se"; // NOI18N
     private static final String loggerKey = "USG_PROJECT_CREATE_J2SE"; // NOI18N
-    
+
     // http://wiki.netbeans.org/UsageLoggingSpecification
     private static void logUsage() {
         LogRecord logRecord = new LogRecord(Level.INFO, loggerKey);
@@ -623,12 +672,12 @@ public class J2SEProjectBuilder {
         System.arraycopy(additionalEntries, 0, result, libraries.size(), additionalEntries.length);
         return result;
     }
-    
-    private static void createMainClass( 
+
+    private static void createMainClass(
             final @NonNull String mainClassName,
             final @NonNull FileObject srcFolder,
             @NullAllowed String mainClassTemplate) throws IOException {
-        
+
         int lastDotIdx = mainClassName.lastIndexOf( '.' );
         String mName, pName;
         if ( lastDotIdx == -1 ) {
@@ -639,11 +688,11 @@ public class J2SEProjectBuilder {
             mName = mainClassName.substring( lastDotIdx + 1 ).trim();
             pName = mainClassName.substring( 0, lastDotIdx ).trim();
         }
-        
+
         if ( mName.length() == 0 ) {
             return;
         }
-        
+
         if (mainClassTemplate == null) {
             mainClassTemplate = "Templates/Classes/Main.java";  //NOI18N
         }
@@ -656,15 +705,15 @@ public class J2SEProjectBuilder {
                 mainClassTemplate);
             return; // Don't know the template
         }
-                
+
         DataObject mt = DataObject.find( mainTemplate );
-        
+
         FileObject pkgFolder = srcFolder;
         if ( pName != null ) {
             String fName = pName.replace( '.', '/' ); // NOI18N
-            pkgFolder = FileUtil.createFolder( srcFolder, fName );        
+            pkgFolder = FileUtil.createFolder( srcFolder, fName );
         }
-        DataFolder pDf = DataFolder.findFolder( pkgFolder );        
+        DataFolder pDf = DataFolder.findFolder( pkgFolder );
         DataObject res = mt.createFromTemplate( pDf, mName );
         if (res == null || !res.isValid()) {
             LOG.log(
@@ -676,23 +725,23 @@ public class J2SEProjectBuilder {
                 });
         }
     }
-    
+
     private static void copyRequiredLibraries(
             final AntProjectHelper h,
             final ReferenceHelper rh,
             final Collection<? extends Library> libraries) throws IOException {
         if (!h.isSharableProject()) {
-            return; 
+            return;
         }
         for (Library library : libraries) {
             final String libName = library.getName();
-            if (rh.getProjectLibraryManager().getLibrary(libName) == null 
+            if (rh.getProjectLibraryManager().getLibrary(libName) == null
                 && LibraryManager.getDefault().getLibrary(libName) != null) {
                 rh.copyLibrary(LibraryManager.getDefault().getLibrary(libName)); // NOI18N
             }
-        }        
+        }
     }
-    
+
     private static Collection<? extends Library> getMandatoryLibraries(boolean skipTests) {
         final List<Library> result = new ArrayList<Library>();
         final LibraryManager manager = LibraryManager.getDefault();
@@ -703,6 +752,15 @@ public class J2SEProjectBuilder {
             }
         }
         return result;
+    }
+
+    private static String ref(
+            @NonNull final String propertyName,
+            final boolean lastEntry) {
+        return String.format(
+                "${%s}%s",  //NOI18N
+                propertyName,
+                lastEntry ? "" : ":");  //NOI18N
     }
 
 }

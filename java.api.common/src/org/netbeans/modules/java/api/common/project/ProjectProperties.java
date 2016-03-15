@@ -86,20 +86,39 @@ public final class ProjectProperties {
      */
     public static final String JAVAC_PROCESSORPATH = "javac.processorpath"; //NOI18N
     public static final String JAVAC_TEST_CLASSPATH = "javac.test.classpath"; // NOI18N
-    /**
-     * @since 1.77
-     */
-    public static final String MODULE_COMPILE_PATH = "javac.modulepath";    //NOI18N
-    /**
-     * @since 1.77
-     */
-    public static final String TEST_MODULE_COMPILE_PATH = "javac.test.modulepath";    //NOI18N
-
     public static final String RUN_CLASSPATH = "run.classpath"; // NOI18N
     public static final String RUN_TEST_CLASSPATH = "run.test.classpath"; // NOI18N
     public static final String BUILD_CLASSES_DIR = "build.classes.dir"; //NOI18N
     public static final String BUILD_TEST_CLASSES_DIR = "build.test.classes.dir"; // NOI18N
     public static final String ENDORSED_CLASSPATH = "endorsed.classpath"; // NOI18N
+
+    /**
+     * @since 1.77
+     */
+    public static final String JAVAC_MODULEPATH = "javac.modulepath";    //NOI18N
+    /**
+     * @since 1.77
+     */
+    public static final String JAVAC_TEST_MODULEPATH = "javac.test.modulepath";    //NOI18N
+    /**
+     * @since 1.80
+     */
+    public static final String RUN_MODULEPATH = "run.modulepath";    //NOI18N
+    /**
+     * @since 1.80
+     */
+    public static final String RUN_TEST_MODULEPATH = "run.test.modulepath";    //NOI18N
+
+    /**
+     * @since 1.80
+     */
+    public static final String DEBUG_MODULEPATH = "debug.modulepath"; //NOI18N
+    /**
+     * @since 1.80
+     */
+    public static final String DEBUG_TEST_MODULEPATH = "debug.test.modulepath"; //NOI18N
+
+    //debug.modulepath
 
     public static final String[] WELL_KNOWN_PATHS = new String[] {
         "${" + JAVAC_CLASSPATH + "}", // NOI18N

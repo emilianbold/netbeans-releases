@@ -289,8 +289,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         private static final String[] DEFAULT_RUN_CLASS_PATH = new String[]{"run.classpath"};    //NOI18N
         private static final String[] DEFAULT_RUN_TEST_CLASS_PATH = new String[]{"run.test.classpath"};  //NOI18N
         private static final String[] DEFAULT_ENDORSED_CLASSPATH = new String[]{ProjectProperties.ENDORSED_CLASSPATH};  //NOI18N
-        private static final String[] DEFAULT_MODULE_PATH = new String[]{ProjectProperties.MODULE_COMPILE_PATH};
-        private static final String[] DEFAULT_TEST_MODULE_PATH = new String[] {ProjectProperties.TEST_MODULE_COMPILE_PATH};
+        private static final String[] DEFAULT_MODULE_PATH = new String[]{ProjectProperties.JAVAC_MODULEPATH};
+        private static final String[] DEFAULT_TEST_MODULE_PATH = new String[] {ProjectProperties.JAVAC_TEST_MODULEPATH};
         private static final String DEFAULT_JAVAC_SOURCE = ProjectProperties.JAVAC_SOURCE;
 
         private final AntProjectHelper helper;
@@ -450,7 +450,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
 
         /**
          * Sets module path properties.
-         * @param modulePathProperties  the names of properties containing the module path, by default {@link ProjectProperties#MODULE_COMPILE_PATH}
+         * @param modulePathProperties  the names of properties containing the module path, by default {@link ProjectProperties#JAVAC_MODULEPATH}
          * @return {@link Builder}
          * @since 1.77
          */
@@ -463,7 +463,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
 
         /**
          * Sets test module path properties.
-         * @param modulePathProperties  the names of properties containing the test module path, by default {@link ProjectProperties#TEST_MODULE_COMPILE_PATH}
+         * @param modulePathProperties  the names of properties containing the test module path, by default {@link ProjectProperties#JAVAC_TEST_MODULEPATH}
          * @return {@link Builder}
          * @since 1.77
          */

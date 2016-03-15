@@ -301,7 +301,7 @@ public class J2SEProjectProperties {
         // CustomizerLibraries
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );                
         
-        JAVAC_MODULEPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.MODULE_COMPILE_PATH)));
+        JAVAC_MODULEPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.JAVAC_MODULEPATH)));
         JAVAC_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.JAVAC_CLASSPATH)));
         String processorPath = projectProperties.get(ProjectProperties.JAVAC_PROCESSORPATH);
         processorPath = processorPath == null ? "${javac.classpath}" : processorPath;
@@ -595,7 +595,7 @@ public class J2SEProjectProperties {
         privateProperties.setProperty(JAVADOC_PREVIEW, encodeBoolean (JAVADOC_PREVIEW_MODEL.isSelected(), javadocPreviewBooleanKind));
                 
         // Save all paths
-        projectProperties.setProperty( ProjectProperties.MODULE_COMPILE_PATH, javac_mp );
+        projectProperties.setProperty(ProjectProperties.JAVAC_MODULEPATH, javac_mp );
         projectProperties.setProperty( ProjectProperties.JAVAC_CLASSPATH, javac_cp );
         projectProperties.setProperty( ProjectProperties.JAVAC_PROCESSORPATH, javac_pp );
         projectProperties.setProperty( ProjectProperties.JAVAC_TEST_CLASSPATH, javac_test_cp );

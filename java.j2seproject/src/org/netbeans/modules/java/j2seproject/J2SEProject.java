@@ -96,6 +96,7 @@ import org.netbeans.modules.java.api.common.project.ProjectOperations;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.LogicalViewProviders;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
+import org.netbeans.modules.java.j2seproject.api.J2SEProjectBuilder;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider;
@@ -856,7 +857,7 @@ public final class J2SEProject implements Project {
         return new Runnable() {
             @Override
             public void run() {
-                EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                final EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                 if (!ep.containsKey(ProjectProperties.INCLUDES)) {
                     ep.setProperty(ProjectProperties.INCLUDES, "**"); // NOI18N
                 }
@@ -866,6 +867,7 @@ public final class J2SEProject implements Project {
                 if (!ep.containsKey("build.generated.sources.dir")) { // NOI18N
                     ep.setProperty("build.generated.sources.dir", "${build.dir}/generated-sources"); // NOI18N
                 }
+                J2SEProjectBuilder.createDefaultModuleProperties(ep, testRoots.getRoots().length > 0);
                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
             }
         };
