@@ -1,0 +1,13 @@
+<Unnamed test>
+LINE_COMMENT    "// Integers", la=1, st=-1
+EOL             "\n", la=1, st=-1
+KEYWORD_VAR     "var", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "10", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+----- EOF -----
+

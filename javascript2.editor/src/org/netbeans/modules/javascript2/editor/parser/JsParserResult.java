@@ -37,9 +37,9 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
+import com.oracle.js.parser.ir.FunctionNode;
 import java.util.ArrayList;
 import java.util.Arrays;
-import jdk.nashorn.internal.ir.FunctionNode;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
