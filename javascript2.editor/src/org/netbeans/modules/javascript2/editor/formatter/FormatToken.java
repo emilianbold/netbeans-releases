@@ -295,7 +295,6 @@ public final class FormatToken {
                 return false;
             }
         },
-
         // separate line wrap options
         AFTER_IF_START {
             @Override
@@ -497,8 +496,48 @@ public final class FormatToken {
                 return false;
             }
         },
+        AFTER_CLASS_START {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        BEFORE_CLASS_END {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        BEFORE_CLASS_EXTENDS {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
         // a bit special tokens to detect proper continuation
         AFTER_PROPERTY {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        AFTER_ELEMENT {
             @Override
             public boolean isLineWrapMarker() {
                 return true;
@@ -634,6 +673,13 @@ public final class FormatToken {
 
         // before braces
         BEFORE_FUNCTION_DECLARATION_BRACE {
+            @Override
+            public boolean isBraceMarker() {
+                return true;
+            }
+        },
+        
+        BEFORE_CLASS_DECLARATION_BRACE {
             @Override
             public boolean isBraceMarker() {
                 return true;

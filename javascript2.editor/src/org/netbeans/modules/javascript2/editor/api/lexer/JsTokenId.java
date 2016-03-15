@@ -143,6 +143,7 @@ public enum JsTokenId implements TokenId {
     OPERATOR_LEFT_SHIFT_ARITHMETIC_ASSIGNMENT("<<=", "operator"), // NOI18N
     OPERATOR_RIGHT_SHIFT_ARITHMETIC_ASSIGNMENT(">>=", "operator"), // NOI18N
     OPERATOR_RIGHT_SHIFT_ASSIGNMENT(">>>=", "operator"), // NOI18N
+    OPERATOR_ARROW("=>", "operator"),
 
     KEYWORD_BREAK("break", "keyword"), // NOI18N
     KEYWORD_CASE("case", "keyword"), // NOI18N
@@ -171,14 +172,15 @@ public enum JsTokenId implements TokenId {
     KEYWORD_WHILE("while", "keyword"), // NOI18N
     KEYWORD_WITH("with", "keyword"), // NOI18N
 
-    RESERVED_CLASS("class", "reserved"), // NOI18N
-    RESERVED_CONST("const", "reserved"), // NOI18N
+    KEYWORD_CLASS("class", "keyword"), // NOI18N
+    KEYWORD_CONST("const", "keyword"), // NOI18N
+    KEYWORD_EXTENDS("extends", "keyword"), // NOI18N
+    KEYWORD_EXPORT("export", "keyword"), // NOI18N
+    KEYWORD_IMPORT("import", "keyword"), // NOI18N
+    KEYWORD_SUPER("super", "keyword"), // NOI18N
+    KEYWORD_YIELD("yield", "keyword"), // NOI18N
+    
     RESERVED_ENUM("enum", "reserved"), // NOI18N
-    RESERVED_EXPORT("export", "reserved"), // NOI18N
-    RESERVED_EXTENDS("extends", "reserved"), // NOI18N
-    RESERVED_IMPORT("import", "reserved"), // NOI18N
-    RESERVED_SUPER("super", "reserved"), // NOI18N
-
     RESERVED_IMPLEMENTS("implements", "reserved"), // NOI18N
     RESERVED_INTERFACE("interface", "reserved"), // NOI18N
     RESERVED_LET("let", "reserved"), // NOI18N
@@ -187,8 +189,9 @@ public enum JsTokenId implements TokenId {
     RESERVED_PROTECTED("protected", "reserved"), // NOI18N
     RESERVED_PUBLIC("public", "reserved"), // NOI18N
     RESERVED_STATIC("static", "reserved"), // NOI18N
-    RESERVED_YIELD("yield", "reserved"), // NOI18N
-
+    
+    RESERVED_AWAIT("await", "reserved"),
+    
     KEYWORD_TRUE("true", "keyword"), // NOI18N
     KEYWORD_FALSE("false", "keyword"), // NOI18N
     KEYWORD_NULL("null", "keyword"); // NOI18N
