@@ -111,4 +111,19 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+    <folder name="Templates">
+        <folder name="Other">
+            <file name="Dockerfile" url="nbresloc:/org/netbeans/modules/docker/editor/resources/Dockerfile">
+                <attr name="position" intvalue="700"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/docker/editor/resources/docker_file.png"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.docker.editor.resources.Bundle"/>
+                <attr name="templateCategory" stringvalue="simple-files"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/docker/editor/resources/Dockerfile.html"/>
+                <attr name="requireProject" boolvalue="false"/>
+                <attr name="targetName" stringvalue="Dockerfile"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>
