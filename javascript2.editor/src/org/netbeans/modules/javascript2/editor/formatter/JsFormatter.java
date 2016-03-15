@@ -865,12 +865,21 @@ public class JsFormatter implements Formatter {
         FormatToken nextImportant = continuation ? FormatTokenStream.getNextImportant(token) : token;
         if (nextImportant != null && nextImportant.getKind() == FormatToken.Kind.TEXT) {
             if (JsTokenId.BRACKET_LEFT_CURLY == nextImportant.getId()) {
-                continuations.push(new FormatContext.ContinuationBlock(
-                        FormatContext.ContinuationBlock.Type.CURLY, true));
-                formatContext.incContinuationLevel();
-                formatContext.setPendingContinuation(false);
-                processed.add(nextImportant);
-                change = true;
+                // if the pending continuation originates from
+                // class X
+                //         extends Y {
+                // we do not want to increase the continuation on left brace
+                FormatToken previous = nextImportant.previous();
+                if (previous == null
+                        || previous.getKind() != FormatToken.Kind.BEFORE_CLASS_DECLARATION_BRACE
+                        || continuation) {
+                    continuations.push(new FormatContext.ContinuationBlock(
+                            FormatContext.ContinuationBlock.Type.CURLY, true));
+                    formatContext.incContinuationLevel();
+                    formatContext.setPendingContinuation(false);
+                    processed.add(nextImportant);
+                    change = true;
+                }
             } else if (JsTokenId.BRACKET_LEFT_BRACKET == nextImportant.getId()) {
                 continuations.push(new FormatContext.ContinuationBlock(
                         FormatContext.ContinuationBlock.Type.BRACKET, true));
@@ -908,10 +917,8 @@ public class JsFormatter implements Formatter {
                     processed.add(curly);
                     change = true;
                 }
-            } else {
-                if (continuation) {
-                    formatContext.setPendingContinuation(true);
-                }
+            } else if (continuation) {
+                formatContext.setPendingContinuation(true);
             }
         }
         return change;
@@ -928,6 +935,18 @@ public class JsFormatter implements Formatter {
                 || JsTokenId.BRACKET_RIGHT_PAREN == token.getId())) {
             formatContext.setPendingContinuation(false);
         }
+
+        // if the pending continuation originates from
+        // class X
+        //         extends Y {
+        // we want to finish it on left before class declaration brace
+        if (formatContext.isPendingContinuation() && JsTokenId.BRACKET_LEFT_CURLY == token.getId()) {
+            FormatToken previous = token.previous();
+            if (previous != null && previous.getKind() == FormatToken.Kind.BEFORE_CLASS_DECLARATION_BRACE) {
+                formatContext.setPendingContinuation(false);
+            }
+        }
+
         if (continuations.isEmpty()) {
             return;
         }
