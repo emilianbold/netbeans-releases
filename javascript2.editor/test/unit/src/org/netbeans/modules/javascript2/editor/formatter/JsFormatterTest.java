@@ -1463,9 +1463,37 @@ public class JsFormatterTest extends JsTestBase {
     public void testArrow1() throws Exception {
         reformatFileContents("testfiles/formatter/arrow1.js",new IndentPrefs(4, 4));
     }
+    
+    public void testArrow1Inverted() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.spaceWithinMethodDeclParens, true);
+        reformatFileContents("testfiles/formatter/arrow1.js", options, ".inverted.formatted");
+    }
 
     public void testArrow1Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/arrow1.js");
+    }
+
+    public void testArrow2Always() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapMethodParams, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/arrow2.js", options, ".wrapAlways.formatted");
+    }
+    
+    public void testArrow2Never() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapMethodParams, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatter/arrow2.js", options, ".wrapNever.formatted");
+    }
+    
+    public void testArrow2IfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapMethodParams, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatter/arrow2.js", options, ".wrapIfLong.formatted");
+    }
+
+    public void testArrow2Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/arrow2.js");
     }
 
     public void testParentheses1Default() throws Exception {

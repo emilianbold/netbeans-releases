@@ -340,7 +340,54 @@ public class FormatVisitor extends NodeVisitor {
     public boolean enterFunctionNode(FunctionNode functionNode) {
         enterBlock(functionNode.getBody());
 
-        if (!functionNode.isProgram() && functionNode.getKind() != FunctionNode.Kind.ARROW) {
+        if (functionNode.isProgram()) {
+            return false;
+        }
+        if (functionNode.getKind() == FunctionNode.Kind.ARROW) {
+            int start = getStart(functionNode);
+
+            FormatToken leftParen = getNextToken(start, JsTokenId.BRACKET_LEFT_PAREN, start);
+            if (leftParen != null) {
+                // remove original paren marks
+                FormatToken mark = leftParen.next();
+                assert mark != null && mark.getKind() == FormatToken.Kind.AFTER_LEFT_PARENTHESIS : mark;
+                tokenStream.removeToken(mark);
+
+                FormatToken rightParen = getPreviousToken(getStart(functionNode.getBody()),
+                        JsTokenId.BRACKET_RIGHT_PAREN, leftParen.getOffset());
+                if (rightParen != null) {
+                    FormatToken previous = rightParen.previous();
+                    assert previous != null && previous.getKind() == FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS : previous;
+                    tokenStream.removeToken(previous);
+                }
+                
+                // place the new marks
+                if (!functionNode.getParameters().isEmpty()) {
+                    appendToken(leftParen, FormatToken.forFormat(
+                            FormatToken.Kind.AFTER_FUNCTION_DECLARATION_PARENTHESIS));
+
+                    if (rightParen != null) {
+                        FormatToken previous = rightParen.previous();
+                        if (previous != null) {
+                            appendToken(previous, FormatToken.forFormat(
+                                    FormatToken.Kind.BEFORE_FUNCTION_DECLARATION_PARENTHESIS));
+                        }
+                    }
+                }
+            }
+            
+            // place function parameters marks
+            for (IdentNode param : functionNode.getParameters()) {
+                FormatToken ident = getNextToken(getStart(param), JsTokenId.IDENTIFIER);
+                if (ident != null) {
+                    FormatToken beforeIdent = ident.previous();
+                    if (beforeIdent != null) {
+                        appendToken(beforeIdent,
+                                FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_DECLARATION_PARAMETER));
+                    }
+                }
+            }
+        } else {
             int start = getStart(functionNode);
 
             FormatToken leftParen = getNextToken(start, JsTokenId.BRACKET_LEFT_PAREN);
@@ -406,7 +453,7 @@ public class FormatVisitor extends NodeVisitor {
                     }
                 }
 
-                if (functionNode.isStatement() && !functionNode.isAnonymous() && !functionNode.isProgram()) {
+                if (functionNode.isStatement() && !functionNode.isAnonymous()) {
                     FormatToken rightBrace = getPreviousToken(getFinish(functionNode),
                             JsTokenId.BRACKET_RIGHT_CURLY,
                             leftBrace != null ? leftBrace.getOffset() : start);
