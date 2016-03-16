@@ -664,7 +664,7 @@ public class ModelVisitor extends PathNodeVisitor {
         // this is needed, to handle usege before declaration
         processDeclarations(fncScope, functionNode);
         
-        if (!functionNode.isProgram()) {
+        if (!functionNode.isProgram() && !functionNode.isModule()) {
             correctNameAndOffsets(fncScope, functionNode);
             setParent(fncScope, functionNode);
             // set modifiers for the processed function
@@ -686,7 +686,9 @@ public class ModelVisitor extends PathNodeVisitor {
             fncScope.addReturnType(new TypeUsageImpl(Type.UNDEFINED, -1, false));
         }
         
-        if (!functionNode.isProgram()) {
+        
+        if (!functionNode.isProgram() && !functionNode.isModule()) {
+            processModifiersFromJsDoc(fncScope, functionNode, parserResult.getDocumentationHolder());
             modelBuilder.reset();
         }
 ////        List<FunctionNode> functions = new ArrayList<FunctionNode>(getDeclaredFunction(functionNode));
@@ -1584,24 +1586,6 @@ public class ModelVisitor extends PathNodeVisitor {
             
             jsFunction.setDeprecated(docHolder.isDeprecated(fn));
             
-            Set<JsModifier> modifiers = docHolder.getModifiers(fn);
-            if (modifiers != null && !modifiers.isEmpty()) {
-                Set<Modifier> fnModifiers = jsFunction.getModifiers();
-                if (modifiers.contains(JsModifier.PRIVATE)) {
-                    fnModifiers.remove(Modifier.PUBLIC);
-                    fnModifiers.remove(Modifier.PROTECTED);
-                    fnModifiers.add(Modifier.PRIVATE);
-                }
-                if (modifiers.contains(JsModifier.PUBLIC)) {
-                    fnModifiers.remove(Modifier.PRIVATE);
-                    fnModifiers.remove(Modifier.PROTECTED);
-                    fnModifiers.add(Modifier.PUBLIC);
-                }
-                if (modifiers.contains(JsModifier.STATIC)) {
-                    fnModifiers.add(Modifier.STATIC);
-                }
-            }
-            
             // process @extends tag
             List<Type> extendTypes = docHolder.getExtends(fn);
             if (!extendTypes.isEmpty()) {
@@ -1700,7 +1684,28 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
             }
         }
-
+    }
+    
+    private void processModifiersFromJsDoc(JsFunctionImpl jsFunction, FunctionNode fn, JsDocumentationHolder docHolder) {
+        if (!fn.isProgram() && !fn.isModule() && docHolder != null) {
+            Set<JsModifier> modifiers = docHolder.getModifiers(fn);
+            if (modifiers != null && !modifiers.isEmpty()) {
+                Set<Modifier> fnModifiers = jsFunction.getModifiers();
+                if (modifiers.contains(JsModifier.PRIVATE)) {
+                    fnModifiers.remove(Modifier.PUBLIC);
+                    fnModifiers.remove(Modifier.PROTECTED);
+                    fnModifiers.add(Modifier.PRIVATE);
+                }
+                if (modifiers.contains(JsModifier.PUBLIC)) {
+                    fnModifiers.remove(Modifier.PRIVATE);
+                    fnModifiers.remove(Modifier.PROTECTED);
+                    fnModifiers.add(Modifier.PUBLIC);
+                }
+                if (modifiers.contains(JsModifier.STATIC)) {
+                    fnModifiers.add(Modifier.STATIC);
+                }
+            }
+        }
     }
     
     private List<FunctionNode> getDeclaredFunction(FunctionNode inNode) {
@@ -2808,7 +2813,10 @@ public class ModelVisitor extends PathNodeVisitor {
                 // -> in the model, just change  the f1 from private to privilaged. 
                 String lastName = fqn.get(1).getName();
                 JsObjectImpl property = (JsObjectImpl)object.getProperty(lastName);
-                if (property != null && lastName.equals(property.getName()) && (property.getModifiers().contains(Modifier.PRIVATE) && property.getModifiers().size() == 1)) {
+                Node lastVisited = getPreviousFromPath(2);
+                if (property != null && lastName.equals(property.getName()) && (property.getModifiers().contains(Modifier.PRIVATE) && property.getModifiers().size() == 1)
+                        && !(lastVisited instanceof CallNode)) {
+                    // if there is CallNode, then it like this.xxx() -> don't change modifiers
                     property.getModifiers().remove(Modifier.PRIVATE);
                     property.getModifiers().add(Modifier.PROTECTED);
                 }
