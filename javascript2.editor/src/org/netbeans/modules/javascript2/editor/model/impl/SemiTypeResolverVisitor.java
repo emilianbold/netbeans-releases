@@ -383,6 +383,10 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
             reset();
             return false;
         }
+        if (binaryNode.rhs() instanceof FunctionNode) {
+            binaryNode.lhs().accept(this);
+            return false;
+        }
         return super.enterBinaryNode(binaryNode);
     }
 

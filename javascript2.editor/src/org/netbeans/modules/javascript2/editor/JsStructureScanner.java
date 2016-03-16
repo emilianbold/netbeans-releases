@@ -197,7 +197,8 @@ public class JsStructureScanner implements StructureScanner {
             Collection<? extends TypeUsage> assignmentForOffset = jsObject.getAssignmentForOffset(jsObject.getDeclarationName().getOffsetRange().getEnd());
             if (assignmentForOffset.size() == 1) {
                 JsObject assignedObject = ModelUtils.findJsObjectByName(result.getModel().getGlobalObject(), assignmentForOffset.iterator().next().getType());
-                if (assignedObject != null && assignedObject.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
+                if (assignedObject != null && assignedObject.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT
+                        && processedObjects.contains(assignedObject.getParent().getFullyQualifiedName())) {
                     for (JsObject property : assignedObject.getProperties().values()) {
                         final List<StructureItem> items = new ArrayList<StructureItem>();
                         getEmbededItems(result, property, items, processedObjects, cancel);

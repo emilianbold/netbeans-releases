@@ -1542,10 +1542,16 @@ public class ModelVisitor extends PathNodeVisitor {
     
     private boolean isFunctionAnonymous(FunctionNode fn) {
         boolean result = false;
-        if (fn.isAnonymous() 
+        if (fn.isAnonymous() ) {
+            if (fn.getIdent().getName().startsWith("L:")) { //NOI18N
                 // XXX this depends on the implemenation of parser. Find the better way
-                && fn.getIdent().getName().startsWith("L:")) { //NOI8N
-            result = true;
+                result = true;
+            } else if (fn.getIdent().getStart() == fn.getIdent().getFinish()) {
+                Node lastVisited = getPreviousFromPath(2);
+                if (lastVisited instanceof CallNode) {
+                    result = true;
+                }
+            }
         }
         return result;
     }
@@ -1593,6 +1599,19 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
                 if (modifiers.contains(JsModifier.STATIC)) {
                     fnModifiers.add(Modifier.STATIC);
+                }
+            }
+            
+            // process @extends tag
+            List<Type> extendTypes = docHolder.getExtends(fn);
+            if (!extendTypes.isEmpty()) {
+                JsObject prototype = jsFunction.getProperty(ModelUtils.PROTOTYPE);
+                if (prototype == null) {
+                    prototype = new JsObjectImpl(jsFunction, ModelUtils.PROTOTYPE, true, OffsetRange.NONE, EnumSet.of(Modifier.PUBLIC), parserResult.getSnapshot().getMimeType(), null);
+                    jsFunction.addProperty(ModelUtils.PROTOTYPE, prototype);
+                }
+                for (Type type : extendTypes) {
+                    prototype.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset(), true), type.getOffset());
                 }
             }
             
@@ -2471,6 +2490,34 @@ public class ModelVisitor extends PathNodeVisitor {
             while (bNode.rhs() instanceof BinaryNode ) {
                 bNode = (BinaryNode)bNode.rhs();
             }
+            if (bNode.rhs() instanceof FunctionNode) {
+                // this should handle cases like 
+                // var prom  = another.prom = function prom() {}
+                rNode = (FunctionNode) bNode.rhs();
+                List<Identifier> name = getNodeName(bNode.lhs(), parserResult);
+                if (name != null && !name.isEmpty()) {
+                    boolean isPriviliged = name.get(0).getName().equals(ModelUtils.THIS);
+                    JsObject parent =  isPriviliged ? resolveThis(modelBuilder.getCurrentObject()) : modelBuilder.getCurrentObject();
+                    for (int i = isPriviliged ? 1 : 0; parent != null && i < name.size(); i++) {
+                        parent = parent.getProperty(name.get(i).getName());
+                    }
+                    if (parent!= null && parent instanceof JsFunction) {
+                        IdentifierImpl propertyName = create(parserResult, varNode.getName());
+                        Set<Modifier> modifiers;
+                        if (isPriviliged) {
+                            modifiers = Collections.singleton(Modifier.PROTECTED);
+                        } else if (modelBuilder.getCurrentDeclarationFunction().getJSKind() == JsElement.Kind.FILE) {
+                            modifiers = Collections.singleton(Modifier.PUBLIC);
+                        } else {
+                            modifiers = Collections.singleton(Modifier.PRIVATE);
+                        }
+                        JsObject property = new JsFunctionReference(modelBuilder.getCurrentObject(), propertyName, (JsFunction)parent, true, modifiers);
+                        modelBuilder.getCurrentObject().addProperty(propertyName.getName(), property);
+                        property.addOccurrence(propertyName.getOffsetRange());
+                    }
+                }
+
+            }
 //            if (bNode.rhs() instanceof ReferenceNode /*&& bNode.tokenType() == TokenType.ASSIGN*/) {
 //                 init = (ReferenceNode) bNode.rhs();
 //            }
@@ -2850,6 +2897,10 @@ public class ModelVisitor extends PathNodeVisitor {
             return getName((VarNode) node, parserResult);
         } else if (node instanceof PropertyNode) {
             return getName((PropertyNode) node, parserResult);
+        } else if (node instanceof IdentNode) {
+            IdentNode ident = ((IdentNode) node);
+            return Arrays.<Identifier>asList(new IdentifierImpl(
+                    ident.getName(), getOffsetRange(ident)));
         } else if (node instanceof FunctionNode) {
             if (((FunctionNode) node).getKind() == FunctionNode.Kind.SCRIPT) {
                 return Collections.<Identifier>emptyList();
