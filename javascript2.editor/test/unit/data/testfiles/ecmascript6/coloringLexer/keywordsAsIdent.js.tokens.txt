@@ -1,0 +1,426 @@
+<Unnamed test>
+KEYWORD_VAR     "var", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+BRACKET_LEFT_CURLY  "{", la=1, st=-1
+BRACKET_RIGHT_CURLY  "}", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "break", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "1", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "do", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "2", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "in", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "3", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "typeof", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "4", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "case", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "5", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "else", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "6", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "instanceof", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "7", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "var", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "9", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "catch", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "10", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "export", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "11", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "new", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "12", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "void", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "13", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "class", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "14", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "extends", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "15", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "return", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "16", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "while", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "17", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "const", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "18", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "finaly", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "19", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "super", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "20", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "with", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "21", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "continue", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "22", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "for", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "23", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "of", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "24", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "switch", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "25", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "yield", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "26", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "debugger", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "27", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "function", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "28", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "this", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "29", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "default", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "30", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "if", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "31", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "throw", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "32", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "delete", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "33", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "import", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "34", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "try", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "35", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "enum", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "36", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "await", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "37", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "implements", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "38", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "package", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "39", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "protected", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "40", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "interface", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "41", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "private", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "42", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "public", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "43", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "static", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "44", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "let", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "45", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "as", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "46", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+EOL             "\n", la=1, st=-1
+IDENTIFIER      "a", la=1, st=-1
+OPERATOR_DOT    ".", la=1, st=-1
+IDENTIFIER      "from", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+OPERATOR_ASSIGNMENT  "=", la=1, st=-1
+WHITESPACE      " ", la=1, st=-1
+NUMERIC_DECIMAL  "47", la=1, st=-1
+OPERATOR_SEMICOLON  ";", la=1, st=-1
+----- EOF -----
+

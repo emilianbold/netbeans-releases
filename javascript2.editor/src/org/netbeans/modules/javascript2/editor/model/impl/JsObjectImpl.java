@@ -62,7 +62,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     final private NavigableMap<Integer, Collection<TypeUsage>> assignments = new TreeMap<Integer, Collection<TypeUsage>>();
     final private Map<String, Integer>assignmentsReverse = new HashMap();
     private int countOfAssignments = 0;
-    final private boolean hasName;
+    private boolean hasName;
     private Documentation documentation;
     protected JsElement.Kind kind;
     private boolean isVirtual;
@@ -110,8 +110,14 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         return declarationName;
     }
 
+    @Override
+    public String getName() {
+        return declarationName != null ? declarationName.getName() : super.getName();
+    }
+    
     public void setDeclarationName(Identifier declaration) {
         declarationName = declaration;
+        hasName = declaration.getOffsetRange().getLength() > 0;
     }
 
     @Override

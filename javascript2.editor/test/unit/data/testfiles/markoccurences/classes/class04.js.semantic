@@ -1,0 +1,25 @@
+"use strict";   
+
+class |>CLASS,GLOBAL:Point<| {
+    |>METHOD:constructor<|(x, y) {
+        this.|>FIELD:x<| = x;
+        this.|>FIELD:y<| = y;
+    }
+
+    /**
+     * 
+     * @param {Point} a 
+     * @param {Point} b 
+     */
+    static |>METHOD:distance<|(a, b) {
+        const |>LOCAL_VARIABLE_DECLARATION:dx<| = a.|>FIELD:x<| - b.|>FIELD:x<|;
+        const |>LOCAL_VARIABLE_DECLARATION:dy<| = a.|>FIELD:y<| - b.|>FIELD:y<|;
+
+        return |>GLOBAL:Math<|.sqrt(|>LOCAL_VARIABLE:dx<|*|>LOCAL_VARIABLE:dx<| + |>LOCAL_VARIABLE:dy<|*|>LOCAL_VARIABLE:dy<|);
+    }
+}
+  
+const |>GLOBAL:p1<| = new |>GLOBAL:Point<|(5, 5);
+const |>GLOBAL:p2<| = new |>GLOBAL:Point<|(10, 10);
+
+|>GLOBAL:console<|.log(|>GLOBAL:Point<|.distance(|>GLOBAL:p1<|, |>GLOBAL:p2<|)); 
