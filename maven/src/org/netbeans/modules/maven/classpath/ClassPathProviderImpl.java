@@ -79,10 +79,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     private static final int TYPE_UNKNOWN = -1;
     
     private final @NonNull Project proj;
-    private final ClassPath[] cache = new ClassPath[9];
+    private final ClassPath[] cache = new ClassPath[11];
     
     public ClassPathProviderImpl(@NonNull Project proj) {
-        this.proj = proj;
+        this.proj = proj;        
     }
     
     /**
@@ -116,6 +116,21 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
             l.add(getSourcepath(TYPE_TESTSRC));
             return l.toArray(new ClassPath[l.size()]);
         }
+        if (JavaClassPathConstants.MODULE_BOOT_PATH.equals(type)) {
+            return new ClassPath[] {getModuleBootPath()};
+        }
+        if (JavaClassPathConstants.MODULE_COMPILE_PATH.equals(type)) {
+            ClassPath[] l = new ClassPath[2];
+            l[0] = getModuleCompilePath();
+            l[1] = getModuleCompilePath();
+            return l;
+        }
+        if (JavaClassPathConstants.MODULE_CLASS_PATH.equals(type)) {
+            ClassPath[] l = new ClassPath[2];
+            l[0] = getCompileTimeClasspath(0);
+            l[1] = getCompileTimeClasspath(1);
+            return l;
+        }
         return new ClassPath[0];
     }
     
@@ -138,6 +153,15 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
         }
         if (ClassPath.EXECUTE.equals(type)) {
             return getRuntimeClasspath(TYPE_SRC);
+        }
+        if (type.equals(JavaClassPathConstants.MODULE_BOOT_PATH)) {            
+            return getModuleBootPath();
+        }
+        if (type.equals(JavaClassPathConstants.MODULE_COMPILE_PATH)) {            
+            return getModuleCompilePath();
+        }
+        if (type.equals(JavaClassPathConstants.MODULE_CLASS_PATH)) {            
+            return getCompileTimeClasspath(0);
         }
         assert false;
         return null;
@@ -167,6 +191,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
             return getEndorsedClassPath();
         } else if (type.equals(JavaClassPathConstants.PROCESSOR_PATH)) {
             // XXX read <processorpath> from maven-compiler-plugin config
+            return getCompileTimeClasspath(fileType);
+        } else if (type.equals(JavaClassPathConstants.MODULE_BOOT_PATH)) {            
+            return getModuleBootPath();
+        } else if (type.equals(JavaClassPathConstants.MODULE_COMPILE_PATH)) {            
+            return getModuleCompilePath();
+        } else if (type.equals(JavaClassPathConstants.MODULE_CLASS_PATH)) {            
             return getCompileTimeClasspath(fileType);
         } else {
             return null;
@@ -319,5 +349,20 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
         }
         return cp;
     }
+    
+    private synchronized ClassPath getModuleBootPath() {
+        if (cache[9] == null) {
+            cache[9] = ClassPathFactory.createClassPath(new PlatformModulePathImpl(proj.getLookup().lookup(NbMavenProjectImpl.class)));
+        }
+        return cache[9];
+    }
+
+    private synchronized ClassPath getModuleCompilePath() {
+        if (cache[10] == null) {
+            cache[10] = ClassPathFactory.createClassPath(new ModuleCompilePathImpl(proj.getLookup().lookup(NbMavenProjectImpl.class), false));
+        }
+        return cache[10];
+    }
+
 }
 

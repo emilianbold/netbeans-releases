@@ -103,6 +103,10 @@ public abstract class AbstractProjectClassPathImpl implements ClassPathImplement
         });
     }
     
+    protected NbMavenProjectImpl getProject() {
+        return project;
+    }
+    
     private boolean hasChanged(List<PathResourceImplementation> oldValues,
                                List<PathResourceImplementation> newValues) {
         if (oldValues == null) {
