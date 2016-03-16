@@ -67,6 +67,7 @@ import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.CompilerOptionsQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.lib.nbjavac.services.CancelAbort;
@@ -145,7 +146,8 @@ final class OnePassCompileWorker extends CompileWorker {
                                             return context.isCancelled() || isLowMemory(null);
                                         }
                                     },
-                                    tuple.aptGenerated ? null : APTUtils.get(context.getRoot()));
+                                    tuple.aptGenerated ? null : APTUtils.get(context.getRoot()),
+                                    CompilerOptionsQuery.getOptions(context.getRoot()));
                             }
                             for (CompilationUnitTree cut : jt.parse(tuple.jfo)) { //TODO: should be exactly one
                                 if (units != null) {

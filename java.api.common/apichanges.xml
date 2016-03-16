@@ -105,6 +105,21 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
+        <change id="CompilerOptionsQueryImpl">
+            <api name="java-api-common"/>
+            <summary>Added a factory method into <code>QuerySupport</code>to create<code>CompilerOptionsQueryImplementation</code> provider</summary>
+            <version major="1" minor="81"/>
+            <date day="16" month="3" year="2016"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added a factory method into <code>QuerySupport</code>to create an Ant property based implementation of
+                    the <code>CompilerOptionsQueryImplementation</code>.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.queries" name="QuerySupport"/>
+        </change>
         <change id="java-vm-options-customizer">
             <api name="java-api-common"/>
             <summary>Added a utility method to open a java VM options customizer - <code>ProjectUISupport.showVMOptionCustomizer</code></summary>

@@ -56,6 +56,7 @@ import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.java.queries.AnnotationProcessingQueryImplementation;
 import org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation;
+import org.netbeans.spi.java.queries.CompilerOptionsQueryImplementation;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
@@ -263,6 +264,20 @@ public final class QuerySupport {
         Parameters.notNull("evaluator", evaluator); // NOI18N
         Parameters.notNull("platformType", platformType);   //NOI18N
         return new SourceLevelQueryImpl2(evaluator, platformType);
+    }
+
+    /**
+     * Create a new query to find out explicit compiler options for Java source files.
+     * @param evaluator {@link PropertyEvaluator} used for obtaining needed properties
+     * @param additionalCompilerOptionsProperty the property holding the additional compiler options
+     * @return a {@link CompilerOptionsQueryImplementation} to find out explicit compiler options of Java source files.
+     * @since 1.81
+     */
+    @NonNull
+    public static CompilerOptionsQueryImplementation createCompilerOptionsQuery(
+            @NonNull final PropertyEvaluator evaluator,
+            @NonNull final String additionalCompilerOptionsProperty) {
+        return new CompilerOptionsQueryImpl(evaluator, additionalCompilerOptionsProperty);
     }
 
     /**
