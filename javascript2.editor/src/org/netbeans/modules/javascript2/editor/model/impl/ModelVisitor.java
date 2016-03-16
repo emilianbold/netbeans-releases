@@ -1602,6 +1602,19 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
             }
             
+            // process @extends tag
+            List<Type> extendTypes = docHolder.getExtends(fn);
+            if (!extendTypes.isEmpty()) {
+                JsObject prototype = jsFunction.getProperty(ModelUtils.PROTOTYPE);
+                if (prototype == null) {
+                    prototype = new JsObjectImpl(jsFunction, ModelUtils.PROTOTYPE, true, OffsetRange.NONE, EnumSet.of(Modifier.PUBLIC), parserResult.getSnapshot().getMimeType(), null);
+                    jsFunction.addProperty(ModelUtils.PROTOTYPE, prototype);
+                }
+                for (Type type : extendTypes) {
+                    prototype.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset(), true), type.getOffset());
+                }
+            }
+            
             List<Type> types = docHolder.getReturnType(fn);
             if (types != null && !types.isEmpty()) {
                 for(Type type : types) {
