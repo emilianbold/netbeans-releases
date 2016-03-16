@@ -347,46 +347,7 @@ public class FormatVisitor extends NodeVisitor {
             int start = getStart(functionNode);
 
             FormatToken leftParen = getNextToken(start, JsTokenId.BRACKET_LEFT_PAREN, start);
-            if (leftParen != null) {
-                // remove original paren marks
-                FormatToken mark = leftParen.next();
-                assert mark != null && mark.getKind() == FormatToken.Kind.AFTER_LEFT_PARENTHESIS : mark;
-                tokenStream.removeToken(mark);
-
-                FormatToken rightParen = getPreviousToken(getStart(functionNode.getBody()),
-                        JsTokenId.BRACKET_RIGHT_PAREN, leftParen.getOffset());
-                if (rightParen != null) {
-                    FormatToken previous = rightParen.previous();
-                    assert previous != null && previous.getKind() == FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS : previous;
-                    tokenStream.removeToken(previous);
-                }
-                
-                // place the new marks
-                if (!functionNode.getParameters().isEmpty()) {
-                    appendToken(leftParen, FormatToken.forFormat(
-                            FormatToken.Kind.AFTER_FUNCTION_DECLARATION_PARENTHESIS));
-
-                    if (rightParen != null) {
-                        FormatToken previous = rightParen.previous();
-                        if (previous != null) {
-                            appendToken(previous, FormatToken.forFormat(
-                                    FormatToken.Kind.BEFORE_FUNCTION_DECLARATION_PARENTHESIS));
-                        }
-                    }
-                }
-            }
-            
-            // place function parameters marks
-            for (IdentNode param : functionNode.getParameters()) {
-                FormatToken ident = getNextToken(getStart(param), JsTokenId.IDENTIFIER);
-                if (ident != null) {
-                    FormatToken beforeIdent = ident.previous();
-                    if (beforeIdent != null) {
-                        appendToken(beforeIdent,
-                                FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_DECLARATION_PARAMETER));
-                    }
-                }
-            }
+            handleFunctionParameters(functionNode, leftParen);
         } else {
             int start = getStart(functionNode);
 
@@ -400,20 +361,7 @@ public class FormatVisitor extends NodeVisitor {
                                     : FormatToken.Kind.BEFORE_FUNCTION_DECLARATION));
                 }
 
-                // mark the within parenthesis places
-
-                // remove original paren marks
-                FormatToken mark = leftParen.next();
-                assert mark != null && mark.getKind() == FormatToken.Kind.AFTER_LEFT_PARENTHESIS : mark;
-                tokenStream.removeToken(mark);
-
-                FormatToken rightParen = getPreviousToken(getStart(functionNode.getBody()),
-                        JsTokenId.BRACKET_RIGHT_PAREN, leftParen.getOffset());
-                if (rightParen != null) {
-                    previous = rightParen.previous();
-                    assert previous != null && previous.getKind() == FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS : previous;
-                    tokenStream.removeToken(previous);
-                }
+                handleFunctionParameters(functionNode, leftParen);
 
                 // mark left brace of block - this works if function node
                 // start offset is offset of the left brace
@@ -424,32 +372,6 @@ public class FormatVisitor extends NodeVisitor {
                     if (previous != null) {
                         appendToken(previous, FormatToken.forFormat(
                                 FormatToken.Kind.BEFORE_FUNCTION_DECLARATION_BRACE));
-                    }
-                }
-
-                // place the new marks
-                if (!functionNode.getParameters().isEmpty()) {
-                    appendToken(leftParen, FormatToken.forFormat(
-                            FormatToken.Kind.AFTER_FUNCTION_DECLARATION_PARENTHESIS));
-
-                    if (rightParen != null) {
-                        previous = rightParen.previous();
-                        if (previous != null) {
-                            appendToken(previous, FormatToken.forFormat(
-                                    FormatToken.Kind.BEFORE_FUNCTION_DECLARATION_PARENTHESIS));
-                        }
-                    }
-                }
-
-                // place function parameters marks
-                for (IdentNode param : functionNode.getParameters()) {
-                    FormatToken ident = getNextToken(getStart(param), JsTokenId.IDENTIFIER);
-                    if (ident != null) {
-                        FormatToken beforeIdent = ident.previous();
-                        if (beforeIdent != null) {
-                            appendToken(beforeIdent,
-                                    FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_DECLARATION_PARAMETER));
-                        }
                     }
                 }
 
@@ -470,6 +392,50 @@ public class FormatVisitor extends NodeVisitor {
         return false;
     }
 
+    // handles both standard and arrow functions
+    private void handleFunctionParameters(FunctionNode functionNode, FormatToken leftParen) {
+        if (leftParen != null) {
+            // remove original paren marks
+            FormatToken mark = leftParen.next();
+            assert mark != null && mark.getKind() == FormatToken.Kind.AFTER_LEFT_PARENTHESIS : mark;
+            tokenStream.removeToken(mark);
+
+            FormatToken rightParen = getPreviousToken(getStart(functionNode.getBody()),
+                    JsTokenId.BRACKET_RIGHT_PAREN, leftParen.getOffset());
+            if (rightParen != null) {
+                FormatToken previous = rightParen.previous();
+                assert previous != null && previous.getKind() == FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS : previous;
+                tokenStream.removeToken(previous);
+            }
+
+            // place the new marks
+            if (!functionNode.getParameters().isEmpty()) {
+                appendToken(leftParen, FormatToken.forFormat(
+                        FormatToken.Kind.AFTER_FUNCTION_DECLARATION_PARENTHESIS));
+
+                if (rightParen != null) {
+                    FormatToken previous = rightParen.previous();
+                    if (previous != null) {
+                        appendToken(previous, FormatToken.forFormat(
+                                FormatToken.Kind.BEFORE_FUNCTION_DECLARATION_PARENTHESIS));
+                    }
+                }
+            }
+        }
+
+        // place function parameters marks
+        for (IdentNode param : functionNode.getParameters()) {
+            FormatToken ident = getNextToken(getStart(param), JsTokenId.IDENTIFIER);
+            if (ident != null) {
+                FormatToken beforeIdent = ident.previous();
+                if (beforeIdent != null) {
+                    appendToken(beforeIdent,
+                            FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_DECLARATION_PARAMETER));
+                }
+            }
+        }
+    }
+    
     @Override
     public Node leaveFunctionNode(FunctionNode functionNode) {
         leaveBlock(functionNode.getBody());
