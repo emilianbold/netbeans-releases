@@ -63,11 +63,14 @@ import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.elements.ParameterElementImpl;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
+import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FunctionScope;
+import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
@@ -235,17 +238,32 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
                 }
             }
             Arrays.sort(typeNames); // must sort
-            if (getInScope() instanceof TypeScope && containsSelfDependentType(typeNames)) {
-                retval.add(((TypeScope) getInScope()));
+            Scope inScope = getInScope();
+            if (canBeSelfDependent(inScope, typeNames)) {
+                retval.add(((TypeScope) inScope));
             }
 
-            if (containsCallerDependentType(typeNames)) {
+            if (canBeCallerDependent(inScope, typeNames)) {
                 result = new CallerDependentTypesDescriptor(retval);
             } else {
                 result = new CommonTypesDescriptor(retval);
             }
         }
         return result;
+    }
+
+    private static boolean canBeSelfDependent(Scope scope, String[] types) {
+        if (scope instanceof ClassScope || scope instanceof InterfaceScope) { // not trait
+            return containsSelfDependentType(types);
+        }
+        return false;
+    }
+
+    private static boolean canBeCallerDependent(Scope scope, String[] types) {
+        if (scope instanceof TraitScope) {
+            return containsCallerDependentType(types) || containsSelfDependentType(types);
+        }
+        return containsCallerDependentType(types);
     }
 
     private int getLastValidMethodOffset() {
