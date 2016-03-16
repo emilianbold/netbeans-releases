@@ -387,16 +387,16 @@ public abstract class CaretBasedBlockHighlighting implements HighlightsContainer
             return selections;
         }
 
-//        @Override
-//        public HighlightsSequence getHighlights(int startOffset, int endOffset) {
-//            if (!RectangularSelectionUtils.isRectangularSelection(component())) { // regular selection
-//                return super.getHighlights(startOffset, endOffset);
-//            } else { // rectangular selection
-//                return (rectangularSelectionBag != null)
-//                        ? (rectangularSelectionBag.getHighlights(startOffset, endOffset))
-//                        : HighlightsSequence.EMPTY;
-//            }
-//        }
+        @Override
+        public HighlightsSequence getHighlights(int startOffset, int endOffset) {
+            if (!RectangularSelectionUtils.isRectangularSelection(component())) { // regular selection
+                return super.getHighlights(startOffset, endOffset);
+            } else { // rectangular selection
+                return (rectangularSelectionBag != null)
+                        ? (rectangularSelectionBag.getHighlights(startOffset, endOffset))
+                        : HighlightsSequence.EMPTY;
+            }
+        }
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
