@@ -1542,10 +1542,16 @@ public class ModelVisitor extends PathNodeVisitor {
     
     private boolean isFunctionAnonymous(FunctionNode fn) {
         boolean result = false;
-        if (fn.isAnonymous() 
+        if (fn.isAnonymous() ) {
+            if (fn.getIdent().getName().startsWith("L:")) { //NOI18N
                 // XXX this depends on the implemenation of parser. Find the better way
-                && fn.getIdent().getName().startsWith("L:")) { //NOI8N
-            result = true;
+                result = true;
+            } else if (fn.getIdent().getStart() == fn.getIdent().getFinish()) {
+                Node lastVisited = getPreviousFromPath(2);
+                if (lastVisited instanceof CallNode) {
+                    result = true;
+                }
+            }
         }
         return result;
     }
