@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model.impl;
+package org.netbeans.modules.javascript2.editor;
 
 import java.util.Collections;
 import java.util.HashSet;
