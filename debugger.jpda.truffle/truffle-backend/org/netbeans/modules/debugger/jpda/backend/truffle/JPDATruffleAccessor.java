@@ -406,12 +406,11 @@ public class JPDATruffleAccessor extends Object {
                 frameInfos.append(visualizer.displaySourceLocation(fi.getCallNode()));
                 frameInfos.append('\n');
             } else {
-                frameInfos.append(fi.getCallTarget().toString());
+                frameInfos.append(DebuggerVisualizer.getDisplayName(fi.getCallTarget()));
                 frameInfos.append('\n');
-                frameInfos.append(fi.getCallNode().toString());
+                frameInfos.append(DebuggerVisualizer.getMethodName(fi.getCallNode().getRootNode()));
                 frameInfos.append('\n');
-                SourceSection ss = fi.getCallNode().getSourceSection();
-                frameInfos.append((ss != null) ? ss.getShortDescription() : "unknown");
+                frameInfos.append(DebuggerVisualizer.getSourceLocation(fi.getCallNode()));
                 frameInfos.append('\n');
             }
             if (fi.getCallNode() == null) {
