@@ -113,6 +113,8 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         afterTernaryOpsCheckBox.addFocusListener(this);
         assignOpsCombo.putClientProperty(OPTION_ID, wrapAssignOps);
         assignOpsCombo.addFocusListener(this);
+        arrowOpsCombo.putClientProperty(OPTION_ID, wrapArrowOps);
+        arrowOpsCombo.addFocusListener(this);
 
         Dimension dimension = new Dimension((int) panel1.getPreferredSize().getWidth() + Utils.POSSIBLE_SCROLL_BAR_WIDTH, (int) scrollPane.getMinimumSize().getHeight());
         scrollPane.setMinimumSize(dimension);
@@ -189,6 +191,8 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         elementsCombo = new javax.swing.JComboBox();
         classExtendsCombo = new javax.swing.JComboBox();
         classExtendsLabel = new javax.swing.JLabel();
+        arrowOpsCombo = new javax.swing.JComboBox();
+        arrowOpsLabel = new javax.swing.JLabel();
 
         setName(org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_Wrapping")); // NOI18N
         setOpaque(false);
@@ -438,6 +442,11 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
             classExtendsLabel.setLabelFor(classExtendsCombo);
             org.openide.awt.Mnemonics.setLocalizedText(classExtendsLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.classExtendsLabel.text")); // NOI18N
 
+            arrowOpsCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+            arrowOpsLabel.setLabelFor(arrowOpsCombo);
+            org.openide.awt.Mnemonics.setLocalizedText(arrowOpsLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "FmtWrapping.arrowOpsLabel.text")); // NOI18N
+
             javax.swing.GroupLayout panel1Layout = new javax.swing.GroupLayout(panel1);
             panel1.setLayout(panel1Layout);
             panel1Layout.setHorizontalGroup(
@@ -530,7 +539,11 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                                 .addComponent(afterDotCheckBox)
                                 .addComponent(afterBinaryOpsCheckBox)
                                 .addComponent(afterTernaryOpsCheckBox))
-                            .addGap(0, 12, Short.MAX_VALUE)))
+                            .addGap(0, 12, Short.MAX_VALUE))
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panel1Layout.createSequentialGroup()
+                            .addComponent(arrowOpsLabel)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(arrowOpsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addContainerGap())
             );
             panel1Layout.setVerticalGroup(
@@ -622,6 +635,10 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
                     .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(assignOpsLabel)
                         .addComponent(assignOpsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addGroup(panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(arrowOpsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(arrowOpsLabel))
                     .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
 
@@ -720,6 +737,8 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
     private javax.swing.JComboBox arrayInitItemsCombo;
     private javax.swing.JLabel arrayInitItemsLabel;
     private javax.swing.JLabel arrayInitLabel;
+    private javax.swing.JComboBox arrowOpsCombo;
+    private javax.swing.JLabel arrowOpsLabel;
     private javax.swing.JComboBox assignOpsCombo;
     private javax.swing.JLabel assignOpsLabel;
     private javax.swing.JComboBox binaryOpsCombo;

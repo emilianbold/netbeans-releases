@@ -21,7 +21,7 @@ class Car {
         this.engine = engine;
     }
     start() {
-        this.engine.start();
+        this.engine.start(throttle => throttle + max);
     }
 }
     

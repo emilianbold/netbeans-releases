@@ -279,7 +279,8 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
                 new Item(spaceAroundTernaryOps),
 //		new Item(spaceAroundStringConcatOps),
 //		new Item(spaceAroundKeyValueOps),
-                new Item(spaceAroundAssignOps)),
+                new Item(spaceAroundAssignOps),
+                new Item(spaceAroundArrowOps)),
 //		new Item(spaceAroundObjectOps)),
 
             new Item("BeforeLeftBraces",                        // NOI18N
