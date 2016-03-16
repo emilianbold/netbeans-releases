@@ -76,6 +76,22 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+        <change id="CompilerOptionsQuery">
+            <api name="queries"/>
+            <summary>Added <code>CompilerOptionsQuery</code> for additional compiler options</summary>
+            <version major="1" minor="61"/>
+            <date day="16" month="3" year="2016"/>
+            <author login="tzezula"/>
+            <compatibility semantic="compatible" source="compatible" binary="compatible"/>
+            <description>
+                <p>
+                    Added <code>CompilerOptionsQuery</code> for passing additional compiler options
+                    to java infrastructure.
+                </p>
+            </description>
+            <class package="org.netbeans.api.java.queries" name="CompilerOptionsQuery"/>
+            <class package="org.netbeans.spi.java.queries" name="CompilerOptionsQueryImplementation"/>
+        </change>
         <change id="SourceLevelQuery-MINIMAL_SOURCE_LEVEL">
             <api name="queries"/>
             <summary>Added <code>MINIMAL_SOURCE_LEVEL</code> into <code>SourceLevelQuery</code></summary>

@@ -105,6 +105,38 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
+        <change id="CompilerOptionsQueryImpl">
+            <api name="java-api-common"/>
+            <summary>Added a factory method into <code>QuerySupport</code>to create<code>CompilerOptionsQueryImplementation</code> provider</summary>
+            <version major="1" minor="81"/>
+            <date day="16" month="3" year="2016"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added a factory method into <code>QuerySupport</code>to create an Ant property based implementation of
+                    the <code>CompilerOptionsQueryImplementation</code>.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.queries" name="QuerySupport"/>
+        </change>
+        <change id="ProjectProperties-modulepath">
+            <api name="java-api-common"/>
+            <summary>Added modulepath properties into the <code>ProjectProperties</code></summary>
+            <version major="1" minor="80"/>
+            <date day="15" month="3" year="2016"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added constants holding the modulepath property names into the<code>ProjectProperties</code>.
+                    The following constants were added <code>JAVAC_MODULEPATH</code>, <code>JAVAC_TEST_MODULEPATH</code>,
+                    <code>RUN_MODULEPATH</code>,<code>RUN_TEST_MODULEPATH</code>,
+                    <code>DEBUG_MODULEPATH</code>,<code>DEBUG_TEST_MODULEPATH</code>.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.project" name="ProjectProperties"/>
+        </change>
         <change id="java-vm-options-customizer">
             <api name="java-api-common"/>
             <summary>Added a utility method to open a java VM options customizer - <code>ProjectUISupport.showVMOptionCustomizer</code></summary>

@@ -108,6 +108,7 @@ import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.CompilerOptionsQuery;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
@@ -709,6 +710,11 @@ public class JavacParser extends Parser {
                 LOGGER.log(Level.FINE, null, ex);
             }
         }
+        final CompilerOptionsQuery.Result compilerOptions = root != null ?
+                CompilerOptionsQuery.getOptions(root) :
+                file != null ?
+                    CompilerOptionsQuery.getOptions(file) :
+                    null;
         final Set<ConfigFlags> flags = EnumSet.noneOf(ConfigFlags.class);
         final Optional<JavacParser> mayBeParser = Optional.ofNullable(parser);
         if (mayBeParser.filter((p)->p.sourceCount>1).isPresent()) {
@@ -726,7 +732,8 @@ public class JavacParser extends Parser {
                 oraculum,
                 dcc,
                 parser == null ? null : new DefaultCancelService(parser),
-                APTUtils.get(root));
+                APTUtils.get(root),
+                compilerOptions);
         Context context = javacTask.getContext();
         TreeLoader.preRegister(context, cpInfo, detached);
         return javacTask;
@@ -740,7 +747,8 @@ public class JavacParser extends Parser {
             @NullAllowed final ClassNamesForFileOraculum cnih,
             @NullAllowed final DuplicateClassChecker dcc,
             @NullAllowed final CancelService cancelService,
-            @NullAllowed final APTUtils aptUtils) {
+            @NullAllowed final APTUtils aptUtils,
+            @NullAllowed final CompilerOptionsQuery.Result compilerOptions) {
         return createJavacTask(
                 cpInfo,
                 diagnosticListener,
@@ -750,7 +758,8 @@ public class JavacParser extends Parser {
                 cnih,
                 dcc,
                 cancelService,
-                aptUtils);
+                aptUtils,
+                compilerOptions);
     }
 
     private static enum ConfigFlags {
@@ -768,7 +777,8 @@ public class JavacParser extends Parser {
             @NullAllowed final ClassNamesForFileOraculum cnih,
             @NullAllowed final DuplicateClassChecker dcc,
             @NullAllowed final CancelService cancelService,
-            @NullAllowed final APTUtils aptUtils) {
+            @NullAllowed final APTUtils aptUtils,
+            @NullAllowed final CompilerOptionsQuery.Result compilerOptions) {
         final boolean backgroundCompilation = flags.contains(ConfigFlags.BACKGROUND_COMPILATION);
         final boolean multiSource = flags.contains(ConfigFlags.MULTI_SOURCE);
         final List<String> options = new ArrayList<>();
@@ -838,6 +848,11 @@ public class JavacParser extends Parser {
             }
         } else {
             options.add("-proc:none"); // NOI18N, Disable annotation processors
+        }
+        if (compilerOptions != null) {
+            for (String compilerOption : validateCompilerOptions(compilerOptions.getArguments())) {
+                options.add(compilerOption);
+            }
         }
 
         Context context = new Context();
@@ -961,6 +976,26 @@ public class JavacParser extends Parser {
         else {
             return sources[sources.length-1];
         }
+    }
+
+    @NonNull
+    public static List<? extends String> validateCompilerOptions(@NonNull final List<? extends String> options) {
+        final List<String> res = new ArrayList<>();
+        for (int i = 0; i < options.size(); i++) {
+            String option = options.get(i);
+            if (option.startsWith("-XaddExports:") ||   //NOI18N
+                option.startsWith("-Xmodule:") ||       //NOI18N
+                option.startsWith("-XaddReads:")) {     //NOI18N
+                res.add(option);
+            } else if (i+1 < options.size() && (
+                    option.equals("-addmods") ||
+                    option.equals("-limitmods"))) {         //NOI18N
+                res.add(option);
+                option = options.get(++i);
+                res.add(option);
+            }
+        }
+        return res;
     }
 
     private static boolean hasResource(

@@ -76,6 +76,7 @@ import javax.tools.StandardLocation;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.CompilerOptionsQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.TreeLoader;
@@ -184,7 +185,8 @@ final class MultiPassCompileWorker extends CompileWorker {
                                         return context.isCancelled() || (checkForMemLow && isLowMemory(null));
                                     }
                                 },
-                                active.aptGenerated ? null : APTUtils.get(context.getRoot()));
+                                active.aptGenerated ? null : APTUtils.get(context.getRoot()),
+                                CompilerOptionsQuery.getOptions(context.getRoot()));
                         Iterable<? extends Processor> processors = jt.getProcessors();
                         aptEnabled = processors != null && processors.iterator().hasNext();
                         if (JavaIndex.LOG.isLoggable(Level.FINER)) {

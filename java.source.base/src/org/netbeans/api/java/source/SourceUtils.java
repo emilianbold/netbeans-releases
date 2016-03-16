@@ -1622,6 +1622,7 @@ public class SourceUtils {
                         null,
                         null,
                         null,
+                        null,
                         null);
                 try {
                     final CompilationUnitTree cu =  jt.parse(FileObjects.fileObjectFileObject(

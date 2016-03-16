@@ -214,7 +214,7 @@ public class JavaBinaryIndexer extends BinaryIndexer {
             true,
             false,
             false);
-        final JavacTaskImpl jt = JavacParser.createJavacTask(cpInfo, new DevNullDiagnosticListener(), null, null, null, null, null, null);
+        final JavacTaskImpl jt = JavacParser.createJavacTask(cpInfo, new DevNullDiagnosticListener(), null, null, null, null, null, null, null);
         TreeLoader.preRegister(jt.getContext(), cpInfo, true);
         //Force JTImpl.prepareCompiler to get JTImpl into Context
         jt.enter();
