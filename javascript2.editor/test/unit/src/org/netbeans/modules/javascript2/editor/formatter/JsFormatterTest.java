@@ -1495,6 +1495,28 @@ public class JsFormatterTest extends JsTestBase {
     public void testArrow2Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/arrow2.js");
     }
+    
+    public void testArrow3Always() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapArrowOps, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/arrow3.js", options, ".wrapAlways.formatted");
+    }
+    
+    public void testArrow3Never() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapArrowOps, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatter/arrow3.js", options, ".wrapNever.formatted");
+    }
+    
+    public void testArrow3IfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapArrowOps, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatter/arrow3.js", options, ".wrapIfLong.formatted");
+    }
+
+    public void testArrow3Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/arrow3.js");
+    }
 
     public void testParentheses1Default() throws Exception {
         reformatFileContents("testfiles/formatter/parentheses1.js",
