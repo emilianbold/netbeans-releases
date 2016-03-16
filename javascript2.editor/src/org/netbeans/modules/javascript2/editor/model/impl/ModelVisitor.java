@@ -2477,6 +2477,34 @@ public class ModelVisitor extends PathNodeVisitor {
             while (bNode.rhs() instanceof BinaryNode ) {
                 bNode = (BinaryNode)bNode.rhs();
             }
+            if (bNode.rhs() instanceof FunctionNode) {
+                // this should handle cases like 
+                // var prom  = another.prom = function prom() {}
+                rNode = (FunctionNode) bNode.rhs();
+                List<Identifier> name = getNodeName(bNode.lhs(), parserResult);
+                if (name != null && !name.isEmpty()) {
+                    boolean isPriviliged = name.get(0).getName().equals(ModelUtils.THIS);
+                    JsObject parent =  isPriviliged ? resolveThis(modelBuilder.getCurrentObject()) : modelBuilder.getCurrentObject();
+                    for (int i = isPriviliged ? 1 : 0; parent != null && i < name.size(); i++) {
+                        parent = parent.getProperty(name.get(i).getName());
+                    }
+                    if (parent!= null && parent instanceof JsFunction) {
+                        IdentifierImpl propertyName = create(parserResult, varNode.getName());
+                        Set<Modifier> modifiers;
+                        if (isPriviliged) {
+                            modifiers = Collections.singleton(Modifier.PROTECTED);
+                        } else if (modelBuilder.getCurrentDeclarationFunction().getJSKind() == JsElement.Kind.FILE) {
+                            modifiers = Collections.singleton(Modifier.PUBLIC);
+                        } else {
+                            modifiers = Collections.singleton(Modifier.PRIVATE);
+                        }
+                        JsObject property = new JsFunctionReference(modelBuilder.getCurrentObject(), propertyName, (JsFunction)parent, true, modifiers);
+                        modelBuilder.getCurrentObject().addProperty(propertyName.getName(), property);
+                        property.addOccurrence(propertyName.getOffsetRange());
+                    }
+                }
+
+            }
 //            if (bNode.rhs() instanceof ReferenceNode /*&& bNode.tokenType() == TokenType.ASSIGN*/) {
 //                 init = (ReferenceNode) bNode.rhs();
 //            }
@@ -2856,6 +2884,10 @@ public class ModelVisitor extends PathNodeVisitor {
             return getName((VarNode) node, parserResult);
         } else if (node instanceof PropertyNode) {
             return getName((PropertyNode) node, parserResult);
+        } else if (node instanceof IdentNode) {
+            IdentNode ident = ((IdentNode) node);
+            return Arrays.<Identifier>asList(new IdentifierImpl(
+                    ident.getName(), getOffsetRange(ident)));
         } else if (node instanceof FunctionNode) {
             if (((FunctionNode) node).getKind() == FunctionNode.Kind.SCRIPT) {
                 return Collections.<Identifier>emptyList();
