@@ -1285,6 +1285,8 @@ public class JsFormatter implements Formatter {
                 return codeStyle.wrapBinaryOps;
             case AFTER_ASSIGNMENT_OPERATOR_WRAP:
                 return codeStyle.wrapAssignOps;
+            case AFTER_ARROW_OPERATOR_WRAP:
+                return codeStyle.wrapArrowOps;
             case AFTER_TERNARY_OPERATOR_WRAP:
                 if (codeStyle.wrapAfterTernaryOps) {
                     return codeStyle.wrapTernaryOps;
@@ -1402,6 +1404,10 @@ public class JsFormatter implements Formatter {
                 return codeStyle.spaceAroundAssignOps;
             case AFTER_ASSIGNMENT_OPERATOR:
                 return codeStyle.spaceAroundAssignOps;
+            case BEFORE_ARROW_OPERATOR:
+                return codeStyle.spaceAroundArrowOps;
+            case AFTER_ARROW_OPERATOR:
+                return codeStyle.spaceAroundArrowOps;
             case BEFORE_PROPERTY_OPERATOR:
                 return codeStyle.spaceBeforeColon;
             case AFTER_PROPERTY_OPERATOR:

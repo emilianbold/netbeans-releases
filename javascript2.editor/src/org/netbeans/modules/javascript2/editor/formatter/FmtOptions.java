@@ -151,6 +151,7 @@ public class FmtOptions {
     public static final String spaceAroundTernaryOps = "spaceAroundTernaryOps"; //NOI18N
     public static final String spaceAroundStringConcatOps = "spaceAroundStringConcatOps"; //NOI18N
     public static final String spaceAroundAssignOps = "spaceAroundAssignOps"; //NOI18N
+    public static final String spaceAroundArrowOps = "spaceAroundArrowOps"; //NOI18N
     public static final String spaceAroundKeyValueOps = "spaceAroundKeyValueOps"; //NOI18N
     public static final String spaceAroundObjectOps = "spaceAroundObjectOps"; //NOI18N
     public static final String spaceBeforeClassDeclLeftBrace = "spaceBeforeClassDeclLeftBrace"; //NOI18N
@@ -226,6 +227,7 @@ public class FmtOptions {
     public static final String wrapTernaryOps = "wrapTernaryOps"; //NOI18N
     public static final String wrapAfterTernaryOps = "wrapAfterTernaryOps"; //NOI18N
     public static final String wrapAssignOps = "wrapAssignOps"; //NOI18N
+    public static final String wrapArrowOps = "wrapArrowOps"; //NOI18N
     public static final String wrapBlockBraces = "wrapBlockBraces";  //NOI18N
     public static final String wrapStatementsOnTheLine = "wrapStateMentsOnTheLine"; // NOI18N
     public static final String wrapObjects = "wrapObjects"; // NOI18N
@@ -334,6 +336,7 @@ public class FmtOptions {
 	    { spaceAroundStringConcatOps, TRUE},
 	    { spaceAroundKeyValueOps, TRUE},
             { spaceAroundAssignOps, TRUE},
+            { spaceAroundArrowOps, TRUE},
 	    { spaceAroundObjectOps, FALSE},
             { spaceBeforeClassDeclLeftBrace, TRUE},
             { spaceBeforeMethodDeclLeftBrace, TRUE},
@@ -408,6 +411,7 @@ public class FmtOptions {
             { wrapTernaryOps, WRAP_NEVER},
             { wrapAfterTernaryOps, FALSE}, //NOI18N
             { wrapAssignOps, WRAP_NEVER},
+            { wrapArrowOps, WRAP_NEVER},
             { wrapBlockBraces, TRUE},
             { wrapStatementsOnTheLine, TRUE},
             { wrapObjects, WRAP_NEVER},

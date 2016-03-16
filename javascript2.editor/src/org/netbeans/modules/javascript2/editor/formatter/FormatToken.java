@@ -426,6 +426,16 @@ public final class FormatToken {
                 return false;
             }
         },
+        AFTER_ARROW_OPERATOR_WRAP {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
         BEFORE_TERNARY_OPERATOR_WRAP {
             @Override
             public boolean isLineWrapMarker() {
@@ -569,6 +579,10 @@ public final class FormatToken {
         // around assignment operator
         BEFORE_ASSIGNMENT_OPERATOR,
         AFTER_ASSIGNMENT_OPERATOR,
+        
+        // around arrow operator
+        BEFORE_ARROW_OPERATOR,
+        AFTER_ARROW_OPERATOR,
 
         // around property
         BEFORE_PROPERTY_OPERATOR,

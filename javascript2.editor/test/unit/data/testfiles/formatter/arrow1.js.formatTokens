@@ -18,7 +18,10 @@ FormatToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null, id=null}
 FormatToken{kind=BEFORE_FUNCTION_DECLARATION_PARAMETER, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=18, text=v, id=IDENTIFIER}
 FormatToken{kind=WHITESPACE, offset=19, text= , id=WHITESPACE}
+FormatToken{kind=BEFORE_ARROW_OPERATOR, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=20, text==>, id=OPERATOR_ARROW}
+FormatToken{kind=AFTER_ARROW_OPERATOR, offset=-1, text=null, id=null}
+FormatToken{kind=AFTER_ARROW_OPERATOR_WRAP, offset=-1, text=null, id=null}
 FormatToken{kind=WHITESPACE, offset=22, text= , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=23, text=v, id=IDENTIFIER}
 FormatToken{kind=WHITESPACE, offset=24, text= , id=WHITESPACE}
@@ -53,7 +56,10 @@ FormatToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null, id=null}
 FormatToken{kind=BEFORE_FUNCTION_DECLARATION_PARAMETER, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=48, text=v, id=IDENTIFIER}
 FormatToken{kind=WHITESPACE, offset=49, text= , id=WHITESPACE}
+FormatToken{kind=BEFORE_ARROW_OPERATOR, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=50, text==>, id=OPERATOR_ARROW}
+FormatToken{kind=AFTER_ARROW_OPERATOR, offset=-1, text=null, id=null}
+FormatToken{kind=AFTER_ARROW_OPERATOR_WRAP, offset=-1, text=null, id=null}
 FormatToken{kind=WHITESPACE, offset=52, text= , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=53, text=(, id=BRACKET_LEFT_PAREN}
 FormatToken{kind=AFTER_LEFT_PARENTHESIS, offset=-1, text=null, id=null}
@@ -116,7 +122,10 @@ FormatToken{kind=TEXT, offset=101, text=i, id=IDENTIFIER}
 FormatToken{kind=BEFORE_FUNCTION_DECLARATION_PARENTHESIS, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=102, text=), id=BRACKET_RIGHT_PAREN}
 FormatToken{kind=WHITESPACE, offset=103, text= , id=WHITESPACE}
+FormatToken{kind=BEFORE_ARROW_OPERATOR, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=104, text==>, id=OPERATOR_ARROW}
+FormatToken{kind=AFTER_ARROW_OPERATOR, offset=-1, text=null, id=null}
+FormatToken{kind=AFTER_ARROW_OPERATOR_WRAP, offset=-1, text=null, id=null}
 FormatToken{kind=WHITESPACE, offset=106, text= , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=107, text=v, id=IDENTIFIER}
 FormatToken{kind=WHITESPACE, offset=108, text= , id=WHITESPACE}

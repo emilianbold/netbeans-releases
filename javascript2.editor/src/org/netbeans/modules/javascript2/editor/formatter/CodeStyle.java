@@ -342,6 +342,10 @@ public final class CodeStyle {
     public boolean spaceAroundAssignOps() {
         return preferences.getBoolean(spaceAroundAssignOps, provider.getDefaultAsBoolean(spaceAroundAssignOps));
     }
+    
+    public boolean spaceAroundArrowOps() {
+        return preferences.getBoolean(spaceAroundArrowOps, provider.getDefaultAsBoolean(spaceAroundArrowOps));
+    }
 
     public boolean spaceAroundObjectOps() {
         return preferences.getBoolean(spaceAroundObjectOps, provider.getDefaultAsBoolean(spaceAroundObjectOps));
@@ -621,6 +625,11 @@ public final class CodeStyle {
         String wrap = preferences.get(wrapAssignOps, provider.getDefaultAsString(wrapAssignOps));
         return WrapStyle.valueOf(wrap);
     }
+    
+    public WrapStyle wrapArrowOps() {
+        String wrap = preferences.get(wrapArrowOps, provider.getDefaultAsString(wrapArrowOps));
+        return WrapStyle.valueOf(wrap);
+    }
 
     public boolean wrapAfterTernaryOps() {
         return preferences.getBoolean(wrapAfterTernaryOps, provider.getDefaultAsBoolean(wrapAfterTernaryOps));
@@ -761,6 +770,8 @@ public final class CodeStyle {
         final boolean spaceAroundKeyValueOps;
 
         final boolean spaceAroundAssignOps;
+        
+        final boolean spaceAroundArrowOps;
 
         final boolean spaceAroundObjectOps;
 
@@ -861,6 +872,8 @@ public final class CodeStyle {
         final CodeStyle.WrapStyle wrapTernaryOps;
 
         final CodeStyle.WrapStyle wrapAssignOps;
+        
+        final CodeStyle.WrapStyle wrapArrowOps;
 
         final boolean wrapAfterTernaryOps;
 
@@ -923,6 +936,7 @@ public final class CodeStyle {
             spaceAroundTernaryOps = style.spaceAroundTernaryOps();
             spaceAroundKeyValueOps = style.spaceAroundKeyValueOps();
             spaceAroundAssignOps = style.spaceAroundAssignOps();
+            spaceAroundArrowOps = style.spaceAroundArrowOps();
             spaceAroundObjectOps = style.spaceAroundObjectOps();
             spaceBeforeClassDeclLeftBrace = style.spaceBeforeClassDeclLeftBrace();
             spaceBeforeMethodDeclLeftBrace = style.spaceBeforeMethodDeclLeftBrace();
@@ -974,6 +988,7 @@ public final class CodeStyle {
             wrapAfterBinaryOps = style.wrapAfterBinaryOps();
             wrapTernaryOps = style.wrapTernaryOps();
             wrapAssignOps = style.wrapAssignOps();
+            wrapArrowOps = style.wrapArrowOps();
             wrapAfterTernaryOps = style.wrapAfterTernaryOps();
             wrapBlockBrace = style.wrapBlockBrace();
             wrapStatementsOnTheSameLine = style.wrapStatementsOnTheSameLine();
