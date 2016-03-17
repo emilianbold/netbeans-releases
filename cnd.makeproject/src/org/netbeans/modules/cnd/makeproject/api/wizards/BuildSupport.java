@@ -54,6 +54,7 @@ import org.openide.util.Lookup;
  */
 public class BuildSupport {
     public static final String MAKE_MACRO = "${MAKE}"; //NOI18N
+    public static final String MAKEFLAGS_MACRO = "${MAKEFLAGS}"; //NOI18N
     public interface BuildFile {
         public String getFile();
         public String getCleanCommandLine(String arguments, String workingDir);

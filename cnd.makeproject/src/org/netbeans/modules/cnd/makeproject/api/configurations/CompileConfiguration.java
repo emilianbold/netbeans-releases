@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.ComboStringNodeProp;
+import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
@@ -58,7 +59,7 @@ public class CompileConfiguration implements Cloneable {
     private final DefaultPicklistModel compileCommandPicklist;
     public static final String AUTO_FOLDER = "${AUTO_FOLDER}"; // NOI18N
     public static final String AUTO_COMPILE = "${AUTO_COMPILE}"; // NOI18N
-    public static final String AUTO_MAKE = "${MAKE}"; // NOI18N
+    public static final String AUTO_MAKE = BuildSupport.MAKE_MACRO;
     public static final String AUTO_ITEM_PATH = "${ITEM_PATH}"; // NOI18N
     public static final String AUTO_ITEM_NAME = "${ITEM_NAME}"; // NOI18N
 
@@ -72,7 +73,7 @@ public class CompileConfiguration implements Cloneable {
         
         compileCommandPicklist = new DefaultPicklistModel(10);
         compileCommandPicklist.addElement(AUTO_COMPILE);
-        compileCommandPicklist.addElement("${MAKE} ${ITEM_NAME}.o"); // NOI18N
+        compileCommandPicklist.addElement(AUTO_MAKE+" "+AUTO_ITEM_NAME+".o"); // NOI18N
         compileCommand = new ComboStringConfiguration(null, AUTO_COMPILE, compileCommandPicklist); // NOI18N
     }
     
