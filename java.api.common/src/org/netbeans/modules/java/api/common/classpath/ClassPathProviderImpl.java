@@ -126,8 +126,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     private final ClassPath[/*@GuardedBy("this")*/] cache = new ClassPath[18];
     private final Map</*@GuardedBy("this")*/String,FileObject> dirCache = new HashMap<>();
 
-    //@GuardedBy("this")
-    private MuxClassPathImplementation.Selector selector;
 
     public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sourceRoots,
                                  SourceRoots testSourceRoots) {
@@ -660,12 +658,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                     type == 0 ? sourceRoots : testSourceRoots,
                     getModuleBootPath(),
                     getJava8ClassPath(type)));
-            cp = ClassPathFactory.createClassPath(new MuxClassPathImplementation(
-                new ClassPath[]{
-                    getJava8ClassPath(type),
-                    modules
-                },
-                getSourceLevelSelector()));
+            cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
+                    createSourceLevelSelector(getJava8ClassPath(type), modules));
             cache[2+type] = cp;
         }
         return cp;
@@ -797,12 +791,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 final ClassPath moduleSytemPath = ClassPathFactory.createClassPath(ModuleClassPaths.createModuleInfoBasedPath(
                     getModuleBootPath(),
                     sourceRoots));
-                cp = ClassPathFactory.createClassPath(new MuxClassPathImplementation(
-                    new ClassPath[] {
-                        cp,
-                        moduleSytemPath
-                    },
-                    getSourceLevelSelector()));
+                cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
+                        createSourceLevelSelector(cp,moduleSytemPath));
             } else {
                 assert platform.hasSecond();
                 cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath(
@@ -831,12 +821,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 final ClassPath moduleSytemPath = ClassPathFactory.createClassPath(ModuleClassPaths.createPlatformModulePath(
                     evaluator,
                     platform.first()));
-                cp = ClassPathFactory.createClassPath(new MuxClassPathImplementation(
-                    new ClassPath[]{
-                        cp,
-                        moduleSytemPath
-                    },
-                    getSourceLevelSelector()));
+                cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
+                        createSourceLevelSelector(cp, moduleSytemPath));
             } else {
                 cp = ClassPath.EMPTY;
             }
@@ -863,12 +849,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                     projectDirectory,
                     evaluator,
                     type == 0 ? modulePath : testModulePath));
-            cp = ClassPathFactory.createClassPath(new MuxClassPathImplementation(
-                new ClassPath[] {
-                    ClassPath.EMPTY,
-                    modules
-                },
-                getSourceLevelSelector()));
+            cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
+                    createSourceLevelSelector(ClassPath.EMPTY, modules));
             cache[12+type] = cp;
         }
         return cp;
@@ -888,12 +870,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         assert type >=0 && type <=1;
         ClassPath cp = cache[14+type];
         if (cp == null) {
-            cp = ClassPathFactory.createClassPath(new MuxClassPathImplementation(
-                new ClassPath[]{
-                    ClassPath.EMPTY,
-                    getJava8ClassPath(type),
-                },
-                getSourceLevelSelector()));
+            cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(
+                    createSourceLevelSelector(ClassPath.EMPTY, getJava8ClassPath(type)));
             cache[14+type] = cp;
         }
         return cp;
@@ -912,6 +890,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         return cp;
     }
 
+    @Override
     public ClassPath findClassPath(FileObject file, String type) {
         if (type.equals(ClassPath.COMPILE)) {
             return getCompileTimeClasspath(file);
@@ -1112,45 +1091,58 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     }
 
     @NonNull
-    private synchronized MuxClassPathImplementation.Selector getSourceLevelSelector() {
-        if (selector == null) {
-            selector = new SourceLevelSelector(evaluator, javacSource);
-        }
-        return selector;
+    private org.netbeans.spi.java.classpath.support.ClassPathSupport.Selector createSourceLevelSelector(
+            @NonNull final ClassPath preJdk9,
+            @NonNull final ClassPath jdk9) {
+        return new SourceLevelSelector(
+                evaluator,
+                javacSource,
+                new ClassPath[] {preJdk9, jdk9});
     }
 
-    private static final class SourceLevelSelector implements MuxClassPathImplementation.Selector, PropertyChangeListener {
+    private static final class SourceLevelSelector implements org.netbeans.spi.java.classpath.support.ClassPathSupport.Selector, PropertyChangeListener {
 
         private static final SpecificationVersion JDK9 = new SpecificationVersion("1.9");   //NOI18N
 
         private final PropertyEvaluator eval;
         private final String sourceLevelPropName;
+        private final ClassPath[] cps;
         private final PropertyChangeSupport listeners;
-        private volatile int active;
+        private volatile ClassPath active;
 
 
         SourceLevelSelector(
                 @NonNull final PropertyEvaluator eval,
-                @NonNull final String sourceLevelPropName) {
+                @NonNull final String sourceLevelPropName,
+                @NonNull final ClassPath[] classpaths) {
             Parameters.notNull("eval", eval);   //NOI18N
             Parameters.notNull("sourceLevelPropName", sourceLevelPropName); //NOI18N
+            Parameters.notNull("classpaths", classpaths); //NOI18N
+            if (classpaths.length != 2) {
+                throw new IllegalArgumentException("Invalid classpaths: " + Arrays.toString(classpaths));  //NOI18N
+            }
+            for (ClassPath cp : classpaths) {
+                if (cp == null) {
+                    throw new NullPointerException("Classpaths contain null: " + Arrays.toString(classpaths));  //NOI18N
+                }
+            }
             this.eval = eval;
             this.sourceLevelPropName = sourceLevelPropName;
-            this.active = -1;
+            this.cps = classpaths;
             this.listeners = new PropertyChangeSupport(this);
             this.eval.addPropertyChangeListener(WeakListeners.propertyChange(this, this.eval));
         }
 
         @Override
-        public int getActiveIndex() {
-            int res = active;
-            if (res == -1) {
-                res = 0;
+        public ClassPath getActiveClassPath() {
+            ClassPath res = active;
+            if (res == null) {
+                res = cps[0];
                 final String sl = eval.getProperty(this.sourceLevelPropName);
                 if (sl != null) {
                     try {
                         if (JDK9.compareTo(new SpecificationVersion(sl)) <= 0) {
-                            res = 1;
+                            res = cps[1];
                         }
                     } catch (NumberFormatException e) {
                         //pass
@@ -1177,8 +1169,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         public void propertyChange(@NonNull final PropertyChangeEvent evt) {
             final String propName = evt.getPropertyName();
             if (propName == null || sourceLevelPropName.equals(propName)) {
-                this.active = -1;
-                this.listeners.firePropertyChange(PROP_ACTIVE_INDEX, null, null);
+                this.active = null;
+                this.listeners.firePropertyChange(PROP_ACTIVE_CLASS_PATH, null, null);
             }
         }
     }
