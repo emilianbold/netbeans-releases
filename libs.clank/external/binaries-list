@@ -1,7 +1,6 @@
-#changeset:   17024:81525eeefdc5
+#changeset:   17078:4910544dde05
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Sat Mar 12 12:38:50 2016 +0300
-#summary:     fixed #258316: ArrayIndexOutOfBoundsException: -2
-83DB4623F3B6A93E0B36BC341C3C1B926749ED67 clank_0.3.6.zip
-
+#date:        Thu Mar 17 09:09:05 2016 +0300
+#summary:     PERF: experiment with turned ON PTH
+23CCF348F17C973B68D62AAB72BCEF99A758F11A clank_0.3.6.zip
