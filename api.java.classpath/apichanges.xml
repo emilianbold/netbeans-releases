@@ -76,6 +76,21 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="MultiplexClassPath">
+            <api name="classpath"/>
+            <summary>Added a <code>ClassPath</code> switching among several <code>ClassPath</code> instances</summary>
+            <version major="1" minor="53"/>
+            <date day="17" month="3" year="2016"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes" modification="no" semantic="compatible" source="compatible" binary="compatible"/>
+            <description>
+                <p>
+                    Added a factory method into <code>ClassPathSupport</code> creating a <code>ClassPath</code>
+                    switching among several <code>ClassPath</code> instances.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.java.classpath.support" name="ClassPathSupport"/>
+        </change>
         <change id="PathEmbeddingMode">
             <api name="classpath"/>
             <summary>Added a policy for handling in archive paths</summary>
