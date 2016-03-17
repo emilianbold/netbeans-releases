@@ -1956,4 +1956,11 @@ public class Css3ParserScssTest extends CssTestBase {
     public void testSassMapWithNumbers() {
         assertParses("$twoToTheN: (0: 1, 1: 2, 2: 4, 3: 8, 4: 16, 5: 32);");
     }
+    
+    public void testStringEscapesInInterpolation() {
+        assertParses("@function oj-prepend-slash($char)\n"
+                + "{\n"
+                + "  @return #{\"\\\"\\\\\"}#{$char + \"\\\"\"};\n"
+                + "}");
+    }
 }
