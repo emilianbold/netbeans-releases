@@ -1,4 +1,4 @@
-// $ANTLR 3.5.2 /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2016-02-26 12:51:48
+// $ANTLR 3.5.2 /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2016-03-17 13:14:43
 
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -6337,7 +6337,7 @@ public class Css3Lexer extends Lexer {
 		try {
 			int _type = STRING;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1729:17: ( '\\'' (~ ( '\\r' | '\\f' | '\\'' ) )* ( '\\'' |) | '\"' ( ( ( '\\\\' '\\\"' )=> '\\\\' '\\\"' ) |~ ( '\\r' | '\\f' | '\"' ) )* ( '\"' |) )
+			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1729:17: ( '\\'' (~ ( '\\r' | '\\f' | '\\'' ) )* ( '\\'' |) | '\"' ( ( '\\\\\\\"' )=> '\\\\\\\"' | ( '\\\\\\\\' )=> '\\\\\\\\' |~ ( '\\r' | '\\f' | '\"' ) )* ( '\"' |) )
 			int alt171=2;
 			int LA171_0 = input.LA(1);
 			if ( (LA171_0=='\'') ) {
@@ -6420,50 +6420,66 @@ public class Css3Lexer extends Lexer {
 					}
 					break;
 				case 2 :
-					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1735:19: '\"' ( ( ( '\\\\' '\\\"' )=> '\\\\' '\\\"' ) |~ ( '\\r' | '\\f' | '\"' ) )* ( '\"' |)
+					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1735:19: '\"' ( ( '\\\\\\\"' )=> '\\\\\\\"' | ( '\\\\\\\\' )=> '\\\\\\\\' |~ ( '\\r' | '\\f' | '\"' ) )* ( '\"' |)
 					{
 					match('\"'); if (state.failed) return;
-					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1735:23: ( ( ( '\\\\' '\\\"' )=> '\\\\' '\\\"' ) |~ ( '\\r' | '\\f' | '\"' ) )*
+					// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1735:24: ( ( '\\\\\\\"' )=> '\\\\\\\"' | ( '\\\\\\\\' )=> '\\\\\\\\' |~ ( '\\r' | '\\f' | '\"' ) )*
 					loop169:
 					while (true) {
-						int alt169=3;
+						int alt169=4;
 						int LA169_0 = input.LA(1);
 						if ( (LA169_0=='\\') ) {
-							int LA169_2 = input.LA(2);
-							if ( (LA169_2=='\"') ) {
+							switch ( input.LA(2) ) {
+							case '\"':
+								{
 								int LA169_4 = input.LA(3);
 								if ( (synpred1_Css3()) ) {
 									alt169=1;
 								}
 								else if ( (true) ) {
-									alt169=2;
+									alt169=3;
 								}
 
-							}
-							else {
-								alt169=2;
-							}
+								}
+								break;
+							case '\\':
+								{
+								int LA169_5 = input.LA(3);
+								if ( (synpred2_Css3()) ) {
+									alt169=2;
+								}
+								else if ( (true) ) {
+									alt169=3;
+								}
 
+								}
+								break;
+							default:
+								alt169=3;
+								break;
+							}
 						}
 						else if ( ((LA169_0 >= '\u0000' && LA169_0 <= '\u000B')||(LA169_0 >= '\u000E' && LA169_0 <= '!')||(LA169_0 >= '#' && LA169_0 <= '[')||(LA169_0 >= ']' && LA169_0 <= '\uFFFF')) ) {
-							alt169=2;
+							alt169=3;
 						}
 
 						switch (alt169) {
 						case 1 :
-							// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1735:25: ( ( '\\\\' '\\\"' )=> '\\\\' '\\\"' )
+							// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1735:26: ( '\\\\\\\"' )=> '\\\\\\\"'
 							{
-							// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1735:25: ( ( '\\\\' '\\\"' )=> '\\\\' '\\\"' )
-							// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1735:26: ( '\\\\' '\\\"' )=> '\\\\' '\\\"'
-							{
-							match('\\'); if (state.failed) return;
-							match('\"'); if (state.failed) return;
-							}
+							match("\\\""); if (state.failed) return;
 
 							}
 							break;
 						case 2 :
-							// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1735:54: ~ ( '\\r' | '\\f' | '\"' )
+							// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1735:47: ( '\\\\\\\\' )=> '\\\\\\\\'
+							{
+							match("\\\\"); if (state.failed) return;
+
+							}
+							break;
+						case 3 :
+							// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1735:68: ~ ( '\\r' | '\\f' | '\"' )
 							{
 							if ( (input.LA(1) >= '\u0000' && input.LA(1) <= '\u000B')||(input.LA(1) >= '\u000E' && input.LA(1) <= '!')||(input.LA(1) >= '#' && input.LA(1) <= '\uFFFF') ) {
 								input.consume();
@@ -9710,7 +9726,7 @@ public class Css3Lexer extends Lexer {
 			int LA193_0 = input.LA(1);
 			if ( (LA193_0=='\t'||LA193_0==' ') ) {
 				int LA193_1 = input.LA(2);
-				if ( (synpred12_Css3()) ) {
+				if ( (synpred13_Css3()) ) {
 					alt193=1;
 				}
 			}
@@ -9804,7 +9820,7 @@ public class Css3Lexer extends Lexer {
 			int LA196_0 = input.LA(1);
 			if ( (LA196_0=='\t'||LA196_0==' ') ) {
 				int LA196_1 = input.LA(2);
-				if ( (synpred13_Css3()) ) {
+				if ( (synpred14_Css3()) ) {
 					alt196=1;
 				}
 			}
@@ -9898,7 +9914,7 @@ public class Css3Lexer extends Lexer {
 			int LA199_0 = input.LA(1);
 			if ( (LA199_0=='\t'||LA199_0==' ') ) {
 				int LA199_1 = input.LA(2);
-				if ( (synpred14_Css3()) ) {
+				if ( (synpred15_Css3()) ) {
 					alt199=1;
 				}
 			}
@@ -9990,7 +10006,7 @@ public class Css3Lexer extends Lexer {
 			// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1935:13: ( ( WS )=> WS )?
 			int alt202=2;
 			int LA202_0 = input.LA(1);
-			if ( (LA202_0=='\t'||LA202_0==' ') && (synpred15_Css3())) {
+			if ( (LA202_0=='\t'||LA202_0==' ') && (synpred16_Css3())) {
 				alt202=1;
 			}
 			switch (alt202) {
@@ -10984,11 +11000,11 @@ public class Css3Lexer extends Lexer {
 
 	// $ANTLR start synpred1_Css3
 	public final void synpred1_Css3_fragment() throws RecognitionException {
-		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1735:26: ( '\\\\' '\\\"' )
-		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1735:28: '\\\\' '\\\"'
+		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1735:26: ( '\\\\\\\"' )
+		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1735:27: '\\\\\\\"'
 		{
-		match('\\'); if (state.failed) return;
-		match('\"'); if (state.failed) return;
+		match("\\\""); if (state.failed) return;
+
 		}
 
 	}
@@ -10996,6 +11012,18 @@ public class Css3Lexer extends Lexer {
 
 	// $ANTLR start synpred2_Css3
 	public final void synpred2_Css3_fragment() throws RecognitionException {
+		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1735:47: ( '\\\\\\\\' )
+		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1735:48: '\\\\\\\\'
+		{
+		match("\\\\"); if (state.failed) return;
+
+		}
+
+	}
+	// $ANTLR end synpred2_Css3
+
+	// $ANTLR start synpred3_Css3
+	public final void synpred3_Css3_fragment() throws RecognitionException {
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1849:15: ( D P ( I | C ) )
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1849:16: D P ( I | C )
 		{
@@ -11274,10 +11302,10 @@ public class Css3Lexer extends Lexer {
 		}
 
 	}
-	// $ANTLR end synpred2_Css3
+	// $ANTLR end synpred3_Css3
 
-	// $ANTLR start synpred3_Css3
-	public final void synpred3_Css3_fragment() throws RecognitionException {
+	// $ANTLR start synpred4_Css3
+	public final void synpred4_Css3_fragment() throws RecognitionException {
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1856:15: ( E ( M | X ) )
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1856:16: E ( M | X )
 		{
@@ -11478,10 +11506,10 @@ public class Css3Lexer extends Lexer {
 		}
 
 	}
-	// $ANTLR end synpred3_Css3
+	// $ANTLR end synpred4_Css3
 
-	// $ANTLR start synpred4_Css3
-	public final void synpred4_Css3_fragment() throws RecognitionException {
+	// $ANTLR start synpred5_Css3
+	public final void synpred5_Css3_fragment() throws RecognitionException {
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1862:15: ( P ( X | T | C ) )
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1862:16: P ( X | T | C )
 		{
@@ -11813,10 +11841,10 @@ public class Css3Lexer extends Lexer {
 		}
 
 	}
-	// $ANTLR end synpred4_Css3
+	// $ANTLR end synpred5_Css3
 
-	// $ANTLR start synpred5_Css3
-	public final void synpred5_Css3_fragment() throws RecognitionException {
+	// $ANTLR start synpred6_Css3
+	public final void synpred6_Css3_fragment() throws RecognitionException {
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1870:15: ( C M )
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1870:16: C M
 		{
@@ -11827,10 +11855,10 @@ public class Css3Lexer extends Lexer {
 		}
 
 	}
-	// $ANTLR end synpred5_Css3
+	// $ANTLR end synpred6_Css3
 
-	// $ANTLR start synpred6_Css3
-	public final void synpred6_Css3_fragment() throws RecognitionException {
+	// $ANTLR start synpred7_Css3
+	public final void synpred7_Css3_fragment() throws RecognitionException {
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1872:15: ( M ( M | S ) )
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1872:16: M ( M | S )
 		{
@@ -12031,10 +12059,10 @@ public class Css3Lexer extends Lexer {
 		}
 
 	}
-	// $ANTLR end synpred6_Css3
+	// $ANTLR end synpred7_Css3
 
-	// $ANTLR start synpred7_Css3
-	public final void synpred7_Css3_fragment() throws RecognitionException {
+	// $ANTLR start synpred8_Css3
+	public final void synpred8_Css3_fragment() throws RecognitionException {
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1879:15: ( I N )
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1879:16: I N
 		{
@@ -12045,10 +12073,10 @@ public class Css3Lexer extends Lexer {
 		}
 
 	}
-	// $ANTLR end synpred7_Css3
+	// $ANTLR end synpred8_Css3
 
-	// $ANTLR start synpred8_Css3
-	public final void synpred8_Css3_fragment() throws RecognitionException {
+	// $ANTLR start synpred9_Css3
+	public final void synpred9_Css3_fragment() throws RecognitionException {
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1882:15: ( D E G )
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1882:16: D E G
 		{
@@ -12061,10 +12089,10 @@ public class Css3Lexer extends Lexer {
 		}
 
 	}
-	// $ANTLR end synpred8_Css3
+	// $ANTLR end synpred9_Css3
 
-	// $ANTLR start synpred9_Css3
-	public final void synpred9_Css3_fragment() throws RecognitionException {
+	// $ANTLR start synpred10_Css3
+	public final void synpred10_Css3_fragment() throws RecognitionException {
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1887:15: ( R ( A | E ) )
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1887:16: R ( A | E )
 		{
@@ -12332,10 +12360,10 @@ public class Css3Lexer extends Lexer {
 		}
 
 	}
-	// $ANTLR end synpred9_Css3
+	// $ANTLR end synpred10_Css3
 
-	// $ANTLR start synpred10_Css3
-	public final void synpred10_Css3_fragment() throws RecognitionException {
+	// $ANTLR start synpred11_Css3
+	public final void synpred11_Css3_fragment() throws RecognitionException {
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1894:15: ( S )
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1894:16: S
 		{
@@ -12344,10 +12372,10 @@ public class Css3Lexer extends Lexer {
 		}
 
 	}
-	// $ANTLR end synpred10_Css3
+	// $ANTLR end synpred11_Css3
 
-	// $ANTLR start synpred11_Css3
-	public final void synpred11_Css3_fragment() throws RecognitionException {
+	// $ANTLR start synpred12_Css3
+	public final void synpred12_Css3_fragment() throws RecognitionException {
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1896:15: ( ( K )? H Z )
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1896:16: ( K )? H Z
 		{
@@ -12432,24 +12460,12 @@ public class Css3Lexer extends Lexer {
 		}
 
 	}
-	// $ANTLR end synpred11_Css3
-
-	// $ANTLR start synpred12_Css3
-	public final void synpred12_Css3_fragment() throws RecognitionException {
-		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1912:14: ( WS )
-		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1912:15: WS
-		{
-		mWS(); if (state.failed) return;
-
-		}
-
-	}
 	// $ANTLR end synpred12_Css3
 
 	// $ANTLR start synpred13_Css3
 	public final void synpred13_Css3_fragment() throws RecognitionException {
-		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1919:14: ( WS )
-		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1919:15: WS
+		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1912:14: ( WS )
+		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1912:15: WS
 		{
 		mWS(); if (state.failed) return;
 
@@ -12460,8 +12476,8 @@ public class Css3Lexer extends Lexer {
 
 	// $ANTLR start synpred14_Css3
 	public final void synpred14_Css3_fragment() throws RecognitionException {
-		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1927:14: ( WS )
-		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1927:15: WS
+		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1919:14: ( WS )
+		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1919:15: WS
 		{
 		mWS(); if (state.failed) return;
 
@@ -12472,6 +12488,18 @@ public class Css3Lexer extends Lexer {
 
 	// $ANTLR start synpred15_Css3
 	public final void synpred15_Css3_fragment() throws RecognitionException {
+		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1927:14: ( WS )
+		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1927:15: WS
+		{
+		mWS(); if (state.failed) return;
+
+		}
+
+	}
+	// $ANTLR end synpred15_Css3
+
+	// $ANTLR start synpred16_Css3
+	public final void synpred16_Css3_fragment() throws RecognitionException {
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1935:14: ( WS )
 		// /home/mito/nb/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:1935:15: WS
 		{
@@ -12480,7 +12508,7 @@ public class Css3Lexer extends Lexer {
 		}
 
 	}
-	// $ANTLR end synpred15_Css3
+	// $ANTLR end synpred16_Css3
 
 	public final boolean synpred11_Css3() {
 		state.backtracking++;
@@ -12585,6 +12613,20 @@ public class Css3Lexer extends Lexer {
 		int start = input.mark();
 		try {
 			synpred7_Css3_fragment(); // can never throw exception
+		} catch (RecognitionException re) {
+			System.err.println("impossible: "+re);
+		}
+		boolean success = !state.failed;
+		input.rewind(start);
+		state.backtracking--;
+		state.failed=false;
+		return success;
+	}
+	public final boolean synpred16_Css3() {
+		state.backtracking++;
+		int start = input.mark();
+		try {
+			synpred16_Css3_fragment(); // can never throw exception
 		} catch (RecognitionException re) {
 			System.err.println("impossible: "+re);
 		}
@@ -12794,71 +12836,71 @@ public class Css3Lexer extends Lexer {
 		"\1\3\7\uffff\1\4\4\uffff\1\5\7\uffff\1\6\30\uffff\1\12\4\uffff\1\1\22"+
 		"\uffff\1\7\113\uffff\1\10\u020c\uffff";
 	static final String DFA192_specialS =
-		"\2\uffff\1\u01b3\6\uffff\1\117\12\uffff\1\120\5\uffff\1\u01f3\16\uffff"+
-		"\1\126\1\127\4\uffff\1\u00a1\1\u016f\1\u0160\1\u00a8\1\u0168\1\u0196\1"+
-		"\u0159\1\u011c\1\u01e6\1\u019e\1\u0125\1\u01eb\1\71\1\u0154\1\100\1\u00b5"+
-		"\1\u01aa\1\u0130\1\u00c3\1\u0140\1\131\1\u01b6\1\142\1\uffff\1\u01c0\5"+
-		"\uffff\1\u015d\1\uffff\1\u0170\1\152\1\u0184\1\u00a2\1\u0161\1\u00a9\1"+
-		"\u0167\1\u0197\1\u011d\1\u01e7\1\u01a0\1\u0124\1\u01ec\1\72\1\101\1\u00b6"+
-		"\1\u0131\1\u00c2\1\u0141\1\130\1\144\1\u0171\1\u0182\1\40\1\u0108\1\uffff"+
-		"\1\47\6\uffff\1\u01c5\1\u010d\1\u01d5\1\37\1\50\1\u01c4\1\u01d7\1\u0199"+
-		"\1\u01a1\1\u011b\1\u0126\1\u01e8\1\u01ed\14\uffff\1\u0195\1\u019f\1\u011e"+
-		"\1\u0127\1\u01e9\1\u01ee\1\u00b4\1\u00c5\1\u0132\1\u0142\2\uffff\1\6\1"+
-		"\u00b7\1\u00c7\1\u0133\1\u0143\1\132\1\145\1\133\1\146\1\u0172\1\u0185"+
-		"\1\u0176\1\u0186\1\uffff\1\124\1\125\1\u01b4\2\uffff\1\u01b5\2\uffff\1"+
-		"\u01bb\1\u01bc\1\u014f\2\uffff\1\u0151\2\uffff\1\4\1\5\3\uffff\1\167\1"+
-		"\171\1\u014c\2\uffff\1\u014d\2\uffff\1\66\1\70\2\uffff\1\16\1\u00d2\1"+
-		"\24\2\uffff\1\u00e6\1\u0156\1\u00f5\1\17\1\25\1\u00e7\1\u00f6\1\u0177"+
-		"\1\u0189\4\uffff\1\u0178\1\u018e\1\uffff\1\u01bf\1\u01c1\3\uffff\1\u01d3"+
-		"\1\u01e3\2\uffff\1\173\1\u0150\1\u008a\1\174\1\u008b\1\36\1\51\1\41\1"+
-		"\52\6\uffff\1\u015c\1\u015e\20\uffff\1\155\2\uffff\1\u00a3\1\u0162\1\u00aa"+
-		"\1\u0169\1\73\1\102\1\u00b8\1\u0134\1\u00ca\1\u0146\1\134\1\147\1\u017d"+
-		"\1\u0183\1\u00ba\1\u0135\1\u00cb\1\u013f\1\u019a\1\u011f\1\32\1\u01a2"+
-		"\1\u0128\1\34\7\uffff\1\u01e4\1\u01e5\1\u012d\3\uffff\1\u014e\1\u00d6"+
-		"\1\35\2\uffff\1\u01a8\1\u01a9\3\uffff\1\2\1\3\1\u00d3\2\uffff\1\u01b9"+
-		"\1\u01ba\7\uffff\1\u00b2\1\u00b3\2\uffff\1\u017e\1\u0192\1\u0181\1\u018f"+
-		"\5\uffff\1\u0152\1\u0153\2\uffff\1\u0158\1\uffff\1\115\1\116\7\uffff\1"+
-		"\42\1\uffff\1\53\1\uffff\1\u01c7\1\u01d8\2\uffff\1\u010a\16\uffff\1\u00d7"+
-		"\2\uffff\1\u00a4\1\u0163\1\u00ab\1\u016b\1\74\1\103\1\u00bd\1\u0139\1"+
-		"\u00cc\1\u0149\1\135\1\141\1\u0179\1\u0191\1\u00bf\1\u013b\1\u00cd\1\u014b"+
-		"\1\u019b\1\u0121\1\u009b\1\u01a3\1\u0129\1\u009e\4\uffff\1\u01c9\1\u01da"+
-		"\1\u01cb\1\u01d4\1\u00dd\1\u00e0\1\u00e5\1\u00f7\1\u00de\1\u00e1\1\u00e8"+
-		"\1\u00f8\3\uffff\1\65\1\67\1\u01a7\3\uffff\1\u01ac\1\u0114\1\u00a0\2\uffff"+
-		"\1\u01f1\1\u01f2\3\uffff\1\122\1\123\1\u0113\2\uffff\1\10\1\11\2\uffff"+
-		"\1\161\4\uffff\1\u00d8\1\u00d9\1\u00e9\1\u00fa\2\uffff\1\14\1\15\3\uffff"+
-		"\1\u0180\1\u0188\2\uffff\1\u01ae\1\u01af\2\uffff\1\u01b8\1\uffff\1\175"+
-		"\1\u0089\2\uffff\1\u01c2\1\u01c3\5\uffff\1\44\1\uffff\1\54\1\uffff\1\u01cf"+
-		"\1\u01db\1\176\1\u008d\1\172\1\u008e\2\uffff\1\u0155\15\uffff\1\160\2"+
-		"\uffff\1\u00a5\1\u0164\1\u00ac\1\u016c\1\75\1\104\1\u00be\1\u013a\1\u00c8"+
-		"\1\u013e\1\136\1\150\1\u017a\1\u0190\1\u00c1\1\u013d\1\u00ce\1\u0144\1"+
-		"\u019c\1\u0122\1\62\1\u01a4\1\u012a\1\64\4\uffff\1\u01d0\1\u01dd\1\u01d1"+
-		"\1\u01de\1\162\1\164\1\u00ea\1\u00f4\1\163\1\165\1\u00ef\1\u00fb\3\uffff"+
-		"\1\u00af\1\u00b0\1\u01f0\3\uffff\1\u01f7\1\u0194\1\u0109\2\uffff\1\113"+
-		"\1\114\3\uffff\1\u00d4\1\u00d5\1\u015f\2\uffff\1\156\1\157\2\uffff\1\u00e2"+
-		"\4\uffff\1\u0119\1\u011a\1\u00f1\1\u00fd\2\uffff\1\166\1\170\3\uffff\1"+
-		"\u017f\1\u018b\2\uffff\1\0\1\1\2\uffff\1\7\1\uffff\1\u0081\1\u0090\2\uffff"+
-		"\1\31\1\33\4\uffff\1\46\1\uffff\1\55\1\uffff\1\u01d2\1\u01df\1\u0085\1"+
-		"\u0094\1\u0086\1\u0095\2\uffff\1\u01b0\13\uffff\1\u010e\2\uffff\1\u00a6"+
-		"\1\u0165\1\u00ad\1\u016d\1\76\1\105\1\u00bb\1\u013c\1\u00c9\1\u0148\1"+
-		"\137\1\151\1\u0173\1\u018d\1\u00bc\1\u0137\1\u00c6\1\u0145\1\u019d\1\u0123"+
-		"\1\u00db\1\u01a6\1\u012b\1\u00df\4\uffff\1\u01ce\1\u01e0\1\u01ca\1\u01d9"+
-		"\1\u010f\1\u0111\1\u00f2\1\u0102\1\u0110\1\u0112\1\u00eb\1\u00ff\2\uffff"+
-		"\1\111\1\112\1\u01ab\2\uffff\1\u01ad\1\u0118\1\u00b1\1\uffff\1\u01f5\1"+
-		"\u01f6\2\uffff\1\153\1\154\1\u0115\1\uffff\1\12\1\13\2\uffff\1\u0138\3"+
-		"\uffff\1\u00e3\1\u00e4\1\u00ed\1\u00fe\2\uffff\1\u0106\1\u0107\2\uffff"+
-		"\1\u0174\1\u018c\1\uffff\1\u01b1\1\u01b2\1\uffff\1\u01be\1\uffff\1\u0087"+
-		"\1\u008f\2\uffff\1\u009a\1\u009c\2\uffff\1\43\1\uffff\1\57\1\uffff\1\u01c8"+
-		"\1\u01e1\1\177\1\u008c\1\u0080\1\u0091\1\uffff\1\u0157\1\u00a7\1\u0166"+
-		"\1\u00ae\1\u016e\1\77\1\106\1\u00c0\1\u012f\1\u00c4\1\u0147\1\140\1\143"+
-		"\1\u017c\1\u0187\1\u00b9\1\u0136\1\u00cf\1\u014a\1\u0198\1\u0120\1\u01ea"+
-		"\1\u01a5\1\u012c\1\u01ef\1\u01cd\1\u01e2\1\u01c6\1\u01d6\1\20\1\26\1\u00ee"+
-		"\1\u00fc\1\21\1\27\1\u00f3\1\u0101\1\u0103\1\u0104\1\23\1\60\1\u01bd\1"+
-		"\u012e\1\u0098\1\u0099\1\u010b\1\u010c\1\u01b7\1\u00d0\1\u00d1\1\uffff"+
-		"\1\u0105\2\uffff\1\u015a\1\u015b\1\u00f0\1\u00f9\1\uffff\1\u009d\1\u009f"+
-		"\1\uffff\1\u0175\1\u018a\1\107\1\110\1\121\1\uffff\1\u0084\1\u0092\1\uffff"+
-		"\1\61\1\63\1\45\1\56\1\u01cc\1\u01dc\1\u0082\1\u0093\1\u0083\1\u0097\1"+
-		"\u01f4\1\u016a\1\22\1\30\1\u00ec\1\u0100\1\u0116\1\u0117\1\u017b\1\u0193"+
-		"\1\u0088\1\u0096\1\u00da\1\u00dc}>";
+		"\2\uffff\1\u01ec\6\uffff\1\u0085\12\uffff\1\u0086\5\uffff\1\u01f7\16\uffff"+
+		"\1\u009c\1\u009d\4\uffff\1\u00d0\1\u018f\1\u0193\1\u00d6\1\u019b\1\u01cb"+
+		"\1\u018b\1\u014f\1\42\1\u01d4\1\u0158\1\47\1\145\1\u017f\1\154\1\u00eb"+
+		"\1\u01c9\1\u0161\1\u00fa\1\u0170\1\u0088\1\u01e0\1\u0092\1\uffff\1\u01e7"+
+		"\5\uffff\1\u018d\1\uffff\1\u01a5\1\u0082\1\u01b7\1\u00cf\1\u0194\1\u00d7"+
+		"\1\u019c\1\u01cc\1\u0150\1\43\1\u01d5\1\u0159\1\50\1\146\1\155\1\u00ea"+
+		"\1\u0160\1\u00f9\1\u0171\1\u0089\1\u0091\1\u01a3\1\u01b5\1\117\1\u010e"+
+		"\1\uffff\1\130\6\uffff\1\1\1\u013e\1\21\1\120\1\127\1\4\1\23\1\u01ca\1"+
+		"\u01d3\1\u014e\1\u015a\1\44\1\51\14\uffff\1\u01cd\1\u01d6\1\u0151\1\u0157"+
+		"\1\45\1\52\1\u00ec\1\u00fb\1\u0162\1\u0172\2\uffff\1\73\1\u00ed\1\u00f8"+
+		"\1\u0163\1\u016f\1\u008a\1\u0093\1\u008b\1\u0094\1\u01a4\1\u01b8\1\u01a6"+
+		"\1\u01b9\1\uffff\1\u009a\1\u009b\1\u01e6\2\uffff\1\u01e8\2\uffff\1\u01ed"+
+		"\1\u01ef\1\u0186\2\uffff\1\u0187\2\uffff\1\71\1\72\3\uffff\1\u00a7\1\u00a9"+
+		"\1\u0183\2\uffff\1\u0184\2\uffff\1\142\1\143\2\uffff\1\101\1\u00e4\1\106"+
+		"\2\uffff\1\u0112\1\u0185\1\u0122\1\102\1\107\1\u0113\1\u0123\1\u01a7\1"+
+		"\u01bc\4\uffff\1\u01a8\1\u01bf\1\uffff\1\u01f4\1\u01f5\3\uffff\1\40\1"+
+		"\41\2\uffff\1\u00ab\1\u014d\1\u00b9\1\u00a8\1\u00ba\1\121\1\131\1\123"+
+		"\1\132\6\uffff\1\u0191\1\u0192\20\uffff\1\u00a3\2\uffff\1\u00d1\1\u0195"+
+		"\1\u00d8\1\u019d\1\147\1\156\1\u00f2\1\u0166\1\u00fc\1\u016e\1\u008c\1"+
+		"\u0095\1\u01a9\1\u01b6\1\u00f4\1\u016b\1\u00fe\1\u0176\1\u01ce\1\u0152"+
+		"\1\163\1\u01d7\1\u015b\1\164\7\uffff\1\54\1\55\1\u0181\3\uffff\1\u0188"+
+		"\1\u010b\1\144\2\uffff\1\u01dd\1\u01de\3\uffff\1\67\1\70\1\u0108\2\uffff"+
+		"\1\u01f0\1\u01f1\7\uffff\1\u00e8\1\u00e9\2\uffff\1\u01aa\1\u01c3\1\u01ae"+
+		"\1\u01c5\5\uffff\1\u0189\1\u018a\2\uffff\1\u0190\1\uffff\1\u0083\1\u0084"+
+		"\7\uffff\1\116\1\uffff\1\133\1\uffff\1\0\1\25\2\uffff\1\u0140\16\uffff"+
+		"\1\u0110\2\uffff\1\u00d2\1\u0196\1\u00d9\1\u019e\1\150\1\157\1\u00f5\1"+
+		"\u016c\1\u00ff\1\u0179\1\u008d\1\u0096\1\u01b0\1\u01be\1\u00f7\1\u016d"+
+		"\1\u0100\1\u017a\1\u01cf\1\u0153\1\u00e2\1\u01d8\1\u015c\1\u00e3\4\uffff"+
+		"\1\5\1\20\1\10\1\27\1\u0134\1\u0137\1\u0117\1\u0124\1\u0135\1\u0138\1"+
+		"\u0118\1\u0125\3\uffff\1\170\1\171\1\u01df\3\uffff\1\u01e2\1\u0149\1\u00e1"+
+		"\2\uffff\1\56\1\60\3\uffff\1\u009e\1\u009f\1\u0148\2\uffff\1\74\1\76\2"+
+		"\uffff\1\u00a5\4\uffff\1\u010c\1\u010d\1\u0119\1\u0126\2\uffff\1\113\1"+
+		"\114\3\uffff\1\u01ab\1\u01c2\2\uffff\1\u01e4\1\u01e5\2\uffff\1\u01f2\1"+
+		"\uffff\1\u00ac\1\u00b8\2\uffff\1\36\1\37\5\uffff\1\124\1\uffff\1\134\1"+
+		"\uffff\1\11\1\31\1\u00ad\1\u00bb\1\u00af\1\u00bc\2\uffff\1\u018c\15\uffff"+
+		"\1\u00a6\2\uffff\1\u00d3\1\u0197\1\u00da\1\u019f\1\151\1\160\1\u00f1\1"+
+		"\u016a\1\u0102\1\u0173\1\u008e\1\u0097\1\u01b1\1\u01c1\1\u00f3\1\u0167"+
+		"\1\u0103\1\u0177\1\u01d0\1\u0154\1\172\1\u01d9\1\u015d\1\173\4\uffff\1"+
+		"\14\1\32\1\15\1\33\1\u00c7\1\u00c9\1\u011a\1\u0129\1\u00c8\1\u00ca\1\u011d"+
+		"\1\u0121\3\uffff\1\u00e5\1\u00e6\1\57\3\uffff\1\64\1\u01dc\1\u013f\2\uffff"+
+		"\1\177\1\u0081\3\uffff\1\u0109\1\u010a\1\u01c8\2\uffff\1\u00a2\1\u00a4"+
+		"\2\uffff\1\u0132\4\uffff\1\u017d\1\u017e\1\u011e\1\u012b\2\uffff\1\u00cb"+
+		"\1\u00cc\3\uffff\1\u01b3\1\u01c6\2\uffff\1\65\1\66\2\uffff\1\75\1\uffff"+
+		"\1\u00b1\1\u00be\2\uffff\1\140\1\141\4\uffff\1\125\1\uffff\1\135\1\uffff"+
+		"\1\16\1\34\1\u00b3\1\u00c0\1\u00b4\1\u00c3\2\uffff\1\u01e9\13\uffff\1"+
+		"\u0143\2\uffff\1\u00d4\1\u0198\1\u00db\1\u01a0\1\152\1\161\1\u00ee\1\u0169"+
+		"\1\u0105\1\u0178\1\u008f\1\u0098\1\u01b4\1\u01c4\1\u00ef\1\u0164\1\u0104"+
+		"\1\u0174\1\u01d1\1\u0155\1\u0130\1\u01da\1\u015e\1\u0131\4\uffff\1\7\1"+
+		"\26\1\3\1\17\1\u0144\1\u0146\1\u011f\1\u012e\1\u0145\1\u0147\1\u011b\1"+
+		"\u012f\2\uffff\1\176\1\u0080\1\u01e1\2\uffff\1\u01e3\1\u017c\1\u00e7\1"+
+		"\uffff\1\62\1\63\2\uffff\1\u00a0\1\u00a1\1\u014a\1\uffff\1\77\1\100\2"+
+		"\uffff\1\u0182\3\uffff\1\u0133\1\u0136\1\u0120\1\u012d\2\uffff\1\u013c"+
+		"\1\u013d\2\uffff\1\u01ac\1\u01ba\1\uffff\1\u01ea\1\u01eb\1\uffff\1\u01f6"+
+		"\1\uffff\1\u00b0\1\u00c4\2\uffff\1\u00dd\1\u00df\2\uffff\1\126\1\uffff"+
+		"\1\136\1\uffff\1\12\1\22\1\u00ae\1\u00c1\1\u00b5\1\u00bd\1\uffff\1\u018e"+
+		"\1\u00d5\1\u0199\1\u00dc\1\u01a1\1\153\1\162\1\u00f0\1\u0168\1\u0101\1"+
+		"\u017b\1\u0090\1\u0099\1\u01ad\1\u01bd\1\u00f6\1\u0165\1\u00fd\1\u0175"+
+		"\1\u01d2\1\u0156\1\46\1\u01db\1\u015f\1\53\1\13\1\30\1\2\1\35\1\103\1"+
+		"\110\1\u0116\1\u012a\1\104\1\111\1\u011c\1\u0127\1\u0139\1\u013a\1\115"+
+		"\1\165\1\u01f3\1\u0180\1\u00cd\1\u00ce\1\u0141\1\u0142\1\u01ee\1\u0106"+
+		"\1\u0107\1\uffff\1\u013b\2\uffff\1\u019a\1\u01a2\1\u0114\1\u012c\1\uffff"+
+		"\1\u00de\1\u00e0\1\uffff\1\u01af\1\u01c0\1\174\1\175\1\u0087\1\uffff\1"+
+		"\u00b6\1\u00c2\1\uffff\1\166\1\167\1\122\1\137\1\6\1\24\1\u00b7\1\u00c5"+
+		"\1\u00b2\1\u00c6\1\61\1\u01c7\1\105\1\112\1\u0115\1\u0128\1\u014b\1\u014c"+
+		"\1\u01b2\1\u01bb\1\u00aa\1\u00bf\1\u010f\1\u0111}>";
 	static final String[] DFA192_transitionS = {
 			"\1\27\7\uffff\1\14\23\uffff\2\14\1\20\1\15\1\16\2\14\1\26\1\22\1\14\1"+
 			"\25\1\14\1\21\2\14\1\17\1\14\1\23\1\24\7\14\1\uffff\1\2\2\uffff\1\14"+
@@ -13778,1384 +13820,1696 @@ public class Css3Lexer extends Lexer {
 			int _s = s;
 			switch ( s ) {
 					case 0 : 
+						int LA192_355 = input.LA(1);
+						 
+						int index192_355 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_355);
+						if ( s>=0 ) return s;
+						break;
+
+					case 1 : 
+						int LA192_112 = input.LA(1);
+						 
+						int index192_112 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_112);
+						if ( s>=0 ) return s;
+						break;
+
+					case 2 : 
+						int LA192_773 = input.LA(1);
+						 
+						int index192_773 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_773);
+						if ( s>=0 ) return s;
+						break;
+
+					case 3 : 
+						int LA192_672 = input.LA(1);
+						 
+						int index192_672 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_672);
+						if ( s>=0 ) return s;
+						break;
+
+					case 4 : 
+						int LA192_117 = input.LA(1);
+						 
+						int index192_117 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_117);
+						if ( s>=0 ) return s;
+						break;
+
+					case 5 : 
+						int LA192_405 = input.LA(1);
+						 
+						int index192_405 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_405);
+						if ( s>=0 ) return s;
+						break;
+
+					case 6 : 
+						int LA192_821 = input.LA(1);
+						 
+						int index192_821 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_821);
+						if ( s>=0 ) return s;
+						break;
+
+					case 7 : 
+						int LA192_670 = input.LA(1);
+						 
+						int index192_670 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_670);
+						if ( s>=0 ) return s;
+						break;
+
+					case 8 : 
+						int LA192_407 = input.LA(1);
+						 
+						int index192_407 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_407);
+						if ( s>=0 ) return s;
+						break;
+
+					case 9 : 
+						int LA192_486 = input.LA(1);
+						 
+						int index192_486 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_486);
+						if ( s>=0 ) return s;
+						break;
+
+					case 10 : 
+						int LA192_739 = input.LA(1);
+						 
+						int index192_739 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_739);
+						if ( s>=0 ) return s;
+						break;
+
+					case 11 : 
+						int LA192_771 = input.LA(1);
+						 
+						int index192_771 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_771);
+						if ( s>=0 ) return s;
+						break;
+
+					case 12 : 
+						int LA192_539 = input.LA(1);
+						 
+						int index192_539 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_539);
+						if ( s>=0 ) return s;
+						break;
+
+					case 13 : 
+						int LA192_541 = input.LA(1);
+						 
+						int index192_541 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_541);
+						if ( s>=0 ) return s;
+						break;
+
+					case 14 : 
+						int LA192_619 = input.LA(1);
+						 
+						int index192_619 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_619);
+						if ( s>=0 ) return s;
+						break;
+
+					case 15 : 
+						int LA192_673 = input.LA(1);
+						 
+						int index192_673 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_673);
+						if ( s>=0 ) return s;
+						break;
+
+					case 16 : 
+						int LA192_406 = input.LA(1);
+						 
+						int index192_406 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_406);
+						if ( s>=0 ) return s;
+						break;
+
+					case 17 : 
+						int LA192_114 = input.LA(1);
+						 
+						int index192_114 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_114);
+						if ( s>=0 ) return s;
+						break;
+
+					case 18 : 
+						int LA192_740 = input.LA(1);
+						 
+						int index192_740 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_740);
+						if ( s>=0 ) return s;
+						break;
+
+					case 19 : 
+						int LA192_118 = input.LA(1);
+						 
+						int index192_118 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_118);
+						if ( s>=0 ) return s;
+						break;
+
+					case 20 : 
+						int LA192_822 = input.LA(1);
+						 
+						int index192_822 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_822);
+						if ( s>=0 ) return s;
+						break;
+
+					case 21 : 
+						int LA192_356 = input.LA(1);
+						 
+						int index192_356 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_356);
+						if ( s>=0 ) return s;
+						break;
+
+					case 22 : 
+						int LA192_671 = input.LA(1);
+						 
+						int index192_671 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_671);
+						if ( s>=0 ) return s;
+						break;
+
+					case 23 : 
+						int LA192_408 = input.LA(1);
+						 
+						int index192_408 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_408);
+						if ( s>=0 ) return s;
+						break;
+
+					case 24 : 
+						int LA192_772 = input.LA(1);
+						 
+						int index192_772 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_772);
+						if ( s>=0 ) return s;
+						break;
+
+					case 25 : 
+						int LA192_487 = input.LA(1);
+						 
+						int index192_487 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_487);
+						if ( s>=0 ) return s;
+						break;
+
+					case 26 : 
+						int LA192_540 = input.LA(1);
+						 
+						int index192_540 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_540);
+						if ( s>=0 ) return s;
+						break;
+
+					case 27 : 
+						int LA192_542 = input.LA(1);
+						 
+						int index192_542 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_542);
+						if ( s>=0 ) return s;
+						break;
+
+					case 28 : 
+						int LA192_620 = input.LA(1);
+						 
+						int index192_620 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_620);
+						if ( s>=0 ) return s;
+						break;
+
+					case 29 : 
+						int LA192_774 = input.LA(1);
+						 
+						int index192_774 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_774);
+						if ( s>=0 ) return s;
+						break;
+
+					case 30 : 
+						int LA192_475 = input.LA(1);
+						 
+						int index192_475 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_475);
+						if ( s>=0 ) return s;
+						break;
+
+					case 31 : 
+						int LA192_476 = input.LA(1);
+						 
+						int index192_476 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_476);
+						if ( s>=0 ) return s;
+						break;
+
+					case 32 : 
+						int LA192_222 = input.LA(1);
+						 
+						int index192_222 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_222);
+						if ( s>=0 ) return s;
+						break;
+
+					case 33 : 
+						int LA192_223 = input.LA(1);
+						 
+						int index192_223 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_223);
+						if ( s>=0 ) return s;
+						break;
+
+					case 34 : 
+						int LA192_55 = input.LA(1);
+						 
+						int index192_55 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_55);
+						if ( s>=0 ) return s;
+						break;
+
+					case 35 : 
+						int LA192_88 = input.LA(1);
+						 
+						int index192_88 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_88);
+						if ( s>=0 ) return s;
+						break;
+
+					case 36 : 
+						int LA192_123 = input.LA(1);
+						 
+						int index192_123 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_123);
+						if ( s>=0 ) return s;
+						break;
+
+					case 37 : 
+						int LA192_141 = input.LA(1);
+						 
+						int index192_141 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_141);
+						if ( s>=0 ) return s;
+						break;
+
+					case 38 : 
+						int LA192_767 = input.LA(1);
+						 
+						int index192_767 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_767);
+						if ( s>=0 ) return s;
+						break;
+
+					case 39 : 
+						int LA192_58 = input.LA(1);
+						 
+						int index192_58 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_58);
+						if ( s>=0 ) return s;
+						break;
+
+					case 40 : 
+						int LA192_91 = input.LA(1);
+						 
+						int index192_91 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_91);
+						if ( s>=0 ) return s;
+						break;
+
+					case 41 : 
+						int LA192_124 = input.LA(1);
+						 
+						int index192_124 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_124);
+						if ( s>=0 ) return s;
+						break;
+
+					case 42 : 
+						int LA192_142 = input.LA(1);
+						 
+						int index192_142 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_142);
+						if ( s>=0 ) return s;
+						break;
+
+					case 43 : 
+						int LA192_770 = input.LA(1);
+						 
+						int index192_770 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_770);
+						if ( s>=0 ) return s;
+						break;
+
+					case 44 : 
+						int LA192_293 = input.LA(1);
+						 
+						int index192_293 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_293);
+						if ( s>=0 ) return s;
+						break;
+
+					case 45 : 
+						int LA192_294 = input.LA(1);
+						 
+						int index192_294 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_294);
+						if ( s>=0 ) return s;
+						break;
+
+					case 46 : 
+						int LA192_431 = input.LA(1);
+						 
+						int index192_431 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred6_Css3()) ) {s = 178;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_431);
+						if ( s>=0 ) return s;
+						break;
+
+					case 47 : 
+						int LA192_556 = input.LA(1);
+						 
+						int index192_556 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_556);
+						if ( s>=0 ) return s;
+						break;
+
+					case 48 : 
+						int LA192_432 = input.LA(1);
+						 
+						int index192_432 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred6_Css3()) ) {s = 178;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_432);
+						if ( s>=0 ) return s;
+						break;
+
+					case 49 : 
+						int LA192_827 = input.LA(1);
+						 
+						int index192_827 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_827);
+						if ( s>=0 ) return s;
+						break;
+
+					case 50 : 
+						int LA192_693 = input.LA(1);
+						 
+						int index192_693 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred6_Css3()) ) {s = 178;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_693);
+						if ( s>=0 ) return s;
+						break;
+
+					case 51 : 
+						int LA192_694 = input.LA(1);
+						 
+						int index192_694 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred6_Css3()) ) {s = 178;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_694);
+						if ( s>=0 ) return s;
+						break;
+
+					case 52 : 
+						int LA192_560 = input.LA(1);
+						 
+						int index192_560 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_560);
+						if ( s>=0 ) return s;
+						break;
+
+					case 53 : 
 						int LA192_599 = input.LA(1);
 						 
 						int index192_599 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_599);
 						if ( s>=0 ) return s;
 						break;
 
-					case 1 : 
+					case 54 : 
 						int LA192_600 = input.LA(1);
 						 
 						int index192_600 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_600);
 						if ( s>=0 ) return s;
 						break;
 
-					case 2 : 
+					case 55 : 
 						int LA192_309 = input.LA(1);
 						 
 						int index192_309 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
+						if ( (synpred7_Css3()) ) {s = 183;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_309);
 						if ( s>=0 ) return s;
 						break;
 
-					case 3 : 
+					case 56 : 
 						int LA192_310 = input.LA(1);
 						 
 						int index192_310 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
+						if ( (synpred7_Css3()) ) {s = 183;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_310);
 						if ( s>=0 ) return s;
 						break;
 
-					case 4 : 
+					case 57 : 
 						int LA192_179 = input.LA(1);
 						 
 						int index192_179 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred5_Css3()) ) {s = 178;}
+						if ( (synpred6_Css3()) ) {s = 178;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_179);
 						if ( s>=0 ) return s;
 						break;
 
-					case 5 : 
+					case 58 : 
 						int LA192_180 = input.LA(1);
 						 
 						int index192_180 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred5_Css3()) ) {s = 178;}
+						if ( (synpred6_Css3()) ) {s = 178;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_180);
 						if ( s>=0 ) return s;
 						break;
 
-					case 6 : 
+					case 59 : 
 						int LA192_149 = input.LA(1);
 						 
 						int index192_149 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred10_Css3()) ) {s = 75;}
+						if ( (synpred11_Css3()) ) {s = 75;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_149);
 						if ( s>=0 ) return s;
 						break;
 
-					case 7 : 
-						int LA192_603 = input.LA(1);
-						 
-						int index192_603 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_603);
-						if ( s>=0 ) return s;
-						break;
-
-					case 8 : 
+					case 60 : 
 						int LA192_441 = input.LA(1);
 						 
 						int index192_441 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
+						if ( (synpred8_Css3()) ) {s = 191;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_441);
 						if ( s>=0 ) return s;
 						break;
 
-					case 9 : 
+					case 61 : 
+						int LA192_603 = input.LA(1);
+						 
+						int index192_603 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_603);
+						if ( s>=0 ) return s;
+						break;
+
+					case 62 : 
 						int LA192_442 = input.LA(1);
 						 
 						int index192_442 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
+						if ( (synpred8_Css3()) ) {s = 191;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_442);
 						if ( s>=0 ) return s;
 						break;
 
-					case 10 : 
+					case 63 : 
 						int LA192_701 = input.LA(1);
 						 
 						int index192_701 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
+						if ( (synpred8_Css3()) ) {s = 191;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_701);
 						if ( s>=0 ) return s;
 						break;
 
-					case 11 : 
+					case 64 : 
 						int LA192_702 = input.LA(1);
 						 
 						int index192_702 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
+						if ( (synpred8_Css3()) ) {s = 191;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_702);
 						if ( s>=0 ) return s;
 						break;
 
-					case 12 : 
-						int LA192_456 = input.LA(1);
-						 
-						int index192_456 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_456);
-						if ( s>=0 ) return s;
-						break;
-
-					case 13 : 
-						int LA192_457 = input.LA(1);
-						 
-						int index192_457 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_457);
-						if ( s>=0 ) return s;
-						break;
-
-					case 14 : 
+					case 65 : 
 						int LA192_196 = input.LA(1);
 						 
 						int index192_196 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
+						if ( (synpred10_Css3()) ) {s = 316;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_196);
 						if ( s>=0 ) return s;
 						break;
 
-					case 15 : 
+					case 66 : 
 						int LA192_204 = input.LA(1);
 						 
 						int index192_204 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
+						if ( (synpred10_Css3()) ) {s = 316;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_204);
 						if ( s>=0 ) return s;
 						break;
 
-					case 16 : 
+					case 67 : 
 						int LA192_775 = input.LA(1);
 						 
 						int index192_775 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
+						if ( (synpred10_Css3()) ) {s = 316;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_775);
 						if ( s>=0 ) return s;
 						break;
 
-					case 17 : 
+					case 68 : 
 						int LA192_779 = input.LA(1);
 						 
 						int index192_779 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
+						if ( (synpred10_Css3()) ) {s = 316;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_779);
 						if ( s>=0 ) return s;
 						break;
 
-					case 18 : 
+					case 69 : 
 						int LA192_829 = input.LA(1);
 						 
 						int index192_829 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
+						if ( (synpred10_Css3()) ) {s = 316;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_829);
 						if ( s>=0 ) return s;
 						break;
 
-					case 19 : 
-						int LA192_785 = input.LA(1);
-						 
-						int index192_785 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_785);
-						if ( s>=0 ) return s;
-						break;
-
-					case 20 : 
+					case 70 : 
 						int LA192_198 = input.LA(1);
 						 
 						int index192_198 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
+						if ( (synpred10_Css3()) ) {s = 316;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_198);
 						if ( s>=0 ) return s;
 						break;
 
-					case 21 : 
+					case 71 : 
 						int LA192_205 = input.LA(1);
 						 
 						int index192_205 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
+						if ( (synpred10_Css3()) ) {s = 316;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_205);
 						if ( s>=0 ) return s;
 						break;
 
-					case 22 : 
+					case 72 : 
 						int LA192_776 = input.LA(1);
 						 
 						int index192_776 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
+						if ( (synpred10_Css3()) ) {s = 316;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_776);
 						if ( s>=0 ) return s;
 						break;
 
-					case 23 : 
+					case 73 : 
 						int LA192_780 = input.LA(1);
 						 
 						int index192_780 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
+						if ( (synpred10_Css3()) ) {s = 316;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_780);
 						if ( s>=0 ) return s;
 						break;
 
-					case 24 : 
+					case 74 : 
 						int LA192_830 = input.LA(1);
 						 
 						int index192_830 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
+						if ( (synpred10_Css3()) ) {s = 316;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_830);
 						if ( s>=0 ) return s;
 						break;
 
-					case 25 : 
-						int LA192_609 = input.LA(1);
+					case 75 : 
+						int LA192_456 = input.LA(1);
 						 
-						int index192_609 = input.index();
+						int index192_456 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred10_Css3()) ) {s = 316;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_609);
+						input.seek(index192_456);
 						if ( s>=0 ) return s;
 						break;
 
-					case 26 : 
-						int LA192_282 = input.LA(1);
+					case 76 : 
+						int LA192_457 = input.LA(1);
 						 
-						int index192_282 = input.index();
+						int index192_457 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
+						if ( (synpred10_Css3()) ) {s = 316;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_282);
+						input.seek(index192_457);
 						if ( s>=0 ) return s;
 						break;
 
-					case 27 : 
-						int LA192_610 = input.LA(1);
+					case 77 : 
+						int LA192_785 = input.LA(1);
 						 
-						int index192_610 = input.index();
+						int index192_785 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred4_Css3()) ) {s = 162;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_610);
+						input.seek(index192_785);
 						if ( s>=0 ) return s;
 						break;
 
-					case 28 : 
-						int LA192_285 = input.LA(1);
-						 
-						int index192_285 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_285);
-						if ( s>=0 ) return s;
-						break;
-
-					case 29 : 
-						int LA192_301 = input.LA(1);
-						 
-						int index192_301 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_301);
-						if ( s>=0 ) return s;
-						break;
-
-					case 30 : 
-						int LA192_231 = input.LA(1);
-						 
-						int index192_231 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_231);
-						if ( s>=0 ) return s;
-						break;
-
-					case 31 : 
-						int LA192_115 = input.LA(1);
-						 
-						int index192_115 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_115);
-						if ( s>=0 ) return s;
-						break;
-
-					case 32 : 
-						int LA192_102 = input.LA(1);
-						 
-						int index192_102 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_102);
-						if ( s>=0 ) return s;
-						break;
-
-					case 33 : 
-						int LA192_233 = input.LA(1);
-						 
-						int index192_233 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_233);
-						if ( s>=0 ) return s;
-						break;
-
-					case 34 : 
+					case 78 : 
 						int LA192_351 = input.LA(1);
 						 
 						int index192_351 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_351);
 						if ( s>=0 ) return s;
 						break;
 
-					case 35 : 
-						int LA192_735 = input.LA(1);
+					case 79 : 
+						int LA192_102 = input.LA(1);
 						 
-						int index192_735 = input.index();
+						int index192_102 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_735);
+						input.seek(index192_102);
 						if ( s>=0 ) return s;
 						break;
 
-					case 36 : 
-						int LA192_482 = input.LA(1);
+					case 80 : 
+						int LA192_115 = input.LA(1);
 						 
-						int index192_482 = input.index();
+						int index192_115 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_482);
+						input.seek(index192_115);
 						if ( s>=0 ) return s;
 						break;
 
-					case 37 : 
+					case 81 : 
+						int LA192_231 = input.LA(1);
+						 
+						int index192_231 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_231);
+						if ( s>=0 ) return s;
+						break;
+
+					case 82 : 
 						int LA192_819 = input.LA(1);
 						 
 						int index192_819 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_819);
 						if ( s>=0 ) return s;
 						break;
 
-					case 38 : 
+					case 83 : 
+						int LA192_233 = input.LA(1);
+						 
+						int index192_233 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_233);
+						if ( s>=0 ) return s;
+						break;
+
+					case 84 : 
+						int LA192_482 = input.LA(1);
+						 
+						int index192_482 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_482);
+						if ( s>=0 ) return s;
+						break;
+
+					case 85 : 
 						int LA192_615 = input.LA(1);
 						 
 						int index192_615 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_615);
 						if ( s>=0 ) return s;
 						break;
 
-					case 39 : 
-						int LA192_105 = input.LA(1);
+					case 86 : 
+						int LA192_735 = input.LA(1);
 						 
-						int index192_105 = input.index();
+						int index192_735 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_105);
+						input.seek(index192_735);
 						if ( s>=0 ) return s;
 						break;
 
-					case 40 : 
+					case 87 : 
 						int LA192_116 = input.LA(1);
 						 
 						int index192_116 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_116);
 						if ( s>=0 ) return s;
 						break;
 
-					case 41 : 
+					case 88 : 
+						int LA192_105 = input.LA(1);
+						 
+						int index192_105 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_105);
+						if ( s>=0 ) return s;
+						break;
+
+					case 89 : 
 						int LA192_232 = input.LA(1);
 						 
 						int index192_232 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_232);
 						if ( s>=0 ) return s;
 						break;
 
-					case 42 : 
+					case 90 : 
 						int LA192_234 = input.LA(1);
 						 
 						int index192_234 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_234);
 						if ( s>=0 ) return s;
 						break;
 
-					case 43 : 
+					case 91 : 
 						int LA192_353 = input.LA(1);
 						 
 						int index192_353 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_353);
 						if ( s>=0 ) return s;
 						break;
 
-					case 44 : 
+					case 92 : 
 						int LA192_484 = input.LA(1);
 						 
 						int index192_484 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_484);
 						if ( s>=0 ) return s;
 						break;
 
-					case 45 : 
+					case 93 : 
 						int LA192_617 = input.LA(1);
 						 
 						int index192_617 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_617);
 						if ( s>=0 ) return s;
 						break;
 
-					case 46 : 
-						int LA192_820 = input.LA(1);
-						 
-						int index192_820 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_820);
-						if ( s>=0 ) return s;
-						break;
-
-					case 47 : 
+					case 94 : 
 						int LA192_737 = input.LA(1);
 						 
 						int index192_737 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_737);
 						if ( s>=0 ) return s;
 						break;
 
-					case 48 : 
-						int LA192_786 = input.LA(1);
+					case 95 : 
+						int LA192_820 = input.LA(1);
 						 
-						int index192_786 = input.index();
+						int index192_820 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_786);
+						input.seek(index192_820);
 						if ( s>=0 ) return s;
 						break;
 
-					case 49 : 
-						int LA192_817 = input.LA(1);
+					case 96 : 
+						int LA192_609 = input.LA(1);
 						 
-						int index192_817 = input.index();
+						int index192_609 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_817);
+						input.seek(index192_609);
 						if ( s>=0 ) return s;
 						break;
 
-					case 50 : 
-						int LA192_531 = input.LA(1);
+					case 97 : 
+						int LA192_610 = input.LA(1);
 						 
-						int index192_531 = input.index();
+						int index192_610 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_531);
+						input.seek(index192_610);
 						if ( s>=0 ) return s;
 						break;
 
-					case 51 : 
-						int LA192_818 = input.LA(1);
-						 
-						int index192_818 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_818);
-						if ( s>=0 ) return s;
-						break;
-
-					case 52 : 
-						int LA192_534 = input.LA(1);
-						 
-						int index192_534 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_534);
-						if ( s>=0 ) return s;
-						break;
-
-					case 53 : 
-						int LA192_420 = input.LA(1);
-						 
-						int index192_420 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_420);
-						if ( s>=0 ) return s;
-						break;
-
-					case 54 : 
+					case 98 : 
 						int LA192_192 = input.LA(1);
 						 
 						int index192_192 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
+						if ( (synpred8_Css3()) ) {s = 191;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_192);
 						if ( s>=0 ) return s;
 						break;
 
-					case 55 : 
-						int LA192_421 = input.LA(1);
-						 
-						int index192_421 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_421);
-						if ( s>=0 ) return s;
-						break;
-
-					case 56 : 
+					case 99 : 
 						int LA192_193 = input.LA(1);
 						 
 						int index192_193 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
+						if ( (synpred8_Css3()) ) {s = 191;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_193);
 						if ( s>=0 ) return s;
 						break;
 
-					case 57 : 
+					case 100 : 
+						int LA192_301 = input.LA(1);
+						 
+						int index192_301 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_301);
+						if ( s>=0 ) return s;
+						break;
+
+					case 101 : 
 						int LA192_59 = input.LA(1);
 						 
 						int index192_59 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred5_Css3()) ) {s = 178;}
+						if ( (synpred6_Css3()) ) {s = 178;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_59);
 						if ( s>=0 ) return s;
 						break;
 
-					case 58 : 
+					case 102 : 
 						int LA192_92 = input.LA(1);
 						 
 						int index192_92 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred5_Css3()) ) {s = 178;}
+						if ( (synpred6_Css3()) ) {s = 178;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_92);
 						if ( s>=0 ) return s;
 						break;
 
-					case 59 : 
+					case 103 : 
 						int LA192_266 = input.LA(1);
 						 
 						int index192_266 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred5_Css3()) ) {s = 178;}
+						if ( (synpred6_Css3()) ) {s = 178;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_266);
 						if ( s>=0 ) return s;
 						break;
 
-					case 60 : 
+					case 104 : 
 						int LA192_381 = input.LA(1);
 						 
 						int index192_381 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred5_Css3()) ) {s = 178;}
+						if ( (synpred6_Css3()) ) {s = 178;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_381);
 						if ( s>=0 ) return s;
 						break;
 
-					case 61 : 
+					case 105 : 
 						int LA192_515 = input.LA(1);
 						 
 						int index192_515 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred5_Css3()) ) {s = 178;}
+						if ( (synpred6_Css3()) ) {s = 178;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_515);
 						if ( s>=0 ) return s;
 						break;
 
-					case 62 : 
+					case 106 : 
 						int LA192_646 = input.LA(1);
 						 
 						int index192_646 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred5_Css3()) ) {s = 178;}
+						if ( (synpred6_Css3()) ) {s = 178;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_646);
 						if ( s>=0 ) return s;
 						break;
 
-					case 63 : 
+					case 107 : 
 						int LA192_751 = input.LA(1);
 						 
 						int index192_751 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred5_Css3()) ) {s = 178;}
+						if ( (synpred6_Css3()) ) {s = 178;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_751);
 						if ( s>=0 ) return s;
 						break;
 
-					case 64 : 
+					case 108 : 
 						int LA192_61 = input.LA(1);
 						 
 						int index192_61 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred5_Css3()) ) {s = 178;}
+						if ( (synpred6_Css3()) ) {s = 178;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_61);
 						if ( s>=0 ) return s;
 						break;
 
-					case 65 : 
+					case 109 : 
 						int LA192_93 = input.LA(1);
 						 
 						int index192_93 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred5_Css3()) ) {s = 178;}
+						if ( (synpred6_Css3()) ) {s = 178;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_93);
 						if ( s>=0 ) return s;
 						break;
 
-					case 66 : 
+					case 110 : 
 						int LA192_267 = input.LA(1);
 						 
 						int index192_267 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred5_Css3()) ) {s = 178;}
+						if ( (synpred6_Css3()) ) {s = 178;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_267);
 						if ( s>=0 ) return s;
 						break;
 
-					case 67 : 
+					case 111 : 
 						int LA192_382 = input.LA(1);
 						 
 						int index192_382 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred5_Css3()) ) {s = 178;}
+						if ( (synpred6_Css3()) ) {s = 178;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_382);
 						if ( s>=0 ) return s;
 						break;
 
-					case 68 : 
+					case 112 : 
 						int LA192_516 = input.LA(1);
 						 
 						int index192_516 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred5_Css3()) ) {s = 178;}
+						if ( (synpred6_Css3()) ) {s = 178;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_516);
 						if ( s>=0 ) return s;
 						break;
 
-					case 69 : 
+					case 113 : 
 						int LA192_647 = input.LA(1);
 						 
 						int index192_647 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred5_Css3()) ) {s = 178;}
+						if ( (synpred6_Css3()) ) {s = 178;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_647);
 						if ( s>=0 ) return s;
 						break;
 
-					case 70 : 
+					case 114 : 
 						int LA192_752 = input.LA(1);
 						 
 						int index192_752 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred5_Css3()) ) {s = 178;}
+						if ( (synpred6_Css3()) ) {s = 178;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_752);
 						if ( s>=0 ) return s;
 						break;
 
-					case 71 : 
+					case 115 : 
+						int LA192_282 = input.LA(1);
+						 
+						int index192_282 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_282);
+						if ( s>=0 ) return s;
+						break;
+
+					case 116 : 
+						int LA192_285 = input.LA(1);
+						 
+						int index192_285 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_285);
+						if ( s>=0 ) return s;
+						break;
+
+					case 117 : 
+						int LA192_786 = input.LA(1);
+						 
+						int index192_786 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_786);
+						if ( s>=0 ) return s;
+						break;
+
+					case 118 : 
+						int LA192_817 = input.LA(1);
+						 
+						int index192_817 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_817);
+						if ( s>=0 ) return s;
+						break;
+
+					case 119 : 
+						int LA192_818 = input.LA(1);
+						 
+						int index192_818 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_818);
+						if ( s>=0 ) return s;
+						break;
+
+					case 120 : 
+						int LA192_420 = input.LA(1);
+						 
+						int index192_420 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_420);
+						if ( s>=0 ) return s;
+						break;
+
+					case 121 : 
+						int LA192_421 = input.LA(1);
+						 
+						int index192_421 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_421);
+						if ( s>=0 ) return s;
+						break;
+
+					case 122 : 
+						int LA192_531 = input.LA(1);
+						 
+						int index192_531 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_531);
+						if ( s>=0 ) return s;
+						break;
+
+					case 123 : 
+						int LA192_534 = input.LA(1);
+						 
+						int index192_534 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_534);
+						if ( s>=0 ) return s;
+						break;
+
+					case 124 : 
 						int LA192_810 = input.LA(1);
 						 
 						int index192_810 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_810);
 						if ( s>=0 ) return s;
 						break;
 
-					case 72 : 
+					case 125 : 
 						int LA192_811 = input.LA(1);
 						 
 						int index192_811 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_811);
 						if ( s>=0 ) return s;
 						break;
 
-					case 73 : 
+					case 126 : 
 						int LA192_684 = input.LA(1);
 						 
 						int index192_684 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
+						if ( (synpred4_Css3()) ) {s = 162;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_684);
 						if ( s>=0 ) return s;
 						break;
 
-					case 74 : 
-						int LA192_685 = input.LA(1);
-						 
-						int index192_685 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_685);
-						if ( s>=0 ) return s;
-						break;
-
-					case 75 : 
+					case 127 : 
 						int LA192_565 = input.LA(1);
 						 
 						int index192_565 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred5_Css3()) ) {s = 178;}
+						if ( (synpred6_Css3()) ) {s = 178;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_565);
 						if ( s>=0 ) return s;
 						break;
 
-					case 76 : 
+					case 128 : 
+						int LA192_685 = input.LA(1);
+						 
+						int index192_685 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_685);
+						if ( s>=0 ) return s;
+						break;
+
+					case 129 : 
 						int LA192_566 = input.LA(1);
 						 
 						int index192_566 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred5_Css3()) ) {s = 178;}
+						if ( (synpred6_Css3()) ) {s = 178;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_566);
 						if ( s>=0 ) return s;
 						break;
 
-					case 77 : 
-						int LA192_342 = input.LA(1);
-						 
-						int index192_342 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_342);
-						if ( s>=0 ) return s;
-						break;
-
-					case 78 : 
-						int LA192_343 = input.LA(1);
-						 
-						int index192_343 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_343);
-						if ( s>=0 ) return s;
-						break;
-
-					case 79 : 
-						int LA192_9 = input.LA(1);
-						 
-						int index192_9 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred10_Css3()) ) {s = 75;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_9);
-						if ( s>=0 ) return s;
-						break;
-
-					case 80 : 
-						int LA192_20 = input.LA(1);
-						 
-						int index192_20 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred10_Css3()) ) {s = 75;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_20);
-						if ( s>=0 ) return s;
-						break;
-
-					case 81 : 
-						int LA192_812 = input.LA(1);
-						 
-						int index192_812 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_812);
-						if ( s>=0 ) return s;
-						break;
-
-					case 82 : 
-						int LA192_436 = input.LA(1);
-						 
-						int index192_436 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_436);
-						if ( s>=0 ) return s;
-						break;
-
-					case 83 : 
-						int LA192_437 = input.LA(1);
-						 
-						int index192_437 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_437);
-						if ( s>=0 ) return s;
-						break;
-
-					case 84 : 
-						int LA192_163 = input.LA(1);
-						 
-						int index192_163 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_163);
-						if ( s>=0 ) return s;
-						break;
-
-					case 85 : 
-						int LA192_164 = input.LA(1);
-						 
-						int index192_164 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_164);
-						if ( s>=0 ) return s;
-						break;
-
-					case 86 : 
-						int LA192_41 = input.LA(1);
-						 
-						int index192_41 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred10_Css3()) ) {s = 75;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_41);
-						if ( s>=0 ) return s;
-						break;
-
-					case 87 : 
-						int LA192_42 = input.LA(1);
-						 
-						int index192_42 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred10_Css3()) ) {s = 75;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_42);
-						if ( s>=0 ) return s;
-						break;
-
-					case 88 : 
-						int LA192_98 = input.LA(1);
-						 
-						int index192_98 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_98);
-						if ( s>=0 ) return s;
-						break;
-
-					case 89 : 
-						int LA192_67 = input.LA(1);
-						 
-						int index192_67 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_67);
-						if ( s>=0 ) return s;
-						break;
-
-					case 90 : 
-						int LA192_154 = input.LA(1);
-						 
-						int index192_154 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_154);
-						if ( s>=0 ) return s;
-						break;
-
-					case 91 : 
-						int LA192_156 = input.LA(1);
-						 
-						int index192_156 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_156);
-						if ( s>=0 ) return s;
-						break;
-
-					case 92 : 
-						int LA192_272 = input.LA(1);
-						 
-						int index192_272 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_272);
-						if ( s>=0 ) return s;
-						break;
-
-					case 93 : 
-						int LA192_387 = input.LA(1);
-						 
-						int index192_387 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_387);
-						if ( s>=0 ) return s;
-						break;
-
-					case 94 : 
-						int LA192_521 = input.LA(1);
-						 
-						int index192_521 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_521);
-						if ( s>=0 ) return s;
-						break;
-
-					case 95 : 
-						int LA192_652 = input.LA(1);
-						 
-						int index192_652 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_652);
-						if ( s>=0 ) return s;
-						break;
-
-					case 96 : 
-						int LA192_757 = input.LA(1);
-						 
-						int index192_757 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_757);
-						if ( s>=0 ) return s;
-						break;
-
-					case 97 : 
-						int LA192_388 = input.LA(1);
-						 
-						int index192_388 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_388);
-						if ( s>=0 ) return s;
-						break;
-
-					case 98 : 
-						int LA192_69 = input.LA(1);
-						 
-						int index192_69 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_69);
-						if ( s>=0 ) return s;
-						break;
-
-					case 99 : 
-						int LA192_758 = input.LA(1);
-						 
-						int index192_758 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_758);
-						if ( s>=0 ) return s;
-						break;
-
-					case 100 : 
-						int LA192_99 = input.LA(1);
-						 
-						int index192_99 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_99);
-						if ( s>=0 ) return s;
-						break;
-
-					case 101 : 
-						int LA192_155 = input.LA(1);
-						 
-						int index192_155 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_155);
-						if ( s>=0 ) return s;
-						break;
-
-					case 102 : 
-						int LA192_157 = input.LA(1);
-						 
-						int index192_157 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_157);
-						if ( s>=0 ) return s;
-						break;
-
-					case 103 : 
-						int LA192_273 = input.LA(1);
-						 
-						int index192_273 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_273);
-						if ( s>=0 ) return s;
-						break;
-
-					case 104 : 
-						int LA192_522 = input.LA(1);
-						 
-						int index192_522 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_522);
-						if ( s>=0 ) return s;
-						break;
-
-					case 105 : 
-						int LA192_653 = input.LA(1);
-						 
-						int index192_653 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_653);
-						if ( s>=0 ) return s;
-						break;
-
-					case 106 : 
+					case 130 : 
 						int LA192_80 = input.LA(1);
 						s = -1;
 						if ( (LA192_80=='z') ) {s = 217;}
@@ -15166,1346 +15520,1268 @@ public class Css3Lexer extends Lexer {
 						if ( s>=0 ) return s;
 						break;
 
-					case 107 : 
+					case 131 : 
+						int LA192_342 = input.LA(1);
+						 
+						int index192_342 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_342);
+						if ( s>=0 ) return s;
+						break;
+
+					case 132 : 
+						int LA192_343 = input.LA(1);
+						 
+						int index192_343 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_343);
+						if ( s>=0 ) return s;
+						break;
+
+					case 133 : 
+						int LA192_9 = input.LA(1);
+						 
+						int index192_9 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred11_Css3()) ) {s = 75;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_9);
+						if ( s>=0 ) return s;
+						break;
+
+					case 134 : 
+						int LA192_20 = input.LA(1);
+						 
+						int index192_20 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred11_Css3()) ) {s = 75;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_20);
+						if ( s>=0 ) return s;
+						break;
+
+					case 135 : 
+						int LA192_812 = input.LA(1);
+						 
+						int index192_812 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_812);
+						if ( s>=0 ) return s;
+						break;
+
+					case 136 : 
+						int LA192_67 = input.LA(1);
+						 
+						int index192_67 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred8_Css3()) ) {s = 191;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_67);
+						if ( s>=0 ) return s;
+						break;
+
+					case 137 : 
+						int LA192_98 = input.LA(1);
+						 
+						int index192_98 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred8_Css3()) ) {s = 191;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_98);
+						if ( s>=0 ) return s;
+						break;
+
+					case 138 : 
+						int LA192_154 = input.LA(1);
+						 
+						int index192_154 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred8_Css3()) ) {s = 191;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_154);
+						if ( s>=0 ) return s;
+						break;
+
+					case 139 : 
+						int LA192_156 = input.LA(1);
+						 
+						int index192_156 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred8_Css3()) ) {s = 191;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_156);
+						if ( s>=0 ) return s;
+						break;
+
+					case 140 : 
+						int LA192_272 = input.LA(1);
+						 
+						int index192_272 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred8_Css3()) ) {s = 191;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_272);
+						if ( s>=0 ) return s;
+						break;
+
+					case 141 : 
+						int LA192_387 = input.LA(1);
+						 
+						int index192_387 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred8_Css3()) ) {s = 191;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_387);
+						if ( s>=0 ) return s;
+						break;
+
+					case 142 : 
+						int LA192_521 = input.LA(1);
+						 
+						int index192_521 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred8_Css3()) ) {s = 191;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_521);
+						if ( s>=0 ) return s;
+						break;
+
+					case 143 : 
+						int LA192_652 = input.LA(1);
+						 
+						int index192_652 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred8_Css3()) ) {s = 191;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_652);
+						if ( s>=0 ) return s;
+						break;
+
+					case 144 : 
+						int LA192_757 = input.LA(1);
+						 
+						int index192_757 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred8_Css3()) ) {s = 191;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_757);
+						if ( s>=0 ) return s;
+						break;
+
+					case 145 : 
+						int LA192_99 = input.LA(1);
+						 
+						int index192_99 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred8_Css3()) ) {s = 191;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_99);
+						if ( s>=0 ) return s;
+						break;
+
+					case 146 : 
+						int LA192_69 = input.LA(1);
+						 
+						int index192_69 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred8_Css3()) ) {s = 191;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_69);
+						if ( s>=0 ) return s;
+						break;
+
+					case 147 : 
+						int LA192_155 = input.LA(1);
+						 
+						int index192_155 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred8_Css3()) ) {s = 191;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_155);
+						if ( s>=0 ) return s;
+						break;
+
+					case 148 : 
+						int LA192_157 = input.LA(1);
+						 
+						int index192_157 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred8_Css3()) ) {s = 191;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_157);
+						if ( s>=0 ) return s;
+						break;
+
+					case 149 : 
+						int LA192_273 = input.LA(1);
+						 
+						int index192_273 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred8_Css3()) ) {s = 191;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_273);
+						if ( s>=0 ) return s;
+						break;
+
+					case 150 : 
+						int LA192_388 = input.LA(1);
+						 
+						int index192_388 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred8_Css3()) ) {s = 191;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_388);
+						if ( s>=0 ) return s;
+						break;
+
+					case 151 : 
+						int LA192_522 = input.LA(1);
+						 
+						int index192_522 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred8_Css3()) ) {s = 191;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_522);
+						if ( s>=0 ) return s;
+						break;
+
+					case 152 : 
+						int LA192_653 = input.LA(1);
+						 
+						int index192_653 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred8_Css3()) ) {s = 191;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_653);
+						if ( s>=0 ) return s;
+						break;
+
+					case 153 : 
+						int LA192_758 = input.LA(1);
+						 
+						int index192_758 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred8_Css3()) ) {s = 191;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_758);
+						if ( s>=0 ) return s;
+						break;
+
+					case 154 : 
+						int LA192_163 = input.LA(1);
+						 
+						int index192_163 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_163);
+						if ( s>=0 ) return s;
+						break;
+
+					case 155 : 
+						int LA192_164 = input.LA(1);
+						 
+						int index192_164 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_164);
+						if ( s>=0 ) return s;
+						break;
+
+					case 156 : 
+						int LA192_41 = input.LA(1);
+						 
+						int index192_41 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred11_Css3()) ) {s = 75;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_41);
+						if ( s>=0 ) return s;
+						break;
+
+					case 157 : 
+						int LA192_42 = input.LA(1);
+						 
+						int index192_42 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred11_Css3()) ) {s = 75;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_42);
+						if ( s>=0 ) return s;
+						break;
+
+					case 158 : 
+						int LA192_436 = input.LA(1);
+						 
+						int index192_436 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_436);
+						if ( s>=0 ) return s;
+						break;
+
+					case 159 : 
+						int LA192_437 = input.LA(1);
+						 
+						int index192_437 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_437);
+						if ( s>=0 ) return s;
+						break;
+
+					case 160 : 
 						int LA192_697 = input.LA(1);
 						 
 						int index192_697 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
+						if ( (synpred7_Css3()) ) {s = 183;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_697);
 						if ( s>=0 ) return s;
 						break;
 
-					case 108 : 
+					case 161 : 
 						int LA192_698 = input.LA(1);
 						 
 						int index192_698 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
+						if ( (synpred7_Css3()) ) {s = 183;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_698);
 						if ( s>=0 ) return s;
 						break;
 
-					case 109 : 
-						int LA192_259 = input.LA(1);
-						 
-						int index192_259 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred10_Css3()) ) {s = 75;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_259);
-						if ( s>=0 ) return s;
-						break;
-
-					case 110 : 
+					case 162 : 
 						int LA192_575 = input.LA(1);
 						 
 						int index192_575 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
+						if ( (synpred8_Css3()) ) {s = 191;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_575);
 						if ( s>=0 ) return s;
 						break;
 
-					case 111 : 
+					case 163 : 
+						int LA192_259 = input.LA(1);
+						 
+						int index192_259 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred11_Css3()) ) {s = 75;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_259);
+						if ( s>=0 ) return s;
+						break;
+
+					case 164 : 
 						int LA192_576 = input.LA(1);
 						 
 						int index192_576 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
+						if ( (synpred8_Css3()) ) {s = 191;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_576);
 						if ( s>=0 ) return s;
 						break;
 
-					case 112 : 
-						int LA192_508 = input.LA(1);
-						 
-						int index192_508 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred10_Css3()) ) {s = 75;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_508);
-						if ( s>=0 ) return s;
-						break;
-
-					case 113 : 
+					case 165 : 
 						int LA192_445 = input.LA(1);
 						 
 						int index192_445 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
+						if ( (synpred10_Css3()) ) {s = 316;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_445);
 						if ( s>=0 ) return s;
 						break;
 
-					case 114 : 
-						int LA192_543 = input.LA(1);
+					case 166 : 
+						int LA192_508 = input.LA(1);
 						 
-						int index192_543 = input.index();
+						int index192_508 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
+						if ( (synpred11_Css3()) ) {s = 75;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_543);
+						input.seek(index192_508);
 						if ( s>=0 ) return s;
 						break;
 
-					case 115 : 
-						int LA192_547 = input.LA(1);
-						 
-						int index192_547 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_547);
-						if ( s>=0 ) return s;
-						break;
-
-					case 116 : 
-						int LA192_544 = input.LA(1);
-						 
-						int index192_544 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_544);
-						if ( s>=0 ) return s;
-						break;
-
-					case 117 : 
-						int LA192_548 = input.LA(1);
-						 
-						int index192_548 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_548);
-						if ( s>=0 ) return s;
-						break;
-
-					case 118 : 
-						int LA192_590 = input.LA(1);
-						 
-						int index192_590 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_590);
-						if ( s>=0 ) return s;
-						break;
-
-					case 119 : 
+					case 167 : 
 						int LA192_184 = input.LA(1);
 						 
 						int index192_184 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
+						if ( (synpred7_Css3()) ) {s = 183;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_184);
 						if ( s>=0 ) return s;
 						break;
 
-					case 120 : 
-						int LA192_591 = input.LA(1);
-						 
-						int index192_591 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_591);
-						if ( s>=0 ) return s;
-						break;
-
-					case 121 : 
-						int LA192_185 = input.LA(1);
-						 
-						int index192_185 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_185);
-						if ( s>=0 ) return s;
-						break;
-
-					case 122 : 
-						int LA192_490 = input.LA(1);
-						 
-						int index192_490 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_490);
-						if ( s>=0 ) return s;
-						break;
-
-					case 123 : 
-						int LA192_226 = input.LA(1);
-						 
-						int index192_226 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_226);
-						if ( s>=0 ) return s;
-						break;
-
-					case 124 : 
+					case 168 : 
 						int LA192_229 = input.LA(1);
 						 
 						int index192_229 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_229);
 						if ( s>=0 ) return s;
 						break;
 
-					case 125 : 
-						int LA192_471 = input.LA(1);
+					case 169 : 
+						int LA192_185 = input.LA(1);
 						 
-						int index192_471 = input.index();
+						int index192_185 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred7_Css3()) ) {s = 183;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_471);
+						input.seek(index192_185);
 						if ( s>=0 ) return s;
 						break;
 
-					case 126 : 
-						int LA192_488 = input.LA(1);
-						 
-						int index192_488 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_488);
-						if ( s>=0 ) return s;
-						break;
-
-					case 127 : 
-						int LA192_741 = input.LA(1);
-						 
-						int index192_741 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_741);
-						if ( s>=0 ) return s;
-						break;
-
-					case 128 : 
-						int LA192_743 = input.LA(1);
-						 
-						int index192_743 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_743);
-						if ( s>=0 ) return s;
-						break;
-
-					case 129 : 
-						int LA192_605 = input.LA(1);
-						 
-						int index192_605 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_605);
-						if ( s>=0 ) return s;
-						break;
-
-					case 130 : 
-						int LA192_823 = input.LA(1);
-						 
-						int index192_823 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_823);
-						if ( s>=0 ) return s;
-						break;
-
-					case 131 : 
-						int LA192_825 = input.LA(1);
-						 
-						int index192_825 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_825);
-						if ( s>=0 ) return s;
-						break;
-
-					case 132 : 
-						int LA192_814 = input.LA(1);
-						 
-						int index192_814 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_814);
-						if ( s>=0 ) return s;
-						break;
-
-					case 133 : 
-						int LA192_621 = input.LA(1);
-						 
-						int index192_621 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_621);
-						if ( s>=0 ) return s;
-						break;
-
-					case 134 : 
-						int LA192_623 = input.LA(1);
-						 
-						int index192_623 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_623);
-						if ( s>=0 ) return s;
-						break;
-
-					case 135 : 
-						int LA192_727 = input.LA(1);
-						 
-						int index192_727 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_727);
-						if ( s>=0 ) return s;
-						break;
-
-					case 136 : 
+					case 170 : 
 						int LA192_837 = input.LA(1);
 						 
 						int index192_837 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_837);
 						if ( s>=0 ) return s;
 						break;
 
-					case 137 : 
+					case 171 : 
+						int LA192_226 = input.LA(1);
+						 
+						int index192_226 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_226);
+						if ( s>=0 ) return s;
+						break;
+
+					case 172 : 
+						int LA192_471 = input.LA(1);
+						 
+						int index192_471 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_471);
+						if ( s>=0 ) return s;
+						break;
+
+					case 173 : 
+						int LA192_488 = input.LA(1);
+						 
+						int index192_488 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_488);
+						if ( s>=0 ) return s;
+						break;
+
+					case 174 : 
+						int LA192_741 = input.LA(1);
+						 
+						int index192_741 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_741);
+						if ( s>=0 ) return s;
+						break;
+
+					case 175 : 
+						int LA192_490 = input.LA(1);
+						 
+						int index192_490 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_490);
+						if ( s>=0 ) return s;
+						break;
+
+					case 176 : 
+						int LA192_727 = input.LA(1);
+						 
+						int index192_727 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_727);
+						if ( s>=0 ) return s;
+						break;
+
+					case 177 : 
+						int LA192_605 = input.LA(1);
+						 
+						int index192_605 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_605);
+						if ( s>=0 ) return s;
+						break;
+
+					case 178 : 
+						int LA192_825 = input.LA(1);
+						 
+						int index192_825 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_825);
+						if ( s>=0 ) return s;
+						break;
+
+					case 179 : 
+						int LA192_621 = input.LA(1);
+						 
+						int index192_621 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_621);
+						if ( s>=0 ) return s;
+						break;
+
+					case 180 : 
+						int LA192_623 = input.LA(1);
+						 
+						int index192_623 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_623);
+						if ( s>=0 ) return s;
+						break;
+
+					case 181 : 
+						int LA192_743 = input.LA(1);
+						 
+						int index192_743 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_743);
+						if ( s>=0 ) return s;
+						break;
+
+					case 182 : 
+						int LA192_814 = input.LA(1);
+						 
+						int index192_814 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_814);
+						if ( s>=0 ) return s;
+						break;
+
+					case 183 : 
+						int LA192_823 = input.LA(1);
+						 
+						int index192_823 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_823);
+						if ( s>=0 ) return s;
+						break;
+
+					case 184 : 
 						int LA192_472 = input.LA(1);
 						 
 						int index192_472 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_472);
 						if ( s>=0 ) return s;
 						break;
 
-					case 138 : 
+					case 185 : 
 						int LA192_228 = input.LA(1);
 						 
 						int index192_228 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_228);
 						if ( s>=0 ) return s;
 						break;
 
-					case 139 : 
+					case 186 : 
 						int LA192_230 = input.LA(1);
 						 
 						int index192_230 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_230);
 						if ( s>=0 ) return s;
 						break;
 
-					case 140 : 
-						int LA192_742 = input.LA(1);
-						 
-						int index192_742 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_742);
-						if ( s>=0 ) return s;
-						break;
-
-					case 141 : 
+					case 187 : 
 						int LA192_489 = input.LA(1);
 						 
 						int index192_489 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_489);
 						if ( s>=0 ) return s;
 						break;
 
-					case 142 : 
+					case 188 : 
 						int LA192_491 = input.LA(1);
 						 
 						int index192_491 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_491);
 						if ( s>=0 ) return s;
 						break;
 
-					case 143 : 
-						int LA192_728 = input.LA(1);
-						 
-						int index192_728 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_728);
-						if ( s>=0 ) return s;
-						break;
-
-					case 144 : 
-						int LA192_606 = input.LA(1);
-						 
-						int index192_606 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_606);
-						if ( s>=0 ) return s;
-						break;
-
-					case 145 : 
+					case 189 : 
 						int LA192_744 = input.LA(1);
 						 
 						int index192_744 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_744);
 						if ( s>=0 ) return s;
 						break;
 
-					case 146 : 
-						int LA192_815 = input.LA(1);
+					case 190 : 
+						int LA192_606 = input.LA(1);
 						 
-						int index192_815 = input.index();
+						int index192_606 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_815);
+						input.seek(index192_606);
 						if ( s>=0 ) return s;
 						break;
 
-					case 147 : 
-						int LA192_824 = input.LA(1);
-						 
-						int index192_824 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_824);
-						if ( s>=0 ) return s;
-						break;
-
-					case 148 : 
-						int LA192_622 = input.LA(1);
-						 
-						int index192_622 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_622);
-						if ( s>=0 ) return s;
-						break;
-
-					case 149 : 
-						int LA192_624 = input.LA(1);
-						 
-						int index192_624 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_624);
-						if ( s>=0 ) return s;
-						break;
-
-					case 150 : 
+					case 191 : 
 						int LA192_838 = input.LA(1);
 						 
 						int index192_838 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_838);
 						if ( s>=0 ) return s;
 						break;
 
-					case 151 : 
+					case 192 : 
+						int LA192_622 = input.LA(1);
+						 
+						int index192_622 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_622);
+						if ( s>=0 ) return s;
+						break;
+
+					case 193 : 
+						int LA192_742 = input.LA(1);
+						 
+						int index192_742 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_742);
+						if ( s>=0 ) return s;
+						break;
+
+					case 194 : 
+						int LA192_815 = input.LA(1);
+						 
+						int index192_815 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_815);
+						if ( s>=0 ) return s;
+						break;
+
+					case 195 : 
+						int LA192_624 = input.LA(1);
+						 
+						int index192_624 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_624);
+						if ( s>=0 ) return s;
+						break;
+
+					case 196 : 
+						int LA192_728 = input.LA(1);
+						 
+						int index192_728 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_728);
+						if ( s>=0 ) return s;
+						break;
+
+					case 197 : 
+						int LA192_824 = input.LA(1);
+						 
+						int index192_824 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_824);
+						if ( s>=0 ) return s;
+						break;
+
+					case 198 : 
 						int LA192_826 = input.LA(1);
 						 
 						int index192_826 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_826);
 						if ( s>=0 ) return s;
 						break;
 
-					case 152 : 
+					case 199 : 
+						int LA192_543 = input.LA(1);
+						 
+						int index192_543 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_543);
+						if ( s>=0 ) return s;
+						break;
+
+					case 200 : 
+						int LA192_547 = input.LA(1);
+						 
+						int index192_547 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_547);
+						if ( s>=0 ) return s;
+						break;
+
+					case 201 : 
+						int LA192_544 = input.LA(1);
+						 
+						int index192_544 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_544);
+						if ( s>=0 ) return s;
+						break;
+
+					case 202 : 
+						int LA192_548 = input.LA(1);
+						 
+						int index192_548 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_548);
+						if ( s>=0 ) return s;
+						break;
+
+					case 203 : 
+						int LA192_590 = input.LA(1);
+						 
+						int index192_590 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_590);
+						if ( s>=0 ) return s;
+						break;
+
+					case 204 : 
+						int LA192_591 = input.LA(1);
+						 
+						int index192_591 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_591);
+						if ( s>=0 ) return s;
+						break;
+
+					case 205 : 
 						int LA192_789 = input.LA(1);
 						 
 						int index192_789 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred5_Css3()) ) {s = 178;}
+						if ( (synpred6_Css3()) ) {s = 178;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_789);
 						if ( s>=0 ) return s;
 						break;
 
-					case 153 : 
+					case 206 : 
 						int LA192_790 = input.LA(1);
 						 
 						int index192_790 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred5_Css3()) ) {s = 178;}
+						if ( (synpred6_Css3()) ) {s = 178;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_790);
 						if ( s>=0 ) return s;
 						break;
 
-					case 154 : 
-						int LA192_731 = input.LA(1);
-						 
-						int index192_731 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_731);
-						if ( s>=0 ) return s;
-						break;
-
-					case 155 : 
-						int LA192_397 = input.LA(1);
-						 
-						int index192_397 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_397);
-						if ( s>=0 ) return s;
-						break;
-
-					case 156 : 
-						int LA192_732 = input.LA(1);
-						 
-						int index192_732 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_732);
-						if ( s>=0 ) return s;
-						break;
-
-					case 157 : 
-						int LA192_805 = input.LA(1);
-						 
-						int index192_805 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_805);
-						if ( s>=0 ) return s;
-						break;
-
-					case 158 : 
-						int LA192_400 = input.LA(1);
-						 
-						int index192_400 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_400);
-						if ( s>=0 ) return s;
-						break;
-
-					case 159 : 
-						int LA192_806 = input.LA(1);
-						 
-						int index192_806 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_806);
-						if ( s>=0 ) return s;
-						break;
-
-					case 160 : 
-						int LA192_428 = input.LA(1);
-						 
-						int index192_428 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_428);
-						if ( s>=0 ) return s;
-						break;
-
-					case 161 : 
-						int LA192_47 = input.LA(1);
-						 
-						int index192_47 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_47);
-						if ( s>=0 ) return s;
-						break;
-
-					case 162 : 
+					case 207 : 
 						int LA192_82 = input.LA(1);
 						 
 						int index192_82 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
+						if ( (synpred4_Css3()) ) {s = 162;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_82);
 						if ( s>=0 ) return s;
 						break;
 
-					case 163 : 
+					case 208 : 
+						int LA192_47 = input.LA(1);
+						 
+						int index192_47 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_47);
+						if ( s>=0 ) return s;
+						break;
+
+					case 209 : 
 						int LA192_262 = input.LA(1);
 						 
 						int index192_262 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
+						if ( (synpred4_Css3()) ) {s = 162;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_262);
 						if ( s>=0 ) return s;
 						break;
 
-					case 164 : 
+					case 210 : 
 						int LA192_377 = input.LA(1);
 						 
 						int index192_377 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
+						if ( (synpred4_Css3()) ) {s = 162;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_377);
 						if ( s>=0 ) return s;
 						break;
 
-					case 165 : 
+					case 211 : 
 						int LA192_511 = input.LA(1);
 						 
 						int index192_511 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
+						if ( (synpred4_Css3()) ) {s = 162;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_511);
 						if ( s>=0 ) return s;
 						break;
 
-					case 166 : 
+					case 212 : 
 						int LA192_642 = input.LA(1);
 						 
 						int index192_642 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
+						if ( (synpred4_Css3()) ) {s = 162;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_642);
 						if ( s>=0 ) return s;
 						break;
 
-					case 167 : 
+					case 213 : 
 						int LA192_747 = input.LA(1);
 						 
 						int index192_747 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
+						if ( (synpred4_Css3()) ) {s = 162;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_747);
 						if ( s>=0 ) return s;
 						break;
 
-					case 168 : 
+					case 214 : 
 						int LA192_50 = input.LA(1);
 						 
 						int index192_50 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
+						if ( (synpred4_Css3()) ) {s = 162;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_50);
 						if ( s>=0 ) return s;
 						break;
 
-					case 169 : 
+					case 215 : 
 						int LA192_84 = input.LA(1);
 						 
 						int index192_84 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
+						if ( (synpred4_Css3()) ) {s = 162;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_84);
 						if ( s>=0 ) return s;
 						break;
 
-					case 170 : 
+					case 216 : 
 						int LA192_264 = input.LA(1);
 						 
 						int index192_264 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
+						if ( (synpred4_Css3()) ) {s = 162;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_264);
 						if ( s>=0 ) return s;
 						break;
 
-					case 171 : 
+					case 217 : 
 						int LA192_379 = input.LA(1);
 						 
 						int index192_379 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
+						if ( (synpred4_Css3()) ) {s = 162;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_379);
 						if ( s>=0 ) return s;
 						break;
 
-					case 172 : 
+					case 218 : 
 						int LA192_513 = input.LA(1);
 						 
 						int index192_513 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
+						if ( (synpred4_Css3()) ) {s = 162;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_513);
 						if ( s>=0 ) return s;
 						break;
 
-					case 173 : 
+					case 219 : 
 						int LA192_644 = input.LA(1);
 						 
 						int index192_644 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
+						if ( (synpred4_Css3()) ) {s = 162;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_644);
 						if ( s>=0 ) return s;
 						break;
 
-					case 174 : 
+					case 220 : 
 						int LA192_749 = input.LA(1);
 						 
 						int index192_749 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
+						if ( (synpred4_Css3()) ) {s = 162;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_749);
 						if ( s>=0 ) return s;
 						break;
 
-					case 175 : 
-						int LA192_554 = input.LA(1);
+					case 221 : 
+						int LA192_731 = input.LA(1);
 						 
-						int index192_554 = input.index();
+						int index192_731 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_554);
+						input.seek(index192_731);
 						if ( s>=0 ) return s;
 						break;
 
-					case 176 : 
-						int LA192_555 = input.LA(1);
+					case 222 : 
+						int LA192_805 = input.LA(1);
 						 
-						int index192_555 = input.index();
+						int index192_805 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
+						if ( (synpred10_Css3()) ) {s = 316;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_555);
+						input.seek(index192_805);
 						if ( s>=0 ) return s;
 						break;
 
-					case 177 : 
-						int LA192_691 = input.LA(1);
+					case 223 : 
+						int LA192_732 = input.LA(1);
 						 
-						int index192_691 = input.index();
+						int index192_732 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_691);
+						input.seek(index192_732);
 						if ( s>=0 ) return s;
 						break;
 
-					case 178 : 
-						int LA192_323 = input.LA(1);
+					case 224 : 
+						int LA192_806 = input.LA(1);
 						 
-						int index192_323 = input.index();
+						int index192_806 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
+						if ( (synpred10_Css3()) ) {s = 316;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_323);
+						input.seek(index192_806);
 						if ( s>=0 ) return s;
 						break;
 
-					case 179 : 
-						int LA192_324 = input.LA(1);
+					case 225 : 
+						int LA192_428 = input.LA(1);
 						 
-						int index192_324 = input.index();
+						int index192_428 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
+						if ( (synpred5_Css3()) ) {s = 170;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_324);
+						input.seek(index192_428);
 						if ( s>=0 ) return s;
 						break;
 
-					case 180 : 
-						int LA192_143 = input.LA(1);
+					case 226 : 
+						int LA192_397 = input.LA(1);
 						 
-						int index192_143 = input.index();
+						int index192_397 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
+						if ( (synpred5_Css3()) ) {s = 170;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_143);
+						input.seek(index192_397);
 						if ( s>=0 ) return s;
 						break;
 
-					case 181 : 
-						int LA192_62 = input.LA(1);
+					case 227 : 
+						int LA192_400 = input.LA(1);
 						 
-						int index192_62 = input.index();
+						int index192_400 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
+						if ( (synpred5_Css3()) ) {s = 170;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_62);
+						input.seek(index192_400);
 						if ( s>=0 ) return s;
 						break;
 
-					case 182 : 
-						int LA192_94 = input.LA(1);
-						 
-						int index192_94 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_94);
-						if ( s>=0 ) return s;
-						break;
-
-					case 183 : 
-						int LA192_150 = input.LA(1);
-						 
-						int index192_150 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_150);
-						if ( s>=0 ) return s;
-						break;
-
-					case 184 : 
-						int LA192_268 = input.LA(1);
-						 
-						int index192_268 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_268);
-						if ( s>=0 ) return s;
-						break;
-
-					case 185 : 
-						int LA192_761 = input.LA(1);
-						 
-						int index192_761 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_761);
-						if ( s>=0 ) return s;
-						break;
-
-					case 186 : 
-						int LA192_276 = input.LA(1);
-						 
-						int index192_276 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_276);
-						if ( s>=0 ) return s;
-						break;
-
-					case 187 : 
-						int LA192_648 = input.LA(1);
-						 
-						int index192_648 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_648);
-						if ( s>=0 ) return s;
-						break;
-
-					case 188 : 
-						int LA192_656 = input.LA(1);
-						 
-						int index192_656 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_656);
-						if ( s>=0 ) return s;
-						break;
-
-					case 189 : 
-						int LA192_383 = input.LA(1);
-						 
-						int index192_383 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_383);
-						if ( s>=0 ) return s;
-						break;
-
-					case 190 : 
-						int LA192_517 = input.LA(1);
-						 
-						int index192_517 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_517);
-						if ( s>=0 ) return s;
-						break;
-
-					case 191 : 
-						int LA192_391 = input.LA(1);
-						 
-						int index192_391 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_391);
-						if ( s>=0 ) return s;
-						break;
-
-					case 192 : 
-						int LA192_753 = input.LA(1);
-						 
-						int index192_753 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_753);
-						if ( s>=0 ) return s;
-						break;
-
-					case 193 : 
-						int LA192_525 = input.LA(1);
-						 
-						int index192_525 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_525);
-						if ( s>=0 ) return s;
-						break;
-
-					case 194 : 
-						int LA192_96 = input.LA(1);
-						 
-						int index192_96 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_96);
-						if ( s>=0 ) return s;
-						break;
-
-					case 195 : 
-						int LA192_65 = input.LA(1);
-						 
-						int index192_65 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_65);
-						if ( s>=0 ) return s;
-						break;
-
-					case 196 : 
-						int LA192_755 = input.LA(1);
-						 
-						int index192_755 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_755);
-						if ( s>=0 ) return s;
-						break;
-
-					case 197 : 
-						int LA192_144 = input.LA(1);
-						 
-						int index192_144 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_144);
-						if ( s>=0 ) return s;
-						break;
-
-					case 198 : 
-						int LA192_658 = input.LA(1);
-						 
-						int index192_658 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_658);
-						if ( s>=0 ) return s;
-						break;
-
-					case 199 : 
-						int LA192_151 = input.LA(1);
-						 
-						int index192_151 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_151);
-						if ( s>=0 ) return s;
-						break;
-
-					case 200 : 
-						int LA192_519 = input.LA(1);
-						 
-						int index192_519 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_519);
-						if ( s>=0 ) return s;
-						break;
-
-					case 201 : 
-						int LA192_650 = input.LA(1);
-						 
-						int index192_650 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_650);
-						if ( s>=0 ) return s;
-						break;
-
-					case 202 : 
-						int LA192_270 = input.LA(1);
-						 
-						int index192_270 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_270);
-						if ( s>=0 ) return s;
-						break;
-
-					case 203 : 
-						int LA192_278 = input.LA(1);
-						 
-						int index192_278 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_278);
-						if ( s>=0 ) return s;
-						break;
-
-					case 204 : 
-						int LA192_385 = input.LA(1);
-						 
-						int index192_385 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_385);
-						if ( s>=0 ) return s;
-						break;
-
-					case 205 : 
-						int LA192_393 = input.LA(1);
-						 
-						int index192_393 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_393);
-						if ( s>=0 ) return s;
-						break;
-
-					case 206 : 
-						int LA192_527 = input.LA(1);
-						 
-						int index192_527 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_527);
-						if ( s>=0 ) return s;
-						break;
-
-					case 207 : 
-						int LA192_763 = input.LA(1);
-						 
-						int index192_763 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_763);
-						if ( s>=0 ) return s;
-						break;
-
-					case 208 : 
-						int LA192_794 = input.LA(1);
-						 
-						int index192_794 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_794);
-						if ( s>=0 ) return s;
-						break;
-
-					case 209 : 
-						int LA192_795 = input.LA(1);
-						 
-						int index192_795 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_795);
-						if ( s>=0 ) return s;
-						break;
-
-					case 210 : 
+					case 228 : 
 						int LA192_197 = input.LA(1);
 						s = -1;
 						if ( ((LA192_197 >= '\u0000' && LA192_197 <= '\t')||LA192_197=='\u000B'||(LA192_197 >= '\u000E' && LA192_197 <= '/')||(LA192_197 >= '1' && LA192_197 <= '3')||LA192_197=='5'||(LA192_197 >= '7' && LA192_197 <= '\uFFFF')) ) {s = 12;}
@@ -16514,696 +16790,540 @@ public class Css3Lexer extends Lexer {
 						if ( s>=0 ) return s;
 						break;
 
-					case 211 : 
+					case 229 : 
+						int LA192_554 = input.LA(1);
+						 
+						int index192_554 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_554);
+						if ( s>=0 ) return s;
+						break;
+
+					case 230 : 
+						int LA192_555 = input.LA(1);
+						 
+						int index192_555 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_555);
+						if ( s>=0 ) return s;
+						break;
+
+					case 231 : 
+						int LA192_691 = input.LA(1);
+						 
+						int index192_691 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_691);
+						if ( s>=0 ) return s;
+						break;
+
+					case 232 : 
+						int LA192_323 = input.LA(1);
+						 
+						int index192_323 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_323);
+						if ( s>=0 ) return s;
+						break;
+
+					case 233 : 
+						int LA192_324 = input.LA(1);
+						 
+						int index192_324 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_324);
+						if ( s>=0 ) return s;
+						break;
+
+					case 234 : 
+						int LA192_94 = input.LA(1);
+						 
+						int index192_94 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_94);
+						if ( s>=0 ) return s;
+						break;
+
+					case 235 : 
+						int LA192_62 = input.LA(1);
+						 
+						int index192_62 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_62);
+						if ( s>=0 ) return s;
+						break;
+
+					case 236 : 
+						int LA192_143 = input.LA(1);
+						 
+						int index192_143 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_143);
+						if ( s>=0 ) return s;
+						break;
+
+					case 237 : 
+						int LA192_150 = input.LA(1);
+						 
+						int index192_150 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_150);
+						if ( s>=0 ) return s;
+						break;
+
+					case 238 : 
+						int LA192_648 = input.LA(1);
+						 
+						int index192_648 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_648);
+						if ( s>=0 ) return s;
+						break;
+
+					case 239 : 
+						int LA192_656 = input.LA(1);
+						 
+						int index192_656 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_656);
+						if ( s>=0 ) return s;
+						break;
+
+					case 240 : 
+						int LA192_753 = input.LA(1);
+						 
+						int index192_753 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_753);
+						if ( s>=0 ) return s;
+						break;
+
+					case 241 : 
+						int LA192_517 = input.LA(1);
+						 
+						int index192_517 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_517);
+						if ( s>=0 ) return s;
+						break;
+
+					case 242 : 
+						int LA192_268 = input.LA(1);
+						 
+						int index192_268 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_268);
+						if ( s>=0 ) return s;
+						break;
+
+					case 243 : 
+						int LA192_525 = input.LA(1);
+						 
+						int index192_525 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_525);
+						if ( s>=0 ) return s;
+						break;
+
+					case 244 : 
+						int LA192_276 = input.LA(1);
+						 
+						int index192_276 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_276);
+						if ( s>=0 ) return s;
+						break;
+
+					case 245 : 
+						int LA192_383 = input.LA(1);
+						 
+						int index192_383 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_383);
+						if ( s>=0 ) return s;
+						break;
+
+					case 246 : 
+						int LA192_761 = input.LA(1);
+						 
+						int index192_761 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_761);
+						if ( s>=0 ) return s;
+						break;
+
+					case 247 : 
+						int LA192_391 = input.LA(1);
+						 
+						int index192_391 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_391);
+						if ( s>=0 ) return s;
+						break;
+
+					case 248 : 
+						int LA192_151 = input.LA(1);
+						 
+						int index192_151 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_151);
+						if ( s>=0 ) return s;
+						break;
+
+					case 249 : 
+						int LA192_96 = input.LA(1);
+						 
+						int index192_96 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_96);
+						if ( s>=0 ) return s;
+						break;
+
+					case 250 : 
+						int LA192_65 = input.LA(1);
+						 
+						int index192_65 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_65);
+						if ( s>=0 ) return s;
+						break;
+
+					case 251 : 
+						int LA192_144 = input.LA(1);
+						 
+						int index192_144 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_144);
+						if ( s>=0 ) return s;
+						break;
+
+					case 252 : 
+						int LA192_270 = input.LA(1);
+						 
+						int index192_270 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_270);
+						if ( s>=0 ) return s;
+						break;
+
+					case 253 : 
+						int LA192_763 = input.LA(1);
+						 
+						int index192_763 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_763);
+						if ( s>=0 ) return s;
+						break;
+
+					case 254 : 
+						int LA192_278 = input.LA(1);
+						 
+						int index192_278 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_278);
+						if ( s>=0 ) return s;
+						break;
+
+					case 255 : 
+						int LA192_385 = input.LA(1);
+						 
+						int index192_385 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_385);
+						if ( s>=0 ) return s;
+						break;
+
+					case 256 : 
+						int LA192_393 = input.LA(1);
+						 
+						int index192_393 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_393);
+						if ( s>=0 ) return s;
+						break;
+
+					case 257 : 
+						int LA192_755 = input.LA(1);
+						 
+						int index192_755 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_755);
+						if ( s>=0 ) return s;
+						break;
+
+					case 258 : 
+						int LA192_519 = input.LA(1);
+						 
+						int index192_519 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_519);
+						if ( s>=0 ) return s;
+						break;
+
+					case 259 : 
+						int LA192_527 = input.LA(1);
+						 
+						int index192_527 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_527);
+						if ( s>=0 ) return s;
+						break;
+
+					case 260 : 
+						int LA192_658 = input.LA(1);
+						 
+						int index192_658 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_658);
+						if ( s>=0 ) return s;
+						break;
+
+					case 261 : 
+						int LA192_650 = input.LA(1);
+						 
+						int index192_650 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_650);
+						if ( s>=0 ) return s;
+						break;
+
+					case 262 : 
+						int LA192_794 = input.LA(1);
+						 
+						int index192_794 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred8_Css3()) ) {s = 191;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_794);
+						if ( s>=0 ) return s;
+						break;
+
+					case 263 : 
+						int LA192_795 = input.LA(1);
+						 
+						int index192_795 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred8_Css3()) ) {s = 191;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_795);
+						if ( s>=0 ) return s;
+						break;
+
+					case 264 : 
 						int LA192_311 = input.LA(1);
 						 
 						int index192_311 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
+						if ( (synpred7_Css3()) ) {s = 183;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_311);
 						if ( s>=0 ) return s;
 						break;
 
-					case 212 : 
+					case 265 : 
 						int LA192_570 = input.LA(1);
 						 
 						int index192_570 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
+						if ( (synpred7_Css3()) ) {s = 183;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_570);
 						if ( s>=0 ) return s;
 						break;
 
-					case 213 : 
+					case 266 : 
 						int LA192_571 = input.LA(1);
 						 
 						int index192_571 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
+						if ( (synpred7_Css3()) ) {s = 183;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_571);
 						if ( s>=0 ) return s;
 						break;
 
-					case 214 : 
+					case 267 : 
 						int LA192_300 = input.LA(1);
 						 
 						int index192_300 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
+						if ( (synpred5_Css3()) ) {s = 170;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_300);
 						if ( s>=0 ) return s;
 						break;
 
-					case 215 : 
-						int LA192_374 = input.LA(1);
-						 
-						int index192_374 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred10_Css3()) ) {s = 75;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_374);
-						if ( s>=0 ) return s;
-						break;
-
-					case 216 : 
+					case 268 : 
 						int LA192_450 = input.LA(1);
 						 
 						int index192_450 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
+						if ( (synpred10_Css3()) ) {s = 316;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_450);
 						if ( s>=0 ) return s;
 						break;
 
-					case 217 : 
+					case 269 : 
 						int LA192_451 = input.LA(1);
 						 
 						int index192_451 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
+						if ( (synpred10_Css3()) ) {s = 316;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_451);
 						if ( s>=0 ) return s;
 						break;
 
-					case 218 : 
-						int LA192_839 = input.LA(1);
-						 
-						int index192_839 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_839);
-						if ( s>=0 ) return s;
-						break;
-
-					case 219 : 
-						int LA192_662 = input.LA(1);
-						 
-						int index192_662 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_662);
-						if ( s>=0 ) return s;
-						break;
-
-					case 220 : 
-						int LA192_840 = input.LA(1);
-						 
-						int index192_840 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_840);
-						if ( s>=0 ) return s;
-						break;
-
-					case 221 : 
-						int LA192_409 = input.LA(1);
-						 
-						int index192_409 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_409);
-						if ( s>=0 ) return s;
-						break;
-
-					case 222 : 
-						int LA192_413 = input.LA(1);
-						 
-						int index192_413 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_413);
-						if ( s>=0 ) return s;
-						break;
-
-					case 223 : 
-						int LA192_665 = input.LA(1);
-						 
-						int index192_665 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_665);
-						if ( s>=0 ) return s;
-						break;
-
-					case 224 : 
-						int LA192_410 = input.LA(1);
-						 
-						int index192_410 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_410);
-						if ( s>=0 ) return s;
-						break;
-
-					case 225 : 
-						int LA192_414 = input.LA(1);
-						 
-						int index192_414 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_414);
-						if ( s>=0 ) return s;
-						break;
-
-					case 226 : 
-						int LA192_579 = input.LA(1);
-						 
-						int index192_579 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_579);
-						if ( s>=0 ) return s;
-						break;
-
-					case 227 : 
-						int LA192_709 = input.LA(1);
-						 
-						int index192_709 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_709);
-						if ( s>=0 ) return s;
-						break;
-
-					case 228 : 
-						int LA192_710 = input.LA(1);
-						 
-						int index192_710 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_710);
-						if ( s>=0 ) return s;
-						break;
-
-					case 229 : 
-						int LA192_411 = input.LA(1);
-						 
-						int index192_411 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_411);
-						if ( s>=0 ) return s;
-						break;
-
-					case 230 : 
-						int LA192_201 = input.LA(1);
-						 
-						int index192_201 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_201);
-						if ( s>=0 ) return s;
-						break;
-
-					case 231 : 
-						int LA192_206 = input.LA(1);
-						 
-						int index192_206 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_206);
-						if ( s>=0 ) return s;
-						break;
-
-					case 232 : 
-						int LA192_415 = input.LA(1);
-						 
-						int index192_415 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_415);
-						if ( s>=0 ) return s;
-						break;
-
-					case 233 : 
-						int LA192_452 = input.LA(1);
-						 
-						int index192_452 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_452);
-						if ( s>=0 ) return s;
-						break;
-
-					case 234 : 
-						int LA192_545 = input.LA(1);
-						 
-						int index192_545 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_545);
-						if ( s>=0 ) return s;
-						break;
-
-					case 235 : 
-						int LA192_680 = input.LA(1);
-						 
-						int index192_680 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_680);
-						if ( s>=0 ) return s;
-						break;
-
-					case 236 : 
-						int LA192_831 = input.LA(1);
-						 
-						int index192_831 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_831);
-						if ( s>=0 ) return s;
-						break;
-
-					case 237 : 
-						int LA192_711 = input.LA(1);
-						 
-						int index192_711 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_711);
-						if ( s>=0 ) return s;
-						break;
-
-					case 238 : 
-						int LA192_777 = input.LA(1);
-						 
-						int index192_777 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_777);
-						if ( s>=0 ) return s;
-						break;
-
-					case 239 : 
-						int LA192_549 = input.LA(1);
-						 
-						int index192_549 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_549);
-						if ( s>=0 ) return s;
-						break;
-
-					case 240 : 
-						int LA192_802 = input.LA(1);
-						 
-						int index192_802 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_802);
-						if ( s>=0 ) return s;
-						break;
-
-					case 241 : 
-						int LA192_586 = input.LA(1);
-						 
-						int index192_586 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_586);
-						if ( s>=0 ) return s;
-						break;
-
-					case 242 : 
-						int LA192_676 = input.LA(1);
-						 
-						int index192_676 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_676);
-						if ( s>=0 ) return s;
-						break;
-
-					case 243 : 
-						int LA192_781 = input.LA(1);
-						 
-						int index192_781 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_781);
-						if ( s>=0 ) return s;
-						break;
-
-					case 244 : 
-						int LA192_546 = input.LA(1);
-						 
-						int index192_546 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_546);
-						if ( s>=0 ) return s;
-						break;
-
-					case 245 : 
-						int LA192_203 = input.LA(1);
-						 
-						int index192_203 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_203);
-						if ( s>=0 ) return s;
-						break;
-
-					case 246 : 
-						int LA192_207 = input.LA(1);
-						 
-						int index192_207 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_207);
-						if ( s>=0 ) return s;
-						break;
-
-					case 247 : 
-						int LA192_412 = input.LA(1);
-						 
-						int index192_412 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_412);
-						if ( s>=0 ) return s;
-						break;
-
-					case 248 : 
-						int LA192_416 = input.LA(1);
-						 
-						int index192_416 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_416);
-						if ( s>=0 ) return s;
-						break;
-
-					case 249 : 
-						int LA192_803 = input.LA(1);
-						 
-						int index192_803 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_803);
-						if ( s>=0 ) return s;
-						break;
-
-					case 250 : 
-						int LA192_453 = input.LA(1);
-						 
-						int index192_453 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_453);
-						if ( s>=0 ) return s;
-						break;
-
-					case 251 : 
-						int LA192_550 = input.LA(1);
-						 
-						int index192_550 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_550);
-						if ( s>=0 ) return s;
-						break;
-
-					case 252 : 
-						int LA192_778 = input.LA(1);
-						 
-						int index192_778 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_778);
-						if ( s>=0 ) return s;
-						break;
-
-					case 253 : 
-						int LA192_587 = input.LA(1);
-						 
-						int index192_587 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_587);
-						if ( s>=0 ) return s;
-						break;
-
-					case 254 : 
-						int LA192_712 = input.LA(1);
-						 
-						int index192_712 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_712);
-						if ( s>=0 ) return s;
-						break;
-
-					case 255 : 
-						int LA192_681 = input.LA(1);
-						 
-						int index192_681 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_681);
-						if ( s>=0 ) return s;
-						break;
-
-					case 256 : 
-						int LA192_832 = input.LA(1);
-						 
-						int index192_832 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_832);
-						if ( s>=0 ) return s;
-						break;
-
-					case 257 : 
-						int LA192_782 = input.LA(1);
-						 
-						int index192_782 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_782);
-						if ( s>=0 ) return s;
-						break;
-
-					case 258 : 
-						int LA192_677 = input.LA(1);
-						 
-						int index192_677 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_677);
-						if ( s>=0 ) return s;
-						break;
-
-					case 259 : 
-						int LA192_783 = input.LA(1);
-						 
-						int index192_783 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_783);
-						if ( s>=0 ) return s;
-						break;
-
-					case 260 : 
-						int LA192_784 = input.LA(1);
-						 
-						int index192_784 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_784);
-						if ( s>=0 ) return s;
-						break;
-
-					case 261 : 
-						int LA192_797 = input.LA(1);
-						 
-						int index192_797 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_797);
-						if ( s>=0 ) return s;
-						break;
-
-					case 262 : 
-						int LA192_715 = input.LA(1);
-						 
-						int index192_715 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_715);
-						if ( s>=0 ) return s;
-						break;
-
-					case 263 : 
-						int LA192_716 = input.LA(1);
-						 
-						int index192_716 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_716);
-						if ( s>=0 ) return s;
-						break;
-
-					case 264 : 
+					case 270 : 
 						int LA192_103 = input.LA(1);
 						s = -1;
 						if ( (LA192_103=='i') ) {s = 222;}
@@ -17214,59 +17334,618 @@ public class Css3Lexer extends Lexer {
 						if ( s>=0 ) return s;
 						break;
 
-					case 265 : 
-						int LA192_562 = input.LA(1);
+					case 271 : 
+						int LA192_839 = input.LA(1);
 						 
-						int index192_562 = input.index();
+						int index192_839 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_562);
+						input.seek(index192_839);
 						if ( s>=0 ) return s;
 						break;
 
-					case 266 : 
-						int LA192_359 = input.LA(1);
+					case 272 : 
+						int LA192_374 = input.LA(1);
 						 
-						int index192_359 = input.index();
+						int index192_374 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
+						if ( (synpred11_Css3()) ) {s = 75;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_359);
+						input.seek(index192_374);
 						if ( s>=0 ) return s;
 						break;
 
-					case 267 : 
-						int LA192_791 = input.LA(1);
+					case 273 : 
+						int LA192_840 = input.LA(1);
 						 
-						int index192_791 = input.index();
+						int index192_840 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_791);
+						input.seek(index192_840);
 						if ( s>=0 ) return s;
 						break;
 
-					case 268 : 
-						int LA192_792 = input.LA(1);
+					case 274 : 
+						int LA192_201 = input.LA(1);
 						 
-						int index192_792 = input.index();
+						int index192_201 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
+						if ( (synpred10_Css3()) ) {s = 316;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_792);
+						input.seek(index192_201);
 						if ( s>=0 ) return s;
 						break;
 
-					case 269 : 
+					case 275 : 
+						int LA192_206 = input.LA(1);
+						 
+						int index192_206 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_206);
+						if ( s>=0 ) return s;
+						break;
+
+					case 276 : 
+						int LA192_802 = input.LA(1);
+						 
+						int index192_802 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_802);
+						if ( s>=0 ) return s;
+						break;
+
+					case 277 : 
+						int LA192_831 = input.LA(1);
+						 
+						int index192_831 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_831);
+						if ( s>=0 ) return s;
+						break;
+
+					case 278 : 
+						int LA192_777 = input.LA(1);
+						 
+						int index192_777 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_777);
+						if ( s>=0 ) return s;
+						break;
+
+					case 279 : 
+						int LA192_411 = input.LA(1);
+						 
+						int index192_411 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_411);
+						if ( s>=0 ) return s;
+						break;
+
+					case 280 : 
+						int LA192_415 = input.LA(1);
+						 
+						int index192_415 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_415);
+						if ( s>=0 ) return s;
+						break;
+
+					case 281 : 
+						int LA192_452 = input.LA(1);
+						 
+						int index192_452 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_452);
+						if ( s>=0 ) return s;
+						break;
+
+					case 282 : 
+						int LA192_545 = input.LA(1);
+						 
+						int index192_545 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_545);
+						if ( s>=0 ) return s;
+						break;
+
+					case 283 : 
+						int LA192_680 = input.LA(1);
+						 
+						int index192_680 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_680);
+						if ( s>=0 ) return s;
+						break;
+
+					case 284 : 
+						int LA192_781 = input.LA(1);
+						 
+						int index192_781 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_781);
+						if ( s>=0 ) return s;
+						break;
+
+					case 285 : 
+						int LA192_549 = input.LA(1);
+						 
+						int index192_549 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_549);
+						if ( s>=0 ) return s;
+						break;
+
+					case 286 : 
+						int LA192_586 = input.LA(1);
+						 
+						int index192_586 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_586);
+						if ( s>=0 ) return s;
+						break;
+
+					case 287 : 
+						int LA192_676 = input.LA(1);
+						 
+						int index192_676 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_676);
+						if ( s>=0 ) return s;
+						break;
+
+					case 288 : 
+						int LA192_711 = input.LA(1);
+						 
+						int index192_711 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_711);
+						if ( s>=0 ) return s;
+						break;
+
+					case 289 : 
+						int LA192_550 = input.LA(1);
+						 
+						int index192_550 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_550);
+						if ( s>=0 ) return s;
+						break;
+
+					case 290 : 
+						int LA192_203 = input.LA(1);
+						 
+						int index192_203 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_203);
+						if ( s>=0 ) return s;
+						break;
+
+					case 291 : 
+						int LA192_207 = input.LA(1);
+						 
+						int index192_207 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_207);
+						if ( s>=0 ) return s;
+						break;
+
+					case 292 : 
+						int LA192_412 = input.LA(1);
+						 
+						int index192_412 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_412);
+						if ( s>=0 ) return s;
+						break;
+
+					case 293 : 
+						int LA192_416 = input.LA(1);
+						 
+						int index192_416 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_416);
+						if ( s>=0 ) return s;
+						break;
+
+					case 294 : 
+						int LA192_453 = input.LA(1);
+						 
+						int index192_453 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_453);
+						if ( s>=0 ) return s;
+						break;
+
+					case 295 : 
+						int LA192_782 = input.LA(1);
+						 
+						int index192_782 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_782);
+						if ( s>=0 ) return s;
+						break;
+
+					case 296 : 
+						int LA192_832 = input.LA(1);
+						 
+						int index192_832 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_832);
+						if ( s>=0 ) return s;
+						break;
+
+					case 297 : 
+						int LA192_546 = input.LA(1);
+						 
+						int index192_546 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_546);
+						if ( s>=0 ) return s;
+						break;
+
+					case 298 : 
+						int LA192_778 = input.LA(1);
+						 
+						int index192_778 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_778);
+						if ( s>=0 ) return s;
+						break;
+
+					case 299 : 
+						int LA192_587 = input.LA(1);
+						 
+						int index192_587 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_587);
+						if ( s>=0 ) return s;
+						break;
+
+					case 300 : 
+						int LA192_803 = input.LA(1);
+						 
+						int index192_803 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_803);
+						if ( s>=0 ) return s;
+						break;
+
+					case 301 : 
+						int LA192_712 = input.LA(1);
+						 
+						int index192_712 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_712);
+						if ( s>=0 ) return s;
+						break;
+
+					case 302 : 
+						int LA192_677 = input.LA(1);
+						 
+						int index192_677 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_677);
+						if ( s>=0 ) return s;
+						break;
+
+					case 303 : 
+						int LA192_681 = input.LA(1);
+						 
+						int index192_681 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_681);
+						if ( s>=0 ) return s;
+						break;
+
+					case 304 : 
+						int LA192_662 = input.LA(1);
+						 
+						int index192_662 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_662);
+						if ( s>=0 ) return s;
+						break;
+
+					case 305 : 
+						int LA192_665 = input.LA(1);
+						 
+						int index192_665 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_665);
+						if ( s>=0 ) return s;
+						break;
+
+					case 306 : 
+						int LA192_579 = input.LA(1);
+						 
+						int index192_579 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_579);
+						if ( s>=0 ) return s;
+						break;
+
+					case 307 : 
+						int LA192_709 = input.LA(1);
+						 
+						int index192_709 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_709);
+						if ( s>=0 ) return s;
+						break;
+
+					case 308 : 
+						int LA192_409 = input.LA(1);
+						 
+						int index192_409 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_409);
+						if ( s>=0 ) return s;
+						break;
+
+					case 309 : 
+						int LA192_413 = input.LA(1);
+						 
+						int index192_413 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_413);
+						if ( s>=0 ) return s;
+						break;
+
+					case 310 : 
+						int LA192_710 = input.LA(1);
+						 
+						int index192_710 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_710);
+						if ( s>=0 ) return s;
+						break;
+
+					case 311 : 
+						int LA192_410 = input.LA(1);
+						 
+						int index192_410 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_410);
+						if ( s>=0 ) return s;
+						break;
+
+					case 312 : 
+						int LA192_414 = input.LA(1);
+						 
+						int index192_414 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_414);
+						if ( s>=0 ) return s;
+						break;
+
+					case 313 : 
+						int LA192_783 = input.LA(1);
+						 
+						int index192_783 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_783);
+						if ( s>=0 ) return s;
+						break;
+
+					case 314 : 
+						int LA192_784 = input.LA(1);
+						 
+						int index192_784 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_784);
+						if ( s>=0 ) return s;
+						break;
+
+					case 315 : 
+						int LA192_797 = input.LA(1);
+						 
+						int index192_797 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_797);
+						if ( s>=0 ) return s;
+						break;
+
+					case 316 : 
+						int LA192_715 = input.LA(1);
+						 
+						int index192_715 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_715);
+						if ( s>=0 ) return s;
+						break;
+
+					case 317 : 
+						int LA192_716 = input.LA(1);
+						 
+						int index192_716 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_716);
+						if ( s>=0 ) return s;
+						break;
+
+					case 318 : 
 						int LA192_113 = input.LA(1);
 						s = -1;
 						if ( (LA192_113=='g') ) {s = 241;}
@@ -17277,865 +17956,189 @@ public class Css3Lexer extends Lexer {
 						if ( s>=0 ) return s;
 						break;
 
-					case 270 : 
+					case 319 : 
+						int LA192_562 = input.LA(1);
+						 
+						int index192_562 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_562);
+						if ( s>=0 ) return s;
+						break;
+
+					case 320 : 
+						int LA192_359 = input.LA(1);
+						 
+						int index192_359 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_359);
+						if ( s>=0 ) return s;
+						break;
+
+					case 321 : 
+						int LA192_791 = input.LA(1);
+						 
+						int index192_791 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_791);
+						if ( s>=0 ) return s;
+						break;
+
+					case 322 : 
+						int LA192_792 = input.LA(1);
+						 
+						int index192_792 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_792);
+						if ( s>=0 ) return s;
+						break;
+
+					case 323 : 
 						int LA192_639 = input.LA(1);
 						 
 						int index192_639 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred10_Css3()) ) {s = 75;}
+						if ( (synpred11_Css3()) ) {s = 75;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_639);
 						if ( s>=0 ) return s;
 						break;
 
-					case 271 : 
+					case 324 : 
 						int LA192_674 = input.LA(1);
 						 
 						int index192_674 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
+						if ( (synpred10_Css3()) ) {s = 316;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_674);
 						if ( s>=0 ) return s;
 						break;
 
-					case 272 : 
+					case 325 : 
 						int LA192_678 = input.LA(1);
 						 
 						int index192_678 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
+						if ( (synpred10_Css3()) ) {s = 316;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_678);
 						if ( s>=0 ) return s;
 						break;
 
-					case 273 : 
+					case 326 : 
 						int LA192_675 = input.LA(1);
 						 
 						int index192_675 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
+						if ( (synpred10_Css3()) ) {s = 316;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_675);
 						if ( s>=0 ) return s;
 						break;
 
-					case 274 : 
+					case 327 : 
 						int LA192_679 = input.LA(1);
 						 
 						int index192_679 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
+						if ( (synpred10_Css3()) ) {s = 316;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_679);
 						if ( s>=0 ) return s;
 						break;
 
-					case 275 : 
+					case 328 : 
 						int LA192_438 = input.LA(1);
 						 
 						int index192_438 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
+						if ( (synpred7_Css3()) ) {s = 183;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_438);
 						if ( s>=0 ) return s;
 						break;
 
-					case 276 : 
+					case 329 : 
 						int LA192_427 = input.LA(1);
 						 
 						int index192_427 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
+						if ( (synpred5_Css3()) ) {s = 170;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_427);
 						if ( s>=0 ) return s;
 						break;
 
-					case 277 : 
+					case 330 : 
 						int LA192_699 = input.LA(1);
 						 
 						int index192_699 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
+						if ( (synpred7_Css3()) ) {s = 183;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_699);
 						if ( s>=0 ) return s;
 						break;
 
-					case 278 : 
+					case 331 : 
 						int LA192_833 = input.LA(1);
 						 
 						int index192_833 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
+						if ( (synpred10_Css3()) ) {s = 316;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_833);
 						if ( s>=0 ) return s;
 						break;
 
-					case 279 : 
+					case 332 : 
 						int LA192_834 = input.LA(1);
 						 
 						int index192_834 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
+						if ( (synpred10_Css3()) ) {s = 316;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_834);
 						if ( s>=0 ) return s;
 						break;
 
-					case 280 : 
-						int LA192_690 = input.LA(1);
-						 
-						int index192_690 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_690);
-						if ( s>=0 ) return s;
-						break;
-
-					case 281 : 
-						int LA192_584 = input.LA(1);
-						 
-						int index192_584 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_584);
-						if ( s>=0 ) return s;
-						break;
-
-					case 282 : 
-						int LA192_585 = input.LA(1);
-						 
-						int index192_585 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_585);
-						if ( s>=0 ) return s;
-						break;
-
-					case 283 : 
-						int LA192_121 = input.LA(1);
-						 
-						int index192_121 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_121);
-						if ( s>=0 ) return s;
-						break;
-
-					case 284 : 
-						int LA192_54 = input.LA(1);
-						 
-						int index192_54 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_54);
-						if ( s>=0 ) return s;
-						break;
-
-					case 285 : 
-						int LA192_87 = input.LA(1);
-						 
-						int index192_87 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_87);
-						if ( s>=0 ) return s;
-						break;
-
-					case 286 : 
-						int LA192_139 = input.LA(1);
-						 
-						int index192_139 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_139);
-						if ( s>=0 ) return s;
-						break;
-
-					case 287 : 
-						int LA192_281 = input.LA(1);
-						 
-						int index192_281 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_281);
-						if ( s>=0 ) return s;
-						break;
-
-					case 288 : 
-						int LA192_766 = input.LA(1);
-						 
-						int index192_766 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_766);
-						if ( s>=0 ) return s;
-						break;
-
-					case 289 : 
-						int LA192_396 = input.LA(1);
-						 
-						int index192_396 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_396);
-						if ( s>=0 ) return s;
-						break;
-
-					case 290 : 
-						int LA192_530 = input.LA(1);
-						 
-						int index192_530 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_530);
-						if ( s>=0 ) return s;
-						break;
-
-					case 291 : 
-						int LA192_661 = input.LA(1);
-						 
-						int index192_661 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_661);
-						if ( s>=0 ) return s;
-						break;
-
-					case 292 : 
-						int LA192_90 = input.LA(1);
-						 
-						int index192_90 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_90);
-						if ( s>=0 ) return s;
-						break;
-
-					case 293 : 
-						int LA192_57 = input.LA(1);
-						 
-						int index192_57 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_57);
-						if ( s>=0 ) return s;
-						break;
-
-					case 294 : 
-						int LA192_122 = input.LA(1);
-						 
-						int index192_122 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_122);
-						if ( s>=0 ) return s;
-						break;
-
-					case 295 : 
-						int LA192_140 = input.LA(1);
-						 
-						int index192_140 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_140);
-						if ( s>=0 ) return s;
-						break;
-
-					case 296 : 
-						int LA192_284 = input.LA(1);
-						 
-						int index192_284 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_284);
-						if ( s>=0 ) return s;
-						break;
-
-					case 297 : 
-						int LA192_399 = input.LA(1);
-						 
-						int index192_399 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_399);
-						if ( s>=0 ) return s;
-						break;
-
-					case 298 : 
-						int LA192_533 = input.LA(1);
-						 
-						int index192_533 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_533);
-						if ( s>=0 ) return s;
-						break;
-
-					case 299 : 
-						int LA192_664 = input.LA(1);
-						 
-						int index192_664 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_664);
-						if ( s>=0 ) return s;
-						break;
-
-					case 300 : 
-						int LA192_769 = input.LA(1);
-						 
-						int index192_769 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_769);
-						if ( s>=0 ) return s;
-						break;
-
-					case 301 : 
-						int LA192_295 = input.LA(1);
-						 
-						int index192_295 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_295);
-						if ( s>=0 ) return s;
-						break;
-
-					case 302 : 
-						int LA192_788 = input.LA(1);
-						 
-						int index192_788 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_788);
-						if ( s>=0 ) return s;
-						break;
-
-					case 303 : 
-						int LA192_754 = input.LA(1);
-						 
-						int index192_754 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_754);
-						if ( s>=0 ) return s;
-						break;
-
-					case 304 : 
-						int LA192_64 = input.LA(1);
-						 
-						int index192_64 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_64);
-						if ( s>=0 ) return s;
-						break;
-
-					case 305 : 
-						int LA192_95 = input.LA(1);
-						 
-						int index192_95 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_95);
-						if ( s>=0 ) return s;
-						break;
-
-					case 306 : 
-						int LA192_145 = input.LA(1);
-						 
-						int index192_145 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_145);
-						if ( s>=0 ) return s;
-						break;
-
-					case 307 : 
-						int LA192_152 = input.LA(1);
-						 
-						int index192_152 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_152);
-						if ( s>=0 ) return s;
-						break;
-
-					case 308 : 
-						int LA192_269 = input.LA(1);
-						 
-						int index192_269 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_269);
-						if ( s>=0 ) return s;
-						break;
-
-					case 309 : 
-						int LA192_277 = input.LA(1);
-						 
-						int index192_277 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_277);
-						if ( s>=0 ) return s;
-						break;
-
-					case 310 : 
-						int LA192_762 = input.LA(1);
-						 
-						int index192_762 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_762);
-						if ( s>=0 ) return s;
-						break;
-
-					case 311 : 
-						int LA192_657 = input.LA(1);
-						 
-						int index192_657 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_657);
-						if ( s>=0 ) return s;
-						break;
-
-					case 312 : 
-						int LA192_705 = input.LA(1);
-						 
-						int index192_705 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_705);
-						if ( s>=0 ) return s;
-						break;
-
-					case 313 : 
-						int LA192_384 = input.LA(1);
-						 
-						int index192_384 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_384);
-						if ( s>=0 ) return s;
-						break;
-
-					case 314 : 
-						int LA192_518 = input.LA(1);
-						 
-						int index192_518 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_518);
-						if ( s>=0 ) return s;
-						break;
-
-					case 315 : 
-						int LA192_392 = input.LA(1);
-						 
-						int index192_392 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_392);
-						if ( s>=0 ) return s;
-						break;
-
-					case 316 : 
-						int LA192_649 = input.LA(1);
-						 
-						int index192_649 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_649);
-						if ( s>=0 ) return s;
-						break;
-
-					case 317 : 
-						int LA192_526 = input.LA(1);
-						 
-						int index192_526 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_526);
-						if ( s>=0 ) return s;
-						break;
-
-					case 318 : 
-						int LA192_520 = input.LA(1);
-						 
-						int index192_520 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_520);
-						if ( s>=0 ) return s;
-						break;
-
-					case 319 : 
-						int LA192_279 = input.LA(1);
-						 
-						int index192_279 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_279);
-						if ( s>=0 ) return s;
-						break;
-
-					case 320 : 
-						int LA192_66 = input.LA(1);
-						 
-						int index192_66 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_66);
-						if ( s>=0 ) return s;
-						break;
-
-					case 321 : 
-						int LA192_97 = input.LA(1);
-						 
-						int index192_97 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_97);
-						if ( s>=0 ) return s;
-						break;
-
-					case 322 : 
-						int LA192_146 = input.LA(1);
-						 
-						int index192_146 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_146);
-						if ( s>=0 ) return s;
-						break;
-
-					case 323 : 
-						int LA192_153 = input.LA(1);
-						 
-						int index192_153 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_153);
-						if ( s>=0 ) return s;
-						break;
-
-					case 324 : 
-						int LA192_528 = input.LA(1);
-						 
-						int index192_528 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_528);
-						if ( s>=0 ) return s;
-						break;
-
-					case 325 : 
-						int LA192_659 = input.LA(1);
-						 
-						int index192_659 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_659);
-						if ( s>=0 ) return s;
-						break;
-
-					case 326 : 
-						int LA192_271 = input.LA(1);
-						 
-						int index192_271 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_271);
-						if ( s>=0 ) return s;
-						break;
-
-					case 327 : 
-						int LA192_756 = input.LA(1);
-						 
-						int index192_756 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_756);
-						if ( s>=0 ) return s;
-						break;
-
-					case 328 : 
-						int LA192_651 = input.LA(1);
-						 
-						int index192_651 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_651);
-						if ( s>=0 ) return s;
-						break;
-
-					case 329 : 
-						int LA192_386 = input.LA(1);
-						 
-						int index192_386 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_386);
-						if ( s>=0 ) return s;
-						break;
-
-					case 330 : 
-						int LA192_764 = input.LA(1);
-						 
-						int index192_764 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_764);
-						if ( s>=0 ) return s;
-						break;
-
-					case 331 : 
-						int LA192_394 = input.LA(1);
-						 
-						int index192_394 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_394);
-						if ( s>=0 ) return s;
-						break;
-
-					case 332 : 
-						int LA192_186 = input.LA(1);
-						 
-						int index192_186 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_186);
-						if ( s>=0 ) return s;
-						break;
-
 					case 333 : 
-						int LA192_189 = input.LA(1);
-						 
-						int index192_189 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_189);
-						if ( s>=0 ) return s;
-						break;
-
-					case 334 : 
-						int LA192_299 = input.LA(1);
-						 
-						int index192_299 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_299);
-						if ( s>=0 ) return s;
-						break;
-
-					case 335 : 
-						int LA192_173 = input.LA(1);
-						 
-						int index192_173 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_173);
-						if ( s>=0 ) return s;
-						break;
-
-					case 336 : 
 						int LA192_227 = input.LA(1);
 						s = -1;
 						if ( (LA192_227=='m') ) {s = 342;}
@@ -18146,46 +18149,644 @@ public class Css3Lexer extends Lexer {
 						if ( s>=0 ) return s;
 						break;
 
-					case 337 : 
-						int LA192_176 = input.LA(1);
+					case 334 : 
+						int LA192_121 = input.LA(1);
 						 
-						int index192_176 = input.index();
+						int index192_121 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
+						if ( (synpred5_Css3()) ) {s = 170;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_176);
+						input.seek(index192_121);
+						if ( s>=0 ) return s;
+						break;
+
+					case 335 : 
+						int LA192_54 = input.LA(1);
+						 
+						int index192_54 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_54);
+						if ( s>=0 ) return s;
+						break;
+
+					case 336 : 
+						int LA192_87 = input.LA(1);
+						 
+						int index192_87 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_87);
+						if ( s>=0 ) return s;
+						break;
+
+					case 337 : 
+						int LA192_139 = input.LA(1);
+						 
+						int index192_139 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_139);
 						if ( s>=0 ) return s;
 						break;
 
 					case 338 : 
-						int LA192_336 = input.LA(1);
+						int LA192_281 = input.LA(1);
 						 
-						int index192_336 = input.index();
+						int index192_281 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred5_Css3()) ) {s = 170;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_336);
+						input.seek(index192_281);
 						if ( s>=0 ) return s;
 						break;
 
 					case 339 : 
-						int LA192_337 = input.LA(1);
+						int LA192_396 = input.LA(1);
 						 
-						int index192_337 = input.index();
+						int index192_396 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred5_Css3()) ) {s = 170;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_337);
+						input.seek(index192_396);
 						if ( s>=0 ) return s;
 						break;
 
 					case 340 : 
+						int LA192_530 = input.LA(1);
+						 
+						int index192_530 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_530);
+						if ( s>=0 ) return s;
+						break;
+
+					case 341 : 
+						int LA192_661 = input.LA(1);
+						 
+						int index192_661 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_661);
+						if ( s>=0 ) return s;
+						break;
+
+					case 342 : 
+						int LA192_766 = input.LA(1);
+						 
+						int index192_766 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_766);
+						if ( s>=0 ) return s;
+						break;
+
+					case 343 : 
+						int LA192_140 = input.LA(1);
+						 
+						int index192_140 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_140);
+						if ( s>=0 ) return s;
+						break;
+
+					case 344 : 
+						int LA192_57 = input.LA(1);
+						 
+						int index192_57 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_57);
+						if ( s>=0 ) return s;
+						break;
+
+					case 345 : 
+						int LA192_90 = input.LA(1);
+						 
+						int index192_90 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_90);
+						if ( s>=0 ) return s;
+						break;
+
+					case 346 : 
+						int LA192_122 = input.LA(1);
+						 
+						int index192_122 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_122);
+						if ( s>=0 ) return s;
+						break;
+
+					case 347 : 
+						int LA192_284 = input.LA(1);
+						 
+						int index192_284 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_284);
+						if ( s>=0 ) return s;
+						break;
+
+					case 348 : 
+						int LA192_399 = input.LA(1);
+						 
+						int index192_399 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_399);
+						if ( s>=0 ) return s;
+						break;
+
+					case 349 : 
+						int LA192_533 = input.LA(1);
+						 
+						int index192_533 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_533);
+						if ( s>=0 ) return s;
+						break;
+
+					case 350 : 
+						int LA192_664 = input.LA(1);
+						 
+						int index192_664 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_664);
+						if ( s>=0 ) return s;
+						break;
+
+					case 351 : 
+						int LA192_769 = input.LA(1);
+						 
+						int index192_769 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_769);
+						if ( s>=0 ) return s;
+						break;
+
+					case 352 : 
+						int LA192_95 = input.LA(1);
+						 
+						int index192_95 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_95);
+						if ( s>=0 ) return s;
+						break;
+
+					case 353 : 
+						int LA192_64 = input.LA(1);
+						 
+						int index192_64 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_64);
+						if ( s>=0 ) return s;
+						break;
+
+					case 354 : 
+						int LA192_145 = input.LA(1);
+						 
+						int index192_145 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_145);
+						if ( s>=0 ) return s;
+						break;
+
+					case 355 : 
+						int LA192_152 = input.LA(1);
+						 
+						int index192_152 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_152);
+						if ( s>=0 ) return s;
+						break;
+
+					case 356 : 
+						int LA192_657 = input.LA(1);
+						 
+						int index192_657 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_657);
+						if ( s>=0 ) return s;
+						break;
+
+					case 357 : 
+						int LA192_762 = input.LA(1);
+						 
+						int index192_762 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_762);
+						if ( s>=0 ) return s;
+						break;
+
+					case 358 : 
+						int LA192_269 = input.LA(1);
+						 
+						int index192_269 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_269);
+						if ( s>=0 ) return s;
+						break;
+
+					case 359 : 
+						int LA192_526 = input.LA(1);
+						 
+						int index192_526 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_526);
+						if ( s>=0 ) return s;
+						break;
+
+					case 360 : 
+						int LA192_754 = input.LA(1);
+						 
+						int index192_754 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_754);
+						if ( s>=0 ) return s;
+						break;
+
+					case 361 : 
+						int LA192_649 = input.LA(1);
+						 
+						int index192_649 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_649);
+						if ( s>=0 ) return s;
+						break;
+
+					case 362 : 
+						int LA192_518 = input.LA(1);
+						 
+						int index192_518 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_518);
+						if ( s>=0 ) return s;
+						break;
+
+					case 363 : 
+						int LA192_277 = input.LA(1);
+						 
+						int index192_277 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_277);
+						if ( s>=0 ) return s;
+						break;
+
+					case 364 : 
+						int LA192_384 = input.LA(1);
+						 
+						int index192_384 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_384);
+						if ( s>=0 ) return s;
+						break;
+
+					case 365 : 
+						int LA192_392 = input.LA(1);
+						 
+						int index192_392 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_392);
+						if ( s>=0 ) return s;
+						break;
+
+					case 366 : 
+						int LA192_271 = input.LA(1);
+						 
+						int index192_271 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_271);
+						if ( s>=0 ) return s;
+						break;
+
+					case 367 : 
+						int LA192_153 = input.LA(1);
+						 
+						int index192_153 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_153);
+						if ( s>=0 ) return s;
+						break;
+
+					case 368 : 
+						int LA192_66 = input.LA(1);
+						 
+						int index192_66 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_66);
+						if ( s>=0 ) return s;
+						break;
+
+					case 369 : 
+						int LA192_97 = input.LA(1);
+						 
+						int index192_97 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_97);
+						if ( s>=0 ) return s;
+						break;
+
+					case 370 : 
+						int LA192_146 = input.LA(1);
+						 
+						int index192_146 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_146);
+						if ( s>=0 ) return s;
+						break;
+
+					case 371 : 
+						int LA192_520 = input.LA(1);
+						 
+						int index192_520 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_520);
+						if ( s>=0 ) return s;
+						break;
+
+					case 372 : 
+						int LA192_659 = input.LA(1);
+						 
+						int index192_659 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_659);
+						if ( s>=0 ) return s;
+						break;
+
+					case 373 : 
+						int LA192_764 = input.LA(1);
+						 
+						int index192_764 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_764);
+						if ( s>=0 ) return s;
+						break;
+
+					case 374 : 
+						int LA192_279 = input.LA(1);
+						 
+						int index192_279 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_279);
+						if ( s>=0 ) return s;
+						break;
+
+					case 375 : 
+						int LA192_528 = input.LA(1);
+						 
+						int index192_528 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_528);
+						if ( s>=0 ) return s;
+						break;
+
+					case 376 : 
+						int LA192_651 = input.LA(1);
+						 
+						int index192_651 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_651);
+						if ( s>=0 ) return s;
+						break;
+
+					case 377 : 
+						int LA192_386 = input.LA(1);
+						 
+						int index192_386 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_386);
+						if ( s>=0 ) return s;
+						break;
+
+					case 378 : 
+						int LA192_394 = input.LA(1);
+						 
+						int index192_394 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_394);
+						if ( s>=0 ) return s;
+						break;
+
+					case 379 : 
+						int LA192_756 = input.LA(1);
+						 
+						int index192_756 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_756);
+						if ( s>=0 ) return s;
+						break;
+
+					case 380 : 
+						int LA192_690 = input.LA(1);
+						 
+						int index192_690 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_690);
+						if ( s>=0 ) return s;
+						break;
+
+					case 381 : 
+						int LA192_584 = input.LA(1);
+						 
+						int index192_584 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_584);
+						if ( s>=0 ) return s;
+						break;
+
+					case 382 : 
+						int LA192_585 = input.LA(1);
+						 
+						int index192_585 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_585);
+						if ( s>=0 ) return s;
+						break;
+
+					case 383 : 
 						int LA192_60 = input.LA(1);
 						s = -1;
 						if ( (LA192_60=='m') ) {s = 179;}
@@ -18196,20 +18797,72 @@ public class Css3Lexer extends Lexer {
 						if ( s>=0 ) return s;
 						break;
 
-					case 341 : 
-						int LA192_494 = input.LA(1);
+					case 384 : 
+						int LA192_788 = input.LA(1);
 						 
-						int index192_494 = input.index();
+						int index192_788 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
+						if ( (synpred5_Css3()) ) {s = 170;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_494);
+						input.seek(index192_788);
 						if ( s>=0 ) return s;
 						break;
 
-					case 342 : 
+					case 385 : 
+						int LA192_295 = input.LA(1);
+						 
+						int index192_295 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_295);
+						if ( s>=0 ) return s;
+						break;
+
+					case 386 : 
+						int LA192_705 = input.LA(1);
+						 
+						int index192_705 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_705);
+						if ( s>=0 ) return s;
+						break;
+
+					case 387 : 
+						int LA192_186 = input.LA(1);
+						 
+						int index192_186 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_186);
+						if ( s>=0 ) return s;
+						break;
+
+					case 388 : 
+						int LA192_189 = input.LA(1);
+						 
+						int index192_189 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_189);
+						if ( s>=0 ) return s;
+						break;
+
+					case 389 : 
 						int LA192_202 = input.LA(1);
 						s = -1;
 						if ( (LA192_202=='m') ) {s = 323;}
@@ -18220,33 +18873,72 @@ public class Css3Lexer extends Lexer {
 						if ( s>=0 ) return s;
 						break;
 
-					case 343 : 
-						int LA192_746 = input.LA(1);
+					case 390 : 
+						int LA192_173 = input.LA(1);
 						 
-						int index192_746 = input.index();
+						int index192_173 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
+						if ( (synpred5_Css3()) ) {s = 170;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_746);
+						input.seek(index192_173);
 						if ( s>=0 ) return s;
 						break;
 
-					case 344 : 
-						int LA192_340 = input.LA(1);
+					case 391 : 
+						int LA192_176 = input.LA(1);
 						 
-						int index192_340 = input.index();
+						int index192_176 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred5_Css3()) ) {s = 170;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_340);
+						input.seek(index192_176);
 						if ( s>=0 ) return s;
 						break;
 
-					case 345 : 
+					case 392 : 
+						int LA192_299 = input.LA(1);
+						 
+						int index192_299 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_299);
+						if ( s>=0 ) return s;
+						break;
+
+					case 393 : 
+						int LA192_336 = input.LA(1);
+						 
+						int index192_336 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred12_Css3()) ) {s = 216;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_336);
+						if ( s>=0 ) return s;
+						break;
+
+					case 394 : 
+						int LA192_337 = input.LA(1);
+						 
+						int index192_337 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred12_Css3()) ) {s = 216;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_337);
+						if ( s>=0 ) return s;
+						break;
+
+					case 395 : 
 						int LA192_53 = input.LA(1);
 						s = -1;
 						if ( (LA192_53=='x') ) {s = 171;}
@@ -18260,46 +18952,20 @@ public class Css3Lexer extends Lexer {
 						if ( s>=0 ) return s;
 						break;
 
-					case 346 : 
-						int LA192_800 = input.LA(1);
+					case 396 : 
+						int LA192_494 = input.LA(1);
 						 
-						int index192_800 = input.index();
+						int index192_494 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
+						if ( (synpred9_Css3()) ) {s = 240;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_800);
+						input.seek(index192_494);
 						if ( s>=0 ) return s;
 						break;
 
-					case 347 : 
-						int LA192_801 = input.LA(1);
-						 
-						int index192_801 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_801);
-						if ( s>=0 ) return s;
-						break;
-
-					case 348 : 
-						int LA192_241 = input.LA(1);
-						 
-						int index192_241 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_241);
-						if ( s>=0 ) return s;
-						break;
-
-					case 349 : 
+					case 397 : 
 						int LA192_77 = input.LA(1);
 						s = -1;
 						if ( (LA192_77=='h') ) {s = 210;}
@@ -18310,228 +18976,20 @@ public class Css3Lexer extends Lexer {
 						if ( s>=0 ) return s;
 						break;
 
-					case 350 : 
-						int LA192_242 = input.LA(1);
+					case 398 : 
+						int LA192_746 = input.LA(1);
 						 
-						int index192_242 = input.index();
+						int index192_746 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
+						if ( (synpred9_Css3()) ) {s = 240;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_242);
+						input.seek(index192_746);
 						if ( s>=0 ) return s;
 						break;
 
-					case 351 : 
-						int LA192_572 = input.LA(1);
-						 
-						int index192_572 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_572);
-						if ( s>=0 ) return s;
-						break;
-
-					case 352 : 
-						int LA192_49 = input.LA(1);
-						 
-						int index192_49 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_49);
-						if ( s>=0 ) return s;
-						break;
-
-					case 353 : 
-						int LA192_83 = input.LA(1);
-						 
-						int index192_83 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_83);
-						if ( s>=0 ) return s;
-						break;
-
-					case 354 : 
-						int LA192_263 = input.LA(1);
-						 
-						int index192_263 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_263);
-						if ( s>=0 ) return s;
-						break;
-
-					case 355 : 
-						int LA192_378 = input.LA(1);
-						 
-						int index192_378 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_378);
-						if ( s>=0 ) return s;
-						break;
-
-					case 356 : 
-						int LA192_512 = input.LA(1);
-						 
-						int index192_512 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_512);
-						if ( s>=0 ) return s;
-						break;
-
-					case 357 : 
-						int LA192_643 = input.LA(1);
-						 
-						int index192_643 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_643);
-						if ( s>=0 ) return s;
-						break;
-
-					case 358 : 
-						int LA192_748 = input.LA(1);
-						 
-						int index192_748 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_748);
-						if ( s>=0 ) return s;
-						break;
-
-					case 359 : 
-						int LA192_85 = input.LA(1);
-						 
-						int index192_85 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_85);
-						if ( s>=0 ) return s;
-						break;
-
-					case 360 : 
-						int LA192_51 = input.LA(1);
-						 
-						int index192_51 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_51);
-						if ( s>=0 ) return s;
-						break;
-
-					case 361 : 
-						int LA192_265 = input.LA(1);
-						 
-						int index192_265 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_265);
-						if ( s>=0 ) return s;
-						break;
-
-					case 362 : 
-						int LA192_828 = input.LA(1);
-						 
-						int index192_828 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred9_Css3()) ) {s = 316;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_828);
-						if ( s>=0 ) return s;
-						break;
-
-					case 363 : 
-						int LA192_380 = input.LA(1);
-						 
-						int index192_380 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_380);
-						if ( s>=0 ) return s;
-						break;
-
-					case 364 : 
-						int LA192_514 = input.LA(1);
-						 
-						int index192_514 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_514);
-						if ( s>=0 ) return s;
-						break;
-
-					case 365 : 
-						int LA192_645 = input.LA(1);
-						 
-						int index192_645 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_645);
-						if ( s>=0 ) return s;
-						break;
-
-					case 366 : 
-						int LA192_750 = input.LA(1);
-						 
-						int index192_750 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_750);
-						if ( s>=0 ) return s;
-						break;
-
-					case 367 : 
+					case 399 : 
 						int LA192_48 = input.LA(1);
 						s = -1;
 						if ( (LA192_48=='m') ) {s = 163;}
@@ -18545,761 +19003,748 @@ public class Css3Lexer extends Lexer {
 						if ( s>=0 ) return s;
 						break;
 
-					case 368 : 
-						int LA192_79 = input.LA(1);
+					case 400 : 
+						int LA192_340 = input.LA(1);
 						 
-						int index192_79 = input.index();
+						int index192_340 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_79);
+						input.seek(index192_340);
 						if ( s>=0 ) return s;
 						break;
 
-					case 369 : 
+					case 401 : 
+						int LA192_241 = input.LA(1);
+						 
+						int index192_241 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_241);
+						if ( s>=0 ) return s;
+						break;
+
+					case 402 : 
+						int LA192_242 = input.LA(1);
+						 
+						int index192_242 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred9_Css3()) ) {s = 240;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_242);
+						if ( s>=0 ) return s;
+						break;
+
+					case 403 : 
+						int LA192_49 = input.LA(1);
+						 
+						int index192_49 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_49);
+						if ( s>=0 ) return s;
+						break;
+
+					case 404 : 
+						int LA192_83 = input.LA(1);
+						 
+						int index192_83 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_83);
+						if ( s>=0 ) return s;
+						break;
+
+					case 405 : 
+						int LA192_263 = input.LA(1);
+						 
+						int index192_263 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_263);
+						if ( s>=0 ) return s;
+						break;
+
+					case 406 : 
+						int LA192_378 = input.LA(1);
+						 
+						int index192_378 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_378);
+						if ( s>=0 ) return s;
+						break;
+
+					case 407 : 
+						int LA192_512 = input.LA(1);
+						 
+						int index192_512 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_512);
+						if ( s>=0 ) return s;
+						break;
+
+					case 408 : 
+						int LA192_643 = input.LA(1);
+						 
+						int index192_643 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_643);
+						if ( s>=0 ) return s;
+						break;
+
+					case 409 : 
+						int LA192_748 = input.LA(1);
+						 
+						int index192_748 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_748);
+						if ( s>=0 ) return s;
+						break;
+
+					case 410 : 
+						int LA192_800 = input.LA(1);
+						 
+						int index192_800 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_800);
+						if ( s>=0 ) return s;
+						break;
+
+					case 411 : 
+						int LA192_51 = input.LA(1);
+						 
+						int index192_51 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_51);
+						if ( s>=0 ) return s;
+						break;
+
+					case 412 : 
+						int LA192_85 = input.LA(1);
+						 
+						int index192_85 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_85);
+						if ( s>=0 ) return s;
+						break;
+
+					case 413 : 
+						int LA192_265 = input.LA(1);
+						 
+						int index192_265 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_265);
+						if ( s>=0 ) return s;
+						break;
+
+					case 414 : 
+						int LA192_380 = input.LA(1);
+						 
+						int index192_380 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_380);
+						if ( s>=0 ) return s;
+						break;
+
+					case 415 : 
+						int LA192_514 = input.LA(1);
+						 
+						int index192_514 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_514);
+						if ( s>=0 ) return s;
+						break;
+
+					case 416 : 
+						int LA192_645 = input.LA(1);
+						 
+						int index192_645 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_645);
+						if ( s>=0 ) return s;
+						break;
+
+					case 417 : 
+						int LA192_750 = input.LA(1);
+						 
+						int index192_750 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_750);
+						if ( s>=0 ) return s;
+						break;
+
+					case 418 : 
+						int LA192_801 = input.LA(1);
+						 
+						int index192_801 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred10_Css3()) ) {s = 316;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_801);
+						if ( s>=0 ) return s;
+						break;
+
+					case 419 : 
 						int LA192_100 = input.LA(1);
 						 
 						int index192_100 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_100);
 						if ( s>=0 ) return s;
 						break;
 
-					case 370 : 
+					case 420 : 
 						int LA192_158 = input.LA(1);
 						 
 						int index192_158 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_158);
 						if ( s>=0 ) return s;
 						break;
 
-					case 371 : 
-						int LA192_654 = input.LA(1);
+					case 421 : 
+						int LA192_79 = input.LA(1);
 						 
-						int index192_654 = input.index();
+						int index192_79 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_654);
+						input.seek(index192_79);
 						if ( s>=0 ) return s;
 						break;
 
-					case 372 : 
-						int LA192_719 = input.LA(1);
-						 
-						int index192_719 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_719);
-						if ( s>=0 ) return s;
-						break;
-
-					case 373 : 
-						int LA192_808 = input.LA(1);
-						 
-						int index192_808 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_808);
-						if ( s>=0 ) return s;
-						break;
-
-					case 374 : 
+					case 422 : 
 						int LA192_160 = input.LA(1);
 						 
 						int index192_160 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_160);
 						if ( s>=0 ) return s;
 						break;
 
-					case 375 : 
+					case 423 : 
 						int LA192_208 = input.LA(1);
 						 
 						int index192_208 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_208);
 						if ( s>=0 ) return s;
 						break;
 
-					case 376 : 
+					case 424 : 
 						int LA192_214 = input.LA(1);
 						 
 						int index192_214 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_214);
 						if ( s>=0 ) return s;
 						break;
 
-					case 377 : 
-						int LA192_389 = input.LA(1);
-						 
-						int index192_389 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_389);
-						if ( s>=0 ) return s;
-						break;
-
-					case 378 : 
-						int LA192_523 = input.LA(1);
-						 
-						int index192_523 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_523);
-						if ( s>=0 ) return s;
-						break;
-
-					case 379 : 
-						int LA192_835 = input.LA(1);
-						 
-						int index192_835 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_835);
-						if ( s>=0 ) return s;
-						break;
-
-					case 380 : 
-						int LA192_759 = input.LA(1);
-						 
-						int index192_759 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_759);
-						if ( s>=0 ) return s;
-						break;
-
-					case 381 : 
+					case 425 : 
 						int LA192_274 = input.LA(1);
 						 
 						int index192_274 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_274);
 						if ( s>=0 ) return s;
 						break;
 
-					case 382 : 
+					case 426 : 
 						int LA192_327 = input.LA(1);
 						 
 						int index192_327 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_327);
 						if ( s>=0 ) return s;
 						break;
 
-					case 383 : 
-						int LA192_595 = input.LA(1);
-						 
-						int index192_595 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_595);
-						if ( s>=0 ) return s;
-						break;
-
-					case 384 : 
+					case 427 : 
 						int LA192_461 = input.LA(1);
 						 
 						int index192_461 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_461);
 						if ( s>=0 ) return s;
 						break;
 
-					case 385 : 
+					case 428 : 
+						int LA192_719 = input.LA(1);
+						 
+						int index192_719 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred12_Css3()) ) {s = 216;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_719);
+						if ( s>=0 ) return s;
+						break;
+
+					case 429 : 
+						int LA192_759 = input.LA(1);
+						 
+						int index192_759 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred12_Css3()) ) {s = 216;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_759);
+						if ( s>=0 ) return s;
+						break;
+
+					case 430 : 
 						int LA192_329 = input.LA(1);
 						 
 						int index192_329 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_329);
 						if ( s>=0 ) return s;
 						break;
 
-					case 386 : 
+					case 431 : 
+						int LA192_808 = input.LA(1);
+						 
+						int index192_808 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred12_Css3()) ) {s = 216;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_808);
+						if ( s>=0 ) return s;
+						break;
+
+					case 432 : 
+						int LA192_389 = input.LA(1);
+						 
+						int index192_389 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred12_Css3()) ) {s = 216;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_389);
+						if ( s>=0 ) return s;
+						break;
+
+					case 433 : 
+						int LA192_523 = input.LA(1);
+						 
+						int index192_523 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred12_Css3()) ) {s = 216;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_523);
+						if ( s>=0 ) return s;
+						break;
+
+					case 434 : 
+						int LA192_835 = input.LA(1);
+						 
+						int index192_835 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred12_Css3()) ) {s = 216;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_835);
+						if ( s>=0 ) return s;
+						break;
+
+					case 435 : 
+						int LA192_595 = input.LA(1);
+						 
+						int index192_595 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred12_Css3()) ) {s = 216;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_595);
+						if ( s>=0 ) return s;
+						break;
+
+					case 436 : 
+						int LA192_654 = input.LA(1);
+						 
+						int index192_654 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred12_Css3()) ) {s = 216;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_654);
+						if ( s>=0 ) return s;
+						break;
+
+					case 437 : 
 						int LA192_101 = input.LA(1);
 						 
 						int index192_101 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_101);
 						if ( s>=0 ) return s;
 						break;
 
-					case 387 : 
+					case 438 : 
 						int LA192_275 = input.LA(1);
 						 
 						int index192_275 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_275);
 						if ( s>=0 ) return s;
 						break;
 
-					case 388 : 
+					case 439 : 
 						int LA192_81 = input.LA(1);
 						 
 						int index192_81 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_81);
 						if ( s>=0 ) return s;
 						break;
 
-					case 389 : 
+					case 440 : 
 						int LA192_159 = input.LA(1);
 						 
 						int index192_159 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_159);
 						if ( s>=0 ) return s;
 						break;
 
-					case 390 : 
+					case 441 : 
 						int LA192_161 = input.LA(1);
 						 
 						int index192_161 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_161);
 						if ( s>=0 ) return s;
 						break;
 
-					case 391 : 
-						int LA192_760 = input.LA(1);
-						 
-						int index192_760 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_760);
-						if ( s>=0 ) return s;
-						break;
-
-					case 392 : 
-						int LA192_462 = input.LA(1);
-						 
-						int index192_462 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_462);
-						if ( s>=0 ) return s;
-						break;
-
-					case 393 : 
-						int LA192_209 = input.LA(1);
-						 
-						int index192_209 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_209);
-						if ( s>=0 ) return s;
-						break;
-
-					case 394 : 
-						int LA192_809 = input.LA(1);
-						 
-						int index192_809 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_809);
-						if ( s>=0 ) return s;
-						break;
-
-					case 395 : 
-						int LA192_596 = input.LA(1);
-						 
-						int index192_596 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_596);
-						if ( s>=0 ) return s;
-						break;
-
-					case 396 : 
+					case 442 : 
 						int LA192_720 = input.LA(1);
 						 
 						int index192_720 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_720);
 						if ( s>=0 ) return s;
 						break;
 
-					case 397 : 
-						int LA192_655 = input.LA(1);
-						 
-						int index192_655 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_655);
-						if ( s>=0 ) return s;
-						break;
-
-					case 398 : 
-						int LA192_215 = input.LA(1);
-						 
-						int index192_215 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_215);
-						if ( s>=0 ) return s;
-						break;
-
-					case 399 : 
-						int LA192_330 = input.LA(1);
-						 
-						int index192_330 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_330);
-						if ( s>=0 ) return s;
-						break;
-
-					case 400 : 
-						int LA192_524 = input.LA(1);
-						 
-						int index192_524 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_524);
-						if ( s>=0 ) return s;
-						break;
-
-					case 401 : 
-						int LA192_390 = input.LA(1);
-						 
-						int index192_390 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_390);
-						if ( s>=0 ) return s;
-						break;
-
-					case 402 : 
-						int LA192_328 = input.LA(1);
-						 
-						int index192_328 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_328);
-						if ( s>=0 ) return s;
-						break;
-
-					case 403 : 
+					case 443 : 
 						int LA192_836 = input.LA(1);
 						 
 						int index192_836 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_836);
 						if ( s>=0 ) return s;
 						break;
 
-					case 404 : 
-						int LA192_561 = input.LA(1);
+					case 444 : 
+						int LA192_209 = input.LA(1);
 						 
-						int index192_561 = input.index();
+						int index192_209 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_561);
+						input.seek(index192_209);
 						if ( s>=0 ) return s;
 						break;
 
-					case 405 : 
-						int LA192_137 = input.LA(1);
+					case 445 : 
+						int LA192_760 = input.LA(1);
 						 
-						int index192_137 = input.index();
+						int index192_760 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_137);
+						input.seek(index192_760);
 						if ( s>=0 ) return s;
 						break;
 
-					case 406 : 
-						int LA192_52 = input.LA(1);
+					case 446 : 
+						int LA192_390 = input.LA(1);
 						 
-						int index192_52 = input.index();
+						int index192_390 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_52);
+						input.seek(index192_390);
 						if ( s>=0 ) return s;
 						break;
 
-					case 407 : 
-						int LA192_86 = input.LA(1);
+					case 447 : 
+						int LA192_215 = input.LA(1);
 						 
-						int index192_86 = input.index();
+						int index192_215 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_86);
+						input.seek(index192_215);
 						if ( s>=0 ) return s;
 						break;
 
-					case 408 : 
-						int LA192_765 = input.LA(1);
+					case 448 : 
+						int LA192_809 = input.LA(1);
 						 
-						int index192_765 = input.index();
+						int index192_809 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_765);
+						input.seek(index192_809);
 						if ( s>=0 ) return s;
 						break;
 
-					case 409 : 
-						int LA192_119 = input.LA(1);
+					case 449 : 
+						int LA192_524 = input.LA(1);
 						 
-						int index192_119 = input.index();
+						int index192_524 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_119);
+						input.seek(index192_524);
 						if ( s>=0 ) return s;
 						break;
 
-					case 410 : 
-						int LA192_280 = input.LA(1);
+					case 450 : 
+						int LA192_462 = input.LA(1);
 						 
-						int index192_280 = input.index();
+						int index192_462 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_280);
+						input.seek(index192_462);
 						if ( s>=0 ) return s;
 						break;
 
-					case 411 : 
-						int LA192_395 = input.LA(1);
+					case 451 : 
+						int LA192_328 = input.LA(1);
 						 
-						int index192_395 = input.index();
+						int index192_328 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_395);
+						input.seek(index192_328);
 						if ( s>=0 ) return s;
 						break;
 
-					case 412 : 
-						int LA192_529 = input.LA(1);
+					case 452 : 
+						int LA192_655 = input.LA(1);
 						 
-						int index192_529 = input.index();
+						int index192_655 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_529);
+						input.seek(index192_655);
 						if ( s>=0 ) return s;
 						break;
 
-					case 413 : 
-						int LA192_660 = input.LA(1);
+					case 453 : 
+						int LA192_330 = input.LA(1);
 						 
-						int index192_660 = input.index();
+						int index192_330 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_660);
+						input.seek(index192_330);
 						if ( s>=0 ) return s;
 						break;
 
-					case 414 : 
-						int LA192_56 = input.LA(1);
+					case 454 : 
+						int LA192_596 = input.LA(1);
 						 
-						int index192_56 = input.index();
+						int index192_596 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_56);
+						input.seek(index192_596);
 						if ( s>=0 ) return s;
 						break;
 
-					case 415 : 
-						int LA192_138 = input.LA(1);
+					case 455 : 
+						int LA192_828 = input.LA(1);
 						 
-						int index192_138 = input.index();
+						int index192_828 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
+						if ( (synpred10_Css3()) ) {s = 316;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_138);
+						input.seek(index192_828);
 						if ( s>=0 ) return s;
 						break;
 
-					case 416 : 
-						int LA192_89 = input.LA(1);
+					case 456 : 
+						int LA192_572 = input.LA(1);
 						 
-						int index192_89 = input.index();
+						int index192_572 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
+						if ( (synpred7_Css3()) ) {s = 183;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_89);
+						input.seek(index192_572);
 						if ( s>=0 ) return s;
 						break;
 
-					case 417 : 
-						int LA192_120 = input.LA(1);
-						 
-						int index192_120 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_120);
-						if ( s>=0 ) return s;
-						break;
-
-					case 418 : 
-						int LA192_283 = input.LA(1);
-						 
-						int index192_283 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_283);
-						if ( s>=0 ) return s;
-						break;
-
-					case 419 : 
-						int LA192_398 = input.LA(1);
-						 
-						int index192_398 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_398);
-						if ( s>=0 ) return s;
-						break;
-
-					case 420 : 
-						int LA192_532 = input.LA(1);
-						 
-						int index192_532 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_532);
-						if ( s>=0 ) return s;
-						break;
-
-					case 421 : 
-						int LA192_768 = input.LA(1);
-						 
-						int index192_768 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_768);
-						if ( s>=0 ) return s;
-						break;
-
-					case 422 : 
-						int LA192_663 = input.LA(1);
-						 
-						int index192_663 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_663);
-						if ( s>=0 ) return s;
-						break;
-
-					case 423 : 
-						int LA192_422 = input.LA(1);
-						 
-						int index192_422 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_422);
-						if ( s>=0 ) return s;
-						break;
-
-					case 424 : 
-						int LA192_304 = input.LA(1);
-						 
-						int index192_304 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred5_Css3()) ) {s = 178;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_304);
-						if ( s>=0 ) return s;
-						break;
-
-					case 425 : 
-						int LA192_305 = input.LA(1);
-						 
-						int index192_305 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred5_Css3()) ) {s = 178;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_305);
-						if ( s>=0 ) return s;
-						break;
-
-					case 426 : 
+					case 457 : 
 						int LA192_63 = input.LA(1);
 						s = -1;
 						if ( (LA192_63=='m') ) {s = 184;}
@@ -19313,111 +19758,443 @@ public class Css3Lexer extends Lexer {
 						if ( s>=0 ) return s;
 						break;
 
-					case 427 : 
+					case 458 : 
+						int LA192_119 = input.LA(1);
+						 
+						int index192_119 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_119);
+						if ( s>=0 ) return s;
+						break;
+
+					case 459 : 
+						int LA192_52 = input.LA(1);
+						 
+						int index192_52 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_52);
+						if ( s>=0 ) return s;
+						break;
+
+					case 460 : 
+						int LA192_86 = input.LA(1);
+						 
+						int index192_86 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_86);
+						if ( s>=0 ) return s;
+						break;
+
+					case 461 : 
+						int LA192_137 = input.LA(1);
+						 
+						int index192_137 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_137);
+						if ( s>=0 ) return s;
+						break;
+
+					case 462 : 
+						int LA192_280 = input.LA(1);
+						 
+						int index192_280 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_280);
+						if ( s>=0 ) return s;
+						break;
+
+					case 463 : 
+						int LA192_395 = input.LA(1);
+						 
+						int index192_395 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_395);
+						if ( s>=0 ) return s;
+						break;
+
+					case 464 : 
+						int LA192_529 = input.LA(1);
+						 
+						int index192_529 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_529);
+						if ( s>=0 ) return s;
+						break;
+
+					case 465 : 
+						int LA192_660 = input.LA(1);
+						 
+						int index192_660 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_660);
+						if ( s>=0 ) return s;
+						break;
+
+					case 466 : 
+						int LA192_765 = input.LA(1);
+						 
+						int index192_765 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_765);
+						if ( s>=0 ) return s;
+						break;
+
+					case 467 : 
+						int LA192_120 = input.LA(1);
+						 
+						int index192_120 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_120);
+						if ( s>=0 ) return s;
+						break;
+
+					case 468 : 
+						int LA192_56 = input.LA(1);
+						 
+						int index192_56 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_56);
+						if ( s>=0 ) return s;
+						break;
+
+					case 469 : 
+						int LA192_89 = input.LA(1);
+						 
+						int index192_89 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_89);
+						if ( s>=0 ) return s;
+						break;
+
+					case 470 : 
+						int LA192_138 = input.LA(1);
+						 
+						int index192_138 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_138);
+						if ( s>=0 ) return s;
+						break;
+
+					case 471 : 
+						int LA192_283 = input.LA(1);
+						 
+						int index192_283 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_283);
+						if ( s>=0 ) return s;
+						break;
+
+					case 472 : 
+						int LA192_398 = input.LA(1);
+						 
+						int index192_398 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_398);
+						if ( s>=0 ) return s;
+						break;
+
+					case 473 : 
+						int LA192_532 = input.LA(1);
+						 
+						int index192_532 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_532);
+						if ( s>=0 ) return s;
+						break;
+
+					case 474 : 
+						int LA192_663 = input.LA(1);
+						 
+						int index192_663 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_663);
+						if ( s>=0 ) return s;
+						break;
+
+					case 475 : 
+						int LA192_768 = input.LA(1);
+						 
+						int index192_768 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_768);
+						if ( s>=0 ) return s;
+						break;
+
+					case 476 : 
+						int LA192_561 = input.LA(1);
+						 
+						int index192_561 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred5_Css3()) ) {s = 170;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_561);
+						if ( s>=0 ) return s;
+						break;
+
+					case 477 : 
+						int LA192_304 = input.LA(1);
+						 
+						int index192_304 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred6_Css3()) ) {s = 178;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_304);
+						if ( s>=0 ) return s;
+						break;
+
+					case 478 : 
+						int LA192_305 = input.LA(1);
+						 
+						int index192_305 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred6_Css3()) ) {s = 178;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_305);
+						if ( s>=0 ) return s;
+						break;
+
+					case 479 : 
+						int LA192_422 = input.LA(1);
+						 
+						int index192_422 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_422);
+						if ( s>=0 ) return s;
+						break;
+
+					case 480 : 
+						int LA192_68 = input.LA(1);
+						s = -1;
+						if ( (LA192_68=='n') ) {s = 192;}
+						else if ( (LA192_68=='N') ) {s = 193;}
+						else if ( ((LA192_68 >= '\u0000' && LA192_68 <= '\t')||LA192_68=='\u000B'||(LA192_68 >= '\u000E' && LA192_68 <= '/')||(LA192_68 >= '1' && LA192_68 <= '3')||LA192_68=='5'||(LA192_68 >= '7' && LA192_68 <= 'M')||(LA192_68 >= 'O' && LA192_68 <= 'm')||(LA192_68 >= 'o' && LA192_68 <= '\uFFFF')) ) {s = 12;}
+						else if ( (LA192_68=='0') ) {s = 194;}
+						else if ( (LA192_68=='4'||LA192_68=='6') ) {s = 195;}
+						if ( s>=0 ) return s;
+						break;
+
+					case 481 : 
 						int LA192_686 = input.LA(1);
 						 
 						int index192_686 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
+						if ( (synpred4_Css3()) ) {s = 162;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_686);
 						if ( s>=0 ) return s;
 						break;
 
-					case 428 : 
+					case 482 : 
 						int LA192_426 = input.LA(1);
 						 
 						int index192_426 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
+						if ( (synpred5_Css3()) ) {s = 170;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_426);
 						if ( s>=0 ) return s;
 						break;
 
-					case 429 : 
+					case 483 : 
 						int LA192_689 = input.LA(1);
 						 
 						int index192_689 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
+						if ( (synpred5_Css3()) ) {s = 170;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_689);
 						if ( s>=0 ) return s;
 						break;
 
-					case 430 : 
+					case 484 : 
 						int LA192_465 = input.LA(1);
 						 
 						int index192_465 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_465);
 						if ( s>=0 ) return s;
 						break;
 
-					case 431 : 
+					case 485 : 
 						int LA192_466 = input.LA(1);
 						 
 						int index192_466 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_466);
 						if ( s>=0 ) return s;
 						break;
 
-					case 432 : 
+					case 486 : 
+						int LA192_165 = input.LA(1);
+						 
+						int index192_165 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_165);
+						if ( s>=0 ) return s;
+						break;
+
+					case 487 : 
+						int LA192_71 = input.LA(1);
+						s = -1;
+						if ( ((LA192_71 >= '\u0000' && LA192_71 <= '\t')||LA192_71=='\u000B'||(LA192_71 >= '\u000E' && LA192_71 <= '/')||(LA192_71 >= '1' && LA192_71 <= '3')||LA192_71=='5'||(LA192_71 >= '7' && LA192_71 <= '\uFFFF')) ) {s = 12;}
+						else if ( (LA192_71=='0') ) {s = 199;}
+						else if ( (LA192_71=='4'||LA192_71=='6') ) {s = 200;}
+						if ( s>=0 ) return s;
+						break;
+
+					case 488 : 
+						int LA192_168 = input.LA(1);
+						 
+						int index192_168 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred4_Css3()) ) {s = 162;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_168);
+						if ( s>=0 ) return s;
+						break;
+
+					case 489 : 
 						int LA192_627 = input.LA(1);
 						 
 						int index192_627 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
+						if ( (synpred9_Css3()) ) {s = 240;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_627);
 						if ( s>=0 ) return s;
 						break;
 
-					case 433 : 
+					case 490 : 
 						int LA192_722 = input.LA(1);
 						 
 						int index192_722 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_722);
 						if ( s>=0 ) return s;
 						break;
 
-					case 434 : 
+					case 491 : 
 						int LA192_723 = input.LA(1);
 						 
 						int index192_723 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_723);
 						if ( s>=0 ) return s;
 						break;
 
-					case 435 : 
+					case 492 : 
 						int LA192_2 = input.LA(1);
 						s = -1;
 						if ( (LA192_2=='p') ) {s = 30;}
@@ -19441,820 +20218,137 @@ public class Css3Lexer extends Lexer {
 						if ( s>=0 ) return s;
 						break;
 
-					case 436 : 
-						int LA192_165 = input.LA(1);
-						 
-						int index192_165 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_165);
-						if ( s>=0 ) return s;
-						break;
-
-					case 437 : 
-						int LA192_168 = input.LA(1);
-						 
-						int index192_168 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_168);
-						if ( s>=0 ) return s;
-						break;
-
-					case 438 : 
-						int LA192_68 = input.LA(1);
-						s = -1;
-						if ( (LA192_68=='n') ) {s = 192;}
-						else if ( (LA192_68=='N') ) {s = 193;}
-						else if ( ((LA192_68 >= '\u0000' && LA192_68 <= '\t')||LA192_68=='\u000B'||(LA192_68 >= '\u000E' && LA192_68 <= '/')||(LA192_68 >= '1' && LA192_68 <= '3')||LA192_68=='5'||(LA192_68 >= '7' && LA192_68 <= 'M')||(LA192_68 >= 'O' && LA192_68 <= 'm')||(LA192_68 >= 'o' && LA192_68 <= '\uFFFF')) ) {s = 12;}
-						else if ( (LA192_68=='0') ) {s = 194;}
-						else if ( (LA192_68=='4'||LA192_68=='6') ) {s = 195;}
-						if ( s>=0 ) return s;
-						break;
-
-					case 439 : 
-						int LA192_793 = input.LA(1);
-						 
-						int index192_793 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred6_Css3()) ) {s = 183;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_793);
-						if ( s>=0 ) return s;
-						break;
-
-					case 440 : 
-						int LA192_469 = input.LA(1);
-						 
-						int index192_469 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_469);
-						if ( s>=0 ) return s;
-						break;
-
-					case 441 : 
-						int LA192_314 = input.LA(1);
-						 
-						int index192_314 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_314);
-						if ( s>=0 ) return s;
-						break;
-
-					case 442 : 
-						int LA192_315 = input.LA(1);
-						 
-						int index192_315 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred7_Css3()) ) {s = 191;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_315);
-						if ( s>=0 ) return s;
-						break;
-
-					case 443 : 
+					case 493 : 
 						int LA192_171 = input.LA(1);
 						 
 						int index192_171 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
+						if ( (synpred5_Css3()) ) {s = 170;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_171);
 						if ( s>=0 ) return s;
 						break;
 
-					case 444 : 
+					case 494 : 
+						int LA192_793 = input.LA(1);
+						 
+						int index192_793 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred7_Css3()) ) {s = 183;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_793);
+						if ( s>=0 ) return s;
+						break;
+
+					case 495 : 
 						int LA192_172 = input.LA(1);
 						 
 						int index192_172 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
+						if ( (synpred5_Css3()) ) {s = 170;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_172);
 						if ( s>=0 ) return s;
 						break;
 
-					case 445 : 
+					case 496 : 
+						int LA192_314 = input.LA(1);
+						 
+						int index192_314 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred8_Css3()) ) {s = 191;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_314);
+						if ( s>=0 ) return s;
+						break;
+
+					case 497 : 
+						int LA192_315 = input.LA(1);
+						 
+						int index192_315 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred8_Css3()) ) {s = 191;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_315);
+						if ( s>=0 ) return s;
+						break;
+
+					case 498 : 
+						int LA192_469 = input.LA(1);
+						 
+						int index192_469 = input.index();
+						input.rewind();
+						s = -1;
+						if ( (synpred3_Css3()) ) {s = 221;}
+						else if ( (true) ) {s = 12;}
+						 
+						input.seek(index192_469);
+						if ( s>=0 ) return s;
+						break;
+
+					case 499 : 
 						int LA192_787 = input.LA(1);
 						 
 						int index192_787 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
+						if ( (synpred5_Css3()) ) {s = 170;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_787);
 						if ( s>=0 ) return s;
 						break;
 
-					case 446 : 
-						int LA192_725 = input.LA(1);
-						 
-						int index192_725 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_725);
-						if ( s>=0 ) return s;
-						break;
-
-					case 447 : 
+					case 500 : 
 						int LA192_217 = input.LA(1);
 						 
 						int index192_217 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_217);
 						if ( s>=0 ) return s;
 						break;
 
-					case 448 : 
-						int LA192_71 = input.LA(1);
-						s = -1;
-						if ( ((LA192_71 >= '\u0000' && LA192_71 <= '\t')||LA192_71=='\u000B'||(LA192_71 >= '\u000E' && LA192_71 <= '/')||(LA192_71 >= '1' && LA192_71 <= '3')||LA192_71=='5'||(LA192_71 >= '7' && LA192_71 <= '\uFFFF')) ) {s = 12;}
-						else if ( (LA192_71=='0') ) {s = 199;}
-						else if ( (LA192_71=='4'||LA192_71=='6') ) {s = 200;}
-						if ( s>=0 ) return s;
-						break;
-
-					case 449 : 
+					case 501 : 
 						int LA192_218 = input.LA(1);
 						 
 						int index192_218 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred11_Css3()) ) {s = 216;}
+						if ( (synpred12_Css3()) ) {s = 216;}
 						else if ( (true) ) {s = 12;}
 						 
 						input.seek(index192_218);
 						if ( s>=0 ) return s;
 						break;
 
-					case 450 : 
-						int LA192_475 = input.LA(1);
+					case 502 : 
+						int LA192_725 = input.LA(1);
 						 
-						int index192_475 = input.index();
+						int index192_725 = input.index();
 						input.rewind();
 						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
+						if ( (synpred3_Css3()) ) {s = 221;}
 						else if ( (true) ) {s = 12;}
 						 
-						input.seek(index192_475);
+						input.seek(index192_725);
 						if ( s>=0 ) return s;
 						break;
 
-					case 451 : 
-						int LA192_476 = input.LA(1);
-						 
-						int index192_476 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_476);
-						if ( s>=0 ) return s;
-						break;
-
-					case 452 : 
-						int LA192_117 = input.LA(1);
-						 
-						int index192_117 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_117);
-						if ( s>=0 ) return s;
-						break;
-
-					case 453 : 
-						int LA192_112 = input.LA(1);
-						 
-						int index192_112 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_112);
-						if ( s>=0 ) return s;
-						break;
-
-					case 454 : 
-						int LA192_773 = input.LA(1);
-						 
-						int index192_773 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_773);
-						if ( s>=0 ) return s;
-						break;
-
-					case 455 : 
-						int LA192_355 = input.LA(1);
-						 
-						int index192_355 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_355);
-						if ( s>=0 ) return s;
-						break;
-
-					case 456 : 
-						int LA192_739 = input.LA(1);
-						 
-						int index192_739 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_739);
-						if ( s>=0 ) return s;
-						break;
-
-					case 457 : 
-						int LA192_405 = input.LA(1);
-						 
-						int index192_405 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_405);
-						if ( s>=0 ) return s;
-						break;
-
-					case 458 : 
-						int LA192_672 = input.LA(1);
-						 
-						int index192_672 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_672);
-						if ( s>=0 ) return s;
-						break;
-
-					case 459 : 
-						int LA192_407 = input.LA(1);
-						 
-						int index192_407 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_407);
-						if ( s>=0 ) return s;
-						break;
-
-					case 460 : 
-						int LA192_821 = input.LA(1);
-						 
-						int index192_821 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_821);
-						if ( s>=0 ) return s;
-						break;
-
-					case 461 : 
-						int LA192_771 = input.LA(1);
-						 
-						int index192_771 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_771);
-						if ( s>=0 ) return s;
-						break;
-
-					case 462 : 
-						int LA192_670 = input.LA(1);
-						 
-						int index192_670 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_670);
-						if ( s>=0 ) return s;
-						break;
-
-					case 463 : 
-						int LA192_486 = input.LA(1);
-						 
-						int index192_486 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_486);
-						if ( s>=0 ) return s;
-						break;
-
-					case 464 : 
-						int LA192_539 = input.LA(1);
-						 
-						int index192_539 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_539);
-						if ( s>=0 ) return s;
-						break;
-
-					case 465 : 
-						int LA192_541 = input.LA(1);
-						 
-						int index192_541 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_541);
-						if ( s>=0 ) return s;
-						break;
-
-					case 466 : 
-						int LA192_619 = input.LA(1);
-						 
-						int index192_619 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_619);
-						if ( s>=0 ) return s;
-						break;
-
-					case 467 : 
-						int LA192_222 = input.LA(1);
-						 
-						int index192_222 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_222);
-						if ( s>=0 ) return s;
-						break;
-
-					case 468 : 
-						int LA192_408 = input.LA(1);
-						 
-						int index192_408 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_408);
-						if ( s>=0 ) return s;
-						break;
-
-					case 469 : 
-						int LA192_114 = input.LA(1);
-						 
-						int index192_114 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_114);
-						if ( s>=0 ) return s;
-						break;
-
-					case 470 : 
-						int LA192_774 = input.LA(1);
-						 
-						int index192_774 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_774);
-						if ( s>=0 ) return s;
-						break;
-
-					case 471 : 
-						int LA192_118 = input.LA(1);
-						 
-						int index192_118 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_118);
-						if ( s>=0 ) return s;
-						break;
-
-					case 472 : 
-						int LA192_356 = input.LA(1);
-						 
-						int index192_356 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_356);
-						if ( s>=0 ) return s;
-						break;
-
-					case 473 : 
-						int LA192_673 = input.LA(1);
-						 
-						int index192_673 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_673);
-						if ( s>=0 ) return s;
-						break;
-
-					case 474 : 
-						int LA192_406 = input.LA(1);
-						 
-						int index192_406 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_406);
-						if ( s>=0 ) return s;
-						break;
-
-					case 475 : 
-						int LA192_487 = input.LA(1);
-						 
-						int index192_487 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_487);
-						if ( s>=0 ) return s;
-						break;
-
-					case 476 : 
-						int LA192_822 = input.LA(1);
-						 
-						int index192_822 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_822);
-						if ( s>=0 ) return s;
-						break;
-
-					case 477 : 
-						int LA192_540 = input.LA(1);
-						 
-						int index192_540 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_540);
-						if ( s>=0 ) return s;
-						break;
-
-					case 478 : 
-						int LA192_542 = input.LA(1);
-						 
-						int index192_542 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_542);
-						if ( s>=0 ) return s;
-						break;
-
-					case 479 : 
-						int LA192_620 = input.LA(1);
-						 
-						int index192_620 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_620);
-						if ( s>=0 ) return s;
-						break;
-
-					case 480 : 
-						int LA192_671 = input.LA(1);
-						 
-						int index192_671 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_671);
-						if ( s>=0 ) return s;
-						break;
-
-					case 481 : 
-						int LA192_740 = input.LA(1);
-						 
-						int index192_740 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_740);
-						if ( s>=0 ) return s;
-						break;
-
-					case 482 : 
-						int LA192_772 = input.LA(1);
-						 
-						int index192_772 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_772);
-						if ( s>=0 ) return s;
-						break;
-
-					case 483 : 
-						int LA192_223 = input.LA(1);
-						 
-						int index192_223 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred2_Css3()) ) {s = 221;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_223);
-						if ( s>=0 ) return s;
-						break;
-
-					case 484 : 
-						int LA192_293 = input.LA(1);
-						 
-						int index192_293 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_293);
-						if ( s>=0 ) return s;
-						break;
-
-					case 485 : 
-						int LA192_294 = input.LA(1);
-						 
-						int index192_294 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_294);
-						if ( s>=0 ) return s;
-						break;
-
-					case 486 : 
-						int LA192_55 = input.LA(1);
-						 
-						int index192_55 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_55);
-						if ( s>=0 ) return s;
-						break;
-
-					case 487 : 
-						int LA192_88 = input.LA(1);
-						 
-						int index192_88 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_88);
-						if ( s>=0 ) return s;
-						break;
-
-					case 488 : 
-						int LA192_123 = input.LA(1);
-						 
-						int index192_123 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_123);
-						if ( s>=0 ) return s;
-						break;
-
-					case 489 : 
-						int LA192_141 = input.LA(1);
-						 
-						int index192_141 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_141);
-						if ( s>=0 ) return s;
-						break;
-
-					case 490 : 
-						int LA192_767 = input.LA(1);
-						 
-						int index192_767 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_767);
-						if ( s>=0 ) return s;
-						break;
-
-					case 491 : 
-						int LA192_58 = input.LA(1);
-						 
-						int index192_58 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_58);
-						if ( s>=0 ) return s;
-						break;
-
-					case 492 : 
-						int LA192_91 = input.LA(1);
-						 
-						int index192_91 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_91);
-						if ( s>=0 ) return s;
-						break;
-
-					case 493 : 
-						int LA192_124 = input.LA(1);
-						 
-						int index192_124 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_124);
-						if ( s>=0 ) return s;
-						break;
-
-					case 494 : 
-						int LA192_142 = input.LA(1);
-						 
-						int index192_142 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_142);
-						if ( s>=0 ) return s;
-						break;
-
-					case 495 : 
-						int LA192_770 = input.LA(1);
-						 
-						int index192_770 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_770);
-						if ( s>=0 ) return s;
-						break;
-
-					case 496 : 
-						int LA192_556 = input.LA(1);
-						 
-						int index192_556 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred3_Css3()) ) {s = 162;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_556);
-						if ( s>=0 ) return s;
-						break;
-
-					case 497 : 
-						int LA192_431 = input.LA(1);
-						 
-						int index192_431 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred5_Css3()) ) {s = 178;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_431);
-						if ( s>=0 ) return s;
-						break;
-
-					case 498 : 
-						int LA192_432 = input.LA(1);
-						 
-						int index192_432 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred5_Css3()) ) {s = 178;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_432);
-						if ( s>=0 ) return s;
-						break;
-
-					case 499 : 
+					case 503 : 
 						int LA192_26 = input.LA(1);
 						s = -1;
 						if ( (LA192_26=='p') ) {s = 107;}
@@ -20263,58 +20357,6 @@ public class Css3Lexer extends Lexer {
 						else if ( (LA192_26=='0') ) {s = 109;}
 						else if ( (LA192_26=='5'||LA192_26=='7') ) {s = 110;}
 						else if ( (LA192_26=='4'||LA192_26=='6') ) {s = 111;}
-						if ( s>=0 ) return s;
-						break;
-
-					case 500 : 
-						int LA192_827 = input.LA(1);
-						 
-						int index192_827 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred8_Css3()) ) {s = 240;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_827);
-						if ( s>=0 ) return s;
-						break;
-
-					case 501 : 
-						int LA192_693 = input.LA(1);
-						 
-						int index192_693 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred5_Css3()) ) {s = 178;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_693);
-						if ( s>=0 ) return s;
-						break;
-
-					case 502 : 
-						int LA192_694 = input.LA(1);
-						 
-						int index192_694 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred5_Css3()) ) {s = 178;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_694);
-						if ( s>=0 ) return s;
-						break;
-
-					case 503 : 
-						int LA192_560 = input.LA(1);
-						 
-						int index192_560 = input.index();
-						input.rewind();
-						s = -1;
-						if ( (synpred4_Css3()) ) {s = 170;}
-						else if ( (true) ) {s = 12;}
-						 
-						input.seek(index192_560);
 						if ( s>=0 ) return s;
 						break;
 			}
@@ -20432,7 +20474,7 @@ public class Css3Lexer extends Lexer {
 		"\1\73\1\uffff\1\104\6\uffff\1\64\4\uffff\1\70\5\uffff\1\105\1\71\1\uffff"+
 		"\1\75";
 	static final String DFA208_specialS =
-		"\40\uffff\1\1\74\uffff\1\0\50\uffff\1\2\u014b\uffff}>";
+		"\40\uffff\1\2\74\uffff\1\1\50\uffff\1\0\u014b\uffff}>";
 	static final String[] DFA208_transitionS = {
 			"\1\45\1\46\2\uffff\1\46\22\uffff\1\45\1\30\1\32\1\41\1\7\1\27\1\31\1"+
 			"\32\1\23\1\24\1\10\1\22\1\25\1\3\1\26\1\21\12\42\1\20\1\17\1\2\1\16\1"+
@@ -20998,6 +21040,17 @@ public class Css3Lexer extends Lexer {
 			int _s = s;
 			switch ( s ) {
 					case 0 : 
+						int LA208_134 = input.LA(1);
+						s = -1;
+						if ( (LA208_134=='l') ) {s = 176;}
+						else if ( (LA208_134=='0') ) {s = 177;}
+						else if ( (LA208_134=='L') ) {s = 178;}
+						else if ( ((LA208_134 >= '\u0000' && LA208_134 <= '\t')||LA208_134=='\u000B'||(LA208_134 >= '\u000E' && LA208_134 <= '/')||(LA208_134 >= '1' && LA208_134 <= '3')||LA208_134=='5'||(LA208_134 >= '7' && LA208_134 <= 'K')||(LA208_134 >= 'M' && LA208_134 <= 'k')||(LA208_134 >= 'm' && LA208_134 <= '\uFFFF')) ) {s = 29;}
+						else if ( (LA208_134=='4'||LA208_134=='6') ) {s = 179;}
+						if ( s>=0 ) return s;
+						break;
+
+					case 1 : 
 						int LA208_93 = input.LA(1);
 						s = -1;
 						if ( (LA208_93=='r') ) {s = 135;}
@@ -21008,7 +21061,7 @@ public class Css3Lexer extends Lexer {
 						if ( s>=0 ) return s;
 						break;
 
-					case 1 : 
+					case 2 : 
 						int LA208_32 = input.LA(1);
 						s = -1;
 						if ( (LA208_32=='u') ) {s = 95;}
@@ -21016,17 +21069,6 @@ public class Css3Lexer extends Lexer {
 						else if ( (LA208_32=='U') ) {s = 97;}
 						else if ( ((LA208_32 >= '\u0000' && LA208_32 <= '\t')||LA208_32=='\u000B'||(LA208_32 >= '\u000E' && LA208_32 <= '/')||(LA208_32 >= '1' && LA208_32 <= '4')||LA208_32=='6'||(LA208_32 >= '8' && LA208_32 <= 'T')||(LA208_32 >= 'V' && LA208_32 <= 't')||(LA208_32 >= 'v' && LA208_32 <= '\uFFFF')) ) {s = 29;}
 						else if ( (LA208_32=='5'||LA208_32=='7') ) {s = 98;}
-						if ( s>=0 ) return s;
-						break;
-
-					case 2 : 
-						int LA208_134 = input.LA(1);
-						s = -1;
-						if ( (LA208_134=='l') ) {s = 176;}
-						else if ( (LA208_134=='0') ) {s = 177;}
-						else if ( (LA208_134=='L') ) {s = 178;}
-						else if ( ((LA208_134 >= '\u0000' && LA208_134 <= '\t')||LA208_134=='\u000B'||(LA208_134 >= '\u000E' && LA208_134 <= '/')||(LA208_134 >= '1' && LA208_134 <= '3')||LA208_134=='5'||(LA208_134 >= '7' && LA208_134 <= 'K')||(LA208_134 >= 'M' && LA208_134 <= 'k')||(LA208_134 >= 'm' && LA208_134 <= '\uFFFF')) ) {s = 29;}
-						else if ( (LA208_134=='4'||LA208_134=='6') ) {s = 179;}
 						if ( s>=0 ) return s;
 						break;
 			}

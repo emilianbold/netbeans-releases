@@ -71,7 +71,11 @@ final class DebuggerVisualizer {
             ss = rn.getEncapsulatingSourceSection();
         }
         if (ss != null) {
-            return ss.getIdentifier();
+            String method = ss.getIdentifier();
+            if (method == null) {
+                method = "";
+            }
+            return method;
         } else {
             //System.err.println("No source section for root node "+rn);
             return "";

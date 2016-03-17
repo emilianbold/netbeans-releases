@@ -97,26 +97,30 @@ public class TruffleStackFrame {
         this.depth = depth;
         this.frameInstance = frameInstance;
         this.stackTrace = stackTrace;
-        int i1 = 0;
-        int i2 = frameDefinition.indexOf('\n');
-        callTargetName = frameDefinition.substring(i1, i2);
-        i1 = i2 + 1;
-        i2 = frameDefinition.indexOf('\n', i1);
-        methodName = frameDefinition.substring(i1, i2);
-        i1 = i2 + 1;
-        i2 = frameDefinition.indexOf('\n', i1);
-        sourceLocation = frameDefinition.substring(i1, i2);
-        i1 = i2 + 1;
-        i2 = frameDefinition.indexOf('\n', i1);
-        sourceId = Integer.parseInt(frameDefinition.substring(i1, i2));
-        i1 = i2 + 1;
-        i2 = frameDefinition.indexOf('\n', i1);
-        sourceName = frameDefinition.substring(i1, i2);
-        i1 = i2 + 1;
-        i2 = frameDefinition.indexOf('\n', i1);
-        sourcePath = frameDefinition.substring(i1, i2);
-        i1 = i2 + 1;
-        sourceLine = Integer.parseInt(frameDefinition.substring(i1));
+        try {
+            int i1 = 0;
+            int i2 = frameDefinition.indexOf('\n');
+            callTargetName = frameDefinition.substring(i1, i2);
+            i1 = i2 + 1;
+            i2 = frameDefinition.indexOf('\n', i1);
+            methodName = frameDefinition.substring(i1, i2);
+            i1 = i2 + 1;
+            i2 = frameDefinition.indexOf('\n', i1);
+            sourceLocation = frameDefinition.substring(i1, i2);
+            i1 = i2 + 1;
+            i2 = frameDefinition.indexOf('\n', i1);
+            sourceId = Integer.parseInt(frameDefinition.substring(i1, i2));
+            i1 = i2 + 1;
+            i2 = frameDefinition.indexOf('\n', i1);
+            sourceName = frameDefinition.substring(i1, i2);
+            i1 = i2 + 1;
+            i2 = frameDefinition.indexOf('\n', i1);
+            sourcePath = frameDefinition.substring(i1, i2);
+            i1 = i2 + 1;
+            sourceLine = Integer.parseInt(frameDefinition.substring(i1));
+        } catch (IndexOutOfBoundsException ioob) {
+            throw new IllegalStateException("frameDefinition='"+frameDefinition+"'", ioob);
+        }
         this.codeRef = codeRef;
         this.vars = vars;
         this.thisObject = thisObject;
@@ -143,7 +147,11 @@ public class TruffleStackFrame {
     }
 
     public String getDisplayName() {
-        return methodName + " ("+sourceLocation+")";
+        if (!methodName.isEmpty()) {
+            return methodName + " ("+sourceLocation+")";
+        } else {
+            return sourceLocation;
+        }
     }
     
     public SourcePosition getSourcePosition() {
