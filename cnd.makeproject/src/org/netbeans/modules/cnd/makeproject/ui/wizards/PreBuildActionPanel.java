@@ -709,7 +709,7 @@ public class PreBuildActionPanel extends javax.swing.JPanel implements HelpCtx.P
                             FileObject root = NewProjectWizardUtils.getFileObject(WizardConstants.PROPERTY_SIMPLE_MODE_FOLDER.get(controller.getWizardDescriptor()), controller.getWizardDescriptor());
                             otherArtifact = item.provider.findScriptInFolder(root, ee, cs);
                             if (otherArtifact == null) {
-                                String msg = NbBundle.getMessage(BuildActionsPanel.class, "NOTFOUNDCONFIGUREFILE", item.provider.getDisplayName()); // NOI18N
+                                String msg = NbBundle.getMessage(BuildActionsPanel.class, "NOTFOUNDCONFIGUREFILE", item.provider.getDisplayName(), cs == null? "" : cs.getName()); // NOI18N
                                 controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                                 return;
                             }
