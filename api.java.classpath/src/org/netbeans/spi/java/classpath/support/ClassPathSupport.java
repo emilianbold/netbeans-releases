@@ -43,6 +43,7 @@
  */
 package org.netbeans.spi.java.classpath.support;
 
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -54,6 +55,7 @@ import org.openide.filesystems.FileObject;
 import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -195,6 +197,46 @@ public class ClassPathSupport {
              impls[i] = ClassPathAccessor.DEFAULT.getClassPathImpl (delegates[i]);
         }
         return ClassPathFactory.createClassPath (createProxyClassPathImplementation(impls));
+    }
+
+    /**
+     * Creates a {@link ClassPath} switching among several {@link ClassPath} instances.
+     * @param selector  the active {@link ClassPath} provider
+     * @return a newly created {@link ClassPath} instance
+     * @since 1.53
+     */
+    @NonNull
+    public static ClassPath createMultiplexClassPath(@NonNull final Selector selector) {
+        return ClassPathFactory.createClassPath(new MuxClassPathImplementation(selector));
+    }
+
+    /**
+     * The active {@link ClassPath} provider for multiplexing {@link ClassPath}.
+     * @since 1.53
+     */
+    public static interface Selector {
+        /**
+         * The name of the <code>activeClassPath</code> property.
+         */
+        static final String PROP_ACTIVE_CLASS_PATH = "activeClassPath";  //NOI18N
+
+        /**
+         * Returns the active {@link ClassPath}.
+         * @return the active {@link ClassPath}
+         */
+        @NonNull
+        ClassPath getActiveClassPath();
+
+        /**
+         * Adds {@link PropertyChangeListener} listening on active {@link ClassPath} change.
+         * @param listener the listener notified when an active {@link ClassPath} selection changes
+         */
+        void addPropertyChangeListener(@NonNull PropertyChangeListener listener);
+        /**
+         * Removes {@link PropertyChangeListener} listening on active {@link ClassPath} change.
+         * @param listener the listener to be removed
+         */
+        void removePropertyChangeListener(@NonNull PropertyChangeListener listener);
     }
 
 }

@@ -39,14 +39,13 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.api.common.classpath;
+package org.netbeans.spi.java.classpath.support;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -59,23 +58,18 @@ import org.openide.util.WeakListeners;
  * @author Tomas Zezula
  */
 final class MuxClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
-    private final ClassPath[] delegates;
-    private final Selector selector;
+    private final ClassPathSupport.Selector selector;
     private final PropertyChangeSupport listeners;
-    private final AtomicReference<List<PathResourceImplementation>> cache;
+    //@GuardedBy("this")
+    private List<PathResourceImplementation> cache;
+    //GuardedBy("this")
+    private ClassPath activeClassPath;
+    //@GuardedBy("this")
+    private PropertyChangeListener activeListener;
 
-    MuxClassPathImplementation(
-        @NonNull final ClassPath[] delegates,
-        @NonNull final Selector selector) {
-        Parameters.notNull("delegates", delegates); //NOI18N
+    MuxClassPathImplementation(@NonNull final ClassPathSupport.Selector selector) {
         Parameters.notNull("selector", selector);   //NOI18N
-        this.cache = new AtomicReference<>();
         this.listeners = new PropertyChangeSupport(this);
-        this.delegates = new ClassPath[delegates.length];
-        for (int i = 0; i < delegates.length; i++) {
-            this.delegates[i] = delegates[i];
-            this.delegates[i].addPropertyChangeListener(WeakListeners.propertyChange(this, this.delegates[i]));
-        }
         this.selector = selector;
         this.selector.addPropertyChangeListener(WeakListeners.propertyChange(this, this.selector));
     }
@@ -83,22 +77,45 @@ final class MuxClassPathImplementation implements ClassPathImplementation, Prope
     @Override
     @NonNull
     public List<? extends PathResourceImplementation> getResources() {
-        List<PathResourceImplementation> res = cache.get();
-        if (res == null) {
-            int currentIndex = selector.getActiveIndex();
-            if (currentIndex < 0 || currentIndex >= delegates.length) {
-                throw new IllegalStateException(String.format(
-                        "Wrong selector index: %d, delegates count: %d",    //NOI18N
-                        currentIndex,
-                        delegates.length));
+        List<PathResourceImplementation> res;
+        ClassPath activeCp = null;
+        PropertyChangeListener activeLst = null;
+        synchronized (this) {
+            res = cache;
+            if (res == null) {
+                activeCp = activeClassPath;
+                activeClassPath = null;
+                activeLst = activeListener;
+                activeListener = null;
             }
-            final List<ClassPath.Entry> entries = delegates[currentIndex].entries();
+        }
+        if (res == null) {
+            if (activeCp != null) {
+                assert activeLst != null;
+                activeCp.removePropertyChangeListener(activeLst);
+            }
+            final ClassPath newCp = selector.getActiveClassPath();
+            assert newCp != null : String.format(
+                    "Selector: %s (%s) returned null ClassPath",    //NOI18N
+                    selector,
+                    selector.getClass());
+            final List<ClassPath.Entry> entries = newCp.entries();
             res = new ArrayList<>(entries.size());
             for (ClassPath.Entry entry : entries) {
                 res.add(org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(entry.getURL()));
             }
-            if (!cache.compareAndSet(null, res)) {
-                res = cache.get();
+            synchronized (this) {
+                if (cache == null) {
+                    if (activeClassPath == null) {
+                        assert activeListener == null;
+                        activeClassPath = newCp;
+                        activeListener = WeakListeners.propertyChange(this, activeClassPath);
+                        activeClassPath.addPropertyChangeListener(activeListener);
+                        cache = res;
+                    }
+                } else {
+                    res = cache;
+                }
             }
         }
         return res;
@@ -119,16 +136,12 @@ final class MuxClassPathImplementation implements ClassPathImplementation, Prope
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         final String propName = evt.getPropertyName();
-        if (Selector.PROP_ACTIVE_INDEX.equals(propName) || ClassPath.PROP_ENTRIES.equals(propName)) {
-            this.cache.set(null);
+        if (ClassPathSupport.Selector.PROP_ACTIVE_CLASS_PATH.equals(propName) ||
+                ClassPath.PROP_ENTRIES.equals(propName)) {
+            synchronized (this) {
+                cache = null;
+            }
             this.listeners.firePropertyChange(PROP_RESOURCES, null, null);
         }
-    }
-
-    static interface Selector {
-        static final String PROP_ACTIVE_INDEX = "activeIndex";  //NOI18N
-        int getActiveIndex();
-        void addPropertyChangeListener(@NonNull PropertyChangeListener listener);
-        void removePropertyChangeListener(@NonNull PropertyChangeListener listener);
     }
 }
