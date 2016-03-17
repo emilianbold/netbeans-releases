@@ -123,7 +123,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             case BRACKET_LEFT_BRACKET:
             case KEYWORD_RETURN:
             case KEYWORD_THROW:
-            case RESERVED_YIELD:
+            case KEYWORD_YIELD:
             // unary operators (keyword)
             case KEYWORD_TYPEOF:
             // end of line
@@ -304,14 +304,16 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
   "while"                        { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_WHILE; }
   "with"                         { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_WITH; }
 
+  "class"                        { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_CLASS; }
+  "const"                        { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_CONST; }
+  "export"                       { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_EXPORT; }
+  "extends"                      { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_EXTENDS; }
+  "import"                       { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_IMPORT; }
+  "super"                        { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_SUPER; }
+  "yield"                        { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.KEYWORD_YIELD; }
+
   /* reserved keywords 7.6.1.2 */
-  "class"                        { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_CLASS; }
-  "const"                        { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_CONST; }
   "enum"                         { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_ENUM; }
-  "export"                       { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_EXPORT; }
-  "extends"                      { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_EXTENDS; }
-  "import"                       { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_IMPORT; }
-  "super"                        { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_SUPER; }
 
   "implements"                   { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_IMPLEMENTS; }
   "interface"                    { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_INTERFACE; }
@@ -321,8 +323,8 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
   "protected"                    { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_PROTECTED; }
   "public"                       { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_PUBLIC; }
   "static"                       { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_STATIC; }
-  "yield"                        { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_YIELD; }
 
+  "await"                        { if (!canFollowKeyword) { return JsTokenId.IDENTIFIER; } return JsTokenId.RESERVED_AWAIT; }
 
   /* boolean literals */
   "true"                         { return JsTokenId.KEYWORD_TRUE; }
@@ -399,6 +401,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
   "<<="                          { return JsTokenId.OPERATOR_LEFT_SHIFT_ARITHMETIC_ASSIGNMENT; }
   ">>="                          { return JsTokenId.OPERATOR_RIGHT_SHIFT_ARITHMETIC_ASSIGNMENT; }
   ">>>="                         { return JsTokenId.OPERATOR_RIGHT_SHIFT_ASSIGNMENT; }
+  "=>"                           { return JsTokenId.OPERATOR_ARROW; }
 
   /* string literal */
   \"                             {
