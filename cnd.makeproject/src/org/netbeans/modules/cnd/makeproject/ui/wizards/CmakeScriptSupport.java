@@ -152,7 +152,7 @@ public class CmakeScriptSupport implements PreBuildArtifactProvider {
         @Override
         public String getCommandLine(String arguments, String workingDir) {
             StringBuilder buf = new StringBuilder();
-            buf.append("cmake "); //NOI18N
+            buf.append(PreBuildSupport.CMAKE_MACRO+" "); //NOI18N
             buf.append(arguments);
             FileObject parent = script.getParent();
             if (parent != null) {
