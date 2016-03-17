@@ -1316,7 +1316,7 @@ sass_for
 
 sass_each
     :
-    SASS_EACH ws sass_each_variables ws {tokenNameEquals("in")}? IDENT /*in*/ ws cp_expression_list ws? sass_control_block
+    SASS_EACH ws sass_each_variables ws {tokenNameEquals("in")}? IDENT /*in*/ ws (cp_expression_list (ws? COMMA)? ws?)+  sass_control_block
     ;
 
 sass_each_variables

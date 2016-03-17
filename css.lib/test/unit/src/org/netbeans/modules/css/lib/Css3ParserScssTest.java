@@ -1963,4 +1963,22 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "  @return #{\"\\\"\\\\\"}#{$char + \"\\\"\"};\n"
                 + "}");
     }
+    
+    public void testEachWithMultipleLists() {
+        assertParses("@each $className, $iconFile\n"
+                + "in\n"
+                + "(my_class, my_file_name_base),\n"
+                + "{}");
+        assertParses("@each $animal, $color, $cursor in (puma, black, default),\n"
+                + "                                  (sea-slug, blue, pointer),\n"
+                + "                                  (egret, white, move) {\n"
+                + "  .#{$animal}-icon {\n"
+                + "    background-image: url('/images/#{$animal}.png');\n"
+                + "    border: 2px solid $color;\n"
+                + "    cursor: $cursor;\n"
+                + "  }\n"
+                + "}");
+    }
+    
+    
 }
