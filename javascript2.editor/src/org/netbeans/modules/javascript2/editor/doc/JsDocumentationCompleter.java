@@ -62,7 +62,7 @@ import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.javascript2.editor.Utils;
 import org.netbeans.modules.javascript2.editor.doc.api.JsDocumentationSupport;
 import org.netbeans.modules.javascript2.editor.doc.spi.SyntaxProvider;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;

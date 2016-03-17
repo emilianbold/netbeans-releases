@@ -45,7 +45,7 @@ import com.oracle.js.parser.ir.FunctionNode;
 import com.oracle.js.parser.ir.LexicalContext;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.test.CslTestBase;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;

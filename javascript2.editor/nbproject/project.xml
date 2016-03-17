@@ -51,6 +51,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.csl.types</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.css.editor</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -197,6 +206,15 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.26</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.javascript2.lexer</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0-1</release-version>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -368,6 +386,12 @@
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.csl.api</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.csl.types</code-name-base>
                         <recursive/>
                         <compile-dependency/>
                         <test/>
