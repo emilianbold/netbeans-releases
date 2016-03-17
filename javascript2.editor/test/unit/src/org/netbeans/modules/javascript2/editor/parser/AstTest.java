@@ -2463,17 +2463,17 @@ public class AstTest extends CslTestBase {
         checkAstResult("testfiles/ecmascript6/parser/ES6/template-literals/dollar-sign.js");
     }
 
-    public void testEscapeSequencesSource() throws Exception {
-        checkAstResult("testfiles/ecmascript6/parser/ES6/template-literals/escape-sequences.source.js");
-    }
+//    public void testEscapeSequencesSource() throws Exception {
+//        checkAstResult("testfiles/ecmascript6/parser/ES6/template-literals/escape-sequences.source.js");
+//    }
 
     public void testInvalidEscape() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/ES6/template-literals/invalid-escape.js");
     }
 
-    public void testLineTerminatorsSource() throws Exception {
-        checkAstResult("testfiles/ecmascript6/parser/ES6/template-literals/line-terminators.source.js");
-    }
+//    public void testLineTerminatorsSource() throws Exception {
+//        checkAstResult("testfiles/ecmascript6/parser/ES6/template-literals/line-terminators.source.js");
+//    }
 
     public void testLiteralEscapeSequencesSource() throws Exception {
         checkAstResult("testfiles/ecmascript6/parser/ES6/template-literals/literal-escape-sequences.source.js");

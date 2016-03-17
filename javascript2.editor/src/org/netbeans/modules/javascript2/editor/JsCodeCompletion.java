@@ -1054,18 +1054,18 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             jsObject = jsObject.getParent();
         }
         
-        completeObjectMembers(jsObject, request, addedItems);
+        completeObjectMembers(jsObject, request, addedItems, true);
         
         if (ModelUtils.PROTOTYPE.equals(jsObject.getName())) {  //NOI18N
-            completeObjectMembers(jsObject.getParent(), request, addedItems);
+            completeObjectMembers(jsObject.getParent(), request, addedItems, true);
         }
     }
     
-    private void completeObjectMembers(JsObject jsObject, CompletionRequest request, Map<String, List<JsElement>> properties) {
+    private void completeObjectMembers(JsObject jsObject, CompletionRequest request, Map<String, List<JsElement>> properties, boolean includePrivate) {
         if (jsObject.getJSKind() == JsElement.Kind.OBJECT || jsObject.getJSKind() == JsElement.Kind.CONSTRUCTOR
                 || jsObject.getJSKind() == JsElement.Kind.OBJECT_LITERAL) {
             for (JsObject property : jsObject.getProperties().values()) {
-                if(!(request.completionContext == OBJECT_MEMBERS && property.getModifiers().contains(Modifier.PRIVATE) && property.getModifiers().size() == 1) && !property.isAnonymous()) {
+                if(!(request.completionContext == OBJECT_MEMBERS && property.getModifiers().contains(Modifier.PRIVATE) && !includePrivate && property.getModifiers().size() == 1) && !property.isAnonymous()) {
                     addPropertyToMap(request, properties, property);
                 }
             }
