@@ -1952,4 +1952,8 @@ public class Css3ParserScssTest extends CssTestBase {
     public void testFunctionQuoteInMap() {
         assertParses("$a: (quote(bgcolor): black)");
     }
+    
+    public void testSassMapWithNumbers() {
+        assertParses("$twoToTheN: (0: 1, 1: 2, 2: 4, 3: 8, 4: 16, 5: 32);");
+    }
 }
