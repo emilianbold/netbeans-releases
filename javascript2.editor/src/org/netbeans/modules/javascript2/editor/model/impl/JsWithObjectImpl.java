@@ -13,7 +13,7 @@ import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.JsWith;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
-import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.javascript2.types.api.TypeUsage;
 import static org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl.findPrototypeChain;
 
 /*

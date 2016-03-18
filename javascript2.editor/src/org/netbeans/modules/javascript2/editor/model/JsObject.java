@@ -46,6 +46,8 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.types.api.Identifier;
+import org.netbeans.modules.javascript2.types.api.TypeUsage;
 
 /**
  *

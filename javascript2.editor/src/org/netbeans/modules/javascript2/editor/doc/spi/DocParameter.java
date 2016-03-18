@@ -42,8 +42,8 @@
 package org.netbeans.modules.javascript2.editor.doc.spi;
 
 import java.util.List;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.types.api.Identifier;
+import org.netbeans.modules.javascript2.types.api.Type;
 
 /**
  * Stores named and unnamed documentation parameters.

@@ -42,7 +42,7 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.types.api.Identifier;
 
 /**
  *

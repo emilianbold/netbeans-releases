@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.model;
 
 import java.util.Collection;
+import org.netbeans.modules.javascript2.types.api.TypeUsage;
 
 /**
  *

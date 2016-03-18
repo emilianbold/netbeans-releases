@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.javascript2.editor.api;
 
-import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
+import org.netbeans.modules.javascript2.types.api.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 

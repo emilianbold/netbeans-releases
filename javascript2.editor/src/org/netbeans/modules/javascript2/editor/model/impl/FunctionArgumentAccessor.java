@@ -42,7 +42,7 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.List;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.types.api.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 

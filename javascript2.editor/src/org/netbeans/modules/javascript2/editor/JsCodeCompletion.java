@@ -83,6 +83,8 @@ import static org.netbeans.modules.javascript2.editor.spi.CompletionContext.EXPR
 import static org.netbeans.modules.javascript2.editor.spi.CompletionContext.OBJECT_MEMBERS;
 import static org.netbeans.modules.javascript2.editor.spi.CompletionContext.OBJECT_PROPERTY;
 import org.netbeans.modules.javascript2.editor.spi.CompletionProvider;
+import org.netbeans.modules.javascript2.types.api.Identifier;
+import org.netbeans.modules.javascript2.types.api.TypeUsage;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;

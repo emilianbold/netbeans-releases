@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,16 +37,22 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.javascript2.types.api;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Pisl, Petr Hejl
  */
-public interface TypeUsage extends Type {
+public interface DeclarationScope {
 
-    boolean isResolved();
+    DeclarationScope getParentScope();
 
+    Collection<? extends DeclarationScope> getChildrenScopes();
+
+    void addDeclaredScope(DeclarationScope scope);
 }

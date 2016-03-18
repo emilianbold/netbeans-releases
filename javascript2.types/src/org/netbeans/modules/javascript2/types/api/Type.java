@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,27 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
-
-import org.netbeans.modules.csl.api.OffsetRange;
+package org.netbeans.modules.javascript2.types.api;
 
 /**
  *
- * @author Petr Pisl
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public interface Identifier {
+public interface Type {
+
+    static String BOOLEAN = "Boolean";   //NOI18N
+    static String NUMBER = "Number";     //NOI18N
+    static String STRING = "String";     //NOI18N
+    static String ARRAY = "Array";       //NOI18N
+
+    static String REGEXP = "RegExp";     //NOI18N
+    static String FUNCTION = "Function"; //NOI18N
 
     /**
-     * Gets name of the identifier.
-     * @return identifier name
+     * When the type is unknown / we are not able to resolve it
      */
-    String getName();
+    static String UNRESOLVED = "unresolved"; //NOI18N
+    static String UNDEFINED = "undefined";   //NOI18N
+    static String NULL = "null";            //NOI18N
+    static String OBJECT = "Object";        //NOI18N
+    
+    String getType();
 
-    /**
-     * Gets the identifier offset range.
-     * @return identifier offset range
-     */
-    OffsetRange getOffsetRange();
+    int getOffset();
+    
 }

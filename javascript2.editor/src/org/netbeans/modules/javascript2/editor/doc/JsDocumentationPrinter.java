@@ -45,7 +45,7 @@ import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
-import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.types.api.Type;
 import org.openide.util.NbBundle.Messages;
 
 /**

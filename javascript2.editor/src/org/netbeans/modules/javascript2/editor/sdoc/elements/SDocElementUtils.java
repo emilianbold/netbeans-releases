@@ -44,8 +44,8 @@ package org.netbeans.modules.javascript2.editor.sdoc.elements;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.types.api.Identifier;
+import org.netbeans.modules.javascript2.types.api.Type;
 import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 

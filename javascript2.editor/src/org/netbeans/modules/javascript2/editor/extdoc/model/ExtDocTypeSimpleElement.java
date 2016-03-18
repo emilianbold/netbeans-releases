@@ -43,8 +43,8 @@ package org.netbeans.modules.javascript2.editor.extdoc.model;
 
 import java.util.List;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.types.api.Identifier;
+import org.netbeans.modules.javascript2.types.api.Type;
 
 /**
  * Represents extDoc elements with type declaration purpose.

@@ -53,7 +53,7 @@ import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElementType;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElementUtils;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.NamedParameterElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.UnnamedParameterElement;
-import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.types.api.Type;
 
 /**
  * Represents block of jsDoc comment which contains particular {@link JsDocTag}s.

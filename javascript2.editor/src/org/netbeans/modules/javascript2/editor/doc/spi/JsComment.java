@@ -45,7 +45,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.JsDocumentationPrinter;
-import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.types.api.Type;
 
 /**
  * Base class which represents JavaScript documentation comment.
