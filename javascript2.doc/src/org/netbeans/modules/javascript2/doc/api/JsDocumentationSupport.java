@@ -39,20 +39,20 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.api;
+package org.netbeans.modules.javascript2.doc.api;
 
 import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.javascript2.editor.doc.JsDocumentationFallbackSyntaxProvider;
-import org.netbeans.modules.javascript2.editor.doc.JsDocumentationResolver;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
-import org.netbeans.modules.javascript2.editor.doc.spi.SyntaxProvider;
-import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.javascript2.doc.JsDocumentationFallbackSyntaxProvider;
+import org.netbeans.modules.javascript2.doc.JsDocumentationResolver;
+import org.netbeans.modules.javascript2.doc.spi.JsComment;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationProvider;
+import org.netbeans.modules.javascript2.doc.spi.SyntaxProvider;
+import org.netbeans.modules.javascript2.types.spi.ParserResult;
 
 /**
  * Contains support methods for obtaining {@link JsDocumentationProvider}.
@@ -64,7 +64,7 @@ public final class JsDocumentationSupport {
     /** Path of the documentation providers in the layer. */
     public static final String DOCUMENTATION_PROVIDER_PATH = "javascript/doc/providers"; //NOI18N
 
-    private static Map<JsParserResult, WeakReference<JsDocumentationHolder>> providers = new WeakHashMap<JsParserResult, WeakReference<JsDocumentationHolder>>();
+    private static Map<ParserResult, WeakReference<JsDocumentationHolder>> providers = new WeakHashMap<ParserResult, WeakReference<JsDocumentationHolder>>();
 
     private JsDocumentationSupport() {
     }
@@ -77,19 +77,16 @@ public final class JsDocumentationSupport {
      * @return {@code JsDocumentationProvider} for given {@code JsParserResult}, never {@code null}
      */
     @NonNull
-    public static synchronized JsDocumentationHolder getDocumentationHolder(JsParserResult result) {
-        if (!providers.containsKey(result)) {
-            JsDocumentationHolder holder = createDocumentationHolder(result);
+    public static synchronized JsDocumentationHolder getDocumentationHolder(ParserResult result) {
+        WeakReference<JsDocumentationHolder> holderRef = providers.get(result);
+        JsDocumentationHolder holder;
+        if (holderRef == null) {
+            holder = createDocumentationHolder(result);
             providers.put(result, new WeakReference(holder));
-            return holder;
         } else {
-            JsDocumentationHolder holder = providers.get(result).get();
-            if (holder == null) {
-                holder = createDocumentationHolder(result);
-                providers.put(result, new WeakReference(holder));
-            }
-            return holder;
+            holder = holderRef.get();
         }
+        return holder;
     }
 
     /**
@@ -98,7 +95,7 @@ public final class JsDocumentationSupport {
      * @return JsDocumentationProvider
      */
     @NonNull
-    public static JsDocumentationProvider getDocumentationProvider(JsParserResult result) {
+    public static JsDocumentationProvider getDocumentationProvider(ParserResult result) {
         // XXX - complete caching of documentation tool provider
         return JsDocumentationResolver.getDefault().getDocumentationProvider(result.getSnapshot());
     }
@@ -109,8 +106,8 @@ public final class JsDocumentationSupport {
      * @return documentation support specific or default {@code SyntaxProvider}
      */
     @NonNull
-    public static SyntaxProvider getSyntaxProvider(JsParserResult parserResult) {
-        SyntaxProvider syntaxProvider = parserResult.getDocumentationHolder().getProvider().getSyntaxProvider();
+    public static SyntaxProvider getSyntaxProvider(ParserResult parserResult) {
+        SyntaxProvider syntaxProvider = getDocumentationHolder(parserResult).getProvider().getSyntaxProvider();
         return syntaxProvider != null ? syntaxProvider : new JsDocumentationFallbackSyntaxProvider();
     }
 
@@ -121,12 +118,12 @@ public final class JsDocumentationSupport {
      * @return found {@code JsComment} or {@code null} otherwise
      */
     @CheckForNull
-    public static JsComment getCommentForOffset(JsParserResult result, int offset) {
+    public static JsComment getCommentForOffset(ParserResult result, int offset) {
         JsDocumentationHolder holder = getDocumentationHolder(result);
         return holder.getCommentForOffset(offset, holder.getCommentBlocks());
     }
 
-    private static JsDocumentationHolder createDocumentationHolder(JsParserResult result) {
+    private static JsDocumentationHolder createDocumentationHolder(ParserResult result) {
         JsDocumentationProvider provider = getDocumentationProvider(result);
         return provider.createDocumentationHolder(result.getSnapshot());
     }

@@ -39,12 +39,12 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.spi;
+package org.netbeans.modules.javascript2.doc.spi;
 
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.doc.JsDocumentationPrinter;
+import org.netbeans.modules.javascript2.doc.api.JsDocumentationPrinter;
 import org.netbeans.modules.javascript2.types.api.Type;
 
 /**

@@ -42,8 +42,8 @@
 package org.netbeans.modules.javascript2.editor.doc;
 
 import java.util.Collections;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.doc.spi.JsComment;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.jsdoc.JsDocDocumentationProvider;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;

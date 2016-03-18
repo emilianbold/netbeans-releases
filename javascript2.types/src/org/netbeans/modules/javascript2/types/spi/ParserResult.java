@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,47 +37,21 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.spi;
+package org.netbeans.modules.javascript2.types.spi;
+
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.util.Lookup;
 
 /**
- * Possible modifiers of the javaScript element declared by documentation tools.
+ *
+ * @author Petr Hejl
  */
-public enum JsModifier {
+public abstract class ParserResult extends org.netbeans.modules.csl.spi.ParserResult implements Lookup.Provider {
 
-    /** Private modifier. */
-    PRIVATE("private"),
-
-    /** Public modifier. */
-    PUBLIC("public"),
-
-    /** Static modifier. */
-    STATIC("static");
-
-    private final String value;
-
-    private JsModifier(String value) {
-        this.value = value;
-    }
-
-    @Override
-    public String toString() {
-        return value;
-    }
-
-    /**
-     * Gets {@code JsModifier} corresponding to given value.
-     * @param value {@code String} value of the {@code JsModifier}
-     * @return {@code JsModifier}
-     */
-    public static JsModifier fromString(String value) {
-        for (JsModifier modifier : JsModifier.values()) {
-            if (value.equalsIgnoreCase(modifier.toString())) {
-                return modifier;
-            }
-        }
-        return null;
+    public ParserResult(Snapshot snapshot) {
+        super(snapshot);
     }
 
 }

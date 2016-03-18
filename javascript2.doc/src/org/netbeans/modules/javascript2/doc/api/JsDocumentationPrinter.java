@@ -39,12 +39,12 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc;
+package org.netbeans.modules.javascript2.doc.api;
 
 import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
+import org.netbeans.modules.javascript2.doc.spi.DocParameter;
+import org.netbeans.modules.javascript2.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.types.api.Type;
 import org.openide.util.NbBundle.Messages;
 
@@ -53,7 +53,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class JsDocumentationPrinter {
+public final class JsDocumentationPrinter {
 
     private static final String WRAPPER_HEADER = "h3"; //NOI18N
     private static final String WRAPPER_SUBHEADER = "h4"; //NOI18N

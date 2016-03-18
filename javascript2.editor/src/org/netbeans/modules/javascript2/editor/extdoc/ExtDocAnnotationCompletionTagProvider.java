@@ -43,8 +43,8 @@ package org.netbeans.modules.javascript2.editor.extdoc;
 
 import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTag;
-import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTagProvider;
+import org.netbeans.modules.javascript2.doc.spi.AnnotationCompletionTag;
+import org.netbeans.modules.javascript2.doc.spi.AnnotationCompletionTagProvider;
 import org.netbeans.modules.javascript2.editor.extdoc.completion.DescriptionTag;
 import org.netbeans.modules.javascript2.editor.extdoc.completion.IdentDescribedTag;
 import org.netbeans.modules.javascript2.editor.extdoc.completion.IdentSimpleTag;

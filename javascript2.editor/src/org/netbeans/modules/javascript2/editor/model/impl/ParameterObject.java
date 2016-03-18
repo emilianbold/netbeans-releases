@@ -43,10 +43,11 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.Collections;
 import org.netbeans.modules.csl.api.Documentation;
-import org.netbeans.modules.javascript2.editor.doc.JsDocumentationPrinter;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.doc.api.JsDocumentationSupport;
+import org.netbeans.modules.javascript2.doc.api.JsDocumentationPrinter;
+import org.netbeans.modules.javascript2.doc.spi.DocParameter;
+import org.netbeans.modules.javascript2.doc.spi.JsComment;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.types.api.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
@@ -91,7 +92,7 @@ public class ParameterObject extends JsObjectImpl {
                 public void run(ResultIterator resultIterator) throws Exception {
                     Parser.Result parserResult = resultIterator.getParserResult(getParent().getOffset());
                     if (parserResult instanceof JsParserResult) {
-                        JsDocumentationHolder holder = ((JsParserResult) parserResult).getDocumentationHolder();
+                        JsDocumentationHolder holder = JsDocumentationSupport.getDocumentationHolder((JsParserResult) parserResult);
                         JsComment comment = holder.getCommentForOffset(getParent().getOffset(), holder.getCommentBlocks());
                         if (comment != null) {
                             for (DocParameter docParameter : comment.getParameters()) {

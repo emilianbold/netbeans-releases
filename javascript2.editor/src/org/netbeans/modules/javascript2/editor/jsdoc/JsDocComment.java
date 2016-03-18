@@ -43,9 +43,9 @@ package org.netbeans.modules.javascript2.editor.jsdoc;
 
 import java.util.*;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsModifier;
+import org.netbeans.modules.javascript2.doc.spi.DocParameter;
+import org.netbeans.modules.javascript2.doc.spi.JsComment;
+import org.netbeans.modules.javascript2.doc.spi.JsModifier;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.DeclarationElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.DescriptionElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;

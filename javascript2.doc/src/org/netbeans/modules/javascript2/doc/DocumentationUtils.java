@@ -39,52 +39,20 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.spi;
+package org.netbeans.modules.javascript2.doc;
 
-import java.util.List;
-import org.netbeans.api.annotations.common.NonNull;
-import org.openide.util.Parameters;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.types.api.Type;
 
 /**
- * Encapsulates a JS annotations completion provider.
  *
- * <p>This class allows providing support for completion of JS annotations.</p>
- *
- * <p>Annotations are available per every {@code JsDocumentationProvider}. For <b>framework specific</b> annotations, use
- * {@link org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider#getAnnotationsProvider()}.</p>
-
- * @see org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider#getAnnotationsProvider()
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public abstract class AnnotationCompletionTagProvider {
+public class DocumentationUtils {
 
-    private final String name;
-
-    /**
-     * Create a new JS annotations provider with a name.
-     *
-     * @param  name <b>short, localized</b> name of this JS annotations provider (e.g., "JsDoc");
-     *         never {@code null}
-     * @throws NullPointerException if the {@code name} parameter is {@code null}
-     */
-    public AnnotationCompletionTagProvider(@NonNull String name) {
-        Parameters.notNull("name", name); // NOI18N
-        this.name = name;
+    public static OffsetRange getOffsetRange(Type type) {
+        int startOffset = type.getOffset();
+        return new OffsetRange(startOffset, startOffset + type.getType().length());
     }
-
-    /**
-     * Get the <b>short, localized</b> name of this JS annotations provider.
-     *
-     * @return name; never {@code null}
-     */
-    public final String getName() {
-        return name;
-    }
-
-    /**
-     * Get all supported annotations.
-     * 
-     * @return all supported annotations
-     */
-    public abstract List<AnnotationCompletionTag> getAnnotations();
 
 }

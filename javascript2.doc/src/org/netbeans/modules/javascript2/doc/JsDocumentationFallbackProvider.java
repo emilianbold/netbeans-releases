@@ -39,39 +39,43 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc;
+package org.netbeans.modules.javascript2.doc;
 
-import org.netbeans.modules.javascript2.editor.doc.spi.SyntaxProvider;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import org.netbeans.modules.javascript2.doc.spi.AnnotationCompletionTagProvider;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationProvider;
+import org.netbeans.modules.javascript2.doc.spi.SyntaxProvider;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
- * Default implementation of the syntax provider.
- * <p>
- * Supported syntax by this provider is JsDoc's (as a one of the most used) one.
+ * This is fallback instance of the {@link JsDocumentationProvider}. It enables to not
+ * return {@code null} values anywhere where the {@code JsDocumentationProvider} is needed.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public final class JsDocumentationFallbackSyntaxProvider implements SyntaxProvider {
+public final class JsDocumentationFallbackProvider implements JsDocumentationProvider {
 
-    public JsDocumentationFallbackSyntaxProvider() {
+    @Override
+    public Set getSupportedTags() {
+        return Collections.emptySet();
     }
 
     @Override
-    public String typesSeparator() {
-        return "|"; //NOI18N
+    public JsDocumentationHolder createDocumentationHolder(Snapshot snapshot) {
+        return new JsDocumentationFallbackHolder(this, snapshot);
     }
 
     @Override
-    public String paramTagTemplate() {
-        return "@param {" + TYPE_PLACEHOLDER + "} " + NAME_PLACEHOLDER;
+    public List<AnnotationCompletionTagProvider> getAnnotationsProvider() {
+        return Collections.<AnnotationCompletionTagProvider>emptyList();
     }
 
     @Override
-    public String returnTagTemplate() {
-        return "@return {" + TYPE_PLACEHOLDER + "}";
+    public SyntaxProvider getSyntaxProvider() {
+        return null;
     }
 
-    @Override
-    public String typeTagTemplate() {
-        return "@type {" + TYPE_PLACEHOLDER + "}";
-    }
 }

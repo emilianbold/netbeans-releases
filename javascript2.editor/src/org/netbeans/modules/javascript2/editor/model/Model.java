@@ -73,9 +73,10 @@ import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript2.doc.api.JsDocumentationSupport;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.model.impl.AnonymousObject;
@@ -186,7 +187,7 @@ public final class Model {
             // create all occurrences
             occurrenceBuilder.processOccurrences(visitor.getGlobalObject());
             
-            resolveLocalTypes(visitor.getGlobalObject(), parserResult.getDocumentationHolder());
+            resolveLocalTypes(visitor.getGlobalObject(), JsDocumentationSupport.getDocumentationHolder(parserResult));
 
             ModelElementFactory elementFactory = ModelElementFactoryAccessor.getDefault().createModelElementFactory();
             long startCallingME = System.currentTimeMillis();
@@ -481,7 +482,7 @@ public final class Model {
                 moveProperty(newProperty, propOfProperty);
             }
             // the property needs to be resolved again to handle right occurrences
-            resolveLocalTypes(newProperty, parserResult.getDocumentationHolder());
+            resolveLocalTypes(newProperty, JsDocumentationSupport.getDocumentationHolder(parserResult));
         }
     }
     

@@ -39,49 +39,61 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.netbeans.modules.parsing.api.Snapshot;
+package org.netbeans.modules.javascript2.doc.spi;
 
 /**
- * Reads the documantation comments from the file and returns list of comment tags (like @private, @class, ...).
+ * Provides information about documentation tools syntax.
+ * <p>
+ * Knows i.e. delimiters in more possible typed types, brackets at various tags, etc.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class JsDocumentationReader {
+public interface SyntaxProvider {
 
-    public static Set<String> getAllTags(Snapshot snapshot) {
-        Set<String> tags = new HashSet<String>();
+    static String TYPE_PLACEHOLDER = "[type]";
+    static String NAME_PLACEHOLDER = "[name]";
 
-//        TokenSequence tokenSequence = snapshot.getTokenHierarchy().tokenSequence(JsTokenId.javascriptLanguage());
-//        if (tokenSequence == null) {
-//            return tags;
-//        }
-//
-//        while (tokenSequence.moveNext()) {
-//            if (tokenSequence.token().id() == JsTokenId.DOC_COMMENT) {
-//                tags.addAll(getCommentTags(tokenSequence.token().text()));
-//                continue;
-//            }
-//        }
-        tags.addAll(getCommentTags(snapshot.getText()));
+    /**
+     * Gets the types separator.
+     * <p>
+     * I.e.: "|" in JsDoc or "/" in extDoc
+     *
+     * @return separator if any, {@code null) in case that multi-types are not supported by the doc tool
+     */
+    String typesSeparator();
 
-        return tags;
-    }
+    /**
+     * Returns the param tag template.
+     * <p>
+     * There are patterns which will be replaced by the real value:
+     * [type] - parameter type or types separated by {@link #typesSeparator()}
+     * [name] - parameter name
+     *
+     * <i>The final string could look like this one: "@param {[type]} [name]"</i>
+     * @return template for the parameter tag
+     */
+    String paramTagTemplate();
 
-    protected static Set<String> getCommentTags(CharSequence commentText) {
-        Set<String> tags = new HashSet<String>();
-        String comment = commentText.toString();
-        // XXX - could be rewrite to lexer
-        Pattern pattern = Pattern.compile("[@][a-zA-Z]+"); //NOI18N
-        Matcher matcher = pattern.matcher(comment);
-        while (matcher.find()) {
-			tags.add(matcher.group());
-		}
-        return tags;
-    }
+    /**
+     * Returns the return tag template.
+     * <p>
+     * There are patterns which will be replaced by the real value:
+     * [type] - parameter type or types separated by {@link #typesSeparator()}
+     *
+     * <i>The final string could look like this one: "@return {[type]}"</i>
+     * @return template for the return tag
+     */
+    String returnTagTemplate();
+
+    /**
+     * Returns the type tag template.
+     * <p>
+     * There are patterns which will be replaced by the real value:
+     * [type] - parameter type or types separated by {@link #typesSeparator()}
+     *
+     * <i>The final string could look like this one: "@type {[type]}"</i>
+     * @return template for the type tag
+     */
+    String typeTagTemplate();
+
 }

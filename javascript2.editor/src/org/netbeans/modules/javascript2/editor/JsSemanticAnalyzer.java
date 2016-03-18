@@ -56,7 +56,8 @@ import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
+import org.netbeans.modules.javascript2.doc.api.JsDocumentationSupport;
+import org.netbeans.modules.javascript2.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
 import org.netbeans.modules.javascript2.editor.hints.JSHintSupport;
@@ -324,7 +325,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
     }
 
     private boolean isInComment(JsParserResult result, OffsetRange range) {
-        for (JsComment comment : result.getDocumentationHolder().getCommentBlocks().values()) {
+        for (JsComment comment : JsDocumentationSupport.getDocumentationHolder(result).getCommentBlocks().values()) {
             if (comment.getOffsetRange().containsInclusive(range.getStart())) {
                 return true;
             }

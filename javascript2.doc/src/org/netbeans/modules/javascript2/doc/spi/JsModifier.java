@@ -39,47 +39,45 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.spi;
-
-import java.util.List;
-import org.netbeans.modules.javascript2.types.api.Identifier;
-import org.netbeans.modules.javascript2.types.api.Type;
+package org.netbeans.modules.javascript2.doc.spi;
 
 /**
- * Stores named and unnamed documentation parameters.
- *
- * @author Martin Fousek <marfous@netbeans.org>
+ * Possible modifiers of the javaScript element declared by documentation tools.
  */
-public interface DocParameter {
+public enum JsModifier {
+
+    /** Private modifier. */
+    PRIVATE("private"),
+
+    /** Public modifier. */
+    PUBLIC("public"),
+
+    /** Static modifier. */
+    STATIC("static");
+
+    private final String value;
+
+    private JsModifier(String value) {
+        this.value = value;
+    }
+
+    @Override
+    public String toString() {
+        return value;
+    }
 
     /**
-     * Gets name of the parameter.
-     * @return parameter name, {@code null} if it doesn't have any name
+     * Gets {@code JsModifier} corresponding to given value.
+     * @param value {@code String} value of the {@code JsModifier}
+     * @return {@code JsModifier}
      */
-    Identifier getParamName();
-
-    /**
-     * Gets default value of the parameter.
-     * @return default value, {@code null} if no default value set
-     */
-    String getDefaultValue();
-
-    /**
-     * Get information if the parameter is optional or not.
-     * @return flag which is {@code true} if the parameter is optional, {@code false} otherwise
-     */
-    boolean isOptional();
-
-    /**
-     * Gets the description of the parameter.
-     * @return parameter description, can be empty string, never {@code null}
-     */
-    String getParamDescription();
-
-    /**
-     * Gets the parameter type.
-     * @return parameter possible types, or empty list when no type is set, never {@code null}
-     */
-    List<Type> getParamTypes();
+    public static JsModifier fromString(String value) {
+        for (JsModifier modifier : JsModifier.values()) {
+            if (value.equalsIgnoreCase(modifier.toString())) {
+                return modifier;
+            }
+        }
+        return null;
+    }
 
 }

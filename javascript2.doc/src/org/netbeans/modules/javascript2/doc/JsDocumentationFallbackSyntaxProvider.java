@@ -39,58 +39,39 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc;
+package org.netbeans.modules.javascript2.doc;
 
-import com.oracle.js.parser.ir.Node;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.netbeans.modules.csl.api.Documentation;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
-import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.javascript2.doc.spi.SyntaxProvider;
 
 /**
- * Can be returned by the {@link JsDocumentationFallbackProvider}. It provides
- * empty data. It is used to prevent null checking in the model, visitor codes.
+ * Default implementation of the syntax provider.
+ * <p>
+ * Supported syntax by this provider is JsDoc's (as a one of the most used) one.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public final class JsDocumentationFallbackHolder extends JsDocumentationHolder {
+public final class JsDocumentationFallbackSyntaxProvider implements SyntaxProvider {
 
-    public JsDocumentationFallbackHolder(JsDocumentationProvider provider, Snapshot snapshot) {
-        super(provider, snapshot);
+    public JsDocumentationFallbackSyntaxProvider() {
     }
 
     @Override
-    public List getReturnType(Node node) {
-        return Collections.emptyList();
+    public String typesSeparator() {
+        return "|"; //NOI18N
     }
 
     @Override
-    public List getParameters(Node node) {
-        return Collections.emptyList();
+    public String paramTagTemplate() {
+        return "@param {" + TYPE_PLACEHOLDER + "} " + NAME_PLACEHOLDER;
     }
 
     @Override
-    public Documentation getDocumentation(Node node) {
-        return null;
+    public String returnTagTemplate() {
+        return "@return {" + TYPE_PLACEHOLDER + "}";
     }
 
     @Override
-    public boolean isDeprecated(Node node) {
-        return false;
+    public String typeTagTemplate() {
+        return "@type {" + TYPE_PLACEHOLDER + "}";
     }
-
-    @Override
-    public Set getModifiers(Node node) {
-        return Collections.emptySet();
-    }
-
-    @Override
-    public Map getCommentBlocks() {
-        return Collections.emptyMap();
-    }
-
 }

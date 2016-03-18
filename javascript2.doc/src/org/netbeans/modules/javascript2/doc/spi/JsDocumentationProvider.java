@@ -39,20 +39,45 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc;
+package org.netbeans.modules.javascript2.doc.spi;
 
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.types.api.Type;
+import java.util.List;
+import java.util.Set;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class DocumentationUtils {
+public interface JsDocumentationProvider {
 
-    public static OffsetRange getOffsetRange(Type type) {
-        int startOffset = type.getOffset();
-        return new OffsetRange(startOffset, startOffset + type.getType().length());
-    }
+    /**
+     * Parses and gets {@code JsDocumentationHolder} with processed documentation comments.
+     *
+     * @param snapshot to be parsed and stored into holder
+     * @return JsDocumentationHolder
+     */
+    JsDocumentationHolder createDocumentationHolder(Snapshot snapshot);
+
+    /**
+     * Gets all tags supported by the documentation tool (like @author, @link, ...)
+     *
+     * @return set of all supported tags
+     */
+    Set<String> getSupportedTags();
+
+    /**
+     * Get list of {@link AnnotationCompletionTagProvider annotations providers} for this JavaScript documentation tool.
+     *
+     * @return list of annotations providers, never {@code null}
+     */
+    List<? extends AnnotationCompletionTagProvider> getAnnotationsProvider();
+
+    /**
+     * Get {@link SyntaxProvider syntax provider} for this JavaScript documentation tool.
+     *
+     * @return syntax provider of this documentation tool, can return {@code null) - then is used default SyntaxProvider
+     */
+    SyntaxProvider getSyntaxProvider();
 
 }

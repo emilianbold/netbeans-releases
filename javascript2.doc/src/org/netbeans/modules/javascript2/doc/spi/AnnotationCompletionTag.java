@@ -39,12 +39,12 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.spi;
+package org.netbeans.modules.javascript2.doc.spi;
 
+import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.openide.util.Parameters;
 
 /**
@@ -111,7 +111,9 @@ public class AnnotationCompletionTag {
      * Format parameter part of the signature of this tag.
      * @param formatter formatter to be used for formatting
      */
-    public void formatParameters(HtmlFormatter formatter) {
+    @CheckForNull
+    public List<ParameterFormat> getParameters() {
+        return null;
     }
 
     @Override

@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.spi;
+package org.netbeans.modules.javascript2.doc.spi;
 
 import com.oracle.js.parser.ir.Node;
 import java.util.Collections;
@@ -53,8 +53,8 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.doc.DocumentationUtils;
-import org.netbeans.modules.javascript2.editor.doc.JsDocumentationPrinter;
+import org.netbeans.modules.javascript2.doc.DocumentationUtils;
+import org.netbeans.modules.javascript2.doc.api.JsDocumentationPrinter;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
 import org.netbeans.modules.javascript2.types.api.Type;

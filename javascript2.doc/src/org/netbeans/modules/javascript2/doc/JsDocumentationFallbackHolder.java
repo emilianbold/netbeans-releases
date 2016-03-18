@@ -39,45 +39,58 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.spi;
+package org.netbeans.modules.javascript2.doc;
 
+import com.oracle.js.parser.ir.Node;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import org.netbeans.modules.csl.api.Documentation;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationProvider;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
+ * Can be returned by the {@link JsDocumentationFallbackProvider}. It provides
+ * empty data. It is used to prevent null checking in the model, visitor codes.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public interface JsDocumentationProvider {
+public final class JsDocumentationFallbackHolder extends JsDocumentationHolder {
 
-    /**
-     * Parses and gets {@code JsDocumentationHolder} with processed documentation comments.
-     *
-     * @param snapshot to be parsed and stored into holder
-     * @return JsDocumentationHolder
-     */
-    JsDocumentationHolder createDocumentationHolder(Snapshot snapshot);
+    public JsDocumentationFallbackHolder(JsDocumentationProvider provider, Snapshot snapshot) {
+        super(provider, snapshot);
+    }
 
-    /**
-     * Gets all tags supported by the documentation tool (like @author, @link, ...)
-     *
-     * @return set of all supported tags
-     */
-    Set<String> getSupportedTags();
+    @Override
+    public List getReturnType(Node node) {
+        return Collections.emptyList();
+    }
 
-    /**
-     * Get list of {@link AnnotationCompletionTagProvider annotations providers} for this JavaScript documentation tool.
-     *
-     * @return list of annotations providers, never {@code null}
-     */
-    List<? extends AnnotationCompletionTagProvider> getAnnotationsProvider();
+    @Override
+    public List getParameters(Node node) {
+        return Collections.emptyList();
+    }
 
-    /**
-     * Get {@link SyntaxProvider syntax provider} for this JavaScript documentation tool.
-     *
-     * @return syntax provider of this documentation tool, can return {@code null) - then is used default SyntaxProvider
-     */
-    SyntaxProvider getSyntaxProvider();
+    @Override
+    public Documentation getDocumentation(Node node) {
+        return null;
+    }
+
+    @Override
+    public boolean isDeprecated(Node node) {
+        return false;
+    }
+
+    @Override
+    public Set getModifiers(Node node) {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public Map getCommentBlocks() {
+        return Collections.emptyMap();
+    }
 
 }

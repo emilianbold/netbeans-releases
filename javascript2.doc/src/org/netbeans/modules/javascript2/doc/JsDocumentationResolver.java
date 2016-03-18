@@ -39,15 +39,15 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc;
+package org.netbeans.modules.javascript2.doc;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
-import org.netbeans.modules.javascript2.editor.doc.api.JsDocumentationSupport;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
+import org.netbeans.modules.javascript2.doc.api.JsDocumentationSupport;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationProvider;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.lookup.Lookups;
 
@@ -85,7 +85,7 @@ public class JsDocumentationResolver {
         float max = -1.0f;
         JsDocumentationProvider bestProvider = null;
         for (JsDocumentationProvider jsDocumentationProvider : PROVIDERS) {
-            float coverage = countTagsCoverageRation(allTags, jsDocumentationProvider);
+            float coverage = countTagsCoverageRatio(allTags, jsDocumentationProvider);
             if (coverage == 1.0) {
                 return jsDocumentationProvider;
             } else {
@@ -98,7 +98,7 @@ public class JsDocumentationResolver {
         return bestProvider != null ? bestProvider : new JsDocumentationFallbackProvider();
     }
 
-    private float countTagsCoverageRation(Set<String> tags, JsDocumentationProvider provider) {
+    private float countTagsCoverageRatio(Set<String> tags, JsDocumentationProvider provider) {
         Set<String> unsupportedTags = new HashSet<String>(tags);
         unsupportedTags.removeAll(provider.getSupportedTags());
         if (unsupportedTags.isEmpty()) {

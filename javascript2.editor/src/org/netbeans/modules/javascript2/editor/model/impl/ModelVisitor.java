@@ -89,11 +89,12 @@ import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.doc.api.JsDocumentationSupport;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsModifier;
+import org.netbeans.modules.javascript2.doc.spi.DocParameter;
+import org.netbeans.modules.javascript2.doc.spi.JsComment;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.doc.spi.JsModifier;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.types.api.DeclarationScope;
 import org.netbeans.modules.javascript2.types.api.Identifier;
@@ -672,7 +673,7 @@ public class ModelVisitor extends PathNodeVisitor {
             modelBuilder.setCurrentObject(fncScope);
         }
         
-        processJsDoc(fncScope, functionNode, parserResult.getDocumentationHolder());
+        processJsDoc(fncScope, functionNode, JsDocumentationSupport.getDocumentationHolder(parserResult));
 
         
         // visit all statements of the function
@@ -688,7 +689,7 @@ public class ModelVisitor extends PathNodeVisitor {
         
         
         if (!functionNode.isProgram() && !functionNode.isModule()) {
-            processModifiersFromJsDoc(fncScope, functionNode, parserResult.getDocumentationHolder());
+            processModifiersFromJsDoc(fncScope, functionNode, JsDocumentationSupport.getDocumentationHolder(parserResult));
             modelBuilder.reset();
         }
 ////        List<FunctionNode> functions = new ArrayList<FunctionNode>(getDeclaredFunction(functionNode));
@@ -1161,7 +1162,7 @@ public class ModelVisitor extends PathNodeVisitor {
             }
         }
         // the variables marked isFunctionDeclaration() are syntetic and represensts just simple function declaration
-        JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+        JsDocumentationHolder docHolder = JsDocumentationSupport.getDocumentationHolder(parserResult);
         LOGGER.log(Level.FINEST, "    variables: ");
         for (VarNode varNode : getDeclaredVar(fnParent)) {
             LOGGER.log(Level.FINEST, "       " + debugInfo(varNode));
@@ -2384,7 +2385,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     parent.addProperty(name.getName(), newVariable);
                     variable = newVariable;
                 } 
-                JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+                JsDocumentationHolder docHolder = JsDocumentationSupport.getDocumentationHolder(parserResult);
                 variable.setDeprecated(docHolder.isDeprecated(varNode));
                 variable.setDocumentation(docHolder.getDocumentation(varNode));
                 if (init instanceof IdentNode) {
@@ -2535,7 +2536,7 @@ public class ModelVisitor extends PathNodeVisitor {
         if (!(rNode != null || init instanceof LiteralNode.ArrayLiteralNode)
                 // XXX can we avoid creation of object ?
                 && ModelElementFactory.create(parserResult, varNode.getName()) != null) {
-            JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+            JsDocumentationHolder docHolder = JsDocumentationSupport.getDocumentationHolder(parserResult);
             List<DocParameter> properties = docHolder.getProperties(varNode);
             for (DocParameter docProperty : properties) {
                 String propertyName = docProperty.getParamName().getName();
@@ -2868,7 +2869,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         property = new JsObjectImpl(object, name, name.getOffsetRange(), onLeftSite, parserResult.getSnapshot().getMimeType(), null);
                         property.addOccurrence(name.getOffsetRange());
                         if (setDocumentation) {
-                            JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+                            JsDocumentationHolder docHolder = JsDocumentationSupport.getDocumentationHolder(parserResult);
                             if (docHolder != null) {    
                                 property.setDocumentation(docHolder.getDocumentation(accessNode));
                                 property.setDeprecated(docHolder.isDeprecated(accessNode));
@@ -3090,7 +3091,7 @@ public class ModelVisitor extends PathNodeVisitor {
     }
     
     private void addDocNameOccurence(JsObjectImpl jsObject) {
-        JsDocumentationHolder holder = parserResult.getDocumentationHolder();
+        JsDocumentationHolder holder = JsDocumentationSupport.getDocumentationHolder(parserResult);
         JsComment comment = holder.getCommentForOffset(jsObject.getOffset(), holder.getCommentBlocks());
         if (comment != null) {
             for (DocParameter docParameter : comment.getParameters()) {
@@ -3104,7 +3105,7 @@ public class ModelVisitor extends PathNodeVisitor {
     }
 
     private void addDocTypesOccurence(JsObjectImpl jsObject) {
-        JsDocumentationHolder holder = parserResult.getDocumentationHolder();
+        JsDocumentationHolder holder = JsDocumentationSupport.getDocumentationHolder(parserResult);
         if (holder.getOccurencesMap().containsKey(jsObject.getName())) {
             for (OffsetRange offsetRange : holder.getOccurencesMap().get(jsObject.getName())) {
                 ((JsObjectImpl)jsObject).addOccurrence(offsetRange);
