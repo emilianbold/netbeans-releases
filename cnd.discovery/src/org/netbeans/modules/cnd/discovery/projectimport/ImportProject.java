@@ -966,7 +966,13 @@ public class ImportProject implements PropertyChangeListener {
                 Exceptions.printStackTrace(ex);
             }
         }
-        List<String> vars = ImportUtils.parseEnvironment(configureArguments);
+        List<String> vars;
+        if (configureArguments != null) {
+            configureArguments = PreBuildSupport.expandMacros(configureArguments, toolchain);
+            vars = ImportUtils.parseEnvironment(configureArguments);
+        } else {
+            vars = new ArrayList<>();
+        }
         if (execLog != null) {
             ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
             MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
