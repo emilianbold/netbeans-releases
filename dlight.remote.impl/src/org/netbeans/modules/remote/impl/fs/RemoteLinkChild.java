@@ -68,9 +68,14 @@ public class RemoteLinkChild extends RemoteLinkBase {
     }
 
     @Override
-    protected void init() {
-        if (NO_CYCLIC_LINKS && hasCycle()) {
-            setFlag(MASK_CYCLIC_LINK, true);
+    protected void initListeners(boolean add) {
+        if (add) {
+            if (NO_CYCLIC_LINKS && hasCycle()) {
+                setFlag(MASK_CYCLIC_LINK, true);
+            }
+            delegate.addFileChangeListener(this);
+        } else {
+            delegate.removeFileChangeListener(this);
         }
     }
 

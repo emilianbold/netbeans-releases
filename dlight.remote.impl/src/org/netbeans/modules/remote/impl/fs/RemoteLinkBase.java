@@ -81,7 +81,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     }
 
     /**
-     * That's a kind of addition to constructor.
+     * That's a kind of addition to constructor + kind of "destructor"
      * It will be called each time the instance is created *and* used
      * (i.e. not thrown away - see RemoteFileObjectFactor.putIfAbsent())
      * RemoteFileObjectFactory creates an instance each time before calling putIfAbsent,
@@ -89,12 +89,8 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
      *
      * It is also called after changing link target
      */
-    protected void init() {
-    }
-
-    protected final void initListeners(boolean add) {
+    protected void initListeners(boolean add) {
         if (add) {
-            init();
             getFileSystem().getFactory().addFileChangeListener(getDelegateNormalizedPath(), this);
         } else {
             getFileSystem().getFactory().removeFileChangeListener(getDelegateNormalizedPath(), this);
@@ -104,7 +100,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     public abstract RemoteFileObjectBase getCanonicalDelegate();
     protected abstract String getDelegateNormalizedPath();
     protected abstract RemoteFileObjectBase getDelegateImpl();
- 
+
     protected FileNotFoundException fileNotFoundException(String operation) {
         return RemoteExceptions.createFileNotFoundException(NbBundle.getMessage(RemoteLinkBase.class,
                 "EXC_CantPerformOpOnDeadLink", operation, getDisplayName())); //NOI18N
