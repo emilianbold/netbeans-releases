@@ -83,7 +83,7 @@ public class RemoteLinkChild extends RemoteLinkBase {
         RemoteFileObjectBase dlg = getCanonicalDelegate();
         RemoteFileObjectBase p = getParent();
         while (p instanceof RemoteLinkChild) {
-            if( ((RemoteLinkChild) p).delegate == dlg) {
+            if (p == dlg) {
                 return true;
             }
             p = p.getParent();
