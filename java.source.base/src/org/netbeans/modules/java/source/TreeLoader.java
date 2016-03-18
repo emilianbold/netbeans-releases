@@ -45,7 +45,9 @@
 package org.netbeans.modules.java.source;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.PackageTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
@@ -190,13 +192,18 @@ public class TreeLoader extends LazyTreeLoader {
                         final Log log = Log.instance(context);
                         log.nerrors = 0;
                         final JavaFileManager jfm = context.get(JavaFileManager.class);
+                        final Symtab syms = Symtab.instance(context);
                         JavaFileObject jfo = FileObjects.sourceFileObject(fo, null);
                         Map<ClassSymbol, StringBuilder> oldCouplingErrors = couplingErrors;
                         boolean oldSkipAPT = jc.skipAnnotationProcessing;
                         try {
                             couplingErrors = new HashMap<ClassSymbol, StringBuilder>();
                             jc.skipAnnotationProcessing = true;
-                            jti.analyze(jti.enter(jti.parse(jfo)));
+                            Iterable<? extends CompilationUnitTree> cuts = jti.parse(jfo);
+                            for (CompilationUnitTree cut : cuts) {
+                                ((JCTree.JCCompilationUnit)cut).modle = clazz.packge().modle;
+                            }
+                            jti.analyze(jti.enter(cuts));
                             if (persist && log.nerrors == 0) {
                                 final File classFolder = getClassFolder(jfm, clazz);
                                 if (classFolder != null) {
