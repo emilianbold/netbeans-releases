@@ -79,12 +79,10 @@ public final class JsDocumentationSupport {
     @NonNull
     public static synchronized JsDocumentationHolder getDocumentationHolder(ParserResult result) {
         WeakReference<JsDocumentationHolder> holderRef = providers.get(result);
-        JsDocumentationHolder holder;
-        if (holderRef == null) {
+        JsDocumentationHolder holder = holderRef != null ? holderRef.get() : null;
+        if (holder == null) {
             holder = createDocumentationHolder(result);
             providers.put(result, new WeakReference(holder));
-        } else {
-            holder = holderRef.get();
         }
         return holder;
     }
