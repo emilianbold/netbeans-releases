@@ -71,7 +71,7 @@ public class APTTraceFlags {
             switch (product) {
                 case CND:
                 case PROJECT_CREATOR:
-                    val = true;
+                    val = false;
                     break;
                 case OSS_IDE:
                 case DBXTOOL:
