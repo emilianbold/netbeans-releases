@@ -45,11 +45,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.types.api.DeclarationScope;
+import org.netbeans.modules.javascript2.types.api.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.javascript2.types.api.TypeUsage;
 
 /**
  *

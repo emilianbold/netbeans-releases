@@ -55,10 +55,11 @@ import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.doc.api.JsDocumentationSupport;
+import org.netbeans.modules.javascript2.doc.spi.DocParameter;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.hints.JsHintsProvider.JsRuleContext;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.types.api.Identifier;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.PathNodeVisitor;
 import org.openide.util.NbBundle;
@@ -171,7 +172,7 @@ public class JsFunctionDocumentationRule extends JsAstRule {
 
         @Override
         public boolean enterFunctionNode(FunctionNode fn) {
-            JsDocumentationHolder docHolder = context.getJsParserResult().getDocumentationHolder();
+            JsDocumentationHolder docHolder = JsDocumentationSupport.getDocumentationHolder(context.getJsParserResult());
             // TRUFFLE
             if (fn.isProgram()
                     || docHolder.getCommentForOffset(fn.getStart(), docHolder.getCommentBlocks()) == null) {

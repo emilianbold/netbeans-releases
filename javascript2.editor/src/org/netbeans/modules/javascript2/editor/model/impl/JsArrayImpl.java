@@ -49,12 +49,12 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.types.api.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsArray;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.Type;
-import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.javascript2.types.api.Type;
+import org.netbeans.modules.javascript2.types.api.TypeUsage;
 
 /**
  *

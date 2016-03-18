@@ -75,7 +75,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.java.source.parsing.ClassParserFactory;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.save.Reformatter;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.core.jsploader.TagLibParseSupport;
 import org.netbeans.modules.web.core.jsploader.api.TagLibParseCookie;

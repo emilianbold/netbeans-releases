@@ -43,8 +43,8 @@ package org.netbeans.modules.javascript2.editor.sdoc;
 
 import java.util.*;
 import org.netbeans.modules.javascript2.editor.doc.JsDocumentationTestBase;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.doc.spi.JsComment;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocDescriptionElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElement;

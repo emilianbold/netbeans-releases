@@ -56,16 +56,17 @@ import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.doc.api.JsDocumentationSupport;
+import org.netbeans.modules.javascript2.doc.spi.JsComment;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
 import org.netbeans.modules.javascript2.editor.hints.JSHintSupport;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.types.api.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
-import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.types.api.Type;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
@@ -324,7 +325,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
     }
 
     private boolean isInComment(JsParserResult result, OffsetRange range) {
-        for (JsComment comment : result.getDocumentationHolder().getCommentBlocks().values()) {
+        for (JsComment comment : JsDocumentationSupport.getDocumentationHolder(result).getCommentBlocks().values()) {
             if (comment.getOffsetRange().containsInclusive(range.getStart())) {
                 return true;
             }

@@ -53,10 +53,12 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.doc.api.JsDocumentationSupport;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.javascript2.types.api.Identifier;
 
 /**
  *
@@ -126,7 +128,7 @@ class ModelElementFactory {
                 result.addOccurrence(occurrence.getOffsetRange());
             }
         }
-        JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+        JsDocumentationHolder docHolder = JsDocumentationSupport.getDocumentationHolder(parserResult);
         if (docHolder != null) {
             result.setDocumentation(docHolder.getDocumentation(functionNode));
         }
@@ -200,7 +202,7 @@ class ModelElementFactory {
                 newObject.addProperty(propertyName, result.getProperty(propertyName));
             }
         }
-        JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+        JsDocumentationHolder docHolder = JsDocumentationSupport.getDocumentationHolder(parserResult);
         if (docHolder != null) {
             newObject.setDeprecated(docHolder.isDeprecated(objectNode));
             newObject.setDocumentation(docHolder.getDocumentation(objectNode));
@@ -243,7 +245,7 @@ class ModelElementFactory {
                 newObject.setDeclarationName(result.getDeclarationName());
             }
         }
-        JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+        JsDocumentationHolder docHolder = JsDocumentationSupport.getDocumentationHolder(parserResult);
         if (docHolder != null) {
             newObject.setDeprecated(docHolder.isDeprecated(aNode));
             newObject.setDocumentation(docHolder.getDocumentation(aNode));
@@ -261,7 +263,7 @@ class ModelElementFactory {
         JsObjectImpl result = new AnonymousObject(modelBuilder.getCurrentDeclarationFunction(),
                     name, new OffsetRange(objectNode.getStart(), objectNode.getFinish()), parserResult.getSnapshot().getMimeType(), null);
         modelBuilder.getCurrentDeclarationFunction().addProperty(name, result);
-        JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+        JsDocumentationHolder docHolder = JsDocumentationSupport.getDocumentationHolder(parserResult);
         if (docHolder != null) {
             result.setDocumentation(docHolder.getDocumentation(objectNode));
             result.setDeprecated(docHolder.isDeprecated(objectNode));
@@ -275,7 +277,7 @@ class ModelElementFactory {
         JsArrayImpl result = new AnonymousObject.AnonymousArray(modelBuilder.getCurrentDeclarationFunction(),
                     name, new OffsetRange(aNode.getStart(), aNode.getFinish()), parserResult.getSnapshot().getMimeType(), null);
         modelBuilder.getCurrentDeclarationFunction().addProperty(name, result);
-        JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+        JsDocumentationHolder docHolder = JsDocumentationSupport.getDocumentationHolder(parserResult);
         if (docHolder != null) {
             result.setDocumentation(docHolder.getDocumentation(aNode));
             result.setDeprecated(docHolder.isDeprecated(aNode));
@@ -290,7 +292,7 @@ class ModelElementFactory {
         }
         JsObjectImpl scope = modelBuilder.getCurrentObject();
         JsObjectImpl property = new JsObjectImpl(scope, name, name.getOffsetRange(), parserResult.getSnapshot().getMimeType(), null);
-        JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+        JsDocumentationHolder docHolder = JsDocumentationSupport.getDocumentationHolder(parserResult);
         property.setDocumentation(docHolder.getDocumentation(propertyNode));
         property.setDeprecated(docHolder.isDeprecated(propertyNode));
         if (property.hasExactName()) {

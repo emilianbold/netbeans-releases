@@ -42,7 +42,7 @@
 package org.netbeans.modules.javascript2.editor.jsdoc.model;
 
 import java.util.List;
-import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.types.api.Type;
 
 /**
  * Represents base parameter element class with optional parameter type and description.

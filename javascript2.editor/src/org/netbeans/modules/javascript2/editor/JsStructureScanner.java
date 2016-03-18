@@ -55,12 +55,14 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.csl.spi.support.CancelSupport;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.javascript2.types.api.Type;
+import org.netbeans.modules.javascript2.types.api.TypeUsage;
 import org.openide.util.ImageUtilities;
 
 /**

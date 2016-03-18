@@ -50,14 +50,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsModifier;
+import org.netbeans.modules.javascript2.doc.spi.DocParameter;
+import org.netbeans.modules.javascript2.doc.spi.JsComment;
+import org.netbeans.modules.javascript2.doc.spi.JsModifier;
 import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocDescriptionElement;
 import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocElement;
 import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocElementType;
 import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocIdentSimpleElement;
-import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.types.api.Type;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 
 /**

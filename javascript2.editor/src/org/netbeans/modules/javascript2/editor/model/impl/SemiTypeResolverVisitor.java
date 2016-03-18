@@ -73,8 +73,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.javascript2.editor.model.Type;
-import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.javascript2.types.api.Type;
+import org.netbeans.modules.javascript2.types.api.TypeUsage;
 
 /**
  *

@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.extdoc;
 
-import org.netbeans.modules.javascript2.editor.doc.spi.SyntaxProvider;
+import org.netbeans.modules.javascript2.doc.spi.SyntaxProvider;
 
 /**
  * Syntax provider of the ExtDoc documentation tool.

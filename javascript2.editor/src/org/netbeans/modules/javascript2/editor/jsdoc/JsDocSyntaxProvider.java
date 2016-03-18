@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.jsdoc;
 
-import org.netbeans.modules.javascript2.editor.doc.spi.SyntaxProvider;
+import org.netbeans.modules.javascript2.doc.spi.SyntaxProvider;
 
 /**
  * Syntax provider of the JsDoc documentation tool.

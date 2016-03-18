@@ -46,12 +46,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.doc.api.JsDocumentationSupport;
+import org.netbeans.modules.javascript2.doc.spi.DocParameter;
+import org.netbeans.modules.javascript2.doc.spi.JsComment;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.hints.JSHintSupport;
-import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.types.api.DeclarationScope;
+import org.netbeans.modules.javascript2.types.api.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
@@ -204,7 +205,7 @@ public class OccurrenceBuilder {
     }
     
     private void addDocNameOccurence(JsObjectImpl jsObject) {
-        JsDocumentationHolder holder = parserResult.getDocumentationHolder();
+        JsDocumentationHolder holder = JsDocumentationSupport.getDocumentationHolder(parserResult);
         JsComment comment = holder.getCommentForOffset(jsObject.getOffset(), holder.getCommentBlocks());
         if (comment != null) {
             for (DocParameter docParameter : comment.getParameters()) {
@@ -218,7 +219,7 @@ public class OccurrenceBuilder {
     }
 
     private void addDocTypesOccurence(JsObjectImpl jsObject) {
-        JsDocumentationHolder holder = parserResult.getDocumentationHolder();
+        JsDocumentationHolder holder = JsDocumentationSupport.getDocumentationHolder(parserResult);
         if (holder.getOccurencesMap().containsKey(jsObject.getName())) {
             for (OffsetRange offsetRange : holder.getOccurencesMap().get(jsObject.getName())) {
                 ((JsObjectImpl)jsObject).addOccurrence(offsetRange);

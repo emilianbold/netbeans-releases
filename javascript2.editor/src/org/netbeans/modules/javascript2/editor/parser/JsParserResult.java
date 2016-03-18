@@ -48,18 +48,20 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.lib.api.FilterableError;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.doc.api.JsDocumentationSupport;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.doc.api.JsDocumentationSupport;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.ModelFactory;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Petr Pisl
  */
-public class JsParserResult extends ParserResult {
+public class JsParserResult extends org.netbeans.modules.javascript2.types.spi.ParserResult {
 
     private static final Logger LOGGER = Logger.getLogger(JsParserResult.class.getName());
 
@@ -67,14 +69,14 @@ public class JsParserResult extends ParserResult {
     private final boolean embedded;
     private List<? extends FilterableError> errors;
     private Model model;
-    private JsDocumentationHolder docHolder;
+//    private JsDocumentationHolder docHolder;
 
     public JsParserResult(@NonNull Snapshot snapshot, @NullAllowed FunctionNode root) {
         super(snapshot);
         this.root = root;
         this.errors = Collections.<FilterableError>emptyList();
         this.model = null;
-        this.docHolder = null;
+//        this.docHolder = null;
 
         this.embedded = isEmbedded(snapshot);
     }
@@ -93,6 +95,11 @@ public class JsParserResult extends ParserResult {
         );
 
         return !mimeTypes.contains(snapshot.getMimePath().getPath());
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return Lookups.fixed(this, root);
     }
 
     public List<? extends FilterableError> getErrors(boolean includeFiltered) {
@@ -150,14 +157,14 @@ public class JsParserResult extends ParserResult {
         }
     }
 
-    public JsDocumentationHolder getDocumentationHolder() {
-        synchronized (this) {
-            if (docHolder == null) {
-                docHolder = JsDocumentationSupport.getDocumentationHolder(this);
-            }
-            return docHolder;
-        }
-    }
+//    public JsDocumentationHolder getDocumentationHolder() {
+//        synchronized (this) {
+//            if (docHolder == null) {
+//                docHolder = JsDocumentationSupport.getDocumentationHolder(this);
+//            }
+//            return docHolder;
+//        }
+//    }
 
     public boolean isEmbedded() {
         return embedded;

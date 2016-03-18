@@ -55,8 +55,8 @@ import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocDescriptionEle
 import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocElement;
 import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocElementType;
 import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocElementUtils;
-import org.netbeans.modules.javascript2.editor.lexer.JsDocumentationTokenId;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.JsDocumentationTokenId;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**

@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.javascript2.editor.jsdoc.completion;
 
-import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTag;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.javascript2.doc.spi.AnnotationCompletionTag;
+import org.netbeans.modules.javascript2.doc.spi.ParameterFormat;
 
 /**
  *
@@ -57,13 +59,8 @@ public class TypeSimpleTag extends AnnotationCompletionTag {
     }
 
     @Override
-    public void formatParameters(HtmlFormatter formatter) {
-        formatter.appendText(" "); //NOI18N
-        formatter.parameters(true);
-        formatter.appendText("type"); //NOI18N
-        formatter.parameters(false);
-        formatter.appendText(""); //NOI18N
+    public List<ParameterFormat> getParameters() {
+        return Collections.singletonList(new ParameterFormat(" ", "type", null)); //NOI18N
     }
-
 
 }

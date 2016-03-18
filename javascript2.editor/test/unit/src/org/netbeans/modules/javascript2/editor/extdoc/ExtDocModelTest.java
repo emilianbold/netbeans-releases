@@ -43,8 +43,8 @@ package org.netbeans.modules.javascript2.editor.extdoc;
 
 import java.util.*;
 import org.netbeans.modules.javascript2.editor.doc.JsDocumentationTestBase;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.doc.spi.JsComment;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocDescriptionElement;
 import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocElement;
 import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocElementType;

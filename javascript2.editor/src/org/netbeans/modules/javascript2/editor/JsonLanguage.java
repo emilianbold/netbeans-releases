@@ -46,7 +46,7 @@ import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.javascript2.editor.formatter.JsFormatter;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.javascript2.editor.navigation.DeclarationFinderImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsonParser;
 import org.netbeans.modules.parsing.spi.Parser;

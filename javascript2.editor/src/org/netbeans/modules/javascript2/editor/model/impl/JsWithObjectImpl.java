@@ -8,12 +8,12 @@ import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.JsWith;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
-import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.javascript2.types.api.TypeUsage;
 import static org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl.findPrototypeChain;
 
 /*
