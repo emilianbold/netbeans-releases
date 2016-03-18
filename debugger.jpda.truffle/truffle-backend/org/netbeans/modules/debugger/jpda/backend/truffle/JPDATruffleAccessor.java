@@ -481,6 +481,7 @@ public class JPDATruffleAccessor extends Object {
     private static Breakpoint doSetLineBreakpoint(String path, int line,
                                                   int ignoreCount, String condition,
                                                   boolean oneShot) {
+        /*
         try {
             return doSetLineBreakpoint(new File(path).toURI().toURL(), line,
                                        ignoreCount, condition, oneShot);
@@ -488,6 +489,7 @@ public class JPDATruffleAccessor extends Object {
             System.err.println(muex.getLocalizedMessage());
             muex.printStackTrace();
         }
+        */
         Source source;
         try {
             source = Source.fromFileName(path);
