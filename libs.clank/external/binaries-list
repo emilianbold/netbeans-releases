@@ -1,6 +1,6 @@
-#changeset:   17078:4910544dde05
+#changeset:   17116:7c6077662232
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Thu Mar 17 09:09:05 2016 +0300
-#summary:     PERF: experiment with turned ON PTH
-23CCF348F17C973B68D62AAB72BCEF99A758F11A clank_0.3.6.zip
+#date:        Sat Mar 19 17:31:18 2016 +0300
+#summary:     fixed #258439 - [newcodemodel] UnsupportedOperationException: View 'unix' not available
+07BECAC464DCB9F18599B7B469ED35AABD19169C clank_0.3.6.zip
