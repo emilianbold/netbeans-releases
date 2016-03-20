@@ -1,6 +1,6 @@
-#changeset:   17116:7c6077662232
+#changeset:   17118:6e3c70e7e929
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Sat Mar 19 17:31:18 2016 +0300
-#summary:     fixed #258439 - [newcodemodel] UnsupportedOperationException: View 'unix' not available
-07BECAC464DCB9F18599B7B469ED35AABD19169C clank_0.3.6.zip
+#date:        Sun Mar 20 13:02:33 2016 +0300
+#summary:     fixed #258439 - [newcodemodel] UnsupportedOperationException: View 'posix' not available
+E80190E352124F54D4A0BC9862724B81CD2D7E74 clank_0.3.6.zip
