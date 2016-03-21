@@ -238,7 +238,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         }
         CacheEntry key = null;
         CsmFunction fun = CsmContextUtilities.getFunction(context, true);
-        ResultImpl resImpl = new ResultImpl();
+        ResultImpl resImpl = new ResultImpl(context);
         boolean isLocalVariable = resolveLocalContext(prj, resImpl, fun, context, offset, strPrefix, match);
         if (USE_CACHE && isEnough(strPrefix, match)) {
             if (isLocalVariable) {
@@ -1410,6 +1410,8 @@ public class CompletionResolverImpl implements CompletionResolver {
     }
 
     private static final class ResultImpl implements Result {
+        
+        private CsmContext context;
 
         private Collection<CsmVariable> localVars;
         private Collection<CsmField> classFields;
@@ -1437,7 +1439,8 @@ public class CompletionResolverImpl implements CompletionResolver {
         private Collection<CsmNamespaceAlias> libNsAliases;
         private Collection<CsmTemplateParameter> templateParameters;
 
-        private ResultImpl() {
+        private ResultImpl(CsmContext context) {
+            this.context = context;
         }
 
         @Override
@@ -1628,6 +1631,11 @@ public class CompletionResolverImpl implements CompletionResolver {
         }
 
         @Override
+        public CsmContext getContext() {
+            return context;
+        }
+
+        @Override
         public String toString() {
             Collection<? extends CsmObject> coll = new ArrayList<CsmObject>();
             addResulItemsToCol(coll);
@@ -1756,6 +1764,11 @@ public class CompletionResolverImpl implements CompletionResolver {
         @Override
         public int size() {
             return 0;
+        }
+
+        @Override
+        public CsmContext getContext() {
+            return null;
         }
 
         @Override
