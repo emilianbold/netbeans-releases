@@ -554,7 +554,10 @@ public class ModelUtils {
         } else if(type.getType().startsWith(SemiTypeResolverVisitor.ST_VAR)){
             String name = type.getType().substring(5);
             JsFunction declarationScope = object instanceof DeclarationScope ? (JsFunction)object : (JsFunction)getDeclarationScope(object);
-            Collection<? extends JsObject> variables = ModelUtils.getVariables(declarationScope);
+            List<JsObject> variables = new ArrayList(ModelUtils.getVariables(declarationScope));
+            if (!(object instanceof DeclarationScope) && object.getParent() != null && !(object.getParent() instanceof DeclarationScope)) {
+                variables.addAll(object.getParent().getProperties().values());
+            }
             if (declarationScope != null) {
                 boolean resolved = false;
                 for (JsObject variable : variables) {

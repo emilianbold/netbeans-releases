@@ -689,6 +689,15 @@ public class ModelVisitor extends PathNodeVisitor {
         
         if (!functionNode.isProgram() && !functionNode.isModule()) {
             processModifiersFromJsDoc(fncScope, functionNode, parserResult.getDocumentationHolder());
+            if (canBeSingletonPattern(1)) {
+                // move all properties to the parent
+                JsObject singleton = resolveThisInSingletonPattern(fncScope);
+                fncScope.setJsKind(JsElement.Kind.CONSTRUCTOR);
+                List<JsObject> properties = new ArrayList(fncScope.getProperties().values());
+                for (JsObject property : properties) {
+                    ModelUtils.moveProperty(singleton, property);
+                }
+            }
             modelBuilder.reset();
         }
 ////        List<FunctionNode> functions = new ArrayList<FunctionNode>(getDeclaredFunction(functionNode));
@@ -1349,12 +1358,12 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
             }
         } else if (lastVisited instanceof CallNode) {
-            if (canBeSingletonPattern()) {
+            /*if (canBeSingletonPattern()) {
                 isPrivate = true;
                 if (fn.isAnonymous()) {
                     jsFunction.setAnonymous(true);
                 }
-            } else if (getPreviousFromPath(3) instanceof UnaryNode) {
+            } else*/ if (getPreviousFromPath(3) instanceof UnaryNode) {
                 if (getPreviousFromPath(4) instanceof VarNode) {
                     isPrivate = true;
                 }
@@ -1415,9 +1424,9 @@ public class ModelVisitor extends PathNodeVisitor {
                     // var f1 = function () {}
                     // var f1 = function f1() {}
                     parent.getProperties().remove(modelBuilder.getFunctionName(fn));
-                    if (canBeSingletonPattern()) {
-                        parent = resolveThis(jsFunction);
-                    }
+//                    if (canBeSingletonPattern()) {
+//                        parent = resolveThis(jsFunction);
+//                    }
                     parent.addProperty(fn.getIdent().getName(), jsFunction);
                     //jsFunction.setDeclarationName(new IdentifierImpl(fn.getIdent().getName(), jsFunction.getDeclarationName().getOffsetRange()));
 //                }
@@ -2336,7 +2345,7 @@ public class ModelVisitor extends PathNodeVisitor {
                  || init instanceof LiteralNode.ArrayLiteralNode
                  || init instanceof ClassNode)) {
             JsObject parent = modelBuilder.getCurrentObject();
-            parent = canBeSingletonPattern(1) ? resolveThis(parent) : parent;
+            //parent = canBeSingletonPattern(1) ? resolveThis(parent) : parent;
             if (parent instanceof CatchBlockImpl) {
                 parent = parent.getParent();
             }
@@ -3195,12 +3204,12 @@ public class ModelVisitor extends PathNodeVisitor {
      */
     public JsObject resolveThis(JsObject where) {
         JsElement.Kind whereKind = where.getJSKind();
-        if (canBeSingletonPattern()) {
-            JsObject result = resolveThisInSingletonPattern(where);
-            if (result != null) {
-                return result;
-            }
-        }
+//        if (canBeSingletonPattern()) {
+//            JsObject result = resolveThisInSingletonPattern(where);
+//            if (result != null) {
+//                return result;
+//            }
+//        }
         if (whereKind == JsElement.Kind.FILE) {
             // this is used in global context
             return where;
@@ -3247,12 +3256,12 @@ public class ModelVisitor extends PathNodeVisitor {
             // this is used in a method of an object -> this is the object
             return parent;
         }
-        if (where.isAnonymous()) {
-            JsObject result = resolveThisInSingletonPattern(where);
-            if (result != null) {
-                return result;
-            }
-        }
+//        if (where.isAnonymous()) {
+//            JsObject result = resolveThisInSingletonPattern(where);
+//            if (result != null) {
+//                return result;
+//            }
+//        }
         return where;
     }
     
@@ -3310,6 +3319,9 @@ public class ModelVisitor extends PathNodeVisitor {
                             parent = parent.getParent();
                         }
                         if (parent != null && parent.getProperty(name) != null) {
+                            if (parent.getName().equals(name) && parent.getProperty(name).getJSKind().isFunction()) {
+                                return parent;
+                            }
                             return parent.getProperty(name);
                         }
                     } else {
@@ -3338,7 +3350,7 @@ public class ModelVisitor extends PathNodeVisitor {
     }
     
     private boolean canBeSingletonPattern(int pathIndex) {
-       return  (getPath().size() > pathIndex + 4 && getPreviousFromPath(pathIndex) instanceof FunctionNode
+       return  (getPath().size() > pathIndex + 3 && getPreviousFromPath(pathIndex) instanceof FunctionNode
                     && getPreviousFromPath(pathIndex + 1) instanceof CallNode
                     && ((CallNode)getPreviousFromPath(pathIndex + 1)).getFunction().equals(getPreviousFromPath(pathIndex))
                     && getPreviousFromPath(pathIndex + 2) instanceof UnaryNode
