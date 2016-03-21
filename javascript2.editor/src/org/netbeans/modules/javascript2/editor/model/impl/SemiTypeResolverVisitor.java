@@ -162,10 +162,12 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
 
     @Override
     public Node leaveAccessNode(AccessNode accessNode) {
-        String type = exp.get(exp.size() - 1);
-        String preType = exp.size() > 1 ? exp.get(exp.size() - 2) : "";
-        if (!ST_THIS.equals(type) && !(preType.startsWith(ST_START_DELIMITER))) {
-            exp.add(exp.size() - 1, ST_PRO);
+        if (!exp.isEmpty()) {
+            String type = exp.get(exp.size() - 1);
+            String preType = exp.size() > 1 ? exp.get(exp.size() - 2) : "";
+            if (!ST_THIS.equals(type) && !(preType.startsWith(ST_START_DELIMITER))) {
+                exp.add(exp.size() - 1, ST_PRO);
+            }
         }
         exp.add(ST_PRO);
         exp.add(accessNode.getProperty());

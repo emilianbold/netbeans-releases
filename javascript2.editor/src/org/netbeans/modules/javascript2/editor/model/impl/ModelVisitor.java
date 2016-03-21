@@ -303,7 +303,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     lObject = processLhs(ModelElementFactory.create(parserResult, (IdentNode)lhs), parent, true);
                 }
                 
-                if (lObject != null) {
+                if (lObject != null && !(binaryNode.rhs() instanceof FunctionNode)) {
                     Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(modelBuilder, binaryNode.rhs());
                     if (lhs instanceof IndexNode && lObject instanceof JsArrayImpl) {
                         ((JsArrayImpl)lObject).addTypesInArray(types);
@@ -1437,33 +1437,35 @@ public class ModelVisitor extends PathNodeVisitor {
             List<Identifier> name = getName(bNode, parserResult);
             boolean isPriviliged = false;
             
-            if (ModelUtils.THIS.equals(name.get(0).getName())) {
-                name.remove(0);
-                isPriviliged = true;
-                parent = (JsObjectImpl)resolveThis(parent);
-                JsObject hParent = parent;
-                while(hParent.getKind() != ElementKind.FILE) {
-                    name.add(0, hParent.getDeclarationName());
-                    hParent = hParent.getParent();
-                }
-            } 
+            if (name != null && !name.isEmpty()) {
+                if (ModelUtils.THIS.equals(name.get(0).getName())) {
+                    name.remove(0);
+                    isPriviliged = true;
+                    parent = (JsObjectImpl)resolveThis(parent);
+                    JsObject hParent = parent;
+                    while(hParent.getKind() != ElementKind.FILE) {
+                        name.add(0, hParent.getDeclarationName());
+                        hParent = hParent.getParent();
+                    }
+                } 
             
-            JsObjectImpl jsObject = ModelUtils.getJsObject(modelBuilder, name, true);
-            if (!isPriviliged) {
-                parent = jsObject.getParent();
+                JsObjectImpl jsObject = ModelUtils.getJsObject(modelBuilder, name, true);
+                if (!isPriviliged) {
+                    parent = jsObject.getParent();
+                }
+                if (fn.isNamedFunctionExpression()) {
+                    // case like A.f1 = function f1(){}
+                    IdentifierImpl refName = new IdentifierImpl(fn.getIdent().getName(), new OffsetRange(fn.getIdent().getStart(), fn.getIdent().getFinish()));
+                    JsFunctionReference jsRef = new JsFunctionReference(jsFunction, refName, jsFunction, true,  EnumSet.of(Modifier.PRIVATE));
+                    jsRef.addOccurrence(jsRef.getDeclarationName().getOffsetRange());
+                    jsFunction.addProperty(jsRef.getName(), jsRef);
+                }
+                jsFunction.setDeclarationName(jsObject.getDeclarationName());
+                ModelUtils.copyOccurrences(jsObject, jsFunction);
+                jsFunction.getParent().getProperties().remove(modelBuilder.getFunctionName(fn));
+                parent.addProperty(jsObject.getName(), jsFunction);
+                jsFunction.setParent(parent);
             }
-            if (fn.isNamedFunctionExpression()) {
-                // case like A.f1 = function f1(){}
-                IdentifierImpl refName = new IdentifierImpl(fn.getIdent().getName(), new OffsetRange(fn.getIdent().getStart(), fn.getIdent().getFinish()));
-                JsFunctionReference jsRef = new JsFunctionReference(jsFunction, refName, jsFunction, true,  EnumSet.of(Modifier.PRIVATE));
-                jsRef.addOccurrence(jsRef.getDeclarationName().getOffsetRange());
-                jsFunction.addProperty(jsRef.getName(), jsRef);
-            }
-            jsFunction.setDeclarationName(jsObject.getDeclarationName());
-            ModelUtils.copyOccurrences(jsObject, jsFunction);
-            jsFunction.getParent().getProperties().remove(modelBuilder.getFunctionName(fn));
-            parent.addProperty(jsObject.getName(), jsFunction);
-            jsFunction.setParent(parent);
         } else if (lastVisited instanceof CallNode) {
             if (getPreviousFromPath(3) instanceof UnaryNode) {
                 if (getPreviousFromPath(4) instanceof VarNode) {
@@ -2696,11 +2698,15 @@ public class ModelVisitor extends PathNodeVisitor {
                 else {
                     return null;
                 }
+            } else if (indexNode.getBase() instanceof IdentNode) {
+                name.add(create(parserResult, (IdentNode)indexNode.getBase()));
             }
             if (indexNode.getIndex() instanceof LiteralNode) {
                 LiteralNode lNode = (LiteralNode)indexNode.getIndex();
                 name.add(new IdentifierImpl(lNode.getPropertyName(), 
                         new OffsetRange(lNode.getStart(), lNode.getFinish())));
+            } else if (indexNode.getIndex() instanceof IdentNode) {
+                name.add(create(parserResult, (IdentNode)indexNode.getIndex()));
             }
         }
         return name;
