@@ -463,9 +463,16 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
 
         @Override
         protected boolean isReset(PropertyChangeEvent evt) {
-            return NbMavenProject.PROP_RESOURCE.equals(evt.getPropertyName()) && 
-                   evt.getNewValue() instanceof URI && 
-                   ((URI)evt.getNewValue()).getPath().endsWith(File.separator + MODULE_INFO);            
+            boolean reset = NbMavenProject.PROP_RESOURCE.equals(evt.getPropertyName()) && 
+                    evt.getNewValue() instanceof URI &&
+                    ((URI)evt.getNewValue()).getPath().endsWith(File.separator + MODULE_INFO);            
+            
+            if(reset) {
+                LOGGER.log(Level.FINER, "ClassPathSelector resource changed: {0}", evt);                
+            }
+            
+            return reset;
+            
         }
     }
     
