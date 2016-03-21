@@ -44,6 +44,7 @@ package org.netbeans.api.editor.caret;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.logging.Logger;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.api.annotations.common.CheckForNull;
 
@@ -62,12 +63,14 @@ final class CaretItem implements Comparable {
     // -J-Dorg.netbeans.modules.editor.lib2.CaretItem.level=FINEST
     private static final Logger LOG = Logger.getLogger(CaretItem.class.getName());
 
-    private static final int TRANSACTION_MARK_REMOVED = 1;
+    private static final int REMOVED_IN_TRANSACTION = 1;
     
     private static final int INFO_OBSOLETE = 2;
 
-    private static final int UPDATE_VISUAL_BOUNDS = 4;
+    private static final int UPDATE_CARET_BOUNDS = 4;
 
+    private static final int CARET_PAINTED = 8;
+    
     private final EditorCaret editorCaret;
     
     private Position dotPos;
@@ -97,7 +100,7 @@ final class CaretItem implements Comparable {
         this.editorCaret = editorCaret;
         this.dotPos = dotPos;
         this.markPos = markPos;
-        this.statusBits = UPDATE_VISUAL_BOUNDS; // Request visual bounds updating automatically
+        this.statusBits = UPDATE_CARET_BOUNDS; // Request visual bounds updating automatically
     }
     
     EditorCaret editorCaret() {
@@ -203,11 +206,57 @@ final class CaretItem implements Comparable {
         this.magicCaretPosition = newMagicCaretPosition;
     }
 
-    void setCaretBounds(Rectangle newCaretBounds) {
+    /**
+     * Set new caret bounds while repainting both original and new bounds.
+     * Clear the caret-painted and update-caret-bounds flags.
+     *
+     * @param newCaretBounds non-null new bounds
+     */
+    synchronized Rectangle setCaretBoundsWithRepaint(Rectangle newCaretBounds, JTextComponent c) {
+        Rectangle oldCaretBounds = this.caretBounds;
+        boolean repaintOld = (oldCaretBounds != null && (this.statusBits & CARET_PAINTED) != 0);
+        this.statusBits &= ~(CARET_PAINTED | UPDATE_CARET_BOUNDS);
+        if (repaintOld) {
+            c.repaint(oldCaretBounds); // First schedule repaint of the original bounds (even if new bounds will possibly be the same)
+        }
+        if (!repaintOld || !newCaretBounds.equals(oldCaretBounds)) {
+            c.repaint(newCaretBounds);
+        }
         this.caretBounds = newCaretBounds;
+        return oldCaretBounds;
+    }
+    
+    /**
+     * Set new caret bounds (without doing any extra repaint).
+     * Clear the caret-painted and update-caret-bounds flags.
+     *
+     * @param newCaretBounds non-null new bounds
+     */
+    synchronized Rectangle setCaretBounds(Rectangle newCaretBounds) {
+        Rectangle oldCaretBounds = this.caretBounds;
+        this.statusBits &= ~(CARET_PAINTED | UPDATE_CARET_BOUNDS);
+        this.caretBounds = newCaretBounds;
+        return oldCaretBounds;
+    }
+    
+    /**
+     * Repaint caret bounds if the caret is showing or do nothing
+     * @param c
+     * @return 
+     */
+    synchronized Rectangle repaintIfShowing(JTextComponent c) {
+        Rectangle bounds = this.caretBounds;
+        if (bounds != null) {
+            boolean repaint = (this.statusBits & CARET_PAINTED) != 0;
+            if (repaint) {
+                this.statusBits &= ~CARET_PAINTED;
+                c.repaint(bounds);
+            }
+        }
+        return bounds;
     }
 
-    Rectangle getCaretBounds() {
+    synchronized Rectangle getCaretBounds() {
         return this.caretBounds;
     }
 
@@ -219,51 +268,64 @@ final class CaretItem implements Comparable {
         this.transactionIndexHint = transactionIndexHint;
     }
 
-    void markTransactionMarkRemoved() {
-        this.statusBits |= TRANSACTION_MARK_REMOVED;
+    synchronized void markRemovedInTransaction() {
+        this.statusBits |= REMOVED_IN_TRANSACTION;
     }
 
-    boolean isTransactionMarkRemoved() {
-        return (this.statusBits & TRANSACTION_MARK_REMOVED) != 0;
+    synchronized boolean getAndClearRemovedInTransaction() {
+        boolean ret = (this.statusBits & REMOVED_IN_TRANSACTION) != 0;
+        this.statusBits &= ~REMOVED_IN_TRANSACTION;
+        return ret;
     }
 
-    void clearTransactionMarkRemoved() {
-        this.statusBits &= ~TRANSACTION_MARK_REMOVED;
-    }
-    
-    void markUpdateVisualBounds() {
-        this.statusBits |= UPDATE_VISUAL_BOUNDS;
-    }
-    
-    boolean isUpdateVisualBounds() {
-        return (this.statusBits & UPDATE_VISUAL_BOUNDS) != 0;
-    }
-    
-    void clearUpdateVisualBounds() {
-        this.statusBits &= ~UPDATE_VISUAL_BOUNDS;
-    }
-    
-    void markInfoObsolete() {
+    synchronized void markInfoObsolete() {
         this.statusBits |= INFO_OBSOLETE;
     }
-    
-    boolean isInfoObsolete() {
-        return (this.statusBits & INFO_OBSOLETE) != 0;
-    }
-    
-    void clearInfoObsolete() {
-        this.statusBits &= ~INFO_OBSOLETE;
-    }
-    
 
+    synchronized boolean getAndClearInfoObsolete() {
+        boolean ret = (this.statusBits & INFO_OBSOLETE) != 0;
+        this.statusBits &= ~INFO_OBSOLETE;
+        return ret;
+    }
+
+    synchronized void markUpdateCaretBounds() {
+        this.statusBits |= UPDATE_CARET_BOUNDS;
+    }
+    
+    synchronized boolean getAndClearUpdateCaretBounds() {
+        boolean ret = (this.statusBits & UPDATE_CARET_BOUNDS) != 0;
+        this.statusBits &= ~UPDATE_CARET_BOUNDS;
+        return ret;
+    }
+    
+    synchronized void markCaretPainted() {
+        this.statusBits |= CARET_PAINTED;
+    }
+    
     @Override
     public int compareTo(Object o) {
         return getDot() - ((CaretItem)o).getDot();
     }
 
     @Override
-    public String toString() {
-        return "dotPos=" + dotPos + ", markPos=" + markPos + ", magicCaretPosition=" + magicCaretPosition; // NOI18N
+    public synchronized String toString() {
+        StringBuilder sb = new StringBuilder(100);
+        sb.append("dotPos=").append(dotPos).append(", markPos=").append(markPos).
+                append(", caretBounds=").append(caretBounds).
+                append(", magicCaretPosition=").append(magicCaretPosition); // NOI18N
+        if ((statusBits & REMOVED_IN_TRANSACTION) != 0) {
+            sb.append(" REMOVED_IN_TRANSACTION");
+        }
+        if ((statusBits & INFO_OBSOLETE) != 0) {
+            sb.append(" INFO_OBSOLETE");
+        }
+        if ((statusBits & UPDATE_CARET_BOUNDS) != 0) {
+            sb.append(" UPDATE_CARET_BOUNDS");
+        }
+        if ((statusBits & CARET_PAINTED) != 0) {
+            sb.append(" CARET_PAINTED");
+        }
+        return sb.toString();
     }
 
 }

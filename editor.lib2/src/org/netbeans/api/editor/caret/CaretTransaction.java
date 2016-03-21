@@ -45,6 +45,8 @@ import org.netbeans.spi.editor.caret.CaretMoveHandler;
 import java.awt.Point;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -54,11 +56,14 @@ import org.netbeans.api.editor.document.ShiftPositions;
 import org.netbeans.lib.editor.util.GapList;
 
 /**
- * Context passed to getCaret transaction allowing to create/remove/modify the carets during the transaction.
+ * Context passed to caret transaction allowing to create/remove/modify the carets during the transaction.
  *
  * @author Miloslav Metelka
  */
 final class CaretTransaction {
+    
+    // -J-Dorg.netbeans.api.editor.caret.CaretTransaction.level=FINEST
+    private static final Logger LOG = Logger.getLogger(CaretTransaction.class.getName());
     
     private final EditorCaret editorCaret;
     
@@ -100,6 +105,8 @@ final class CaretTransaction {
     private GapList<CaretItem> replaceSortedItems;
     
     private GapList<CaretItem> extraRemovedItems;
+    
+    private GapList<CaretItem> allRemovedItems;
     
     private int[] indexes;
     
@@ -173,7 +180,7 @@ final class CaretTransaction {
                     anyMarkChanged = true;
                 }
                 updateAffectedIndexes(index, index + 1);
-                caretItem.markUpdateVisualBounds();
+                caretItem.markUpdateCaretBounds();
                 caretItem.markInfoObsolete();
                 return true;
             }
@@ -187,7 +194,7 @@ final class CaretTransaction {
         int index = findCaretItemIndex(origCaretItems, caretItem);
         if (index != -1) {
             caretItem.setMagicCaretPosition(p);
-            caretItem.clearInfo();
+            caretItem.markInfoObsolete();
             updateAffectedIndexes(index, index + 1);
             return true;
         }
@@ -235,17 +242,6 @@ final class CaretTransaction {
         fullResort = true; // TODO modify to more specific update
     }
 
-    private void setSelectionStartEnd(@NonNull CaretItemInfo info, @NonNull Position pos, boolean start) {
-        int index = findCaretItemIndex(origCaretItems, info.caretItem);
-        assert (index != -1) : "Index=" + index + " should be valid";
-        if (start == info.dotAtStart) {
-            info.caretItem.setDotPos(pos);
-        } else {
-            info.caretItem.setMarkPos(pos);
-        }
-        updateAffectedIndexes(index, index + 1);
-    }
-    
     void handleCaretRemove(@NonNull CaretInfo caret) {
         
     }
@@ -348,41 +344,79 @@ final class CaretTransaction {
         CaretItemInfo itemInfo = new CaretItemInfo();
         while (++i < origSortedItemsSize) {
             itemInfo.update(origSortedItems.get(i));
-            if (itemInfo.overlapsAtStart(lastInfo)) {
-                if (nonOverlappingItems == null) {
-                    nonOverlappingItems = new GapList<CaretItem>(origSortedItemsSize - 1); // At least one will be skipped
-                }
-                itemsRemoved = true;
-                // Determine type of overlap
-                if (!lastInfo.dotAtStart) { // Caret of lastInfo moved into next block
-                    if (lastInfo.startsBelow(itemInfo)) {
-                        // Extend selection of itemInfo to start of lastInfo
-                        updateAffectedOffsets(lastInfo.startOffset, itemInfo.startOffset);
-                        setSelectionStartEnd(itemInfo, lastInfo.startPos, true);
+            if (lastInfo.caretItem != null) { // If lastInfo is valid
+                if (itemInfo.overlapsAtStart(lastInfo)) {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("CaretTransaction.removeOverlappingRegions(): [" + i + "]: overlap at start of itemInfo=" + // NOI18N
+                                itemInfo + "\n  with lastInfo=" + lastInfo + "\n"); // NOI18N
                     }
-                    // Remove lastInfo's getCaret item
-                    lastInfo.caretItem.markTransactionMarkRemoved();
-                    origSortedItems.copyElements(copyStartIndex, i - 1, nonOverlappingItems);
-                    copyStartIndex = i;
-                    
-                } else { // Remove itemInfo and set selection of lastInfo to end of itemInfo
-                    if (itemInfo.endsAbove(lastInfo)) {
-                        updateAffectedOffsets(lastInfo.endOffset, itemInfo.endOffset);
-                        setSelectionStartEnd(lastInfo, itemInfo.endPos, false);
+                    if (nonOverlappingItems == null) {
+                        nonOverlappingItems = new GapList<CaretItem>(origSortedItemsSize - 1); // At least one will be skipped
                     }
-                    // Remove itemInfo's getCaret item
-                    itemInfo.caretItem.markTransactionMarkRemoved();
-                    origSortedItems.copyElements(copyStartIndex, i, nonOverlappingItems);
-                    copyStartIndex = i + 1;
+                    itemsRemoved = true;
+                    // Determine type of overlap
+                    if (!lastInfo.dotAtStart) { // Caret of lastInfo moved into next block
+                        if (lastInfo.startsBelow(itemInfo)) {
+                            // Extend selection of itemInfo to start of lastInfo
+                            updateAffectedOffsets(lastInfo.startOffset, itemInfo.startOffset);
+                            setDotAndMark(itemInfo.caretItem, lastInfo.startPos, itemInfo.endPos);
+                        }
+                        // Remove lastInfo's caret item
+                        lastInfo.caretItem.markRemovedInTransaction();
+                        origSortedItems.copyElements(copyStartIndex, i - 1, nonOverlappingItems);
+                        copyStartIndex = i;
+
+                    } else { // Remove itemInfo and set selection of lastInfo to end of itemInfo
+                        if (itemInfo.endsAbove(lastInfo)) {
+                            updateAffectedOffsets(lastInfo.endOffset, itemInfo.endOffset);
+                            setDotAndMark(lastInfo.caretItem, lastInfo.startPos, itemInfo.endPos);
+                        }
+                        // Remove itemInfo's caret item
+                        itemInfo.caretItem.markRemovedInTransaction();
+                        origSortedItems.copyElements(copyStartIndex, i, nonOverlappingItems);
+                        copyStartIndex = i + 1;
+                    }
+
+                } else if (itemInfo.dotsOverlap(lastInfo)) { // Check whether dots of lastInfo and itemInfo are at same offset (and shift).
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("CaretTransaction.removeOverlappingRegions(): [" + i + "]: dots overlap: itemInfo=" + // NOI18N
+                                itemInfo + "\n  with lastInfo=" + lastInfo + "\n"); // NOI18N
+                    }
+                    if (nonOverlappingItems == null) {
+                        nonOverlappingItems = new GapList<CaretItem>(origSortedItemsSize - 1); // At least one will be skipped
+                    }
+                    itemsRemoved = true;
+                    if (itemInfo.selection) {
+                        if (itemInfo.dotAtStart) {
+                            // Likely lastInfo is below itemInfo so their dots "touch" at itemInfo start
+                            setDotAndMark(lastInfo.caretItem, itemInfo.endPos, lastInfo.startPos);
+                            // Remove itemInfo's caret item
+                            itemInfo.caretItem.markRemovedInTransaction();
+                            origSortedItems.copyElements(copyStartIndex, i, nonOverlappingItems);
+                            copyStartIndex = i + 1;
+                        } else {
+                            // Likely lastInfo is above itemInfo it so their dots "touch" at itemInfo end
+                            setDotAndMark(itemInfo.caretItem, lastInfo.endPos, itemInfo.startPos);
+                            // Remove lastInfo's caret item
+                            lastInfo.caretItem.markRemovedInTransaction();
+                            origSortedItems.copyElements(copyStartIndex, i - 1, nonOverlappingItems);
+                            copyStartIndex = i;
+                        }
+                    } else { // itemInfo has no selection => remove itemInfo
+                        // Remove itemInfo's caret item
+                        itemInfo.caretItem.markRemovedInTransaction();
+                        origSortedItems.copyElements(copyStartIndex, i, nonOverlappingItems);
+                        copyStartIndex = i + 1;
+                    }
                 }
-            } else { // No overlapping
-                // Swap the items to reuse original lastInfo
-                CaretItemInfo tmp = lastInfo;
-                lastInfo = itemInfo;
-                itemInfo = tmp;
-                if (lastInfo.endOffset > stopOffset) {
-                    break;
-                }
+            }
+
+            // Swap the items to reuse original lastInfo
+            CaretItemInfo tmp = lastInfo;
+            lastInfo = itemInfo;
+            itemInfo = tmp;
+            if (lastInfo.endOffset > stopOffset) {
+                break;
             }
         }
 
@@ -395,8 +429,7 @@ final class CaretTransaction {
             replaceItems = new GapList<>(origItemsSize);
             for (i = 0; i < origItemsSize; i++) {
                 CaretItem caretItem = origItems.get(i);
-                if (caretItem.isTransactionMarkRemoved()) {
-                    caretItem.clearTransactionMarkRemoved();
+                if (caretItem.getAndClearRemovedInTransaction()) {
                     if (extraRemovedItems == null) {
                         extraRemovedItems = new GapList<>();
                     }
@@ -409,39 +442,23 @@ final class CaretTransaction {
         }
     }
     
-    GapList<CaretItem> addRemovedItems(GapList<CaretItem> toItems) {
+    GapList<CaretItem> allRemovedItems() {
         int removeSize = modEndIndex - modIndex;
         int extraRemovedSize = (extraRemovedItems != null) ? extraRemovedItems.size() : 0;
         if (removeSize + extraRemovedSize > 0) {
-            if (toItems == null) {
-                toItems = new GapList<>(removeSize + extraRemovedSize);
-            }
-            if (removeSize > 0) {
-                toItems.addAll(origCaretItems, modIndex, removeSize);
-            }
-            if (extraRemovedSize > 0) {
-                toItems.addAll(extraRemovedItems);
+            if (allRemovedItems == null) {
+                allRemovedItems = new GapList<>(removeSize + extraRemovedSize);
+                if (removeSize > 0) {
+                    allRemovedItems.addAll(origCaretItems, modIndex, removeSize);
+                }
+                if (extraRemovedSize > 0) {
+                    allRemovedItems.addAll(extraRemovedItems);
+                }
             }
         }
-        return toItems;
+        return allRemovedItems;
     }
     
-    GapList<CaretItem> addUpdateVisualBoundsItems(GapList<CaretItem> toItems) {
-        GapList<CaretItem> items = resultItems();
-        int size = items.size();
-        for (int i = 0; i < size; i++) {
-            CaretItem caretItem = items.get(i);
-            if (caretItem.isUpdateVisualBounds()) {
-                caretItem.clearUpdateVisualBounds();
-                if (toItems == null) {
-                    toItems = new GapList<>();
-                }
-                toItems.add(caretItem);
-            }
-        }
-        return toItems;
-    }
-
     private GapList<CaretItem> resultItems() {
         return (replaceItems != null) ? replaceItems : origCaretItems;
     }
@@ -558,7 +575,7 @@ final class CaretTransaction {
     }
     
     /**
-     * Helper class for resolving overlapping getCaret selections.
+     * Helper class for resolving overlapping caret selections.
      */
     private static final class CaretItemInfo {
         
@@ -567,6 +584,10 @@ final class CaretTransaction {
         Position startPos;
         
         Position endPos;
+        
+        int dotOffset;
+        
+        int dotShift;
 
         int startOffset;
 
@@ -576,19 +597,27 @@ final class CaretTransaction {
 
         int endShift;
         
+        /**
+         * True for non empty selection and dot pos-and-shift precedes mark pos-and-shift.
+         */
         boolean dotAtStart;
+        
+        /**
+         * True for non-empty selection.
+         */
+        boolean selection;
         
         void update(CaretItem caret) {
             this.caretItem = caret;
             Position dotPos = caret.getDotPosition();
             if (dotPos != null) {
-                int dotOffset = dotPos.getOffset();
-                int dotShift = ShiftPositions.getShift(dotPos);
+                dotOffset = dotPos.getOffset();
+                dotShift = ShiftPositions.getShift(dotPos);
                 Position markPos = caret.getMarkPosition();
                 if (markPos != null && markPos != dotPos) { // Still they may be equal which means no selection
                     int markOffset = markPos.getOffset();
                     int markShift = ShiftPositions.getShift(markPos);
-                    if (markOffset < dotOffset || (markOffset == dotOffset && markShift <= dotShift)) {
+                    if (markOffset < dotOffset || (markOffset == dotOffset && markShift < dotShift)) {
                         startPos = markPos;
                         endPos = dotPos;
                         startOffset = markOffset;
@@ -596,47 +625,76 @@ final class CaretTransaction {
                         endOffset = dotOffset;
                         endShift = dotShift;
                         dotAtStart = false;
+                        selection = true;
                     } else {
-                        startPos = dotPos;
-                        endPos = markPos;
-                        startOffset = dotOffset;
-                        startShift = dotShift;
-                        endOffset = markOffset;
-                        endShift = markShift;
-                        dotAtStart = true;
+                        if (markOffset == dotOffset && markShift == dotShift) { // No selection
+                            startPos = markPos;
+                            endPos = dotPos;
+                            startOffset = markOffset;
+                            startShift = markShift;
+                            endOffset = dotOffset;
+                            endShift = dotShift;
+                            dotAtStart = false;
+                            selection = false;
+                        } else {
+                            startPos = dotPos;
+                            endPos = markPos;
+                            startOffset = dotOffset;
+                            startShift = dotShift;
+                            endOffset = markOffset;
+                            endShift = markShift;
+                            dotAtStart = true;
+                            selection = true;
+                        }
+                        
                     }
                 } else {
                     startPos = endPos = dotPos;
                     startOffset = endOffset = dotOffset;
                     startShift = startShift = dotShift;
                     dotAtStart = false;
+                    selection = false;
                 }
             } else {
                 clear();
             }
         }
 
-        private void clear() {
+        void clear() {
             caretItem = null;
+            dotOffset = dotShift = 0;
             startPos = endPos = null;
             startOffset = endOffset = 0;
             startShift = startShift = 0;
             dotAtStart = false;
+            selection = false;
         }
         
-        private boolean overlapsAtStart(CaretItemInfo info) {
+        boolean overlapsAtStart(CaretItemInfo info) {
             return (ShiftPositions.compare(info.endOffset, info.endShift,
                     startOffset, startShift) > 0);
         }
         
-        private boolean startsBelow(CaretItemInfo info) {
+        boolean startsBelow(CaretItemInfo info) {
             return (ShiftPositions.compare(startOffset, startShift,
                     info.startOffset, info.startShift) < 0);
         }
         
-        private boolean endsAbove(CaretItemInfo info) {
+        boolean endsAbove(CaretItemInfo info) {
             return (ShiftPositions.compare(endOffset, endShift,
                     info.endOffset, info.endShift) > 0);
+        }
+        
+        boolean dotsOverlap(CaretItemInfo info) {
+            return (ShiftPositions.compare(dotOffset, dotShift,
+                    info.dotOffset, info.dotShift) == 0);
+        }
+
+        @Override
+        public String toString() {
+            return "DOS(" + dotOffset + "," + dotShift + ") <(" + startOffset + "," + startShift + "), (" + // NOI18N
+                    endOffset + "," + endShift + ")> dotAtStart=" + dotAtStart + ", selection=" + selection + // NOI18N
+                    "\n    caretItem=" + caretItem; // NOI18N
         }
         
     }

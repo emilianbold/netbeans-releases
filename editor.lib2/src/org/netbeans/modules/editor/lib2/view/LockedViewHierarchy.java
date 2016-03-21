@@ -37,6 +37,7 @@
  */
 package org.netbeans.modules.editor.lib2.view;
 
+import java.awt.Rectangle;
 import java.awt.Shape;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
@@ -133,6 +134,18 @@ public final class LockedViewHierarchy {
     }
 
     /**
+     * Return bounds around the visual mapping of character at the given offset.
+     *
+     * @param offset
+     * @param bias
+     * @return rectangle corresponding to the given offset.
+     */
+    public Rectangle modelToViewBounds(int offset, Position.Bias bias) {
+        Shape shape = modelToView(offset, bias);
+        return (shape != null) ? shape.getBounds() : null;
+    }
+
+    /**
      * Map visual point to an offset.
      *
      * @param x
@@ -162,11 +175,23 @@ public final class LockedViewHierarchy {
      * Map y to index of paragraph view.
      *
      * @param y
-     * @return offset corresponding to given visual point.
+     * @return offset corresponding to given visual point. Returns -1 if the view hierarchy is not active.
      */
     public int yToParagraphViewIndex(double y) {
         checkValid();
         return impl.yToParagraphViewIndex(docView, y);
+    }
+    
+    /**
+     * Map y to start offset of paragraph view that "contains" the y coordinate.
+     *
+     * @param y
+     * @return start offset of paragraph view containing the y. Returns 0 if the view hierarchy is not active.
+     */
+    public int yToParagraphStartOffset(double y) {
+        checkValid();
+        int index = yToParagraphViewIndex(y);
+        return (index != -1) ? docView.getView(index).getStartOffset() : 0;
     }
     
     /**
