@@ -556,6 +556,22 @@ class WeakProxyListener<T extends
         }
     }
 
+    @Override
+    public void watchPinned(Watch watch) {
+        T t = get();
+        if (t != null){
+            ((DebuggerManagerListener) t).watchRemoved(watch);
+        }
+    }
+
+    @Override
+    public void watchUnpinned(Watch watch) {
+        T t = get();
+        if (t != null){
+            ((DebuggerManagerListener) t).watchRemoved(watch);
+        }
+    }
+
     Task getTask(){
         return myTask;
     }

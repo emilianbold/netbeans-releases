@@ -202,6 +202,16 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
     @Override
     public void watchRemoved (Watch watch) {
     }
+
+    @Override
+    public void watchPinned(Watch watch) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void watchUnpinned(Watch watch) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     
     @Override
     public void propertyChange (PropertyChangeEvent evt) {

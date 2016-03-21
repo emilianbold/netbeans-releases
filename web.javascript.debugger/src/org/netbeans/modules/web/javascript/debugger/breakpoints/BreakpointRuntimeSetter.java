@@ -265,6 +265,10 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
     @Override
     public void watchRemoved(Watch watch) {}
     @Override
+    public void watchPinned(Watch watch) {}
+    @Override
+    public void watchUnpinned(Watch watch) {}
+    @Override
     public void sessionAdded(Session session) {}
     @Override
     public void sessionRemoved(Session session) {}

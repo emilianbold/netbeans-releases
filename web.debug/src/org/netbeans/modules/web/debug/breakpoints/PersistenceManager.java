@@ -145,6 +145,12 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
     
     public void watchRemoved (Watch watch) {
     }
+
+    public void watchPinned(Watch watch) {
+    }
+
+    public void watchUnpinned(Watch watch) {
+    }
     
     public void propertyChange (PropertyChangeEvent evt) {
         if (evt.getSource() instanceof Breakpoint) {

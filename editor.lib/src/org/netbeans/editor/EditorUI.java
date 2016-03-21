@@ -89,6 +89,7 @@ import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.ext.ExtKit;
+import org.netbeans.editor.ext.StickyWindowSupport;
 import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.modules.editor.lib.ColoringMap;
 import org.netbeans.modules.editor.lib.EditorExtPackageAccessor;
@@ -273,6 +274,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     private PreferenceChangeListener weakPrefsListener = null;
 
     private final DrawLayerList drawLayerList = new DrawLayerList();
+    private StickyWindowSupport stickyWindowSupport;
 
     /** Construct extended UI for the use with a text component */
     public EditorUI() {
@@ -1770,6 +1772,13 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
             toolTipSupport = EditorExtPackageAccessor.get().createToolTipSupport(this);
         }
         return toolTipSupport;
+    }
+    
+    public StickyWindowSupport getStickyWindowSupport() {
+        if(stickyWindowSupport == null) {
+            stickyWindowSupport = new StickyWindowSupport(this);
+        }
+        return stickyWindowSupport;
     }
 
     public PopupManager getPopupManager() {

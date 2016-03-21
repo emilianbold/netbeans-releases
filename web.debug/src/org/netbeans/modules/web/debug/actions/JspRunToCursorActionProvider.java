@@ -255,6 +255,8 @@ public class JspRunToCursorActionProvider extends ActionsProviderSupport {
         public void sessionAdded (Session session) {}
         public void watchAdded (Watch watch) {}
         public void watchRemoved (Watch watch) {}
+        public void watchPinned(Watch watch) {}
+        public void watchUnpinned(Watch watch) {}
 
         public void engineAdded (DebuggerEngine engine) {
             JPDADebugger debugger = (JPDADebugger) engine.lookupFirst 

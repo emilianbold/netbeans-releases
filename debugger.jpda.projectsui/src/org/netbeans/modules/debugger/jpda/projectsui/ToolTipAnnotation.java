@@ -48,6 +48,7 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -58,7 +59,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
@@ -66,11 +66,11 @@ import javax.swing.BorderFactory;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
@@ -215,7 +215,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         if (ep == null || ep.getDocument() != doc) {
             return ;
         }
-        DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager ().
+        final DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager ().
             getCurrentEngine ();
         if (currentEngine == null) {
             return;
@@ -232,13 +232,12 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         int offset;
         boolean[] isMethodPtr = new boolean[] { false };
         String[] fieldOfPtr = new String[] { null };
-        final String expression = getIdentifier (
-            d,
+        final Line line = lp.getLine();
+        final String expression = getIdentifier (d,
             doc,
             ep,
-            offset = NbDocument.findLineOffset (
-                doc,
-                lp.getLine ().getLineNumber ()
+            offset = NbDocument.findLineOffset (doc,
+                line.getLineNumber ()
             ) + lp.getColumn (),
             isMethodPtr,
             fieldOfPtr
@@ -247,6 +246,8 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             return;
         }
 
+        final FileObject fo = line.getLookup().lookup(FileObject.class);
+        
         String toolTipText;
         try {
             Variable v = null;
@@ -316,7 +317,6 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                     v.getValue ();
             }
         } catch (InvalidExpressionException e) {
-            FileObject fo = lp.getLine ().getLookup().lookup(FileObject.class);
             Source src;
             if (fo != null) {
                 src = Source.create(fo);
@@ -360,6 +360,17 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                                     }
                                 }
                             });
+                        }
+                    });
+                    et.addPinListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            EditorUI eui = Utilities.getEditorUI(ep);
+                            Point location = et.getLocation();
+                            eui.getToolTipSupport().setToolTipVisible(false);
+                            DebuggerManager dbMgr = DebuggerManager.getDebuggerManager();
+                            Watch w = dbMgr.createWatch(expression);
+                            w.pinTo(fo, line.getLineNumber(), location);
                         }
                     });
                     EditorUI eui = Utilities.getEditorUI(ep);

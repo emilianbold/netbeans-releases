@@ -207,6 +207,10 @@ public class StepIntoActionProvider extends ActionsProviderSupport {
         public void watchAdded (Watch watch) {}
         @Override
         public void watchRemoved (Watch watch) {}
+        @Override
+        public void watchPinned(Watch watch) {}
+        @Override
+        public void watchUnpinned(Watch watch) {}
         
         @Override
         public void engineAdded(DebuggerEngine engine) {

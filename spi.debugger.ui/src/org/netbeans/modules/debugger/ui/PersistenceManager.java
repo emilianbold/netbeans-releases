@@ -119,6 +119,9 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
             );
         }
     }
+
+    public void watchPinned(Watch watch) {}
+    public void watchUnpinned(Watch watch) {}
     
     public void sessionAdded (Session session) {}
     public void sessionRemoved (Session session) {}

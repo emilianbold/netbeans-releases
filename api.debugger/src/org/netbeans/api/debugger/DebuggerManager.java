@@ -44,6 +44,7 @@
 
 package org.netbeans.api.debugger;
 
+import java.awt.Point;
 import java.beans.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -63,6 +64,7 @@ import org.netbeans.spi.debugger.DelegatingDebuggerEngineProvider;
 import org.netbeans.spi.debugger.DelegatingSessionProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.SessionProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 
@@ -697,6 +699,19 @@ public final class DebuggerManager implements ContextProvider {
         watches.removeElement (w);
         fireWatchRemoved (w);
     }
+    
+    void pinWatch(Watch w, FileObject fo, int line, Point location) {
+        Pin newPin = null;
+        synchronized(this) {
+            if(w.getPin() == null) {
+                newPin = new Pin(fo, line, location);
+                w.setPin(newPin);
+                fireWatchPinned(w);
+            } else {
+                throw new IllegalStateException("Watch is already pinned to a document");
+            }
+        }
+    }
 
     /**
      * Reorders watches with given permutation.
@@ -1249,6 +1264,45 @@ public final class DebuggerManager implements ContextProvider {
             for (i = 0; i < k; i++) {
                 try {
                     ((DebuggerManagerListener) l1.elementAt (i)).watchRemoved (watch);
+                    // TODO: fix nonsense double firing
+                    ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+    }
+    
+    private void fireWatchPinned (final Watch watch) {
+        initDebuggerManagerListeners ();
+        PropertyChangeEvent ev = new PropertyChangeEvent (
+            this, PROP_WATCHES, null, null
+        );
+
+        Vector l = (Vector) listeners.clone ();
+        int i, k = l.size ();
+        for (i = 0; i < k; i++) {
+            try {
+                ((DebuggerManagerListener) l.elementAt (i)).watchPinned(watch);
+                // TODO: fix nonsense double firing
+                ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        Vector l1;
+        synchronized (listenersMap) {
+            l1 = (Vector) listenersMap.get (PROP_WATCHES);
+            if (l1 != null) {
+                l1 = (Vector) l1.clone ();
+            }
+        }
+        if (l1 != null) {
+            k = l1.size ();
+            for (i = 0; i < k; i++) {
+                try {
+                    ((DebuggerManagerListener) l1.elementAt (i)).watchPinned (watch);
                     // TODO: fix nonsense double firing
                     ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
                 } catch (Exception ex) {

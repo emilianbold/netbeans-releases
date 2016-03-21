@@ -210,7 +210,7 @@
         <node name="org.netbeans.modules.java.hints.StaticAccess"/>
         <node name="org.netbeans.modules.java.hints.FieldForUnusedParam"/>
         <node name="Braces_IF">
-            <attribute name="enabled" value="true"/>
+            <attribute name="enabled" value="false"/>
         </node>
         <node name="EmptyStatements_BLOCK"/>
         <node name="org.netbeans.modules.java.hints.perf.StringBuffer2Builder"/>

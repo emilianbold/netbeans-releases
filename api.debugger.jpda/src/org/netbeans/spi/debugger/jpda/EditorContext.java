@@ -102,6 +102,8 @@ public abstract class EditorContext {
     /** Annotation type constant.
      * @since 2.16     */
     public static final String OTHER_THREAD_ANNOTATION_TYPE = "OtherThread";
+    /** Annotation type constant. */
+    public static final String WATCH_ANNOTATION_TYPE = "Watch";
 
     /** Property name constant. */
     public static final String PROP_LINE_NUMBER = "lineNumber";

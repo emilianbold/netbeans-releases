@@ -69,6 +69,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.spi.debugger.ui.ViewFactory;
+import org.openide.util.ImageUtilities;
 
 
 // <RAVE>
@@ -205,6 +206,7 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
         private static final String UI_PREFIX = "ToolTip"; // NOI18N
         
         private JButton expButton;
+        private JButton pinButton;
         private JComponent textToolTip;
         private boolean widthCheck = true;
         private boolean sizeSet = false;
@@ -242,12 +244,22 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
             if (backColor != null) {
                 l.setBackground(backColor);
             }
+            l.setBorder(new javax.swing.border.EmptyBorder(0, 3, 0, 3));
             textToolTip = l;
             add(l);
+            pinButton = new JButton(ImageUtilities.loadImageIcon("org/netbeans/editor/resources/pin.png", false));
+            pinButton.setBorder(new javax.swing.border.EmptyBorder(0, 3, 0, 0));
+            pinButton.setBorderPainted(false);
+            pinButton.setContentAreaFilled(false);
+            add(pinButton);
         }
 
         void addExpansionListener(ActionListener treeExpansionListener) {
             expButton.addActionListener(treeExpansionListener);
+        }
+        
+        void addPinListener(ActionListener treeExpansionListener) {
+            pinButton.addActionListener(treeExpansionListener);
         }
 
         void setWidthCheck(boolean widthCheck) {
@@ -268,16 +280,17 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
         @Override
         public void setSize(int width, int height) {
             Dimension prefSize = getPreferredSize();
-            Dimension buttonSize = expButton.getPreferredSize();
+            Dimension button1Size = expButton.getPreferredSize();
+            Dimension button2Size = pinButton.getPreferredSize();
             if (widthCheck) {
                 Insets insets = getInsets();
-                int textWidth = width - insets.left - buttonSize.width - insets.right;
-                height = Math.max(height, buttonSize.height);
+                int textWidth = width - insets.left - button1Size.width - button2Size.width - insets.right;
+                height = Math.max(Math.max(height, button1Size.height), button2Size.height);
                 textToolTip.setSize(textWidth, height);
                 Dimension textPreferredSize = textToolTip.getPreferredSize();
                 super.setSize(
-                        insets.left + buttonSize.width + textPreferredSize.width + insets.right,
-                        insets.top + Math.max(buttonSize.height, textPreferredSize.height) + insets.bottom);
+                        insets.left + button1Size.width + button2Size.width + textPreferredSize.width + insets.right,
+                        insets.top + Math.max(Math.max(button1Size.height, textPreferredSize.height), button2Size.height) + insets.bottom);
             } else {
                 if (height >= prefSize.height) { // enough height
                     height = prefSize.height;

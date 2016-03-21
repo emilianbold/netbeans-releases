@@ -133,6 +133,14 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
     @Override
     public void watchRemoved (Watch watch) {
     }
+
+    @Override
+    public void watchPinned(Watch watch) {
+    }
+
+    @Override
+    public void watchUnpinned(Watch watch) {
+    }
     
     @Override
     public void propertyChange (PropertyChangeEvent evt) {
