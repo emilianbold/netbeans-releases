@@ -105,6 +105,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.completion.cplusplus.CsmFinderFactory;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletion.SimpleClass;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery.Context;
 import org.netbeans.modules.cnd.completion.csm.CompletionUtilities;
 import org.netbeans.modules.cnd.completion.csm.CsmContext;
@@ -581,6 +582,26 @@ public final class CompletionSupport implements DocumentListener {
     }
     
     /*package*/ CsmType getCommonType(Context ctx, CsmType typ1, CsmType typ2, CppTokenId operator) {
+        // Handle logical operators
+        switch (operator) {
+            case AMPAMP:
+            case BARBAR: {
+                CsmClassifier cls1 = typ1.getClassifier();
+                if (cls1 != null) {
+                    CsmClassifier cls2 = typ2.getClassifier();
+                    if (cls2 != null) {
+                        if (CndLexerUtilities.isType(cls1.getName().toString()) &&
+                                CndLexerUtilities.isType(cls2.getName().toString())) {
+                            // Both types are primitive
+                            return CsmCompletion.BOOLEAN_TYPE;
+                        }
+                    }
+                }
+                break;
+            }
+        }
+        
+        // If types are equal, then no need to check them further
         if (typ1.equals(typ2)) {
             return typ1;
         }
@@ -655,16 +676,18 @@ public final class CompletionSupport implements DocumentListener {
                         return null;
                     }
                 } else { // at least one primitive class
-                    if (secondIsPrimitive) {
-                        if (isAutoConvertible(typ1, typ2)) {
+                    if (firstIsPrimitive && secondIsPrimitive) {
+                        return applyArithmeticConversion(typ1, cls1, typ2, cls2);
+                    } else if (secondIsPrimitive) {
+                        if (isAutoConvertible(typ2, typ1)) {
                             return typ1;
-                        } else if (isAutoConvertible(typ2, typ1)) {
+                        } else if (isAutoConvertible(typ1, typ2)) {
                             return typ2;
                         }
                     } else if (firstIsPrimitive) {
-                        if (isAutoConvertible(typ2, typ1)) {
+                        if (isAutoConvertible(typ1, typ2)) {
                             return typ2;
-                        } else if (isAutoConvertible(typ1, typ2)) {
+                        } else if (isAutoConvertible(typ2, typ1)) {
                             return typ1;
                         }
                     }
@@ -672,6 +695,49 @@ public final class CompletionSupport implements DocumentListener {
             }
         }
         return null;
+    }
+    
+    private static CsmType applyArithmeticConversion(CsmType type1, CsmClassifier cls1, CsmType type2, CsmClassifier cls2) {
+        CharSequence name1 = cls1.getName();
+        CharSequence name2 = cls2.getName();
+        if (isSpecifiedClass(name1, CsmCompletion.LONG_DOUBLE_CLASS)) {
+            return type1;
+        }
+        if (isSpecifiedClass(name2, CsmCompletion.LONG_DOUBLE_CLASS)) {
+            return type2;
+        }
+        if (isSpecifiedClass(name1, CsmCompletion.DOUBLE_CLASS)) {
+            return type1;
+        }
+        if (isSpecifiedClass(name2, CsmCompletion.DOUBLE_CLASS)) {
+            return type2;
+        }
+        if (isSpecifiedClass(name1, CsmCompletion.FLOAT_CLASS)) {
+            return type1;
+        }
+        if (isSpecifiedClass(name2, CsmCompletion.FLOAT_CLASS)) {
+            return type2;
+        }
+        // Convert the rest according to integral ranks
+        if (isEitherOfSpecifiedClass(name1, name2, CsmCompletion.UNSIGNED_LONG_CLASS)) {
+            return isSpecifiedClass(name1, CsmCompletion.UNSIGNED_LONG_CLASS) ? type1 : type2;
+        }
+        if (isEitherOfSpecifiedClass(name1, name2, CsmCompletion.LONG_CLASS)) {
+            return isSpecifiedClass(name1, CsmCompletion.LONG_CLASS) ? type1 : type2;
+        }
+        if (isEitherOfSpecifiedClass(name1, name2, CsmCompletion.UNSIGNED_INT_CLASS)) {
+            return isSpecifiedClass(name1, CsmCompletion.UNSIGNED_INT_CLASS) ? type1 : type2;
+        }
+        // If none of the preceding conditions are met, both operands are converted to type int.
+        return CsmCompletion.INT_TYPE;
+    }
+    
+    private static boolean isSpecifiedClass(CharSequence clsName, SimpleClass cls) {
+        return CharSequenceUtilities.equals(clsName, cls.getName());
+    }
+    
+    private static boolean isEitherOfSpecifiedClass(CharSequence clsName1, CharSequence clsName2, SimpleClass cls) {
+        return isSpecifiedClass(clsName1, cls) || isSpecifiedClass(clsName2, cls);
     }
 
     private static boolean canBePointer(CsmType type) {
