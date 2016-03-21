@@ -266,12 +266,12 @@ public class JsParserTest extends JsTestBase {
             + "           \n"
             + "    date: [c_from, c_to],\n"
             + "    current: new Date(c_to.getFullYear(), c_to.getMonth(), 1),\n"
-            + "           \n"
+            + "  _UNKNOWN_\n"
             + "    onChange: function(dates,el) {\n"
             + "         \n"
             + "      }\n"
             + "});",
-            3,
+            2,
             SanitizingParser.Sanitize.PREVIOUS_LINES);
     }
 

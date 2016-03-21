@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.formatter;
 
-import jdk.nashorn.internal.ir.FunctionNode;
+import com.oracle.js.parser.ir.FunctionNode;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -837,7 +837,14 @@ public class JsFormatter implements Formatter {
                 startToken = ft;
             }
             FormatToken endToken = FormatTokenStream.getNextImportant(token);
-            FormatToken lastBeforeStart = startToken != null ? startToken.previous() : null;
+            FormatToken lastBeforeStart = null;
+            if (startToken != null) {
+                lastBeforeStart = startToken.previous();
+                while (lastBeforeStart != null && lastBeforeStart.getKind().isIndentationMarker()) {
+                    lastBeforeStart = lastBeforeStart.previous();
+                }
+            }
+
             if (canReformat && startToken != null
                     && lastBeforeStart != null && lastBeforeStart.getKind() == FormatToken.Kind.AFTER_END_BRACE
                     && endToken != null && keywordIds.contains(endToken.getId())) {
@@ -845,7 +852,7 @@ public class JsFormatter implements Formatter {
                 String spaceBeforeBrace = isSpace(token, formatContext, codeStyle) ? " " : ""; // NOI18N
                 formatContext.replace(startToken.getOffset() - formatContext.getOffsetDiff() + lastOffsetDiff,
                         endToken.getOffset() - startToken.getOffset() + formatContext.getOffsetDiff() - lastOffsetDiff, spaceBeforeBrace);
-            } else if (canReformat && !(lastBeforeStart != null && lastBeforeStart.getKind() == FormatToken.Kind.INDENTATION_DEC)) {
+            } else if (canReformat && !(lastBeforeStart != null && lastBeforeStart.getKind() == FormatToken.Kind.AFTER_STATEMENT)) {
                 formatSpace(tokens, index, formatContext, codeStyle);
             }
         }
@@ -858,12 +865,21 @@ public class JsFormatter implements Formatter {
         FormatToken nextImportant = continuation ? FormatTokenStream.getNextImportant(token) : token;
         if (nextImportant != null && nextImportant.getKind() == FormatToken.Kind.TEXT) {
             if (JsTokenId.BRACKET_LEFT_CURLY == nextImportant.getId()) {
-                continuations.push(new FormatContext.ContinuationBlock(
-                        FormatContext.ContinuationBlock.Type.CURLY, true));
-                formatContext.incContinuationLevel();
-                formatContext.setPendingContinuation(false);
-                processed.add(nextImportant);
-                change = true;
+                // if the pending continuation originates from
+                // class X
+                //         extends Y {
+                // we do not want to increase the continuation on left brace
+                FormatToken previous = nextImportant.previous();
+                if (previous == null
+                        || previous.getKind() != FormatToken.Kind.BEFORE_CLASS_DECLARATION_BRACE
+                        || continuation) {
+                    continuations.push(new FormatContext.ContinuationBlock(
+                            FormatContext.ContinuationBlock.Type.CURLY, true));
+                    formatContext.incContinuationLevel();
+                    formatContext.setPendingContinuation(false);
+                    processed.add(nextImportant);
+                    change = true;
+                }
             } else if (JsTokenId.BRACKET_LEFT_BRACKET == nextImportant.getId()) {
                 continuations.push(new FormatContext.ContinuationBlock(
                         FormatContext.ContinuationBlock.Type.BRACKET, true));
@@ -901,10 +917,8 @@ public class JsFormatter implements Formatter {
                     processed.add(curly);
                     change = true;
                 }
-            } else {
-                if (continuation) {
-                    formatContext.setPendingContinuation(true);
-                }
+            } else if (continuation) {
+                formatContext.setPendingContinuation(true);
             }
         }
         return change;
@@ -921,6 +935,18 @@ public class JsFormatter implements Formatter {
                 || JsTokenId.BRACKET_RIGHT_PAREN == token.getId())) {
             formatContext.setPendingContinuation(false);
         }
+
+        // if the pending continuation originates from
+        // class X
+        //         extends Y {
+        // we want to finish it on left before class declaration brace
+        if (formatContext.isPendingContinuation() && JsTokenId.BRACKET_LEFT_CURLY == token.getId()) {
+            FormatToken previous = token.previous();
+            if (previous != null && previous.getKind() == FormatToken.Kind.BEFORE_CLASS_DECLARATION_BRACE) {
+                formatContext.setPendingContinuation(false);
+            }
+        }
+
         if (continuations.isEmpty()) {
             return;
         }
@@ -975,6 +1001,7 @@ public class JsFormatter implements Formatter {
         for (FormatToken current = next; current != null && current.isVirtual(); current = current.next()) {
             if (current.getKind() == FormatToken.Kind.AFTER_STATEMENT
                     || current.getKind() == FormatToken.Kind.AFTER_PROPERTY
+                    || current.getKind() == FormatToken.Kind.AFTER_ELEMENT
                     || current.getKind() == FormatToken.Kind.AFTER_ARRAY_LITERAL_ITEM
                     || current.getKind() == FormatToken.Kind.AFTER_CASE
                     // do not suppose continuation when indentation is changed
@@ -1046,6 +1073,7 @@ public class JsFormatter implements Formatter {
                     || kind == FormatToken.Kind.TEXT
                     || kind == FormatToken.Kind.AFTER_STATEMENT
                     || kind == FormatToken.Kind.AFTER_PROPERTY
+                    || kind == FormatToken.Kind.AFTER_ELEMENT
                     || kind == FormatToken.Kind.AFTER_ARRAY_LITERAL_ITEM
                     || kind == FormatToken.Kind.AFTER_CASE
                     // do not suppose continuation when indentation is changed
@@ -1057,6 +1085,7 @@ public class JsFormatter implements Formatter {
         if (result == null
                 || result.getKind() == FormatToken.Kind.SOURCE_START
                 || result.getKind() == FormatToken.Kind.AFTER_STATEMENT
+                || result.getKind() == FormatToken.Kind.AFTER_ELEMENT
                 || result.getKind() == FormatToken.Kind.AFTER_ARRAY_LITERAL_ITEM
                 || result.getKind() == FormatToken.Kind.AFTER_CASE
                 // do not suppose continuation when indentation is changed
@@ -1256,6 +1285,8 @@ public class JsFormatter implements Formatter {
                 return codeStyle.wrapBinaryOps;
             case AFTER_ASSIGNMENT_OPERATOR_WRAP:
                 return codeStyle.wrapAssignOps;
+            case AFTER_ARROW_OPERATOR_WRAP:
+                return codeStyle.wrapArrowOps;
             case AFTER_TERNARY_OPERATOR_WRAP:
                 if (codeStyle.wrapAfterTernaryOps) {
                     return codeStyle.wrapTernaryOps;
@@ -1275,8 +1306,15 @@ public class JsFormatter implements Formatter {
                     return null;
                 }
                 return codeStyle.wrapObjects;
+            case AFTER_CLASS_START:
+            case BEFORE_CLASS_END:
+                return codeStyle.wrapClasses;
+            case BEFORE_CLASS_EXTENDS:
+                return codeStyle.wrapClassExtends;
             case AFTER_PROPERTY:
                 return codeStyle.wrapProperties;
+            case AFTER_ELEMENT:
+                return codeStyle.wrapElements;
             case AFTER_ARRAY_LITERAL_START:
             case BEFORE_ARRAY_LITERAL_END:
                 return codeStyle.wrapArrayInit;
@@ -1291,6 +1329,8 @@ public class JsFormatter implements Formatter {
         switch (token.getKind()) {
             case BEFORE_FUNCTION_DECLARATION_BRACE:
                 return codeStyle.functionDeclBracePlacement;
+            case BEFORE_CLASS_DECLARATION_BRACE:
+                return codeStyle.classDeclBracePlacement;
             case BEFORE_IF_BRACE:
             case BEFORE_ELSE_BRACE:
                 return codeStyle.ifBracePlacement;
@@ -1364,6 +1404,10 @@ public class JsFormatter implements Formatter {
                 return codeStyle.spaceAroundAssignOps;
             case AFTER_ASSIGNMENT_OPERATOR:
                 return codeStyle.spaceAroundAssignOps;
+            case BEFORE_ARROW_OPERATOR:
+                return codeStyle.spaceAroundArrowOps;
+            case AFTER_ARROW_OPERATOR:
+                return codeStyle.spaceAroundArrowOps;
             case BEFORE_PROPERTY_OPERATOR:
                 return codeStyle.spaceBeforeColon;
             case AFTER_PROPERTY_OPERATOR:
@@ -1476,6 +1520,8 @@ public class JsFormatter implements Formatter {
                 return codeStyle.spaceBeforeWithLeftBrace;
             case BEFORE_FUNCTION_DECLARATION_BRACE:
                 return codeStyle.spaceBeforeMethodDeclLeftBrace;
+            case BEFORE_CLASS_DECLARATION_BRACE:
+                return codeStyle.spaceBeforeClassDeclLeftBrace;
             case AFTER_ARRAY_LITERAL_BRACKET:
                 return codeStyle.spaceWithinArrayBrackets;
             case BEFORE_ARRAY_LITERAL_BRACKET:

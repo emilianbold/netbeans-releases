@@ -4,4 +4,4 @@ App:CONSTRUCTOR:[PRIVATE]:ESCAPED{App}ESCAPED{(}<font color="#999999">ESCAPED{ty
   app:CLASS:[PRIVATE]:ESCAPED{app}:
     resize:METHOD:[PUBLIC]:ESCAPED{resize}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
 window:PARAMETER:[PUBLIC]:ESCAPED{window}:
-  xWipe:FIELD:[PUBLIC]:ESCAPED{xWipe}<font color="#999999">ESCAPED{ : }window.xWipe</font>:
+  xWipe:FIELD:[PUBLIC]:ESCAPED{xWipe}:
