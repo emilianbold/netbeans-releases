@@ -241,6 +241,8 @@ final class ModuleClassPaths {
     }
 
     private static final class PropertyModulePath extends BaseClassPathImplementation implements PropertyChangeListener, FileChangeListener {
+        private static final String MODULE_INFO_CLASS = "module-info.class";   //NOI18N
+
         private final File projectDir;
         private final PropertyEvaluator eval;
         private final Set<String> props;
@@ -278,7 +280,7 @@ final class ModuleClassPaths {
                     })
                     .map((part)->PropertyUtils.resolveFile(projectDir, part))
                     .flatMap((modulePathEntry) -> {
-                        if (isArchiveFile(modulePathEntry)) {
+                        if (isArchiveFile(modulePathEntry) || hasModuleInfo(modulePathEntry)) {
                             return Stream.of(modulePathEntry);
                         } else {
                             modulePathRoots.add(modulePathEntry);
@@ -387,6 +389,10 @@ final class ModuleClassPaths {
                         file);
                 return false;
             }
+        }
+
+        private static boolean hasModuleInfo(@NonNull final File file) {
+            return new File(file, MODULE_INFO_CLASS).isFile();
         }
 
         @NonNull
