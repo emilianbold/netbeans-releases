@@ -56,35 +56,35 @@ public class JsDocumentationReaderTest extends JsTestBase {
     }
 
     public void testGetCommentTags() throws Exception {
-        String commentText = "/**\n"
-                + " * Construct a new Shape object.\n"
-                + " * @class This is the basic {@link Shape} class.\n"
-                + " * It can be considered an abstract class, even though no such thing\n"
-                + " * really existing in JavaScript\n"
-                + " * @constructor\n"
-                + " * @throws MemoryException if there is no more memory\n"
-                + " * @throws GeneralShapeException rarely (if ever)\n"
-                + " * @return {Shape|Coordinate} A new shape.\n"
-                + " */";
-        Set<String> commentTags = JsDocumentationReader.getCommentTags(commentText);
-        assertEquals(5, commentTags.size());
-        assertTrue(commentTags.contains("@class"));
-        assertTrue(commentTags.contains("@link"));
-        assertTrue(commentTags.contains("@constructor"));
-        assertTrue(commentTags.contains("@throws"));
-        assertTrue(commentTags.contains("@return"));
+//        String commentText = "/**\n"
+//                + " * Construct a new Shape object.\n"
+//                + " * @class This is the basic {@link Shape} class.\n"
+//                + " * It can be considered an abstract class, even though no such thing\n"
+//                + " * really existing in JavaScript\n"
+//                + " * @constructor\n"
+//                + " * @throws MemoryException if there is no more memory\n"
+//                + " * @throws GeneralShapeException rarely (if ever)\n"
+//                + " * @return {Shape|Coordinate} A new shape.\n"
+//                + " */";
+//        Set<String> commentTags = JsDocumentationReader.getCommentTags(commentText);
+//        assertEquals(5, commentTags.size());
+//        assertTrue(commentTags.contains("@class"));
+//        assertTrue(commentTags.contains("@link"));
+//        assertTrue(commentTags.contains("@constructor"));
+//        assertTrue(commentTags.contains("@throws"));
+//        assertTrue(commentTags.contains("@return"));
     }
 
     public void testGetAllTags() throws Exception {
-        Source source = getTestSource(getTestFile("testfiles/doc/commonDocFile.js"));
-        Set<String> allTags = JsDocumentationReader.getAllTags(source.createSnapshot());
-        assertEquals(25, allTags.size());
-        // randomly check several tags
-        assertTrue(allTags.contains("@param"));
-        assertTrue(allTags.contains("@example"));
-        assertTrue(allTags.contains("@author"));
-        assertTrue(allTags.contains("@field"));
-        assertTrue(allTags.contains("@version"));
-        assertTrue(allTags.contains("@see"));
+//        Source source = getTestSource(getTestFile("testfiles/doc/commonDocFile.js"));
+//        Set<String> allTags = JsDocumentationReader.getAllTags(source.createSnapshot());
+//        assertEquals(25, allTags.size());
+//        // randomly check several tags
+//        assertTrue(allTags.contains("@param"));
+//        assertTrue(allTags.contains("@example"));
+//        assertTrue(allTags.contains("@author"));
+//        assertTrue(allTags.contains("@field"));
+//        assertTrue(allTags.contains("@version"));
+//        assertTrue(allTags.contains("@see"));
     }
 }

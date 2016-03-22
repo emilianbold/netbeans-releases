@@ -43,7 +43,7 @@ package org.netbeans.modules.javascript2.editor.sdoc;
 
 import java.util.Collections;
 import org.netbeans.modules.javascript2.editor.doc.JsDocumentationTestBase;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.jsdoc.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
