@@ -385,7 +385,8 @@ public final class J2SEProject implements Project {
             BrokenReferencesSupport.createProfileProblemProvider(helper, refHelper, eval, ProjectProperties.JAVAC_PROFILE, ProjectProperties.RUN_CLASSPATH, ProjectProperties.ENDORSED_CLASSPATH),
             UILookupMergerSupport.createProjectProblemsProviderMerger(),
             new J2SEProjectPlatformImpl(this),
-            QuerySupport.createCompilerOptionsQuery(eval, ProjectProperties.JAVAC_COMPILERARGS)
+            QuerySupport.createCompilerOptionsQuery(eval, ProjectProperties.JAVAC_COMPILERARGS),
+            LookupMergerSupport.createCompilerOptionsQueryMerger()
         );
         lookup = base; // in case LookupProvider's call Project.getLookup
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-java-j2seproject/Lookup"); //NOI18N
