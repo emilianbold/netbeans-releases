@@ -143,6 +143,7 @@ public class JPDATruffleAccessor extends Object {
     }
     
     static JPDATruffleDebugManager setUpDebugManagerFor(/*ExecutionEvent*/Object event, boolean doStepInto) {
+        //System.err.println("setUpDebugManagerFor("+event+", "+doStepInto+")");
         ExecutionEvent execEvent = (ExecutionEvent) event;
         Debugger debugger = execEvent.getDebugger();
         PolyglotEngine tvm;
@@ -157,7 +158,11 @@ public class JPDATruffleAccessor extends Object {
         if (doStepInto) {
             execEvent.prepareStepInto();
         }
-        debugManager = JPDATruffleDebugManager.setUp(debugger, tvm, (ExecutionEvent) event);
+        if (debugManager == null || debugManager.getDebugger() != debugger) {
+            debugManager = JPDATruffleDebugManager.setUp(debugger, tvm, (ExecutionEvent) event);
+        } else {
+            debugManager.setExecutionEvent((ExecutionEvent) event);
+        }
         return debugManager;
     }
     
