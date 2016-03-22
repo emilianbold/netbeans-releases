@@ -203,9 +203,9 @@ find $DIST/bundles -name "*cpp*" | xargs -t -I [] rm -rf []
 find $DIST/bundles -name "*html*" | xargs -t -I [] rm -rf []
 find $DIST/bundles -name "*javaee*" | xargs -t -I [] rm -rf []
 find $DIST/bundles -name "*php*" | xargs -t -I [] rm -rf []
-rm -rf $DIST/bundles/netbeans-jdk9branch-$BUILDNUMBER-linux.sh
-rm -rf $DIST/bundles/netbeans-jdk9branch-$BUILDNUMBER-macosx.dmg
-rm -rf $DIST/bundles/netbeans-jdk9branch-$BUILDNUMBER-windows.exe
+rm -rf $DIST/bundles/netbeans-jdk9jigsaw-$BUILDNUMBER-linux.sh
+rm -rf $DIST/bundles/netbeans-jdk9jigsaw-$BUILDNUMBER-macosx.dmg
+rm -rf $DIST/bundles/netbeans-jdk9jigsaw-$BUILDNUMBER-windows.exe
 
 cd $DIST
 
