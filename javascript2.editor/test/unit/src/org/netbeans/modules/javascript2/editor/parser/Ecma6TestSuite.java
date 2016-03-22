@@ -46,6 +46,7 @@ import org.junit.runners.Suite;
 import org.netbeans.modules.javascript2.editor.JsSemanticAnalyzerTest;
 import org.netbeans.modules.javascript2.editor.JsStructureScannerTest;
 import org.netbeans.modules.javascript2.editor.model.impl.MarkOccurrenceTest;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelTest;
 
 /**
  *
@@ -56,7 +57,8 @@ import org.netbeans.modules.javascript2.editor.model.impl.MarkOccurrenceTest;
 @Suite.SuiteClasses({
     MarkOccurrenceTest.class,
     JsSemanticAnalyzerTest.class,
-    JsStructureScannerTest.class
+    JsStructureScannerTest.class,
+    ModelTest.class
 })
 public class Ecma6TestSuite {
     
