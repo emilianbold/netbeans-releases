@@ -46,9 +46,9 @@ import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.Collection;
 import java.util.Iterator;
-import org.netbeans.modules.javascript2.editor.model.JsElement;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.Model;
+import org.netbeans.modules.javascript2.model.api.JsElement;
+import org.netbeans.modules.javascript2.model.api.JsObject;
+import org.netbeans.modules.javascript2.model.api.Model;
 import org.netbeans.modules.javascript2.types.api.TypeUsage;
 import org.openide.filesystems.FileObject;
 

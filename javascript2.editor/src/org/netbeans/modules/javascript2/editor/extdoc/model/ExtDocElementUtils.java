@@ -46,8 +46,7 @@ import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.javascript2.types.api.Identifier;
 import org.netbeans.modules.javascript2.types.api.Type;
-import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
-import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
+import org.netbeans.modules.javascript2.types.api.TypeUsage;
 
 /**
  * Parses Type names, types and their offsets for given strings and
@@ -109,7 +108,7 @@ public class ExtDocElementUtils {
         List<Type> types = new LinkedList<Type>();
         String[] typesArray = textToParse.split("[/]"); //NOI18N
         for (String string : typesArray) {
-            types.add(new TypeUsageImpl(string, offset + textToParse.indexOf(string)));
+            types.add(new TypeUsage(string, offset + textToParse.indexOf(string)));
         }
         return types;
     }
@@ -186,7 +185,7 @@ public class ExtDocElementUtils {
             }
         }
         typeInfo.setOptional(optional);
-        typeInfo.setName(new IdentifierImpl(nameText, nameOffset));
+        typeInfo.setName(new Identifier(nameText, nameOffset));
     }
 
     private static class TypeInformation {

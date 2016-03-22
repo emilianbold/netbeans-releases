@@ -48,10 +48,11 @@ import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
-import org.netbeans.modules.javascript2.editor.model.Occurrence;
-import org.netbeans.modules.javascript2.editor.model.OccurrencesSupport;
+import org.netbeans.modules.javascript2.model.api.Occurrence;
+import org.netbeans.modules.javascript2.model.api.OccurrencesSupport;
 import org.netbeans.modules.javascript2.editor.navigation.OccurrencesFinderImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.javascript2.model.api.Model;
 
 /**
  *
@@ -62,7 +63,7 @@ public class JsInstantRenamer implements InstantRenamer {
     @Override
     public boolean isRenameAllowed(ParserResult info, int caretOffset, String[] explanationRetValue) {
         JsParserResult jsInfo = (JsParserResult)info;
-        OccurrencesSupport os = jsInfo.getModel().getOccurrencesSupport();
+        OccurrencesSupport os = Model.getModel(jsInfo, false).getOccurrencesSupport();
         Occurrence occurrence = os.getOccurrence(jsInfo.getSnapshot().getEmbeddedOffset(caretOffset));
         return occurrence != null;
     }

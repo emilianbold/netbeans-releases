@@ -46,7 +46,6 @@ import java.util.List;
 import org.netbeans.modules.javascript2.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.types.api.Identifier;
 import org.netbeans.modules.javascript2.types.api.Type;
-import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
 
 /**
  * Represents named parameter element.
@@ -167,7 +166,7 @@ public class NamedParameterElement extends ParameterElement implements DocParame
                 }
             }
         }
-        return new NamedParameterElement(type, new IdentifierImpl(name, nameStartOffset), correctedTypes,
+        return new NamedParameterElement(type, new Identifier(name, nameStartOffset), correctedTypes,
                 paramDescription, optional, defaultValue);
     }
 

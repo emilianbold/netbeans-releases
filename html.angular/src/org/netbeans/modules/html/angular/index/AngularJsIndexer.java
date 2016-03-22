@@ -53,8 +53,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.javascript2.editor.spi.PostScanProvider;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
-import org.netbeans.modules.javascript2.editor.index.JsIndexer;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -65,6 +65,7 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
@@ -180,7 +181,10 @@ public class AngularJsIndexer extends EmbeddingIndexer{
         // so we need to be sure, that the JsIndex has to be called before saving the angulra stuff. 
         if (!addedToJsIndexPost.get().booleanValue()) {
             addedToJsIndexPost.set(Boolean.TRUE);
-            JsIndexer.Factory.addPostScanTask(new SaveToIndex(context));
+            PostScanProvider p = Lookup.getDefault().lookup(PostScanProvider.class);
+            if (p!= null) {
+                p.addPostScanTask(new SaveToIndex(context));
+            }
         }
 //        Collection<AngularJsController> cons = null;
 //        Map<String, String>templates = null;

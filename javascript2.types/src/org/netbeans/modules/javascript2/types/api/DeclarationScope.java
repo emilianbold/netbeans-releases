@@ -42,7 +42,6 @@
 package org.netbeans.modules.javascript2.types.api;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  *

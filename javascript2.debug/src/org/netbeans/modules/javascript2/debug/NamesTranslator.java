@@ -47,13 +47,12 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.document.LineDocument;
 import org.netbeans.api.editor.document.LineDocumentUtils;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.types.api.Identifier;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.Model;
+import org.netbeans.modules.javascript2.model.api.JsObject;
+import org.netbeans.modules.javascript2.model.api.Model;
+import org.netbeans.modules.javascript2.types.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -158,7 +157,7 @@ public final class NamesTranslator {
                 void run(ResultIterator resultIterator) throws Exception {
                     Parser.Result r = resultIterator.getParserResult();
                     ParserResult pr = (ParserResult) r;
-                    Model model = Model.getModel(pr);
+                    Model model = Model.getModel(pr, false);
                     Collection<? extends JsObject> variables = model.getVariables(offset);
                     for (JsObject var : variables) {
                         int voffset = var.getOffset();
@@ -191,7 +190,7 @@ public final class NamesTranslator {
                     void run(ResultIterator resultIterator) throws Exception {
                         Parser.Result r = resultIterator.getParserResult();
                         ParserResult pr = (ParserResult) r;
-                        Model model = Model.getModel(pr);
+                        Model model = Model.getModel(pr, false);
                         JsObject declarationObject = model.getDeclarationObject(offset);
                         Identifier declarationName = declarationObject.getDeclarationName();
                         int doffset = declarationName.getOffsetRange().getStart();

@@ -46,9 +46,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.javascript2.types.api.Type;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelExtender;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
-import org.netbeans.modules.javascript2.editor.spi.model.TypeDisplayNameConvertor;
+import org.netbeans.modules.javascript2.model.api.ModelUtils;
+import org.netbeans.modules.javascript2.model.spi.TypeNameConvertor;
 
 /**
  *
@@ -64,39 +63,14 @@ public class Utils {
      */
     public static Collection<String> getDisplayNames(Collection<? extends Type> types) {
         List<String> displayNames = new ArrayList<String>(types.size());
-        List<TypeDisplayNameConvertor> convertors = ModelExtender.getDefault().getTypeDisplayNameConvertors();
         for (Type type : types) {
-            String displayName = null;
-            for (TypeDisplayNameConvertor convertor: convertors) {
-                displayName = convertor.getDisplayName(type);
-                if (displayName != null && !displayName.isEmpty() && !displayName.equals(type.getType())) {
-                    break;
-                }
-            }
-            if (displayName == null || displayName.isEmpty() || displayName.equals(type.getType())) {
-                displayName = ModelUtils.getDisplayName(type.getType());
-            }
+            String displayName = ModelUtils.getDisplayName(type);
             if (displayName != null && !displayName.isEmpty() && !displayNames.contains(displayName)) {
                 displayNames.add(displayName);
             }
         }
         Collections.sort(displayNames);
         return displayNames;
-    }
-    
-    public static String getDisplayName(Type type) {
-        List<TypeDisplayNameConvertor> convertors = ModelExtender.getDefault().getTypeDisplayNameConvertors();
-        String displayName = null;
-        for (TypeDisplayNameConvertor convertor: convertors) {
-            displayName = convertor.getDisplayName(type);
-            if (displayName != null && !displayName.isEmpty() && !displayName.equals(type.getType())) {
-                break;
-            }
-        }
-        if (displayName == null || displayName.isEmpty() || displayName.equals(type.getType())) {
-            displayName = ModelUtils.getDisplayName(type.getType());
-        }
-        return displayName;
     }
     
     /**

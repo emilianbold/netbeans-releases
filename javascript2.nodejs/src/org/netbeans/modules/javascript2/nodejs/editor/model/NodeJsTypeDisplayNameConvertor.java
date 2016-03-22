@@ -41,16 +41,16 @@
  */
 package org.netbeans.modules.javascript2.nodejs.editor.model;
 
+import org.netbeans.modules.javascript2.model.spi.TypeNameConvertor;
 import org.netbeans.modules.javascript2.types.api.Type;
-import org.netbeans.modules.javascript2.editor.spi.model.TypeDisplayNameConvertor;
 import org.netbeans.modules.javascript2.nodejs.editor.NodeJsUtils;
 
 /**
  *
  * @author Petr Pisl
  */
-@TypeDisplayNameConvertor.Registration(priority=200)
-public class NodeJsTypeDisplayNameConvertor implements TypeDisplayNameConvertor {
+@TypeNameConvertor.Registration(priority=200)
+public class NodeJsTypeDisplayNameConvertor implements TypeNameConvertor {
     private static String REQUIRE_MODULE_NAME = NodeJsUtils.REQUIRE_METHOD_NAME + "." + NodeJsUtils.FAKE_OBJECT_NAME_PREFIX;
     
     @Override

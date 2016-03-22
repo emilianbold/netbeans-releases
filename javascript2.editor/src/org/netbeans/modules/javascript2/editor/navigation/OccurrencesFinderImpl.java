@@ -53,17 +53,16 @@ import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.model.JsElement;
-import org.netbeans.modules.javascript2.editor.model.JsElement.Kind;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.JsReference;
-import org.netbeans.modules.javascript2.editor.model.Model;
-import org.netbeans.modules.javascript2.editor.model.Occurrence;
-import org.netbeans.modules.javascript2.editor.model.OccurrencesSupport;
+import org.netbeans.modules.javascript2.model.api.JsElement;
+import org.netbeans.modules.javascript2.model.api.JsElement.Kind;
+import org.netbeans.modules.javascript2.model.api.JsObject;
+import org.netbeans.modules.javascript2.model.api.JsReference;
+import org.netbeans.modules.javascript2.model.api.Model;
+import org.netbeans.modules.javascript2.model.api.Occurrence;
+import org.netbeans.modules.javascript2.model.api.OccurrencesSupport;
 import org.netbeans.modules.javascript2.types.api.Type;
 import org.netbeans.modules.javascript2.types.api.TypeUsage;
-import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
+import org.netbeans.modules.javascript2.model.api.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
@@ -149,7 +148,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder<JsParserResult> {
                 }
             }
         }
-        if (!(object instanceof JsObjectReference && ModelUtils.isDescendant(object, ((JsObjectReference)object).getOriginal()))) {
+        if (!(object instanceof JsReference && ModelUtils.isDescendant(object, ((JsReference)object).getOriginal()))) {
             for(JsObject child : object.getProperties().values()) {
                 result.addAll(findMemberUsage(child, fqn, property, offset, processedObjects));
             }
@@ -159,7 +158,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder<JsParserResult> {
 
     public static Set<OffsetRange> findOccurrenceRanges(JsParserResult result, int caretPosition) {
         Set<OffsetRange> offsets = new HashSet<OffsetRange>();
-        Model model = result.getModel();
+        Model model = Model.getModel(result, false);
         OccurrencesSupport os = model.getOccurrencesSupport();
         Occurrence occurrence = os.getOccurrence(caretPosition);
         if (occurrence != null) {
@@ -196,7 +195,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder<JsParserResult> {
                         }
                     }
                     if (types.isEmpty()) {
-                        List<OffsetRange> usages = findMemberUsage(result.getModel().getGlobalObject(), parent.getFullyQualifiedName(), object.getName(), caretPosition, new ArrayList<String>());
+                        List<OffsetRange> usages = findMemberUsage(Model.getModel(result, false).getGlobalObject(), parent.getFullyQualifiedName(), object.getName(), caretPosition, new ArrayList<String>());
                         for (OffsetRange range : usages) {
                             offsets.add(range);
                         }

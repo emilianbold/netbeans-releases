@@ -58,7 +58,7 @@ import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocElement;
 import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocElementType;
 import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocIdentSimpleElement;
 import org.netbeans.modules.javascript2.types.api.Type;
-import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
+import org.netbeans.modules.javascript2.types.api.TypeUsage;
 
 /**
  *
@@ -131,7 +131,7 @@ public class ExtDocComment extends JsComment {
         List<Type> extendsList = new LinkedList<Type>();
         for (ExtDocElement extDocElement : getTagsForType(ExtDocElementType.EXTENDS)) {
             ExtDocIdentSimpleElement ident = (ExtDocIdentSimpleElement) extDocElement;
-            extendsList.add(new TypeUsageImpl(ident.getIdentifier(), -1));
+            extendsList.add(new TypeUsage(ident.getIdentifier(), -1));
         }
         return extendsList;
     }

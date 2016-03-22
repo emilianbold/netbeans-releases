@@ -43,10 +43,9 @@ package org.netbeans.modules.javascript2.editor.jsdoc.model;
 
 import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.modules.javascript2.types.api.Identifier;
 import org.netbeans.modules.javascript2.types.api.Type;
 import org.netbeans.modules.javascript2.types.api.TypeUsage;
-import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
-import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 
 /**
  * Contains helper classes for work with jsDoc model.
@@ -138,18 +137,18 @@ public class JsDocElementUtils {
     protected static TypeUsage createTypeUsage(String type, int offset) {
         // see issue #233176
         if (LOWERCASED_STRING.equals(type)) {
-            return new TypeUsageImpl(Type.STRING, offset);
+            return new TypeUsage(Type.STRING, offset);
         } else if (LOWERCASED_NUMBER.equals(type)) {
-            return new TypeUsageImpl(Type.NUMBER, offset);
+            return new TypeUsage(Type.NUMBER, offset);
         } else if (LOWERCASED_BOOLEAN.equals(type)) {
-            return new TypeUsageImpl(Type.BOOLEAN, offset);
+            return new TypeUsage(Type.BOOLEAN, offset);
         } else {
             String correctedType = type;
             if (correctedType.indexOf('~') > 0) {
                 // we dont't replace tilda if it's on the first position
                 correctedType = correctedType.replace('~', '.'); // replacing tilda with dot. See issue #25110
             }
-            return new TypeUsageImpl(correctedType, offset);
+            return new TypeUsage(correctedType, offset);
         }
     }
 
@@ -237,7 +236,7 @@ public class JsDocElementUtils {
 
         if (elementType.getCategory() == JsDocElement.Category.NAMED_PARAMETER) {
             return NamedParameterElement.createWithDiagnostics(elementType,
-                    new IdentifierImpl(name.toString(), nameOffset), parseTypes(types, typeOffset), desc);
+                    new Identifier(name.toString(), nameOffset), parseTypes(types, typeOffset), desc);
         } else {
             return UnnamedParameterElement.create(elementType, parseTypes(types, typeOffset), desc);
         }
