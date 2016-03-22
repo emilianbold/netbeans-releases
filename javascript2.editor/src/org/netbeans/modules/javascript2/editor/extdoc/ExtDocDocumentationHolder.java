@@ -42,8 +42,8 @@
 package org.netbeans.modules.javascript2.editor.extdoc;
 
 import java.util.Map;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationProvider;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**

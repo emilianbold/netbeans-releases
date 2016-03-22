@@ -42,10 +42,10 @@
 package org.netbeans.modules.javascript2.editor.jsdoc;
 
 import java.util.*;
-import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTagProvider;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
-import org.netbeans.modules.javascript2.editor.doc.spi.SyntaxProvider;
+import org.netbeans.modules.javascript2.doc.spi.AnnotationCompletionTagProvider;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationProvider;
+import org.netbeans.modules.javascript2.doc.spi.SyntaxProvider;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElementType;
 import org.netbeans.modules.parsing.api.Snapshot;
 

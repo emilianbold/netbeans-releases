@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.javascript2.editor.jsdoc.completion;
 
-import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTag;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.javascript2.doc.spi.AnnotationCompletionTag;
+import org.netbeans.modules.javascript2.doc.spi.ParameterFormat;
 
 /**
  *
@@ -57,17 +59,11 @@ public class AssingTag extends AnnotationCompletionTag {
     }
 
     @Override
-    public void formatParameters(HtmlFormatter formatter) {
-        formatter.appendText(" "); //NOI18N
-        formatter.parameters(true);
-        formatter.appendText("otherName"); //NOI18N
-        formatter.parameters(false);
-
-        formatter.appendText(" as "); //NOI18N
-
-        formatter.parameters(true);
-        formatter.appendText("thisName"); //NOI18N
-        formatter.parameters(false);
+    public List<ParameterFormat> getParameters() {
+        List<ParameterFormat> ret = new ArrayList<ParameterFormat>(2);
+        ret.add(new ParameterFormat(" ", "otherName", null)); //NOI18N
+        ret.add(new ParameterFormat(" as ", "thisName", null)); //NOI18N
+        return ret;
     }
 
 }

@@ -50,11 +50,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsModifier;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
-import org.netbeans.modules.javascript2.editor.model.Type;
-import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
+import org.netbeans.modules.javascript2.doc.spi.JsModifier;
+import org.netbeans.modules.javascript2.doc.spi.DocParameter;
+import org.netbeans.modules.javascript2.doc.spi.JsComment;
+import org.netbeans.modules.javascript2.types.api.Type;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocDescriptionElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElementType;
@@ -62,6 +61,7 @@ import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocIdentifierEleme
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocTypeDescribedElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocTypeNamedElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocTypeSimpleElement;
+import org.netbeans.modules.javascript2.types.api.TypeUsage;
 
 /**
  * Represents documentation comment block of ScriptDoc.
@@ -142,7 +142,7 @@ public class SDocComment extends JsComment {
         List<Type> extendsEntries = new LinkedList<Type>();
         for (SDocElement extend : getTagsForType(SDocElementType.INHERITS)) {
             SDocIdentifierElement ident = (SDocIdentifierElement) extend;
-            extendsEntries.add(new TypeUsageImpl(ident.getIdentifier(), -1));
+            extendsEntries.add(new TypeUsage(ident.getIdentifier(), -1));
         }
         return extendsEntries;
     }

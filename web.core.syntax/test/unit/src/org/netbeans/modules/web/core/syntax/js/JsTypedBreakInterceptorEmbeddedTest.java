@@ -49,7 +49,7 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.web.indent.api.support.AbstractIndenter;
 import org.netbeans.test.web.core.syntax.TestBase;
 

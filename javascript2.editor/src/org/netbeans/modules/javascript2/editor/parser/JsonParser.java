@@ -38,7 +38,7 @@
 package org.netbeans.modules.javascript2.editor.parser;
 
 import com.oracle.js.parser.ir.FunctionNode;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**

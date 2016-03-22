@@ -44,10 +44,9 @@ package org.netbeans.modules.javascript2.editor.sdoc.elements;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.Type;
-import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
-import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
+import org.netbeans.modules.javascript2.types.api.Identifier;
+import org.netbeans.modules.javascript2.types.api.Type;
+import org.netbeans.modules.javascript2.types.api.TypeUsage;
 
 /**
  * Parses Type names, types and their offsets for given strings and
@@ -98,7 +97,7 @@ public class SDocElementUtils {
         textToParse = removeCurlyBraces(textToParse);
         String[] typesArray = textToParse.split("[,]"); //NOI18N
         for (String string : typesArray) {
-            types.add(new TypeUsageImpl(string.trim(), offset + textToParse.indexOf(string.trim())));
+            types.add(new TypeUsage(string.trim(), offset + textToParse.indexOf(string.trim())));
         }
         return types;
     }
@@ -157,7 +156,7 @@ public class SDocElementUtils {
             nameText = nameText.substring(1, nameText.length() - 1);
         }
         typeInfo.setOptional(optional);
-        typeInfo.setName(new IdentifierImpl(nameText, nameOffset));
+        typeInfo.setName(new Identifier(nameText, nameOffset));
     }
 
     private static String removeCurlyBraces(String textToParse) {

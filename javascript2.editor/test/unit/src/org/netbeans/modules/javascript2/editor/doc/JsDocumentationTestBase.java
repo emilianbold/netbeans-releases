@@ -81,9 +81,9 @@ import com.oracle.js.parser.ir.visitor.NodeVisitor;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
-import org.netbeans.modules.javascript2.editor.doc.api.JsDocumentationSupport;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
+import org.netbeans.modules.javascript2.doc.api.JsDocumentationSupport;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationProvider;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.Source;
 
