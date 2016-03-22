@@ -306,7 +306,9 @@ public final class Model {
         for (TypeUsage type : resolveTypeFromExpression) {
             fromType = ModelUtils.findJsObjectByName(visitor.getGlobalObject(), type.getType());
             if (fromType != null) {
-                processWithExpressionOccurrences(fromType, ((JsWithObjectImpl)with).getExpressionRange(), originalExp);
+                if (fromType.isDeclared()) {
+                    processWithExpressionOccurrences(fromType, ((JsWithObjectImpl)with).getExpressionRange(), originalExp);
+                }
                 Collection<TypeUsage> assignments = ModelUtils.resolveTypes(fromType.getAssignments(), parserResult, true, true);
                 for (TypeUsage assignment : assignments) {
                     Collection<IndexedElement> properties = jsIndex.getProperties(assignment.getType());
