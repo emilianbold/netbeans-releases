@@ -43,9 +43,9 @@ package org.netbeans.modules.javascript2.editor.jsdoc;
 
 import java.util.*;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsModifier;
+import org.netbeans.modules.javascript2.doc.spi.DocParameter;
+import org.netbeans.modules.javascript2.doc.spi.JsComment;
+import org.netbeans.modules.javascript2.doc.spi.JsModifier;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.DeclarationElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.DescriptionElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
@@ -53,7 +53,7 @@ import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElementType;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElementUtils;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.NamedParameterElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.UnnamedParameterElement;
-import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.types.api.Type;
 
 /**
  * Represents block of jsDoc comment which contains particular {@link JsDocTag}s.

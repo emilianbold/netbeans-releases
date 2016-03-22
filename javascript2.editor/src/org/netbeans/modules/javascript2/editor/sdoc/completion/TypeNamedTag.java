@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.javascript2.editor.sdoc.completion;
 
-import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTag;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.javascript2.doc.spi.AnnotationCompletionTag;
+import org.netbeans.modules.javascript2.doc.spi.ParameterFormat;
 
 /**
  *
@@ -57,23 +59,12 @@ public class TypeNamedTag extends AnnotationCompletionTag {
     }
 
     @Override
-    public void formatParameters(HtmlFormatter formatter) {
-        formatter.appendText(" {"); //NOI18N
-        formatter.parameters(true);
-        formatter.appendText("type"); //NOI18N
-        formatter.parameters(false);
-        formatter.appendText("}"); //NOI18N
-
-        formatter.appendText(" "); //NOI18N
-        formatter.parameters(true);
-        formatter.appendText("name"); //NOI18N
-        formatter.parameters(false);
-
-        formatter.appendText(" "); //NOI18N
-        formatter.parameters(true);
-        formatter.appendText("description"); //NOI18N
-        formatter.parameters(false);
+    public List<ParameterFormat> getParameters() {
+        List<ParameterFormat> ret = new ArrayList<ParameterFormat>(3);
+        ret.add(new ParameterFormat(" {", "type", "}")); //NOI18N
+        ret.add(new ParameterFormat(" ", "name", null)); //NOI18N
+        ret.add(new ParameterFormat(" ", "description", null)); //NOI18N
+        return ret;
     }
-
 
 }

@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.jsdoc.model;
 
-import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.types.api.Type;
 
 
 /**

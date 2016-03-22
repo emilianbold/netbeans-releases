@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.javascript2.editor.sdoc.completion;
 
-import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTag;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.javascript2.doc.spi.AnnotationCompletionTag;
+import org.netbeans.modules.javascript2.doc.spi.ParameterFormat;
 
 /**
  *
@@ -57,11 +59,8 @@ public class IdentifierTag extends AnnotationCompletionTag {
     }
 
     @Override
-    public void formatParameters(HtmlFormatter formatter) {
-        formatter.appendText(" "); //NOI18N
-        formatter.parameters(true);
-        formatter.appendText("identifier"); //NOI18N
-        formatter.parameters(false);
+    public List<ParameterFormat> getParameters() {
+        return Collections.singletonList(new ParameterFormat(" ", "identifier", null)); //NOI18N
     }
 
 }

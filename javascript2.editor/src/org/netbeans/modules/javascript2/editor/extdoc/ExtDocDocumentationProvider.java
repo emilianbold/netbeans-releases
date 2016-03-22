@@ -45,10 +45,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTagProvider;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
-import org.netbeans.modules.javascript2.editor.doc.spi.SyntaxProvider;
+import org.netbeans.modules.javascript2.doc.spi.AnnotationCompletionTagProvider;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.doc.spi.JsDocumentationProvider;
+import org.netbeans.modules.javascript2.doc.spi.SyntaxProvider;
 import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocElementType;
 import org.netbeans.modules.parsing.api.Snapshot;
 
