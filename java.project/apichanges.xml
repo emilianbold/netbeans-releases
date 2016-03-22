@@ -109,6 +109,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="CompilerOptionsQueryMerger">
+            <api name="java_project"/>
+            <summary>Added a <code>LookupMerger</code> for <code>CompilerOptionsQueryImplementation</code>s</summary>
+            <version major="1" minor="67"/>
+            <date day="22" month="3" year="2016"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                Added a factory method <code>LookupMergerSupport.createCompilerOptionsQueryMerger</code>
+                to create a <code>LookupMerger</code> for <code>CompilerOptionsQueryImplementation</code>s
+                instances.
+            </description>
+            <class package="org.netbeans.spi.java.project.support" name="LookupMergerSupport"/>
+        </change>
         <change id="server.is.free">
             <api name="java_project"/>
             <summary>Desktop dependent Java Project Support UI extracted</summary>
