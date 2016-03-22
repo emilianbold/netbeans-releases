@@ -79,6 +79,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.Modules;
@@ -102,6 +103,8 @@ import org.openide.util.lookup.ProxyLookup;
  * @author Jesse Glick
  */
 public final class ModuleManager extends Modules {
+
+    private static final Logger LOG = Logger.getLogger(ModuleManager.class.getName());
 
     public static final String PROP_MODULES = "modules"; // NOI18N
     public static final String PROP_ENABLED_MODULES = "enabledModules"; // NOI18N
@@ -473,7 +476,14 @@ public final class ModuleManager extends Modules {
                     // has not been called with some other special classloader.
                     if (force || (ts[i].getContextClassLoader() instanceof SystemClassLoader)) {
                         //Util.err.fine("Setting ctxt CL on " + ts[i].getName() + " to " + l);
-                        ts[i].setContextClassLoader(l);
+                        try {
+                            ts[i].setContextClassLoader(l);
+                        } catch (SecurityException se) {
+                            LOG.log(
+                                    Level.FINE,
+                                    "Cannot set context ClassLoader to the Thread: {0}",  //NOI18N
+                                    ts[i]);
+                        }
                     } else {
                         if (Util.err.isLoggable(Level.FINE)) {
                             Util.err.fine("Not touching context class loader " + ts[i].getContextClassLoader() + " on thread " + ts[i].getName());

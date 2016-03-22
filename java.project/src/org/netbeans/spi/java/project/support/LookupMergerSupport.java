@@ -52,12 +52,14 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.project.classpath.ClassPathModifierLookupMerger;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
+import org.netbeans.spi.java.queries.CompilerOptionsQueryImplementation;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
@@ -121,6 +123,18 @@ public final class LookupMergerSupport {
      */
     public static LookupMerger<ProjectClassPathModifierImplementation> createClassPathModifierMerger() {
         return new ClassPathModifierLookupMerger();
+    }
+
+    /**
+     * Creates a merger of {@link CompilerOptionsQueryImplementation}.
+     * It takes all {@link CompilerOptionsQueryImplementation} implementations
+     * in the provided lookup and merges their results into a single one.
+     * @return the {@link CompilerOptionsQueryImplementation} merger
+     * @since 1.67
+     */
+    @NonNull
+    public static LookupMerger<CompilerOptionsQueryImplementation> createCompilerOptionsQueryMerger() {
+        return new CompilerOptionsQueryMerger();
     }
 
     private static class SFBLookupMerger implements LookupMerger<SourceForBinaryQueryImplementation> {
