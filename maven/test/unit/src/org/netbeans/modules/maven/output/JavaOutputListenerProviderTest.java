@@ -60,7 +60,7 @@ public class JavaOutputListenerProviderTest extends TestCase {
    
     @Override
     protected void setUp() throws java.lang.Exception {
-        provider = new JavaOutputListenerProvider();
+        provider = new JavaOutputListenerProvider(null);
     }
 
     @SuppressWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")

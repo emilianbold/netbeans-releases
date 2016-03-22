@@ -52,13 +52,14 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.GuardedDocument;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.POMModelFactory;
 import org.netbeans.modules.maven.model.settings.SettingsModel;
@@ -75,6 +76,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.text.Line;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -417,4 +419,18 @@ public class Utilities {
         }
     }
 
+    public static  void openAtPosition(final POMModel model, final int offset) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Line line = NbEditorUtilities.getLine(model.getBaseDocument(), offset, false);
+                    line.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+                } catch (IndexOutOfBoundsException e) {
+                    logger.log(Level.FINE, "document changed", e);
+                }
+            }
+        });        
+    }
+    
 }

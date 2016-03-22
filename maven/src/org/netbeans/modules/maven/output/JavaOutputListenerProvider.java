@@ -42,8 +42,11 @@
 package org.netbeans.modules.maven.output;
 
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -51,8 +54,24 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.netbeans.modules.maven.api.execute.RunConfig;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.Build;
+import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.POMModelFactory;
+import org.netbeans.modules.maven.model.pom.Plugin;
+import static org.netbeans.modules.maven.output.Bundle.TXT_ModulesNotSupported;
+import org.netbeans.modules.xml.xam.ModelSource;
+import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.NbBundle.Messages;
+import org.openide.windows.OutputEvent;
+import org.openide.windows.OutputListener;
 
 
 
@@ -75,14 +94,20 @@ public class JavaOutputListenerProvider implements OutputProcessor {
     private String windowsDrive; // #197381
     /** @see org.codehaus.plexus.compiler.javac.JavacCompiler#compile */
     private static final Pattern windowsDriveInfoPattern = Pattern.compile("Compiling \\d+ source files? to ([A-Za-z]:)\\\\.+");
+    private final RunConfig config;
+    private Boolean jdk9compilerVersionOK;
     
     /** Creates a new instance of JavaOutputListenerProvider */
-    public JavaOutputListenerProvider() {
+    public JavaOutputListenerProvider(RunConfig config) {
+        this.config = config;
         //[javac] required because of forked compilation
         //DOTALL seems to fix MEVENIDE-455 on windows. one of the characters seems to be a some kind of newline and that's why the line doesnt' get matched otherwise.
         failPattern = Pattern.compile("\\s*(?:\\[WARNING\\])?(?:\\[javac\\])?(?:Compilation failure)?\\s*(.*)\\.java\\:\\[([0-9]*),([0-9]*)\\] (.*)", Pattern.DOTALL); //NOI18N
     }
     
+    private static final Pattern COMPILER_PROBLEM = Pattern.compile(".*module-info\\.java:.*module not found: .*");
+    
+    @Messages("TXT_ModulesNotSupported=Modules are not supported with maven-compiler-plugin < 3.6. (Click to fix in pom.xml)")
     @Override
     public void processLine(String line, OutputVisitor visitor) {
             Matcher match = failPattern.matcher(line);
@@ -96,8 +121,6 @@ public class JavaOutputListenerProvider implements OutputProcessor {
                 } else {
                     clazzfile = FileUtil.normalizeFile(new File(clazz + ".java"));
                 }
-                visitor.setOutputListener(new CompileAnnotation(clazzfile, lineNum,
-                        text), text.indexOf("[deprecation]") < 0); //NOI18N
                 FileUtil.refreshFor(clazzfile);
                 FileObject file = FileUtil.toFileObject(clazzfile);
                 String newclazz = clazz;
@@ -118,7 +141,44 @@ public class JavaOutputListenerProvider implements OutputProcessor {
                     }
                 }
                 line = line.replace(clazz, newclazz); //NOI18N
-                visitor.setLine(line);
+                boolean isImportant = text.indexOf("[deprecation]") < 0; // NOI18N
+                if(COMPILER_PROBLEM.matcher(line).matches() && !isJDK9CompilerVersion()) {
+                    visitor.setLine(line + "\n" + TXT_ModulesNotSupported());
+                    visitor.setOutputListener(new OutputListener() {
+                        @Override public void outputLineSelected(OutputEvent ev) {}
+                        @Override public void outputLineAction(OutputEvent ev) {
+                            FileObject pomFO = FileUtil.toFileObject(config.getMavenProject().getFile());                                                                
+                            ModelSource modelSource = Utilities.createModelSource(pomFO);                                    
+                            POMModel model = POMModelFactory.getDefault().getModel(modelSource);
+                            org.netbeans.modules.maven.model.pom.Project p = model.getProject();
+                            Build bld = p.getBuild();
+                            if (bld != null) {
+                                Plugin plg = bld.findPluginById(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER);
+                                if (plg != null) {
+                                    int pos = plg.findPosition();                                            
+                                    if(pos > -1) {
+                                        Utilities.openAtPosition(model, pos);
+                                    } else {
+                                        try {
+                                            DataObject pomDO = DataObject.find(pomFO);
+                                            OpenCookie oc = pomDO.getLookup().lookup(OpenCookie.class);
+                                            if(oc != null) {
+                                                oc.open();
+                                            }
+                                        } catch (DataObjectNotFoundException x) {
+                                            Logger.getLogger(JavaOutputListenerProvider.class.getName()).log(Level.INFO, null, x);
+                                        }
+                                    }
+                                }    
+                            }
+                        }    
+                        @Override public void outputLineCleared(OutputEvent ev) {}
+                    }
+                    , false );
+                } else {
+                    visitor.setLine(line);
+                    visitor.setOutputListener(new CompileAnnotation(clazzfile, lineNum, text), isImportant); 
+                }
             }
         match = windowsDriveInfoPattern.matcher(line);
         if (match.matches()) {
@@ -141,6 +201,14 @@ public class JavaOutputListenerProvider implements OutputProcessor {
     
     @Override
     public void sequenceFail(String sequenceId, OutputVisitor visitor) {
+    }
+    
+    private synchronized Boolean isJDK9CompilerVersion() {      
+        if(jdk9compilerVersionOK == null) {
+            String version = PluginPropertyUtils.getPluginVersion(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER);
+            jdk9compilerVersionOK = new ComparableVersion(version).compareTo(new ComparableVersion("3.6-SNAPSHOT")) >= 0 ? Boolean.TRUE : Boolean.FALSE;
+        }
+        return jdk9compilerVersionOK;
     }
     
 }
