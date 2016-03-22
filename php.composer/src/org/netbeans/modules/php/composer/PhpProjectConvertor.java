@@ -80,7 +80,7 @@ public final class PhpProjectConvertor implements ProjectConvertor {
 
     static final String COMPOSER_JSON_FILENAME = "composer.json"; // NOI18N
     @StaticResource
-    private static final String PROJECT_ICON = "org/netbeans/modules/php/composer/ui/resources/phpProject.png"; // NOI18N
+    private static final String PROJECT_ICON = "org/netbeans/modules/php/composer/ui/resources/phpConvertorProject.png"; // NOI18N
 
 
     @Override

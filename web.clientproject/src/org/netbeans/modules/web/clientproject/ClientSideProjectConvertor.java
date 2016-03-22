@@ -55,6 +55,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
@@ -78,6 +79,9 @@ import org.openide.util.Lookup;
 public final class ClientSideProjectConvertor implements ProjectConvertor {
 
     static final Logger LOGGER = Logger.getLogger(ClientSideProjectConvertor.class.getName());
+
+    @StaticResource
+    private static final String PROJECT_ICON = "org/netbeans/modules/web/clientproject/ui/resources/html5-convertor-project.png"; // NOI18N
 
     private static final String[] JSON_FILES = new String[] {
         "package.json", // NOI18N
@@ -113,7 +117,7 @@ public final class ClientSideProjectConvertor implements ProjectConvertor {
                 transientLkp,
                 new Factory(projectDirectory, displayName, (Closeable) transientLkp, fileName),
                 displayName,
-                ImageUtilities.image2Icon(ImageUtilities.loadImage(ClientSideProject.HTML5_PROJECT_ICON)));
+                ImageUtilities.image2Icon(ImageUtilities.loadImage(PROJECT_ICON)));
     }
 
     @CheckForNull
