@@ -82,6 +82,9 @@ made subject to such option by the copyright holder.
         <file name="org-netbeans-modules-maven-hints-pom-MoveToDependencyManagementHint.instance">
             <attr name="position" intvalue="1000"/>
         </file>
+        <file name="org-netbeans-modules-maven-hints-pom-CompilerPluginVersionError.instance">
+            <attr name="position" intvalue="1100"/>
+        </file>
     </folder>
 
             
