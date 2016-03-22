@@ -1571,6 +1571,9 @@ public class ModelVisitor extends PathNodeVisitor {
     
     private void processJsDoc(JsFunctionImpl jsFunction, FunctionNode fn, JsDocumentationHolder docHolder) {
         if (!fn.isProgram()) {
+            // the documentation for the function
+            Documentation documentation = docHolder.getDocumentation(fn);
+            jsFunction.setDocumentation(documentation);
             // parameters
             List<DocParameter> docParams = docHolder.getParameters(fn);
             for (DocParameter docParameter : docParams) {
