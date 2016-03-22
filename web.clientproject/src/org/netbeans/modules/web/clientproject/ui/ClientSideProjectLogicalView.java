@@ -113,6 +113,7 @@ import org.openide.util.WeakSet;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.xml.XMLUtil;
 
 @ActionReferences({
@@ -693,7 +694,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             assert root != null;
             assert root.isValid() : root;
             DataFolder df = DataFolder.findFolder(root);
-            return new FolderFilterNode(node, df.getNodeDelegate().cloneNode(), getIgnoredFiles(node));
+            return new FolderFilterNode(project, node, df.getNodeDelegate().cloneNode(), getIgnoredFiles(node));
         }
 
         @Override
@@ -777,9 +778,9 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         private final Node delegate;
 
 
-        public FolderFilterNode(BasicNodes nodeType, Node folderNode, List<File> ignoreList) {
+        public FolderFilterNode(ClientSideProject project, BasicNodes nodeType, Node folderNode, List<File> ignoreList) {
             super(folderNode, folderNode.isLeaf() ? Children.LEAF :
-                    new FolderFilterChildren(folderNode, ignoreList));
+                    new FolderFilterChildren(project, folderNode, ignoreList));
             this.nodeType = nodeType;
             delegate = folderNode;
         }
@@ -891,9 +892,11 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
     private static class FolderFilterChildren extends FilterNode.Children {
 
         private final Set<File> ignoreList = new WeakSet<File>();
+        private final ClientSideProject project;
 
-        public FolderFilterChildren(Node n, List<File> ignoreList) {
+        FolderFilterChildren(ClientSideProject project, Node n, List<File> ignoreList) {
             super(n);
+            this.project = project;
             this.ignoreList.addAll(ignoreList);
         }
 
@@ -917,7 +920,80 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             return super.createNodes(key);
         }
 
+        @Override
+        protected Node copyNode(Node node) {
+            FileObject fo = node.getLookup().lookup(FileObject.class);
+            if (fo == null) {
+                return super.copyNode(node);
+            }
+            if (fo.isFolder()) {
+                return new FolderNode(project, node);
+            }
+            return super.copyNode(node);
+        }
+
     }
 
+    private static final class FolderNode extends FilterNode {
+
+        private final ClientSideProject project;
+
+
+        FolderNode(ClientSideProject project, Node original) {
+            super(original, new FolderChildren(project, original), new ProxyLookup(original.getLookup()));
+            assert original != null;
+            assert project != null;
+            this.project = project;
+        }
+
+        @Override
+        public Image getIcon(int type) {
+            return getIcon(type, false);
+        }
+
+        @Override
+        public Image getOpenedIcon(int type) {
+            return getIcon(type, true);
+        }
+
+        private Image getIcon(int type, boolean opened) {
+            FileObject folder = getOriginal().getLookup().lookup(FileObject.class);
+            assert folder.isFolder() : folder;
+            Project owner = FileOwnerQuery.getOwner(folder);
+            Image originalIcon;
+            if (owner != null
+                    && !owner.equals(project)
+                    && owner.getProjectDirectory().equals(folder)) {
+                originalIcon = ImageUtilities.icon2Image(ProjectUtils.getInformation(owner).getIcon());
+            } else {
+                originalIcon = opened ? super.getOpenedIcon(type) : super.getIcon(type);
+            }
+            return originalIcon;
+        }
+
+    }
+
+    private static class FolderChildren extends FilterNode.Children {
+
+        private final ClientSideProject project;
+
+        FolderChildren(ClientSideProject project, Node node) {
+            super(node);
+            this.project = project;
+        }
+
+        @Override
+        protected Node copyNode(Node node) {
+            FileObject fo = node.getLookup().lookup(FileObject.class);
+            if (fo == null) {
+                return super.copyNode(node);
+            }
+            if (fo.isFolder()) {
+                return new FolderNode(project, node);
+            }
+            return super.copyNode(node);
+        }
+
+    }
 
 }
