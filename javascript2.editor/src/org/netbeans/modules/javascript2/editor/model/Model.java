@@ -306,9 +306,7 @@ public final class Model {
         for (TypeUsage type : resolveTypeFromExpression) {
             fromType = ModelUtils.findJsObjectByName(visitor.getGlobalObject(), type.getType());
             if (fromType != null) {
-                if (fromType.isDeclared()) {
-                    processWithExpressionOccurrences(fromType, ((JsWithObjectImpl)with).getExpressionRange(), originalExp);
-                }
+                processWithExpressionOccurrences(fromType, ((JsWithObjectImpl)with).getExpressionRange(), originalExp);
                 Collection<TypeUsage> assignments = ModelUtils.resolveTypes(fromType.getAssignments(), parserResult, true, true);
                 for (TypeUsage assignment : assignments) {
                     Collection<IndexedElement> properties = jsIndex.getProperties(assignment.getType());
@@ -316,6 +314,9 @@ public final class Model {
                         JsObject jsWithProperty = with.getProperty(indexedElement.getName());
                         if (jsWithProperty != null) {
                             moveProperty(fromType, jsWithProperty);
+                            if (jsWithProperty.isDeclared()) {
+                                ((JsObjectImpl)jsWithProperty).setDeclared(false);
+                            }
                         }
                     }
                 }
@@ -324,6 +325,9 @@ public final class Model {
                     JsObject jsWithProperty = with.getProperty(fromTypeProperty.getName());
                     if (jsWithProperty != null) {
                         moveProperty(fromType, jsWithProperty);
+                        if (jsWithProperty.isDeclared()) {
+                            ((JsObjectImpl)jsWithProperty).setDeclared(false);
+                        }
                     }
                 }
             } else {
