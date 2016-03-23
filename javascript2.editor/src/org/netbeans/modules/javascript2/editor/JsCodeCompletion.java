@@ -41,6 +41,11 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
+import org.netbeans.modules.javascript2.model.api.JsFunction;
+import org.netbeans.modules.javascript2.model.api.JsElement;
+import org.netbeans.modules.javascript2.model.api.Model;
+import org.netbeans.modules.javascript2.model.api.JsObject;
+import org.netbeans.modules.javascript2.model.api.ModelUtils;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -65,24 +70,23 @@ import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModelFactory;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTagAttribute;
-import org.netbeans.modules.html.editor.lib.api.model.HtmlTagType;
 import org.netbeans.modules.javascript2.editor.spi.CompletionContext;
 import org.netbeans.modules.javascript2.editor.JsCompletionItem.CompletionRequest;
 import org.netbeans.modules.javascript2.editor.doc.JsDocumentationCodeCompletion;
 import org.netbeans.modules.javascript2.editor.doc.JsDocumentationElement;
-import org.netbeans.modules.javascript2.editor.index.IndexedElement;
-import org.netbeans.modules.javascript2.editor.index.JsIndex;
-import org.netbeans.modules.javascript2.editor.lexer.JsDocumentationTokenId;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
-import org.netbeans.modules.javascript2.editor.model.*;
-import org.netbeans.modules.javascript2.editor.model.impl.*;
+import org.netbeans.modules.javascript2.model.api.IndexedElement;
+import org.netbeans.modules.javascript2.lexer.api.JsDocumentationTokenId;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
 import org.netbeans.modules.javascript2.editor.options.OptionsUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import static org.netbeans.modules.javascript2.editor.spi.CompletionContext.EXPRESSION;
 import static org.netbeans.modules.javascript2.editor.spi.CompletionContext.OBJECT_MEMBERS;
 import static org.netbeans.modules.javascript2.editor.spi.CompletionContext.OBJECT_PROPERTY;
 import org.netbeans.modules.javascript2.editor.spi.CompletionProvider;
+import org.netbeans.modules.javascript2.model.api.Index;
+import org.netbeans.modules.javascript2.types.api.Identifier;
+import org.netbeans.modules.javascript2.types.api.TypeUsage;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -148,7 +152,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             request.addHtmlTagAttributes = false;
             request.cancelSupport = cancelSupport;
         
-        jsParserResult.getModel().resolve();
+        Model.getModel(jsParserResult, false).resolve();
         final List<CompletionProposal> resultList = new ArrayList<CompletionProposal>();
         HashMap<String, List<JsElement>> added = new HashMap<String, List<JsElement>>();
         if (cancelSupport.isCancelled()) {
@@ -173,7 +177,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                     break;
             }
             if ((context == CompletionContext.EXPRESSION || context == CompletionContext.OBJECT_MEMBERS || context == CompletionContext.OBJECT_PROPERTY) && !request.prefix.isEmpty()) {
-                Collection<? extends IndexResult> indexResults = JsIndex.get(fileObject).query(JsIndex.FIELD_BASE_NAME, request.prefix, QuerySupport.Kind.PREFIX, JsIndex.TERMS_BASIC_INFO);
+                Collection<? extends IndexResult> indexResults = Index.get(fileObject).query(Index.FIELD_BASE_NAME, request.prefix, QuerySupport.Kind.PREFIX, Index.TERMS_BASIC_INFO);
                 for (IndexResult indexResult : indexResults) {
                     IndexedElement indexElement = IndexedElement.create(indexResult);
                     addPropertyToMap(request, added, indexElement);
@@ -203,12 +207,12 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                 case GLOBAL:
                     HashMap<String, List<JsElement>> addedProperties = new HashMap<String, List<JsElement>>();
                     addedProperties.putAll(getDomCompletionResults(request));
-                    for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects(fileObject)) {
+                    for (JsObject libGlobal : ModelUtils.getExtendingGlobalObjects(fileObject)) {
                         for (JsObject object : libGlobal.getProperties().values()) {
                             addPropertyToMap(request, addedProperties, object);
                         }
                     }
-                    for (JsObject object : request.result.getModel().getVariables(caretOffset)) {
+                    for (JsObject object : Model.getModel(request.result, false).getVariables(caretOffset)) {
                         if (!(object instanceof JsFunction && ((JsFunction) object).isAnonymous())) {
                             addPropertyToMap(request, addedProperties, object);
                         }
@@ -260,7 +264,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
     private void addGlobalObjectsFromIndex(CompletionRequest request, HashMap<String, List<JsElement>> addedProperties) {
         FileObject fileObject = request.result.getSnapshot().getSource().getFileObject();
         if (fileObject != null) {
-            JsIndex jsIndex = JsIndex.get(fileObject);
+            Index jsIndex = Index.get(fileObject);
             Collection<IndexedElement> fromIndex = jsIndex.getGlobalVar(request.prefix);
             for (IndexedElement indexElement : fromIndex) {
                 addPropertyToMap(request, addedProperties, indexElement);
@@ -307,7 +311,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                                 JsParserResult jsInfo = (JsParserResult)parserResult;
 
                                 String fqn = indexedElement.getFQN();
-                                JsObject jsObjectGlobal  = jsInfo.getModel().getGlobalObject();
+                                JsObject jsObjectGlobal  = Model.getModel(jsInfo, false).getGlobalObject();
                                 JsObject property = ModelUtils.findJsObjectByName(jsObjectGlobal, fqn);
                                 if (property != null) {
                                     Documentation doc = property.getDocumentation();
@@ -518,14 +522,14 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         FileObject fo = request.info.getSnapshot().getSource().getFileObject();
         addedItems.putAll(getDomCompletionResults(request));
         // from index
-        JsIndex index = JsIndex.get(fo);
+        Index index = Index.get(fo);
         Collection<IndexedElement> fromIndex = index.getGlobalVar(request.prefix);
         for (IndexedElement indexedElement : fromIndex) {
             addPropertyToMap(request, addedItems, indexedElement);
         }
         
         // from libraries
-        for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects(fo)) {
+        for (JsObject libGlobal : ModelUtils.getExtendingGlobalObjects(fo)) {
             for (JsObject object : libGlobal.getProperties().values()) {
                 addPropertyToMap(request, addedItems, object);
             }
@@ -533,7 +537,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         
         // from model
         //int offset = request.info.getSnapshot().getEmbeddedOffset(request.anchor);
-        for(JsObject object : request.result.getModel().getVariables(request.anchor)) {
+        for(JsObject object : Model.getModel(request.result, false).getVariables(request.anchor)) {
             if (!(object instanceof JsFunction && ((JsFunction) object).isAnonymous())) {
                 addPropertyToMap(request, addedItems, object);
             }
@@ -554,7 +558,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             FileObject fo = request.result.getSnapshot().getSource().getFileObject();
             if (fo != null) {
                 long start = System.currentTimeMillis();
-                Collection<IndexedElement> fromUsages = JsIndex.get(request.result.getSnapshot().getSource().getFileObject()).getUsagesFromExpression(expChain);
+                Collection<IndexedElement> fromUsages = Index.get(request.result.getSnapshot().getSource().getFileObject()).getUsagesFromExpression(expChain);
                 for (IndexedElement indexedElement : fromUsages) {
                     if (!fo.equals(indexedElement.getFileObject()) || !indexedElement.getName().equals(request.prefix)) { 
                         addPropertyToMap(request, addedItems, indexedElement);
@@ -569,14 +573,14 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
 
     private Map<String, List<JsElement>> getCompletionFromExpressionChain(CompletionRequest request, List<String> expChain) {
         FileObject fo = request.info.getSnapshot().getSource().getFileObject();
-        JsIndex jsIndex = JsIndex.get(fo);
+        Index jsIndex = Index.get(fo);
         Collection<TypeUsage> resolveTypeFromExpression = new ArrayList<TypeUsage>();
         HashMap<String, List<JsElement>> addedProperties = new HashMap<String, List<JsElement>>();
-        resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(request.result.getModel(), jsIndex, expChain, request.anchor, true));
+        resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(Model.getModel(request.result, false), jsIndex, expChain, request.anchor, true));
         if (request.cancelSupport.isCancelled()) {
             return addedProperties;
         }
-        resolveTypeFromExpression = ModelUtils.resolveTypes(resolveTypeFromExpression, request.result, true, true);
+        resolveTypeFromExpression = ModelUtils.resolveTypes(resolveTypeFromExpression, Model.getModel(request.result, false), jsIndex, true);
         
         // try to map window property
         Collection<String> windowProp = new ArrayList<String>();
@@ -592,11 +596,11 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         }
 
         for (String string : windowProp) {
-            resolveTypeFromExpression.add(new TypeUsageImpl(string));
+            resolveTypeFromExpression.add(new TypeUsage(string));
         }
         
         for (String string : prototypeChain) {
-            resolveTypeFromExpression.add(new TypeUsageImpl(string));
+            resolveTypeFromExpression.add(new TypeUsage(string));
         }
         if (request.cancelSupport.isCancelled()) {
             return addedProperties;
@@ -605,7 +609,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         List<JsObject> lastResolvedObjects = new ArrayList<JsObject>();
         for (TypeUsage typeUsage : resolveTypeFromExpression) {
             checkRecursion = 0;
-            boolean addFunctionProp = processTypeInModel(request, request.result.getModel(), typeUsage, lastResolvedObjects, expChain.get(1).equals("@pro"), jsIndex, addedProperties);
+            boolean addFunctionProp = processTypeInModel(request, Model.getModel(request.result, false), typeUsage, lastResolvedObjects, expChain.get(1).equals("@pro"), jsIndex, addedProperties);
             isFunction = isFunction || addFunctionProp;
             if (typeUsage.isResolved()) {
                 addObjectPropertiesFromIndex(typeUsage.getType(), jsIndex, request, addedProperties);
@@ -691,7 +695,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             token = LexUtilities.findPreviousNonWsNonComment(ts);
             if (token != null && token.id() == JsTokenId.IDENTIFIER) {
                 String functionName = token.text().toString();
-                return new IdentifierImpl(functionName, new OffsetRange(ts.offset(), ts.offset() + functionName.length()));
+                return new Identifier(functionName, new OffsetRange(ts.offset(), ts.offset() + functionName.length()));
             }
         }
         return null;
@@ -702,7 +706,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         List<String> expChain = ModelUtils.resolveExpressionChain(request.result.getSnapshot(), functionName.getOffsetRange().getStart() - 1, false);
         FileObject fo = request.info.getSnapshot().getSource().getFileObject();
         if (fo != null) {
-            JsIndex jsIndex = JsIndex.get(fo);
+            Index jsIndex = Index.get(fo);
             if (expChain.isEmpty()) {
                 // global space
                 Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(functionName.getName());
@@ -713,7 +717,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                 }
             } else {
                 // the expression needs to be resolved
-                Collection<TypeUsage> types = ModelUtils.resolveTypeFromExpression(request.result.getModel(), jsIndex, expChain, request.anchor, false);
+                Collection<TypeUsage> types = ModelUtils.resolveTypeFromExpression(Model.getModel(request.result, false), jsIndex, expChain, request.anchor, false);
                 for (TypeUsage type : types) {
                     Collection<IndexedElement> properties = jsIndex.getPropertiesWithPrefix(type.getType(), functionName.getName());
                     properties.addAll(jsIndex.getPropertiesWithPrefix(type.getType() + "." + ModelUtils.PROTOTYPE, functionName.getName()));
@@ -742,7 +746,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             for (Collection<String> assignments: parameters.values()) {
                 if (!assignments.isEmpty()) {
                     for (String assignment : assignments) {
-                        result.add(new TypeUsageImpl(assignment));
+                        result.add(new TypeUsage(assignment));
                     }
                 }
             }
@@ -787,10 +791,10 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                 List<String> expChain = ModelUtils.resolveExpressionChain(request.result.getSnapshot(), ts.offset() - 1, false);
                 List<TypeUsage> possibleTypes = new ArrayList<TypeUsage>();
                 FileObject fo = request.info.getSnapshot().getSource().getFileObject();
-                JsIndex jsIndex = JsIndex.get(fo);
+                Index jsIndex = Index.get(fo);
                 if (expChain.isEmpty()) {
                     // global space
-                    Collection<? extends JsObject> variables = ModelUtils.getVariables(request.result.getModel(), request.anchor);
+                    Collection<? extends JsObject> variables = ModelUtils.getVariables(Model.getModel(request.result, false), request.anchor);
                     for (JsObject variable : variables) {
                         if (variable.getName().equals(functionName) && variable.getJSKind().isFunction()) {
                             // do we now the tape of the argument?
@@ -812,14 +816,14 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                             for (Collection<String> assignments: parameters.values()) {
                                 if (!assignments.isEmpty()) {
                                     for (String type : assignments) {
-                                        possibleTypes.add(new TypeUsageImpl(type));
+                                        possibleTypes.add(new TypeUsage(type));
                                     }
                                 }
                             }
                         }
                     }
                 } else {
-                    Collection<TypeUsage> types = ModelUtils.resolveTypeFromExpression(request.result.getModel(), jsIndex, expChain, request.anchor, false);
+                    Collection<TypeUsage> types = ModelUtils.resolveTypeFromExpression(Model.getModel(request.result, false), jsIndex, expChain, request.anchor, false);
                     for (TypeUsage type : types) {
                         Collection<IndexedElement> properties = jsIndex.getPropertiesWithPrefix(type.getType(), functionName);
                         properties.addAll(jsIndex.getPropertiesWithPrefix(type.getType() + "." + ModelUtils.PROTOTYPE, functionName));
@@ -830,7 +834,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                                 for (Collection<String> assignments: parameters.values()) {
                                     if (!assignments.isEmpty()) {
                                         for (String assignment : assignments) {
-                                            possibleTypes.add(new TypeUsageImpl(assignment));
+                                            possibleTypes.add(new TypeUsage(assignment));
                                         }
                                     }
                                 }
@@ -1048,7 +1052,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
 
     private void completeObjectMember(CompletionRequest request, Map<String, List<JsElement>> addedItems) {
         JsParserResult result = (JsParserResult)request.info;
-        JsObject jsObject = (JsObject)ModelUtils.getDeclarationScope(result.getModel(), request.anchor);
+        JsObject jsObject = (JsObject)ModelUtils.getDeclarationScope(Model.getModel(result, false), request.anchor);
         
         if (jsObject.getJSKind() == JsElement.Kind.METHOD) {
             jsObject = jsObject.getParent();
@@ -1074,7 +1078,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         String fqn = jsObject.getFullyQualifiedName();
         
         FileObject fo = request.info.getSnapshot().getSource().getFileObject();
-        Collection<IndexedElement> indexedProperties = JsIndex.get(fo).getProperties(fqn);
+        Collection<IndexedElement> indexedProperties = Index.get(fo).getProperties(fqn);
         for (IndexedElement indexedElement : indexedProperties) {
             addPropertyToMap(request, properties, indexedElement);
         }
@@ -1082,13 +1086,13 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
 
     private void completeInWith (CompletionRequest request,HashMap <String, List<JsElement>> addedItems) {
         int offset = request.anchor;
-        Collection<? extends TypeUsage> typesFromWith = ModelUtils.getTypeFromWith(request.result.getModel(), offset);
+        Collection<? extends TypeUsage> typesFromWith = ModelUtils.getTypeFromWith(Model.getModel(request.result, false), offset);
         if (!typesFromWith.isEmpty()) {
             FileObject fo = request.info.getSnapshot().getSource().getFileObject();
-            JsIndex jsIndex = JsIndex.get(fo);
-            Collection<TypeUsage> resolveTypes = ModelUtils.resolveTypes(typesFromWith, request.result, true, true);
+            Index jsIndex = Index.get(fo);
+            Collection<TypeUsage> resolveTypes = ModelUtils.resolveTypes(typesFromWith, Model.getModel(request.result, false), jsIndex, true);
             for (TypeUsage type : resolveTypes) {
-                JsObject localObject = ModelUtils.findJsObjectByName(request.result.getModel(), type.getType());
+                JsObject localObject = ModelUtils.findJsObjectByName(Model.getModel(request.result, false), type.getType());
                 if (localObject != null) {
                     addObjectPropertiesToCC(localObject, request, addedItems);
                 } 
@@ -1103,9 +1107,9 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         List<TypeUsage> types = findPossibleCallArgTypes(request);
         FileObject fo = request.result.getSnapshot().getSource().getFileObject();
         if (types != null && fo != null && !types.isEmpty()) {
-            JsIndex jsIndex = JsIndex.get(fo);
+            Index jsIndex = Index.get(fo);
             for (TypeUsage type: types) {
-                Collection<? extends IndexResult> fromIndex = jsIndex.findByFqn(type.getType(), JsIndex.TERMS_BASIC_INFO);
+                Collection<? extends IndexResult> fromIndex = jsIndex.findByFqn(type.getType(), Index.TERMS_BASIC_INFO);
                 for (IndexResult indexResult: fromIndex) {
                     IndexedElement indexElement = IndexedElement.create(indexResult);
                     if (indexElement.getJSKind() == JsElement.Kind.CALLBACK) {
@@ -1198,7 +1202,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                 : theString.toLowerCase().startsWith(prefix.toLowerCase());
     }
 
-    private boolean processTypeInModel(CompletionRequest request, Model model, TypeUsage type, List<JsObject> lastResolvedObjects, boolean prop, JsIndex index, Map<String, List<JsElement>> addedProperties) {
+    private boolean processTypeInModel(CompletionRequest request, Model model, TypeUsage type, List<JsObject> lastResolvedObjects, boolean prop, Index index, Map<String, List<JsElement>> addedProperties) {
         if (++checkRecursion > 10) {
             return false;
         }
@@ -1209,7 +1213,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             lastResolvedObjects.add(jsObject);
         }
 
-        for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects(request.result.getSnapshot().getSource().getFileObject())) {
+        for (JsObject libGlobal : ModelUtils.getExtendingGlobalObjects(request.result.getSnapshot().getSource().getFileObject())) {
             JsObject found = ModelUtils.findJsObjectByName(libGlobal, type.getType());
             if (found != null && found != libGlobal) {
                 jsObject = found;
@@ -1221,8 +1225,8 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         if (jsObject == null || !jsObject.isDeclared()) {
             boolean isObject = type.getType().equals("Object");   //NOI18N
             if (prop && !isObject) {
-                for (IndexResult indexResult : index.findByFqn(type.getType(), JsIndex.FIELD_FLAG)) {
-                    JsElement.Kind kind = IndexedElement.Flag.getJsKind(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_FLAG)));
+                for (IndexResult indexResult : index.findByFqn(type.getType(), Index.FIELD_FLAG)) {
+                    JsElement.Kind kind = IndexedElement.Flag.getJsKind(Integer.parseInt(indexResult.getValue(Index.FIELD_FLAG)));
                     if (kind.isFunction()) {
                         isFunction = true;
                     }
@@ -1258,7 +1262,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         }
     }
     
-    private void addObjectPropertiesFromIndex(String fqn, JsIndex jsIndex, CompletionRequest request, Map<String, List<JsElement>> addedProperties) {
+    private void addObjectPropertiesFromIndex(String fqn, Index jsIndex, CompletionRequest request, Map<String, List<JsElement>> addedProperties) {
         Collection<IndexedElement> properties = jsIndex.getProperties(fqn);
         for (IndexedElement indexedElement : properties) {
             addPropertyToMap(request, addedProperties, indexedElement);

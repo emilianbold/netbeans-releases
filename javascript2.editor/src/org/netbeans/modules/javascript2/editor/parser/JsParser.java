@@ -41,7 +41,7 @@ import com.oracle.js.parser.ir.FunctionNode;
 import com.oracle.js.parser.Parser;
 import com.oracle.js.parser.ScriptEnvironment;
 import com.oracle.js.parser.Source;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
