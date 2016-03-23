@@ -130,8 +130,7 @@ public final class ExecLogReader {
         } else {
             this.root = root;
         }
-    } //NOI18N
-    //NOI18N
+    }
 
     private PathMap getPathMapper(ProjectProxy project) {
         if (project != null) {
@@ -587,8 +586,7 @@ public final class ExecLogReader {
                     }
                     String s2 = CndPathUtilities.quoteIfNecessary(s);
                     if (s.equals(s2)) {
-                        if (s.indexOf('"') > 0) {
-                            // NOI18N
+                        if (s.indexOf('"') > 0) { // NOI18N
                             int j = s.indexOf("\\\""); // NOI18N
                             if (j < 0) {
                                 s = s.replace("\"", "\\\""); // NOI18N

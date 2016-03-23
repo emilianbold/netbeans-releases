@@ -514,8 +514,7 @@ public class CndPathUtilities {
             return s;
         }
         // A quoted string in the first place?
-        if ((s.charAt(0) == '"') ||
-                (s.charAt(n - 1) == '"')) {
+        if ((s.charAt(0) == '"') &&  (s.charAt(n - 1) == '"')) { // NOI18N
             return s;
         }
 
@@ -526,6 +525,12 @@ public class CndPathUtilities {
                     (c == '(') || (c == ')')) {
                 // Contains some kind of meta character == so quote the
                 // darn thing
+                if (s.indexOf('\"') > 0) {
+                    int j = s.indexOf("\\\""); // NOI18N
+                    if (j < 0) {
+                        s = s.replace("\"", "\\\""); // NOI18N
+                    }
+                }
                 return '"' + s + '"'; // NOI18N
             }
         }
