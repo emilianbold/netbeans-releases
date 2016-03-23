@@ -42,9 +42,9 @@
 package org.netbeans.modules.javascript2.editor.doc;
 
 import java.util.Collections;
-import org.netbeans.modules.javascript2.doc.JsDocumentationTestBase;
 import org.netbeans.modules.javascript2.doc.api.JsDocumentationSupport;
 import org.netbeans.modules.javascript2.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.editor.JsTestBase;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -57,7 +57,7 @@ import org.netbeans.modules.parsing.spi.Parser;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class JsDocumentationResolutionTest extends JsDocumentationTestBase {
+public class JsDocumentationResolutionTest extends JsTestBase {
 
     JsParserResult parserResult;
 
