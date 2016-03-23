@@ -1093,7 +1093,9 @@ public class RemoteServices {
                                     if (res instanceof StringReference) {
                                         String reason = ((StringReference) res).value();
                                         InputOutput io = ((JPDAThreadImpl) t).getDebugger().getConsoleIO().getIO();
-                                        io.getErr().println(NbBundle.getMessage(VisualDebuggerListener.class, "MSG_NoTrackingOfComponentChanges", reason));
+                                        if (io != null) {
+                                            io.getErr().println(NbBundle.getMessage(VisualDebuggerListener.class, "MSG_NoTrackingOfComponentChanges", reason));
+                                        }
                                     }
                                 } else {
                                     Method stopHierarchyListenerMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, "stopHierarchyListener", "()V");
