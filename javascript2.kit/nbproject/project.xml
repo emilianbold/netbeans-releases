@@ -22,6 +22,12 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.javascript2.extdoc</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.javascript2.extjs</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
@@ -36,6 +42,12 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.javascript2.jquery</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.javascript2.jsdoc</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
@@ -63,6 +75,12 @@
                     <code-name-base>org.netbeans.modules.javascript2.requirejs</code-name-base>
                     <run-dependency>
                         <specification-version>0.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.javascript2.sdoc</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
