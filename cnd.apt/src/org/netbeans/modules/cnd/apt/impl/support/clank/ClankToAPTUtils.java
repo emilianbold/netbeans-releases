@@ -319,11 +319,11 @@ public final class ClankToAPTUtils {
             case tok.TokenKind.kw_while:
                 return APTTokenTypes.LITERAL_while;
             case tok.TokenKind.kw__Alignas:
-                return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL__Alignas;
+                return APTTokenTypes.LITERAL__Alignas;
             case tok.TokenKind.kw__Alignof:
-                return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL__Alignof;
+                return APTTokenTypes.LITERAL__Alignof;
             case tok.TokenKind.kw__Atomic:
-                return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL__Atomic;
+                return APTTokenTypes.LITERAL__Atomic;
             case tok.TokenKind.kw__Bool:
                 return APTTokenTypes.LITERAL__Bool;
             case tok.TokenKind.kw__Complex:
@@ -335,9 +335,9 @@ public final class ClankToAPTUtils {
             case tok.TokenKind.kw__Noreturn:
                 return APTTokenTypes.LITERAL__Noreturn;
             case tok.TokenKind.kw__Static_assert:
-                return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL__Static_assert;
+                return APTTokenTypes.LITERAL__Static_assert;
             case tok.TokenKind.kw__Thread_local:
-                return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL__Thread_local;
+                return APTTokenTypes.LITERAL__Thread_local;
             case tok.TokenKind.kw___func__:
                 return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL___func__;
             case tok.TokenKind.kw___objc_yes:

@@ -59,6 +59,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.util.logging.Level;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonModel;
@@ -175,29 +176,45 @@ class GoToPanelImpl extends javax.swing.JPanel implements GoToPanel {
         return this.time;
     }
 
-    /** Sets the model from different therad
+    /** Sets the model.
+     * Threading: Requires EDT.
+     * @param the model to set
+     * @param finished true for final update
+     * @return true if model has changed
      */
     @Override
-    public boolean setModel( final ListModel model) {
+    public boolean setModel(
+            @NonNull final ListModel model,
+            final boolean finished) {
         assert SwingUtilities.isEventDispatchThread();
         if (model.getSize() > 0 || getText() == null || getText().trim().length() == 0 ) {
             matchesList.setModel(model);
             matchesList.setSelectedIndex(0);
             setListPanelContent(null,false);
             if ( time != -1 ) {
-                GoToSymbolAction.LOGGER.fine("Real search time " + (System.currentTimeMillis() - time) + " ms.");
+                GoToSymbolAction.LOGGER.log(
+                        Level.FINE,
+                        "Real search time {0} ms.",    //NOI18N
+                        (System.currentTimeMillis() - time));
                 time = -1;
             }
             return true;
+        } else if (finished) {
+            setListPanelContent(NbBundle.getMessage(GoToPanelImpl.class, "TXT_NoSymbolsFound") ,false );
+            return false;
         } else {
-            setListPanelContent(NbBundle.getMessage(GoToPanelImpl.class, "TXT_NoSymbolsFound") ,false ); // NOI18N
             return false;
         }
     }
 
+    /**
+     * Revalidates the model
+     * @param finished true for final update
+     * @return true if model has changed
+     */
     @Override
-    public boolean revalidateModel () {
-        return setModel(matchesList.getModel());
+    public boolean revalidateModel (final boolean finished) {
+        return setModel(matchesList.getModel(), finished);
     }
 
     /** Sets the initial text to find in case the user did not start typing yet. */

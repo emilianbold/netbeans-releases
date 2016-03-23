@@ -137,9 +137,9 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
         return res;
     }
 
-    @Override
-    public RemoteDirectory getParent() {
-        return (RemoteDirectory) super.getParent(); // cast guaranteed by constructor
+    /** just a conveniency shortcut that allows not to cast each time */
+    private RemoteDirectory getParentImpl() {
+        return (RemoteDirectory) getParent(); // cast guaranteed by constructor
     }
 
     // This homemade Read-Write lock is used instead of ReentrantReadWriteLock to support unlocking from
@@ -480,7 +480,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
             throws TimeoutException, ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         if (refreshMode != RefreshMode.FROM_PARENT && Boolean.valueOf(System.getProperty("cnd.remote.refresh.plain.file", "true"))) { //NOI18N
             long time = System.currentTimeMillis();
-            final DirEntry oldEntry = getParent().getDirEntry(getNameExt());
+            final DirEntry oldEntry = getParentImpl().getDirEntry(getNameExt());
             boolean refreshParent = false;
             boolean updateStat = false;
             boolean fireChangedRO = false;
@@ -540,10 +540,10 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     }
 
     private void updateStatAndSendEvents(DirEntry dirEntry, boolean fireChangedRO) {
-        getParent().updateStat(this, dirEntry);
+        getParentImpl().updateStat(this, dirEntry);
         FileEvent ev = new FileEvent(getOwnerFileObject(), getOwnerFileObject(), false, dirEntry.getLastModified().getTime());
         getOwnerFileObject().fireFileChangedEvent(getListeners(), ev);
-        RemoteDirectory parent = getParent();
+        RemoteDirectory parent = getParentImpl();
         if (parent != null) {
             ev = new FileEvent(parent.getOwnerFileObject(), getOwnerFileObject(), false, dirEntry.getLastModified().getTime());
             parent.getOwnerFileObject().fireFileChangedEvent(parent.getListeners(), ev);

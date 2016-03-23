@@ -207,6 +207,7 @@ public class CreateDependencies implements PropertyChangeListener {
             int i = 0;
             for(Project p : createdProjects.keySet()) {
                 toOpen[i] = p;
+                ImportExecutable.switchModel(model, false, p);
                 i++;
             }
             OpenProjects.getDefault().open(toOpen, false);
@@ -271,8 +272,7 @@ public class CreateDependencies implements PropertyChangeListener {
                 new ProjectItem(new MakeArtifact(configurationDescriptor, configurationDescriptor.getActiveConfiguration())));
     }
 
-    public void process(final DiscoveryExtension extension, final Project lastSelectedProject, final Map<String, Object> map){
-        ImportExecutable.switchModel(model, false, lastSelectedProject);
+    private void process(final DiscoveryExtension extension, final Project lastSelectedProject, final Map<String, Object> map){
         RP.post(new Runnable() {
 
             @Override
@@ -302,7 +302,6 @@ public class CreateDependencies implements PropertyChangeListener {
                         }
                     }
                     onProjectParsingFinished(lastSelectedProject);
-                    ImportExecutable.switchModel(model, true, lastSelectedProject);
                 } catch (Throwable ex) {
                     Exceptions.printStackTrace(ex);
                 } finally {
@@ -330,6 +329,7 @@ public class CreateDependencies implements PropertyChangeListener {
             };
             listeners.add(listener);
             CsmListeners.getDefault().addProgressListener(listener);
+            ImportExecutable.switchModel(model, true, makeProject);
         }
     }
     

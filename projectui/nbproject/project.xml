@@ -327,6 +327,7 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <friend-packages>
                 <friend>com.microchip.mplab.nbide.welcome</friend>
+                <friend>com.oracle.tools.ide.welcome</friend>
                 <friend>com.sun.tools.swdev.sunstudio</friend>
                 <friend>org.netbeans.modules.apisupport.ant</friend>
                 <friend>org.netbeans.modules.java.j2seproject</friend>
