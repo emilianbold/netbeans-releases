@@ -132,19 +132,31 @@ public final class MacroReference extends OffsetableBase implements CsmReference
         NativeFileItem item = startFile.getNativeFileItem();
         if (item != null) {
             for (String m : item.getSystemMacroDefinitions()) {
-                if (CharSequenceUtilities.startsWith(m, macroName)) {
-                    int i = CharSequenceUtilities.indexOf(m, '=');
-                    if (i > 0) {
-                        res = m.substring(i + 1);
-                    }
-                }
+                res = extractBody(macroName, m, res);
             }
             for (String m : item.getUserMacroDefinitions()) {
-                if (CharSequenceUtilities.startsWith(m, macroName)) {
-                    int i = CharSequenceUtilities.indexOf(m, '=');
-                    if (i > 0) {
-                        res = m.substring(i + 1);
-                    }
+                res = extractBody(macroName, m, res);
+            }
+        }
+        return res;
+    }
+
+    private static CharSequence extractBody(CharSequence macroName, String candidate, CharSequence res) {
+        if (CharSequenceUtilities.startsWith(candidate, macroName)) {
+            boolean parmList = false;
+            for(int i = macroName.length(); i < candidate.length(); i++) {
+                char c = candidate.charAt(i);
+                if (c == '(') {
+                    parmList = true;
+                } else if (c == ')') {
+                    parmList = false;
+                } else if (parmList) {
+                } else if (c == '=') {
+                    res = candidate.substring(i+1);
+                    break;
+                } else if (c == ' ') {
+                } else {
+                    break;
                 }
             }
         }
