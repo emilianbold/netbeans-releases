@@ -91,11 +91,41 @@ public class StringListNodePropTest {
                    "111 \"222 333\" \"44 4=555\" \"666=777 888\" 999=000 a b", 
                    new String[] {"111", "222 333", "44 4=555", "666=777 888", "999=000", "a", "b"});
         testEditor("m1=v1   m2=\"v2\"    m3=\"v 3\" ", 
-                   "m1=v1 m2=\"v2\" m3=\"v 3\"", 
+                   "m1=v1 m2=\"v2\" \"m3=\\\"v 3\\\"\"", 
                    new String[] {"m1=v1", "m2=\"v2\"", "m3=\"v 3\""});     
         testEditor("  -DMMM=\"qq\"  -DXXX -DHHH=xxx ", 
                    "MMM=\"qq\" XXX HHH=xxx", 
-                   new String[] {"MMM=\"qq\"", "XXX", "HHH=xxx"});             
+                   new String[] {"MMM=\"qq\"", "XXX", "HHH=xxx"});
+        testEditor("\"AD_VER=char *szVer=\\\"biswdas_linux\\\"\" EXT=\"ExternalClass.h\" \"FOO=foo()\" IMPL=ImplClass MA=main \"QQ=namespace qq { namespace in {\" QQ_CLOSE=}} \"QUOTE(name, extension)=<name.extension>\" \"RET(index)=ret[index]\" USE=qq::in", 
+                   "\"AD_VER=char *szVer=\\\"biswdas_linux\\\"\" EXT=\"ExternalClass.h\" \"FOO=foo()\" IMPL=ImplClass MA=main \"QQ=namespace qq { namespace in {\" QQ_CLOSE=}} \"QUOTE(name, extension)=<name.extension>\" \"RET(index)=ret[index]\" USE=qq::in", 
+                   new String[] {
+                    "AD_VER=char *szVer=\"biswdas_linux\"",
+                    "EXT=\"ExternalClass.h\"",
+                    "FOO=foo()",
+                    "IMPL=ImplClass",
+                    "MA=main",
+                    "QQ=namespace qq { namespace in {",
+                    "QQ_CLOSE=}}",
+                    "QUOTE(name, extension)=<name.extension>",
+                    "RET(index)=ret[index]",
+                    "USE=qq::in"
+                   });
+        testEditor("\"-DRET(index)=ret[index]\" \"-DFOO=foo()\" -DUSE=qq::in -DIMPL=ImplClass \"-DQUOTE(name, extension)=<name.extension>\" -DMA=\"main\" -DEXT=\\\"ExternalClass.h\\\" \"-DQQ=namespace qq { namespace in {\" -DQQ_CLOSE=\"}}\" -DAD_VER='char *szVer=\"biswdas_linux\"' -I../src/impl -I../incl -I../external", 
+                   "\"RET(index)=ret[index]\" \"FOO=foo()\" USE=qq::in IMPL=ImplClass \"QUOTE(name, extension)=<name.extension>\" MA=\"main\" EXT=\"ExternalClass.h\" \"QQ=namespace qq { namespace in {\" QQ_CLOSE=\"}}\" \"AD_VER='char *szVer=\\\"biswdas_linux\\\"'\"", 
+                   new String[] {
+                    "RET(index)=ret[index]",
+                    "FOO=foo()",
+                    "USE=qq::in",
+                    "IMPL=ImplClass",
+                    "QUOTE(name, extension)=<name.extension>",
+                    "MA=\"main\"",
+                    "EXT=\"ExternalClass.h\"",
+                    "QQ=namespace qq { namespace in {",
+                    "QQ_CLOSE=\"}}\"",
+                    "AD_VER='char *szVer=\"biswdas_linux\"'",
+                   });
+        
+//        
     }
 
 }

@@ -114,6 +114,75 @@ public final class DriverFactory {
         return buf.toString();
     }
     
+    public static String removeQuotes(String path) {
+        if (path.length() >= 2 && (path.charAt(0) == '\'' && path.charAt(path.length() - 1) == '\'' || // NOI18N
+                path.charAt(0) == '"' && path.charAt(path.length() - 1) == '"')) {// NOI18N
+            path = path.substring(1, path.length() - 1);
+        }
+        return path;
+    }
+
+    public static String normalizeDefineOption(String value, CompileLineOrigin isScriptOutput, boolean isQuote) {
+        switch (isScriptOutput) {
+            case BuildLog:
+                if (value.length() >= 2 && value.charAt(0) == '`' && value.charAt(value.length() - 1) == '`') { // NOI18N
+                    value = value.substring(1, value.length() - 1);  // NOI18N
+                }
+                if (value.length() >= 6
+                        && (value.charAt(0) == '"' && value.charAt(1) == '\\' && value.charAt(2) == '"'// NOI18N
+                        &&  value.charAt(value.length() - 3) == '\\' && value.charAt(value.length() - 2) == '"' && value.charAt(value.length() - 1) == '"')) { // NOI18N
+                    // What is it?
+                    value = value.substring(2, value.length() - 3) + "\"";  // NOI18N
+                } else if  (value.length() >= 4
+                        && (value.charAt(0) == '\\' && value.charAt(1) == '"' // NOI18N
+                        &&  value.charAt(value.length() - 2) == '\\' && value.charAt(value.length() - 1) == '"')) { // NOI18N
+                    value = value.substring(1, value.length() - 2) + "\"";  // NOI18N
+                } else if  (value.length() >= 4
+                        && (value.charAt(0) == '\\' && value.charAt(1) == '\'' // NOI18N
+                        &&  value.charAt(value.length() - 2) == '\\' && value.charAt(value.length() - 1) == '\'')) { // NOI18N
+                    value = value.substring(1, value.length() - 2) + "'";  // NOI18N
+                } else if (!isQuote && value.length() >= 2
+                        && (value.charAt(0) == '\'' && value.charAt(value.length() - 1) == '\'' // NOI18N
+                        ||  value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"')) { // NOI18N
+                    value = value.substring(1, value.length() - 1);
+                }
+                break;
+            case DwarfCompileLine:
+                if (value.length() >= 2
+                        && (value.charAt(0) == '\'' && value.charAt(value.length() - 1) == '\'' // NOI18N
+                        ||  value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"')) { // NOI18N
+                    value = removeEscape(value.substring(1, value.length() - 1));
+                }
+                break;
+            case ExecLog:
+                // do nothing
+                break;
+        }
+        return value;
+    }
+
+    public static String removeEscape(String s) {
+        int n = s.length();
+        StringBuilder ret = new StringBuilder(n);
+        char prev = 0;
+        for (int i = 0; i < n; i++) {
+            char c = s.charAt(i);
+            if ((c == ' ') || (c == '\t') || // NOI18N
+                    (c == ':') || (c == '\'') || // NOI18N
+                    (c == '*') || (c == '\"') || // NOI18N
+                    (c == '[') || (c == ']') || // NOI18N
+                    (c == '(') || (c == ')') || // NOI18N
+                    (c == ';')) { // NOI18N
+                if (prev == '\\') { // NOI18N
+                    ret.setLength(ret.length() - 1);
+                }
+            }
+            ret.append(c);
+            prev = c;
+        }
+        return ret.toString();
+    }
+
     private static final class DriverImpl implements Driver {
 
         private static final List<String> C89 = Collections.unmodifiableList(Arrays.asList("-std=c89", "-std=iso9899:1990", "-std=iso9899:1990", "-std=c90")); // NOI18N
@@ -276,41 +345,7 @@ public final class DriverFactory {
                     int i = macro.indexOf('=');
                     if (i > 0) {
                         String value = macro.substring(i + 1).trim();
-                        switch (isScriptOutput) {
-                            case BuildLog:
-                                if (value.length() >= 2 && value.charAt(0) == '`' && value.charAt(value.length() - 1) == '`') { // NOI18N
-                                    value = value.substring(1, value.length() - 1);  // NOI18N
-                                }
-                                if (value.length() >= 6
-                                        && (value.charAt(0) == '"' && value.charAt(1) == '\\' && value.charAt(2) == '"' && // NOI18N
-                                        value.charAt(value.length() - 3) == '\\' && value.charAt(value.length() - 2) == '"' && value.charAt(value.length() - 1) == '"')) { // NOI18N
-                                    // What is it?
-                                    value = value.substring(2, value.length() - 3) + "\"";  // NOI18N
-                                } else if (value.length() >= 4
-                                        && (value.charAt(0) == '\\' && value.charAt(1) == '"' && // NOI18N
-                                        value.charAt(value.length() - 2) == '\\' && value.charAt(value.length() - 1) == '"')) { // NOI18N
-                                    value = value.substring(1, value.length() - 2) + "\"";  // NOI18N
-                                } else if (value.length() >= 4
-                                        && (value.charAt(0) == '\\' && value.charAt(1) == '\'' && // NOI18N
-                                        value.charAt(value.length() - 2) == '\\' && value.charAt(value.length() - 1) == '\'')) { // NOI18N
-                                    value = value.substring(1, value.length() - 2) + "'";  // NOI18N
-                                } else if (!isQuote && value.length() >= 2
-                                        && (value.charAt(0) == '\'' && value.charAt(value.length() - 1) == '\'' || // NOI18N
-                                        value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"')) { // NOI18N
-                                    value = value.substring(1, value.length() - 1);
-                                }
-                                break;
-                            case DwarfCompileLine:
-                                if (value.length() >= 2
-                                        && (value.charAt(0) == '\'' && value.charAt(value.length() - 1) == '\'' || // NOI18N
-                                        value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"')) { // NOI18N
-                                    value = removeEscape(value.substring(1, value.length() - 1));
-                                }
-                                break;
-                            case ExecLog:
-                                // do nothing
-                                break;
-                        }
+                        value = normalizeDefineOption(value, isScriptOutput, isQuote);
                         String key = removeEscape(macro.substring(0, i));
                         addDef(key, value, artifacts.userMacros, artifacts.undefinedMacros);
                     } else {
@@ -542,38 +577,7 @@ public final class DriverFactory {
             }
             return artifacts;
         }
-
-        private String removeQuotes(String path) {
-            if (path.length() >= 2 && (path.charAt(0) == '\'' && path.charAt(path.length() - 1) == '\'' || // NOI18N
-                    path.charAt(0) == '"' && path.charAt(path.length() - 1) == '"')) {// NOI18N
-
-                path = path.substring(1, path.length() - 1); // NOI18N
-            }
-            return path;
-        }
-
-        private String removeEscape(String s) {
-            int n = s.length();
-            StringBuilder ret = new StringBuilder(n);
-            char prev = 0;
-            for (int i = 0; i < n; i++) {
-                char c = s.charAt(i);
-                if ((c == ' ') || (c == '\t') || // NOI18N
-                        (c == ':') || (c == '\'') || // NOI18N
-                        (c == '*') || (c == '\"') || // NOI18N
-                        (c == '[') || (c == ']') || // NOI18N
-                        (c == '(') || (c == ')') || // NOI18N
-                        (c == ';')) { // NOI18N
-                    if (prev == '\\') { // NOI18N
-                        ret.setLength(ret.length() - 1);
-                    }
-                }
-                ret.append(c);
-                prev = c;
-            }
-            return ret.toString();
-        }
-        
+  
         private void addDef(String macro, String value, Map<String, String> userMacros, List<String> undefinedMacros) {
             undefinedMacros.remove(macro);
             userMacros.put(macro, value);
