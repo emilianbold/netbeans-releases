@@ -304,7 +304,7 @@ public final class FiltersDescriptor {
         
         private boolean isSelected;
         private Group group;
-        private Reference<JToggleButton> toggleButtonRef;
+        private Reference<JToggleButton> toggleButtonRef = new WeakReference<>(null);
         
         public static FilterImpl createDefault(DVFilter.DefaultFilter df) {
             FilterImpl fimpl;
