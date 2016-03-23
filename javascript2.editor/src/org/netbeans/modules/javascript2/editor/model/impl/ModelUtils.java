@@ -790,7 +790,7 @@ public class ModelUtils {
                     lastResolvedObjects.add(anonym);
                     continue;
                 }
-                if ("this".equals(name)) {
+                if (ModelUtils.THIS.equals(name)) {
                     JsObject thisObject = ModelUtils.findJsObject(model, offset);
                     JsObject first = thisObject;
                     while (thisObject != null && thisObject.getParent() != null && thisObject.getParent().getJSKind() != JsElement.Kind.FILE

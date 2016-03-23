@@ -262,7 +262,7 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
     @Override
     public boolean enterIdentNode(IdentNode iNode) {
         String name = iNode.getPropertyName();
-        if ("this".equals(name)) {  //NOI18N
+        if (ModelUtils.THIS.equals(name)) {  //NOI18N
             exp.add(ST_THIS);
         } else if (Type.UNDEFINED.equals(name)){
             add(UNDEFINED_TYPE);

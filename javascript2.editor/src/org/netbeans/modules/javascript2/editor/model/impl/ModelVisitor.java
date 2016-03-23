@@ -156,7 +156,7 @@ public class ModelVisitor extends PathNodeVisitor {
         BinaryNode node = getPath().get(getPath().size() - 1) instanceof BinaryNode
                 ? (BinaryNode)getPath().get(getPath().size() - 1) : null;
         if (!(node != null && node.tokenType() == TokenType.ASSIGN)) {
-            if (accessNode.getBase() instanceof IdentNode && "this".equals(((IdentNode)accessNode.getBase()).getName())) { //NOI18N
+            if (accessNode.getBase() instanceof IdentNode && ModelUtils.THIS.equals(((IdentNode)accessNode.getBase()).getName())) { //NOI18N
                 String iNode = accessNode.getProperty();
                 JsObject current = modelBuilder.getCurrentDeclarationFunction();
                 JsObject property = current.getProperty(iNode);
@@ -205,7 +205,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 AccessNode aNode = (AccessNode)lhs;
                 JsObjectImpl property = null;
                 List<Identifier> fqName = getName(aNode, parserResult);
-                if (fqName != null && "this".equals(fqName.get(0).getName())) { //NOI18N
+                if (fqName != null && ModelUtils.THIS.equals(fqName.get(0).getName())) { //NOI18N
                     // a usage of field
                     fieldName = aNode.getProperty();
                     if (binaryNode.rhs() instanceof IdentNode) {
@@ -581,7 +581,7 @@ public class ModelVisitor extends PathNodeVisitor {
                parent = (JsObjectImpl)createJsObject((AccessNode)base, parserResult, modelBuilder);
             } else if (base instanceof IdentNode) {
                 IdentNode iNode = (IdentNode)base;
-                if (!"this".equals(iNode.getName())) {
+                if (!ModelUtils.THIS.equals(iNode.getName())) {
                     Identifier parentName = ModelElementFactory.create(parserResult, iNode);
                     if (parentName != null) {
                         List<Identifier> fqName = new ArrayList<Identifier>();
@@ -747,7 +747,7 @@ public class ModelVisitor extends PathNodeVisitor {
 //                            AccessNode aNode = (AccessNode)bNode.lhs();
 //                            if (aNode.getBase() instanceof IdentNode) {
 //                                IdentNode iNode = (IdentNode)aNode.getBase();
-//                                if ("this".equals(iNode.getName())) {
+//                                if (ModelUtils.THIS.equals(iNode.getName())) {
 //                                    isPrivilage = true;
 //                                }
 //                            }
@@ -857,7 +857,7 @@ public class ModelVisitor extends PathNodeVisitor {
 //                // exp: this.pro = new function () { this.field = "";}
 //                parent = resolveThis(fncScope);
 //            }
-//            if ("this".equals(name.get(0).getName())) {
+//            if (ModelUtils.THIS.equals(name.get(0).getName())) {
 //                name.remove(0);
 //            }
 //            if (!name.isEmpty()) {
@@ -1886,8 +1886,8 @@ public class ModelVisitor extends PathNodeVisitor {
                     if ((binNode.lhs() instanceof IdentNode)
                             || (binNode.lhs() instanceof AccessNode
                             && ((AccessNode) binNode.lhs()).getBase() instanceof IdentNode
-                            && ((IdentNode) ((AccessNode) binNode.lhs()).getBase()).getName().equals("this"))) { //NOI18N
-                        if (lastVisited instanceof ExpressionStatement && !fqName.get(0).getName().equals("this")) { //NOI18N
+                            && ((IdentNode) ((AccessNode) binNode.lhs()).getBase()).getName().equals(ModelUtils.THIS))) { //NOI18N
+                        if (lastVisited instanceof ExpressionStatement && !fqName.get(0).getName().equals(ModelUtils.THIS)) { //NOI18N
                             // try to catch the case: pool = [];
                             List<Identifier> objectName = fqName.size() > 1 ? fqName.subList(0, fqName.size() - 1) : fqName;
                             JsObject existingArray = ModelUtils.getJsObject(modelBuilder, objectName, false);
@@ -1924,7 +1924,7 @@ public class ModelVisitor extends PathNodeVisitor {
 //                }
                 
                 if (fqName != null) {
-                    if ("this".equals(fqName.get(0).getName())) {
+                    if (ModelUtils.THIS.equals(fqName.get(0).getName())) {
                         parent = resolveThis(modelBuilder.getCurrentObject());
                         fqName.remove(0);
                         JsObject tmpObject = parent;
@@ -2034,7 +2034,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     fqName = getName(binNode, parserResult);
                     if (binLhs instanceof IdentNode || (binLhs instanceof AccessNode
                             && ((AccessNode) binLhs).getBase() instanceof IdentNode
-                            && ((IdentNode) ((AccessNode) binLhs).getBase()).getName().equals("this"))) {
+                            && ((IdentNode) ((AccessNode) binLhs).getBase()).getName().equals(ModelUtils.THIS))) {
                         // if it's not declared throgh the var node, then the variable doesn't have to be declared here
                         isDeclaredInParent = (binLhs instanceof IdentNode &&  varNode != null);
                         if (binLhs instanceof AccessNode) {
@@ -2203,7 +2203,7 @@ public class ModelVisitor extends PathNodeVisitor {
 //                    List<Identifier> nodeName = getNodeName(lhs, parserResult);
 //                    if (nodeName != null && !nodeName.isEmpty()) {
 //                        JsObject jsObject = null;
-//                        if ("this".equals(nodeName.get(0).getName())) { //NOI18N
+//                        if (ModelUtils.THIS.equals(nodeName.get(0).getName())) { //NOI18N
 //                            jsObject = resolveThis(modelBuilder.getCurrentObject());
 //                            for (int i = 1; jsObject != null && i < nodeName.size(); i++ ) {
 //                                jsObject = jsObject.getProperty(nodeName.get(i).getName());
@@ -2747,7 +2747,7 @@ public class ModelVisitor extends PathNodeVisitor {
         if (base instanceof IdentNode) {
             if (name.size() > 0) {
                 IdentNode ident = (IdentNode) base;
-//                if (!"this".equals(ident.getName())) {
+//                if (!ModelUtils.THIS.equals(ident.getName())) {
                     name.add(new IdentifierImpl(ident.getName(), getOffsetRange(ident)));
 //                }
             }
@@ -2766,7 +2766,7 @@ public class ModelVisitor extends PathNodeVisitor {
         JsObject object = null;
 
         Identifier name = fqn.get(0);
-        if (!"this".equals(fqn.get(0).getName())) { 
+        if (!ModelUtils.THIS.equals(fqn.get(0).getName())) { 
             if (modelBuilder.getCurrentWith() == null) {
                 DeclarationScopeImpl currentDS = modelBuilder.getCurrentDeclarationScope();
                 Collection<? extends JsObject> variables = ModelUtils.getVariables(currentDS);
@@ -2999,7 +2999,7 @@ public class ModelVisitor extends PathNodeVisitor {
     }
     
     private void addOccurrence(String name, OffsetRange range, boolean leftSite, boolean isFunction) {
-        if ("this".equals(name)) {
+        if (ModelUtils.THIS.equals(name)) {
             // don't process this node.
             return;
         }
@@ -3142,7 +3142,7 @@ public class ModelVisitor extends PathNodeVisitor {
     private JsObject processLhs(Identifier name, JsObject parent, boolean lastOnLeft) {
         JsObject lObject = null;
         if (name != null) {
-            if ("this".equals(name.getName())) {
+            if (ModelUtils.THIS.equals(name.getName())) {
                 return null;
             }
             final String newVarName = name.getName();
@@ -3297,7 +3297,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         if (bNode.lhs() instanceof AccessNode) {
                             List<Identifier> identifier = getName((AccessNode) bNode.lhs(), parserResult);
                             if (identifier != null) {
-                                if (!identifier.isEmpty() && "this".equals(identifier.get(0).getName())) {
+                                if (!identifier.isEmpty() && ModelUtils.THIS.equals(identifier.get(0).getName())) {
                                     identifier.remove(0);
                                 }
                                 if (identifier.size() == 1) {
@@ -3372,7 +3372,7 @@ public class ModelVisitor extends PathNodeVisitor {
         while (node instanceof AccessNode) {
             node = ((AccessNode)node).getBase();
         }
-        if (node instanceof IdentNode && "this".endsWith(((IdentNode)node).getName())) {
+        if (node instanceof IdentNode && ModelUtils.THIS.endsWith(((IdentNode)node).getName())) {
             return true;
         }
         return false;

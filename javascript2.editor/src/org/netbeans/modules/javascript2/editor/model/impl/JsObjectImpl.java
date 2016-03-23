@@ -451,7 +451,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                 } else {
                     resolvedHere.add(type);
                 }
-                if (!type.getType().contains("this")) {
+                if (!type.getType().contains(ModelUtils.THIS)) {
                     for (TypeUsage typeHere : resolvedHere) {
                         if (typeHere.getOffset() > 0) {
                             String rType = typeHere.getType();
