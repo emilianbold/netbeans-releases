@@ -70,7 +70,7 @@ public class CompletionJList extends JList {
 
     private static final int DARKER_COLOR_COMPONENT = 5;
     private static final int SUB_MENU_ICON_GAP = 1;
-    private static final ImageIcon subMenuIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/editor/hints/resources/suggestion.gif", false); // NOI18N
+    private static final ImageIcon subMenuIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/editor/completion/resources/suggestion.png", false); // NOI18N
 
     private final RenderComponent renderComponent;
     
