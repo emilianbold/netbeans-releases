@@ -147,7 +147,7 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
         watchToAnnotation.put(watch, annotation);
         annotation.attach(line);
         
-        JPanel window = new JInternalFrameImpl(watch, false, false, false, false);
+        JComponent window = new JInternalFrameImpl(watch, false, false, false, false);
         eui.getStickyWindowSupport().addWindow(window, pin.getLocation());
         watchToWindow.put(watch, window);
     }
@@ -249,28 +249,29 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
     public void propertyChange(PropertyChangeEvent evt) {
     }
 
-    private static final class JInternalFrameImpl extends JPanel {
+    private static final class JInternalFrameImpl extends JInternalFrame {
         private static final String UI_PREFIX = "ToolTip"; // NOI18N
         private final JLabel label;
         private RequestProcessor annotationProcessor = new RequestProcessor("Annotation Refresh", 1);
 
         @SuppressWarnings("OverridableMethodCallInConstructor")
         public JInternalFrameImpl(final Watch watch, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable) {
-//            super(watch.getExpression(), resizable, closable, maximizable, iconifiable);
-//            ((javax.swing.plaf.basic.BasicInternalFrameUI)this.getUI()).setNorthPane(null);
+            super(watch.getExpression(), resizable, closable, maximizable, iconifiable);
+            ((javax.swing.plaf.basic.BasicInternalFrameUI)this.getUI()).setNorthPane(null);
             Font font = UIManager.getFont(UI_PREFIX + ".font"); // NOI18N
             Color backColor = UIManager.getColor(UI_PREFIX + ".background"); // NOI18N
             Color foreColor = UIManager.getColor(UI_PREFIX + ".foreground"); // NOI18N
 
-            setLayout(null);
+            setLayout(new FlowLayout());
             
             setOpaque(false);
             
             JPanel panel = new JPanel();
-            panel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(getForeground()),
-                BorderFactory.createEmptyBorder(0, 3, 0, 3)
-            ));
+            panel.setBorder(
+//                    BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(getForeground())
+//                BorderFactory.createEmptyBorder(0, 3, 0, 3)
+            );
             if (backColor != null) {
                 panel.setBackground(backColor);
             }
@@ -286,7 +287,7 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             buttons.add(new JButton("^"));
             
             add(panel);
-            add(buttons);
+//            add(buttons);
 
             annotationProcessor.post(new Runnable() {
                 @Override
