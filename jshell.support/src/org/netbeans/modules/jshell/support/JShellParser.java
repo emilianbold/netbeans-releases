@@ -220,7 +220,7 @@ public class JShellParser {
                     }
                     input = info.remaining;
                     e -= snippetPrefixLen;
-                    addJavaSnippet(snipOffset, info.unitEndPos);
+                    addJavaSnippet(snipOffset, info.unitEndPos + 1);
                     snipOffset += e;
                     ModelAccessor.INSTANCE.setSectionComplete(section, true);
                     if (empty) {

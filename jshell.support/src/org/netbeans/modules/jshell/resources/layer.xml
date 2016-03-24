@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
+    <folder name="Templates">
+        <folder name="Classes">
+            <!-- Template for a class generated from the snippet --> 
+            <file name="ShellClass.java" url="ShellClass.java.template">
+                <attr name="templateCategory" stringvalue="always-hidden"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.java.project.ui.NewJavaFileWizardIterator"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+        </folder>
+    </folder>
     <folder name="Editors">
         <folder name="text">
             <folder name="x-repl">
@@ -43,6 +53,9 @@
                         </file>
                         <file name="jshell-reset">
                             <attr name="position" intvalue="20002"/>
+                        </file>
+                        <file name="jshell-save-to-class">
+                            <attr name="position" intvalue="20004"/>
                         </file>
                     </folder>
                 </folder>

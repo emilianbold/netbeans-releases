@@ -66,9 +66,11 @@ public class REPLAction2 implements ProjectActionPerformer {
     @ActionID(category="Project", id="org.netbeans.modules.java.repl.REPLAction2")
     @ActionReference(path = "Menu/BuildProject", separatorBefore = 93, position = 95)
     @ActionRegistration(displayName="#DN_ProjectJavaRun")
-    @Messages("DN_ProjectJavaRun=Run Java REPL2")
+    @Messages({
+        "DN_ProjectJavaRun=Run Java Shell"
+    })
     public static Action create() {
-        return ProjectSensitiveActions.projectSensitiveAction(new REPLAction2(), "Java REPL2", null);
+        return ProjectSensitiveActions.projectSensitiveAction(new REPLAction2(), Bundle.DN_ProjectJavaRun(), null);
     }
 
     @Override
@@ -86,7 +88,7 @@ public class REPLAction2 implements ProjectActionPerformer {
     public void perform(Project project) {
         JShellEnvironment env;
         try {
-            env = ShellRegistry.get().openSession(project);
+            env = ShellRegistry.get().openProjectSession(project);
             env.open();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);

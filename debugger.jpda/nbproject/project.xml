@@ -229,6 +229,8 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.debugger.jpda.truffle</friend>
                 <friend>org.netbeans.modules.debugger.jpda.ui</friend>
                 <friend>org.netbeans.modules.debugger.jpda.visual</friend>
+                <friend>org.netbeans.modules.jshell.support</friend>
+                
                 <package>org.netbeans.modules.debugger.jpda</package>
                 <package>org.netbeans.modules.debugger.jpda.actions</package>
                 <package>org.netbeans.modules.debugger.jpda.breakpoints</package>

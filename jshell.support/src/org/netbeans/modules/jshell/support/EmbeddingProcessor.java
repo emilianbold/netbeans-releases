@@ -49,28 +49,30 @@ import java.util.List;
 import jdk.jshell.JShell;
 import jdk.jshell.Snippet;
 import org.netbeans.modules.jshell.model.ConsoleModel.SnippetHandle;
-import org.netbeans.modules.jshell.support.InternalJShell.SnippetInfo;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;
 
 /**
- *
+ * Creates embeddings for the given session/model/snapshot.
+ * 
  * @author sdedic
  */
-public class EmbeddingProcessor {
+final class EmbeddingProcessor {
     /**
      * The result list of embeddings
      */
-    private List<Embedding> embeddings = new ArrayList<>();
+    private final List<Embedding> embeddings = new ArrayList<>();
+    private final ConsoleModel    model;
+    private final JShell shell;
+    private final Snapshot snapshot;
+    private final ShellSession session;
     
-    private ConsoleModel    model;
-    private JShell shell;
-    private Snapshot snapshot;
-    private ShellSession session;
+    private StringBuilder precedingImports = new StringBuilder();
     
     private ConsoleSection  section;
+    
+    private int snippetIndex;
 
     public EmbeddingProcessor(ShellSession session, ConsoleModel model, Snapshot snapshot) {
         this.session = session;
@@ -80,6 +82,7 @@ public class EmbeddingProcessor {
         this.shell = model.getShell();
     }
     
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public List<Embedding> process() {
         model.getSections().stream().filter(s -> s.getType().java).forEach(this::processSection);
         return embeddings;
@@ -99,16 +102,27 @@ public class EmbeddingProcessor {
             return;
         }
         te++;
-        FileObject snipFile = session.snippetFile(info, model.getInputSection() == section);
+        FileObject snipFile = session.snippetFile(info, 
+                model.getInputSection() == section ? snippetIndex++ : -1);
         if (snipFile == null) {
             return;
         }
-        Source src = Source.create(snipFile);
-        Snapshot generatedSnapshot = src.createSnapshot();
         
-        Embedding prolog = snapshot.create(contents.substring(0, ts), "text/x-java");
+        String prologText = contents.substring(0, ts);
+        
+        if (precedingImports.length() > 0) {
+            int indexOfClass = prologText.indexOf("class REPL");
+            if (indexOfClass > 0) {
+                prologText = prologText.substring(0, indexOfClass) +
+                        precedingImports.toString() +
+                        prologText.substring(indexOfClass);
+            }
+        }
+        
+        Embedding prolog = snapshot.create(prologText, "text/x-java");
         Embedding epilog = snapshot.create(contents.substring(te), "text/x-java");
         
+        ConsoleSection activeInput = model.getInputSection();
         List<Embedding> embs = new ArrayList<>();
         embs.add(prolog);
         int l = snapshot.getText().length();
@@ -120,18 +134,28 @@ public class EmbeddingProcessor {
             if (r.end > l) {
                 continue;
             }
-//            System.err.println("Adding: " + r.start + "-" + r.end);
-            embs.add(snapshot.create(r.start, r.len(), "text/x-java"));
+            int fragStart = r.start;
+            int fragLen = r.len();
+            if (activeInput == section && i == fragments.length - 1) {
+                fragLen = snapshot.getText().length() - fragStart;
+            }
+            embs.add(snapshot.create(fragStart, fragLen, "text/x-java"));
         }
         embs.add(epilog);
         Embedding emb = Embedding.create(embs);
-//        System.err.println("define embedding: " + emb.getSnapshot());
         embeddings.add(emb);
     }
     
-    // a section may contain one or more snippets
+    /**
+     * Processes one section for embeddings. Note that one section may have more
+     * snippets, each of which is wrapped SEPARATELY. E.g. there may be 2 methods or
+     * method-import-method-expression, each of which receives a separate wrapping
+     * 
+     * @param section 
+     */
     private void processSection(ConsoleSection section) {
         this.section = section;
+        this.snippetIndex = 0;
         List<SnippetHandle> snippets = model.getSnippets(section);
         Rng[] ranges = section.getAllSnippetBounds();
         if (snippets == null) {
@@ -139,6 +163,14 @@ public class EmbeddingProcessor {
         }
         int index = 0;
         for (SnippetHandle s : snippets) {
+            if (s.getKind() == Snippet.Kind.IMPORT) {
+                // special case: must add imports from preceding snippets.
+                String text = s.getSource().trim();
+                precedingImports.append(text); 
+                if (!text.endsWith(";")) {
+                    precedingImports.append(";");
+                }
+            }
             defineEmbedding(s, ranges[index++]);
         }
     }

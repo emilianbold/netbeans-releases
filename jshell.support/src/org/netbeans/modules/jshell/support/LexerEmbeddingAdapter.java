@@ -48,7 +48,6 @@ import org.netbeans.modules.jshell.model.ConsoleModel;
 import org.netbeans.modules.jshell.model.ConsoleEvent;
 import org.netbeans.modules.jshell.model.JShellToken;
 import java.util.List;
-import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.document.AtomicLockDocument;
 import org.netbeans.api.editor.document.LineDocumentUtils;
@@ -117,5 +116,14 @@ public class LexerEmbeddingAdapter implements ConsoleListener {
                 }
             }
         }
+    }
+
+    @Override
+    public void executing(ConsoleEvent e) {
+    }
+
+    @Override
+    public void closed(ConsoleEvent e) {
+        
     }
 }

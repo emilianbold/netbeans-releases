@@ -48,7 +48,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.swing.event.DocumentEvent;
@@ -64,17 +68,21 @@ import jdk.jshell.JShellAccessor;
 import jdk.jshell.Snippet;
 import jdk.jshell.SnippetEvent;
 import jdk.jshell.SnippetWrapping;
+import org.netbeans.api.editor.document.AtomicLockDocument;
 import org.netbeans.api.editor.document.LineDocument;
 import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.GuardedException;
+import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.jshell.support.JShellParser;
 import org.netbeans.modules.jshell.support.ModelAccessor;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
+import sun.util.logging.PlatformLogger;
 
 /**
  * .
@@ -98,6 +106,8 @@ import org.openide.util.Task;
  * @author sdedic
  */
 public class ConsoleModel {
+    private static Logger LOG = Logger.getLogger(ConsoleModel.class.getName());
+    
     private volatile boolean valid;
     /**
      * The working and configured JShell instance
@@ -123,7 +133,7 @@ public class ConsoleModel {
     private volatile int writablePos;
     
     /**
-     * Track possible changes
+     * Track possible changes, moves atomically as the input is being typed.
      */
     private Position inputEndPos = null;
     
@@ -155,6 +165,8 @@ public class ConsoleModel {
         return p == null ? document.getLength() : p.getOffset();
     }
     
+    private Position inputOffset;
+    
     public int getWritablePos() {
         ConsoleSection s = getInputSection();
         return s == null ? document.getLength() + 1 : s.getPartBegin();
@@ -167,7 +179,14 @@ public class ConsoleModel {
     
     private int getScrollbackEnd() {
         ConsoleSection s = getInputSection();
-        return isExecute() || s == null ? document.getLength() : s.getStart();
+        if (isExecute()) {
+            return document.getLength();
+        }
+        if (inputOffset == null) {
+            return s != null ? s.getStart() : document.getLength();
+        } else {
+            return inputOffset.getOffset();
+        }
     }
     
     private volatile List<ConsoleListener>   listeners = Collections.emptyList();
@@ -249,7 +268,7 @@ public class ConsoleModel {
         } 
         if (!inputValid) {
             // in evaluator, the refresh happens immediately
-            refreshInput(true);
+            refreshInput(false);
         }
         return inputSection;
     }
@@ -259,7 +278,7 @@ public class ConsoleModel {
         boolean wait;
         
         synchronized (this) {
-            if (executing) {
+             if (executing) {
                 return Task.EMPTY;
             }
             inputValid = false;
@@ -284,7 +303,7 @@ public class ConsoleModel {
      */
     private volatile boolean refreshPending;
     
-    private class InputReader implements Runnable {
+    private class InputReader extends EventBuffer implements Runnable {
         private int stage;
         private long docSerial;
         private CharSequence contents;
@@ -292,11 +311,15 @@ public class ConsoleModel {
         private int inputStart;
         private long endSerial;
         private Position endPos;
+        private int stalledInput;
+        
+        private List<ConsoleSection>    updateSections;
         
         @Override
         public void run() {
             switch (stage++) {
                 case 0: 
+                    LOG.log(Level.FINER, "InputReader starting");
                     doIt();
                     break;
                 case 1:
@@ -326,9 +349,18 @@ public class ConsoleModel {
         }
         
         private void readContents() {
-            inputStart = getInputOffset();
-            if (inputStart == -1) {
+            stalledInput = getInputOffset();
+            if (isExecute() || stalledInput == -1) {
                 return;
+            }
+            int is = getScrollbackEnd();
+            if (stalledInput < is) {
+                inputStart = lastSection != null ? lastSection.getStart() : stalledInput;
+                LOG.log(Level.FINER, "Detected stale input. Know input at {0} while anchor moved to {1}. LastSection = {2}, inputStart = {3}", new Object[] {
+                    stalledInput, is, lastSection, inputStart
+                });
+            } else {
+                inputStart = is;
             }
             try {
                 contents = DocumentUtilities.getText(document, inputStart, document.getLength() - inputStart);
@@ -350,25 +382,89 @@ public class ConsoleModel {
         }
         
         private void propagateResults() {
+            runUpdate();
+        }
+        
+        protected void doUpdates() {
+            getPositionAndSerial();
+            if (endSerial != docSerial) {
+                LOG.log(Level.FINER, "Input has changed, discarding....");
+                discardSection(newSection);
+                return;
+            }
+            
+            inputEndPos = endPos;
+            inputValid = true;
+            try {
+                inputOffset = document.createPosition(newSection.getStart(), Position.Bias.Forward);
+            } catch (BadLocationException ex) {
+                // should not happen, running inside readlock.
+            }
+            for (ConsoleSection s : updateSections) {
+                addOrUpdate(s);
+            }
+        }
+/*
+        private void propagateResults2() {
+            ConsoleSection changeLast = null;
+            ConsoleSection oldLast = null;
+            List<ConsoleSection> reportNew = new ArrayList<>();
+            
             synchronized (ConsoleModel.this) {
                 getPositionAndSerial();
-                if (endSerial == docSerial) {
-                    ConsoleSection prevInput = inputSection;
-                    discardSection(prevInput);
-                    inputEndPos = endPos;
-                    inputSection = newSection;
-                    inputValid = true;
-                } else {
+                if (endSerial != docSerial) {
+                    LOG.log(Level.FINER, "Input has changed, discarding....");
                     discardSection(newSection);
                     return;
                 }
+                
+                oldLast = lastSection;
+                ConsoleSection prevInput = inputSection;
+                discardSection(prevInput);
+                inputEndPos = endPos;
+                inputSection = newSection;
+                inputValid = true;
+                try {
+                    inputOffset = document.createPosition(newSection.getStart(), Position.Bias.Forward);
+                } catch (BadLocationException ex) {
+                    // should not happen, running inside readlock.
+                }
+                
+                if (replaceLast != null) {
+                    lastSection = replaceLast;
+                }
+                if (addScrollback != null && !addScrollback.isEmpty()) {
+                    scrollbackSections.addAll(addScrollback);
+                    if (oldLast != null) {
+                        // the old last has been (?) updated, so it will be reported as a change
+                        changeLast = addScrollback.remove(0);
+                    }
+                    reportNew.addAll(scrollbackSections);
+                } else if (replaceLast != null) {
+                    if (oldLast != null) {
+                        // fire event that the last section has been changed.
+                        changeLast = replaceLast;
+                    } else {
+                        reportNew.add(replaceLast);
+                    }
+                }
+                LOG.log(Level.FINER, "Fire old change: {0}, added new: {1}, input refresh: {2}", new Object[] {
+                    changeLast, reportNew, newSection
+                });
             }
             invalidate();
+            if (changeLast != null) {
+                ConsoleSection fChangeLast = changeLast;
+                RP.post(() -> notifyUpdated(fChangeLast));
+            }
+            if (!reportNew.isEmpty()) {
+                RP.post(() -> notifyCreated(reportNew));
+            }
             if (newSection != null) {
                 RP.post(() -> notifyUpdated(newSection));
             }
         }
-        
+        */
         private void parseInput() {
             TokenHierarchy th = TokenHierarchy.get(getDocument());
             TokenSequence seq = th.tokenSequence();
@@ -378,25 +474,47 @@ public class ConsoleModel {
             
             parser2.execute();
             
-            List<ConsoleSection> newSections = parser2.sections();
+            List<ConsoleSection> newSections = new ArrayList<>(parser2.sections());
             if (newSections.isEmpty()) {
                 return;
             }
-            if (newSections.size() > 1) {
-                throw new IllegalArgumentException("Unexpected section: " + newSections.subList(1, newSections.size()));
-            }
-
-            // now try to process the input section into snippets, but do not execute them, just process the snippet events:
-            ConsoleSection newInput = newSections.get(0);
-            Rng[] ranges = newInput.getAllSnippetBounds();
-            int cnt = ranges.length;
-
-            int snipPos = 0;
+            LOG.log(Level.FINER, "Read sections: {0}", newSections);
             
-            for (int i = 0; i < cnt; i++) {
-                String text = newInput.getRangeContents(document, ranges[i]);
-                SnippetWrapping wr = JShellAccessor.wrapInput(shell, text);
-                snipPos = registerNewSnippet0(wr, newInput, snipPos);
+            int iindex = newSections.size() - 1;
+            ConsoleSection newInput = newSections.get(iindex);
+            if (!newInput.getType().input) {
+                LOG.log(Level.FINER, "Last section was not input - bail out");
+                return;
+            }
+            this.updateSections = newSections;
+
+            /*
+            // if we started by executing from the last section (if the input section moved), we may need
+            // to add something to the scrollback now.
+            if (!newSections.isEmpty() && stalledInput < inputStart) {
+                switch (newSections.size()) {
+                    case 0:
+                        break;
+                    case 1:
+                        replaceLast = newSections.get(0);
+                        break;
+                    default:
+                        addScrollback.addAll(newSections.subList(0, newSections.size() - 1));
+                        replaceLast = newSections.get(newSections.size() - 1);
+                }
+            }
+            */
+            if (shell != null) {
+                // now try to process the input section into snippets, but do not execute them, just process the snippet events:
+                Rng[] ranges = newInput.getAllSnippetBounds();
+                int cnt = ranges.length;
+
+                int snipPos = 0;
+                for (int i = 0; i < cnt; i++) {
+                    String text = newInput.getRangeContents(document, ranges[i]);
+                    SnippetWrapping wr = JShellAccessor.wrapInput(shell, text);
+                    snipPos = registerNewSnippet0(wr, newInput, snipPos);
+                }
             }
             this.newSection = newInput;
         }
@@ -410,7 +528,7 @@ public class ConsoleModel {
         if (snips != null) {
             sections.keySet().removeAll(
                     snips.stream().filter((h) -> h.getSnippet() != null).map(
-                    (h) -> h.getSnippet()).collect(Collectors.toList())
+                        (h) -> h.getSnippet()).collect(Collectors.toList())
             );
         }
     }
@@ -422,6 +540,11 @@ public class ConsoleModel {
     private static final RequestProcessor RP = new RequestProcessor(ConsoleModel.class);
     
     private void notifyUpdated(ConsoleSection s) {
+        ConsoleEvent e = new ConsoleEvent(this, s);
+        listeners.stream().forEach(l -> l.sectionUpdated(e));
+    }
+    
+    private void notifyUpdated(List<ConsoleSection> s) {
         ConsoleEvent e = new ConsoleEvent(this, s);
         listeners.stream().forEach(l -> l.sectionUpdated(e));
     }
@@ -443,7 +566,6 @@ public class ConsoleModel {
         } 
         return inputSection;
     }
-        
     
     public synchronized ConsoleSection getLastSection() {
         ConsoleSection s = getOpenSection();
@@ -454,6 +576,94 @@ public class ConsoleModel {
             return scrollbackSections.get(scrollbackSections.size() - 1);
         }
         return null;
+    }
+    
+    private abstract class EventBuffer  {
+        private List<ConsoleSection>    created;
+        private List<ConsoleSection>    updated;
+        ConsoleSection  prevInput;
+        
+        protected abstract void doUpdates();
+
+        public void runUpdate() {
+            List<ConsoleSection> myCreated;
+            List<ConsoleSection> myUpdated;
+            ConsoleSection executing = executingSection;
+            boolean wasInput = executing == null && inputSection != null;
+            boolean myInput;
+            boolean same = true;
+            
+            synchronized (ConsoleModel.this) {
+                created = new ArrayList<>();
+                updated = new ArrayList<>();
+                try {
+                    doUpdates();
+                } finally {
+                    myCreated = created;
+                    myUpdated = updated;
+                    myInput = inputSection != null;
+                    created = null;
+                    updated = null;
+                    // discard only the input, hopefully the preceding [output/message] section
+                    // has no snippets
+                    discardSection(prevInput);
+                }
+            }
+            same &= myUpdated.isEmpty() && myCreated.isEmpty() && (myInput != wasInput);
+            if (same) {
+                return;
+            }
+            invalidate();
+            RP.post(() -> {
+                if (!myUpdated.isEmpty()) {
+                    notifyUpdated(myUpdated);
+                }
+                if (!myCreated.isEmpty()) {
+                    notifyCreated(myCreated);
+                }
+                if (!wasInput && myInput) {
+                    if (executing != null) {
+                        ConsoleEvent e = new ConsoleEvent(ConsoleModel.this, executing, wasInput);
+                        listeners.stream().forEach(t -> t.executing(e));
+                    }
+                }
+            });
+        }
+
+        protected void addOrUpdate(ConsoleSection s) {
+            if (s.getType().input) {
+                if (isExecute() || inputSection == null) {
+                    created.add(s);
+                } else {
+                    updated.add(s);
+                }
+                prevInput = inputSection;
+                setInputSection(s);
+            } else {
+                int start = s.getStart();
+
+                if (lastSection != null) {
+                    if (start == lastSection.getStart()) {
+                        updated.add(s);
+                    } else if (start < lastSection.getEnd()) {
+                        throw new IllegalStateException();
+                    } else {
+                        scrollbackSections.add(lastSection);
+                    }
+                    lastSection = s;
+                } else {
+                    if (!scrollbackSections.isEmpty()) {
+                        ConsoleSection last = scrollbackSections.get(scrollbackSections.size() - 1);
+                        if (last.getEnd() > start) {
+                            throw new IllegalStateException();
+                        }
+                    }
+                    lastSection = s;
+                    created.add(s);
+                }
+            }
+        }
+
     }
     
     /**
@@ -487,17 +697,6 @@ public class ConsoleModel {
         JShellParser parser2 = new JShellParser(shell, seq, 0, document.getLength());
 
         parser2.execute();
-        /*
-        if (replaceLast) {
-            parser.setAfterState(lastSection);
-        } else if (executingSection != null) {
-            parser.setInitialState(JShellParser.State.INITIAL);
-        } else {
-            parser.setInitialState(JShellParser.State.MAY_INPUT);
-        }
-        parser.execute();
-        processed = end;
-        */
         List<ConsoleSection> sections = parser2.sections();
         if (sections.isEmpty()) {
             return;
@@ -505,7 +704,8 @@ public class ConsoleModel {
         
         List<ConsoleSection> created = new ArrayList<>(sections);
         ConsoleSection updated = null;
-        
+
+        /*
         ConsoleSection l = sections.get(sections.size() - 1);
         ConsoleSection f = sections.get(0);
         
@@ -520,6 +720,7 @@ public class ConsoleModel {
                     }
                     scrollbackSections.addAll(sections.subList(0, sections.size() - 1));
                 } else {
+                    // just 1 section updated, it is the last section.
                     if (last != null && lastSection == last) {
                         lastSection = updated = f;
                         created.clear();
@@ -531,18 +732,31 @@ public class ConsoleModel {
                 scrollbackSections.addAll(sections.subList(0, sections.size() - 1));
             }
             if (l.getType().input) {
-                lastSection = null;
+                if (sections.size() > 1) {
+                    ConsoleSection prevLast = sections.get(sections.size() - 2);
+                    if (!prevLast.getType().input) {
+                        lastSection = prevLast;
+                    } else {
+                        lastSection = null;
+                    }
+                } else {
+                    lastSection = null;
+                }
             } else {
                 lastSection = l;
             }
             processed = end;
         }
+        ConsoleSection execSection;
+        
         if (l.getType().input) {
             // prompt was displayed
+            execSection = executingSection;
             setInputSection(l);
         } else {
             lastSection = l;
-        }
+            execSection = null;
+        } 
         final ConsoleSection fu = updated;
         RP.post(() -> {
             if (fu != null) {
@@ -551,7 +765,20 @@ public class ConsoleModel {
             if (!created.isEmpty()) {
                 notifyCreated(created);
             }
+            if (execSection != null) {
+                ConsoleEvent e = new ConsoleEvent(this, execSection, false);
+                listeners.stream().forEach(t -> t.executing(e));
+            }
         });
+        */
+        new EventBuffer() {
+            @Override
+            protected void doUpdates() {
+                for (ConsoleSection s : sections) {
+                    addOrUpdate(s);
+                }
+            }
+        }.runUpdate();
         invalidate();
     }
     
@@ -568,7 +795,8 @@ public class ConsoleModel {
     private void change(DocumentEvent e) {
         int s = e.getOffset();
         int l = e.getLength();
-        if (isExecute()) {
+        ConsoleSection i = getInputSection();
+        if (isExecute() || (i != null && s < i.getStart())) {
             if (progressPos != -1 && s >= progressPos) {
                 return;
             }
@@ -615,15 +843,37 @@ public class ConsoleModel {
         ConsoleSection is = getInputSection();
         executingSection = is;
         if (is != null) {
+            // the input will be added to the scrollback; if something is still
+            // buffered in the lastSection, add it first:
+            if (lastSection != null) {
+                scrollbackSections.add(lastSection);
+            }
+            lastSection = null;
             scrollbackSections.add(executingSection);
         }
         executing = true;
-        RP.post(() -> { if (is != null) { notifyUpdated(is); }});
+        if (is != null) {
+            RP.post(() -> { 
+                // notify that the scrollback has been changed.
+                notifyUpdated(is); 
+                
+                ConsoleEvent e = new ConsoleEvent(this, is, true);
+                listeners.stream().forEach(l -> l.executing(e));
+            });
+        }
     }
     
     synchronized void afterExecution() {
-        if (lastSection != null) {
-            scrollbackSections.add(lastSection);
+//        if (lastSection != null) {
+//            scrollbackSections.add(lastSection);
+//        }
+        ConsoleSection s = executingSection;
+        if (s != null) {
+            RP.post(() -> { 
+                // execution finished.
+                ConsoleEvent e = new ConsoleEvent(this, s, false);
+                listeners.stream().forEach(l -> l.executing(e));
+            });
         }
         executingSection = null;
         if (inputSection == null) {
@@ -747,6 +997,12 @@ public class ConsoleModel {
             case VALID:
             case RECOVERABLE_DEFINED:
             case RECOVERABLE_NOT_DEFINED: {
+                if (ev.previousStatus() == Snippet.Status.VALID) {
+                    if (getInfo(ev.snippet()) == null) {
+                        return;
+                    }
+                    break;
+                }
                 registerNewSnippet(snip);
                 break;
             }
@@ -804,8 +1060,6 @@ public class ConsoleModel {
             }
             int remainder = offset + length - wr;
             int prefix = wr - offset;
-            
-            
         }
 
         @Override
@@ -829,7 +1083,7 @@ public class ConsoleModel {
                 return;
             }
             bypass = fb;
-            if (offset >= getWritablePos()) {
+            if (offset >= getWritablePos() || length == 0) {
                 super.remove(fb, offset, length);
             } else {
                 throw new GuardedException(null, offset);
@@ -909,7 +1163,13 @@ public class ConsoleModel {
         AbstractDocument ad = LineDocumentUtils.asRequired(document, AbstractDocument.class);
         this.valid = true;
         ad.setDocumentFilter(new DocFilter());
-        document.addDocumentListener(new DocL());
+        try {
+            // initialize the bypass:
+            ad.replace(0, 0, "", null);
+        } catch (BadLocationException ex) {
+        }
+        org.netbeans.lib.editor.util.swing.DocumentUtilities.addPriorityDocumentListener(document,
+                l = new DocL(), DocumentListenerPriority.CARET_UPDATE);
     }
     
     public String getInputText() {
@@ -928,6 +1188,25 @@ public class ConsoleModel {
             }
         }
         return "";
+    }
+    
+    public void writeToShellDocument(String text) {
+        AtomicLockDocument ald = LineDocumentUtils.asRequired(
+                document, AtomicLockDocument.class);
+        try {
+            ald.runAtomic(()-> {
+                try {
+                    int offset = getInputOffset();
+                    if (offset == -1) {
+                        offset = document.getLength();
+                    }
+                    getProtectionBypass().insertString(offset, text, null);
+                    textAppended(offset);
+                } catch (BadLocationException ex) {
+                }
+            });
+        } finally {
+        }
     }
     
     public DocumentFilter.FilterBypass getProtectionBypass() {
@@ -1003,6 +1282,10 @@ public class ConsoleModel {
             return section;
         }
         
+        public Snippet.Kind getKind() {
+            return wrapping.getSnippetKind();
+        }
+        
         public String getSource() {
             return wrapping.getSource();
         }
@@ -1043,12 +1326,22 @@ public class ConsoleModel {
             target.setComplete(complete);
         }
 
-        @Override
+//        @Override
         public void beforeExecution(ConsoleModel model) {
             model.beforeExecution();
         }
+        
+        public void execute(ConsoleModel model, Runnable c, Supplier<String> prompt)  {
+            model.beforeExecution();
+            try {
+                c.run();
+            } finally {
+                model.ensureInputSectionAvailable(prompt);
+                model.afterExecution();
+            }
+        }
 
-        @Override
+//        @Override
         public void afterExecution(ConsoleModel model) {
             model.afterExecution();
         }
@@ -1067,17 +1360,34 @@ public class ConsoleModel {
      * Detaches the console model from the document and the JShell. The model
      * will not restrict or observe the document
      */
-    public synchronized void detach() {
-        if (snippetSubscription != null) {
-            shell.unsubscribe(snippetSubscription);
+    public JShell.Subscription detach() {
+        JShell.Subscription d;
+        synchronized (this) {
+            if (!valid) {
+                return null;
+            }
+            d = snippetSubscription;
             snippetSubscription = null;
             valid = false;
         }
         document.putProperty(ConsoleModel.class, null);
         document.removeDocumentListener(l);
+        ConsoleEvent ev = new ConsoleEvent(this, Collections.emptyList());
+        listeners.stream().forEach(l -> l.closed(ev));
+        return d;
     }
     
     static {
         ModelAccessor.impl(new ModelAccImpl());
     }
+
+    void ensureInputSectionAvailable(Supplier<String> promptSupplier) {
+        ConsoleSection s = processInputSection();
+        if (s != null) {
+            return;
+        }
+        String promptText = "\n" + promptSupplier.get(); // NOI18N
+        writeToShellDocument(promptText);
+    }
+    
 }

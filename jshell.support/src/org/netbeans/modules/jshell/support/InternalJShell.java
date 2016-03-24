@@ -107,7 +107,7 @@ public class InternalJShell {
     }
 
     protected boolean interactiveOutput = true;
-    boolean live = false;
+    volatile boolean live = false;
 
     protected final List<String> history = new ArrayList<>();
 
@@ -190,22 +190,25 @@ public class InternalJShell {
                         ? currentNameSpace.tid(sn)
                         : errorNamespace.tid(sn));
     }
+    
+    protected JShell createJShellInstance() {
+        return createJShell().build();
+    }
 
     protected void resetState() {
         closeState();
-
+        
         // Initialize tool id mapping
         mainNamespace = new NameSpace("main", "");
         startNamespace = new NameSpace("start", "s");
         errorNamespace = new NameSpace("error", "e");
         mapSnippet = new LinkedHashMap<>();
         currentNameSpace = startNamespace;
-        
-        state = createJShell().build();
-        
+
+        state = createJShellInstance();
         analysis = state.sourceCodeAnalysis();
         shutdownSubscription = state.onShutdown((JShell deadState) -> {
-            if (deadState == state) {
+            if (deadState == state && !live) {
                 hard("State engine terminated.  See /history");
                 live = false;
             }
@@ -228,11 +231,16 @@ public class InternalJShell {
             start = cmdlineStartup;
         }
         try (Reader r = new StringReader(start)) {
+            setupState();
             run(r);
-        } catch (Exception ex) {
+        } catch (Exception | InternalError ex) {
             hard("Unexpected exception reading start-up: %s\n", ex);
+        } finally {
+            currentNameSpace = mainNamespace;
         }
-        currentNameSpace = mainNamespace;
+    }
+    
+    protected void setupState() {
     }
 
     protected void closeState() {
@@ -449,9 +457,9 @@ public class InternalJShell {
         registerCommand(new Command("/list", "/l", "[all]", "list the source you have typed",
                                     arg -> cmdList(arg),
                                     new FixedCompletionProvider("all")));
-        registerCommand(new Command("/seteditor", null, "<executable>", "set the external editor command to use",
-                                    arg -> cmdSetEditor(arg),
-                                    EMPTY_COMPLETION_PROVIDER));
+//        registerCommand(new Command("/seteditor", null, "<executable>", "set the external editor command to use",
+//                                    arg -> cmdSetEditor(arg),
+//                                    EMPTY_COMPLETION_PROVIDER));
         registerCommand(new Command("/drop", "/d", "<name or id>", "delete a source entry referenced by name or id",
                                     arg -> cmdDrop(arg),
                                     editCompletion()));
@@ -485,12 +493,12 @@ public class InternalJShell {
         registerCommand(new Command("/history", "/h", null, "history of what you have typed",
                                     arg -> cmdHistory(),
                                     EMPTY_COMPLETION_PROVIDER));
-        registerCommand(new Command("/setstart", null, "<file>", "read file and set as the new start-up definitions",
-                                    arg -> cmdSetStart(arg),
-                                    FILE_COMPLETION_PROVIDER));
-        registerCommand(new Command("/savestart", null, "<file>", "save the default start-up definitions to the file",
-                                    arg -> cmdSaveStart(arg),
-                                    FILE_COMPLETION_PROVIDER));
+//        registerCommand(new Command("/setstart", null, "<file>", "read file and set as the new start-up definitions",
+//                                    arg -> cmdSetStart(arg),
+//                                    FILE_COMPLETION_PROVIDER));
+//        registerCommand(new Command("/savestart", null, "<file>", "save the default start-up definitions to the file",
+//                                    arg -> cmdSaveStart(arg),
+//                                    FILE_COMPLETION_PROVIDER));
         registerCommand(new Command("/debug", "/db", "", "toggle debugging of the REPL",
                                     arg -> cmdDebug(arg),
                                     EMPTY_COMPLETION_PROVIDER,

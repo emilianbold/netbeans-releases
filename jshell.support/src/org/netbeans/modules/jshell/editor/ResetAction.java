@@ -43,22 +43,15 @@ package org.netbeans.modules.jshell.editor;
 
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
-import javax.swing.JEditorPane;
 import javax.swing.text.Document;
-import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.document.EditorDocumentUtils;
 import org.netbeans.editor.BaseAction;
-import org.netbeans.modules.jshell.env.JShellDataObject;
 import org.netbeans.modules.jshell.env.JShellEnvironment;
 import org.netbeans.modules.jshell.env.ShellRegistry;
-import org.netbeans.modules.jshell.support.ShellSession;
 import org.openide.awt.ActionID;
-import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
 /**

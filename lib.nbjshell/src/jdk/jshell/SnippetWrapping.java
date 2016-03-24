@@ -41,6 +41,7 @@
  */
 package jdk.jshell;
 
+import jdk.jshell.Snippet.Kind;
 import jdk.jshell.Snippet.Status;
 
 /**
@@ -51,9 +52,40 @@ import jdk.jshell.Snippet.Status;
  * @author sdedic
  */
 public interface SnippetWrapping {
+    /**
+     * @return kind of the snippet.
+     */
+    public Kind    getSnippetKind();
+    
+    /**
+     * Snippet status. Wrappers prepared from String code not
+     * executed by JShell return {@link Status#NONEXISTENT}.
+     * @return snippet status
+     */
     public Status  getStatus();
+    
+    /**
+     * Snippet instance, if executed by JShell
+     * @return snippet instance of {@code null}.
+     */
     public Snippet getSnippet();
+    
+    /**
+     * Returns the complete wrapped text. 
+     * @return wrapped text
+     */
     public String  getCode();
+    
+    /**
+     * Returns the original user's source
+     * @return original source before parsing/executing/wrapping
+     */
     public String  getSource();
+    
+    /**
+     * Transforms original source position into the wrapped one.
+     * @param pos original position
+     * @return position inside the wrapper returned from {@link #getCode}
+     */
     public int     getWrappedPosition(int pos);
 }

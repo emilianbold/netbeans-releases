@@ -45,13 +45,16 @@ import java.util.Map;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.j2seproject.api.J2SECategoryExtensionProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
  *
  * @author sdedic
  */
+@ProjectServiceProvider(projectType = "org-netbeans-modules-java-j2seproject", service = J2SECategoryExtensionProvider.class)
 public class JShellRunProvider implements J2SECategoryExtensionProvider{
-
+    private JShellOptions2  component;
+    
     @Override
     public ExtensibleCategory getCategory() {
         return ExtensibleCategory.RUN;
@@ -59,12 +62,18 @@ public class JShellRunProvider implements J2SECategoryExtensionProvider{
 
     @Override
     public JComponent createComponent(Project proj, ConfigChangeListener listener) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (component == null) {
+            component = new JShellOptions2();
+        }
+        component.setConfigChangeListener(listener);
+        return component;
     }
 
     @Override
     public void configUpdated(Map<String, String> props) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (component != null) {
+            component.readOptions(props);
+        }
     }
     
 }

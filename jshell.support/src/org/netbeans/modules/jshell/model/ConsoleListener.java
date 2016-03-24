@@ -60,4 +60,16 @@ public interface ConsoleListener {
      * @param section 
      */
     public void sectionUpdated(ConsoleEvent e);
+    
+    /**
+     * The execution has started, or has been ended.
+     * @param e 
+     */
+    public void executing(ConsoleEvent e);
+    
+    /**
+     * Called when the active JShell is closed.
+     * @param e 
+     */
+    public void closed(ConsoleEvent e);
 }

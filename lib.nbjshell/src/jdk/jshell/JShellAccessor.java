@@ -41,8 +41,14 @@
  */
 package jdk.jshell;
 
+import com.sun.jdi.VirtualMachine;
 import com.sun.source.tree.Tree;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.lang.reflect.Field;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jdk.jshell.Snippet.Status;
 import jdk.jshell.TaskFactory.ParseTask;
 import static jdk.jshell.Util.REPL_DOESNOTMATTER_CLASS_NAME;
@@ -62,6 +68,17 @@ public class JShellAccessor {
      */
     public static void addCompileClasspath(JShell instance, String classpath) {
         instance.taskFactory.addToClasspath(classpath);
+    }
+    
+    public static void resetCompileClasspath(JShell instance, String classpath) {
+        try {
+            Field f = TaskFactory.class.getDeclaredField("classpath");
+            f.setAccessible(true);
+            f.set(instance.taskFactory, "");
+        } catch (ReflectiveOperationException ex) {
+            throw new IllegalStateException(ex);
+        }
+        addCompileClasspath(instance, classpath);
     }
     
     /**
@@ -128,7 +145,7 @@ public class JShellAccessor {
         String imports = state.maps.packageAndImportsExcept(null, null);
         OuterWrap ow = OuterWrap.wrapInClass(state.maps.packageName(), 
                 REPL_DOESNOTMATTER_CLASS_NAME, imports, src, w);
-        return new ErrWrapper(s, ow);
+        return new ErrWrapper(s, ow, s.kind());
     }
 
     public static SnippetWrapping wrapInput(JShell state, String input) {
@@ -142,18 +159,34 @@ public class JShellAccessor {
         }
         String imports = state.maps.packageAndImportsExcept(null, null);
         Wrap w;
+        Snippet.Kind snipKind = null;
+                
         switch (kind) {
             case IMPORT:
                 w = Wrap.importWrap(compileSource);
+                snipKind = Snippet.Kind.IMPORT;
                 break;
             case CLASS:
             case ENUM:
             case ANNOTATION_TYPE:
             case INTERFACE:
-            case METHOD:
+                snipKind = Snippet.Kind.TYPE_DECL;
                 w = Wrap.classMemberWrap(compileSource);
                 break;
+            case METHOD:
+                snipKind = Snippet.Kind.METHOD;
+                w = Wrap.classMemberWrap(compileSource);
+                break;
+            case VARIABLE:
+                snipKind = Snippet.Kind.VAR;
+                w = Wrap.classMemberWrap(compileSource);
+                break;
+            case EXPRESSION_STATEMENT:
+                snipKind = Snippet.Kind.EXPRESSION;
+                w = Wrap.methodWrap(compileSource);
+                break;
             default:
+                snipKind = Snippet.Kind.STATEMENT;
                 w = Wrap.methodWrap(compileSource);
                 break;
         }
@@ -163,16 +196,23 @@ public class JShellAccessor {
         } else {
             outer = OuterWrap.wrapInClass(state.maps.packageName(), REPL_DOESNOTMATTER_CLASS_NAME, imports, input, w);
         }
-        return new ErrWrapper(null, outer);
+        return new ErrWrapper(null, outer, snipKind);
     }
-
+    
     private static class ErrWrapper implements SnippetWrapping {
         private final Snippet snippet;
         private final OuterWrap ow;
+        private final Snippet.Kind kind;
         
-        public ErrWrapper(Snippet snippet, OuterWrap ow) {
+        public ErrWrapper(Snippet snippet, OuterWrap ow, Snippet.Kind kind) {
             this.snippet = snippet;
             this.ow = ow;
+            this.kind = kind;
+        }
+
+        @Override
+        public Snippet.Kind getSnippetKind() {
+            return kind;
         }
 
         @Override
@@ -207,6 +247,11 @@ public class JShellAccessor {
         }
 
         @Override
+        public Snippet.Kind getSnippetKind() {
+            return snippet.kind();
+        }
+
+        @Override
         public String getSource() {
             return snippet.source();
         }
@@ -232,4 +277,7 @@ public class JShellAccessor {
         }
     }
     
+    public static NbExecutionControl getNbExecControl(JShell state) {
+        return (NbExecutionControl)state.executionControl();
+    }
 }

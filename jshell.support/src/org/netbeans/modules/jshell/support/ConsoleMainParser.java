@@ -58,7 +58,7 @@ import org.netbeans.modules.parsing.spi.SourceModificationEvent;
  *
  * @author sdedic
  */
-public class ConsoleMainParser extends Parser {
+public final class ConsoleMainParser extends Parser {
     private volatile ConsoleResult result;
     @Override
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {

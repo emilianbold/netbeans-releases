@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,21 +37,32 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.support;
+package org.netbeans.modules.jshell.env;
 
 /**
- * Interface which creates a JShell instance launcher configured for the project.
- * Implementations of this interface should be placed into Project's Lookup.
- * 
+ *
  * @author sdedic
  */
-public interface JShellFactory {
+public interface ShellListener {
     /**
-     * Creates a JShell for the particular project run command. See 
-     * @param command
-     * @return 
+     * Fired when the shell was started, or restarted.
+     * The JShellEnvironment instance will already contain a new instance
+     * of ShellSession.
+     * @param ev 
      */
-    public JShellLauncher   createJShell(String command);
+    public void shellStarted(ShellEvent ev);
+    
+    /**
+     * The status of the shell has been changed
+     * @param ev 
+     */
+    public void shellStatusChanged(ShellEvent ev);
+    
+    /**
+     * The entire JShellEnvironment has been shut down.
+     * @param ev 
+     */
+    public void shellShutdown(ShellEvent ev);
 }

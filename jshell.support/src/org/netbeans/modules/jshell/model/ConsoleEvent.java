@@ -55,6 +55,12 @@ public final class ConsoleEvent extends EventObject {
     private final ConsoleSection theSection;
     private final List<ConsoleSection> affectedSections;
     private volatile Boolean input;
+    private boolean start;
+    
+    public ConsoleEvent(ConsoleModel source, ConsoleSection section, boolean startStop) {
+        this(source, section);
+        this.start = startStop;
+    }
     
     public ConsoleEvent(ConsoleModel source, ConsoleSection section) {
         super(source);
@@ -91,5 +97,14 @@ public final class ConsoleEvent extends EventObject {
             }
         }
         return input = false;
+    }
+
+    /**
+     * Valid for executing event callback. True, if the execution has been started,
+     * false indicates the execution finished.
+     * @return 
+     */
+    public boolean isStart() {
+        return start;
     }
 }

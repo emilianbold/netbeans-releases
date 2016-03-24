@@ -41,14 +41,18 @@
  */
 package org.netbeans.modules.jshell.support;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
+import jdk.jshell.EnhancedJShell;
+import jdk.jshell.ExecutionEnv;
 import jdk.jshell.JShell;
+import jdk.jshell.JShellAccessor;
+import jdk.jshell.NbExecutionControl;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -57,25 +61,37 @@ import jdk.jshell.JShell;
 public class JShellLauncher extends InternalJShell implements Supplier<String> {
 
     private String prefix = "";
+    
+    private ExecutionEnv execEnv = null;
 
-    public JShellLauncher(PrintStream cmdout, PrintStream cmderr, InputStream userin, PrintStream userout, PrintStream usererr) {
+    /**
+     * 
+     * @param cmdout command output
+     * @param cmderr command error
+     * @param userin user input to the JShell to the JShell VM
+     * @param userout user output from the JShell VM
+     * @param usererr  user error from the JShell VM
+     */
+    public JShellLauncher(PrintStream cmdout, PrintStream cmderr, InputStream userin, PrintStream userout, PrintStream usererr, ExecutionEnv execEnv) {
         super(cmdout, cmderr, userin, userout, usererr);
+        this.execEnv = execEnv;
     }
 
+    
     protected String prompt(boolean continuation) {
         int index = state.snippets().size() + 1;
         if (continuation) {
-            return ">> ";
+            return ">> "; // NOI18N 
         } else if (feedback() == Feedback.Concise) {
-            return "[" + index + "] -> ";
+            return "[" + index + "] -> "; // NOI18N 
         } else {
-            return "\n[" + index + "] -> ";
+            return "\n[" + index + "] -> "; // NOI18N 
         }
     }
 
     public void start() {
-        fluff("Welcome to the Java REPL NetBeans integration");
-        fluff("Type /help for help");
+        fluff("Welcome to the JShell NetBeans integration"); // NOI18N 
+        fluff("Type /help for help"); // NOI18N 
         ensureLive();
         cmdout.append(prompt(false));
     }
@@ -90,7 +106,7 @@ public class JShellLauncher extends InternalJShell implements Supplier<String> {
         if (!trimmed.isEmpty()) {
             prefix = process(prefix, command);
         }
-        cmdout.append(prompt(!prefix.isEmpty()));
+//        cmdout.append(prompt(!prefix.isEmpty()));
     }
     
     public List<String> completion(String command) {
@@ -110,14 +126,61 @@ public class JShellLauncher extends InternalJShell implements Supplier<String> {
     }
 
     @Override
-    protected JShell.Builder createJShell() {
-        return super.createJShell().javaVMOptionsProvider(this);
+    protected void setupState() {
+//        printSystemInfo();
+    }
+    
+    
+
+    @Override
+    protected JShell createJShellInstance() {
+        if (execEnv == null) {
+            execEnv = new EnhancedJShell.JDILaunchControl();
+        }
+        ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
+            JShell ret = new EnhancedJShell(createJShell(), execEnv) {
+
+                @Override
+                protected String decorateLaunchArgs(String s) {
+                    return "-classpath " + classpath;
+                }
+            };
+            return ret;
+        } finally {
+            Thread.currentThread().setContextClassLoader(ctxLoader);
+        }
+    }
+    
+    @NbBundle.Messages({
+        "MSG_SystemInformation=System Information:",
+        "# {0} - java machine name",
+        "# {1} - java version",
+        "MSG_JavaVersion=    Java version: {0}, version {1}",
+        "MSG_Classpath=    Classpath:",
+        "MSG_VersionUnknown=<unknown>",
+        "MSG_MachineUnknown=<unknown>",
+    })
+    private void printSystemInfo() {
+        NbExecutionControl ctrl = JShellAccessor.getNbExecControl(state);
+        Map<String, String> versionInfo = ctrl.commandVersionInfo();
+        
+        if (versionInfo.isEmpty()) {
+            // some error ?
+            return;
+        }
+        fluff(""); // newline
+        fluff(Bundle.MSG_SystemInformation());
+        String javaName = versionInfo.getOrDefault("java.vm.name", Bundle.MSG_MachineUnknown()); // NOI18N
+        String javaVersion = versionInfo.getOrDefault("java.vm.version", Bundle.MSG_VersionUnknown()); // NOI18N
+        fluff(Bundle.MSG_JavaVersion(javaName, javaVersion));
+        
+        String cpString = versionInfo.get("nb.class.path"); // NOI18N
+        
     }
 
     private String classpath;
-    private OutputStream socketOut;
-    private InputStream socketIn;
-
 
     public void setClasspath(String classpath) {
         this.classpath = classpath;
@@ -127,168 +190,4 @@ public class JShellLauncher extends InternalJShell implements Supplier<String> {
     public String get() {
         return "-classpath " + classpath;
     }
-    
-    public static JShellLauncher createLauncher(InputStream in, OutputStream out,
-            PrintStream userOutput, PrintStream userError) throws IOException {
-
-        PrintStream wrappedOut = wrapOutputStream(out);
-        PrintStream userPrintOut = userOutput == null ?
-                wrappedOut : userOutput;
-        PrintStream userPrintErr = userError == null ?
-                wrappedOut : userError;
-        JShellLauncher l = new JShellLauncher(
-                wrappedOut,
-                wrappedOut,
-                new ByteArrayInputStream(new byte[0]),
-                userPrintOut,
-                userPrintErr);
-        l.socketOut = out;
-        l.socketIn = in;
-        return l;
-    }
-
-    public static PrintStream wrapOutputStream(OutputStream out) {
-        return new PrintStream(new OutputStream() {
-            @Override
-            public void write(int b) throws IOException {
-                synchronized (out) {
-                    out.write(("output:" + String.format("%02X", b) + "\n").getBytes("UTF-8"));
-                }
-            }
-
-            @Override
-            public void write(byte[] b, int off, int len) throws IOException {
-                synchronized (out) {
-                    out.write("output:".getBytes("UTF-8"));
-                    for (int i = 0; i < len; i++) {
-                        out.write(String.format("%02X", b[off + i]).getBytes("UTF-8"));
-                    }
-                    out.write("\n".getBytes("UTF-8"));
-                }
-            }
-        });
-    }
-
-    /*
-    public void run() throws IOException {
-        fluff("Welcome to the Java REPL NetBeans integration");
-        fluff("Type /help for help");
-        ensureLive();
-        cmdout.append(prompt(false));
-
-        synchronized (socketOut) {
-            socketOut.write("done:\n".getBytes("UTF-8"));
-        }
-
-        BufferedReader in = new BufferedReader(new InputStreamReader(socketIn));
-
-        String line;
-
-        try {
-            while ((line = in.readLine()) != null) {
-                int colon = line.indexOf(':');
-                String command = line.substring(0, colon);
-                String data = line.substring(colon + 1).replace("\\n", "\n").replace("\\\\", "\\");
-
-                switch (command) {
-                    case "execute":
-                        try {
-                            evaluate(data);
-                        } finally {
-                            synchronized (socketOut) {
-                                socketOut.write("done:\n".getBytes("UTF-8"));
-                            }
-                        }
-                        break;
-                    case "completion":
-                        try {
-                            List<String> completions = completions(prefix, data);
-                            synchronized (socketOut) {
-                                for (String s : completions) {
-                                    socketOut.write(("completion:" + s.replace("\\", "\\\\").replace("\n", "\\n") + "\n").getBytes("UTF-8"));
-                                }
-                            }
-                        } finally {
-                            synchronized (socketOut) {
-                                socketOut.write("completion-done:\n".getBytes("UTF-8"));
-                            }
-                        }
-                        break;
-                    case "exit":
-                        return;
-                }
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    public static void main(String... args) throws IOException {
-        Socket socket = new Socket(InetAddress.getLocalHost(), Integer.parseInt(args[0]));
-        final OutputStream socketOut = socket.getOutputStream();
-        PrintStream out = new PrintStream(new OutputStream() {
-            @Override
-            public void write(int b) throws IOException {
-                synchronized (socketOut) {
-                    socketOut.write(("output:" + String.format("%02X", b) + "\n").getBytes("UTF-8"));
-                }
-            }
-
-            @Override
-            public void write(byte[] b, int off, int len) throws IOException {
-                synchronized (socketOut) {
-                    socketOut.write("output:".getBytes("UTF-8"));
-                    for (int i = 0; i < len; i++) {
-                        socketOut.write(String.format("%02X", b[off + i]).getBytes("UTF-8"));
-                    }
-                    socketOut.write("\n".getBytes("UTF-8"));
-                }
-            }
-        });
-        JShellLauncher repl = new JShellLauncher(out, out, new ByteArrayInputStream(new byte[0]), out, out);
-
-        synchronized (socketOut) {
-            socketOut.write("done:\n".getBytes("UTF-8"));
-        }
-
-        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-        String line;
-
-        while ((line = in.readLine()) != null) {
-            int colon = line.indexOf(':');
-            String command = line.substring(0, colon);
-            String data = line.substring(colon + 1).replace("\\n", "\n").replace("\\\\", "\\");
-
-            switch (command) {
-                case "execute":
-                    try {
-                        repl.evaluate(data);
-                    } finally {
-                        synchronized (socketOut) {
-                            socketOut.write("done:\n".getBytes("UTF-8"));
-                        }
-                    }
-                    break;
-                case "completion":
-                    try {
-                        List<String> completions = repl.completions(repl.prefix, data);
-                        synchronized (socketOut) {
-                            for (String s : completions) {
-                                socketOut.write(("completion:" + s.replace("\\", "\\\\").replace("\n", "\\n") + "\n").getBytes("UTF-8"));
-                            }
-                        }
-                    } finally {
-                        synchronized (socketOut) {
-                            socketOut.write("completion-done:\n".getBytes("UTF-8"));
-                        }
-                    }
-                    break;
-                case "exit":
-                    System.exit(0);
-                    break;
-            }
-        }
-    }
-    */
 }

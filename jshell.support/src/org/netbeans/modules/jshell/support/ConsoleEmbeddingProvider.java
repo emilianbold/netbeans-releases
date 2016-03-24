@@ -41,12 +41,9 @@
  */
 package org.netbeans.modules.jshell.support;
 
-import org.netbeans.modules.jshell.model.ConsoleSection;
 import org.netbeans.modules.jshell.model.ConsoleModel;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.swing.text.Document;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -83,26 +80,6 @@ public class ConsoleEmbeddingProvider extends EmbeddingProvider {
         return p.process();
     }
     
-    private Embedding createEmbedding(ShellSession session, ConsoleSection s, Snapshot snapshot) {
-        if (!s.hasMoreParts()) {
-            int start = Math.min(s.getPartBegin(), snapshot.getText().length());
-            int end = Math.min(s.getPartBegin() + s.getPartLen(), snapshot.getText().length());
-            
-            return snapshot.create(
-                    start, end - start , "text/x-java");
-        } else {
-            return Embedding.create(
-                Arrays.stream(s.getPartRanges()).map(
-                        r -> {
-                            int start = Math.min(snapshot.getText().length(), r.start);
-                            int end = Math.min(snapshot.getText().length(), r.end);
-                            return snapshot.create(start, end - start, "text/x-java");
-                        }
-                ).collect(Collectors.toList())
-            );
-        }
-    }
-
     @Override
     public int getPriority() {
         return 0;

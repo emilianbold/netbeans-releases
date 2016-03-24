@@ -54,8 +54,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.jshell.support.ShellSession;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
@@ -96,6 +94,9 @@ public class ShellRegistry {
         return INSTANCE;
     }
     
+    /**
+     * Per-project clean VM sessions
+     */
     private Map<Project, JShellEnvironment>     projectSessions = new HashMap<>();
     private Map<FileObject, JShellEnvironment>  fileIndex = new HashMap<>();
     private JShellEnvironment                   defaultSession;
@@ -125,11 +126,21 @@ public class ShellRegistry {
         }
     }
     
+    /**
+     * Opens a new session for the project, or return an existin one. The method 
+     * will open a clean VM session for the project. If a session has been already started,
+     * that existing session will be returned. It is not possible to start multiple VMs for 
+     * a single project.
+     * 
+     * @param p the project to use classes from
+     * @return the environment instance
+     * @throws IOException 
+     */
     @NbBundle.Messages({
         "# {0} - project name",
         "ShellSession_CleanProject=JShell - project {0}"
     })
-    public JShellEnvironment openSession(Project p) throws IOException {
+    public JShellEnvironment openProjectSession(Project p) throws IOException {
         synchronized (this) {
             createAndCleanTrashArea();
             JShellEnvironment s = projectSessions.get(p);
@@ -139,26 +150,32 @@ public class ShellRegistry {
         }
         String dispName = Bundle.ShellSession_CleanProject(
                 ProjectUtils.getInformation(p).getDisplayName());
-        
+        JShellEnvironment s;
         synchronized (this) {
             JShellEnvironment env = projectSessions.get(p);
             if (env != null) {
                 return env;
             }
-        }
-        FileObject r = createCacheRoot();
-        JShellEnvironment s = new JShellEnvironment(p, dispName, r); // may throw IOE
-        synchronized (this) {
-            JShellEnvironment ret  = projectSessions.computeIfAbsent(p, (proj) -> {
-                fileIndex.put(s.getConsoleFile(), s);
-                return s;
-            });
-            if (s != ret) {
-                return ret;
-            }
+
+            s = new JShellEnvironment(p, dispName); // may throw IOE
+            register(s);
         }
         s.start();
         return s;
+    }
+    
+    public void startJShell(JShellEnvironment env) throws IOException {
+        register(env);
+        env.start();
+    }
+    
+    void register(JShellEnvironment env) throws IOException {
+        synchronized (this) {
+            createAndCleanTrashArea();
+            FileObject r = createCacheRoot();
+            env.init(r);
+            fileIndex.put(env.getConsoleFile(), env);
+        }
     }
     
     public JShellEnvironment get(FileObject consoleFile) {

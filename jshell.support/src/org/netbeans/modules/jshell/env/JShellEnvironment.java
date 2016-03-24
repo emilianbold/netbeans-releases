@@ -44,11 +44,20 @@ package org.netbeans.modules.jshell.env;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
+import javafx.scene.media.MediaPlayer;
 import javax.swing.text.Document;
+import jdk.jshell.EnhancedJShell;
+import jdk.jshell.ExecutionEnv;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -58,16 +67,23 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.repl.Utils;
+import org.netbeans.modules.jshell.model.ConsoleEvent;
+import org.netbeans.modules.jshell.model.ConsoleListener;
 import org.netbeans.modules.jshell.support.ShellSession;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.Task;
 import org.openide.util.WeakListeners;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
 
 /**
+ * Encapsulates the IDE environment for the JShell. There are two implementations; one which works with a
+ * Project and another, which works without it.
  * 
  * @author sdedic
  */
@@ -96,13 +112,22 @@ public class JShellEnvironment {
     
     private ClassPath         snippetClassPath;
     
+    private InputOutput       inputOutput;
+    
+    /**
+     * True, if this environment controls the IO
+     */
+    private boolean           controlsIO;
+    
+    private boolean           closed;
+    
     private PropertyChangeSupport supp = new PropertyChangeSupport(this);
     
-    public JShellEnvironment(Project project, String displayName, FileObject workRoot) throws IOException {
+    private List<ShellListener>   shellListeners = new ArrayList<>();
+    
+    protected JShellEnvironment(Project project, String displayName) {
         this.project = project;
         this.displayName = displayName;
-        this.workRoot = workRoot;
-        init();
     }
     
     public void addPropertyChangeListener(PropertyChangeListener pcl) {
@@ -135,7 +160,8 @@ public class JShellEnvironment {
     
     private L inst;
     
-    private void init() throws IOException {
+    void init(FileObject workRoot) throws IOException {
+        this.workRoot = workRoot;
         workRoot.setAttribute("jshell.scratch", true);
         consoleFile = workRoot.createData("console.jsh");
         
@@ -154,9 +180,59 @@ public class JShellEnvironment {
         }
     }
     
-    public synchronized void start() {
+    protected InputOutput createInputOutput() {
+        return null;
+    }
+    
+    private PrintStream outStream;
+    private PrintStream errStream;
+    
+    public InputStream getInputStream() {
+        if (inputOutput == null) {
+            throw new IllegalStateException("not started");
+        }
+        return new ByteArrayInputStream(new byte[0]);
+    }
+    
+    public PrintStream getOutputStream() {
+        if (inputOutput == null) {
+            throw new IllegalStateException("not started");
+        }
+        synchronized (this) {
+            if (outStream == null) {
+                outStream = new PrintStream(
+                        new WriterOutputStream(inputOutput.getOut())
+                );
+            }
+        }
+        return outStream;
+    }
+    
+    public PrintStream getErrorStream() {
+        if (inputOutput == null) {
+            throw new IllegalStateException("not started");
+        }
+        synchronized (this) {
+            if (errStream == null) {
+                errStream = new PrintStream(
+                        new WriterOutputStream(inputOutput.getErr())
+                );
+            }
+        }
+        return errStream;
+    }
+    
+    private volatile boolean starting;
+
+    public synchronized void start() throws IOException {
+        assert workRoot != null;
         if (shellSession != null) {
             return;
+        }
+        inputOutput = createInputOutput();
+        if (inputOutput == null) {
+            inputOutput = IOProvider.getDefault().getIO(displayName, false);
+            controlsIO = true;
         }
         JavaPlatform platformTemp = JavaPlatformManager.getDefault().getDefaultPlatform();
         final Set<URL> roots = new HashSet<>();
@@ -188,16 +264,105 @@ public class JShellEnvironment {
                     snippetClassPath);
         }
         this.classpathInfo = cpi;
-        
-       
-        shellSession = ShellSession.createSession(this);
-        shellSession.start();
+        Document d = forceOpenDocument();
+        doStartAndFire(ShellSession.createSession(this));
+    }
+
+    private void fireShellStatus(ShellEvent event) {
+        List<ShellListener> ll;
+        synchronized (this) {
+            ll = new ArrayList<>(this.shellListeners);
+        }
+        if (ll.isEmpty()) {
+            return;
+        }
+        ll.stream().forEach(l -> l.shellStatusChanged(event));
+    }
+
+    private void fireShellStarted(ShellEvent event) {
+        List<ShellListener> ll;
+        synchronized (this) {
+            ll = new ArrayList<>(this.shellListeners);
+        }
+        if (ll.isEmpty()) {
+            return;
+        }
+        ShellEvent e = event == null ? new ShellEvent(this) : event;
+        ll.stream().forEach(l -> l.shellStarted(e));
+    }
+    
+    /**
+     * Determines if the environment can be reset. If it returns false,
+     * then {@link #reset} will possibly reset the JShell, but will not
+     * put it in a usable shape. For example without a running VM, the JShell
+     * will not be able to define or execute snippets (or even its own startup).
+     * 
+     * @return if the environment can be reset.
+     */
+    public boolean canReset() {
+        return true;
     }
     
     public void reset() {
-        ShellSession nss = ShellSession.createSession(this);
-        nss.start();
+        assert workRoot != null;
+        doStartAndFire(ShellSession.createSession(this));
+    }
+    
+    private void fireExecuting(ShellSession session, boolean start) {
+        ShellEvent e = new ShellEvent(this, session, 
+                start ? ShellStatus.EXECUTE : ShellStatus.READY);
+        shellListeners.stream().forEach(l -> l.shellStatusChanged(e));
+    }
+    
+    private void doStartAndFire(ShellSession nss) {
         this.shellSession = nss;
+        starting = true;
+        Pair<ShellSession, Task> res = nss.start();
+        nss.getModel().addConsoleListener(new ConsoleListener() {
+            @Override
+            public void executing(ConsoleEvent e) {
+                fireExecuting(nss, e.isStart());
+            }
+
+            @Override
+            public void sectionCreated(ConsoleEvent e) {}
+
+            @Override
+            public void sectionUpdated(ConsoleEvent e) {}
+
+            @Override
+            public void closed(ConsoleEvent e) {}
+        });
+        ShellSession previous = res.first();
+        ShellEvent event = new ShellEvent(this, nss, previous);
+        fireShellStatus(event);
+
+        res.second().addTaskListener(e -> {
+            starting = false;
+            fireShellStarted(event);
+            fireShellStatus(event);
+        });
+        
+    }
+    
+    public synchronized ShellStatus getStatus() {
+        ShellSession session = this.shellSession;
+        
+        if (session == null) {
+            return ShellStatus.INIT;
+        }
+        if (starting) {
+            return ShellStatus.STARTING;
+        } else if (closed) {
+            return ShellStatus.SHUTDOWN;
+        }
+        if (session.getModel().isExecute()) {
+            return ShellStatus.EXECUTE;
+        } else if (session.isValid()) {
+            return ShellStatus.READY;
+        } else {
+            return ShellStatus.DISCONNECTED;
+        }
     }
     
     public ShellSession getSession() {
@@ -215,6 +380,11 @@ public class JShellEnvironment {
     public FileObject getConsoleFile() {
         return consoleFile;
     }
+    
+    private Document forceOpenDocument() throws IOException {
+        EditorCookie cake = consoleFile.getLookup().lookup(EditorCookie.class);
+        return cake == null ? null : cake.openDocument();
+    }
 
     public Document getConsoleDocument() {
         EditorCookie cake = consoleFile.getLookup().lookup(EditorCookie.class);
@@ -224,7 +394,7 @@ public class JShellEnvironment {
     public ClassPath getSnippetClassPath() {
         return snippetClassPath;
     }
-
+    
     /**
      * Must be called on JShell shutdown to clean up resources. Should
      * be called after all 
@@ -242,16 +412,31 @@ public class JShellEnvironment {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
+            if (controlsIO) {
+                inputOutput.closeInputOutput();
+            }
             ShellRegistry.get().closed(this);
         });
         return t;
     }
     
+    private Document document;
+    
     public void open() throws IOException {
+        assert workRoot != null;
         DataObject d = DataObject.find(getConsoleFile());
         EditorCookie cake = d.getLookup().lookup(EditorCookie.class);
         // force open
         cake.open();
+        document = cake.openDocument();
+        if (shellSession == null) {
+            start();
+        } else {
+            return;
+        }
+        if (inputOutput != null) {
+            inputOutput.select();
+        }
         EditorCookie.Observable oo = d.getLookup().lookup(EditorCookie.Observable.class);
         assert oo != null;
         oo.addPropertyChangeListener((e) -> {
@@ -266,5 +451,63 @@ public class JShellEnvironment {
                 
             }
         });
+        inputOutput.select();
+    }
+    
+    public void notifyDisconnected(ShellSession old) {
+        List<ShellListener> ll;
+        ShellSession s;
+        synchronized (this) {
+            s = this.shellSession;
+            if (s == null || closed) {
+                return;
+            }
+            ll = new ArrayList<>(shellListeners);
+        }
+        old.notifyClosed(this);
+        ShellEvent e = new ShellEvent(this, s, ShellStatus.DISCONNECTED);
+        ll.stream().forEach(l -> l.shellStatusChanged(e));
+    }
+    
+    protected void notifyShutdown() {
+        List<ShellListener> ll;
+        ShellSession s;
+        
+        synchronized (this) {
+            if (closed) {
+                return;
+            }
+            closed = true;
+            ll = new ArrayList<>(shellListeners);
+            s = this.shellSession;
+        }
+        if (s != null) {
+            s.notifyClosed(this);
+        }
+        ShellEvent e = new ShellEvent(this);
+        ll.stream().forEach(l -> l.shellShutdown(e));
+    }
+    
+    public boolean isClosed() {
+        return closed;
+    }
+    
+    public void addShellListener(ShellListener l) {
+        synchronized (this) {
+            this.shellListeners.add(l);
+            if (!closed) {
+                return;
+            }
+        }
+        // notify the listener as soon as it is registered, since we're closed already.
+        l.shellShutdown(new ShellEvent(this));
+    }
+    
+    public synchronized void removeShellListener(ShellListener l) {
+        this.shellListeners.remove(l);
+    }
+    
+    public ExecutionEnv createExecutionEnv() {
+        return new EnhancedJShell.JDILaunchControl();
     }
 }

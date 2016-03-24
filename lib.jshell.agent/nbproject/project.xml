@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
+            <code-name-base>org.netbeans.lib.jshell.agent</code-name-base>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.netbeans.libs.asm</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>5.3</specification-version>
+                    </run-dependency>
+                </dependency>
+            </module-dependencies>
+            <public-packages/>
+            <extra-compilation-unit>
+                <package-root>agentsrc</package-root>
+                <classpath/>
+                <built-to>build/agent/classes</built-to>
+                <built-to>${cluster}/modules/ext/nb-custom-jshell-probe.jar</built-to>
+            </extra-compilation-unit>
+        </data>
+    </configuration>
+</project>

@@ -232,13 +232,30 @@ public class OverrideEditorActions {
         
 
         protected boolean delegates(JTextComponent target) {
-            Object o = target.getClientProperty(PROP_NAVIGATE_BOUNDARIES);
-            if (!(o instanceof PositionRegion)) {
+            ConsoleModel model = ConsoleModel.get(target.getDocument());
+            if (model == null) {
                 return true;
             }
-            PositionRegion reg = (PositionRegion)o;
-            int pos = target.getCaretPosition();
-            return delegates(target, reg, pos);
+            ConsoleSection input = model.getInputSection();
+            if (input == null) {
+                return true;
+            }
+            int offset = target.getCaretPosition();
+            if (offset < input.getPartBegin() || offset > input.getEnd()) {
+                return true;
+            }
+            Document doc = target.getDocument();
+            
+            LineDocument ld = LineDocumentUtils.as(doc, LineDocument.class);
+            if (ld == null) {
+                return true;
+            }
+            try {
+                int end = LineDocumentUtils.getLineEnd(ld, input.getPartBegin());
+                return offset > end;
+            } catch (BadLocationException ex) {
+                return true;
+            }
         }
         
         protected boolean delegates(JTextComponent target, PositionRegion region, int pos) {
@@ -306,7 +323,6 @@ public class OverrideEditorActions {
             }
             ConsoleModel mod = session.getModel();
             ConsoleSection sec = mod.processInputSection();
-            
             // the interceptor is executed even if a break insertion fails, e.g. is
             // filtered out by DocumentFilter. Accept and process only those inserts,
             // which happen in the input section
@@ -320,6 +336,9 @@ public class OverrideEditorActions {
                     return;
                 }
                 if (sec == null || sec.isIncomplete()) {
+                    return;
+                }
+                if (sec.getContents(doc).trim().isEmpty()) {
                     return;
                 }
                 if (context.getBreakInsertOffset() >= sec.getEnd()) {
@@ -368,7 +387,7 @@ public class OverrideEditorActions {
             super(JSHELL_EXECUTE, MAGIC_POSITION_RESET | UNDO_MERGE_RESET
                   | WORD_MATCH_RESET | CLEAR_STATUS_TEXT);
         }
-
+        
         @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target == null || target.getDocument() == null) {
@@ -379,6 +398,11 @@ public class OverrideEditorActions {
             
             ShellSession s = ShellSession.get(doc);
             if (s == null) {
+                return;
+            }
+            ConsoleModel mod = s.getModel();
+            ConsoleSection sec = mod.processInputSection();
+            if (sec == null || sec.isIncomplete()) {
                 return;
             }
             try {

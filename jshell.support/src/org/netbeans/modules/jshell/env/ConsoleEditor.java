@@ -43,7 +43,17 @@ package org.netbeans.modules.jshell.env;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.net.URL;
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JEditorPane;
+import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
+import javax.swing.JPanel;
+import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -88,7 +98,7 @@ import org.openide.windows.TopComponent;
 public class ConsoleEditor extends CloneableEditor {
 
     private ShellSession session;
-    private ConsoleListener cl = new CL();
+    private CL cl;
     
     public ConsoleEditor(CloneableEditorSupport support) {
         super(support);
@@ -110,14 +120,39 @@ public class ConsoleEditor extends CloneableEditor {
                 pane.addPropertyChangeListener("document", 
                         (e) -> initialize());
             }
-        }
-        if (session != null) {
-            session.getIO().show();
+        } else {
+            updateHourglass();
         }
     }
+    
+
+    @Override
+    protected void componentHidden() {
+        removeProgressIndicator();
+        super.componentHidden();
+    }
+    
+    private void updateHourglass() {
+        ShellStatus status = env.getStatus();
+
+        if (status == ShellStatus.STARTING) {
+            showProgressIndicator(prepareInitPanel(), 0);
+            return;
+        } else if (status == ShellStatus.EXECUTE) {
+            ConsoleModel model = session.getModel();
+            ConsoleSection e = model.getExecutingSection();
+            if (e != null) {
+                showHourglass(e.getEnd());
+                return;
+            }
+        } 
+        removeProgressIndicator();
+    }
+    
 
     @Override
     protected void componentClosed() {
+        removeProgressIndicator();
         super.componentClosed();
         pane = null;
         if (cloneableEditorSupport().getOpenedPanes() == null && session != null) {
@@ -130,55 +165,84 @@ public class ConsoleEditor extends CloneableEditor {
         }
     }
     
+    private JShellEnvironment env;
+    
+    private volatile boolean detached;
+    
+    private synchronized void detachFromSession() {
+        session.getModel().removeConsoleListener(cl);
+        cl = null;
+        detached = true;
+    }
+    
     private void initialize() {
+        assert SwingUtilities.isEventDispatchThread();
+        
         Document d = getEditorPane().getDocument();
         ShellSession s  = ShellSession.get(d);
+        final JShellEnvironment env = ShellRegistry.get().getOwnerEnvironment(s.getConsoleFile());
+
         if (s == null || s == this.session) {
             // some default document, not interesting
             return;
         }
         if (s != this.session && this.session != null) {
-            this.session.getModel().removeConsoleListener(cl);
+            detachFromSession();
         }
         this.session = s;
+
+        synchronized (this) {
+            detached = false;
+            cl = new CL();
+            session.getModel().addConsoleListener(cl);
+        }
+        if (env != null && env != this.env) {
+            this.env = env;
+            env.addShellListener(cl);
+        }
         
-        session.getModel().addConsoleListener(cl);
         // post in order to synchronize after initial shell startup
         session.post(() -> {
-            try {
-                resetEditableArea(true);
-            } catch (BadLocationException ex) {
-            }
+            SwingUtilities.invokeLater(this::initialResetCaret);
         });
         
         (pane = getEditorPane()).setNavigationFilter(new NavFilter());
+        SwingUtilities.invokeLater(this::updateHourglass);
+    }
+    
+    private void initialResetCaret() {
+        resetEditableArea(true);
     }
 
-    private void resetEditableArea(boolean caret) throws BadLocationException {
+    private void resetEditableArea(boolean caret) {
         if (pane == null || pane.getDocument() == null) {
             // probably closed
             return;
         }
-        final LineDocument ld = LineDocumentUtils.as(pane.getDocument(), LineDocument.class);
-        if (ld == null) {
-            return;
-        }
-        ConsoleModel model = session.getModel();
-        ConsoleSection input = model.getInputSection();
-        if (input != null) {
-            int commandStart = input.getPartBegin();
-//            pane.setCaretPosition(commandStart);
-            Position s = ld.createPosition(commandStart, Position.Bias.Backward);
-            Position e = ld.createPosition(ld.getLength(), Position.Bias.Forward);
-            PositionRegion editRegion = new PositionRegion(
-                    s, e
-            );
-//            pane.putClientProperty(OverrideEditorActions.PROP_NAVIGATE_BOUNDARIES, 
-//                    editRegion);
-            if (caret) {
-                SwingUtilities.invokeLater(() -> pane.setCaretPosition(s.getOffset()));
+        
+        Document document = pane.getDocument();
+        // may block/delay, check detached inside.
+        document.render(() -> {
+            if (detached) {
+                return;
             }
-        }
+            final LineDocument ld = LineDocumentUtils.as(document, LineDocument.class);
+            if (ld == null) {
+                return;
+            }
+            ConsoleModel model = session.getModel();
+            ConsoleSection input = model.getInputSection();
+            if (input != null) {
+                int commandStart = input.getPartBegin();
+    //            pane.setCaretPosition(commandStart);
+                if (commandStart > 0 && commandStart < document.getLength()) {
+                    return;
+                }
+                if (caret) {
+                    pane.setCaretPosition(commandStart);
+                }
+            }
+        });
     }
     
     /**
@@ -369,16 +433,54 @@ public class ConsoleEditor extends CloneableEditor {
         
     }
     
-    private class CL implements ConsoleListener, Runnable {
+    private void updateStatusAndActivate() {
+        updateHourglass();
+        ShellStatus s = env.getStatus();
+        if (s == ShellStatus.READY) {
+            this.requestVisible();
+        }
+    }
+    
+    private class CL implements ConsoleListener, Runnable, PropertyChangeListener, ShellListener {
         private boolean caret;
+        private ShellSession saveSession;
+        
+        private CL() {
+            this.saveSession = session;
+        }
+
+        @Override
+        public void shellStatusChanged(ShellEvent ev) {
+            SwingUtilities.invokeLater(ConsoleEditor.this::updateStatusAndActivate);
+        }
+        
+        @Override
+        public void shellStarted(ShellEvent ev) {
+            if (session != env.getSession()) {
+                SwingUtilities.invokeLater(ConsoleEditor.this::initialize);
+            }
+        }
+
+        @Override
+        public void shellShutdown(ShellEvent ev) {
+            env.removeShellListener(this);
+        }
+        
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getSource() == session &&
+                ShellSession.PROP_ACTIVE.equals(evt.getPropertyName())) {
+                if (evt.getNewValue() != Boolean.TRUE) {
+                    detachFromSession();
+                }
+            }
+        }
         
         public void run() {
-            try {
-                resetEditableArea(caret);
-            } catch (BadLocationException ex) {
-                // should not happen
-                Exceptions.printStackTrace(ex);
+            if (detached || session != saveSession) {
+                return;
             }
+            resetEditableArea(caret);
         }
         
         @Override
@@ -396,6 +498,98 @@ public class ConsoleEditor extends CloneableEditor {
                 SwingUtilities.invokeLater(this);
             }
         }
+
+        @Override
+        public void executing(ConsoleEvent e) {
+            SwingUtilities.invokeLater(ConsoleEditor.this::updateHourglass);
+        }
+        
+        public void closed(ConsoleEvent e) {
+            detachFromSession();
+        }
+    }
+    
+    private JPanel  executeWaitPanel;
+    private JLabel  initializingPanel;
+    
+    private JPanel prepareWaitPanel() {
+        if (executeWaitPanel == null) {
+            ExecutingGlassPanel p = new ExecutingGlassPanel();
+            p.addStopListener(this::stopExecution);
+            executeWaitPanel = p;
+        }
+        return executeWaitPanel;
+    }
+    
+    private JComponent prepareInitPanel() {
+        JLabel l = initializingPanel;
+        if (initializingPanel == null) {
+            l = new JLabel(Bundle.MSG_Initializing(), JLabel.LEADING);
+            l.setIcon(new ImageIcon(
+                getClass().getClassLoader().getResource(
+                    "org/netbeans/modules/jshell/resources/wait16.gif"
+                )
+            ));
+            initializingPanel = l;
+        }
+        return initializingPanel;
+    }
+    
+    private void stopExecution(ActionEvent e) {
+    }
+    
+    private JComponent progressIndicator;
+    
+    private void removeProgressIndicator() {
+        if (pane == null || progressIndicator == null) {
+            return;
+        }
+        JLayeredPane lp = JLayeredPane.getLayeredPaneAbove(pane);
+        if (lp == null) {
+            return;
+        }
+        lp.remove(progressIndicator);
+        lp.repaint();
+        progressIndicator.setVisible(false);
+        progressIndicator = null;
+        
+    }
+    
+    private void showProgressIndicator(JComponent indicator, int position) {
+        removeProgressIndicator();
+        try {
+            if (pane == null) {
+                return;
+            }
+            Rectangle r =  pane.getUI().modelToView(pane, position);
+            JLayeredPane lp = JLayeredPane.getLayeredPaneAbove(pane);
+            if (lp == null) {
+                return;
+            }
+            if (r == null) {
+                r = new Rectangle(); // 0:0
+            }
+            
+            lp.add(indicator, JLayeredPane.POPUP_LAYER, 0);
+            r.setSize(indicator.getPreferredSize());
+            Rectangle converted = SwingUtilities.convertRectangle(
+                    pane, r, lp);
+            indicator.setBounds(converted);
+            indicator.setVisible(true);
+            
+            this.progressIndicator = indicator;
+        } catch (BadLocationException ex) {
+            
+        }
+
+    }
+    
+    @NbBundle.Messages({
+            "MSG_Evaluating=Evaluating, please wait...",
+            "MSG_Initializing=Loading and initializing JShell. Please wait..."
+    })
+    private void showHourglass(int offset) {
+        showProgressIndicator(prepareWaitPanel(), offset + 1); // the character AFTER the termianting newline; should be on the next line.
     }
 
     @Override

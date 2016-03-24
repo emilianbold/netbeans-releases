@@ -42,6 +42,8 @@
 package org.netbeans.modules.jshell.support;
 
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 import org.netbeans.modules.jshell.model.ConsoleModel;
 import org.netbeans.modules.jshell.model.ConsoleSection;
 import org.netbeans.modules.jshell.model.Rng;
@@ -82,7 +84,8 @@ public abstract class ModelAccessor {
     
     public abstract void setSectionComplete(ConsoleSection target, boolean complete);
     
-    public abstract void beforeExecution(ConsoleModel model);
-    public abstract void afterExecution(ConsoleModel model);
+    public abstract void execute(ConsoleModel model, Runnable r, Supplier<String> prompt);
+    //public abstract void beforeExecution(ConsoleModel model);
+    //public abstract void afterExecution(ConsoleModel model);
     public abstract void setSnippetOffset(ConsoleModel model, int offset);
 }
