@@ -52,6 +52,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -463,19 +464,23 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
 
         @Override
         protected boolean isReset(PropertyChangeEvent evt) {
-            boolean reset = NbMavenProject.PROP_RESOURCE.equals(evt.getPropertyName()) && 
-                    evt.getNewValue() instanceof URI &&
-                    ((URI)evt.getNewValue()).getPath().endsWith(File.separator + MODULE_INFO);            
-            
-            if(reset) {
-                LOGGER.log(Level.FINER, "ClassPathSelector resource changed: {0}", evt);                
+            boolean reset = false;            
+            if( (NbMavenProject.PROP_RESOURCE.equals(evt.getPropertyName()) && evt.getNewValue() instanceof URI)) {
+                File file = Utilities.toFile((URI) evt.getNewValue());
+                for (String sourceRoot : proj.getOriginalMavenProject().getTestCompileSourceRoots()) {
+                    if(file.equals(new File(sourceRoot, MODULE_INFO))) {
+                        reset = true;
+                        break;
+                    }
+                }
+                if(reset) {
+                    LOGGER.log(Level.FINER, "{0} selector resource changed: {1}", new Object[]{logDesc, evt});
+                }
             }
-            
             return reset;
-            
         }
     }
-    
+           
     private static abstract class ClassPathSelector implements org.netbeans.spi.java.classpath.support.ClassPathSupport.Selector {
         private final PropertyChangeSupport support = new PropertyChangeSupport(this);
         
