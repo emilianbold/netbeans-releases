@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.java.api.common.queries;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
@@ -52,8 +50,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
@@ -61,35 +57,16 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.FileBuiltQuery;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.api.common.SourceRoots;
-import org.netbeans.modules.java.api.common.ant.UpdateHelper;
-import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
-import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
-import org.netbeans.spi.project.AuxiliaryConfiguration;
-import org.netbeans.spi.project.support.ant.AntBasedProjectType;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.ProjectGenerator;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.netbeans.spi.project.support.ant.SourcesHelper;
+import org.netbeans.modules.java.api.common.TestProject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
-import org.openide.util.ChangeSupport;
-import org.openide.util.Lookup;
-import org.openide.util.Mutex;
-import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 /**
  * Test for #105645 functionality: build/generated-sources/NAME/ roots.
@@ -107,7 +84,7 @@ public class GeneratedSourceRootTest extends NbTestCase {
             fo.delete();
         }
         clearWorkDir();
-        MockLookup.setInstances(new TestAntBasedProjectType());
+        MockLookup.setInstances(TestProject.createProjectType());
     }
 
     public void testSourceRoots() throws Exception {
@@ -210,176 +187,13 @@ public class GeneratedSourceRootTest extends NbTestCase {
             TestFileUtils.writeFile(dir, "build/generated-sources/stuff/net/nowhere/XGen.java",
                     "package net.nowhere; public class XGen {}");
         }
-        return ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Project>() {
-            public Project run() throws Exception {
-                AntProjectHelper h = ProjectGenerator.createProject(dir, "test");
-                EditableProperties pp = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                pp.setProperty("src.dir", "src");
-                pp.setProperty("test.src.dir", "test");
-                pp.setProperty("build.dir", "build");
-                pp.setProperty("build.classes.dir", "${build.dir}/classes");
-                pp.setProperty("build.test.classes.dir", "${build.dir}/test/classes");
-                pp.setProperty("build.generated.sources.dir", "${build.dir}/generated-sources");
-                pp.setProperty("javac.classpath", "lib.jar");
-                pp.setProperty("javac.test.classpath", "${javac.classpath}:junit.jar");
-                pp.setProperty("run.classpath", "${javac.classpath}:${build.classes.dir}:runlib.jar");
-                pp.setProperty("run.test.classpath", "${javac.test.classpath}:${build.test.classes.dir}:runlib.jar");
-                pp.setProperty("dist.dir", "dist");
-                pp.setProperty("dist.jar", "${dist.dir}/x.jar");
-                pp.setProperty("javac.source", "1.5");
-                pp.setProperty("encoding", "ISO-8859-2");
-                h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, pp);
-                Element data = h.getPrimaryConfigurationData(true);
-                Document doc = data.getOwnerDocument();
-                ((Element) data.appendChild(doc.createElementNS(NS, "source-roots")).
-                        appendChild(doc.createElementNS(NS, "root"))).
-                        setAttribute("id", "src.dir");
-                ((Element) data.appendChild(doc.createElementNS(NS, "test-roots")).
-                        appendChild(doc.createElementNS(NS, "root"))).
-                        setAttribute("id", "test.src.dir");
-                h.putPrimaryConfigurationData(data, true);
-                Project p = ProjectManager.getDefault().findProject(dir);
-                assertEquals(TestProject.class, p.getClass());
-                ProjectManager.getDefault().saveProject(p);
-                return p;
-            }
-        });
+        final FileObject srcRoot = dir.getFileObject("src");
+        assertNotNull(srcRoot);
+        final FileObject testRoot = dir.getFileObject("test");
+        assertNotNull(testRoot);
+        return TestProject.createProject(dir,srcRoot, testRoot);
     }
 
-    private static final String NS = "urn:test";
-    private static class TestAntBasedProjectType implements AntBasedProjectType {
-        public String getType() {
-            return "test";
-        }
-        public Project createProject(AntProjectHelper helper) throws IOException {
-            return new TestProject(helper);
-        }
-        public String getPrimaryConfigurationDataElementName(boolean shared) {
-            return "data";
-        }
-        public String getPrimaryConfigurationDataElementNamespace(boolean shared) {
-            return NS;
-        }
-    }
-    private static class TestProject implements Project {
-        private final AntProjectHelper helper;
-        private Lookup lookup;
-        TestProject(AntProjectHelper helper) {
-            this.helper = helper;
-        }
-        public FileObject getProjectDirectory() {
-            return helper.getProjectDirectory();
-        }
-        public synchronized Lookup getLookup() {
-            if (lookup == null) {
-                PropertyEvaluator evaluator = helper.getStandardPropertyEvaluator();
-                AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
-                ReferenceHelper refHelper = new ReferenceHelper(helper, aux, evaluator);
-                UpdateHelper upHelper = new UpdateHelper(new UpdateImplementation() {
-                    public boolean isCurrent() {return true;}
-                    public boolean canUpdate() {throw new AssertionError();}
-                    public void saveUpdate(EditableProperties props) throws IOException {throw new AssertionError();}
-                    public Element getUpdatedSharedConfigurationData() {throw new AssertionError();}
-                    public EditableProperties getUpdatedProjectProperties() {throw new AssertionError();}
-                }, helper);
-                SourceRoots src = SourceRoots.create(upHelper, evaluator, refHelper, NS,
-                        "source-roots", false, "src.{0}{1}.dir");
-                SourceRoots test = SourceRoots.create(upHelper, evaluator, refHelper, NS,
-                        "test-roots", false, "test.{0}{1}.dir");
-                lookup = Lookups.fixed(
-                    aux,
-                    new TestSources(this, helper, evaluator, src, test),
-                    new ClassPathProviderImpl(this.helper, evaluator, src, test),
-                    QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator, src, test),
-                    QuerySupport.createBinaryForSourceQueryImplementation(src, test, helper, evaluator),
-                    QuerySupport.createUnitTestForSourceQuery(src, test),
-                    QuerySupport.createSourceLevelQuery(evaluator),
-                    QuerySupport.createFileBuiltQuery(helper, evaluator, src, test),
-                    QuerySupport.createFileEncodingQuery(evaluator, "encoding")
-                );
-            }
-            return lookup;
-        }
-    }
-    /** Simplified copy of J2SESources. */
-    private static class TestSources implements Sources, PropertyChangeListener, ChangeListener {
-        private final Project project;
-        private final AntProjectHelper helper;
-        private final PropertyEvaluator evaluator;
-        private final SourceRoots sourceRoots;
-        private final SourceRoots testRoots;
-        private SourcesHelper sourcesHelper;
-        private Sources delegate;
-        private final ChangeSupport changeSupport = new ChangeSupport(this);
-        TestSources(Project project, AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sourceRoots, SourceRoots testRoots) {
-            this.project = project;
-            this.helper = helper;
-            this.evaluator = evaluator;
-            this.evaluator.addPropertyChangeListener(this);
-            this.sourceRoots = sourceRoots;
-            this.sourceRoots.addPropertyChangeListener(this);
-            this.testRoots = testRoots;
-            this.testRoots.addPropertyChangeListener(this);
-            initSources();
-        }
-        public SourceGroup[] getSourceGroups(final String type) {
-            return ProjectManager.mutex().readAccess(new Mutex.Action<SourceGroup[]>() {
-                public SourceGroup[] run() {
-                    Sources _delegate;
-                    synchronized (TestSources.this) {
-                        if (delegate == null) {
-                            delegate = initSources();
-                            delegate.addChangeListener(TestSources.this);
-                        }
-                        _delegate = delegate;
-                    }
-                    return _delegate.getSourceGroups(type);
-                }
-            });
-        }
-        private Sources initSources() {
-            sourcesHelper = new SourcesHelper(project, helper, evaluator);
-            register(sourceRoots);
-            register(testRoots);
-            sourcesHelper.addNonSourceRoot("${build.dir}");
-            return sourcesHelper.createSources();
-        }
-        private void register(SourceRoots roots) {
-            String[] propNames = roots.getRootProperties();
-            String[] rootNames = roots.getRootNames();
-            for (int i = 0; i < propNames.length; i++) {
-                String prop = propNames[i];
-                String displayName = roots.getRootDisplayName(rootNames[i], prop);
-                String loc = "${" + prop + "}";
-                sourcesHelper.sourceRoot(loc).displayName(displayName).add();
-                sourcesHelper.sourceRoot(loc).type(JavaProjectConstants.SOURCES_TYPE_JAVA).displayName(displayName).add();
-            }
-        }
-        public void addChangeListener(ChangeListener changeListener) {
-            changeSupport.addChangeListener(changeListener);
-        }
-        public void removeChangeListener(ChangeListener changeListener) {
-            changeSupport.removeChangeListener(changeListener);
-        }
-        private void fireChange() {
-            synchronized (this) {
-                if (delegate != null) {
-                    delegate.removeChangeListener(this);
-                    delegate = null;
-                }
-            }
-            changeSupport.fireChange();
-        }
-        public void propertyChange(PropertyChangeEvent evt) {
-            String propName = evt.getPropertyName();
-            if (SourceRoots.PROP_ROOT_PROPERTIES.equals(propName) || "build.dir".equals(propName)) {
-                this.fireChange();
-            }
-        }
-        public void stateChanged(ChangeEvent event) {
-            this.fireChange();
-        }
-    }
 
     private static class FOComparator implements Comparator<FileObject> {
         @Override
