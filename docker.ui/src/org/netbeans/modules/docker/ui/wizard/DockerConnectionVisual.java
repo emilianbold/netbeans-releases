@@ -49,6 +49,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.api.DockerSupport;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -69,15 +70,16 @@ public class DockerConnectionVisual extends javax.swing.JPanel implements Change
         if (DockerSupport.getDefault().isSocketSupported()) {
             configPanel = new ConfigurationLinuxPanel();
         } else {
+            // do not show the port binding explanation on mac and windows
+            if (Utilities.isMac() || Utilities.isWindows()) {
+                explanationLabel.setVisible(false);
+            }
+
             configPanel = new ConfigurationPanel();
         }
 
         configPanel.addChangeListener(this);
         mainPanel.add((JPanel) configPanel);
-        
-        // disable it - it is not implemented
-        // do we really want it?
-        testButton.setVisible(false);
     }
 
     public void addChangeListener(ChangeListener l) {
@@ -121,30 +123,30 @@ public class DockerConnectionVisual extends javax.swing.JPanel implements Change
 
         mainPanel = new javax.swing.JPanel();
         southPanel = new javax.swing.JPanel();
-        testButton = new javax.swing.JButton();
+        explanationLabel = new javax.swing.JLabel();
 
         mainPanel.setLayout(new java.awt.BorderLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(testButton, org.openide.util.NbBundle.getMessage(DockerConnectionVisual.class, "DockerConnectionVisual.testButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(explanationLabel, org.openide.util.NbBundle.getMessage(DockerConnectionVisual.class, "DockerConnectionVisual.explanationLabel.text")); // NOI18N
 
         javax.swing.GroupLayout southPanelLayout = new javax.swing.GroupLayout(southPanel);
         southPanel.setLayout(southPanelLayout);
         southPanelLayout.setHorizontalGroup(
             southPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(southPanelLayout.createSequentialGroup()
-                .addComponent(testButton)
-                .addGap(0, 291, Short.MAX_VALUE))
+            .addComponent(explanationLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
         );
         southPanelLayout.setVerticalGroup(
-            southPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(testButton)
+            southPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, southPanelLayout.createSequentialGroup()
+                .addComponent(explanationLabel)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
             .addComponent(southPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
@@ -158,8 +160,8 @@ public class DockerConnectionVisual extends javax.swing.JPanel implements Change
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel explanationLabel;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JPanel southPanel;
-    private javax.swing.JButton testButton;
     // End of variables declaration//GEN-END:variables
 }
