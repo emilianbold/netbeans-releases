@@ -51,8 +51,8 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.javascript2.editor.hints.JsHintsProvider.JsRuleContext;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
-import org.netbeans.modules.javascript2.editor.model.impl.PathNodeVisitor;
+import org.netbeans.modules.javascript2.model.api.ModelUtils;
+import org.netbeans.modules.javascript2.model.spi.PathNodeVisitor;
 import org.openide.util.NbBundle;
 
 /**
