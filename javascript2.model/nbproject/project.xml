@@ -128,10 +128,20 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.html.angular</friend>
+                <friend>org.netbeans.modules.html.ojet</friend>
+                <friend>org.netbeans.modules.javascript2.debug</friend>
+                <friend>org.netbeans.modules.javascript2.editor</friend>
+                <friend>org.netbeans.modules.javascript2.extjs</friend>
+                <friend>org.netbeans.modules.javascript2.jquery</friend>
+                <friend>org.netbeans.modules.javascript2.knockout</friend>
+                <friend>org.netbeans.modules.javascript2.nodejs</friend>
+                <friend>org.netbeans.modules.javascript2.prototypejs</friend>
+                <friend>org.netbeans.modules.javascript2.requirejs</friend>
                 <package>org.netbeans.modules.javascript2.model.api</package>
                 <package>org.netbeans.modules.javascript2.model.spi</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>

@@ -68,9 +68,25 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.html.angular</friend>
+                <friend>org.netbeans.modules.html.knockout</friend>
+                <friend>org.netbeans.modules.html.ojet</friend>
+                <friend>org.netbeans.modules.javascript2.doc</friend>
+                <friend>org.netbeans.modules.javascript2.editor</friend>
+                <friend>org.netbeans.modules.javascript2.extdoc</friend>
+                <friend>org.netbeans.modules.javascript2.extjs</friend>
+                <friend>org.netbeans.modules.javascript2.jade</friend>
+                <friend>org.netbeans.modules.javascript2.jquery</friend>
+                <friend>org.netbeans.modules.javascript2.jsdoc</friend>
+                <friend>org.netbeans.modules.javascript2.knockout</friend>
+                <friend>org.netbeans.modules.javascript2.model</friend>
+                <friend>org.netbeans.modules.javascript2.nodejs</friend>
+                <friend>org.netbeans.modules.javascript2.prototypejs</friend>
+                <friend>org.netbeans.modules.javascript2.requirejs</friend>
+                <friend>org.netbeans.modules.javascript2.sdoc</friend>
                 <package>org.netbeans.modules.javascript2.lexer.api</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>

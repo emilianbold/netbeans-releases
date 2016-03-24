@@ -32,10 +32,24 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.html.angular</friend>
+                <friend>org.netbeans.modules.javascript2.debug</friend>
+                <friend>org.netbeans.modules.javascript2.doc</friend>
+                <friend>org.netbeans.modules.javascript2.editor</friend>
+                <friend>org.netbeans.modules.javascript2.extdoc</friend>
+                <friend>org.netbeans.modules.javascript2.extjs</friend>
+                <friend>org.netbeans.modules.javascript2.jquery</friend>
+                <friend>org.netbeans.modules.javascript2.jsdoc</friend>
+                <friend>org.netbeans.modules.javascript2.knockout</friend>
+                <friend>org.netbeans.modules.javascript2.model</friend>
+                <friend>org.netbeans.modules.javascript2.nodejs</friend>
+                <friend>org.netbeans.modules.javascript2.prototypejs</friend>
+                <friend>org.netbeans.modules.javascript2.requirejs</friend>
+                <friend>org.netbeans.modules.javascript2.sdoc</friend>
                 <package>org.netbeans.modules.javascript2.types.api</package>
                 <package>org.netbeans.modules.javascript2.types.spi</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>
