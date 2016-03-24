@@ -152,11 +152,12 @@ public final class DockerSupport {
     }
 
     public boolean isSocketSupported() {
-        if (BaseUtilities.getOperatingSystem() != BaseUtilities.OS_LINUX) {
-            return false;
-        }
-        String arch = System.getProperty("os.arch"); // NOI18N
-        return arch != null && (arch.contains("x86") || arch.contains("amd64")); // NOI18N
+        return false;
+//        if (BaseUtilities.getOperatingSystem() != BaseUtilities.OS_LINUX) {
+//            return false;
+//        }
+//        String arch = System.getProperty("os.arch"); // NOI18N
+//        return arch != null && (arch.contains("x86") || arch.contains("amd64")); // NOI18N
     }
 
     private boolean isInitialized() {

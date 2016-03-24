@@ -146,10 +146,6 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.docker.ui</friend>
                 <package>org.netbeans.modules.docker.api</package>
             </friend-packages>
-            <class-path-extension>
-                <runtime-relative-path>ext/juds-0.95.jar</runtime-relative-path>
-                <binary-origin>external/juds-0.95.jar</binary-origin>
-            </class-path-extension>
         </data>
     </configuration>
 </project>

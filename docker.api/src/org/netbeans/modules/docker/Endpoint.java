@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.docker;
 
-import com.etsy.net.UnixDomainSocketClient;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -77,22 +76,4 @@ public interface Endpoint extends Closeable {
         };
     }
 
-    public static Endpoint forDomainSocket(final UnixDomainSocketClient s) {
-        return new Endpoint() {
-            @Override
-            public InputStream getInputStream() throws IOException {
-                return s.getInputStream();
-            }
-
-            @Override
-            public OutputStream getOutputStream() throws IOException {
-                return s.getOutputStream();
-            }
-
-            @Override
-            public void close() throws IOException {
-                s.close();
-            }
-        };
-    }
 }

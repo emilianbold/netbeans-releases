@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.docker.api;
 
-import com.etsy.net.JUDS;
-import com.etsy.net.UnixDomainSocketClient;
 import org.netbeans.modules.docker.StreamItem;
 import org.netbeans.modules.docker.ConnectionListener;
 import org.netbeans.modules.docker.DockerRemoteException;
@@ -129,11 +127,6 @@ public class DockerAction {
     private static final Pair<String, String> ACCEPT_JSON_HEADER = Pair.of("Accept", "application/json");
 
     static {
-        if (System.getProperty("juds.folder.preferred") == null) {
-            String userhome = System.getProperty("netbeans.user");
-            System.setProperty("juds.folder.preferred", userhome);
-        }
-
         DockerActionAccessor.setDefault(new DockerActionAccessor() {
             @Override
             public void events(DockerAction action, Long since, DockerEvent.Listener listener, ConnectionListener connectionListener) throws DockerException {
@@ -1233,10 +1226,7 @@ public class DockerAction {
                 s.connect(new InetSocketAddress(realUrl.getHost(), port));
                 return Endpoint.forSocket(s);
             } else {
-                UnixDomainSocketClient s = new UnixDomainSocketClient(
-                        new File(realUrl.toURI()).getAbsolutePath(), JUDS.SOCK_STREAM);
-                s.setTimeout(0);
-                return Endpoint.forDomainSocket(s);
+                throw new IOException("Unknown protocol: " + realUrl.getProtocol());
             }
         } catch (URISyntaxException ex) {
             throw new IOException(ex);
