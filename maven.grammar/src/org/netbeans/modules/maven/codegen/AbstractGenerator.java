@@ -133,8 +133,8 @@ public abstract class AbstractGenerator<T extends AbstractDocumentModel> impleme
             if(componentAtCarret.getPeer().getTagName().equals(parentTagName)) {
                 c = componentAtCarret;
             } else if(componentAtCarret.getClass() == newChild.getClass() && componentAtCarret.findPosition() == pos) {
-                // if carret positioned at the begining of "<license>"
-                c = componentAtCarret.getParent(); // get the parent (<license>) in such a case
+                // if carret positioned at the begining of e.g. "<license>"
+                c = componentAtCarret.getParent(); // get the parent (<licenses>) in such a case
             }
             if(c != null) {
                 List<C> list = childrenListProvider.get();
