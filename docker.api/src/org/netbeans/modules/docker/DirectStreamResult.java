@@ -53,7 +53,7 @@ import java.nio.charset.Charset;
  */
 public class DirectStreamResult implements StreamResult {
 
-    private final Socket s;
+    private final Endpoint s;
 
     private final Charset charset;
 
@@ -63,7 +63,7 @@ public class DirectStreamResult implements StreamResult {
 
     private final InputStream stdErr;
 
-    public DirectStreamResult(Socket s, Charset charset, InputStream is) throws IOException {
+    public DirectStreamResult(Endpoint s, Charset charset, InputStream is) throws IOException {
         this.s = s;
         this.charset = charset;
         this.stdIn = s.getOutputStream();

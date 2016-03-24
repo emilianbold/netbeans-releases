@@ -43,11 +43,11 @@ package org.netbeans.modules.docker;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
@@ -58,6 +58,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.Pair;
 
 /**
@@ -107,26 +108,45 @@ public final class HttpUtils {
         return new String(content, encoding);
     }
 
-    public static String readError(HttpURLConnection conn) throws IOException {
-        InputStream err = conn.getErrorStream();
-        if (err == null || err.available() <= 0) {
-            return null;
-        }
-        Charset encoding = getCharset(conn.getContentType());
-        ByteArrayOutputStream bos = new ByteArrayOutputStream(200);
-        byte[] content = new byte[200];
-        int length;
-        while((length = err.read(content)) != -1) {
-            bos.write(content, 0, length);
-        }
-        return bos.toString(encoding.name());
-    }
-
-    public static InputStream getResponseStream(InputStream is, Response response) {
+    public static InputStream getResponseStream(InputStream is, Response response, boolean allowSocketStream) throws IOException {
         if (isChunked(response.getHeaders())) {
             return new ChunkedInputStream(new BufferedInputStream(is));
         } else {
-            return new BufferedInputStream(is);
+            Integer l = getLength(response.getHeaders());
+            if (l != null) {
+                return new BufferedInputStream(new FilterInputStream(is) {
+                    private int available = l;
+
+                    @Override
+                    public int available() throws IOException {
+                        return Math.min(super.available(), available);
+                    }
+
+                    @Override
+                    public int read(byte[] b, int off, int len) throws IOException {
+                        if (available <= 0) {
+                            return -1;
+                        }
+                        int real = Math.min(available, len);
+                        int count = super.read(b, off, real);
+                        available -= count;
+                        return count;
+                    }
+
+                    @Override
+                    public int read() throws IOException {
+                        if (available <= 0) {
+                            return -1;
+                        }
+                        available--;
+                        return super.read();
+                    }
+                });
+            } else if (allowSocketStream) {
+                return new BufferedInputStream(is);
+            } else {
+                throw new IOException("Undefined content length");
+            }
         }
     }
 
@@ -142,12 +162,9 @@ public final class HttpUtils {
         }
     }
 
+    @NonNull
     public static Charset getCharset(Response response) {
         return getCharset(response.getHeaders().get("CONTENT-TYPE")); // NOI18N
-    }
-
-    public static Charset getCharset(HttpURLConnection connection) {
-        return getCharset(connection.getContentType());
     }
 
     public static String encodeParameter(String value) throws UnsupportedEncodingException {
@@ -178,20 +195,6 @@ public final class HttpUtils {
         for (Map.Entry<String, String> e : toUse.entrySet()) {
             sb.append(e.getKey()).append(":").append(" "); // NOI18N
             sb.append(e.getValue()).append("\r\n"); // NOI18N
-        }
-    }
-
-    public static void configureHeaders(HttpURLConnection conn, Map<String, String> defaultHeaders,
-            Pair<String, String>... headers) {
-
-        for (Map.Entry<String, String> e : defaultHeaders.entrySet()) {
-            conn.setRequestProperty(e.getKey(), e.getValue());
-        }
-        for (Pair<String, String> h : headers) {
-            if (h == null) {
-                continue;
-            }
-            conn.setRequestProperty(h.first(), h.second());
         }
     }
 
