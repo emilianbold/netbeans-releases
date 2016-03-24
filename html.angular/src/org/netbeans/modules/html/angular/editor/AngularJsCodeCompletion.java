@@ -63,11 +63,11 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.angular.index.AngularJsController;
 import org.netbeans.modules.html.angular.index.AngularJsIndex;
 import org.netbeans.modules.html.angular.model.Directive;
-import org.netbeans.modules.javascript2.editor.index.IndexedElement;
-import org.netbeans.modules.javascript2.editor.index.JsIndex;
-import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.spi.CompletionContext;
 import org.netbeans.modules.javascript2.editor.spi.CompletionProvider;
+import org.netbeans.modules.javascript2.model.api.Index;
+import org.netbeans.modules.javascript2.model.api.IndexedElement;
+import org.netbeans.modules.javascript2.model.api.JsElement;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -194,7 +194,7 @@ public class AngularJsCodeCompletion implements CompletionProvider {
             }
         }
         
-        JsIndex jsIndex = JsIndex.get(fo);
+        Index jsIndex = Index.get(fo);
         if (jsIndex != null) {
             Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(ccContext.getPrefix());
             for (IndexedElement variable : globalVars) {
