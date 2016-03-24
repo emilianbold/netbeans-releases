@@ -108,9 +108,13 @@ public class LicenseGenerator extends AbstractGenerator<POMModel> {
                     if (!url.isEmpty()) {
                         lic.setUrl(url);
                     }
-                    model.getProject().addLicense(lic);
+                    
+                    if(!addAtPosition(model.getPOMQNames().LICENSES.getName(), model.getProject()::getLicenses, lic)) {                        
+                        model.getProject().addLicense(lic);
+                    } 
+                    
                    return lic.getModel().getAccess().findPosition(lic.getPeer());
-                }
+                }                                
             });
         }
     }

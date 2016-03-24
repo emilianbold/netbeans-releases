@@ -98,11 +98,11 @@ public class DependencyGenerator extends AbstractGenerator<POMModel> {
         assert fo != null;
         org.netbeans.api.project.Project prj = FileOwnerQuery.getOwner(fo);
         assert prj != null;
-        int pos = component.getCaretPosition();
-        DocumentComponent c = model.findComponent(pos);
+        final int carretPos = component.getCaretPosition();
+        final DocumentComponent componentAtCarret = model.findComponent(carretPos);
         boolean dm = false;
-        if (c != null) {
-            String xpath = model.getXPathExpression(c);
+        if (componentAtCarret != null) {
+            String xpath = model.getXPathExpression(componentAtCarret);
             dm = xpath.contains("dependencyManagement"); //NOI18N
         }
         String[] ret = DialogFactory.showDependencyDialog(prj, !dm);
@@ -117,8 +117,8 @@ public class DependencyGenerator extends AbstractGenerator<POMModel> {
                 @Override
                 public int write() {
                     int pos = component.getCaretPosition();
-                    DependencyContainer container = findContainer(pos, model);
-                    Dependency dep = container.findDependencyById(groupId, artifactId, classifier);
+                    DependencyContainer dependencyContainer = findContainer(pos, model);
+                    Dependency dep = dependencyContainer.findDependencyById(groupId, artifactId, classifier);
                     if (dep == null) {
                         dep = model.getFactory().createDependency();
                         dep.setGroupId(groupId);
@@ -127,10 +127,13 @@ public class DependencyGenerator extends AbstractGenerator<POMModel> {
                         dep.setScope(scope);
                         dep.setType(type);
                         dep.setClassifier(classifier);
-                        container.addDependency(dep);
+                            
+                        if(!addAtPosition(componentAtCarret, model.getPOMQNames().DEPENDENCIES.getName(), dependencyContainer::getDependencies, dep)) {
+                            dependencyContainer.addDependency(dep);
+                        }
                     }
                     return dep.getModel().getAccess().findPosition(dep.getPeer());
-                }
+                }                             
             });
         }
     }

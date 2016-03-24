@@ -171,7 +171,11 @@ public class ProfileGenerator extends AbstractGenerator<POMModel> {
                                 act.setActivationOS(os);
                             }
                         }
-                        model.getProject().addProfile(prof);
+                        
+                        if(!addAtPosition(model.getPOMQNames().PROFILES.getName(), model.getProject()::getProfiles, prof)) {
+                            model.getProject().addProfile(prof);
+                        } 
+                        
                         return prof.getModel().getAccess().findPosition(prof.getPeer());
                     }
                     return -1;
