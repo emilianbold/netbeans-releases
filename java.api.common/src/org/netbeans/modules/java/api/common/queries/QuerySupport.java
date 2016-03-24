@@ -281,6 +281,19 @@ public final class QuerySupport {
     }
 
     /**
+     * Create a new query to set up explicit compiler options needed for unit test compilation.
+     * @param srcRoots the source roots
+     * @param testRoots the test roots
+     * @return a {@link CompilerOptionsQueryImplementation} to find out unit test compiler options
+     * @since 1.82
+     */
+    public static CompilerOptionsQueryImplementation createUnitTestsCompilerOptionsQuery(
+            @NonNull final SourceRoots srcRoots,
+            @NonNull final SourceRoots testRoots) {
+        return new UnitTestsCompilerOptionsQueryImpl(srcRoots, testRoots);
+    }
+
+    /**
      * Create a new query to find Java package roots of unit tests for Java package root of sources and vice versa.
      * @param sourceRoots a list of source roots.
      * @param testRoots a list of test roots.

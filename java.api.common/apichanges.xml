@@ -105,6 +105,22 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
+        <change id="UnitTestsCompilerOptionsQuery">
+            <api name="java-api-common"/>
+            <summary>Added a factory method into <code>QuerySupport</code>to create unit tests <code>CompilerOptionsQueryImplementation</code> provider</summary>
+            <version major="1" minor="82"/>
+            <date day="24" month="3" year="2016"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added a factory method into <code>QuerySupport</code>to create an implementation of the
+                    <code>CompilerOptionsQueryImplementation</code> providing explicit compiler options for
+                    tests compilation based on the source level and module-infos in source and test roots.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.queries" name="QuerySupport"/>
+        </change>
         <change id="CompilerOptionsQueryImpl">
             <api name="java-api-common"/>
             <summary>Added a factory method into <code>QuerySupport</code>to create<code>CompilerOptionsQueryImplementation</code> provider</summary>
