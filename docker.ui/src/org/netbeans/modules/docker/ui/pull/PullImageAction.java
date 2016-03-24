@@ -59,7 +59,7 @@ import org.netbeans.modules.docker.api.DockerAction;
 import org.netbeans.modules.docker.api.DockerAuthenticationException;
 import org.netbeans.modules.docker.api.DockerName;
 import org.netbeans.modules.docker.ui.credentials.CredentialsUtils;
-import org.netbeans.modules.docker.ui.node.EnhancedDockerInstance;
+import org.netbeans.modules.docker.ui.node.StatefulDockerInstance;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -123,7 +123,7 @@ public class PullImageAction extends NodeAction {
         if (activatedNodes.length != 1) {
             return false;
         }
-        EnhancedDockerInstance checked = activatedNodes[0].getLookup().lookup(EnhancedDockerInstance.class);
+        StatefulDockerInstance checked = activatedNodes[0].getLookup().lookup(StatefulDockerInstance.class);
         if (checked == null || !checked.isAvailable()) {
             return false;
         }

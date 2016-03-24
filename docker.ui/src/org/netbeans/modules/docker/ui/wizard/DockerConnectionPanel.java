@@ -44,23 +44,30 @@ package org.netbeans.modules.docker.ui.wizard;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.docker.api.DockerAction;
 import org.netbeans.modules.docker.api.DockerInstance;
-import org.netbeans.modules.docker.api.DockerIntegration;
+import org.netbeans.modules.docker.api.DockerSupport;
 import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
+@NbBundle.Messages("MSG_InaccessibleSocket=Socket is not accessible.")
+public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchronousValidatingPanel<WizardDescriptor>, ChangeListener {
 
     private static final Pattern REMOTE_HOST_PATTERN = Pattern.compile("^(tcp://)[^/:](:\\d+)($|/.*)"); // NOI18N
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+
+    private final Map<String, Object> values = new HashMap<>();
 
     /**
      * The visual component that displays this panel. If you need to access the
@@ -94,6 +101,7 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
     @NbBundle.Messages({
         "MSG_EmptyDisplayName=Display name must not be empty.",
         "MSG_AlreadyUsedDisplayName=Display name is already used by another instance.",
+        "MSG_EmptySocket=Unix socket must not be empty.",
         "MSG_EmptyUrl=URL must not be empty.",
         "MSG_InvalidUrl=URL must be valid http or https URL.",
         "MSG_NonExistingCertificatePath=The certificates path does not exist.",
@@ -108,68 +116,145 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
         wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
         wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, null);
 
-        String displayName = component.getDisplayName();
+        Configuration panel = component.getConfiguration();
+        String displayName = panel.getDisplayName();
         if (displayName == null) {
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_EmptyDisplayName());
             return false;
         }
-        for (DockerInstance instance : DockerIntegration.getDefault().getInstances()) {
+        for (DockerInstance instance : DockerSupport.getDefault().getInstances()) {
             if (displayName.equals(instance.getDisplayName())) {
                 wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_AlreadyUsedDisplayName());
                 return false;
             }
         }
 
-        String url = component.getUrl();
-        if (url == null) {
-            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_EmptyUrl());
-            return false;
-        }
+        if (panel.isSocketSelected()) {
+            File socket = panel.getSocket();
+            if (socket == null) {
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_EmptySocket());
+                return false;
+            }
+            if (!socket.exists() || !socket.canRead() || !socket.canWrite()) {
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_InaccessibleSocket());
+                return false;
+            }
+        } else {
+            String url = panel.getUrl();
+            if (url == null) {
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_EmptyUrl());
+                return false;
+            }
 
-        URL realUrl = null;
-        boolean urlWrong = false;
-        try {
-            realUrl = new URL(url);
-            if (!"http".equals(realUrl.getProtocol()) && !"https".equals(realUrl.getProtocol())) { // NOI18N
+            URL realUrl = null;
+            boolean urlWrong = false;
+            try {
+                realUrl = new URL(url);
+                if (!"http".equals(realUrl.getProtocol()) // NOI18N
+                        && !"https".equals(realUrl.getProtocol())) { // NOI18N
+                    urlWrong = true;
+                }
+            } catch (MalformedURLException ex) {
                 urlWrong = true;
             }
-        } catch (MalformedURLException ex) {
-            urlWrong = true;
-        }
-        if (urlWrong) {
-            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_InvalidUrl());
-            return false;
-        }
+            if (urlWrong) {
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_InvalidUrl());
+                return false;
+            }
 
-        String certPath = component.getCertPath();
-        if (certPath != null) {
-            File certPathFile = new File(certPath);
-            if (!certPathFile.isDirectory()) {
-                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_NonExistingCertificatePath());
-                return false;
+            String certPath = panel.getCertPath();
+            if (certPath != null) {
+                File certPathFile = new File(certPath);
+                if (!certPathFile.isDirectory()) {
+                    wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_NonExistingCertificatePath());
+                    return false;
+                }
+                if (!new File(certPathFile, AddDockerInstanceWizard.DEFAULT_CA_FILE).isFile()) {
+                    wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                            Bundle.MSG_CertificatePathMissingFile(AddDockerInstanceWizard.DEFAULT_CA_FILE));
+                    return false;
+                }
+                if (!new File(certPathFile, AddDockerInstanceWizard.DEFAULT_CERT_FILE).isFile()) {
+                    wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                            Bundle.MSG_CertificatePathMissingFile(AddDockerInstanceWizard.DEFAULT_CERT_FILE));
+                    return false;
+                }
+                if (!new File(certPathFile, AddDockerInstanceWizard.DEFAULT_KEY_FILE).isFile()) {
+                    wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                            Bundle.MSG_CertificatePathMissingFile(AddDockerInstanceWizard.DEFAULT_KEY_FILE));
+                    return false;
+                }
             }
-            if (!new File(certPathFile, AddDockerInstanceWizard.DEFAULT_CA_FILE).isFile()) {
-                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                        Bundle.MSG_CertificatePathMissingFile(AddDockerInstanceWizard.DEFAULT_CA_FILE));
-                return false;
-            }
-            if (!new File(certPathFile, AddDockerInstanceWizard.DEFAULT_CERT_FILE).isFile()) {
-                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                        Bundle.MSG_CertificatePathMissingFile(AddDockerInstanceWizard.DEFAULT_CERT_FILE));
-                return false;
-            }
-            if (!new File(certPathFile, AddDockerInstanceWizard.DEFAULT_KEY_FILE).isFile()) {
-                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                        Bundle.MSG_CertificatePathMissingFile(AddDockerInstanceWizard.DEFAULT_KEY_FILE));
-                return false;
-            }
-        }
 
-        if (realUrl != null && "https".equals(realUrl.getProtocol()) && certPath == null) { // NOI18N
-            wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, Bundle.MSG_NoCertificatesForSecure());
+            if (realUrl != null && "https".equals(realUrl.getProtocol()) && certPath == null) { // NOI18N
+                wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, Bundle.MSG_NoCertificatesForSecure());
+            }
         }
 
         return true;
+    }
+
+    @Override
+    public void prepareValidation() {
+        synchronized (values) {
+            values.clear();
+            Configuration panel = component.getConfiguration();
+            values.put(AddDockerInstanceWizard.DISPLAY_NAME_PROPERTY, panel.getDisplayName());
+            values.put(AddDockerInstanceWizard.SOCKET_SELECTED_PROPERTY, panel.isSocketSelected());
+            values.put(AddDockerInstanceWizard.SOCKET_PROPERTY, panel.getSocket());
+            values.put(AddDockerInstanceWizard.URL_PROPERTY, panel.getUrl());
+            values.put(AddDockerInstanceWizard.CERTIFICATE_PATH_PROPERTY, panel.getCertPath());
+        }
+        component.setWaitingState(true);
+    }
+
+    @Override
+    public void finishValidation() {
+        component.setWaitingState(false);
+    }
+
+    @NbBundle.Messages("MSG_CannotConnect=Cannot establish connection.")
+    @Override
+    public void validate() throws WizardValidationException {
+        try {
+            DockerInstance instance;
+            synchronized (values) {
+                boolean socketSelected = (Boolean) values.get(AddDockerInstanceWizard.SOCKET_SELECTED_PROPERTY);
+                if (socketSelected) {
+                    File socket = (File) values.get(AddDockerInstanceWizard.SOCKET_PROPERTY);
+                    // this is repeated here as the acessibility might have change since the last check
+                    if (!socket.exists() || !socket.canRead() || !socket.canWrite()) {
+                        String error = Bundle.MSG_InaccessibleSocket();
+                        throw new WizardValidationException(component, error, error);
+                    }
+                    instance = DockerInstance.getInstance(Utilities.toURI(socket).toURL().toString(),
+                            null, null, null, null);
+                } else {
+                    File caFile = null;
+                    File certFile = null;
+                    File keyFile = null;
+
+                    String strCertPath = (String) values.get(AddDockerInstanceWizard.CERTIFICATE_PATH_PROPERTY);
+                    if (strCertPath != null) {
+                        File file = new File(strCertPath);
+                        caFile = new File(file, AddDockerInstanceWizard.DEFAULT_CA_FILE);
+                        certFile = new File(file, AddDockerInstanceWizard.DEFAULT_CERT_FILE);
+                        keyFile = new File(file, AddDockerInstanceWizard.DEFAULT_KEY_FILE);
+                    }
+                    instance = DockerInstance.getInstance((String) values.get(AddDockerInstanceWizard.URL_PROPERTY),
+                            null, caFile, certFile, keyFile);
+                }
+            }
+
+            DockerAction action = new DockerAction(instance);
+            if (!action.ping()) {
+                String error = Bundle.MSG_CannotConnect();
+                throw new WizardValidationException(component, error, error);
+            }
+        } catch (MalformedURLException ex) {
+            String error = Bundle.MSG_CannotConnect();
+            throw new WizardValidationException(component, error, error);
+        }
     }
 
     @Override
@@ -187,27 +272,42 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
     })
     @Override
     public void readSettings(WizardDescriptor wiz) {
+        boolean init = false;
         if (wizard == null) {
+            init = true;
             wizard = wiz;
         }
 
+        Configuration panel = component.getConfiguration();
         String displayName = (String) wiz.getProperty(AddDockerInstanceWizard.DISPLAY_NAME_PROPERTY);
-        if (displayName == null) {
+        if (displayName == null && init) {
             displayName = Bundle.LBL_DefaultDisplayName();
         }
-        component.setDisplayName(displayName);
+        panel.setDisplayName(displayName);
+
+        Boolean socketSelected = (Boolean) wiz.getProperty(AddDockerInstanceWizard.SOCKET_SELECTED_PROPERTY);
+        if (socketSelected == null) {
+            socketSelected = DockerSupport.getDefault().isSocketSupported();
+        }
+        panel.setSocketSelected(socketSelected);
+
+        File socket = (File) wiz.getProperty(AddDockerInstanceWizard.SOCKET_PROPERTY);
+        if (socket == null && init && socketSelected) {
+            socket = getDefaultSocket();
+        }
+        panel.setSocket(socket);
 
         String url = (String) wiz.getProperty(AddDockerInstanceWizard.URL_PROPERTY);
-        if (url == null) {
+        if (url == null && init && !socketSelected) {
             url = getDefaultUrl();
         }
-        component.setUrl(url);
+        panel.setUrl(url);
 
         String certPath = (String) wiz.getProperty(AddDockerInstanceWizard.CERTIFICATE_PATH_PROPERTY);
-        if (certPath == null) {
+        if (certPath == null && init && !socketSelected) {
             certPath = getDefaultCertificatePath();
         }
-        component.setCertPath(certPath);
+        panel.setCertPath(certPath);
 
         // XXX revalidate; is this bug?
         changeSupport.fireChange();
@@ -215,14 +315,25 @@ public class DockerConnectionPanel implements WizardDescriptor.Panel<WizardDescr
 
     @Override
     public void storeSettings(WizardDescriptor wiz) {
-        wiz.putProperty(AddDockerInstanceWizard.DISPLAY_NAME_PROPERTY, component.getDisplayName());
-        wiz.putProperty(AddDockerInstanceWizard.URL_PROPERTY, component.getUrl());
-        wiz.putProperty(AddDockerInstanceWizard.CERTIFICATE_PATH_PROPERTY, component.getCertPath());
+        Configuration panel = component.getConfiguration();
+        wiz.putProperty(AddDockerInstanceWizard.DISPLAY_NAME_PROPERTY, panel.getDisplayName());
+        wiz.putProperty(AddDockerInstanceWizard.SOCKET_SELECTED_PROPERTY, panel.isSocketSelected());
+        wiz.putProperty(AddDockerInstanceWizard.SOCKET_PROPERTY, panel.getSocket());
+        wiz.putProperty(AddDockerInstanceWizard.URL_PROPERTY, panel.getUrl());
+        wiz.putProperty(AddDockerInstanceWizard.CERTIFICATE_PATH_PROPERTY, panel.getCertPath());
     }
 
     @Override
     public void stateChanged(ChangeEvent e) {
         changeSupport.fireChange();
+    }
+
+    private static File getDefaultSocket() {
+        File file = new File("/var/run/docker.sock"); // NOI18N
+        if (file.exists()) {
+            return file;
+        }
+        return null;
     }
 
     private static String getDefaultUrl() {

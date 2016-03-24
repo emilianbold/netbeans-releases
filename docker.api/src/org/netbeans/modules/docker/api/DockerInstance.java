@@ -53,7 +53,6 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -88,116 +87,63 @@ public class DockerInstance {
 
     private final String url;
 
-    private final Preferences prefs;
+    // GuardedBy("this")
+    private String displayName;
+
+    // GuardedBy("this")
+    private File caCertificate;
+
+    // GuardedBy("this")
+    private File certificate;
+
+    // GuardedBy("this")
+    private File key;
+
+    // GuardedBy("this")
+    private Preferences prefs;
 
     private final DockerEventBus eventBus = new DockerEventBus(this);
 
-    private DockerInstance(String url, Preferences prefs) {
+    private DockerInstance(String url, String displayName, File caCertificate, File certificate, File key) {
         this.url = url;
-        this.prefs = prefs;
+        this.displayName = displayName;
+        this.caCertificate = caCertificate;
+        this.certificate = certificate;
+        this.key = key;
     }
 
     @NonNull
-    static DockerInstance create(@NonNull String displayName, @NonNull String url,
+    public static DockerInstance getInstance(@NonNull String url, @NullAllowed String displayName,
             @NullAllowed File caCertificate, @NullAllowed File certificate, @NullAllowed File key) {
-        Preferences global = NbPreferences.forModule(DockerInstance.class).node(INSTANCES_KEY);
 
-        // XXX synchronization ?
-        Preferences prefs = null;
-        int suffix = 0;
-        do {
-            prefs = global.node(escapeUrl(url) + suffix);
-            suffix++;
-        } while (prefs.get(URL_KEY, null) != null && suffix < Integer.MAX_VALUE);
-
-        prefs.put(DISPLAY_NAME_KEY, displayName);
-        prefs.put(URL_KEY, url);
-        if (caCertificate != null) {
-            prefs.put(CA_CERTIFICATE_PATH_KEY, FileUtil.normalizeFile(caCertificate).getAbsolutePath());
-        }
-        if (certificate != null) {
-            prefs.put(CERTIFICATE_PATH_KEY, FileUtil.normalizeFile(certificate).getAbsolutePath());
-        }
-        if (key != null) {
-            prefs.put(KEY_PATH_KEY, FileUtil.normalizeFile(key).getAbsolutePath());
-        }
-        try {
-            prefs.flush();
-        } catch (BackingStoreException ex) {
-            // XXX better solution?
-            throw new IllegalStateException(ex);
-        }
-        DockerInstance instance = new DockerInstance(url, prefs);
-        instance.init();
-        return instance;
-    }
-
-    static Collection<? extends DockerInstance> findAll() {
-        Preferences global = NbPreferences.forModule(DockerInstance.class).node(INSTANCES_KEY);
-        assert global != null;
-
-        List<DockerInstance> instances = new ArrayList<>();
-        try {
-            String[] names = global.childrenNames();
-            if (names.length == 0) {
-                LOGGER.log(Level.INFO, "No preferences nodes");
-            }
-            for (String name : names) {
-                Preferences p = global.node(name);
-                String displayName = p.get(DISPLAY_NAME_KEY, null);
-                String url = p.get(URL_KEY, null);
-                if (displayName != null && url != null) {
-                    DockerInstance instance = new DockerInstance(url, p);
-                    instance.init();
-                    instances.add(instance);
-                } else {
-                    LOGGER.log(Level.INFO, "Invalid Docker instance {0}", name);
-                }
-            }
-            LOGGER.log(Level.FINE, "Loaded {0} Docker instances", instances.size());
-        } catch (BackingStoreException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-        }
-        return instances;
-    }
-
-    public String getDisplayName() {
-        return prefs.get(DISPLAY_NAME_KEY, null);
+        return new DockerInstance(url, displayName, caCertificate, certificate, key);
     }
 
     public String getUrl() {
-        return prefs.get(URL_KEY, null);
+        return url;
+    }
+
+    public String getDisplayName() {
+        synchronized (this) {
+            return displayName;
+        }
     }
 
     public File getCaCertificateFile() {
-        String path = prefs.get(CA_CERTIFICATE_PATH_KEY, null);
-        return path == null ? null : new File(path);
+        synchronized (this) {
+            return caCertificate;
+        }
     }
 
     public File getCertificateFile() {
-        String path = prefs.get(CERTIFICATE_PATH_KEY, null);
-        return path == null ? null : new File(path);
+        synchronized (this) {
+            return certificate;
+        }
     }
 
     public File getKeyFile() {
-        String path = prefs.get(KEY_PATH_KEY, null);
-        return path == null ? null : new File(path);
-    }
-
-    public boolean isAvailable() {
-        if (SwingUtilities.isEventDispatchThread()) {
-            throw new IllegalStateException("Method isConnected might block the EDT");
-        }
-        return new DockerAction(this).ping();
-    }
-
-    public void remove() {
-        eventBus.close();
-        try {
-            prefs.removePreferenceChangeListener(listener);
-            prefs.removeNode();
-        } catch (BackingStoreException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
+        synchronized (this) {
+            return key;
         }
     }
 
@@ -263,12 +209,118 @@ public class DockerInstance {
         return "DockerInstance{" + "url=" + url + '}';
     }
 
-    DockerEventBus getEventBus() {
-        return eventBus;
+    static Collection<? extends DockerInstance> loadAll() {
+        Preferences global = NbPreferences.forModule(DockerInstance.class).node(INSTANCES_KEY);
+        assert global != null;
+
+        List<DockerInstance> instances = new ArrayList<>();
+        try {
+            String[] names = global.childrenNames();
+            if (names.length == 0) {
+                LOGGER.log(Level.INFO, "No preferences nodes");
+            }
+            for (String name : names) {
+                Preferences p = global.node(name);
+                String displayName = p.get(DISPLAY_NAME_KEY, null);
+                String url = p.get(URL_KEY, null);
+                if (displayName != null && url != null
+                        && (!url.startsWith("file:") || DockerSupport.getDefault().isSocketSupported())) { // NOI18N
+                    DockerInstance instance = new DockerInstance(url, null, null, null, null);
+                    instance.load(p);
+
+                    instances.add(instance);
+                } else {
+                    LOGGER.log(Level.INFO, "Invalid Docker instance {0}", name);
+                }
+            }
+            LOGGER.log(Level.FINE, "Loaded {0} Docker instances", instances.size());
+        } catch (BackingStoreException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        }
+        return instances;
     }
 
-    private void init() {
-        prefs.addPreferenceChangeListener(listener);
+    final void save() {
+        synchronized (this) {
+            if (prefs != null) {
+                throw new IllegalStateException();
+            }
+
+            Preferences global = NbPreferences.forModule(DockerInstance.class).node(INSTANCES_KEY);
+
+            Preferences p = null;
+            int suffix = 0;
+            do {
+                p = global.node(escapeUrl(url) + suffix);
+                suffix++;
+            } while (p.get(URL_KEY, null) != null && suffix < Integer.MAX_VALUE);
+
+            p.put(DISPLAY_NAME_KEY, displayName);
+            p.put(URL_KEY, url);
+            if (caCertificate != null) {
+                p.put(CA_CERTIFICATE_PATH_KEY, FileUtil.normalizeFile(caCertificate).getAbsolutePath());
+            }
+            if (certificate != null) {
+                p.put(CERTIFICATE_PATH_KEY, FileUtil.normalizeFile(certificate).getAbsolutePath());
+            }
+            if (key != null) {
+                p.put(KEY_PATH_KEY, FileUtil.normalizeFile(key).getAbsolutePath());
+            }
+            try {
+                p.flush();
+            } catch (BackingStoreException ex) {
+                // XXX better solution?
+                throw new IllegalStateException(ex);
+            }
+            this.prefs = p;
+            this.prefs.addPreferenceChangeListener(listener);
+        }
+    }
+
+    final void delete() {
+        synchronized (this) {
+            if (prefs == null) {
+                throw new IllegalStateException();
+            }
+            try {
+                prefs.removePreferenceChangeListener(listener);
+                prefs.removeNode();
+            } catch (BackingStoreException ex) {
+                LOGGER.log(Level.WARNING, null, ex);
+            }
+            prefs = null;
+        }
+    }
+
+    private final void load(Preferences p) {
+        synchronized (this) {
+            if (prefs != null) {
+                throw new IllegalStateException();
+            }
+            prefs = p;
+            prefs.addPreferenceChangeListener(listener);
+            refresh();
+        }
+    }
+
+    private void refresh() {
+        synchronized (this) {
+            if (prefs == null) {
+                return;
+            }
+
+            displayName = prefs.get(DISPLAY_NAME_KEY, null);
+            String caCertPath = prefs.get(CA_CERTIFICATE_PATH_KEY, null);
+            caCertificate = caCertPath == null ? null : new File(caCertPath);
+            String certPath = prefs.get(CERTIFICATE_PATH_KEY, null);
+            certificate = certPath == null ? null : new File(certPath);
+            String keyPath = prefs.get(KEY_PATH_KEY, null);
+            key = keyPath == null ? null : new File(keyPath);
+        }
+    }
+
+    final DockerEventBus getEventBus() {
+        return eventBus;
     }
 
     private static String escapeUrl(String url) {
@@ -286,6 +338,7 @@ public class DockerInstance {
 
         @Override
         public void preferenceChange(PreferenceChangeEvent evt) {
+            refresh();
             changeSupport.fireChange();
         }
     }
