@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,68 +37,36 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.api;
+package org.netbeans.modules.docker.ui.node;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.docker.Endpoint;
-import org.netbeans.modules.docker.StreamItem;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.nodes.DestroyableNodesFactory;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author Petr Hejl
  */
-public final class ActionChunkedResult implements Closeable {
+public abstract class NodeClosingFactory<T> extends DestroyableNodesFactory<T> {
 
-    private final Endpoint s;
-
-    private final StreamItem.Fetcher fetcher;
-
-    private final Charset charset;
-
-    ActionChunkedResult(Endpoint s, StreamItem.Fetcher fetcher, Charset charset) {
-        this.s = s;
-        this.fetcher = fetcher;
-        this.charset = charset;
-    }
-
-    @CheckForNull
-    public Chunk fetchChunk() {
-        StreamItem r = fetcher.fetch();
-        if (r == null) {
-            return null;
-        }
-        ByteBuffer buffer = r.getData();
-        return new Chunk(new String(buffer.array(), buffer.position(), buffer.limit(), charset), r.isError());
-    }
+    private static final Logger LOGGER = Logger.getLogger(NodeClosingFactory.class.getName());
 
     @Override
-    public void close() throws IOException {
-        s.close();
-    }
-
-    public static class Chunk {
-
-        private final String data;
-
-        private final boolean error;
-
-        private Chunk(String data, boolean error) {
-            this.data = data;
-            this.error = error;
-        }
-
-        public String getData() {
-            return data;
-        }
-
-        public boolean isError() {
-            return error;
+    protected void destroyNodes(Node[] arr) {
+        for (Node n : arr) {
+            for (Closeable c : n.getLookup().lookupAll(Closeable.class)) {
+                try {
+                    LOGGER.log(Level.FINE, "Closing {0}", c.getClass().getName());
+                    c.close();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.FINE, null, ex);
+                }
+            }
         }
     }
 }

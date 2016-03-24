@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,15 +37,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.docker.ui.node;
 
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.api.DockerInstance;
-import org.openide.util.ChangeSupport;
+import org.netbeans.modules.docker.api.DockerSupport;
+import org.netbeans.modules.docker.ui.UiUtils;
+import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
@@ -53,94 +57,60 @@ import org.openide.util.WeakListeners;
  *
  * @author Petr Hejl
  */
-public class EnhancedDockerInstance implements Refreshable {
+public class DockerChildFactory extends NodeClosingFactory<StatefulDockerInstance> implements ChangeListener {
 
-    private static final RequestProcessor RP = new RequestProcessor(EnhancedDockerInstance.class);
+    private static final RequestProcessor REFRESH_PROCESSOR = new RequestProcessor("Docker node update/refresh", 5);
 
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final DockerSupport registry;
 
-    // FIXME default value
-    private final AtomicBoolean available = new AtomicBoolean(true);
-
-    private final DockerInstance.ConnectionListener listener = new DockerInstance.ConnectionListener() {
-        @Override
-        public void onConnect() {
-            update(true);
-        }
-
-        @Override
-        public void onDisconnect() {
-            update(false);
-        }
-    };
-
-    private final DockerInstance instance;
-
-    public EnhancedDockerInstance(DockerInstance instance) {
-        this.instance = instance;
-        instance.addConnectionListener(listener);
+    public DockerChildFactory(DockerSupport registry) {
+        this.registry = registry;
     }
 
-    public void addChangeListener(ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
-    }
+    public void init() {
+        REFRESH_PROCESSOR.post(new Runnable() {
 
-    public void removeChangeListener(ChangeListener listener) {
-        changeSupport.removeChangeListener(listener);
-    }
-
-    public DockerInstance getInstance() {
-        return instance;
-    }
-
-    public boolean isAvailable() {
-        return available.get();
-    }
-
-    @Override
-    public void refresh() {
-        RP.post(new Runnable() {
             @Override
             public void run() {
-                update(instance.isAvailable());
+                synchronized (DockerChildFactory.this) {
+                    registry.addChangeListener(
+                            WeakListeners.create(ChangeListener.class, DockerChildFactory.this, registry));
+                    updateState(new ChangeEvent(registry));
+                }
             }
         });
     }
-    
-    public void remove() {
-        instance.removeConnectionListener(listener);
-        instance.remove();
+
+    @Override
+    public void stateChanged(final ChangeEvent e) {
+        REFRESH_PROCESSOR.post(new Runnable() {
+            public void run() {
+                updateState(e);
+            }
+        });
+    }
+
+    private synchronized void updateState(final ChangeEvent e) {
+        refresh();
+    }
+
+    protected final void refresh() {
+        refresh(false);
     }
 
     @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 61 * hash + Objects.hashCode(this.instance);
-        return hash;
+    protected Node createNodeForKey(StatefulDockerInstance key) {
+        return new DockerInstanceNode(key, new DockerInstanceChildFactory(key));
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final EnhancedDockerInstance other = (EnhancedDockerInstance) obj;
-        if (!Objects.equals(this.instance, other.instance)) {
-            return false;
+    protected boolean createKeys(List<StatefulDockerInstance> toPopulate) {
+        List<DockerInstance> fresh = new ArrayList<>(registry.getInstances());
+        Collections.sort(fresh, UiUtils.getInstanceComparator());
+        for (DockerInstance i : fresh) {
+            toPopulate.add(new StatefulDockerInstance(i));
         }
         return true;
     }
 
-    private void update(boolean newValue) {
-        boolean oldValue = available.getAndSet(newValue);
-        if (oldValue != newValue) {
-            changeSupport.fireChange();
-        }
-    }
 }

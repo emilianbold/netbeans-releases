@@ -41,15 +41,13 @@
  */
 package org.netbeans.modules.docker;
 
-import java.net.Socket;
-
 /**
  *
  * @author Petr Hejl
  */
 public interface ConnectionListener {
 
-    void onConnect(Socket s);
+    void onConnect(Endpoint e);
 
     void onDisconnect();
     

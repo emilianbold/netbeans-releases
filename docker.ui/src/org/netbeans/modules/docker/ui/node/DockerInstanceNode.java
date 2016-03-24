@@ -61,7 +61,7 @@ public class DockerInstanceNode extends AbstractNode {
 
     private static final String DOCKER_INSTANCE_ICON = "org/netbeans/modules/docker/ui/resources/docker_instance.png"; // NOI18N
 
-    private final EnhancedDockerInstance instance;
+    private final StatefulDockerInstance instance;
 
     private final ChangeListener listener = new ChangeListener() {
         @Override
@@ -70,9 +70,9 @@ public class DockerInstanceNode extends AbstractNode {
         }
     };
 
-    public DockerInstanceNode(EnhancedDockerInstance instance) {
-        super(Children.create(new DockerInstanceChildFactory(instance), true),
-                Lookups.fixed(instance.getInstance(), instance));
+    public DockerInstanceNode(StatefulDockerInstance instance, DockerInstanceChildFactory factory) {
+        super(Children.create(factory, true),
+                Lookups.fixed(instance.getInstance(), instance, factory));
         this.instance = instance;
         setIconBaseWithExtension(DOCKER_INSTANCE_ICON);
         setShortDescription(instance.getInstance().getUrl());
