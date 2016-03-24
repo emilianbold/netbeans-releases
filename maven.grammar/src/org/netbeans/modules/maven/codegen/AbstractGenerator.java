@@ -42,12 +42,15 @@
 package org.netbeans.modules.maven.codegen;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import static org.netbeans.modules.maven.codegen.Bundle.*;
+import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
+import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
@@ -111,7 +114,40 @@ public abstract class AbstractGenerator<T extends AbstractDocumentModel> impleme
     public static interface ModelWriter {
         int write();
     }
+            
+    protected static interface ChildrenListProvider<C extends DocumentComponent> {
+        List<C> get();
+    }
     
+    protected <C extends DocumentComponent> boolean addAtPosition(String parentTagName, ChildrenListProvider<C> childrenListProvider, C newChild) {
+        return addAtPosition(null, parentTagName, childrenListProvider, newChild);
+    }
     
+    protected <C extends DocumentComponent> boolean addAtPosition(DocumentComponent componentAtCarret, String parentTagName, ChildrenListProvider<C> childrenListProvider, C newChild) {
+        int pos = component.getCaretPosition();        
+        if (componentAtCarret == null) {
+            componentAtCarret = model.findComponent(pos);
+        }
+        if(componentAtCarret != null) {
+            Component c = null;
+            if(componentAtCarret.getPeer().getTagName().equals(parentTagName)) {
+                c = componentAtCarret;
+            } else if(componentAtCarret.getClass() == newChild.getClass() && componentAtCarret.findPosition() == pos) {
+                // if carret positioned at the begining of e.g. "<license>"
+                c = componentAtCarret.getParent(); // get the parent (<licenses>) in such a case
+            }
+            if(c != null) {
+                List<C> list = childrenListProvider.get();
+                for (int i = 0; i < list.size(); i++) {
+                    C l = list.get(i);
+                    if(pos <= l.findPosition()) {
+                        model.addChildComponent(c, newChild, i);
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
     
 }
