@@ -48,6 +48,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.javascript2.doc.JsDocumentationFallbackSyntaxProvider;
 import org.netbeans.modules.javascript2.doc.JsDocumentationResolver;
+import org.netbeans.modules.javascript2.doc.spi.DocumentationContainer;
 import org.netbeans.modules.javascript2.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.doc.spi.JsDocumentationProvider;
@@ -64,27 +65,23 @@ public final class JsDocumentationSupport {
     /** Path of the documentation providers in the layer. */
     public static final String DOCUMENTATION_PROVIDER_PATH = "javascript/doc/providers"; //NOI18N
 
-    private static Map<ParserResult, WeakReference<JsDocumentationHolder>> providers = new WeakHashMap<ParserResult, WeakReference<JsDocumentationHolder>>();
-
     private JsDocumentationSupport() {
     }
 
     /**
      * Gets {@code JsDocumentationProvider} for given {@code JsParserResult}.
-     * <p>
-     * <b>Obtained {@code JsDocumentationProvider} should be cached in callers place.</b>
-     * @param result {@code JsParserResult}
-     * @return {@code JsDocumentationProvider} for given {@code JsParserResult}, never {@code null}
+     * @param result {@code ParserResult}
+     * @return {@code JsDocumentationHolder} for given {@code ParserResult}, never {@code null}
      */
     @NonNull
-    public static synchronized JsDocumentationHolder getDocumentationHolder(ParserResult result) {
-        WeakReference<JsDocumentationHolder> holderRef = providers.get(result);
-        JsDocumentationHolder holder = holderRef != null ? holderRef.get() : null;
-        if (holder == null) {
-            holder = createDocumentationHolder(result);
-            providers.put(result, new WeakReference(holder));
+    public static JsDocumentationHolder getDocumentationHolder(ParserResult result) {
+        DocumentationContainer c = result.getLookup().lookup(DocumentationContainer.class);
+        if (c != null) {
+            return c.getHolder(result);
+        } else {
+            JsDocumentationProvider p = JsDocumentationResolver.getDefault().getDocumentationProvider(result.getSnapshot());
+            return p.createDocumentationHolder(result.getSnapshot());
         }
-        return holder;
     }
 
     /**
@@ -119,11 +116,6 @@ public final class JsDocumentationSupport {
     public static JsComment getCommentForOffset(ParserResult result, int offset) {
         JsDocumentationHolder holder = getDocumentationHolder(result);
         return holder.getCommentForOffset(offset, holder.getCommentBlocks());
-    }
-
-    private static JsDocumentationHolder createDocumentationHolder(ParserResult result) {
-        JsDocumentationProvider provider = getDocumentationProvider(result);
-        return provider.createDocumentationHolder(result.getSnapshot());
     }
 
 }

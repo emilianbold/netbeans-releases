@@ -42,13 +42,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.css.lib.api.FilterableError;
+import org.netbeans.modules.javascript2.doc.spi.DocumentationContainer;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
-import org.netbeans.modules.javascript2.model.api.Model;
 import org.netbeans.modules.javascript2.model.spi.ModelContainer;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.Lookup;
@@ -61,6 +59,7 @@ import org.openide.util.lookup.Lookups;
 public class JsParserResult extends org.netbeans.modules.javascript2.types.spi.ParserResult {
 
     private final ModelContainer modelContainer = new ModelContainer();
+    private final DocumentationContainer documentationContainer = new DocumentationContainer();
     private final FunctionNode root;
     private final boolean embedded;
     private final Lookup lookup;
@@ -72,9 +71,9 @@ public class JsParserResult extends org.netbeans.modules.javascript2.types.spi.P
         this.errors = Collections.<FilterableError>emptyList();
         this.embedded = isEmbedded(snapshot);
         if (root == null) {
-            lookup = Lookups.fixed(this, modelContainer);
+            lookup = Lookups.fixed(this, modelContainer, documentationContainer);
         } else {
-            lookup = Lookups.fixed(this, modelContainer, root);
+            lookup = Lookups.fixed(this, modelContainer, documentationContainer, root);
         }
     }
 
