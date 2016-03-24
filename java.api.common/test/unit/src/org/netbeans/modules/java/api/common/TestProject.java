@@ -148,7 +148,7 @@ public final class TestProject implements Project {
                     QuerySupport.createCompiledSourceForBinaryQuery(helper.getAntProjectHelper(), evaluator, src, test),
                     QuerySupport.createBinaryForSourceQueryImplementation(src, test, helper.getAntProjectHelper(), evaluator),
                     QuerySupport.createUnitTestForSourceQuery(src, test),
-                    QuerySupport.createSourceLevelQuery(evaluator),
+                    QuerySupport.createSourceLevelQuery2(evaluator),
                     QuerySupport.createFileBuiltQuery(helper.getAntProjectHelper(), evaluator, src, test),
                     QuerySupport.createFileEncodingQuery(evaluator, "encoding")
             );

@@ -42,6 +42,7 @@
 package org.netbeans.modules.java.api.common.queries;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -63,6 +64,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
+import org.openide.util.test.MockChangeListener;
 import org.openide.util.test.MockLookup;
 
 
@@ -157,6 +159,112 @@ public class UnitTestsCompilerOptionsQueryImplTest extends NbTestCase {
         assertEquals(
             Arrays.asList(
                 String.format("-XaddReads:%s=junit", testModuleName) //NOI18N
+            ),
+            args);
+    }
+
+    public void testSourceLevelChanges() throws IOException {
+        setSourceLevel(project, "1.8"); //NOI18N
+        final String srcModuleName = "org.nb.App";  //NOI18N
+        createModuleInfo(srcRoots.getRoots()[0], srcModuleName);
+        final CompilerOptionsQueryImplementation impl = QuerySupport.createUnitTestsCompilerOptionsQuery(srcRoots, testRoots);
+        assertNotNull(impl);
+        final CompilerOptionsQueryImplementation.Result r = impl.getOptions(testRoots.getRoots()[0]);
+        assertNotNull(r);
+        List<? extends String> args = r.getArguments();
+        assertEquals(Collections.emptyList(), args);
+        final MockChangeListener mcl = new MockChangeListener();
+        r.addChangeListener(mcl);
+        setSourceLevel(project, "9"); //NOI18N
+        mcl.assertEventCount(1);
+        args = r.getArguments();
+        assertEquals(
+            Arrays.asList(
+                String.format("-Xmodule:%s", srcModuleName),    //NOI18N
+                String.format("-XaddReads:%s=junit", srcModuleName) //NOI18N
+            ),
+            args);
+    }
+
+    public void testRootsChanges() throws IOException {
+        setSourceLevel(project, "9"); //NOI18N
+        final FileObject src2 = srcRoots.getRoots()[0].getParent().createFolder("src2");
+        final String srcModuleName = "org.nb.App";  //NOI18N
+        createModuleInfo(src2, srcModuleName);
+        final CompilerOptionsQueryImplementation impl = QuerySupport.createUnitTestsCompilerOptionsQuery(srcRoots, testRoots);
+        assertNotNull(impl);
+        final CompilerOptionsQueryImplementation.Result r = impl.getOptions(testRoots.getRoots()[0]);
+        assertNotNull(r);
+        List<? extends String> args = r.getArguments();
+        assertEquals(Collections.emptyList(), args);
+        final MockChangeListener mcl = new MockChangeListener();
+        r.addChangeListener(mcl);
+        srcRoots.putRoots(new URL[]{
+            srcRoots.getRootURLs()[0],
+            src2.toURL()
+        }, new String[]{
+            srcRoots.getRootNames()[0],
+            src2.getName()
+        });
+        mcl.assertEvent();  //Actually 2 events may come (1 for src, 1 for tests)
+        args = r.getArguments();
+        assertEquals(
+            Arrays.asList(
+                String.format("-Xmodule:%s", srcModuleName),    //NOI18N
+                String.format("-XaddReads:%s=junit", srcModuleName) //NOI18N
+            ),
+            args);
+    }
+
+    public void testModuleInfoCreation() throws IOException {
+        setSourceLevel(project, "9"); //NOI18N
+        final CompilerOptionsQueryImplementation impl = QuerySupport.createUnitTestsCompilerOptionsQuery(srcRoots, testRoots);
+        assertNotNull(impl);
+        assertNull(impl.getOptions(srcRoots.getRoots()[0]));
+        final CompilerOptionsQueryImplementation.Result r = impl.getOptions(testRoots.getRoots()[0]);
+        assertNotNull(r);
+        List<? extends String> args = r.getArguments();
+        assertEquals(Collections.emptyList(), args);
+        final MockChangeListener mcl = new MockChangeListener();
+        r.addChangeListener(mcl);
+        final String srcModuleName = "org.nb.App";  //NOI18N
+        createModuleInfo(srcRoots.getRoots()[0], srcModuleName);
+        mcl.assertEventCount(1);
+        args = r.getArguments();
+        assertEquals(
+            Arrays.asList(
+                String.format("-Xmodule:%s", srcModuleName),    //NOI18N
+                String.format("-XaddReads:%s=junit", srcModuleName) //NOI18N
+            ),
+            args);
+    }
+
+    public void testModuleInfoChanges() throws IOException {
+        setSourceLevel(project, "9"); //NOI18N
+        final String srcModuleName = "org.nb.App";  //NOI18N
+        createModuleInfo(srcRoots.getRoots()[0], srcModuleName);
+        final CompilerOptionsQueryImplementation impl = QuerySupport.createUnitTestsCompilerOptionsQuery(srcRoots, testRoots);
+        assertNotNull(impl);
+        assertNull(impl.getOptions(srcRoots.getRoots()[0]));
+        final CompilerOptionsQueryImplementation.Result r = impl.getOptions(testRoots.getRoots()[0]);
+        assertNotNull(r);
+        List<? extends String> args = r.getArguments();
+        assertEquals(
+            Arrays.asList(
+                String.format("-Xmodule:%s", srcModuleName),    //NOI18N
+                String.format("-XaddReads:%s=junit", srcModuleName) //NOI18N
+            ),
+            args);
+        final MockChangeListener mcl = new MockChangeListener();
+        r.addChangeListener(mcl);
+        final String newSrcModuleName = "org.nb.App2";  //NOI18N
+        createModuleInfo(srcRoots.getRoots()[0], newSrcModuleName);
+        mcl.assertEventCount(1);
+        args = r.getArguments();
+        assertEquals(
+            Arrays.asList(
+                String.format("-Xmodule:%s", newSrcModuleName),    //NOI18N
+                String.format("-XaddReads:%s=junit", newSrcModuleName) //NOI18N
             ),
             args);
     }

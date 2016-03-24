@@ -46,11 +46,15 @@ import com.sun.source.tree.ModuleTree;
 import com.sun.source.tree.Tree;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,7 +67,11 @@ import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.spi.java.queries.CompilerOptionsQueryImplementation;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.ChangeSupport;
@@ -119,11 +127,13 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
         return root.equals(file) || FileUtil.isParentOf(root, file);
     }
 
-    private static final class ResultImpl extends Result implements ChangeListener, PropertyChangeListener {
+    private static final class ResultImpl extends Result implements ChangeListener,
+            PropertyChangeListener, FileChangeListener {
         private final SourceRoots srcRoots;
         private final SourceRoots testRoots;
         private final ChangeSupport cs;
         private final ThreadLocal<Boolean> reenter;
+        private final Collection</*@GuardedBy("this")*/File> moduleInfoListeners ;
         //@GuardedBy("this")
         private List<String> cache;
         //@GuardedBy("this")
@@ -138,6 +148,7 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
             this.testRoots = testRoots;
             this.cs = new ChangeSupport(this);
             this.reenter = new ThreadLocal<>();
+            this.moduleInfoListeners = new HashSet<>();
         }
 
         @Override
@@ -155,22 +166,20 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
                     reenter.set(Boolean.TRUE);
                     try {
                         TestMode mode;
-                        final FileObject srcModuleInfo = findModuleInfo(srcRoots, null);
-                        FileObject testModuleInfo = null;
-                        if (srcModuleInfo == null) {
-                            mode = TestMode.UNNAMED;
-                        } else {
-                            testModuleInfo = findModuleInfo(testRoots, slq);
-                            final boolean isLegacy = Optional.ofNullable(slq[0])
-                                    .map((r) -> r.getSourceLevel())
-                                    .map((sl) -> JDK9.compareTo(new SpecificationVersion(sl)) > 0)
-                                    .orElse(Boolean.TRUE);
-                            mode = isLegacy ?
-                                TestMode.LEGACY :
-                                testModuleInfo !=null ?
-                                    TestMode.MODULE :
-                                    TestMode.INLINED;
-                        }
+                        final Collection<File> allRoots = new HashSet<>();
+                        final FileObject srcModuleInfo = findModuleInfo(srcRoots, allRoots, null);
+                        final FileObject testModuleInfo = findModuleInfo(testRoots, allRoots, slq);
+                        final boolean isLegacy = Optional.ofNullable(slq[0])
+                            .map((r) -> r.getSourceLevel())
+                            .map((sl) -> JDK9.compareTo(new SpecificationVersion(sl)) > 0)
+                            .orElse(Boolean.TRUE);
+                        mode = isLegacy ?
+                            TestMode.LEGACY :
+                            srcModuleInfo == null ?
+                                TestMode.UNNAMED :
+                                testModuleInfo == null ?
+                                    TestMode.INLINED:
+                                    TestMode.MODULE;
                         args = mode.createArguments(srcModuleInfo, testModuleInfo);
                         synchronized (this) {
                             if (cache == null) {
@@ -188,6 +197,21 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
                                 listensOnRoots = true;
                                 srcRoots.addPropertyChangeListener(WeakListeners.propertyChange(this, srcRoots));
                                 testRoots.addPropertyChangeListener(WeakListeners.propertyChange(this, testRoots));
+                            }
+                            final Set<File> toRemove = new HashSet<>(moduleInfoListeners);
+                            toRemove.removeAll(allRoots);
+                            allRoots.removeAll(moduleInfoListeners);
+                            for (File f : toRemove) {
+                                FileUtil.removeFileChangeListener(
+                                        this,
+                                        new File(f, MODULE_INFO_JAVA));
+                                moduleInfoListeners.remove(f);
+                            }
+                            for (File f : allRoots) {
+                                FileUtil.addFileChangeListener(
+                                        this,
+                                        new File(f, MODULE_INFO_JAVA));
+                                moduleInfoListeners.add(f);
                             }
                         }
                     } finally {
@@ -210,14 +234,47 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
 
         @Override
         public void stateChanged(@NonNull final ChangeEvent e) {
-            synchronized (this) {
-                cache = null;
-            }
-            cs.fireChange();
+            reset();
         }
 
         @Override
         public void propertyChange(@NonNull final PropertyChangeEvent evt) {
+            if (SourceRoots.PROP_ROOTS.equals(evt.getPropertyName())) {
+                reset();
+            }
+        }
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            reset();
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            reset();
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            reset();
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            reset();
+        }
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+            //Not important
+        }
+
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            //Not important
+        }
+
+        private void reset() {
             synchronized (this) {
                 cache = null;
             }
@@ -226,17 +283,23 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
 
         private static FileObject findModuleInfo(
                 @NonNull final SourceRoots roots,
+                @NonNull final Collection<? super File> rootCollector,
                 @NullAllowed final SourceLevelQuery.Result[] slq) {
+            FileObject result = null;
             for (FileObject root : roots.getRoots()) {
                 if (slq != null && slq[0] == null) {
                     slq[0] = SourceLevelQuery.getSourceLevel2(root);
                 }
-                final FileObject moduleInfo = root.getFileObject(MODULE_INFO_JAVA);
-                if (moduleInfo != null) {
-                    return moduleInfo;
+                Optional.ofNullable(FileUtil.toFile(root))
+                    .ifPresent(rootCollector::add);
+                if (result == null) {
+                    final FileObject moduleInfo = root.getFileObject(MODULE_INFO_JAVA);
+                    if (moduleInfo != null) {
+                        result = moduleInfo;
+                    }
                 }
             }
-            return null;
+            return result;
         }
 
         @CheckForNull
