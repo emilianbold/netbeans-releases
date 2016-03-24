@@ -135,8 +135,8 @@ else
     mv nbbuild/build/testdist.zip $DIST/zip/testdist-${BUILDNUMBER}.zip
 fi
 
-mv $NB_ALL/nbbuild/netbeans $NB_ALL/nbbuild/netbeans.after_commit-validation_and_test-dist
-mv $NB_ALL/nbbuild/netbeans-vanilla $NB_ALL/nbbuild/netbeans
+rm -rf $NB_ALL/nbbuild/netbeans
+cp -rp $NB_ALL/nbbuild/netbeans-vanilla $NB_ALL/nbbuild/netbeans
 cd $NB_ALL
 
 #Build all NBMs for stable UC - IDE + UC-only
@@ -164,6 +164,9 @@ fi
 mv ${DIST}/odcs/extra/org-netbeans-modules-odcs* ${DIST}/uc2/extra/
 mv ${DIST}/odcs/extra/org-netbeans-modules-team-server* ${DIST}/uc2/extra/
 rm -rf ${DIST}/odcs
+
+rm -rf $NB_ALL/nbbuild/netbeans
+mv $NB_ALL/nbbuild/netbeans-vanilla $NB_ALL/nbbuild/netbeans
 
 cd $NB_ALL
 
