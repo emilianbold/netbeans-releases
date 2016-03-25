@@ -420,16 +420,20 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
                         @NullAllowed final FileObject testModuleInfo,
                         @NonNull final List<? extends String> testLibModules) {
                     final String moduleName = getModuleName(srcModuleInfo);
-                    return moduleName == null ?
-                            Collections.emptyList() :
-                            Collections.unmodifiableList(Arrays.asList(
-                                String.format("-Xmodule:%s", moduleName),       //NOI18N
-                                String.format("-XaddReads:%s=%s",               //NOI18N
+                    if (moduleName == null) {
+                        return Collections.emptyList();
+                    }
+                    final List<String> result = new ArrayList<>(2);
+                    result.add(String.format("-Xmodule:%s", moduleName));       //NOI18N
+                    if (!testLibModules.isEmpty()) {
+                        result.add(String.format("-XaddReads:%s=%s",            //NOI18N
                                         moduleName,
                                         testLibModules.stream()
                                             .collect(Collectors.joining(","))   //NOI18N
-                                )));
+                                ));
                     }
+                    return Collections.unmodifiableList(result);
+                }
             },
             /**
              * Tests have its own module.
@@ -441,7 +445,7 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
                         @NullAllowed final FileObject testModuleInfo,
                         @NonNull final List<? extends String> testLibModules) {
                     final String moduleName = getModuleName(testModuleInfo);
-                    return moduleName == null ?
+                    return moduleName == null || testLibModules.isEmpty()?
                             Collections.emptyList() :
                             Collections.singletonList(
                                     String.format("-XaddReads:%s=%s",           //NOI18N
