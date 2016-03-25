@@ -455,7 +455,15 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
                 return false;
             }
         }
-        return context == null ? false : GitUtils.contains(context.getRootFiles(), file);
+        if (context == null) {
+            return false;
+        }
+        for(VCSFileProxy root : context.getRootFiles()) {
+            if (!VCSFileProxySupport.isConnectedFileSystem(VCSFileProxySupport.getFileSystem(root))) {
+                return false;
+            }
+        }
+        return GitUtils.contains(context.getRootFiles(), file);
     }
 
     private void initPanelMode () {
