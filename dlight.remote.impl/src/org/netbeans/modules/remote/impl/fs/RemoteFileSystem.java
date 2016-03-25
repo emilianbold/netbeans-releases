@@ -132,8 +132,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private final AtomicInteger fileCopyCount = new AtomicInteger(0);
     /** Directory synchronization statistics */
     private final AtomicInteger dirSyncCount = new AtomicInteger(0);
-    private static final Object mainLock = new Object();
-    private static final Map<File, WeakReference<ReadWriteLock>> locks = new HashMap<>();
+    private final RemoteLockSupport lockSupport = new RemoteLockSupport();
     private final AtomicBoolean readOnlyConnectNotification = new AtomicBoolean(false);
     private static final List<FileSystemProblemListener> globalProblemListeners = new CopyOnWriteArrayList<>();
     private final List<FileSystemProblemListener> problemListeners =
@@ -380,16 +379,8 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         return cache;
     }
 
-    public static ReadWriteLock getLock(File file) {
-        synchronized (mainLock) {
-            WeakReference<ReadWriteLock> ref = locks.get(file);
-            ReadWriteLock result = (ref == null) ? null : ref.get();
-            if (result == null) {
-                result = new ReentrantReadWriteLock();
-                locks.put(file, new WeakReference<>(result));
-            }
-            return result;
-        }
+    public RemoteLockSupport getLockSupport() {
+        return lockSupport;
     }
 
     /*package-local test method*/ final void resetStatistic() {
