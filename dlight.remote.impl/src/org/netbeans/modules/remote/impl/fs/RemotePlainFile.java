@@ -83,14 +83,12 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     private static final int LOCK_TIMEOUT = Integer.getInteger("remote.rwlock.timeout", 4); // NOI18N
     private static final int REFRESH_TIMEOUT = Integer.getInteger("remote.plain.file.refresh.timeout", 5000); // NOI18N
     
-    private final char fileTypeChar;
 //    private SoftReference<CachedRemoteInputStream> fileContentCache = new SoftReference<CachedRemoteInputStream>(null);
     private final SimpleRWLock rwl = new SimpleRWLock();
     
     /*package*/ RemotePlainFile(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
-            RemoteDirectory parent, String remotePath, File cache, FileType fileType) {
+            RemoteDirectory parent, String remotePath, File cache) {
         super(wrapper, fileSystem, execEnv, parent, remotePath, cache);
-        fileTypeChar = fileType.toChar(); // TODO: pass when created
     }
 
     @Override
@@ -536,7 +534,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
 
     @Override
     public FileType getType() {
-        return FileType.fromChar(fileTypeChar);
+        return FileType.Regular;
     }
 
     private void updateStatAndSendEvents(DirEntry dirEntry, boolean fireChangedRO) {
