@@ -1002,4 +1002,8 @@ public abstract class RemoteFileObjectBase {
     protected static String composeName(String name, String ext) {
         return (ext != null && ext.length() > 0) ? (name + "." + ext) : name;//NOI18N
     }
+
+    protected RemoteLockSupport getLockSupport() {
+        return fileSystem.getLockSupport();
+    }
 }
