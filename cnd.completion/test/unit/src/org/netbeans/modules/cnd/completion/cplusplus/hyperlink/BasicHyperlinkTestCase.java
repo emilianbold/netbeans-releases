@@ -1231,6 +1231,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug258143.cpp", 90, 14, "bug258143.cpp", 32, 3);
     }
     
+    public void testBug258511() throws Exception {
+        // Bug 258511 - Erroneous mismatching argument types "int" conversion specifier "s" hint 
+        performTest("bug258511.cpp", 7, 10, "bug258511.cpp", 2, 3);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

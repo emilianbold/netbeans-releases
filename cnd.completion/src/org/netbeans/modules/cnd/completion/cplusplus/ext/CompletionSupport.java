@@ -665,9 +665,9 @@ public final class CompletionSupport implements DocumentListener {
 
             if (cls2 != null) {
                 // The following part
-                boolean firstIsPrimitive = CndLexerUtilities.isType(cls1.getName().toString());
-                boolean secondIsPrimitive = CndLexerUtilities.isType(cls2.getName().toString());
-                if (!firstIsPrimitive && !secondIsPrimitive) { // non-primitive classes
+                boolean firstIsPrimitiveClassifier = CndLexerUtilities.isType(cls1.getName().toString());
+                boolean secondIsPrimitiveClassifier = CndLexerUtilities.isType(cls2.getName().toString());
+                if (!firstIsPrimitiveClassifier && !secondIsPrimitiveClassifier) { // non-primitive classes
                     if (isAutoConvertible(typ1, typ2)) {
                         return typ1;
                     } else if (isAutoConvertible(typ2, typ1)) {
@@ -676,15 +676,21 @@ public final class CompletionSupport implements DocumentListener {
                         return null;
                     }
                 } else { // at least one primitive class
-                    if (firstIsPrimitive && secondIsPrimitive) {
+                    boolean firstIsPurePrimitive = firstIsPrimitiveClassifier 
+                        && !CsmBaseUtilities.isPointer(typ1) 
+                        && typ1.getArrayDepth() == 0;
+                    boolean secondIsPurePrimitive = secondIsPrimitiveClassifier 
+                        && !CsmBaseUtilities.isPointer(typ2)
+                        && typ2.getArrayDepth() == 0;
+                    if (firstIsPurePrimitive && secondIsPurePrimitive) {
                         return applyArithmeticConversion(typ1, cls1, typ2, cls2);
-                    } else if (secondIsPrimitive) {
+                    } else if (secondIsPrimitiveClassifier) {
                         if (isAutoConvertible(typ2, typ1)) {
                             return typ1;
                         } else if (isAutoConvertible(typ1, typ2)) {
                             return typ2;
                         }
-                    } else if (firstIsPrimitive) {
+                    } else if (firstIsPrimitiveClassifier) {
                         if (isAutoConvertible(typ1, typ2)) {
                             return typ2;
                         } else if (isAutoConvertible(typ2, typ1)) {
