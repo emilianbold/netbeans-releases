@@ -68,8 +68,16 @@ import org.netbeans.modules.db.metadata.model.api.Tuple;
 import org.netbeans.modules.db.metadata.model.jdbc.mysql.MySQLMetadata;
 
 /**
+ * To override the defaults for the tests add properties to
+ * nbbuild/user.build.properties
  *
- * @author Andrei Badea
+ * <pre><code>
+ * test-unit-sys-prop.mysql.host=...
+ * test-unit-sys-prop.mysql.port=...
+ * test-unit-sys-prop.mysql.database=...
+ * test-unit-sys-prop.mysql.user=...
+ * test-unit-sys-prop.mysql.password=...
+ * </code></pre>
  */
 public class JDBCMetadataMySQLTest extends JDBCMetadataTestBase {
 

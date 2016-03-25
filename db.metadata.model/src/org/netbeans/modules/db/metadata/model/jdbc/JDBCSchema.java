@@ -173,16 +173,16 @@ public class JDBCSchema extends SchemaImplementation {
         try {
             ResultSet rs = MetadataUtilities.getTables(jdbcCatalog.getJDBCMetadata().getDmd(),
                     jdbcCatalog.getName(), name, "%", new String[]{"TABLE", "SYSTEM TABLE"}); // NOI18N
-            try {
-                while (rs.next()) {
-                    String type = MetadataUtilities.trimmed(rs.getString("TABLE_TYPE")); //NOI18N
-                    String tableName = MetadataUtilities.trimmed(rs.getString("TABLE_NAME")); // NOI18N
-                    Table table = createJDBCTable(tableName, type.contains("SYSTEM")).getTable(); //NOI18N
-                    newTables.put(tableName, table);
-                    LOGGER.log(Level.FINE, "Created table {0}", table);
-                }
-            } finally {
-                if (rs != null) {
+            if (rs != null) {
+                try {
+                    while (rs.next()) {
+                        String type = MetadataUtilities.trimmed(rs.getString("TABLE_TYPE")); //NOI18N
+                        String tableName = MetadataUtilities.trimmed(rs.getString("TABLE_NAME")); // NOI18N
+                        Table table = createJDBCTable(tableName, type.contains("SYSTEM")).getTable(); //NOI18N
+                        newTables.put(tableName, table);
+                        LOGGER.log(Level.FINE, "Created table {0}", table); //NOI18N
+                    }
+                } finally {
                     rs.close();
                 }
             }
@@ -198,15 +198,15 @@ public class JDBCSchema extends SchemaImplementation {
         try {
             ResultSet rs = MetadataUtilities.getTables(jdbcCatalog.getJDBCMetadata().getDmd(),
                     jdbcCatalog.getName(), name, "%", new String[]{"VIEW"}); // NOI18N
-            try {
-                while (rs.next()) {
-                    String viewName = MetadataUtilities.trimmed(rs.getString("TABLE_NAME")); // NOI18N
-                    View view = createJDBCView(viewName).getView();
-                    newViews.put(viewName, view);
-                    LOGGER.log(Level.FINE, "Created view {0}", view);
-                }
-            } finally {
-                if (rs != null) {
+            if (rs != null) {
+                try {
+                    while (rs.next()) {
+                        String viewName = MetadataUtilities.trimmed(rs.getString("TABLE_NAME")); // NOI18N
+                        View view = createJDBCView(viewName).getView();
+                        newViews.put(viewName, view);
+                        LOGGER.log(Level.FINE, "Created view {0}", view); // NOI18N
+                    }
+                } finally {
                     rs.close();
                 }
             }
@@ -222,15 +222,15 @@ public class JDBCSchema extends SchemaImplementation {
         try {
             ResultSet rs = MetadataUtilities.getProcedures(jdbcCatalog.getJDBCMetadata().getDmd(),
                     jdbcCatalog.getName(), name, "%"); // NOI18N
-            try {
-                while (rs.next()) {
-                    String procedureName = MetadataUtilities.trimmed(rs.getString("PROCEDURE_NAME")); // NOI18N
-                    Procedure procedure = createJDBCProcedure(procedureName).getProcedure();
-                    newProcedures.put(procedureName, procedure);
-                    LOGGER.log(Level.FINE, "Created procedure {0}", procedure);
-                }
-            } finally {
-                if (rs != null) {
+            if (rs != null) {
+                try {
+                    while (rs.next()) {
+                        String procedureName = MetadataUtilities.trimmed(rs.getString("PROCEDURE_NAME")); // NOI18N
+                        Procedure procedure = createJDBCProcedure(procedureName).getProcedure();
+                        newProcedures.put(procedureName, procedure);
+                        LOGGER.log(Level.FINE, "Created procedure {0}", procedure); //NOI18N
+                    }
+                } finally {
                     rs.close();
                 }
             }
@@ -246,15 +246,15 @@ public class JDBCSchema extends SchemaImplementation {
         try {
             ResultSet rs = MetadataUtilities.getFunctions(jdbcCatalog.getJDBCMetadata().getDmd(),
                     jdbcCatalog.getName(), name, "%"); // NOI18N
-            try {
-                while (rs.next()) {
-                    String functionName = MetadataUtilities.trimmed(rs.getString("FUNCTION_NAME")); // NOI18N
-                    Function function = createJDBCFunction(functionName).getFunction();
-                    newProcedures.put(functionName, function);
-                    LOGGER.log(Level.FINE, "Created function {0}", function); //NOI18N
-                }
-            } finally {
-                if (rs != null) {
+            if (rs != null) {
+                try {
+                    while (rs.next()) {
+                        String functionName = MetadataUtilities.trimmed(rs.getString("FUNCTION_NAME")); // NOI18N
+                        Function function = createJDBCFunction(functionName).getFunction();
+                        newProcedures.put(functionName, function);
+                        LOGGER.log(Level.FINE, "Created function {0}", function); //NOI18N
+                    }
+                } finally {
                     rs.close();
                 }
             }

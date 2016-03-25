@@ -106,14 +106,14 @@ public class JDBCView extends ViewImplementation {
         Map<String, Column> newColumns = new LinkedHashMap<String, Column>();
         try {
             ResultSet rs = jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd().getColumns(jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(), name, "%"); // NOI18N
-            try {
-                while (rs.next()) {
-                    Column column = createJDBCColumn(rs).getColumn();
-                    newColumns.put(column.getName(), column);
-                    LOGGER.log(Level.FINE, "Created column {0}", column);
-                }
-            } finally {
-                if (rs != null) {
+            if (rs != null) {
+                try {
+                    while (rs.next()) {
+                        Column column = createJDBCColumn(rs).getColumn();
+                        newColumns.put(column.getName(), column);
+                        LOGGER.log(Level.FINE, "Created column {0}", column);
+                    }
+                } finally {
                     rs.close();
                 }
             }

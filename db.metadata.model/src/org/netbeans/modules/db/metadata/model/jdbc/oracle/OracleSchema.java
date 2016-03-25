@@ -86,20 +86,22 @@ public class OracleSchema extends JDBCSchema {
             DatabaseMetaData dmd = jdbcCatalog.getJDBCMetadata().getDmd();
             Set<String> recycleBinTables = getRecycleBinObjects(dmd, "TABLE"); // NOI18N
             ResultSet rs = dmd.getTables(jdbcCatalog.getName(), name, "%", new String[]{"TABLE"}); // NOI18N
-            try {
-                while (rs.next()) {
-                    String type = MetadataUtilities.trimmed(rs.getString("TABLE_TYPE")); //NOI18N
-                    String tableName = rs.getString("TABLE_NAME"); // NOI18N
-                    if (!recycleBinTables.contains(tableName)) {
-                        Table table = createJDBCTable(tableName, type.contains("SYSTEM")).getTable(); //NOI18N
-                        newTables.put(tableName, table);
-                        LOGGER.log(Level.FINE, "Created table {0}", table);
-                    } else {
-                        LOGGER.log(Level.FINE, "Ignoring recycle bin table ''{0}''", tableName);
+            if (rs != null) {
+                try {
+                    while (rs.next()) {
+                        String type = MetadataUtilities.trimmed(rs.getString("TABLE_TYPE")); //NOI18N
+                        String tableName = rs.getString("TABLE_NAME"); // NOI18N
+                        if (!recycleBinTables.contains(tableName)) {
+                            Table table = createJDBCTable(tableName, type.contains("SYSTEM")).getTable(); //NOI18N
+                            newTables.put(tableName, table);
+                            LOGGER.log(Level.FINE, "Created table {0}", table);
+                        } else {
+                            LOGGER.log(Level.FINE, "Ignoring recycle bin table ''{0}''", tableName);
+                        }
                     }
+                } finally {
+                    rs.close();
                 }
-            } finally {
-                rs.close();
             }
         } catch (SQLException e) {
             throw new MetadataException(e);
