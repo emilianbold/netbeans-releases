@@ -68,7 +68,7 @@ public class SpecialRemoteFileObject extends RemoteFileObjectBase {
             
     /*package*/ SpecialRemoteFileObject(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
             RemoteDirectory parent, String remotePath, FileType fileType) {
-        super(wrapper, fileSystem, execEnv, parent, remotePath, null);
+        super(wrapper, fileSystem, execEnv, parent, remotePath);
         fileTypeChar = fileType.toChar(); // TODO: pass when created
     }
 
