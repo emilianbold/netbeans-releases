@@ -214,7 +214,7 @@ public class UnitTestsCompilerOptionsQueryImplTest extends NbTestCase {
         final MockChangeListener mcl = new MockChangeListener();
         r.addChangeListener(mcl);
         setSourceLevel(project, "9"); //NOI18N
-        mcl.assertEventCount(1);
+        mcl.assertEventCount(2);    //2 events - one for source level, second for empty -> unnempty module path
         args = r.getArguments();
         assertEquals(
             Arrays.asList(
@@ -312,6 +312,45 @@ public class UnitTestsCompilerOptionsQueryImplTest extends NbTestCase {
             Arrays.asList(
                 String.format("-Xmodule:%s", newSrcModuleName),    //NOI18N
                 String.format("-XaddReads:%s=%s", newSrcModuleName, mockTestLibModuleName) //NOI18N
+            ),
+            args);
+    }
+
+    public void testModulePathChanges() throws IOException {
+        setSourceLevel(project, "9"); //NOI18N
+        assertEquals(
+                Collections.singletonList(mockTestLibRoot),
+                Arrays.asList(ClassPath.getClassPath(testRoots.getRoots()[0], JavaClassPathConstants.MODULE_COMPILE_PATH).getRoots()));
+        final String srcModuleName = "org.nb.App";  //NOI18N
+        createModuleInfo(srcRoots.getRoots()[0], srcModuleName);
+        final CompilerOptionsQueryImplementation impl = QuerySupport.createUnitTestsCompilerOptionsQuery(srcRoots, testRoots);
+        assertNotNull(impl);
+        final CompilerOptionsQueryImplementation.Result r = impl.getOptions(testRoots.getRoots()[0]);
+        assertNotNull(r);
+        List<? extends String> args = r.getArguments();
+        assertEquals(
+            Arrays.asList(
+                String.format("-Xmodule:%s", srcModuleName),    //NOI18N
+                String.format("-XaddReads:%s=%s", srcModuleName, mockTestLibModuleName) //NOI18N
+            ),
+            args);
+        final FileObject mockTestLib2 = createJar(
+            FileUtil.getArchiveFile(mockTestLibRoot).getParent(),
+            "hamcrest-core-1.3.jar");   //NOI18N
+        final String mockTestLib2ModuleName = SourceUtils.getModuleName(
+                FileUtil.getArchiveRoot(mockTestLib2).toURL());
+        assertNotNull(mockTestLib2ModuleName);
+        final MockChangeListener mcl = new MockChangeListener();
+        r.addChangeListener(mcl);
+        setPath(project, ProjectProperties.JAVAC_TEST_MODULEPATH,
+                FileUtil.getArchiveFile(mockTestLibRoot),
+                mockTestLib2);
+        mcl.assertEventCount(1);
+        args = r.getArguments();
+        assertEquals(
+            Arrays.asList(
+                String.format("-Xmodule:%s", srcModuleName),    //NOI18N
+                String.format("-XaddReads:%s=%s,%s", srcModuleName, mockTestLibModuleName, mockTestLib2ModuleName) //NOI18N
             ),
             args);
     }
