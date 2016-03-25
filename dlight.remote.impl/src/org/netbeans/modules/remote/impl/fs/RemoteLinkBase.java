@@ -77,7 +77,7 @@ import org.openide.util.NbBundle;
 public abstract class RemoteLinkBase extends RemoteFileObjectBase implements FileChangeListener {
     
     protected RemoteLinkBase(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, RemoteFileObjectBase parent, String remotePath) {
-        super(wrapper, fileSystem, execEnv, parent, remotePath, null);
+        super(wrapper, fileSystem, execEnv, parent, remotePath);
     }
 
     /**

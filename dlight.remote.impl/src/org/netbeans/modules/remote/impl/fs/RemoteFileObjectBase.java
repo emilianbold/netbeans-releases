@@ -84,7 +84,6 @@ public abstract class RemoteFileObjectBase {
     private final RemoteFileSystem fileSystem;
     private final RemoteFileObjectBase parent;
     private volatile String remotePath;
-    private final File cache;
     private final CopyOnWriteArrayList<FileChangeListener> listeners = new CopyOnWriteArrayList<>();
     private FileLock lock;
     private final Object instanceLock = new Object();
@@ -109,12 +108,11 @@ public abstract class RemoteFileObjectBase {
     protected static final byte MASK_CYCLIC_LINK = 32;
     
     protected RemoteFileObjectBase(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
-            RemoteFileObjectBase parent, String remotePath, File cache) {
+            RemoteFileObjectBase parent, String remotePath) {
         RemoteLogger.assertTrue(execEnv.isRemote());        
         //RemoteLogger.assertTrue(cache.exists(), "Cache should exist for " + execEnv + "@" + remotePath); //NOI18N
         this.parent = parent;
         this.remotePath = remotePath; // RemoteFileSupport.fromFixedCaseSensitivePathIfNeeded(remotePath);
-        this.cache = cache;
         setFlag(MASK_VALID, true);
         this.fileSystem = wrapper.getFileSystem();
         this.fileObject = wrapper;
@@ -191,12 +189,12 @@ public abstract class RemoteFileObjectBase {
      * local cache of this FileObject (for directory - local dir, for file - local file with content)
      * @return 
      */
-    protected final File getCache() {
-        return cache;
+    protected File getCache() {
+        return null;
     }
 
     public boolean hasCache() {
-        return cache != null && cache.exists();
+        return false;
     }
 
     public final String getPath() {

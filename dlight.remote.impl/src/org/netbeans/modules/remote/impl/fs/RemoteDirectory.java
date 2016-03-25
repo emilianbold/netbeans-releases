@@ -93,7 +93,7 @@ import org.openide.util.Parameters;
  *
  * @author Vladimir Kvashin
  */
-public class RemoteDirectory extends RemoteFileObjectBase {
+public class RemoteDirectory extends RemoteFileObjectWithCache {
 
     private static final boolean trace = Boolean.getBoolean("cnd.remote.directory.trace"); //NOI18N
 

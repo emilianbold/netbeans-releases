@@ -78,7 +78,7 @@ import org.openide.util.NbBundle;
  *
  * @author Vladimir Kvashin
  */
-public final class RemotePlainFile extends RemoteFileObjectBase {
+public final class RemotePlainFile extends RemoteFileObjectWithCache {
 
     private static final int LOCK_TIMEOUT = Integer.getInteger("remote.rwlock.timeout", 4); // NOI18N
     private static final int REFRESH_TIMEOUT = Integer.getInteger("remote.plain.file.refresh.timeout", 5000); // NOI18N
