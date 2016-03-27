@@ -44,9 +44,12 @@ package org.netbeans.modules.remote.impl.fs;
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.openide.filesystems.FileAlreadyLockedException;
+import org.openide.filesystems.FileLock;
 
 /**
  *
@@ -56,6 +59,7 @@ public class RemoteLockSupport {
 
     private final Object mainLock = new Object();
     private final Map<File, WeakReference<ReadWriteLock>> directoryLocks = new HashMap<>();
+    private final IdentityHashMap<RemoteFileObjectBase, RemoteFileLock> fileLocks = new IdentityHashMap();
 
     /** 
      * Get read-write lock related to the given file object cache
@@ -70,6 +74,53 @@ public class RemoteLockSupport {
                 directoryLocks.put(file, new WeakReference<>(result));
             }
             return result;
+        }
+    }
+
+    public FileLock lock(RemoteFileObjectBase fo) throws FileAlreadyLockedException {
+        RemoteFileLock lock;
+        synchronized (mainLock) {
+            lock = fileLocks.get(fo);
+            if (lock != null && lock.isValid()) {
+                throw new FileAlreadyLockedException(fo.getPath());
+            }
+            lock = new RemoteFileLock(fo);
+            fileLocks.put(fo, lock);
+        }
+        return lock;
+    }
+
+    public boolean isLocked(RemoteFileObjectBase fo) {
+        synchronized (mainLock) {
+            RemoteFileLock lock = fileLocks.get(fo);
+            return lock != null && lock.isValid();
+        }
+    }
+
+    public boolean checkLock(RemoteFileObjectBase fo, FileLock aLock) {
+        if (aLock != null) {
+            synchronized (mainLock) {
+                RemoteFileLock lock = fileLocks.get(fo);
+                return lock == aLock;
+            }
+        }
+        return true;
+    }
+
+    private class RemoteFileLock extends FileLock {
+
+        private final RemoteFileObjectBase fo;
+
+        public RemoteFileLock(RemoteFileObjectBase fo) {
+            this.fo = fo;
+        }
+
+        @Override
+        public void releaseLock() {
+            synchronized (mainLock) {
+                super.releaseLock();
+                fileLocks.remove(fo);
+            }
         }
     }
 }
