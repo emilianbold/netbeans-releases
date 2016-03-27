@@ -58,7 +58,7 @@ import org.openide.filesystems.FileLock;
 public class RemoteLockSupport {
 
     private final Object mainLock = new Object();
-    private final Map<File, WeakReference<ReadWriteLock>> directoryLocks = new HashMap<>();
+    private final Map<File, WeakReference<ReadWriteLock>> cacheLocks = new HashMap<>();
     private final IdentityHashMap<RemoteFileObjectBase, RemoteFileLock> fileLocks = new IdentityHashMap();
 
     /** 
@@ -67,11 +67,11 @@ public class RemoteLockSupport {
     public ReadWriteLock getCacheLock(RemoteFileObjectWithCache fo) {
         final File file = fo.getCache();
         synchronized (mainLock) {
-            WeakReference<ReadWriteLock> ref = directoryLocks.get(file);
+            WeakReference<ReadWriteLock> ref = cacheLocks.get(file);
             ReadWriteLock result = (ref == null) ? null : ref.get();
             if (result == null) {
                 result = new ReentrantReadWriteLock();
-                directoryLocks.put(file, new WeakReference<>(result));
+                cacheLocks.put(file, new WeakReference<>(result));
             }
             return result;
         }
