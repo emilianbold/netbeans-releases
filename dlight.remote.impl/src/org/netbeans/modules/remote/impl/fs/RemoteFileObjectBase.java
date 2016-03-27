@@ -85,8 +85,6 @@ public abstract class RemoteFileObjectBase {
     private final RemoteFileObjectBase parent;
     private volatile String remotePath;
     private final CopyOnWriteArrayList<FileChangeListener> listeners = new CopyOnWriteArrayList<>();
-    private FileLock lock;
-    private final Object instanceLock = new Object();
     public static final boolean USE_VCS;
     static {
         if ("false".equals(System.getProperty("remote.vcs.suport"))) { //NOI18N
@@ -655,35 +653,15 @@ public abstract class RemoteFileObjectBase {
     }
 
     protected FileLock lockImpl(RemoteFileObjectBase orig) throws IOException {
-        synchronized(instanceLock) {
-            if (lock != null && lock.isValid()) {
-                throw new FileAlreadyLockedException(getPath());
-            }
-            lock =  new FileLock();
-        }
-        return lock;
+        return getLockSupport().lock(this);
     }
     
     public boolean isLocked() {
-        boolean res = false;
-        synchronized(instanceLock) {
-            if (lock != null) {
-                res = lock.isValid();
-                if (!res) {
-                    lock = null;
-                }
-            }
-        }
-        return res;
+        return getLockSupport().isLocked(this);
     }
     
     protected boolean checkLock(FileLock aLock) throws IOException {
-        if (aLock != null) {
-            synchronized(instanceLock) {
-                return lock == aLock;
-            }
-        }
-        return true;
+        return getLockSupport().checkLock(this, aLock);
     }
 
     public final void rename(FileLock lock, String name, String ext) throws IOException {
