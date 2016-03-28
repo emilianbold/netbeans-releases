@@ -142,8 +142,8 @@ public class RemoteLockSupport {
         return lock;
     }
 
-    public boolean tryReadLock(RemotePlainFile fo) throws InterruptedException {
-        return getPlainFileRWLock(fo, true).tryReadLock();
+    public void tryReadLock(RemotePlainFile fo) throws InterruptedException, FileAlreadyLockedException {
+        getPlainFileRWLock(fo, true).tryReadLock();
     }
 
     public void readUnlock(RemotePlainFile fo) {
@@ -153,8 +153,8 @@ public class RemoteLockSupport {
         }
     }
 
-    public boolean tryWriteLock(RemotePlainFile fo) throws InterruptedException {
-        return getPlainFileRWLock(fo, true).tryWriteLock();
+    public void tryWriteLock(RemotePlainFile fo) throws InterruptedException, FileAlreadyLockedException {
+        getPlainFileRWLock(fo, true).tryWriteLock();
     }
 
     public void writeUnlock(RemotePlainFile fo) {
@@ -229,14 +229,14 @@ public class RemoteLockSupport {
             return owner;
         }
 
-        public boolean tryReadLock() throws InterruptedException {
+        public void tryReadLock() throws InterruptedException, FileAlreadyLockedException {
             lock.lock();
             try {
                 waiters++;
                 while (!readCondition()) {
                     if (!readable.await(RW_LOCK_TIMEOUT, TimeUnit.SECONDS)) {                        
                         onReadLock(false);
-                        return false;
+                        throw createReadLockException();
                     }
                 }
                 activeReaders++;
@@ -245,7 +245,6 @@ public class RemoteLockSupport {
                 }
                 readLocksCount.incrementAndGet();
                 onReadLock(true);
-                return true;
             } finally {
                 waiters--;
                 lock.unlock();
@@ -270,19 +269,18 @@ public class RemoteLockSupport {
             }
         }
 
-        public boolean tryWriteLock() throws InterruptedException {
+        public void tryWriteLock() throws InterruptedException, FileAlreadyLockedException {
             lock.lock();
             try {
                 while (!writeCondition()) {
                     if (!writtable.await(RW_LOCK_TIMEOUT, TimeUnit.SECONDS)) {
                         onWriteLock(false);
-                        return false;
+                        throw createWriteLockException();
                     }
                 }
                 writer = Thread.currentThread();
                 writeLocksCount.incrementAndGet();
                 onWriteLock(true);
-                return true;
             } finally {                
                 lock.unlock();
             }
@@ -300,6 +298,14 @@ public class RemoteLockSupport {
                 removeIfPossible();
                 lock.unlock();
             }
+        }
+
+        protected FileAlreadyLockedException createReadLockException() {
+            return new FileAlreadyLockedException("Cannot read from locked file: " + owner); //NOI18N
+        }
+
+        protected FileAlreadyLockedException createWriteLockException() {
+            return new FileAlreadyLockedException("Cannot write to locked file: " + owner); //NOI18N
         }
     }
 
@@ -374,29 +380,25 @@ public class RemoteLockSupport {
         }
 
         @Override
-        protected void onWriteLock(boolean success) {
-            if (!success) {
-                Exception e = new Exception("Failed to lock " + getOwner() + " at " + new Date()); // NOI18N
-                e.printStackTrace(System.err);
-                System.err.println("Readers are:");
-                ReaderInfo reader = lastReader;
-                while (reader != null) {
-                    System.err.println("Locked at " + new Date(reader.timestamp) + " by thread " + reader.thread.getName());
-                    for (StackTraceElement ste : reader.lockedStack) {
-                        System.err.println("    at " + ste.toString());
-                    }                    
-                    StackTraceElement[] stack = reader.thread.getStackTrace();
-                    if (stack.length > 0) {
-                        System.err.println("    Now the reader thead stack is");
-                        for (StackTraceElement ste : stack) {
-                            System.err.println("        at " + ste.toString());
-                        }
-                    } else {
-                        System.err.println("    No reader stack at the moment");
-                    }
-                    reader = reader.next;
+        protected FileAlreadyLockedException createWriteLockException() {
+            FileAlreadyLockedException result = super.createWriteLockException();
+            Exception ex = result;
+            ReaderInfo reader = lastReader;
+            while (reader != null) {
+                Exception cause = new Exception("Locked at " + new Date(reader.timestamp) + " by thread " + reader.thread.getName()); //NOI18N
+                cause.setStackTrace(reader.lockedStack);
+                ex.initCause(cause);
+                ex = cause;
+                StackTraceElement[] stack = reader.thread.getStackTrace();
+                if (stack.length > 0) {
+                    cause = new Exception("Now the stack of the reader thead " + reader.thread.getName()); //NOI18N
+                    cause.setStackTrace(stack);
+                    ex.initCause(cause);
+                    ex = cause;
                 }
+                reader = reader.next;
             }
+            return result;
         }
     }
 
