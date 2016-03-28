@@ -105,7 +105,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         super.setUp();
         List<CompilerSet> sets = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets();
         for (CompilerSet set : sets) {
-            if (set.getName().equals("SunStudio")) {
+            if (set.getName().equals("OracleDeveloperStudio")) {
                 SunStudioSet = set;
             }
             if (set.getName().equals("GNU")) {

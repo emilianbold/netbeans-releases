@@ -300,9 +300,9 @@ public class ReadRegistryTestCase extends NbTestCase {
             "", // Default // NOI18N
             "", // All // NOI18N
         };
-        ToolchainDescriptor d = ToolchainManagerImpl.getImpl().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
+        ToolchainDescriptor d = ToolchainManagerImpl.getImpl().getToolchain("OracleDeveloperStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
         assertNotNull(d);
-        assertTrue("SunStudio".equals(d.getName()));
+        assertTrue("OracleDeveloperStudio".equals(d.getName()));
         CompilerDescriptor c = d.getC();
         assertNotNull(c);
         assertTrue(checkArrays(DEVELOPMENT_MODE_OPTIONS, c.getDevelopmentModeFlags()));
@@ -352,9 +352,9 @@ public class ReadRegistryTestCase extends NbTestCase {
             "", // Default // NOI18N
             "-features=extensions,tmplrefstatic,iddollar", // All // NOI18N
         };
-        ToolchainDescriptor d = ToolchainManagerImpl.getImpl().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
+        ToolchainDescriptor d = ToolchainManagerImpl.getImpl().getToolchain("OracleDeveloperStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
         assertNotNull(d);
-        assertTrue("SunStudio".equals(d.getName()));
+        assertTrue("OracleDeveloperStudio".equals(d.getName()));
         CompilerDescriptor c = d.getCpp();
         assertNotNull(c);
         assertTrue(checkArrays(DEVELOPMENT_MODE_OPTIONS, c.getDevelopmentModeFlags()));
@@ -380,7 +380,7 @@ public class ReadRegistryTestCase extends NbTestCase {
             "-w2", // More Warnings // NOI18N
             "-errwarn", // Convert Warnings to Errors // NOI18N
         };
-        ToolchainDescriptor d = ToolchainManagerImpl.getImpl().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
+        ToolchainDescriptor d = ToolchainManagerImpl.getImpl().getToolchain("OracleDeveloperStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
         assertNotNull(d);
         CompilerDescriptor c = d.getFortran();
         assertNotNull(c);

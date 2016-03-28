@@ -402,7 +402,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/xxx: ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}\n");
         golden.append("\t${LINK.cc} -o "+MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/xxx ${OBJECTFILES} ${LDLIBSOPTIONS}\n");
-        testAppWithLibraries("Main_SunStudio_Solaris_Intel", "SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL, golden.toString());
+        testAppWithLibraries("Main_SunStudio_Solaris_Intel", "OracleDeveloperStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL, golden.toString());
     }
 
     @Test
@@ -471,7 +471,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx."+MakeConfiguration.CND_DLIB_EXT_MACRO+": ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}\n");
         golden.append("\t${LINK.cc} -o "+MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/libXxx." + MakeConfiguration.CND_DLIB_EXT_MACRO + " ${OBJECTFILES} ${LDLIBSOPTIONS} -G -KPIC -norunpath -h libXxx."+MakeConfiguration.CND_DLIB_EXT_MACRO+"\n");
-        testDynamicLibrary("DynLib_SunStudio_Solaris_Intel", "SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL, golden.toString());
+        testDynamicLibrary("DynLib_SunStudio_Solaris_Intel", "OracleDeveloperStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL, golden.toString());
     }
 
     @Test
