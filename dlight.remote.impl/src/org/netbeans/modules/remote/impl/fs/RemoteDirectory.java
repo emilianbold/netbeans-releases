@@ -93,7 +93,7 @@ import org.openide.util.Parameters;
  *
  * @author Vladimir Kvashin
  */
-public class RemoteDirectory extends RemoteFileObjectBase {
+public class RemoteDirectory extends RemoteFileObjectWithCache {
 
     private static final boolean trace = Boolean.getBoolean("cnd.remote.directory.trace"); //NOI18N
 
@@ -187,7 +187,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         // leave old implementation for a while (under a flag, by default use new impl.)
         String childNameExt = (child == null) ? null : child.getNameExt();
         if (RemoteFileSystemUtils.getBoolean("remote.fast.delete", true)) {
-            Lock writeLock = RemoteFileSystem.getLock(getCache()).writeLock();
+            Lock writeLock = getLockSupport().getCacheLock(this).writeLock();
             writeLock.lock();
             boolean sendEvents = true;
             try {
@@ -458,7 +458,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (storage == null) {
             File storageFile = getStorageFile();
             if (storageFile.exists()) {
-                Lock readLock = RemoteFileSystem.getLock(getCache()).readLock();
+                Lock readLock = getLockSupport().getCacheLock(this).readLock();
                 readLock.lock();
                 try {
                     storage = DirectoryStorage.load(storageFile, getExecutionEnvironment());
@@ -739,7 +739,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
         checkConnection(this, true);
 
-        Lock writeLock = RemoteFileSystem.getLock(getCache()).writeLock();
+        Lock writeLock = getLockSupport().getCacheLock(this).writeLock();
         if (trace) {trace("waiting for lock");} // NOI18N
         writeLock.lock();
         try {
@@ -977,7 +977,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     /*package */ DirEntry getDirEntry(String childName) {
-        Lock writeLock = RemoteFileSystem.getLock(getCache()).writeLock();
+        Lock writeLock = getLockSupport().getCacheLock(this).writeLock();
         if (trace) {trace("waiting for lock");} // NOI18N
         writeLock.lock();
         try {
@@ -996,7 +996,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         RemoteLogger.assertTrue(fo.getParent() == this);
         RemoteLogger.assertFalse(entry.isDirectory());
         RemoteLogger.assertFalse(entry.isLink());
-        Lock writeLock = RemoteFileSystem.getLock(getCache()).writeLock();
+        Lock writeLock = getLockSupport().getCacheLock(this).writeLock();
         if (trace) {trace("waiting for lock");} // NOI18N
         writeLock.lock();
         try {
@@ -1047,7 +1047,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             fromMemOrDiskCache = false;
             storage = DirectoryStorage.EMPTY;
             if (storageFile.exists()) {
-                Lock readLock = RemoteFileSystem.getLock(getCache()).readLock();
+                Lock readLock = getLockSupport().getCacheLock(this).readLock();
                 try {
                     readLock.lock();
                     try {
@@ -1100,7 +1100,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
         checkConnection(this, true);
 
-        Lock writeLock = RemoteFileSystem.getLock(getCache()).writeLock();
+        Lock writeLock = getLockSupport().getCacheLock(this).writeLock();
         if (trace) { trace("waiting for lock"); } // NOI18N
         writeLock.lock();
         try {
@@ -1547,7 +1547,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     private boolean cacheExists(RemotePlainFile child) {
-        Lock lock = RemoteFileSystem.getLock(child.getCache()).readLock();
+        Lock lock = getLockSupport().getCacheLock(child).readLock();
         lock.lock();
         try {
             return child.getCache().exists();
@@ -1569,7 +1569,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }        
         checkConnection(child, true);
         DirectoryStorage storage = getDirectoryStorage(child.getNameExt()); // do we need this?
-        Lock lock = RemoteFileSystem.getLock(child.getCache()).writeLock();
+        Lock lock = getLockSupport().getCacheLock(child).writeLock();
         lock.lock();
         try {
             if (child.getCache().exists()) {

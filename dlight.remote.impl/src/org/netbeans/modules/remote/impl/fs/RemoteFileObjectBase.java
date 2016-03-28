@@ -84,10 +84,7 @@ public abstract class RemoteFileObjectBase {
     private final RemoteFileSystem fileSystem;
     private final RemoteFileObjectBase parent;
     private volatile String remotePath;
-    private final File cache;
     private final CopyOnWriteArrayList<FileChangeListener> listeners = new CopyOnWriteArrayList<>();
-    private FileLock lock;
-    private final Object instanceLock = new Object();
     public static final boolean USE_VCS;
     static {
         if ("false".equals(System.getProperty("remote.vcs.suport"))) { //NOI18N
@@ -109,12 +106,11 @@ public abstract class RemoteFileObjectBase {
     protected static final byte MASK_CYCLIC_LINK = 32;
     
     protected RemoteFileObjectBase(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
-            RemoteFileObjectBase parent, String remotePath, File cache) {
+            RemoteFileObjectBase parent, String remotePath) {
         RemoteLogger.assertTrue(execEnv.isRemote());        
         //RemoteLogger.assertTrue(cache.exists(), "Cache should exist for " + execEnv + "@" + remotePath); //NOI18N
         this.parent = parent;
         this.remotePath = remotePath; // RemoteFileSupport.fromFixedCaseSensitivePathIfNeeded(remotePath);
-        this.cache = cache;
         setFlag(MASK_VALID, true);
         this.fileSystem = wrapper.getFileSystem();
         this.fileObject = wrapper;
@@ -191,12 +187,12 @@ public abstract class RemoteFileObjectBase {
      * local cache of this FileObject (for directory - local dir, for file - local file with content)
      * @return 
      */
-    protected final File getCache() {
-        return cache;
+    protected File getCache() {
+        return null;
     }
 
     public boolean hasCache() {
-        return cache != null && cache.exists();
+        return false;
     }
 
     public final String getPath() {
@@ -657,35 +653,15 @@ public abstract class RemoteFileObjectBase {
     }
 
     protected FileLock lockImpl(RemoteFileObjectBase orig) throws IOException {
-        synchronized(instanceLock) {
-            if (lock != null && lock.isValid()) {
-                throw new FileAlreadyLockedException(getPath());
-            }
-            lock =  new FileLock();
-        }
-        return lock;
+        return getLockSupport().lock(this);
     }
     
     public boolean isLocked() {
-        boolean res = false;
-        synchronized(instanceLock) {
-            if (lock != null) {
-                res = lock.isValid();
-                if (!res) {
-                    lock = null;
-                }
-            }
-        }
-        return res;
+        return getLockSupport().isLocked(this);
     }
     
     protected boolean checkLock(FileLock aLock) throws IOException {
-        if (aLock != null) {
-            synchronized(instanceLock) {
-                return lock == aLock;
-            }
-        }
-        return true;
+        return getLockSupport().checkLock(this, aLock);
     }
 
     public final void rename(FileLock lock, String name, String ext) throws IOException {
@@ -1003,5 +979,9 @@ public abstract class RemoteFileObjectBase {
     
     protected static String composeName(String name, String ext) {
         return (ext != null && ext.length() > 0) ? (name + "." + ext) : name;//NOI18N
+    }
+
+    protected RemoteLockSupport getLockSupport() {
+        return fileSystem.getLockSupport();
     }
 }
