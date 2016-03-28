@@ -100,8 +100,8 @@ public class SunCCCCompilerTest {
         if (TRACE) {
             System.out.println("Parse Compiler Output of SunStudio CC on Solaris");
         }
-        CompilerFlavor flavor = CompilerFlavor.toFlavor("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
-        MySunCCCompiler instance = new MySunCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, PredefinedToolKind.CCCompiler, "SunStudio", "SunStudio", "/opt/SUNWspro/bin");
+        CompilerFlavor flavor = CompilerFlavor.toFlavor("OracleDeveloperStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
+        MySunCCCompiler instance = new MySunCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, PredefinedToolKind.CCCompiler, "OracleDeveloperStudio", "OracleDeveloperStudio", "/opt/SUNWspro/bin");
         instance.parseCompilerOutput(buf, instance.pair);
         List<String> out = instance.pair.systemIncludeDirectoriesList;
         Collections.<String>sort(out);
@@ -135,8 +135,8 @@ public class SunCCCCompilerTest {
         if (TRACE) {
             System.out.println("Parse Compiler Output of SunStudio C on Solaris");
         }
-        CompilerFlavor flavor = CompilerFlavor.toFlavor("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
-        MySunCCCompiler instance = new MySunCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, PredefinedToolKind.CCompiler, "SunStudio", "SunStudio", "/opt/SUNWspro/bin");
+        CompilerFlavor flavor = CompilerFlavor.toFlavor("OracleDeveloperStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
+        MySunCCCompiler instance = new MySunCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, PredefinedToolKind.CCompiler, "OracleDeveloperStudio", "OracleDeveloperStudio", "/opt/SUNWspro/bin");
         instance.parseCompilerOutput(buf, instance.pair);
         List<String> out = instance.pair.systemIncludeDirectoriesList;
         Collections.<String>sort(out);
@@ -173,8 +173,8 @@ public class SunCCCCompilerTest {
         if (TRACE) {
             System.out.println("Parse Compiler Output of SunStudio C on Lunix");
         }
-        CompilerFlavor flavor = CompilerFlavor.toFlavor("SunStudio", PlatformTypes.PLATFORM_LINUX);
-        MySunCCCompiler instance = new MySunCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, PredefinedToolKind.CCompiler, "SunStudio", "SunStudio", "/opt/SUNWspro/bin");
+        CompilerFlavor flavor = CompilerFlavor.toFlavor("OracleDeveloperStudio", PlatformTypes.PLATFORM_LINUX);
+        MySunCCCompiler instance = new MySunCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, PredefinedToolKind.CCompiler, "OracleDeveloperStudio", "OracleDeveloperStudio", "/opt/SUNWspro/bin");
         instance.parseCompilerOutput(buf, instance.pair);
         List<String> out = instance.pair.systemIncludeDirectoriesList;
         Collections.<String>sort(out);
