@@ -273,7 +273,8 @@ public final class RemotePlainFile extends RemoteFileObjectWithCache {
                         }
                     });
                 }
-            } else if (getLockSupport().tryReadLock(this)) {
+            } else {
+                getLockSupport().tryReadLock(this);
                 RemoteFileSystemUtils.getCanonicalParent(this).ensureChildSync(this);
                 return new InputStreamWrapper(new FileInputStream(getCache()), new Runnable() {
                     @Override
@@ -281,8 +282,6 @@ public final class RemotePlainFile extends RemoteFileObjectWithCache {
                         getLockSupport().readUnlock(RemotePlainFile.this);
                     }
                 });
-            } else {
-                throw new FileAlreadyLockedException("Cannot read from locked file: " + this);  //NOI18N
             }
 
             //getParent().ensureChildSync(this);
@@ -367,12 +366,9 @@ public final class RemotePlainFile extends RemoteFileObjectWithCache {
             if (USE_VCS) {
                 interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
             }
-            if (getLockSupport().tryWriteLock(this)) {
-                // setInsideVCS() is inside
-                return new DelegateOutputStream(interceptor, orig);
-            } else {
-                throw new FileAlreadyLockedException("Cannot write to locked file: " + this);  //NOI18N
-            }
+            getLockSupport().tryWriteLock(this); // if can't lock, throws FileAlreadyLockedException
+            // setInsideVCS() is inside
+            return new DelegateOutputStream(interceptor, orig);
         } catch (InterruptedException ex) {
             throw RemoteExceptions.createInterruptedIOException(ex.getLocalizedMessage(), ex); // NOI18N
         }
