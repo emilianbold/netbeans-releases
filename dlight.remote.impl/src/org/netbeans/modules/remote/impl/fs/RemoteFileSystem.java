@@ -109,6 +109,7 @@ import org.openide.windows.WindowManager;
 @org.netbeans.api.annotations.common.SuppressWarnings("Se") // is it ever serialized?
 public final class RemoteFileSystem extends FileSystem implements ConnectionListener {
 
+    /*package*/ static final boolean COLLECT_STATSISTICS = Boolean.getBoolean("remote.fs.statsistics");
     private static final boolean ATTR_STATS = Boolean.getBoolean("remote.attr.stats");
 
     public static final String ATTRIBUTES_FILE_NAME = ".rfs_attr"; // NOI18N
@@ -348,6 +349,9 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             connectionTask.schedule(0);
         }
         if (ATTR_STATS) { dumpAttrStat(); }
+        if (COLLECT_STATSISTICS) {
+            lockSupport.printStatistics(this);
+        }
     }
     
     public ExecutionEnvironment getExecutionEnvironment() {

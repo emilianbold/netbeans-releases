@@ -43,14 +43,17 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileLock;
 
@@ -68,6 +71,18 @@ public class RemoteLockSupport {
     private final Map<RemotePlainFile, SimpleRWLock> plainFileRWLocks = new IdentityHashMap<>();
 
     private static final int RW_LOCK_TIMEOUT = Integer.getInteger("remote.rwlock.timeout", 4); // NOI18N
+    private static final boolean TRACE_LOCKERS;
+    static {
+        boolean trace = RemoteLogger.isDebugMode();
+        String setting = System.getProperty("remote.rwlock.trace.lockers"); //NNOI18N
+        if (setting != null) {
+            trace = Boolean.parseBoolean(setting);
+        }
+        TRACE_LOCKERS = trace;
+    }
+
+    private AtomicInteger readLocksCount = new AtomicInteger();
+    private AtomicInteger writeLocksCount = new AtomicInteger();
 
     /** 
      * Get read-write lock related to the given file object cache
@@ -120,7 +135,7 @@ public class RemoteLockSupport {
         synchronized (plainFileMainLock) {
             lock = plainFileRWLocks.get(fo);
             if (lock == null && create) {
-                lock = new SimpleRWLock(fo);
+                lock = TRACE_LOCKERS ? new SimpleRWLockWithTrace(fo) : new SimpleRWLock(fo);
                 plainFileRWLocks.put(fo, lock);
             }
         }
@@ -149,6 +164,12 @@ public class RemoteLockSupport {
         }
     }
 
+    void printStatistics(RemoteFileSystem fs) {
+        System.err.println("RemoteLockSupport statistics for " + fs);
+        System.err.println("Read locks count:  " + readLocksCount.get());
+        System.err.println("Write locks count: " + writeLocksCount.get());
+    }
+
     // This homemade Read-Write lock is used instead of ReentrantReadWriteLock to support unlocking from
     // the thread other when one acquired the lock. This is required by FileObjectTestHid.testBigFileAndAsString test.
     // In brief the problem is the following: testBigFileAndAsString checks that if FileObject's InputStream is not closed
@@ -156,7 +177,7 @@ public class RemoteLockSupport {
     // from the finalizer as it is executed in separate thread: the exception will happen if you try. And this homemade lock
     // do not have this restriction.
     // Some facts about RWL implementation can be found here: http://java.dzone.com/news/java-concurrency-read-write-lo
-    private final class SimpleRWLock {
+    private class SimpleRWLock {
 
         private int activeReaders = 0;
         private int waiters = 0;
@@ -188,12 +209,33 @@ public class RemoteLockSupport {
             }
         }
 
+        protected void onReadLock(boolean success) {
+        }
+
+        protected void onReadUnlock() {
+        }
+
+        protected void onWriteLock(boolean success) {
+        }
+
+        protected void onWriteUnlock() {
+        }
+
+        public Thread getWriter() {
+            return writer;
+        }
+
+        public RemotePlainFile getOwner() {
+            return owner;
+        }
+
         public boolean tryReadLock() throws InterruptedException {
             lock.lock();
             try {
                 waiters++;
                 while (!readCondition()) {
-                    if (!readable.await(RW_LOCK_TIMEOUT, TimeUnit.SECONDS)) {
+                    if (!readable.await(RW_LOCK_TIMEOUT, TimeUnit.SECONDS)) {                        
+                        onReadLock(false);
                         return false;
                     }
                 }
@@ -201,6 +243,8 @@ public class RemoteLockSupport {
                 if (writer == Thread.currentThread()) {
                     writer = null;
                 }
+                readLocksCount.incrementAndGet();
+                onReadLock(true);
                 return true;
             } finally {
                 waiters--;
@@ -218,6 +262,7 @@ public class RemoteLockSupport {
                         writtable.signalAll();
                     }
                 }
+                onReadUnlock();
             } finally {
                 waiters--;
                 removeIfPossible();
@@ -230,10 +275,13 @@ public class RemoteLockSupport {
             try {
                 while (!writeCondition()) {
                     if (!writtable.await(RW_LOCK_TIMEOUT, TimeUnit.SECONDS)) {
+                        onWriteLock(false);
                         return false;
                     }
                 }
                 writer = Thread.currentThread();
+                writeLocksCount.incrementAndGet();
+                onWriteLock(true);
                 return true;
             } finally {                
                 lock.unlock();
@@ -251,6 +299,103 @@ public class RemoteLockSupport {
             } finally {
                 removeIfPossible();
                 lock.unlock();
+            }
+        }
+    }
+
+    private static class ReaderInfo {
+        public final Thread thread;
+        public final StackTraceElement[] lockedStack;
+        public final long timestamp;
+        public ReaderInfo next;
+        public ReaderInfo(ReaderInfo next) {
+            this.next = next;
+            this.thread = Thread.currentThread();
+            this.timestamp = System.currentTimeMillis();
+            StackTraceElement[] stack = thread.getStackTrace();
+            this.lockedStack = new StackTraceElement[stack.length-4];
+            System.arraycopy(stack, 4, lockedStack, 0, stack.length-4);
+        }
+    }
+
+    private class SimpleRWLockWithTrace extends SimpleRWLock {
+
+        // Is accessed from onReadLock, onReadUnLock, onWriteLock, onWriteUnlock -
+        // all these are called under parent's lock => no need to sync
+        private ReaderInfo lastReader;
+
+        public SimpleRWLockWithTrace(RemotePlainFile owner) {
+            super(owner);
+        }
+
+        private void addReader() {
+            lastReader = new ReaderInfo(lastReader);
+        }
+
+        private void removeReader(ReaderInfo reader) {
+            if (reader == lastReader) {
+                lastReader = lastReader.next;
+            } else {
+                ReaderInfo prev = lastReader;
+                while (prev != null) {
+                    ReaderInfo next = prev.next;
+                    if (next == reader) {
+                        prev.next = next.next;
+                    }
+                    prev = next;
+                }
+            }
+        }
+
+        private ReaderInfo findReader() {
+            ReaderInfo curr = lastReader;
+            while (curr != null) {
+                if (curr.thread.getId() == Thread.currentThread().getId()) {
+                    return curr;
+                }
+                curr = curr.next;
+            }
+            return lastReader;
+        }
+
+        @Override
+        protected void onReadLock(boolean success) {
+            if (success) {
+                addReader();
+            }
+        }
+
+        @Override
+        protected void onReadUnlock() {
+            ReaderInfo reader = findReader();
+            if (reader != null) {
+                removeReader(reader);
+            }
+        }
+
+        @Override
+        protected void onWriteLock(boolean success) {
+            if (!success) {
+                Exception e = new Exception("Failed to lock " + getOwner() + " at " + new Date()); // NOI18N
+                e.printStackTrace(System.err);
+                System.err.println("Readers are:");
+                ReaderInfo reader = lastReader;
+                while (reader != null) {
+                    System.err.println("Locked at " + new Date(reader.timestamp) + " by thread " + reader.thread.getName());
+                    for (StackTraceElement ste : reader.lockedStack) {
+                        System.err.println("    at " + ste.toString());
+                    }                    
+                    StackTraceElement[] stack = reader.thread.getStackTrace();
+                    if (stack.length > 0) {
+                        System.err.println("    Now the reader thead stack is");
+                        for (StackTraceElement ste : stack) {
+                            System.err.println("        at " + ste.toString());
+                        }
+                    } else {
+                        System.err.println("    No reader stack at the moment");
+                    }
+                    reader = reader.next;
+                }
             }
         }
     }
