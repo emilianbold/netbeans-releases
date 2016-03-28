@@ -45,9 +45,6 @@ made subject to such option by the copyright holder.
 -->
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <toolchain name="SunStudio_12.1" display="Sun Studio 12.1" family="SunStudio" aliases="SunStudio,OracleSolarisStudio"/>
+    <toolchain name="SunStudio_12.1" display="Sun Studio 12.1" family="SunStudio" aliases="OracleDeveloperStudio"/>
     <platforms stringvalue="sun_sparc"/>
-    <default_locations>
-        <platform os="sun_sparc" directory="/opt/sunstudio12.1/bin"/>
-    </default_locations>
 </toolchaindefinition>
