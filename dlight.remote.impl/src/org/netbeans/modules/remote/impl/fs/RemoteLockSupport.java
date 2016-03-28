@@ -46,7 +46,10 @@ import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileLock;
@@ -60,6 +63,11 @@ public class RemoteLockSupport {
     private final Object mainLock = new Object();
     private final Map<File, WeakReference<ReadWriteLock>> cacheLocks = new HashMap<>();
     private final IdentityHashMap<RemoteFileObjectBase, RemoteFileLock> fileLocks = new IdentityHashMap();
+
+    private final Object plainFileMainLock = new Object();
+    private final Map<RemotePlainFile, SimpleRWLock> plainFileRWLocks = new IdentityHashMap<>();
+
+    private static final int RW_LOCK_TIMEOUT = Integer.getInteger("remote.rwlock.timeout", 4); // NOI18N
 
     /** 
      * Get read-write lock related to the given file object cache
@@ -105,6 +113,146 @@ public class RemoteLockSupport {
             }
         }
         return true;
+    }
+
+    private SimpleRWLock getPlainFileRWLock(RemotePlainFile fo, boolean create) {
+        SimpleRWLock lock;
+        synchronized (plainFileMainLock) {
+            lock = plainFileRWLocks.get(fo);
+            if (lock == null && create) {
+                lock = new SimpleRWLock(fo);
+                plainFileRWLocks.put(fo, lock);
+            }
+        }
+        return lock;
+    }
+
+    public boolean tryReadLock(RemotePlainFile fo) throws InterruptedException {
+        return getPlainFileRWLock(fo, true).tryReadLock();
+    }
+
+    public void readUnlock(RemotePlainFile fo) {
+        SimpleRWLock lock = getPlainFileRWLock(fo, false);
+        if (lock != null) {
+            lock.readUnlock();
+        }
+    }
+
+    public boolean tryWriteLock(RemotePlainFile fo) throws InterruptedException {
+        return getPlainFileRWLock(fo, true).tryWriteLock();
+    }
+
+    public void writeUnlock(RemotePlainFile fo) {
+        SimpleRWLock lock = getPlainFileRWLock(fo, false);
+        if (lock != null) {
+            lock.writeUnlock();
+        }
+    }
+
+    // This homemade Read-Write lock is used instead of ReentrantReadWriteLock to support unlocking from
+    // the thread other when one acquired the lock. This is required by FileObjectTestHid.testBigFileAndAsString test.
+    // In brief the problem is the following: testBigFileAndAsString checks that if FileObject's InputStream is not closed
+    // properly it will be closed in the finalizer. But it is not possible to unlock ReentrantReadWriteLock read lock
+    // from the finalizer as it is executed in separate thread: the exception will happen if you try. And this homemade lock
+    // do not have this restriction.
+    // Some facts about RWL implementation can be found here: http://java.dzone.com/news/java-concurrency-read-write-lo
+    private final class SimpleRWLock {
+
+        private int activeReaders = 0;
+        private int waiters = 0;
+        private Thread writer = null;
+        private final ReentrantLock lock = new ReentrantLock();
+        private final Condition readable = lock.newCondition();
+        private final Condition writtable = lock.newCondition();
+        private final RemotePlainFile owner;
+
+        public SimpleRWLock(RemotePlainFile owner) {
+            this.owner = owner;
+        }
+
+        private boolean writeCondition() {
+            assert lock.isLocked();
+            return activeReaders == 0 && writer == null;
+        }
+
+        // should support lock's downgrading
+        private boolean readCondition() {
+            assert lock.isLocked();
+            return writer == null || writer == Thread.currentThread();
+        }
+
+        private void removeIfPossible() {
+            assert lock.isLocked();
+            if (activeReaders == 0 && writer == null && waiters == 0) {
+                plainFileRWLocks.remove(owner);
+            }
+        }
+
+        public boolean tryReadLock() throws InterruptedException {
+            lock.lock();
+            try {
+                waiters++;
+                while (!readCondition()) {
+                    if (!readable.await(RW_LOCK_TIMEOUT, TimeUnit.SECONDS)) {
+                        return false;
+                    }
+                }
+                activeReaders++;
+                if (writer == Thread.currentThread()) {
+                    writer = null;
+                }
+                return true;
+            } finally {
+                waiters--;
+                lock.unlock();
+            }
+        }
+
+        public void readUnlock() {
+            lock.lock();
+            try {
+                waiters++;
+                if (activeReaders > 0) {
+                    activeReaders--;
+                    if (activeReaders == 0) {
+                        writtable.signalAll();
+                    }
+                }
+            } finally {
+                waiters--;
+                removeIfPossible();
+                lock.unlock();
+            }
+        }
+
+        public boolean tryWriteLock() throws InterruptedException {
+            lock.lock();
+            try {
+                while (!writeCondition()) {
+                    if (!writtable.await(RW_LOCK_TIMEOUT, TimeUnit.SECONDS)) {
+                        return false;
+                    }
+                }
+                writer = Thread.currentThread();
+                return true;
+            } finally {                
+                lock.unlock();
+            }
+        }
+
+        public void writeUnlock() {
+            lock.lock();
+            try {
+                if (writer != null) {
+                    writer = null;
+                    writtable.signal();
+                    readable.signalAll();
+                }
+            } finally {
+                removeIfPossible();
+                lock.unlock();
+            }
+        }
     }
 
     private class RemoteFileLock extends FileLock {
