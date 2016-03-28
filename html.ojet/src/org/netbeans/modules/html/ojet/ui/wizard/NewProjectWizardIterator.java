@@ -91,7 +91,20 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
     private WizardDescriptor.Panel<WizardDescriptor>[] panels;
     private WizardDescriptor wizardDescriptor;
 
-
+    private void hackIgnoreSCSSErrorsInOJET(FileObject projectDirectory) {
+        Enumeration<? extends FileObject> children = projectDirectory.getChildren(true);
+        while (children.hasMoreElements()) {
+            FileObject file = children.nextElement();
+            if ("scss".equals(file.getName())) { //NOI18N
+                try {
+                    file.setAttribute("disable_error_checking_CSS", Boolean.TRUE.toString()); //NOI18N
+                    break;
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+    }
     private NewProjectWizardIterator(String displayName, String projectDirName, String zipUrl, File tmpFile) {
         assert displayName != null;
         assert projectDirName != null;
@@ -173,6 +186,7 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
         ClientSideProjectGenerator.createProject(createProperties);
 
         setupProject(handle, files, projectDirectory);
+        hackIgnoreSCSSErrorsInOJET(projectDirectory);
 
         hackIgnoreCSSErrorsInUrlFile(projectDirectory);
         handle.finish();
