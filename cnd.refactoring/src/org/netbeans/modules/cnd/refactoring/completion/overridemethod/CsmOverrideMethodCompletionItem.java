@@ -227,16 +227,7 @@ public class CsmOverrideMethodCompletionItem implements CompletionItem {
                    sb.append(' '); //NOI18N
                 }
                 first = false;
-                if (param.isVarArgs()) {
-                    sb.append("..."); // NOI18N
-                } else {
-                    CsmType type = param.getType();
-                    if (type != null) {
-                        sb.append(type.getText());
-                        sb.append(' ');
-                        sb.append(param.getName());
-                    }
-                }
+                sb.append(param.getDisplayText());
             }
             sb.append(')'); //NOI18N
             if(CsmKindUtilities.isMethod(item) && ((CsmMethod)item).isConst()) {
