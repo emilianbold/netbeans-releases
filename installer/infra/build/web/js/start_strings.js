@@ -19,13 +19,13 @@
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL or only the
  * GPL Version 2, indicate your decision by adding "[Contributor] elects to include
  * this software in this distribution under the [CDDL or GPL Version 2] license." If
@@ -46,7 +46,7 @@ var NOFILE_MESSAGE    = "No file requested" ;
 var NETBEANS_DOWNLOAD_STARTED_PAGE_TITLE       = "NetBeans IDE Download Started";
 var NETBEANS_DOWNLOAD_STARTED_PAGE_DESCRIPTION = "NetBeans IDE Download Started";
 
-var NETBEANS_DOWNLOAD_STARTED_HEADER = "NetBeans IDE {0} Download Started";
+var NETBEANS_DOWNLOAD_STARTED_HEADER = "NetBeans JDK9 Branch {0} Download Started";
 var RELEASE_NOTES_LABEL = "Release Notes";
 var INSTALL_NOTES_LABEL = "Installation Instructions";
 var FIND_OUT_MORE_LABEL = "Find Out More";
@@ -65,4 +65,3 @@ var INFO_MESSAGE_OTHER = "{0} ({1} MB)<br>MD5: {2}";
 
 //DO NOT TRANSLATE
 var SUBSCRIPTION_PHP_URL = "http://services.netbeans.org/sub.php";
-

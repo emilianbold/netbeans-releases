@@ -19,13 +19,13 @@
  * accompanied this code. If applicable, add the following below the License Header,
  * with the fields enclosed by brackets [] replaced by your own identifying
  * information: "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL or only the
  * GPL Version 2, indicate your decision by adding "[Contributor] elects to include
  * this software in this distribution under the [CDDL or GPL Version 2] license." If
@@ -38,7 +38,7 @@
  */
 
 var BUNDLED_SERVERS_GROUP_NAME = "Bundled&nbsp;servers";
-                                                   
+
 var NETBEANS_DOWNLOAD_BUNDLES_MSG = "NetBeans IDE Download Bundles";
 var NETBEANS_DOWNLOAD_BUNDLES_COMMUNITY_MSG = "NetBeans IDE Download Bundles in community contributed languages";
 var NETBEANS_PACKS_MSG 		  = "Supported&nbsp;technologies";
@@ -73,12 +73,12 @@ var COMMUNITY_MESSAGE = "The NetBeans Community has fully contributed to the lan
 var COMMUNITY_CONTRIBUTED_SEP    = " -- Community Contributed -- " ;
 var SUN_SUPPORTED_SEP            = " -- Oracle Supported -- " ;
 
-var NETBEANS_DOWNLOAD_PAGE_TITLE       = "NetBeans IDE Download";
+var NETBEANS_DOWNLOAD_PAGE_TITLE       = "NetBeans JDK9 Branch Download";
 var NETBEANS_DOWNLOAD_PAGE_DESCRIPTION = "NetBeans IDE Download";
 
 
 
-var NETBEANS_DOWNLOAD_HEADER = "NetBeans IDE {0} Download";
+var NETBEANS_DOWNLOAD_HEADER = "NetBeans JDK9 Branch, {0} Download";
 var DEVELOPMENT_TITLE        = "Development";
 var ARCHIVE_TITLE            = "Archive";
 var EMAIL_LABEL              = "Email&nbsp;address&nbsp;(optional):&nbsp;";
@@ -106,4 +106,3 @@ var DOWNLOAD_BUTTON_HIGHLIGHT = "download_h.gif";
 // DO NOT TRANSLATE
 var START_PAGE = "start.html";
 var ZIP_PAGE   = "zip.html";
-
