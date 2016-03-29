@@ -105,6 +105,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.ExpressionArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
@@ -117,6 +118,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
 import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.GroupUseStatementPart;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.InstanceOfExpression;
@@ -710,6 +712,17 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             Kind[] kinds = {Kind.CLASS, Kind.IFACE};
             occurencesBuilder.prepare(kinds, (NamespaceName) className, scope);
         }
+        Expression constant = node.getConstant();
+        if (constant instanceof ExpressionArrayAccess) {
+            ExpressionArrayAccess access = (ExpressionArrayAccess) constant;
+            scan(access.getDimension());
+            Expression name = access.getExpression();
+            while (name instanceof ExpressionArrayAccess) {
+                ExpressionArrayAccess access1 = (ExpressionArrayAccess) name;
+                scan(access1.getDimension());
+                name = access1.getExpression();
+            }
+        }
     }
 
     @Override
@@ -730,6 +743,27 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     @Override
     public void visit(SingleFieldDeclaration node) {
         scan(node.getValue());
+    }
+
+    @Override
+    public void visit(ExpressionArrayAccess node) {
+        // CONSTANT[0], "String"[0], [1][0]
+        scan(node.getDimension());
+        Expression expression = node.getExpression();
+        while (expression instanceof ExpressionArrayAccess) {
+            ExpressionArrayAccess access = (ExpressionArrayAccess) expression;
+            scan(access.getDimension());
+            expression = access.getExpression();
+        }
+
+        if (expression instanceof Identifier) {
+            // global const
+            Identifier identifier = (Identifier) expression;
+            String name = identifier.getName();
+            if(!NavUtils.isQuoted(name)) {
+                occurencesBuilder.prepare(Kind.CONSTANT, expression, modelBuilder.getCurrentScope());
+            }
+        }
     }
 
     @Override
