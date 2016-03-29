@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.api.extexecution.ProcessBuilder;
@@ -218,7 +219,23 @@ abstract public class FileOperationsProvider {
         protected boolean isFile(FileProxyO file) {
             if (RemoteVcsSupportUtil.USE_FS && !fileSystem.isInsideVCS()) {
                 RemoteFileObject fo = getFileObject(file);
-                return (fo == null || !fo.isValid()) ? false : fo.isData();
+                if (fo == null || !fo.isValid()) {
+                    if (fileSystem.getFactory().vcsIsUnconfirmedDeletion(file.getPath())) {
+                        try {
+                            DirEntry e = RemoteFileSystemTransport.lstat(getExecutionEnvironment(), file.getPath());
+                            if (e == null) {
+                                fileSystem.getFactory().vcsUnregisterUnconfirmedDeletion(file.getPath());
+                            } else {
+                                return !e.isDirectory();
+                            }
+                        } catch (IOException | InterruptedException | CancellationException | ExecutionException e) {
+                            RemoteLogger.finest(e);
+                        }
+                    }
+                    return false;
+                } else {
+                    return fo.isData();
+                }
             }
             if (USE_CACHE) {
                 Boolean res = fileSystem.vcsSafeIsFile(file.getPath());

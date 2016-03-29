@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -65,6 +66,7 @@ public class RemoteFileObjectFactory {
     private final RemoteFileSystem fileSystem;
 
     private final WeakCache<String, RemoteFileObjectBase> fileObjectsCache = new WeakCache<>();
+    private final  ConcurrentHashMap<String, Boolean> unconfirmedDeletions = new ConcurrentHashMap<>();
 
     /** lockImpl for both fileObjectsCache and pendingListeners */
     private final Object lock = new Object();
@@ -279,6 +281,7 @@ public class RemoteFileObjectFactory {
                     }
                 }
                 fileObjectsCache.put(remotePath, fo);
+                unconfirmedDeletions.remove(remotePath);
                 return fo;
             } else {
                 return prev;
@@ -375,5 +378,17 @@ public class RemoteFileObjectFactory {
                 fo.invalidate();
             }
         }
+    }
+
+    public void vcsRegisterUnconfirmedDeletion(String path) {
+        unconfirmedDeletions.put(path, Boolean.TRUE);
+    }
+
+    public void vcsUnregisterUnconfirmedDeletion(String path) {
+        unconfirmedDeletions.remove(path);
+    }
+
+    public boolean vcsIsUnconfirmedDeletion(String path) {
+        return unconfirmedDeletions.get(path) != null;
     }
 }
