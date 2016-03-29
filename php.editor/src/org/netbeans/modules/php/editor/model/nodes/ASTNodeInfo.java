@@ -323,7 +323,7 @@ public class ASTNodeInfo<T extends ASTNode> {
             return toName(mi.getMethod());
         } else if (node instanceof StaticConstantAccess) {
             StaticConstantAccess sca = (StaticConstantAccess) node;
-            return sca.getConstant().getName();
+            return sca.getConstantName().getName();
         } else if (node instanceof ClassName) {
             ClassName cname = (ClassName) node;
             return CodeUtils.extractClassName(cname);
@@ -380,7 +380,7 @@ public class ASTNodeInfo<T extends ASTNode> {
             return toOffsetRange(mi.getMethod());
         } else if (node instanceof StaticConstantAccess) {
             StaticConstantAccess sca = (StaticConstantAccess) node;
-            Identifier constant = sca.getConstant();
+            Identifier constant = sca.getConstantName();
             return new OffsetRange(constant.getStartOffset(), constant.getEndOffset());
         } else if (node instanceof ClassName) {
             Identifier id = CodeUtils.extractUnqualifiedIdentifier(((ClassName) node).getName());

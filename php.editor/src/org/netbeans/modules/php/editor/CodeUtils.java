@@ -500,11 +500,11 @@ public final class CodeUtils {
             if (className instanceof Identifier) {
                 Identifier i = (Identifier) className;
 
-                return i.getName() + "::" + staticConstantAccess.getConstant().getName(); // NOI18N
+                return i.getName() + "::" + staticConstantAccess.getConstantName().getName(); // NOI18N
             } else if (className instanceof NamespaceName) {
                 NamespaceName namespace = (NamespaceName) className;
                 StringBuilder sb = new StringBuilder(extractQualifiedName(namespace));
-                return sb.append("::").append(staticConstantAccess.getConstant().getName()).toString(); // NOI18N
+                return sb.append("::").append(staticConstantAccess.getConstantName().getName()).toString(); // NOI18N
             }
         }
         return expr == null ? null : " "; //NOI18N

@@ -372,6 +372,19 @@ public class PhpParserErrorTest extends PHPTestBase {
         checkErrors("testfiles/parser/classConstant.php");
     }
 
+    // #250579
+    public void testConstantArrayAccess_01() throws Exception {
+        checkErrors("testfiles/parser/constantArrayAccess_01.php");
+    }
+
+    public void testConstantArrayAccess_02() throws Exception {
+        checkErrors("testfiles/parser/constantArrayAccess_02.php");
+    }
+
+    public void testConstantArrayAccess_03() throws Exception {
+        checkErrors("testfiles/parser/constantArrayAccess_03.php");
+    }
+
     public void testIssue237220() throws Exception {
         checkErrors("testfiles/parser/issue237220.php");
     }
