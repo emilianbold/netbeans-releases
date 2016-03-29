@@ -149,9 +149,11 @@
                                 <Variable start='197' end='199' isDollared='true'>
                                     <Identifier start='198' end='199' name='e'/>
                                 </Variable>
-                                <Variable start='201' end='202' isDollared='false'>
-                                    <Identifier start='201' end='202' name='e'/>
-                                </Variable>
+                                <Field>
+                                    <Variable start='201' end='202' isDollared='false'>
+                                        <Identifier start='201' end='202' name='e'/>
+                                    </Variable>
+                                </Field>
                             </FieldAccess>
                             <Scalar start='205' end='209' type='STRING' value='"\n"'/>
                         </InfixExpression>

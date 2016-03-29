@@ -239,9 +239,11 @@
                                         <Variable start='189' end='191' isDollared='true'>
                                             <Identifier start='190' end='191' name='d'/>
                                         </Variable>
-                                        <Variable start='193' end='194' isDollared='false'>
-                                            <Identifier start='193' end='194' name='d'/>
-                                        </Variable>
+                                        <Field>
+                                            <Variable start='193' end='194' isDollared='false'>
+                                                <Identifier start='193' end='194' name='d'/>
+                                            </Variable>
+                                        </Field>
                                     </FieldAccess>
                                 </ReflectionVariable>
                                 <Scalar start='195' end='209' type='STRING' value='.\n\n'/>
@@ -288,9 +290,11 @@
                                     <Variable start='284' end='286' isDollared='true'>
                                         <Identifier start='285' end='286' name='d'/>
                                     </Variable>
-                                    <Variable start='288' end='289' isDollared='false'>
-                                        <Identifier start='288' end='289' name='d'/>
-                                    </Variable>
+                                    <Field>
+                                        <Variable start='288' end='289' isDollared='false'>
+                                            <Identifier start='288' end='289' name='d'/>
+                                        </Variable>
+                                    </Field>
                                 </FieldAccess>
                             </ReflectionVariable>
                             <Scalar start='290' end='304' type='STRING' value='.\n\n'/>

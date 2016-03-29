@@ -1032,9 +1032,11 @@
                                             <Variable start='375' end='380' isDollared='true'>
                                                 <Identifier start='376' end='380' name='this'/>
                                             </Variable>
-                                            <Variable start='382' end='388' isDollared='false'>
-                                                <Identifier start='382' end='388' name='logger'/>
-                                            </Variable>
+                                            <Field>
+                                                <Variable start='382' end='388' isDollared='false'>
+                                                    <Identifier start='382' end='388' name='logger'/>
+                                                </Variable>
+                                            </Field>
                                         </FieldAccess>
                                         <Variable start='391' end='398' isDollared='true'>
                                             <Identifier start='392' end='398' name='logger'/>
@@ -1067,56 +1069,58 @@
                     <Variable start='435' end='439' isDollared='true'>
                         <Identifier start='436' end='439' name='app'/>
                     </Variable>
-                    <FunctionInvocation start='441' end='547'>
-                        <FucntionName start='441' end='450'>
-                            <Variable start='441' end='450' isDollared='false'>
-                                <Identifier start='441' end='450' name='setLogger'/>
-                            </Variable>
-                        </FucntionName>
-                        <Parameters>
-                            <ClassInstanceCreation start='451' end='546' anonymous='true'>
-                                <Parameters>
-                                </Parameters>
-                                <Superclass>
-                                </Superclass>
-                                <Interfaces>
-                                    <NamespaceName start='472' end='478' isCurrent='false' isGlobal='false'>
-                                        <Identifier start='472' end='478' name='Logger'/>
-                                    </NamespaceName>
-                                </Interfaces>
-                                <Block start='479' end='546' isCurly='true'>
-                                    <MethodDeclaration start='485' end='544' modifiers='public'>
-                                        <FunctionDeclaration start='492' end='544' isReference='false'>
-                                            <Identifier start='501' end='504' name='log'/>
-                                            <FormalParameters>
-                                                <FormalParameter start='505' end='516' isMandatory='true' isVariadic='false'>
-                                                    <ParametrType>
-                                                        <NamespaceName start='505' end='511' isCurrent='false' isGlobal='false'>
-                                                            <Identifier start='505' end='511' name='string'/>
-                                                        </NamespaceName>
-                                                    </ParametrType>
-                                                    <ParametrName>
-                                                        <Variable start='512' end='516' isDollared='true'>
-                                                            <Identifier start='513' end='516' name='msg'/>
+                    <Method>
+                        <FunctionInvocation start='441' end='547'>
+                            <FucntionName start='441' end='450'>
+                                <Variable start='441' end='450' isDollared='false'>
+                                    <Identifier start='441' end='450' name='setLogger'/>
+                                </Variable>
+                            </FucntionName>
+                            <Parameters>
+                                <ClassInstanceCreation start='451' end='546' anonymous='true'>
+                                    <Parameters>
+                                    </Parameters>
+                                    <Superclass>
+                                    </Superclass>
+                                    <Interfaces>
+                                        <NamespaceName start='472' end='478' isCurrent='false' isGlobal='false'>
+                                            <Identifier start='472' end='478' name='Logger'/>
+                                        </NamespaceName>
+                                    </Interfaces>
+                                    <Block start='479' end='546' isCurly='true'>
+                                        <MethodDeclaration start='485' end='544' modifiers='public'>
+                                            <FunctionDeclaration start='492' end='544' isReference='false'>
+                                                <Identifier start='501' end='504' name='log'/>
+                                                <FormalParameters>
+                                                    <FormalParameter start='505' end='516' isMandatory='true' isVariadic='false'>
+                                                        <ParametrType>
+                                                            <NamespaceName start='505' end='511' isCurrent='false' isGlobal='false'>
+                                                                <Identifier start='505' end='511' name='string'/>
+                                                            </NamespaceName>
+                                                        </ParametrType>
+                                                        <ParametrName>
+                                                            <Variable start='512' end='516' isDollared='true'>
+                                                                <Identifier start='513' end='516' name='msg'/>
+                                                            </Variable>
+                                                        </ParametrName>
+                                                        <DefaultValue>
+                                                        </DefaultValue>
+                                                    </FormalParameter>
+                                                </FormalParameters>
+                                                <Block start='518' end='544' isCurly='true'>
+                                                    <EchoStatement start='528' end='538'>
+                                                        <Variable start='533' end='537' isDollared='true'>
+                                                            <Identifier start='534' end='537' name='msg'/>
                                                         </Variable>
-                                                    </ParametrName>
-                                                    <DefaultValue>
-                                                    </DefaultValue>
-                                                </FormalParameter>
-                                            </FormalParameters>
-                                            <Block start='518' end='544' isCurly='true'>
-                                                <EchoStatement start='528' end='538'>
-                                                    <Variable start='533' end='537' isDollared='true'>
-                                                        <Identifier start='534' end='537' name='msg'/>
-                                                    </Variable>
-                                                </EchoStatement>
-                                            </Block>
-                                        </FunctionDeclaration>
-                                    </MethodDeclaration>
-                                </Block>
-                            </ClassInstanceCreation>
-                        </Parameters>
-                    </FunctionInvocation>
+                                                    </EchoStatement>
+                                                </Block>
+                                            </FunctionDeclaration>
+                                        </MethodDeclaration>
+                                    </Block>
+                                </ClassInstanceCreation>
+                            </Parameters>
+                        </FunctionInvocation>
+                    </Method>
                 </MethodInvocation>
             </ExpressionStatement>
             <ExpressionStatement start='550' end='578'>
@@ -1131,15 +1135,17 @@
                             <Variable start='559' end='563' isDollared='true'>
                                 <Identifier start='560' end='563' name='app'/>
                             </Variable>
-                            <FunctionInvocation start='565' end='576'>
-                                <FucntionName start='565' end='574'>
-                                    <Variable start='565' end='574' isDollared='false'>
-                                        <Identifier start='565' end='574' name='getLogger'/>
-                                    </Variable>
-                                </FucntionName>
-                                <Parameters>
-                                </Parameters>
-                            </FunctionInvocation>
+                            <Method>
+                                <FunctionInvocation start='565' end='576'>
+                                    <FucntionName start='565' end='574'>
+                                        <Variable start='565' end='574' isDollared='false'>
+                                            <Identifier start='565' end='574' name='getLogger'/>
+                                        </Variable>
+                                    </FucntionName>
+                                    <Parameters>
+                                    </Parameters>
+                                </FunctionInvocation>
+                            </Method>
                         </MethodInvocation>
                     </Parameters>
                 </FunctionInvocation>
@@ -1234,9 +1240,11 @@
                                                         <Variable start='907' end='912' isDollared='true'>
                                                             <Identifier start='908' end='912' name='this'/>
                                                         </Variable>
-                                                        <Variable start='914' end='917' isDollared='false'>
-                                                            <Identifier start='914' end='917' name='num'/>
-                                                        </Variable>
+                                                        <Field>
+                                                            <Variable start='914' end='917' isDollared='false'>
+                                                                <Identifier start='914' end='917' name='num'/>
+                                                            </Variable>
+                                                        </Field>
                                                     </FieldAccess>
                                                     <Variable start='920' end='924' isDollared='true'>
                                                         <Identifier start='921' end='924' name='num'/>
@@ -1327,25 +1335,29 @@
                                 </Parameters>
                             </ClassInstanceCreation>
                         </AnonymousObjectVariable>
-                        <FunctionInvocation start='1561' end='1568'>
-                            <FucntionName start='1561' end='1566'>
-                                <Variable start='1561' end='1566' isDollared='false'>
-                                    <Identifier start='1561' end='1566' name='func2'/>
+                        <Method>
+                            <FunctionInvocation start='1561' end='1568'>
+                                <FucntionName start='1561' end='1566'>
+                                    <Variable start='1561' end='1566' isDollared='false'>
+                                        <Identifier start='1561' end='1566' name='func2'/>
+                                    </Variable>
+                                </FucntionName>
+                                <Parameters>
+                                </Parameters>
+                            </FunctionInvocation>
+                        </Method>
+                    </MethodInvocation>
+                    <Method>
+                        <FunctionInvocation start='1570' end='1577'>
+                            <FucntionName start='1570' end='1575'>
+                                <Variable start='1570' end='1575' isDollared='false'>
+                                    <Identifier start='1570' end='1575' name='func3'/>
                                 </Variable>
                             </FucntionName>
                             <Parameters>
                             </Parameters>
                         </FunctionInvocation>
-                    </MethodInvocation>
-                    <FunctionInvocation start='1570' end='1577'>
-                        <FucntionName start='1570' end='1575'>
-                            <Variable start='1570' end='1575' isDollared='false'>
-                                <Identifier start='1570' end='1575' name='func3'/>
-                            </Variable>
-                        </FucntionName>
-                        <Parameters>
-                        </Parameters>
-                    </FunctionInvocation>
+                    </Method>
                 </MethodInvocation>
             </EchoStatement>
             <ExpressionStatement start='1655' end='1773'>
@@ -1393,16 +1405,18 @@
                             </Block>
                         </ClassInstanceCreation>
                     </AnonymousObjectVariable>
-                    <FunctionInvocation start='1754' end='1772'>
-                        <FucntionName start='1754' end='1757'>
-                            <Variable start='1754' end='1757' isDollared='false'>
-                                <Identifier start='1754' end='1757' name='log'/>
-                            </Variable>
-                        </FucntionName>
-                        <Parameters>
-                            <Scalar start='1758' end='1771' type='STRING' value='&apos;hello world&apos;'/>
-                        </Parameters>
-                    </FunctionInvocation>
+                    <Method>
+                        <FunctionInvocation start='1754' end='1772'>
+                            <FucntionName start='1754' end='1757'>
+                                <Variable start='1754' end='1757' isDollared='false'>
+                                    <Identifier start='1754' end='1757' name='log'/>
+                                </Variable>
+                            </FucntionName>
+                            <Parameters>
+                                <Scalar start='1758' end='1771' type='STRING' value='&apos;hello world&apos;'/>
+                            </Parameters>
+                        </FunctionInvocation>
+                    </Method>
                 </MethodInvocation>
             </ExpressionStatement>
         </Statements>
