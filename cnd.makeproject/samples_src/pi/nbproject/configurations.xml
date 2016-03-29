@@ -67,6 +67,7 @@
         </cCompilerTool>
         <linkerTool>
           <linkerLibItems>
+            <linkerLibStdlibItem>PosixThreads</linkerLibStdlibItem>
           </linkerLibItems>
         </linkerTool>
       </compileType>
@@ -100,6 +101,7 @@
         </cCompilerTool>
         <linkerTool>
           <linkerLibItems>
+            <linkerLibStdlibItem>PosixThreads</linkerLibStdlibItem>
           </linkerLibItems>
         </linkerTool>
       </compileType>
@@ -133,6 +135,7 @@
         </cCompilerTool>
         <linkerTool>
           <linkerLibItems>
+            <linkerLibStdlibItem>PosixThreads</linkerLibStdlibItem>
           </linkerLibItems>
         </linkerTool>
       </compileType>

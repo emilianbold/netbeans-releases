@@ -1393,7 +1393,6 @@ public final class EditorCaret implements Caret {
     private void updateType() {
         final JTextComponent c = component;
         if (c != null) {
-            Color caretColor = null;
             CaretType newType;
             boolean cIsTextField = Boolean.TRUE.equals(c.getClientProperty("AsTextField"));
             
@@ -1414,6 +1413,7 @@ public final class EditorCaret implements Caret {
 
             String mimeType = DocumentUtilities.getMimeType(c);
             FontColorSettings fcs = (mimeType != null) ? MimeLookup.getLookup(mimeType).lookup(FontColorSettings.class) : null;
+            Color caretColor = Color.BLACK;
             if (fcs != null) {
                 AttributeSet attribs = fcs.getFontColors(overwriteMode
                         ? FontColorNames.CARET_COLOR_OVERWRITE_MODE
@@ -1422,6 +1422,7 @@ public final class EditorCaret implements Caret {
                     caretColor = (Color) attribs.getAttribute(StyleConstants.Foreground);
                 }
             }
+            c.setCaretColor(caretColor);
             
             this.type = newType;
         }
