@@ -823,7 +823,7 @@ public final class ElementUtilities {
                                     if (subType != null) {
                                         undef.remove(existing);
                                         MethodSymbol ms = ((MethodSymbol)existing).clone((Symbol)impl);
-                                        Type mt = implTypes.createMethodTypeWithReturn((MethodType)ms.type, (Type)subType);
+                                        Type mt = implTypes.createMethodTypeWithReturn(ms.type, (Type)subType);
                                         ms.type = mt;
                                         undef.add(ms);
                                     }
