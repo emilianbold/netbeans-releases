@@ -74,7 +74,7 @@ public class RfsSunStudioRemoteBuildTestCase extends RemoteBuildTestBase {
 
     @ForAllEnvironments
     public void testBuildRfsSampleArgsSunStudio() throws Exception {
-        setDefaultCompilerSet("SunStudio");
+        setDefaultCompilerSet(Toolchain.SUN.ID);
         FileObject projectDirFO = prepareSampleProject("Arguments", "Args_SunStudio_01");
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
         buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
