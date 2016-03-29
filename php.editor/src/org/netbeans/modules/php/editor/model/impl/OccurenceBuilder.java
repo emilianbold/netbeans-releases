@@ -357,7 +357,7 @@ class OccurenceBuilder {
                     traitIDs.put(nodeInfo, scope);
                     break;
                 case CONSTANT:
-                    if (node instanceof NamespaceName) {
+                    if (node instanceof NamespaceName || node instanceof Identifier) {
                         nsConstInvocations.put(nodeInfo, scope);
                     }
                     break;
@@ -1105,9 +1105,15 @@ class OccurenceBuilder {
             for (Entry<ASTNodeInfo<Expression>, Scope> entry : nsConstInvocations.entrySet()) {
                 ASTNodeInfo<Expression> nodeInfo = entry.getKey();
                 Expression originalNode = nodeInfo.getOriginalNode();
+                QualifiedName qualifiedName = null;
                 if (originalNode instanceof NamespaceName) {
                     NamespaceName namespaceName = (NamespaceName) originalNode;
-                    final QualifiedName qualifiedName = QualifiedName.create(namespaceName);
+                    qualifiedName = QualifiedName.create(namespaceName);
+                } else if (originalNode instanceof Identifier) {
+                    Identifier identifier = (Identifier) originalNode;
+                    qualifiedName = QualifiedName.create(identifier);
+                }
+                if (qualifiedName != null) {
                     if (NameKind.exact(qualifiedName).matchesName(phpElement)) {
                         if (qualifiedName.getKind().isUnqualified()) {
                             occurences.add(new OccurenceImpl(ElementFilter.forFiles(fileScope.getFileObject()).prefer(elements), nodeInfo.getRange()));
@@ -1117,10 +1123,7 @@ class OccurenceBuilder {
                     }
                 }
             }
-
         }
-
-
     }
 
     private void buildConstantDeclarations(ElementInfo nodeCtxInfo, FileScopeImpl fileScope, final List<Occurence> occurences) {

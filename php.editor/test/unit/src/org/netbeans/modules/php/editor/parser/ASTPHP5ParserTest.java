@@ -504,6 +504,11 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("parser/exponentiation_01");
     }
 
+    // #250579
+    public void testConstantArrayAccess_01() throws Exception {
+        performTest("parser/constantArrayAccess_01");
+    }
+
     public void testConstantScalarExpressions_01() throws Exception {
         performTest("parser/constantScalarExpressions_01");
     }

@@ -108,7 +108,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
 
     public static enum Toolchain {
         GNU("GNU"),
-        SUN("SunStudio");
+        SUN("OracleDeveloperStudio");
         public final String ID;
         Toolchain(String id) {
             this.ID = id;

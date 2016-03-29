@@ -320,7 +320,7 @@ public class IntroduceSuggestion extends SuggestionRule {
         @Override
         public void visit(StaticConstantAccess staticConstantAccess) {
             if (lineBounds.containsInclusive(staticConstantAccess.getStartOffset())) {
-                String constName = staticConstantAccess.getConstant().getName();
+                String constName = staticConstantAccess.getConstantName().getName();
                 String clzName = CodeUtils.extractUnqualifiedClassName(staticConstantAccess);
 
                 if (clzName != null && StringUtils.hasText(constName)) {
@@ -674,7 +674,7 @@ public class IntroduceSuggestion extends SuggestionRule {
         public IntroduceClassConstantFix(BaseDocument doc, StaticConstantAccess node, TypeScope type) {
             super(doc, node);
             this.type = type;
-            this.constantName = ((StaticConstantAccess) node).getConstant().getName();
+            this.constantName = ((StaticConstantAccess) node).getConstantName().getName();
             this.templ = String.format("const %s = \"\";", constantName);
         }
 

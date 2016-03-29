@@ -44,12 +44,13 @@ package org.netbeans.modules.php.editor.parser.astnodes;
 /**
  * Represents a constant class access
  * <pre>e.g.<pre> MyClass::CONST
+ * MyClass::CONSTANT[0]
  */
 public class StaticConstantAccess extends StaticDispatch {
 
-    private Identifier constant;
+    private Expression constant;
 
-    public StaticConstantAccess(int start, int end, Expression className, Identifier constant) {
+    public StaticConstantAccess(int start, int end, Expression className, Expression constant) {
         super(start, end, className);
         this.constant = constant;
     }
@@ -63,10 +64,20 @@ public class StaticConstantAccess extends StaticDispatch {
      *
      * @return constant name of this static dispatch
      */
-    public Identifier getConstant() {
+    public Expression getConstant() {
         return constant;
     }
 
+    public Identifier getConstantName() {
+        Expression expression = constant;
+        while (expression instanceof ExpressionArrayAccess) {
+            expression = ((ExpressionArrayAccess) expression).getExpression();
+        }
+        assert expression instanceof Identifier;
+        return (Identifier) expression;
+    }
+
+    @Override
     public ASTNode getMember() {
         return getConstant();
     }

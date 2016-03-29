@@ -49,14 +49,18 @@ import java.util.List;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment.Type;
 import org.netbeans.modules.php.editor.parser.astnodes.ConditionalExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.ExpressionArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression.OperatorType;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
@@ -137,8 +141,12 @@ public class PHP56UnhandledError extends UnhandledErrorRule {
         @Override
         public void visit(ConstantDeclaration node) {
             for (Expression expression : node.getInitializers()) {
-                if (isStaticScalarExpression(expression)) {
+                if (isStaticScalarExpression(expression)
+                        || expression instanceof ArrayCreation
+                        || expression instanceof ExpressionArrayAccess) {
                     createError(expression);
+                } else {
+                    scan(expression);
                 }
             }
         }
@@ -153,6 +161,20 @@ public class PHP56UnhandledError extends UnhandledErrorRule {
             if (UseStatement.Type.CONST.equals(node.getType()) || UseStatement.Type.FUNCTION.equals(node.getType())) {
                 createError(node);
             }
+        }
+
+        @Override
+        public void visit(ExpressionArrayAccess node) {
+            Expression expression = node.getExpression();
+            if (expression instanceof Identifier) {
+                Identifier identifier = (Identifier) expression;
+                String name = identifier.getName();
+                if (!NavUtils.isQuoted(name)) {
+                    // e.g. CONSTANT[0][1]
+                    createError(node);
+                }
+            }
+            scan(node.getDimension());
         }
 
         private  void createError(int startOffset, int endOffset) {

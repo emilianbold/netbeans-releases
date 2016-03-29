@@ -45,6 +45,7 @@ package org.netbeans.modules.php.editor.parser.astnodes;
  * <pre>e.g.<pre>
  * [1, 2, 3][0];
  * "String"[1];
+ * CONSTANT[1][2]; MyClass::CONSTANT[1];
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
