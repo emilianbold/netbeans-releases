@@ -362,5 +362,14 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
             }
         }
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getDeclarationName().getName()).append("()");
+        return sb.toString();
+    }
+    
+    
     
 }
