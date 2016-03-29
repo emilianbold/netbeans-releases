@@ -93,6 +93,5 @@ public class REPLAction2 implements ProjectActionPerformer {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        
     }
 }

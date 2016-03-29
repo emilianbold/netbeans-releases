@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.jshell.env;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,12 +51,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javafx.application.Platform;
+import jdk.jshell.JDIRemoteAgent;
+import jdk.jshell.RemoteJShellService;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.Places;
 import org.openide.util.NbBundle;
 
@@ -157,7 +163,7 @@ public class ShellRegistry {
                 return env;
             }
 
-            s = new JShellEnvironment(p, dispName); // may throw IOE
+            s = new LaunchJShellEnv(p, dispName); // may throw IOE
             register(s);
         }
         s.start();
@@ -234,5 +240,75 @@ public class ShellRegistry {
             }
         }
         return null;
+    }
+    
+    private static class LaunchJShellEnv extends JShellEnvironment {
+
+        public LaunchJShellEnv(Project project, String displayName) {
+            super(project, displayName);
+        }
+        
+        @Override
+        public RemoteJShellService createExecutionEnv() {
+            return new JDIRemoteAgent(this::createClasspathString);
+        }
+        
+        private String createClasspathString(String dummy) {
+            File remoteProbeJar = InstalledFileLocator.getDefault().locate(
+                    "modules/ext/nb-custom-jshell-probe.jar", "org.netbeans.libs.jshell", false);
+            File replJar = InstalledFileLocator.getDefault().locate("modules/ext/nb-jshell.jar", "org.netbeans.libs.jshell", false);
+            File toolsJar = null;
+
+            for (FileObject jdkInstallDir : getPlatform().getInstallFolders()) {
+                FileObject toolsJarFO = jdkInstallDir.getFileObject("lib/tools.jar");
+
+                if (toolsJarFO == null) {
+                    toolsJarFO = jdkInstallDir.getFileObject("../lib/tools.jar");
+                }
+                if (toolsJarFO != null) {
+                    toolsJar = FileUtil.toFile(toolsJarFO);
+                }
+            }
+            ClassPath compilePath = getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE);
+
+            FileObject[] roots = compilePath.getRoots();
+            File[] urlFiles = new File[roots.length];
+            int index = 0;
+            for (FileObject fo : roots) {
+                File f = FileUtil.toFile(fo);
+                if (f != null) {
+                    urlFiles[index++] = f;
+                }
+            }
+            String cp = addClassPath(
+                    toolsJar != null ? toClassPath(remoteProbeJar, toolsJar) : 
+                                       toClassPath(remoteProbeJar),
+                    urlFiles) + System.getProperty("path.separator") + " "; // NOI18N avoid REPL bug
+
+            return "-classpath " + cp; // NOI18N
+        }
+
+        private static String addClassPath(String prefix, File... files) {
+            String suffix = toClassPath(files);
+            if (prefix != null && !prefix.isEmpty()) {
+                return prefix + System.getProperty("path.separator") + suffix;
+            }
+            return suffix;
+        }
+
+        private static String toClassPath(File... files) {
+            String sep = "";
+            StringBuilder cp = new StringBuilder();
+
+            for (File f : files) {
+                if (f == null) continue;
+                cp.append(sep);
+                cp.append(f.getAbsolutePath());
+                sep = System.getProperty("path.separator");
+            }
+
+            return cp.toString();
+        }
+
     }
 }

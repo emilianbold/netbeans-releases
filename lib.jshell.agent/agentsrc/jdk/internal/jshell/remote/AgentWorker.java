@@ -52,7 +52,10 @@ import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.ProtectionDomain;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import org.netbeans.lib.jshell.agent.NbJShellAgent;
@@ -120,7 +123,6 @@ public class AgentWorker extends RemoteAgent implements Runnable, ClassFileTrans
         
         prepareClassLoader();
         StringBuilder cp = new StringBuilder();
-        
         for (URL u: loader.getURLs()) {
             try {
                 if (cp.length() > 0) {
@@ -132,6 +134,15 @@ public class AgentWorker extends RemoteAgent implements Runnable, ClassFileTrans
                 cp.append(u.toExternalForm());
             }
         }
+        for (String s : props.getProperty("java.class.path").split(File.pathSeparator)) {
+            if (s.isEmpty()) {
+                continue;
+            }
+            if (cp.length() > 0) {
+                cp.append(":"); // NOI18N
+            }
+            cp.append(s);
+        }
         
         result.put("nb.class.path", cp.toString());
         
@@ -140,16 +151,24 @@ public class AgentWorker extends RemoteAgent implements Runnable, ClassFileTrans
             o.writeUTF(s);
             o.writeUTF(result.get(s));
         }
+        o.flush();
     }
 
     @Override
     protected void handleUnknownCommand(int cmd, ObjectInputStream i, ObjectOutputStream o) throws IOException {
-        switch (cmd) {
-            case CMD_VM_INFO:
-                returnVMInfo(o);
-                break;
-            default:
-                super.handleUnknownCommand(cmd, i, o);
+        System.err.println("HandleUnknown: " + cmd);
+        System.err.flush();
+        try {
+            switch (cmd) {
+                case CMD_VM_INFO:
+                    returnVMInfo(o);
+                    break;
+                default:
+                    super.handleUnknownCommand(cmd, i, o);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace(System.err);
+            System.err.flush();
         }
     }
     

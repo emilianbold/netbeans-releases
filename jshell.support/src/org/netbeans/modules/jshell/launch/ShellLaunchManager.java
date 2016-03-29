@@ -56,9 +56,6 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
-import java.net.StandardSocketOptions;
-import java.nio.channels.Channel;
-import java.nio.channels.Channels;
 import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -75,7 +72,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -114,12 +110,12 @@ public final class ShellLaunchManager {
     /**
      * How long the handshake can take.
      */
-    private static final int HANDSHAKE_TIMEOUT = 1000;
+    public static final int HANDSHAKE_TIMEOUT = 1000;
     
     /**
      * Timeout for connecting.
      */
-    private static final int CONNECT_TIMEOUT = 5000_000;
+    public static final int CONNECT_TIMEOUT = 5000_000;
     
     /**
      * This RP will run one task that waits for the handshakes to begin, and some scheduled short-lived "timeout" tasks.
@@ -343,46 +339,6 @@ public final class ShellLaunchManager {
         }
     }
     
-    /**
-     * Terminates the JShellConnection on socket close. Relies on that JShell
-     * processor loops reading the stream, and will receive EOF when the socket
-     * closes.
-     */
-    private static final class NotifyInputStream extends FilterInputStream {
-        JShellConnection c;
-        Runnable callback;
-        
-        public NotifyInputStream(InputStream in) {
-            super(in);
-            this.c = c;
-        }
-
-        @Override
-        public int read() throws IOException {
-            int r = super.read();
-            if (r == -1 && c != null) {
-                // socket was closed
-                c.getMachineAgent().disconnected(c);
-            }
-            return r;
-        }
-        
-        private boolean closed;
-
-        @Override
-        public void close() throws IOException {
-            boolean cl;
-            synchronized (this) {
-                cl = closed;
-                closed  = true;
-            }
-            if (cl) {
-                this.c.getMachineAgent().disconnected(c);
-            }
-            super.close();
-        }
-    }
-    
     /* private */ void attachInputOutput(String remoteKey, InputOutput out) {
         ShellAgent ag;
         synchronized (registeredAgents) {
@@ -395,15 +351,26 @@ public final class ShellLaunchManager {
         }
     }
     
+    /**
+     * How many times will the debugger connector try to obtain the JDI VirtualMachine
+     * before giving up. The VM is not available immediately after a session launch.
+     */
     private static final int MAX_PROBE_COUNTER = 10;
+    
+    /**
+     * Delay between attempts to get a VM for the debugging session
+     */
     private static final int DEBUGGER_PROBE_DELAY = 200;
     
     /**
      * Waits until the debugger initializes its VirtualMachine and produces a key.
+     * Fails after {@link #MAX_PROBE_COUNTER} attempts each with {@link #DEBUGGER_PROBE_DELAY}
+     * milliseconds delay.
      */
     private class WaitForDebuggerStart implements Runnable, PropertyChangeListener {
         final Reference<Session>          refSession;
         final Project                     project;
+        
         int                               probeCounter;
         boolean                           stop;
         volatile String                   readKey;
@@ -474,7 +441,7 @@ public final class ShellLaunchManager {
             }
         }
         
-        String getKey() {
+        public String getKey() {
             if (readKey != null) {
                 return readKey;
             }
@@ -488,10 +455,10 @@ public final class ShellLaunchManager {
         private boolean probe(JPDADebugger debugger, Session session) {
             String key = getKey();
             if (key == null) {
-                LOG.log(Level.FINE, "NbJshell agent did not execute far enough; queueing until the agent connects back");
+                LOG.log(Level.FINE, "NbJshell agent did not execute far enough; queueing until the agent connects back"); // NOI18N
                 return true;
             } 
-            if ("".equals(key)) {
+            if ("".equals(key)) { // NOI18N
                 return false;
             }
             this.readKey = key;
@@ -500,7 +467,7 @@ public final class ShellLaunchManager {
             synchronized (ShellLaunchManager.this) {
                 agent = registeredAgents.get(key);
                 if (agent == null) {
-                    LOG.log(Level.FINE, "Could not find agent matching key: {0}", key);
+                    LOG.log(Level.FINE, "Could not find agent matching key: {0}", key); // NOI18N
                     return false;
                 }
             }
@@ -522,13 +489,13 @@ public final class ShellLaunchManager {
     }
     
     private String getAgentKey(JPDADebugger debugger) {
-        List<JPDAClassType> classes = debugger.getClassesByName("org.netbeans.lib.jshell.agent.NbJShellAgent");
+        List<JPDAClassType> classes = debugger.getClassesByName("org.netbeans.lib.jshell.agent.NbJShellAgent"); // NOI18N
         if (classes == null || classes.size() != 1) {
             return null;
         }
         JPDAClassType ct = classes.get(0);
         for (Field ff : ct.staticFields()) {
-            if ("debuggerKey".equals(ff.getName())) {
+            if ("debuggerKey".equals(ff.getName())) {  // NOI18N
                 String s = ff.getValue();
                 if (s.charAt(0) != '"' || s.charAt(s.length() - 1) != '"') {
                     return "";
@@ -539,7 +506,7 @@ public final class ShellLaunchManager {
         return null;
     }
     
-    private Session findWaitingDebugger(String authKey) {
+    /* package-private, for ShellAgent */ Session findWaitingDebugger(String authKey) {
         List<WaitForDebuggerStart> al;
         synchronized (uninitializedDebuggers) {
             al = new ArrayList<>(uninitializedDebuggers);
@@ -562,240 +529,7 @@ public final class ShellLaunchManager {
         listeners.stream().forEach(c);
     }
     
-    /**
-     * Encapsulates management around JShell (remote) agent. The instance is (pre) allocated
-     * when a port is requested for the agent to connect in. When the agent calls home, the instance
-     * will receive address/port to connect with when agent service(s) is demanded. The listening
-     * socket can be then closed.
-     * <p/>
-     */
-    public static class ShellAgent {
-        private final ShellLaunchManager    mgr;
-        private final Project       project;
-        private final ServerSocket  handshakeSocket;
-        /**
-         * True, if the agent is expected to be paired with a debugger session
-         */
-        private final boolean       expectDebugger;
-        
-        private final String        authorizationKey;
-
-
-        private Session             debuggerSession;
-        private VirtualMachine      debuggerMachine;
-        
-        private InetSocketAddress   connectAddress;
-        
-        private InputOutput         io;
-        
-        private boolean             closed;
-        
-        /**
-         * The active instance, possibly null. Potentially may
-         * contain multiple JShellConnections, if multiple parallel
-         * JShells is supported in the future.
-         */
-        private JShellConnection    connection;
-        
-        public ShellAgent(ShellLaunchManager mgr, Project project, ServerSocket handshakeSocket, String authKey, boolean expectDebugger) {
-            this.mgr = mgr;
-            this.authorizationKey = authKey;
-            this.project = project;
-            this.handshakeSocket = handshakeSocket;
-            this.expectDebugger = expectDebugger;
-            
-            LOG.log(Level.FINE, "ShellAgent allocated. Project = {0}, socket = {1}, authKey = {2}, debugger = {3}", new Object[] {
-                project, handshakeSocket, authKey, expectDebugger
-            });
-        }
-        
-        ServerSocket getHandshakeSocket() {
-            return handshakeSocket;
-        }
-        
-        public InputOutput getIO() {
-            return io;
-        }
-        
-        void setIO(InputOutput io) {
-            this.io = io;
-        }
-
-        public Project getProject() {
-            return project;
-        }
-
-        public Session getDebuggerSession() {
-            return debuggerSession;
-        }
-
-        public VirtualMachine getDebuggerMachine() {
-            return debuggerMachine;
-        }
-        
-        void destroy() throws IOException {
-            LOG.log(Level.FINE, "ShellAgent destroyed: authKey = {0}, socket = {1}", new Object[] { authorizationKey, handshakeSocket });
-            synchronized (this) {
-                handshakeSocket.close();
-                if (closed) {
-                    return;
-                }
-                closed = true;
-            }
-            disconnected(connection);
-            ShellLaunchEvent ev = new ShellLaunchEvent(mgr, this);
-            mgr.fire(l -> l.agentDestroyed(ev));
-        }
-        
-        public InetSocketAddress getHandshakeAddress() {
-            return (InetSocketAddress)handshakeSocket.getLocalSocketAddress();
-        }
-
-        public String getAuthorizationKey() {
-            return authorizationKey;
-        }
-        
-        public void target(InetSocketAddress addr) throws IOException {
-            Session curSession;
-            
-            synchronized (this) {
-                if (this.connectAddress != null) {
-                    throw new IOException("Duplicated handshake from agent {0}: " + addr);
-                }
-                this.connectAddress = addr;
-                curSession = debuggerSession;
-            }
-            // FIXME: for non-debugger run, make the agent live and attach it to
-            // its project.
-            if (expectDebugger) {
-                LOG.log(Level.FINE, "Agent authorized with {0}, expecting debuggger, have: {1}", 
-                        new Object[] { authorizationKey, curSession});
-                if (curSession == null) {
-                    Session debSession = mgr.findWaitingDebugger(authorizationKey);
-                    LOG.log(Level.FINE, "Searched for debugger session, got: {0}", debSession);
-                    attachDebugger(debSession);
-                    return;
-                }
-            }
-            ShellLaunchEvent ev = new ShellLaunchEvent(mgr, this);
-            mgr.fire(l -> l.handshakeCompleted(ev));
-        }
-        
-        void attachDebugger(Session s) {
-            boolean complete;
-            if (s == null) {
-                return;
-            }
-            synchronized (this) {
-                if (debuggerSession != null && s != debuggerSession) {
-                    throw new IllegalStateException("Debugger already attached");
-                }
-                LOG.log(Level.FINE, "Attaching debugger session {0}, current session = {1}, connectAddress = {2}", new Object[] { s, debuggerSession, connectAddress } );
-                if (debuggerSession == s) {
-                    // race between debugger and handshake
-                    return;
-                }
-                debuggerSession = s;
-                JPDADebugger dbg = s.lookupFirst(null, JPDADebugger.class);
-                debuggerMachine = ((JPDADebuggerImpl)dbg).getVirtualMachine();
-                dbg.addPropertyChangeListener(JPDADebugger.PROP_STATE, e -> {
-                    if (dbg.getState() == JPDADebugger.STATE_DISCONNECTED) {
-                        // destroy the agent
-                        RP.post(() -> {
-                            mgr.destroyAgent(authorizationKey);
-                        }, 5000);
-                    }
-                });
-                complete =  connectAddress != null;
-            }
-            
-            if (complete) {
-                LOG.log(Level.FINE, "Firing handshake complete for {0}", this);
-                ShellLaunchEvent ev = new ShellLaunchEvent(mgr, this);
-                mgr.fire(l -> l.handshakeCompleted(ev));
-            }
-        }
-        
-        public void disconnected(JShellConnection c) {
-            synchronized (this) {
-                if (c == null || connection != c) {
-                    return;
-                }
-                this.connection = null;
-            }
-            c.notifyDisconnected();
-            if (closed) {
-                // do not fire closed events after the agent was destroyed
-                return;
-            }
-            if (handshakeSocket.isClosed()) {
-                try {
-                    destroy();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            } else {
-                ShellLaunchEvent ev = new ShellLaunchEvent(mgr, c);
-                mgr.fire(l -> l.connectionClosed(ev));
-            }
-        }
-        
-        @NbBundle.Messages({
-            "MSG_AgengConnectionBroken=Control connection with JShell VM is broken, could not connect to agent"
-        })
-        /**
-         * Creates a connection to the JShell agent. Throws IOException if 
-         * the connection fails. If a connection already exists, return the existing
-         * connection.
-         * <p/>
-         * Will return {@code null}, if the agent is not yet initialized.
-         * @return 
-         */
-        public JShellConnection createConnection() throws IOException {
-            JShellConnection old;
-            synchronized (this) {
-                if (closed) {
-                    throw new IOException(Bundle.MSG_AgengConnectionBroken());
-                }
-                if (expectDebugger && debuggerMachine == null) {
-                    return null;
-                }
-                if (connection != null && connection.isValid()) {
-                    return connection;
-                }
-                old = connection;
-                connection = null;
-            }
-            if (old != null) {
-                old.notifyDisconnected();
-            }
-            SocketChannel sc = SocketChannel.open();
-            sc.configureBlocking(true);
-            Socket sock = sc.socket();
-            sock.connect(connectAddress, CONNECT_TIMEOUT);
-            
-            // turn to nonblocking mode
-            sc.configureBlocking(false);
-            boolean notify = false;
-            JShellConnection con = new JShellConnection(this, sock.getChannel());
-            synchronized (this) {
-                if (connection == null) {
-                    connection = con;
-                    notify = true;
-                } else {
-                    con = connection;
-                }
-            }
-            if (notify) {
-                ShellLaunchEvent ev = new ShellLaunchEvent(mgr, con);
-                mgr.fire(l -> l.connectionInitiated(ev));
-            }
-            return con;
-        }
-        
-    }
-    
-    /* package */ void destroyAgent(String authKey) {
+    void destroyAgent(String authKey) {
         if (authKey == null || "".equals(authKey)) {
             return;
         }
@@ -812,5 +546,10 @@ public final class ShellLaunchManager {
             LOG.log(Level.INFO, "JShell agent shut down unsuccessfully:", ex);
         }
         // PENDING: fire event that agent has been destroyed
+    }
+
+
+    static void queueTask(Runnable run, int delay) {
+        RP.post(run);
     }
 }

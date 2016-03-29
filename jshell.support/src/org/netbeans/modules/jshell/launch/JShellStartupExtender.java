@@ -44,7 +44,6 @@ package org.netbeans.modules.jshell.launch;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -52,14 +51,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.startup.StartupExtender.StartMode;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.jshell.launch.ShellLaunchManager.ShellAgent;
 import org.netbeans.modules.jshell.project.LaunchedProjectOpener;
 import org.netbeans.spi.extexecution.startup.StartupExtenderImplementation;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
+ * Hooks onto the J2SE project startup, and injects JShell agent as java agent.
  *
  * @author sdedic
  */

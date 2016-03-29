@@ -41,29 +41,125 @@
  */
 package jdk.jshell;
 
+import com.sun.jdi.VirtualMachine;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static jdk.internal.jshell.debug.InternalDebugControl.DBG_GEN;
 
 /**
- *
+ * Makes a bridge from original ExecutionControl and delegates remote
+ * operation to the environment. ExecutionControl should handle only protocol-level
+ * initiate startup and shutdown.
+ * 
  * @author sdedic
  */
 public class NbExecutionControl extends ExecutionControl {
     private static final Logger LOG = Logger.getLogger(NbExecutionControl.class.getName());
     
     public static final int CMD_VERSION_INFO = 100;
-    public NbExecutionControl(JDIEnv env, ExecutionEnv execEnv, SnippetMaps maps, JShell proc) {
-        super(env, execEnv, maps, proc);
+    
+    private final RemoteJShellService  execEnv;
+    private final JDIEnv jdi;
+    private final JShell proc;
+    
+    public NbExecutionControl(JDIEnv env, RemoteJShellService execEnv, SnippetMaps maps, JShell proc) {
+        super(new NullEnv(proc), maps, proc);
+        this.execEnv = execEnv;
+        this.jdi = env;
+        this.proc = proc;
     }
     
+    private static class NullEnv extends JDIEnv {
+        private JShell state;
+        
+        public NullEnv(JShell state) {
+            super(state);
+            this.state = state;
+        }
+
+        @Override
+        void shutdown() {
+            // FIXME: check
+            state.closeDown();
+        }
+
+        @Override
+        VirtualMachine vm() {
+            return super.vm();
+        }
+
+        @Override
+        JDIConnection connection() {
+            return null;
+        }
+    }
+    
+    boolean commandRedefine(Map<Object, byte[]> mp) {
+        try {
+            execEnv.redefineClasses(mp);
+            return true;
+        } catch (UnsupportedOperationException ex) {
+            return false;
+        } catch (Exception ex) {
+            proc.debug(DBG_GEN, "Exception on JDI redefine: %s\n", ex);
+            return false;
+        }
+    }
+
+    Object nameToRef(String name) {
+        return execEnv.getClassHandle(name);
+    }
+
+
+    void commandStop() {
+        synchronized (STOP_LOCK) {
+            if (!isUserCodeRunning())
+                return ;
+            try {
+                proc.debug(DBG_GEN, "Attempting to stop the client code...\n");
+                execEnv.sendStopUserCode();
+            } catch (IllegalStateException ex) {
+                proc.debug(DBG_GEN, "Exception on remote stop: %s\n", ex.getCause());
+            }
+        }
+    }
+    
+    void launch() throws IOException {
+        execEnv.waitConnected(60000);
+        OutputStream os = execEnv.getCommandStream();
+        InputStream is = execEnv.getResponseStream();
+        out = os instanceof ObjectOutputStream ? (ObjectOutputStream)os : 
+                new ObjectOutputStream(execEnv.getCommandStream());
+        in = is instanceof ObjectInputStream ? (ObjectInputStream)is : 
+                new ObjectInputStream(execEnv.getResponseStream());
+
+        /*
+        try (ServerSocket listener = new ServerSocket(0)) {
+            // timeout after 60 seconds
+            listener.setSoTimeout(60000);
+            int port = listener.getLocalPort();
+            jdiGo(port);
+            socket = listener.accept();
+            // out before in -- match remote creation so we don't hang
+            out = new ObjectOutputStream(socket.getOutputStream());
+            in = new ObjectInputStream(socket.getInputStream());
+        }
+        */
+    }
+
     public Map<String, String> commandVersionInfo() {
         Map<String, String> result = new HashMap<>();
         try {
             out.writeInt(CMD_VERSION_INFO);
-            
+            out.flush();
             int num = in.readInt();
             for (int i = 0; i < num; i++) {
                 String key = in.readUTF();
@@ -74,5 +170,13 @@ public class NbExecutionControl extends ExecutionControl {
             LOG.log(Level.INFO, "Error invoking JShell agent", ex.toString());
         }
         return result;
+    }
+
+    ///////////----------------- NetBeans ----------------///////////
+    static String defaultJavaVMParameters() {
+        String classPath = System.getProperty("java.class.path");
+        String bootclassPath = System.getProperty("sun.boot.class.path");
+        String javaArgs = "-classpath " + classPath + "-Xbootclasspath:" + bootclassPath;
+        return javaArgs;
     }
 }

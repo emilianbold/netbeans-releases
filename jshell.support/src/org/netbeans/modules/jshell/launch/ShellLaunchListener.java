@@ -42,7 +42,10 @@
 package org.netbeans.modules.jshell.launch;
 
 /**
- *
+ * Receives lifecycle events for the remote agent communication. The listener is informed
+ * when the remote starts, becomes available, closes a connection or the entire remote
+ * agent shuts down (assuming the entire process has been shut down, or the network broke).
+ * 
  * @author sdedic
  */
 public interface ShellLaunchListener {
@@ -62,7 +65,8 @@ public interface ShellLaunchListener {
     
     /**
      * Called when the connection has been closed.  The connection and
-     * agent fields are valid.
+     * agent fields are valid. Agent may be still live, so a new Connection
+     * can be opened.
      * @param ev 
      */
     public void connectionClosed(ShellLaunchEvent ev);

@@ -46,9 +46,9 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 import jdk.jshell.EnhancedJShell;
-import jdk.jshell.ExecutionEnv;
+import jdk.jshell.JDIRemoteAgent;
+import jdk.jshell.RemoteJShellService;
 import jdk.jshell.JShell;
 import jdk.jshell.JShellAccessor;
 import jdk.jshell.NbExecutionControl;
@@ -58,11 +58,11 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-public class JShellLauncher extends InternalJShell implements Supplier<String> {
+public class JShellLauncher extends InternalJShell {
 
     private String prefix = "";
     
-    private ExecutionEnv execEnv = null;
+    private RemoteJShellService execEnv = null;
 
     /**
      * 
@@ -72,7 +72,7 @@ public class JShellLauncher extends InternalJShell implements Supplier<String> {
      * @param userout user output from the JShell VM
      * @param usererr  user error from the JShell VM
      */
-    public JShellLauncher(PrintStream cmdout, PrintStream cmderr, InputStream userin, PrintStream userout, PrintStream usererr, ExecutionEnv execEnv) {
+    public JShellLauncher(PrintStream cmdout, PrintStream cmderr, InputStream userin, PrintStream userout, PrintStream usererr, RemoteJShellService execEnv) {
         super(cmdout, cmderr, userin, userout, usererr);
         this.execEnv = execEnv;
     }
@@ -127,7 +127,7 @@ public class JShellLauncher extends InternalJShell implements Supplier<String> {
 
     @Override
     protected void setupState() {
-//        printSystemInfo();
+        printSystemInfo();
     }
     
     
@@ -135,22 +135,20 @@ public class JShellLauncher extends InternalJShell implements Supplier<String> {
     @Override
     protected JShell createJShellInstance() {
         if (execEnv == null) {
-            execEnv = new EnhancedJShell.JDILaunchControl();
+            execEnv = new JDIRemoteAgent(this::decorateLaunchArgs);
         }
         ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
-            JShell ret = new EnhancedJShell(createJShell(), execEnv) {
-
-                @Override
-                protected String decorateLaunchArgs(String s) {
-                    return "-classpath " + classpath;
-                }
-            };
+            JShell ret = new EnhancedJShell(createJShell(), execEnv);
             return ret;
         } finally {
             Thread.currentThread().setContextClassLoader(ctxLoader);
         }
+    }
+    
+    private String decorateLaunchArgs(String s) {
+        return "-classpath " + classpath; // NOI18N
     }
     
     @NbBundle.Messages({
@@ -177,17 +175,22 @@ public class JShellLauncher extends InternalJShell implements Supplier<String> {
         fluff(Bundle.MSG_JavaVersion(javaName, javaVersion));
         
         String cpString = versionInfo.get("nb.class.path"); // NOI18N
-        
+        String[] cpItems = cpString.split(":"); // NOI18N
+        if (cpItems.length > 0) {
+            fluff("Classpath:");
+            for (String item : cpItems) {
+                if (item.isEmpty()) {
+                    continue;
+                }
+                fluff("\t%s", item);
+            }
+        }
+        fluff(""); // newline
     }
 
     private String classpath;
 
     public void setClasspath(String classpath) {
         this.classpath = classpath;
-    }
-
-    @Override
-    public String get() {
-        return "-classpath " + classpath;
     }
 }

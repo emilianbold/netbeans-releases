@@ -42,24 +42,19 @@
 package org.netbeans.modules.jshell.launch;
 
 import com.sun.jdi.VirtualMachine;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
-import java.lang.ref.Reference;
 import java.net.SocketAddress;
 import java.nio.channels.Channels;
 import java.nio.channels.SocketChannel;
-import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.Session;
-import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.jshell.launch.ShellLaunchManager.ShellAgent;
 import org.openide.util.Exceptions;
 
 /**
@@ -84,12 +79,10 @@ import org.openide.util.Exceptions;
  * The connection is only valid during its operational time.
  * @author sdedic
  */
-public class JShellConnection {
+public final class JShellConnection {
     private static final Logger LOG = Logger.getLogger(JShellConnection.class.getName());
     
     private static final int WRITE_TIMEOUT = 10000;
-    
-    private static final Map<Project, Reference<JShellConnection>> connections = new WeakHashMap<>();
     
     private static final AtomicInteger connId = new AtomicInteger(0);
     
@@ -111,12 +104,9 @@ public class JShellConnection {
     /**
      * The associated debugger session, is launched in debugger.
      */
-    private Session debuggerSession;
+    private final Session debuggerSession;
 
-    /**
-     * The JPDA Debugger instance for this connection
-     */
-    private JPDADebugger    debugger;
+    private final ShellAgent      theAgent;
     
     /**
      * Control socket for the JShell.
@@ -125,18 +115,8 @@ public class JShellConnection {
     
     private volatile boolean closed;
     
-    private boolean vmAvailable;
-    
-    private ShellAgent      theAgent;
-    
     public Project          getProject() {
         return project;
-    }
-    
-    JShellConnection(Project project, SocketAddress address)  {
-        this.listenAddress = address;
-        this.project = project;
-        this.id = connId.incrementAndGet();
     }
     
     JShellConnection(ShellAgent agent, SocketChannel controlSocket) throws IOException {
@@ -147,14 +127,15 @@ public class JShellConnection {
         
         this.controlSocket = controlSocket;
         this.ostm = NIOStreams.createOutputStream(controlSocket, WRITE_TIMEOUT);
-        this.istm = NIOStreams.createInputStream(controlSocket, this::disconnected);
+        this.istm = new CloseInputStream(NIOStreams.createInputStream(controlSocket, this::disconnected));
         this.debuggerSession = agent.getDebuggerSession();
         
         LOG.log(Level.FINE, "Allocated connection: {0}", this);
     }
 
     private void disconnected(SocketChannel dummy) {
-        theAgent.disconnected(this);
+        LOG.log(Level.FINE, "Detected disconnect: {0}", this);
+        theAgent.disconnect(this, true);
     }
     
     public SocketAddress getLocalAddress() {
@@ -165,10 +146,37 @@ public class JShellConnection {
         return id;
     }
     
+    /**
+     * Simple wrapper, which interprets close() call as local close and will
+     * fire appropriate disconnect events
+     */
+    private class CloseInputStream extends FilterInputStream {
+        private boolean closed;
+        
+        public CloseInputStream(InputStream in) {
+            super(in);
+        }
+
+        @Override
+        public  void close() throws IOException {
+            synchronized (this) {
+                if (closed) {
+                    return;
+                }
+                closed = true;
+            }
+            try {
+                super.close();
+            } finally {
+                LOG.log(Level.FINE, "Requested to close connection: {0}", this);
+                theAgent.disconnect(JShellConnection.this, false);
+            }
+        }
+    }
+    
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("JShellConnection[").append("id = ").append(id).
-                append(", debugger = ").append(debugger).
                 append(", session = ").append(debuggerSession).
                 append(", handshake = ").append(listenAddress).
                 append(", control = ").append(controlSocket).
@@ -180,7 +188,10 @@ public class JShellConnection {
         return theAgent;
     }
     
-    void notifyDisconnected() {
+    /**
+     * Shuts down the connection, may be called for local or remote close.
+     */
+    void shutDown() {
         try {
             LOG.log(Level.FINE, "notifyShutdown: closing control socket: {0}", controlSocket);
             if (controlSocket != null) {
@@ -197,11 +208,6 @@ public class JShellConnection {
                 notify();
             }
         }
-    }
-    
-    synchronized void notifyDebuggerStarted() {
-        vmAvailable = true;
-        notify();
     }
     
     synchronized boolean acceptSocketAndKey(int key, SocketChannel socket, ObjectInputStream istm) throws IOException {
@@ -240,21 +246,11 @@ public class JShellConnection {
         if (controlSocket == null || !controlSocket.isConnected() || !controlSocket.isOpen()) {
             return false;
         }
-        return debugger == null ||
-               vmAvailable;
+        return true;
     }
     
     public boolean isClosed() {
         return closed;
-    }
-    
-    synchronized boolean attachDebugger(Session session, JPDADebugger debugger, String key) {
-        if (closed || debuggerSession != null) {
-            return false;
-        }
-        this.debugger = debugger;
-        this.debuggerSession = session;
-        return true;
     }
     
     public Session getDebuggerSession() {
@@ -263,14 +259,6 @@ public class JShellConnection {
     
     public VirtualMachine getVirtualMachine() {
         return getMachineAgent().getDebuggerMachine();
-    }
-    
-    public JPDADebugger getDebugger() {
-        // half-lock
-        if (debuggerSession == null) {
-            return null;
-        }
-        return debugger;
     }
     
     /**
@@ -287,23 +275,6 @@ public class JShellConnection {
     
     public InputStream getAgentOutput() {
         return controlSocket != null ? istm : null;
-    }
-    
-    /**
-     * Waits until the handshake completes (or fails).
-     */
-    public void waitConnected(int millis) throws IOException, InterruptedException {
-        boolean next = true;
-        while (next) {
-            synchronized (this) {
-                if (controlSocket != null) {
-                    return;
-                }
-                wait(millis);
-                next = !closed;
-            }
-        }
-        throw new IOException("Connection failure");
     }
     
     private OutputStream ostm;

@@ -60,7 +60,6 @@ import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.nio.channels.ClosedChannelException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
@@ -81,7 +80,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
-import jdk.jshell.ExecutionEnv;
+import jdk.jshell.RemoteJShellService;
 import jdk.jshell.JShell;
 import jdk.jshell.JShellAccessor;
 import jdk.jshell.Snippet;
@@ -100,8 +99,6 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.jshell.env.JShellEnvironment;
-import org.netbeans.modules.jshell.env.ShellEvent;
-import org.netbeans.modules.jshell.env.ShellListener;
 import org.netbeans.modules.jshell.model.ConsoleModel.SnippetHandle;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
@@ -283,7 +280,9 @@ public class ShellSession {
     }
     
     private synchronized void forceCloseStreams() {
-        exec.closeStreams();
+        if (exec != null) {
+            exec.closeStreams();
+        }
     }
 
     JShell getJShell() {
@@ -612,7 +611,7 @@ public class ShellSession {
         return documentWriter;
     }
     
-    private ExecutionEnv exec;
+    private RemoteJShellService exec;
     
     private String addRoots(String prev, ClassPath cp) {
         FileObject[] roots = cp.getRoots();
@@ -646,6 +645,10 @@ public class ShellSession {
     }
     
     private boolean initializing;
+    
+    public  String getClasspath() {
+        return createClasspathString();
+    }
 
     private void initJShell() {
         if (shell != null) {
@@ -1079,14 +1082,16 @@ public class ShellSession {
     }
     
     private synchronized Task sendJShellClose(JShell.Subscription unsub) {
-        ExecutionEnv e;
+        RemoteJShellService e;
         synchronized (this) {
             if (launcher == null) {
                 return Task.EMPTY;
             }
             e = this.exec;
         }
-        e.requestShutdown();
+        if (e != null) {
+            e.requestShutdown();
+        }
         // possibly delayed, if the evaluator is just processing some remote call.
         return evaluator.post(() -> {
             if (shell != null && unsub != null) {

@@ -53,11 +53,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
-import javafx.scene.media.MediaPlayer;
 import javax.swing.text.Document;
-import jdk.jshell.EnhancedJShell;
-import jdk.jshell.ExecutionEnv;
+import jdk.jshell.RemoteJShellService;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -507,7 +504,7 @@ public class JShellEnvironment {
         this.shellListeners.remove(l);
     }
     
-    public ExecutionEnv createExecutionEnv() {
-        return new EnhancedJShell.JDILaunchControl();
+    public RemoteJShellService createExecutionEnv() {
+        return null;
     }
 }

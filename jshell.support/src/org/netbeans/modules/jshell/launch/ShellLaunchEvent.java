@@ -42,24 +42,42 @@
 package org.netbeans.modules.jshell.launch;
 
 import java.util.EventObject;
-import org.netbeans.modules.jshell.launch.ShellLaunchManager.ShellAgent;
 
 /**
- *
+ * Event informing on Shell launch events.
+ * 
  * @author sdedic
  */
 public final class ShellLaunchEvent extends EventObject {
     private JShellConnection connection;
     private ShellAgent       agent;
-    
+    private boolean          remoteClose;
+
+    /*
+    Enable after refactoring
     ShellLaunchEvent(ShellLaunchManager mgr, JShellConnection source) {
+        this(mgr, source, false);
+    }
+     */
+    
+    ShellLaunchEvent(ShellLaunchManager mgr, JShellConnection source, boolean remoteClose) {
         super(mgr);
         this.connection = source;
+        this.remoteClose = remoteClose;
     }
+
 
     ShellLaunchEvent(ShellLaunchManager mgr, ShellAgent agent) {
         super(mgr);
         this.agent = agent;
+    }
+    
+    /**
+     * True, if the connection was shut down remotely.
+     * @return true for remote-initiated close.
+     */
+    public boolean isRemoteClose() {
+        return remoteClose;
     }
     
     public ShellAgent       getAgent() {

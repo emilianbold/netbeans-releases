@@ -45,8 +45,10 @@ import com.sun.jdi.VirtualMachine;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.function.UnaryOperator;
 import jdk.jshell.EnhancedJShell;
-import jdk.jshell.ExecutionEnv;
+import jdk.jshell.JDIRemoteAgent;
+import jdk.jshell.RemoteJShellService;
 import jdk.jshell.JShell;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -56,7 +58,7 @@ import org.netbeans.modules.jshell.launch.JShellConnection;
 import org.netbeans.modules.jshell.launch.ShellLaunchEvent;
 import org.netbeans.modules.jshell.launch.ShellLaunchListener;
 import org.netbeans.modules.jshell.launch.ShellLaunchManager;
-import org.netbeans.modules.jshell.launch.ShellLaunchManager.ShellAgent;
+import org.netbeans.modules.jshell.launch.ShellAgent;
 import org.netbeans.modules.jshell.support.ShellSession;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
@@ -131,7 +133,7 @@ public class LaunchedProjectOpener implements ShellLaunchListener {
             return agent.getIO();
         }
         
-        public ExecutionEnv createExecutionEnv() {
+        public RemoteJShellService createExecutionEnv() {
             return new DebugExecutionEnvironment(getSession(), agent, this);
         }
         
@@ -150,16 +152,17 @@ public class LaunchedProjectOpener implements ShellLaunchListener {
     @Override
     public void connectionClosed(ShellLaunchEvent ev) { }
     
-    static class DebugExecutionEnvironment extends EnhancedJShell.JDILaunchControl implements ShellLaunchListener {
+    static class DebugExecutionEnvironment extends JDIRemoteAgent implements ShellLaunchListener {
         private boolean             added;
-        private volatile JShellConnection    shellConnection;
+        volatile JShellConnection    shellConnection;
         private boolean             closed;
         
-        private final ShellAgent          agent;
-        private final DebugShellEnv   shellEnv;
-        private final ShellSession    reportSession;
+        final ShellAgent          agent;
+        final DebugShellEnv   shellEnv;
+        final ShellSession    reportSession;
         
         public DebugExecutionEnvironment(ShellSession s, ShellAgent agent, DebugShellEnv env) {
+            super(UnaryOperator.identity());
             this.shellEnv = env;
             this.agent = agent;
             this.reportSession = s;
@@ -229,7 +232,7 @@ public class LaunchedProjectOpener implements ShellLaunchListener {
 
         @Override
         public boolean requestShutdown() {
-            agent.disconnected(shellConnection);
+            agent.closeConnection(shellConnection);
             return false;
         }
 
