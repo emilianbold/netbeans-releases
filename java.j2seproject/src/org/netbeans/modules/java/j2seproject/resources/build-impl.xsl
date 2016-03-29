@@ -526,7 +526,7 @@ is divided into following sections:
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-javac-with-modules" depends="-init-ap-cmdline-properties, -init-modules-properties" if="modules.supported.internal">
+            <target name="-init-macrodef-javac-with-module" depends="-init-ap-cmdline-properties, -init-modules-properties" if="modules.supported.internal">
                 <macrodef>
                     <xsl:attribute name="name">javac</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
@@ -858,7 +858,7 @@ is divided into following sections:
                     </sequential>
                 </macrodef>
             </target>
-            <target name="-init-macrodef-javac" depends="-init-macrodef-javac-with-modules,-init-macrodef-javac-with-processors,-init-macrodef-javac-without-processors">
+            <target name="-init-macrodef-javac" depends="-init-macrodef-javac-with-module,-init-macrodef-javac-with-processors,-init-macrodef-javac-without-processors">
                 <macrodef> <!-- #36033, #85707 -->
                     <xsl:attribute name="name">depend</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
@@ -1761,7 +1761,7 @@ is divided into following sections:
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-java-with-modules" if="named.module.internal" depends="-init-modules-properties">
+            <target name="-init-macrodef-java-with-module" if="named.module.internal" depends="-init-modules-properties">
                 <macrodef>
                     <xsl:attribute name="name">java</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
@@ -1883,7 +1883,7 @@ is divided into following sections:
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-java-without-modules" unless="modules.supported.internal" depends="-init-modules-properties">
+            <target name="-init-macrodef-java-without-module" unless="modules.supported.internal" depends="-init-modules-properties">
                 <macrodef>
                     <xsl:attribute name="name">java</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
@@ -1935,7 +1935,7 @@ is divided into following sections:
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-java" depends="-init-macrodef-java-with-modules, -init-macrodef-java-with-unnamed-module, -init-macrodef-java-without-modules"/>
+            <target name="-init-macrodef-java" depends="-init-macrodef-java-with-module, -init-macrodef-java-with-unnamed-module, -init-macrodef-java-without-module"/>
 
             <target name="-init-macrodef-copylibs">
                 <macrodef>
