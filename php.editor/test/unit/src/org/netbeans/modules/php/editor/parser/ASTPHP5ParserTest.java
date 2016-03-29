@@ -590,6 +590,98 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("parser/anonymousClass_01");
     }
 
+    public void testUniformVariableSyntax_01() throws Exception {
+        performTest("parser/uniformVariableSyntax_01");
+    }
+
+    public void testUniformVariableSyntax_02() throws Exception {
+        performTest("parser/uniformVariableSyntax_02");
+    }
+
+    public void testUniformVariableSyntax_03() throws Exception {
+        performTest("parser/uniformVariableSyntax_03");
+    }
+
+    public void testUniformVariableSyntax_04() throws Exception {
+        performTest("parser/uniformVariableSyntax_04");
+    }
+
+    public void testUniformVariableSyntax_05() throws Exception {
+        performTest("parser/uniformVariableSyntax_05");
+    }
+
+    public void testUniformVariableSyntax_06() throws Exception {
+        performTest("parser/uniformVariableSyntax_06");
+    }
+
+    public void testUniformVariableSyntax_07() throws Exception {
+        performTest("parser/uniformVariableSyntax_07");
+    }
+
+    public void testUniformVariableSyntax_08() throws Exception {
+        performTest("parser/uniformVariableSyntax_08");
+    }
+
+    public void testUniformVariableSyntax_09() throws Exception {
+        performTest("parser/uniformVariableSyntax_09");
+    }
+
+    public void testUniformVariableSyntax_10() throws Exception {
+        performTest("parser/uniformVariableSyntax_10");
+    }
+
+    public void testUniformVariableSyntax_11() throws Exception {
+        performTest("parser/uniformVariableSyntax_11");
+    }
+
+    public void testUniformVariableSyntax_12() throws Exception {
+        performTest("parser/uniformVariableSyntax_12");
+    }
+
+    public void testUniformVariableSyntax_13() throws Exception {
+        performTest("parser/uniformVariableSyntax_13");
+    }
+
+    public void testUniformVariableSyntax_14() throws Exception {
+        performTest("parser/uniformVariableSyntax_14");
+    }
+
+    // incorrect AST (pre php7)
+    public void testUniformVariableSyntax_15() throws Exception {
+        performTest("parser/uniformVariableSyntax_15");
+    }
+
+    // incorrect AST (pre php7)
+    public void testUniformVariableSyntax_16() throws Exception {
+        performTest("parser/uniformVariableSyntax_16");
+    }
+
+    public void testUniformVariableSyntax_17() throws Exception {
+        performTest("parser/uniformVariableSyntax_17");
+    }
+
+    public void testUniformVariableSyntax_18() throws Exception {
+        performTest("parser/uniformVariableSyntax_18");
+    }
+
+    public void testUniformVariableSyntax_19() throws Exception {
+        performTest("parser/uniformVariableSyntax_19");
+    }
+
+    public void testUniformVariableSyntax_20() throws Exception {
+        performTest("parser/uniformVariableSyntax_20");
+    }
+
+    // XXX
+//    public void testUniformVariableSyntax_21() throws Exception {
+//        performTest("parser/uniformVariableSyntax_21");
+//    }
+
+    // XXX
+//    public void testUniformVariableSyntax_22() throws Exception {
+//        performTest("parser/uniformVariableSyntax_22");
+//    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         File testFile = new File(getDataDir(), "testfiles/" + filename + ".php");

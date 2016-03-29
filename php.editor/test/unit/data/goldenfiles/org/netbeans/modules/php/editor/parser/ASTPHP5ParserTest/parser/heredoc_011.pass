@@ -121,11 +121,9 @@
                     <Parameters>
                         <InfixExpression start='202' end='213' operator='CONCAT'>
                             <StaticConstantAccess start='202' end='206'>
-                                <ClassName>
-                                    <NamespaceName start='202' end='203' isCurrent='false' isGlobal='false'>
-                                        <Identifier start='202' end='203' name='e'/>
-                                    </NamespaceName>
-                                </ClassName>
+                                <NamespaceName start='202' end='203' isCurrent='false' isGlobal='false'>
+                                    <Identifier start='202' end='203' name='e'/>
+                                </NamespaceName>
                                 <Constant>
                                     <Identifier start='205' end='206' name='E'/>
                                 </Constant>

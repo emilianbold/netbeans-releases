@@ -132,9 +132,11 @@
                             </Parameters>
                         </ClassInstanceCreation>
                     </AnonymousObjectVariable>
-                    <Variable start='32' end='38' isDollared='false'>
-                        <Identifier start='32' end='38' name='field1'/>
-                    </Variable>
+                    <Field>
+                        <Variable start='32' end='38' isDollared='false'>
+                            <Identifier start='32' end='38' name='field1'/>
+                        </Variable>
+                    </Field>
                 </FieldAccess>
             </ExpressionStatement>
             <ExpressionStatement start='40' end='76'>
@@ -150,15 +152,17 @@
                             </Parameters>
                         </ClassInstanceCreation>
                     </AnonymousObjectVariable>
-                    <FunctionInvocation start='66' end='75'>
-                        <FucntionName start='66' end='73'>
-                            <Variable start='66' end='73' isDollared='false'>
-                                <Identifier start='66' end='73' name='method1'/>
-                            </Variable>
-                        </FucntionName>
-                        <Parameters>
-                        </Parameters>
-                    </FunctionInvocation>
+                    <Method>
+                        <FunctionInvocation start='66' end='75'>
+                            <FucntionName start='66' end='73'>
+                                <Variable start='66' end='73' isDollared='false'>
+                                    <Identifier start='66' end='73' name='method1'/>
+                                </Variable>
+                            </FucntionName>
+                            <Parameters>
+                            </Parameters>
+                        </FunctionInvocation>
+                    </Method>
                 </MethodInvocation>
             </ExpressionStatement>
             <ExpressionStatement start='77' end='108'>
@@ -174,9 +178,11 @@
                             </Parameters>
                         </ClassInstanceCreation>
                     </AnonymousObjectVariable>
-                    <Variable start='101' end='107' isDollared='false'>
-                        <Identifier start='101' end='107' name='field2'/>
-                    </Variable>
+                    <Field>
+                        <Variable start='101' end='107' isDollared='false'>
+                            <Identifier start='101' end='107' name='field2'/>
+                        </Variable>
+                    </Field>
                 </FieldAccess>
             </ExpressionStatement>
             <ExpressionStatement start='109' end='143'>
@@ -192,15 +198,17 @@
                             </Parameters>
                         </ClassInstanceCreation>
                     </AnonymousObjectVariable>
-                    <FunctionInvocation start='133' end='142'>
-                        <FucntionName start='133' end='140'>
-                            <Variable start='133' end='140' isDollared='false'>
-                                <Identifier start='133' end='140' name='method2'/>
-                            </Variable>
-                        </FucntionName>
-                        <Parameters>
-                        </Parameters>
-                    </FunctionInvocation>
+                    <Method>
+                        <FunctionInvocation start='133' end='142'>
+                            <FucntionName start='133' end='140'>
+                                <Variable start='133' end='140' isDollared='false'>
+                                    <Identifier start='133' end='140' name='method2'/>
+                                </Variable>
+                            </FucntionName>
+                            <Parameters>
+                            </Parameters>
+                        </FunctionInvocation>
+                    </Method>
                 </MethodInvocation>
             </ExpressionStatement>
             <EmptyStatement start='144' end='146'/>
