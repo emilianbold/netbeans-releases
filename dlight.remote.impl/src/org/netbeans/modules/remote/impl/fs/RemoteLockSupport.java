@@ -65,7 +65,7 @@ public class RemoteLockSupport {
 
     private final Object mainLock = new Object();
     private final Map<File, WeakReference<ReadWriteLock>> cacheLocks = new HashMap<>();
-    private final IdentityHashMap<RemoteFileObjectBase, RemoteFileLock> fileLocks = new IdentityHashMap();
+    private final IdentityHashMap<RemoteFileObjectBase, RemoteFileLock> fileLocks = new IdentityHashMap<>();
 
     private final Object plainFileMainLock = new Object();
     private final Map<RemotePlainFile, SimpleRWLock> plainFileRWLocks = new IdentityHashMap<>();
