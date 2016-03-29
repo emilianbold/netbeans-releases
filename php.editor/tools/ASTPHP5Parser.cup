@@ -405,6 +405,7 @@ non terminal Quote heredoc;
 non terminal VariableBase field_or_method_access;
 non terminal VariableBase function_call_with_array;
 non terminal Expression expression_array_access;
+non terminal Expression constant_array_access;
 non terminal Expression array_creation;
 non terminal Expression array_creation_with_access;
 non terminal ClassInstanceCreation anonymous_class;
@@ -448,11 +449,16 @@ non terminal Integer af_modifiers;
 
 non terminal ClassName class_name_reference;
 non terminal StaticConstantAccess class_constant;
+non terminal Expression reference_constant;
 non terminal ClassName dynamic_class_name_reference;
 non terminal VariableBase base_variable;
 non terminal List dynamic_class_name_variable_properties;
 non terminal VariableBase dynamic_class_name_variable_property;
 non terminal StaticConstantAccess static_class_constant;
+non terminal Expression static_reference_constant;
+non terminal Expression static_array_creation_with_access;
+non terminal Expression static_constant_array_access;
+non terminal Expression static_array_creation;
 non terminal VariableBase base_variable_with_function_calls;
 
 non terminal List class_name_list;
@@ -3105,16 +3111,29 @@ static_operation ::=
 
 | */
 
-T_ARRAY:start T_OPEN_PARENTHESE static_array_pair_list:list T_CLOSE_PARENTHESE:end
+static_array_creation:arrayCreation
 {:
-	Expression array = new ArrayCreation(startleft, endright, list, ArrayCreation.Type.OLD);
-	RESULT = array;
+    RESULT = arrayCreation;
 :}
 
-| T_OPEN_RECT:start static_array_pair_list:list T_CLOSE_RECT:end
+| static_array_creation_with_access:arrayAccess
 {:
-	Expression array = new ArrayCreation(startleft, endright, list, ArrayCreation.Type.NEW);
-	RESULT = array;
+    RESULT = arrayAccess;
+:}
+
+| static_constant_array_access:arrayAccess
+{:
+    RESULT = arrayAccess;
+:}
+
+| T_ENCAPSED_AND_WHITESPACE:str T_OPEN_RECT:o static_scalar_value:index T_CLOSE_RECT:end
+{:
+    RESULT = new ExpressionArrayAccess(strleft, endright, new Identifier(strleft, strright, str), new ArrayDimension(oleft, endright, index));
+:}
+
+| T_CONSTANT_ENCAPSED_STRING:str T_OPEN_RECT:o static_scalar_value:index T_CLOSE_RECT:end
+{:
+    RESULT = new ExpressionArrayAccess(strleft, endright, new Identifier(strleft, strright, str), new ArrayDimension(oleft, endright, index));
 :}
 
 | static_scalar_value:expr1 T_PLUS static_scalar_value:expr2
@@ -3298,10 +3317,59 @@ static_scalar_value:scalar
 ;
 
 static_class_constant ::=
-class_name:className T_PAAMAYIM_NEKUDOTAYIM T_STRING:varName
+class_name:className T_PAAMAYIM_NEKUDOTAYIM static_reference_constant:constant
 {:
-	RESULT = new StaticConstantAccess(classNameleft, varNameright, className,
-		new Identifier(varNameleft, varNameright, varName));
+	RESULT = new StaticConstantAccess(classNameleft, constantright, className, constant);
+:}
+;
+
+static_reference_constant ::=
+static_constant_array_access:arrayAccess
+{:
+	RESULT = arrayAccess;
+:}
+
+| T_STRING:constantName
+{:
+	RESULT = new Identifier(constantNameleft, constantNameright, constantName);
+:}
+;
+
+static_constant_array_access ::=
+static_constant_array_access:arrayAccess T_OPEN_RECT:o static_scalar_value:index T_CLOSE_RECT:end
+{:
+	RESULT = new ExpressionArrayAccess(arrayAccessleft, endright, arrayAccess, new ArrayDimension(oleft, endright, index));
+:}
+
+| T_STRING:constantName T_OPEN_RECT:o static_scalar_value:index T_CLOSE_RECT:end
+{:
+	RESULT = new ExpressionArrayAccess(constantNameleft, endright, new Identifier(constantNameleft, constantNameright, constantName), new ArrayDimension(oleft, endright, index));
+:}
+;
+
+static_array_creation_with_access ::=
+static_array_creation:arr T_OPEN_RECT:o static_scalar_value:index T_CLOSE_RECT:end
+{:
+    RESULT = new ExpressionArrayAccess(arrleft, endright, arr, new ArrayDimension(oleft, endright, index));
+:}
+
+| static_array_creation_with_access:acc T_OPEN_RECT:o static_scalar_value:index T_CLOSE_RECT:end
+{:
+    RESULT = new ExpressionArrayAccess(accleft, endright, acc, new ArrayDimension(oleft, endright, index));
+:}
+;
+
+static_array_creation ::=
+T_ARRAY:start T_OPEN_PARENTHESE:o static_array_pair_list:list T_CLOSE_PARENTHESE:end
+{:
+	Expression expr = new ArrayCreation(startleft, endright, list, ArrayCreation.Type.OLD);
+	RESULT = expr;
+:}
+
+| T_OPEN_RECT:start static_array_pair_list:list T_CLOSE_RECT:end
+{:
+	Expression expr = new ArrayCreation(startleft, endright, list, ArrayCreation.Type.NEW);
+	RESULT = expr;
 :}
 ;
 
@@ -3666,9 +3734,9 @@ function_call:var T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
 ;
 
 expression_array_access ::=
-T_STRING:str T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
+constant_array_access:arrayAccess
 {:
-    RESULT = new ExpressionArrayAccess(strleft, endright, new Identifier(strleft, strright, str), new ArrayDimension(oleft, endright, index));
+    RESULT = arrayAccess;
 :}
 
 | T_ENCAPSED_AND_WHITESPACE:str T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
@@ -3684,6 +3752,18 @@ T_STRING:str T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
 | array_creation_with_access:arr
 {:
     RESULT = arr;
+:}
+;
+
+constant_array_access ::=
+constant_array_access:arrayAccess T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
+{:
+    RESULT = new ExpressionArrayAccess(arrayAccessleft, endright, arrayAccess, new ArrayDimension(oleft, endright, index));
+:}
+
+| T_STRING:constantName T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
+{:
+    RESULT = new ExpressionArrayAccess(constantNameleft, endright, new Identifier(constantNameleft, constantNameright, constantName), new ArrayDimension(oleft, endright, index));
 :}
 ;
 
@@ -4115,16 +4195,26 @@ variable:var
 ;
 
 class_constant ::=
-class_name:className T_PAAMAYIM_NEKUDOTAYIM T_STRING:varName
+class_name:className T_PAAMAYIM_NEKUDOTAYIM reference_constant:constant
 {:
-	RESULT = new StaticConstantAccess(classNameleft, varNameright, className,
-		new Identifier(varNameleft, varNameright, varName));
+	RESULT = new StaticConstantAccess(classNameleft, constantright, className, constant);
 :}
 
-| variable_class_name:className T_PAAMAYIM_NEKUDOTAYIM T_STRING:varName
+| variable_class_name:className T_PAAMAYIM_NEKUDOTAYIM reference_constant:constant
 {:
-	RESULT = new StaticConstantAccess(classNameleft, varNameright, className,
-		new Identifier(varNameleft, varNameright, varName));
+	RESULT = new StaticConstantAccess(classNameleft, constantright, className, constant);
+:}
+;
+
+reference_constant ::=
+reference_constant:constant T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
+{:
+	RESULT = new ExpressionArrayAccess(constantleft, endright, constant, new ArrayDimension(oleft, endright, index));
+:}
+
+| T_STRING:constantName
+{:
+	RESULT = new Identifier(constantNameleft, constantNameright, constantName);
 :}
 ;
 

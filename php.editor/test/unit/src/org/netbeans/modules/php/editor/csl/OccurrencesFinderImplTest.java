@@ -920,6 +920,127 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
         checkOccurrences(getTestPath(), "static::C^ON;", true);
     }
 
+    // #250579
+    public void testConstantArrayAccess_01() throws Exception {
+        checkOccurrences(getTestPath(), "const GLOBAL_C^ONSTANT1 = [0, 1];", true);
+    }
+
+    public void testConstantArrayAccess_02() throws Exception {
+        checkOccurrences(getTestPath(), "const GLOBAL_CONSTANT2 = GL^OBAL_CONSTANT1[0];", true);
+    }
+
+    public void testConstantArrayAccess_03() throws Exception {
+        checkOccurrences(getTestPath(), "const GLOBAL_CONSTANT3 = GLOBAL_^CONSTANT1[GLOBAL_CONSTANT1[0] + GLOBAL_CONSTANT1[0]];", true);
+    }
+
+    public void testConstantArrayAccess_04() throws Exception {
+        checkOccurrences(getTestPath(), "const GLOBAL_CONSTANT3 = GLOBAL_CONSTANT1[GL^OBAL_CONSTANT1[0] + GLOBAL_CONSTANT1[0]];", true);
+    }
+
+    public void testConstantArrayAccess_05() throws Exception {
+        checkOccurrences(getTestPath(), "const GLOBAL_CONSTANT3 = GLOBAL_CONSTANT1[GLOBAL_CONSTANT1[0] + GL^OBAL_CONSTANT1[0]];", true);
+    }
+
+    public void testConstantArrayAccess_06() throws Exception {
+        checkOccurrences(getTestPath(), "const G^LOBAL_CONSTANT4 = [\"a\" => [0, 1], \"b\" => [\"c\", \"d\"]];", true);
+    }
+
+    public void testConstantArrayAccess_07() throws Exception {
+        checkOccurrences(getTestPath(), "const GLOBAL_CONSTANT5 = GLOBAL_CO^NSTANT4[\"b\"][GLOBAL_CONSTANT1[1]];", true);
+    }
+
+    public void testConstantArrayAccess_08() throws Exception {
+        checkOccurrences(getTestPath(), "const GLOBAL_CONSTANT5 = GLOBAL_CONSTANT4[\"b\"][GLOBAL_CONS^TANT1[1]];", true);
+    }
+
+    public void testConstantArrayAccess_09() throws Exception {
+        checkOccurrences(getTestPath(), "GLOBAL_CONST^ANT1[$index];", true);
+    }
+
+    public void testConstantArrayAccess_10() throws Exception {
+        checkOccurrences(getTestPath(), "[1][GLOBAL_CO^NSTANT1[0]];", true);
+    }
+
+    public void testConstantArrayAccess_11() throws Exception {
+        checkOccurrences(getTestPath(), "echo GLOBAL_C^ONSTANT4[\"a\"][GLOBAL_CONSTANT1[$index]];", true);
+    }
+
+    public void testConstantArrayAccess_12() throws Exception {
+        checkOccurrences(getTestPath(), "echo GLOBAL_CONSTANT4[\"a\"][GLOB^AL_CONSTANT1[$index]];", true);
+    }
+
+    public void testConstantArrayAccess_13() throws Exception {
+        checkOccurrences(getTestPath(), "const CLASS_CO^NSTANT1 = [\"a\", \"b\"];", true);
+    }
+
+    public void testConstantArrayAccess_14() throws Exception {
+        checkOccurrences(getTestPath(), "const CLASS_CONSTANT2 = self::CL^ASS_CONSTANT1[0];", true);
+    }
+
+    public void testConstantArrayAccess_15() throws Exception {
+        checkOccurrences(getTestPath(), "const CLASS_CONSTANT3 = GLOB^AL_CONSTANT1[0] + GLOBAL_CONSTANT1[1];", true);
+    }
+
+    public void testConstantArrayAccess_16() throws Exception {
+        checkOccurrences(getTestPath(), "const CLASS_CONSTANT3 = GLOBAL_CONSTANT1[0] + GLOBAL_CON^STANT1[1];", true);
+    }
+
+    public void testConstantArrayAccess_17() throws Exception {
+        checkOccurrences(getTestPath(), "const CLASS_C^ONSTANT4 = [0, 1];", true);
+    }
+
+    public void testConstantArrayAccess_18() throws Exception {
+        checkOccurrences(getTestPath(), "self::CLASS_CON^STANT1[GLOBAL_CONSTANT1[1]];", true);
+    }
+
+    public void testConstantArrayAccess_19() throws Exception {
+        checkOccurrences(getTestPath(), "self::CLASS_CONSTANT1[GL^OBAL_CONSTANT1[1]];", true);
+    }
+
+    public void testConstantArrayAccess_20() throws Exception {
+        checkOccurrences(getTestPath(), "self::CLASS_CON^STANT1[ConstantClass::CLASS_CONSTANT4[self::CLASS_CONSTANT4[0]]];", true);
+    }
+
+    public void testConstantArrayAccess_21() throws Exception {
+        checkOccurrences(getTestPath(), "self::CLASS_CONSTANT1[ConstantClass::CLASS_C^ONSTANT4[self::CLASS_CONSTANT4[0]]];", true);
+    }
+
+    public void testConstantArrayAccess_22() throws Exception {
+        checkOccurrences(getTestPath(), "self::CLASS_CONSTANT1[ConstantClass::CLASS_CONSTANT4[self::CLASS_CONS^TANT4[0]]];", true);
+    }
+
+    public void testConstantArrayAccess_23() throws Exception {
+        checkOccurrences(getTestPath(), "ConstantClass::CLASS_CO^NSTANT1[$index];", true);
+    }
+
+    public void testConstantArrayAccess_24() throws Exception {
+        checkOccurrences(getTestPath(), "\"String\"[ConstantClass::CLASS_CON^STANT4[0]];", true);
+    }
+
+    public void testConstantArrayAccess_25() throws Exception {
+        checkOccurrences(getTestPath(), "ConstantInterface::IN^TERFACE_CONSTANT1[GLOBAL_CONSTANT1[1]];", true);
+    }
+
+    public void testConstantArrayAccess_26() throws Exception {
+        checkOccurrences(getTestPath(), "ConstantInterface::INTERFACE_CONSTANT1[GL^OBAL_CONSTANT1[1]];", true);
+    }
+
+    public void testConstantArrayAccess_27() throws Exception {
+        checkOccurrences(getTestPath(), "const IN^TERFACE_CONSTANT1 = [\"a\", \"b\"];", true);
+    }
+
+    public void testConstantArrayAccess_28() throws Exception {
+        checkOccurrences(getTestPath(), "const INTERFACE_CONSTANT2 = self::IN^TERFACE_CONSTANT1[0];", true);
+    }
+
+    public void testConstantArrayAccess_29() throws Exception {
+        checkOccurrences(getTestPath(), "const INTERFACE_CONSTANT3 = ConstantInterface::INTERFACE_CON^STANT1[0] . GLOBAL_CONSTANT1[1];", true);
+    }
+
+    public void testConstantArrayAccess_30() throws Exception {
+        checkOccurrences(getTestPath(), "const INTERFACE_CONSTANT3 = ConstantInterface::INTERFACE_CONSTANT1[0] . GLOBAL_CON^STANT1[1];", true);
+    }
+
     public void testStaticAccessWithNsAlias_01() throws Exception {
         checkOccurrences(getTestPath(), "const O^MG = 1;", true);
     }
