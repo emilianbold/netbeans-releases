@@ -1053,11 +1053,11 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         if (jsObject.getJSKind() == JsElement.Kind.METHOD) {
             jsObject = jsObject.getParent();
         }
-        
-        completeObjectMembers(jsObject, request, addedItems, true);
+        boolean startThis = startWithThis(request);
+        completeObjectMembers(jsObject, request, addedItems, !startThis);
         
         if (ModelUtils.PROTOTYPE.equals(jsObject.getName())) {  //NOI18N
-            completeObjectMembers(jsObject.getParent(), request, addedItems, true);
+            completeObjectMembers(jsObject.getParent(), request, addedItems, !startThis);
         }
     }
     
@@ -1080,6 +1080,22 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         }
     }
 
+    private boolean startWithThis(CompletionRequest request) {
+        boolean result = false;
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(request.info.getSnapshot(), request.anchor);
+        if (ts == null) {
+            return result;
+        }
+        ts.move(request.info.getSnapshot().getEmbeddedOffset(request.anchor));
+        if (ts.moveNext()) {
+            Token<? extends JsTokenId> token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.IDENTIFIER, JsTokenId.OPERATOR_DOT));
+            if (token != null && JsTokenId.KEYWORD_THIS == token.id()) {
+                result = true;
+            }
+        }
+        return result;
+    }
+    
     private void completeInWith (CompletionRequest request,HashMap <String, List<JsElement>> addedItems) {
         int offset = request.anchor;
         Collection<? extends TypeUsage> typesFromWith = ModelUtils.getTypeFromWith(request.result.getModel(), offset);
