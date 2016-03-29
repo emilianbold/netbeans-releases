@@ -228,6 +228,23 @@ is divided into following sections:
                 <property name="module.name" value=""/>
             </target>
             <target name="-init-test-module-properties" depends="-init-source-module-properties" if="named.module.internal">
+                <pathconvert property="javac.test.addreads.internal" pathsep=",">
+                    <path path="${{javac.test.modulepath}}"/>
+                    <chainedmapper>
+                        <flattenmapper/>
+                        <firstmatchmapper>
+                            <regexpmapper from="^((junit|testng|hamcrest)-.*)\.jar$$" to="\1"/>
+                            <regexpmapper from="^.*$$" to=""/>
+                        </firstmatchmapper>
+                        <regexpmapper from="^(.*)-\d+(\..*|$$)" to="\1"/>
+                        <filtermapper>
+                            <replaceregex pattern="[^A-Z0-9]" replace="." flags="gi"/>
+                            <replaceregex pattern="(\.)(\1)+" replace="." flags="gi"/>
+                            <replaceregex pattern="^\." replace="" flags="gi"/>
+                            <replaceregex pattern="\.$$" replace="" flags="gi"/>
+                        </filtermapper>
+                    </chainedmapper>
+                </pathconvert>
                 <j2seproject3:modulename property="test.module.name">
                     <xsl:attribute name="sourcepath">
                             <xsl:call-template name="createPath">
@@ -235,7 +252,7 @@ is divided into following sections:
                             </xsl:call-template>
                     </xsl:attribute>
                 </j2seproject3:modulename>
-                <condition property="javac.test.compilerargs" value="-XaddReads:${{test.module.name}}=junit" else="-Xmodule:${{module.name}} -XaddReads:${{module.name}}=junit">
+                <condition property="javac.test.compilerargs" value="-XaddReads:${{test.module.name}}=${{javac.test.addreads.internal}}" else="-Xmodule:${{module.name}} -XaddReads:${{module.name}}=${{javac.test.addreads.internal}}">
                     <and>
                         <isset property="test.module.name"/>
                         <length length="0" string="${{test.module.name}}" when="greater"/>
