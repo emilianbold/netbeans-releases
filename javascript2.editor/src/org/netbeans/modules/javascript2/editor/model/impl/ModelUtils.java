@@ -89,6 +89,8 @@ public class ModelUtils {
       
     public static final String PROTOTYPE = "prototype"; //NOI18N
     
+    public static final String CONSTRUCTOR = "constructor"; //NOI18N
+    
     public static final String THIS = "this"; //NOI18N
 
     public static final String ARGUMENTS = "arguments"; //NOI18N

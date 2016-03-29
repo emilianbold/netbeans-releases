@@ -39,29 +39,32 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.parser;
-
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.netbeans.modules.javascript2.editor.JsCodeCompletionES6Test;
-import org.netbeans.modules.javascript2.editor.JsSemanticAnalyzerTest;
-import org.netbeans.modules.javascript2.editor.JsStructureScannerTest;
-import org.netbeans.modules.javascript2.editor.model.impl.MarkOccurrenceTest;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelTest;
+package org.netbeans.modules.javascript2.editor;
 
 /**
  *
  * @author Petr Pisl
  */
+public class JsCodeCompletionES6Test extends JsCodeCompletionBase {
 
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-    MarkOccurrenceTest.class,
-    JsSemanticAnalyzerTest.class,
-    JsStructureScannerTest.class,
-    ModelTest.class,
-    JsCodeCompletionES6Test.class   
-})
-public class Ecma6TestSuite {
+    public JsCodeCompletionES6Test(String testName) {
+        super(testName);
+    }
+    
+    public void testClassName01() throws Exception {
+        // the name of Polygon class has to be offered
+        checkCompletion("testfiles/completion/ecmascript6/classes/class01.js", "var p = new P^", false);
+    }
+    
+    public void testClassName02() throws Exception {
+        // the constructor should not be offered, height  and width has to be offered
+        checkCompletion("testfiles/completion/ecmascript6/classes/class01.js", "console.log(pol.^height);", false);
+    }
+    
+    public void testClassStaticMethod01() throws Exception {
+        // has to offer the static distance method
+        checkCompletion("testfiles/completion/ecmascript6/classes/class04.js", "Point.^", false);
+    }
+    
     
 }
