@@ -142,7 +142,7 @@ public class RemoteFileObjectFactory {
         if (fo instanceof RemoteDirectory && fo.isValid() && fo.getCache().equals(cacheFile)) {
             if (fo.getParent() == parent) {
                 cacheHits++;
-                return (RemoteDirectory) fo;
+                return fo;
             }
             fo = null;
         }
@@ -162,7 +162,7 @@ public class RemoteFileObjectFactory {
         if (parent.isValid()) {
             RemoteFileObjectBase result = putIfAbsent(normalizedRemotePath, creator);
             if (result instanceof RemoteDirectory && result.getParent() == parent) {
-                return (RemoteDirectory)result;
+                return result;
             } else {
                 // NB: previously, we returned the newly created file object (which was NOT put in cache)
                 // TODO: should we replace old object with new one?
@@ -181,7 +181,7 @@ public class RemoteFileObjectFactory {
         if (fo instanceof RemotePlainFile && fo.isValid() && fo.getCache().equals(cacheFile)) {
             if (fo.getParent() == parent) {
                 cacheHits++;
-                return (RemotePlainFile) fo;
+                return fo;
             }
             fo = null;
         }
@@ -201,7 +201,7 @@ public class RemoteFileObjectFactory {
         if (parent.isValid()) {
             RemoteFileObjectBase result = putIfAbsent(normalizedRemotePath, creator);
             if (result instanceof RemotePlainFile && result.getParent() == parent) {
-                return (RemotePlainFile)result;
+                return result;
             } else {
                 // NB: previously, we returned the newly created file object (which was NOT put in cache)
                 // TODO: should we replace old object with new one?
@@ -220,7 +220,7 @@ public class RemoteFileObjectFactory {
         if (fo instanceof SpecialRemoteFileObject && fo.isValid()) {
             if (fo.getParent() == parent) {
                 cacheHits++;
-                return (SpecialRemoteFileObject) fo;
+                return fo;
             }
             fo = null;
         }
@@ -240,7 +240,7 @@ public class RemoteFileObjectFactory {
         if (parent.isValid()) {
             RemoteFileObjectBase result = putIfAbsent(normalizedRemotePath, creator);
             if (result instanceof SpecialRemoteFileObject && result.getParent() == parent) {
-                return (SpecialRemoteFileObject)result;
+                return result;
             } else {
                 // NB: previously, we returned the newly created file object (which was NOT put in cache)
                 // TODO: should we replace old object with new one?
