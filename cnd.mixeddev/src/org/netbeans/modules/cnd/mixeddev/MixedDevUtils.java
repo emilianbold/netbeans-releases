@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.cnd.mixeddev;
 
-import java.io.File;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,26 +50,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.api.model.CsmScope;
-import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.services.CsmSymbolResolver;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.java.j2seproject.api.J2SEProjectPlatform;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.openide.util.Lookup;
 import org.openide.util.Pair;
 
 /**
@@ -199,6 +187,29 @@ public final class MixedDevUtils {
                     Collection<CsmOffsetable> candidates = CsmSymbolResolver.resolveSymbol(nativeProject, cppName);
                     if (!candidates.isEmpty()) {
                         return candidates.iterator().next();
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public static MakeConfiguration findCppFunctionMakeConfiguration(String cppNames[]) {
+        if (cppNames != null) {
+            for (NativeProject nativeProject : findNativeProjects()) {
+                for (String cppName : cppNames) {
+                    Collection<CsmOffsetable> candidates = CsmSymbolResolver.resolveGlobalFunction(nativeProject, cppName);
+                    if (!candidates.isEmpty()) {
+                        Lookup.Provider project = nativeProject.getProject();
+                        if (project instanceof Project) {
+                            ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                            if (provider != null && provider.gotDescriptor()) {
+                                MakeConfigurationDescriptor descriptor = provider.getConfigurationDescriptor();
+                                if (descriptor != null) {
+                                    return descriptor.getActiveConfiguration();
+                                }
+                            }
+                        }
                     }
                 }
             }

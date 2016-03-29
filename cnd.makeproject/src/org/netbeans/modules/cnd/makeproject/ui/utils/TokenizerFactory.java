@@ -173,53 +173,94 @@ public final class TokenizerFactory {
     // Should work in most real-word case, but you can easily broke it if you want.
     // If token is started with -D, then -D is removed.
     private static List<String> tokenize(String text, String[] keys, String SEPARATOR, PathResolver resolver) {
-        final char QUOTE = '\"'; // NOI18N
+        List<String> splitLine = splitLine(text, SEPARATOR);
         List<String> result = new ArrayList<>();
-        boolean inQuote = false;
-        boolean innerQuote = false;
-        int start = 0;
-        int i = 0;
-        char prev = 0;
-        while (i < text.length()) {
-            String str = text.substring(start, i).trim();
-            if (isSeparator(SEPARATOR, text.charAt(i)) && !inQuote) {
-                if (str.length() > 0) {
-                    addItem(result, keys, str, resolver);
-                    start = i + 1;
-                }
-            } else if (text.charAt(i) == QUOTE && inQuote) {
-                if (str.length() > 0) {
-                    addItem(result, keys, str + (innerQuote ? QUOTE : ""), resolver); // NOI18N
-                    start = i + 1;
-                    inQuote = false;
-                    innerQuote = false;
-                }
-            } else if (text.charAt(i) == QUOTE) {
-                inQuote = true;
-                if (isSeparator(SEPARATOR, prev)) {
-                    start = i + 1;
-                } else {
-                    innerQuote = true;
+        for(String s : splitLine) {
+            if (s.startsWith("'") && s.endsWith("'") || // NOI18N
+                    s.startsWith("\"") && s.endsWith("\"")) { // NOI18N
+                if (s.length() >= 2) {
+                    s = s.substring(1, s.length() - 1);
                 }
             }
-            prev = text.charAt(i);
-            i++;
-        }
-        if (start != i) {
-            addItem(result, keys, text.substring(start).trim(), resolver);
+            addItem(result, keys, s, resolver);
         }
         return result;
     }
 
-    private static boolean isSeparator(String separators, char c) {
-        return separators.indexOf(c) >= 0;
-    }
     
+    private static List<String> splitLine(String line, String SEPARATOR) {
+        List<String> res = new ArrayList<>();
+        int i = 0;
+        StringBuilder current = new StringBuilder();
+        boolean isSingleQuoteMode = false;
+        boolean isDoubleQuoteMode = false;
+        char prev = 0;
+        while (i < line.length()) {
+            char c = line.charAt(i);
+            i++;
+            if (SEPARATOR.indexOf(c) >= 0) {
+                if (isSingleQuoteMode || isDoubleQuoteMode) {
+                    current.append(c);
+                } else {
+                    if (current.length() > 0) {
+                        res.add(current.toString());
+                        current.setLength(0);
+                    }
+                }
+            } else switch (c) {
+                case '\'': // NOI18N
+                    if (prev != '\\') {
+                        if (isSingleQuoteMode) {
+                            isSingleQuoteMode = false;
+                        } else if (!isDoubleQuoteMode) {
+                            isSingleQuoteMode = true;
+                        }
+                    }
+                    current.append(c);
+                    break;
+                case '\"': // NOI18N
+                    if (prev != '\\') {
+                        if (isDoubleQuoteMode) {
+                            isDoubleQuoteMode = false;
+                        } else if (!isSingleQuoteMode) {
+                            isDoubleQuoteMode = true;
+                        }
+                    }
+                    current.append(c);
+                    break;
+                case ' ': // NOI18N
+                case '\t': // NOI18N
+                case '\n': // NOI18N
+                case '\r': // NOI18N
+                    if (isSingleQuoteMode || isDoubleQuoteMode) {
+                        current.append(c);
+                    } else {
+                        if (current.length() > 0) {
+                            res.add(current.toString());
+                            current.setLength(0);
+                        }
+                    }
+                    break;
+                default:
+                    current.append(c);
+                    break;
+            }
+            prev = c;
+        }
+        if (current.length() > 0) {
+            res.add(current.toString());
+        }
+        return res;
+    }
+   
     private static void addItem(List<String> result, String[] keys, String value, PathResolver resolver) {
         for(String key : keys) {
             if (value.startsWith(key)) {
                 String s = removePrefix(key, value, resolver);
                 if (!s.isEmpty()) {
+                    if (s.contains("\\\"")) { // NOI18N
+                        s = s.replace("\\\"", "\""); // NOI18N
+                    }
                     result.add(s);
                 }
                 return;
@@ -229,6 +270,9 @@ public final class TokenizerFactory {
             //ugnore other keys
         } else {
             if (!value.isEmpty()) {
+                if (value.contains("\\\"")) { // NOI18N
+                    value = value.replace("\\\"", "\""); // NOI18N
+                }
                 result.add(value);
             }
         }

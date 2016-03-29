@@ -242,7 +242,12 @@ public enum CppTokenId implements TokenId {
 
     // C11
     _NORETURN("_Noreturn", "keyword"), // c11 // NOI18N
-    
+    _ATOMIC("_Atomic", "keyword"), // c11 // NOI18N
+    _ALIGNAS("_Alignas", "keyword"), // c11 // NOI18N
+    _ALIGNOF("_Alignof", "keyword"), // c11 // NOI18N
+    _THREAD_LOCAL("_Thread_local", "keyword"), // c11 // NOI18N
+    _STATIC_ASSERT("_Static_assert", "keyword"), // c11 // NOI18N
+
     // extension points
     BUILT_IN_TYPE(null, "keyword"), // NOI18N
     TYPE_QUALIFIER(null, "keyword"), // NOI18N

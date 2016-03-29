@@ -292,13 +292,15 @@ public class RemoteFileObjectFactory {
         if (fo == null) {
             synchronized (lock) {
                 fo = getCachedFileObject(normalizedPath);
-                if (fo != null) {
+                if (fo == null) {
                     List<FileChangeListener> listeners = pendingListeners.get(normalizedPath);
                     if (listeners == null) {
                         listeners = new ArrayList<>();
                         pendingListeners.put(normalizedPath, listeners);
                     }
                     listeners.add(listener);
+                } else {
+                    fo.addFileChangeListener(listener);
                 }
             }
         } else {
@@ -312,11 +314,13 @@ public class RemoteFileObjectFactory {
         if (fo == null) {
             synchronized (lock) {
                 fo = getCachedFileObject(normalizedPath);
-                if (fo != null) {
+                if (fo == null) {
                     List<FileChangeListener> listeners = pendingListeners.get(normalizedPath);
                     if (listeners != null) {
                         listeners.remove(listener);
                     }
+                } else {
+                    fo.removeFileChangeListener(listener);
                 }
             }
         } else {

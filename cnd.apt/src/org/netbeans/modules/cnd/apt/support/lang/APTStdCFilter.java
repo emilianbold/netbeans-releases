@@ -128,5 +128,10 @@ class APTStdCFilter extends APTBaseLanguageFilter {
         filter("_Complex", APTTokenTypes.LITERAL__Complex); // NOI18N
         filter("_Imaginary", APTTokenTypes.LITERAL__Imaginary); // NOI18N
         filter("_Noreturn", APTTokenTypes.LITERAL__Noreturn); // NOI18N        
+        filter("_Atomic", APTTokenTypes.LITERAL__Atomic); // NOI18N        
+        filter("_Alignof", APTTokenTypes.LITERAL__Alignof); // NOI18N
+        filter("_Alignas", APTTokenTypes.LITERAL__Alignas); // NOI18N
+        filter("_Thread_local", APTTokenTypes.LITERAL__Thread_local); // NOI18N
+        filter("_Static_assert", APTTokenTypes.LITERAL__Static_assert); // NOI18N
     }    
 }

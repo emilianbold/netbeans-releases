@@ -241,23 +241,6 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
         return exp;
     }
 
-    private CsmCompletionExpression createTokenExp(int id, CsmCompletionExpression oldExpression) {
-        return createTokenExp(id, oldExpression, false);
-    }
-
-    private CsmCompletionExpression createTokenExp(int id, CsmCompletionExpression oldExpression, boolean withParams) {
-        CsmCompletionExpression exp = new CsmCompletionExpression(id);
-        for (int i = 0; i < oldExpression.getTokenCount(); i++) {
-            exp.addToken(oldExpression.getTokenID(i), oldExpression.getTokenOffset(i), oldExpression.getTokenText(i));
-        }
-        if (withParams) {
-            for (int i = 0; i < oldExpression.getParameterCount(); i++) {
-                exp.addParameter(oldExpression.getParameter(i));
-            }
-        }
-        return exp;
-    }
-
     /** Add the token to a given expression */
     private void addTokenTo(CsmCompletionExpression exp) {
         exp.addToken(curTokenID, curTokenPosition, curTokenText);
@@ -1713,7 +1696,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                                 popExp();
 
                                                 // push MEMBER_POINTER_OPEN (it must be reduced to MEMBER_POINTER later)
-                                                pushExp(createTokenExp(MEMBER_POINTER_OPEN, param));
+                                                pushExp(CsmCompletionExpression.createTokenExp(MEMBER_POINTER_OPEN, param));
 
                                                 // push new GENERIC_TYPE (without MEMBER_POINTER)
                                                 pushExp(newGen);
@@ -1970,7 +1953,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                 // Postfix operator after PARENTHESIS
                                 opExp = createTokenExp(UNARY_OPERATOR);
                                 popExp();
-                                opExp.addParameter(createTokenExp(PARENTHESIS, top, true));
+                                opExp.addParameter(CsmCompletionExpression.createTokenExp(PARENTHESIS, top, true));
                                 pushExp(opExp);
                             } else {
                                 errorState = true;
@@ -2934,8 +2917,8 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         }
                         if (newExpType >= 0) {
                             popExp();
-                            pushExp(createTokenExp(newExpType, paramExp, withParams));
-                            pushExp(createTokenExp(OPERATOR, top));
+                            pushExp(CsmCompletionExpression.createTokenExp(newExpType, paramExp, withParams));
+                            pushExp(CsmCompletionExpression.createTokenExp(OPERATOR, top));
                             alternativeParse = true;
                             errorState = false;
                             tokenImpl(token, tokenOffset, macro, mayBeInLambda);

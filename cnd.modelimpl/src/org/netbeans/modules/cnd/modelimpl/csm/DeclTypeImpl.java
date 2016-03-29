@@ -197,13 +197,11 @@ public class DeclTypeImpl extends TypeImpl {
 
         if (type == null) {
             if (canUseCache(instantiations)) {
-                synchronized (this) {
-                    if (cachedType == null) {
-                        type = CsmExpressionResolver.resolveType(typeExpression, instantiations);
-                        cachedType = type;
-                    } else {
-                        type = cachedType;
-                    }
+                if (cachedType == null) {
+                    type = CsmExpressionResolver.resolveType(typeExpression, instantiations);
+                    cachedType = type;
+                } else {
+                    type = cachedType;
                 }
             } else {
                 type = CsmExpressionResolver.resolveType(typeExpression, instantiations);

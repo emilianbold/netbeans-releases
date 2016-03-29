@@ -52,17 +52,27 @@ import java.util.regex.Pattern;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.SessionBridge;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.DebuggerDescriptor;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeSession;
 import org.netbeans.modules.cnd.debugger.common2.debugger.State;
 import org.netbeans.modules.cnd.debugger.common2.debugger.StateListener;
+import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
+import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineTypeManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarget;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.utils.PsProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.mixeddev.MixedDevUtils;
 import org.netbeans.modules.cnd.mixeddev.java.JNISupport;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.util.Exceptions;
@@ -102,7 +112,9 @@ public class CndSessionChanger implements SessionBridge.SessionChanger{
         final long longPid = Long.parseLong(stringPid);
         Session ret = recognizeSessionByPid(longPid);
         if (ret == null) {
+            MakeConfiguration cppSymbolMakeConfiguration = MixedDevUtils.findCppFunctionMakeConfiguration(new String[]{funcName});
             final DebugTarget target = new DebugTarget();
+            setDefaultEngine(target, ExecutionEnvironmentFactory.getLocal(), cppSymbolMakeConfiguration);
             target.setPid(longPid);
             // local case only
             target.setHostName("localhost"); // NOI18N
@@ -160,6 +172,42 @@ public class CndSessionChanger implements SessionBridge.SessionChanger{
             if (nativeSession.getPid() == pid) {
                 return nativeSession.coreSession();
             }
+        }
+        return null;
+    }
+
+    private static void setDefaultEngine(DebugTarget target, ExecutionEnvironment env, MakeConfiguration conf) {
+        if (conf != null) {
+            CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+            if (compilerSet != null) {
+                EngineType engine = getEngineFromCompilerSet(compilerSet);
+                if (engine != null) {
+                    target.setEngine(engine);
+                    target.setCompilerSet(compilerSet);
+                    String id = EngineTypeManager.engine2DebugProfileID(engine);
+                    target.getDbgProfile().assign(conf.getAuxObject(id));
+                    return;
+                }
+            }
+        }
+        CompilerSetManager compilerSetManager = CompilerSetManager.get(env);
+        if (compilerSetManager != null) {
+            CompilerSet defaultCompilerSet = compilerSetManager.getDefaultCompilerSet();
+            if (defaultCompilerSet != null) {
+                EngineType engine = getEngineFromCompilerSet(defaultCompilerSet);
+                if (engine != null) {
+                    target.setEngine(engine);
+                    target.setCompilerSet(defaultCompilerSet);
+                }
+            }
+        }
+    }
+
+    private static EngineType getEngineFromCompilerSet(CompilerSet cs) {
+        Tool debuggerTool = cs.getTool(PredefinedToolKind.DebuggerTool);
+        if (debuggerTool != null) {
+            DebuggerDescriptor descriptor = (DebuggerDescriptor) debuggerTool.getDescriptor();
+            return EngineTypeManager.getEngineTypeForDebuggerDescriptor(descriptor);
         }
         return null;
     }

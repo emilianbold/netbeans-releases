@@ -156,6 +156,29 @@ public class CsmSymbolResolverImpl implements CsmSymbolResolverImplementation {
         }
         return Collections.emptyList();
     }
+
+    @Override
+    public Collection<CsmOffsetable> resolveGlobalFunction(NativeProject project, CharSequence functionName) {
+        CsmProject cndProject = CsmModelAccessor.getModel().getProject(project);
+        if (cndProject != null) {
+            try {
+                CsmCacheManager.enter();
+                List<CsmOffsetable> candidates = new ArrayList<>();
+                CsmSelect.CsmFilter filter = CsmSelect.getFilterBuilder().createCompoundFilter(
+                         CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.FUNCTION_DEFINITION),
+                         CsmSelect.getFilterBuilder().createNameFilter(functionName, true, true, false)
+                );               
+                Iterator<CsmOffsetableDeclaration> iter = CsmSelect.getDeclarations(cndProject.getGlobalNamespace(), filter);
+                fillFromDecls(candidates, iter, FunctionsAcceptor.INSTANCE);
+                return candidates;
+            } catch (Exception ex) {
+                LOG.warning(ex.getMessage());
+            } finally {
+                CsmCacheManager.leave();
+            }
+        }
+        return Collections.emptyList();
+    }
     
     private Collection<CsmOffsetable> resolveFunction(CsmProject project, AST ast, boolean template) {
         AST funNameAst = AstUtil.findMethodName(ast);
@@ -555,8 +578,7 @@ public class CsmSymbolResolverImpl implements CsmSymbolResolverImplementation {
             sb.append(character);
         }
     }
-    
-    
+
     private static interface DeclarationAcceptor {
         
         boolean accept(CsmObject decl);        

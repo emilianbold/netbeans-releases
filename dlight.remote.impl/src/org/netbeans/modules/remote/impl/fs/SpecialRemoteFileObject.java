@@ -98,11 +98,6 @@ public class SpecialRemoteFileObject extends RemoteFileObjectBase {
     }
 
     @Override
-    public RemoteDirectory getParent() {
-        return (RemoteDirectory) super.getParent(); // cast guaranteed by constructor
-    }
-
-    @Override
     public InputStream getInputStream(boolean checkLock) throws FileNotFoundException {
         return new ByteArrayInputStream(new byte[] {});
     }

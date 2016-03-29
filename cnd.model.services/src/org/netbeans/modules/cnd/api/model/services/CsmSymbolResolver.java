@@ -43,8 +43,6 @@
 package org.netbeans.modules.cnd.api.model.services;
 
 import java.util.Collection;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -93,6 +91,18 @@ public final class CsmSymbolResolver {
         return DEFAULT.resolveSymbol(project, declText);
     }        
         
+    /**
+     * Resolves function by name in global namespace.
+     * Does not wait until project parse is finished.
+     * 
+     * @param project
+     * @param functionName
+     * 
+     * @return all function definitions with name
+     */    
+    public static Collection<CsmOffsetable> resolveGlobalFunction(NativeProject project, CharSequence functionName) {
+        return DEFAULT.resolveGlobalFunction(project, functionName);
+    }        
     //<editor-fold defaultstate="collapsed" desc="Implementation">
 
     private static final CsmSymbolResolverImplementation DEFAULT = new Default();
@@ -135,6 +145,11 @@ public final class CsmSymbolResolver {
         @Override
         public Collection<CsmOffsetable> resolveSymbol(CsmProject project, CharSequence declText) {
             return getDelegate().resolveSymbol(project, declText);
+        }
+
+        @Override
+        public Collection<CsmOffsetable> resolveGlobalFunction(NativeProject project, CharSequence functionName) {
+            return getDelegate().resolveGlobalFunction(project, functionName);
         }
     }
 //</editor-fold>
