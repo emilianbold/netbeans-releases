@@ -132,9 +132,9 @@ public class RemoteFileObjectFactory {
         return putIfAbsent(fo.getPath(), fo);
     }
 
-    private RemoteFileObjectBase createRemoteDirectory(RemoteDirectory parent, String remotePath, File cacheFile, RemoteFileObject owner) {
+    private RemoteFileObjectBase createRemoteDirectory(final RemoteDirectory parent, final String remotePath, final File cacheFile, final RemoteFileObject owner) {
         cacheRequests++;
-        String normalizedRemotePath = PathUtilities.normalizeUnixPath(remotePath);
+        final String normalizedRemotePath = PathUtilities.normalizeUnixPath(remotePath);
         RemoteFileObjectBase fo = fileObjectsCache.get(normalizedRemotePath);
         if (fo instanceof RemoteDirectory && fo.isValid() && fo.getCache().equals(cacheFile)) {
             if (fo.getParent() == parent) {
@@ -147,10 +147,8 @@ public class RemoteFileObjectFactory {
             fo.invalidate();
             fileObjectsCache.remove(normalizedRemotePath, fo);
         }
-        if (owner == null) {
-            owner = new RemoteFileObject(fileSystem);
-        }
-        fo = new RemoteDirectory(owner, fileSystem, env, parent, normalizedRemotePath, cacheFile);
+        fo = new RemoteDirectory((owner == null) ? new RemoteFileObject(fileSystem) : owner,
+                fileSystem, env, parent, normalizedRemotePath, cacheFile);
         if (fo.isValid()) {
             RemoteFileObjectBase result = putIfAbsent(normalizedRemotePath, fo);
             if (result instanceof RemoteDirectory && result.getParent() == parent) {
@@ -160,9 +158,9 @@ public class RemoteFileObjectFactory {
         return fo;
     }
 
-    private RemoteFileObjectBase createRemotePlainFile(RemoteDirectory parent, String remotePath, File cacheFile, RemoteFileObject owner) {
+    private RemoteFileObjectBase createRemotePlainFile(final RemoteDirectory parent, final String remotePath, final File cacheFile, final RemoteFileObject owner) {
         cacheRequests++;
-        String normalizedRemotePath = PathUtilities.normalizeUnixPath(remotePath);
+        final String normalizedRemotePath = PathUtilities.normalizeUnixPath(remotePath);
         RemoteFileObjectBase fo = fileObjectsCache.get(normalizedRemotePath);
         if (fo instanceof RemotePlainFile && fo.isValid() && fo.getCache().equals(cacheFile)) {
             if (fo.getParent() == parent) {
@@ -175,10 +173,8 @@ public class RemoteFileObjectFactory {
             fo.invalidate();
             fileObjectsCache.remove(normalizedRemotePath, fo);
         }
-        if (owner == null) {
-            owner = new RemoteFileObject(fileSystem);
-        }
-        fo = new RemotePlainFile(owner, fileSystem, env, parent, normalizedRemotePath, cacheFile);
+        fo = new RemotePlainFile((owner == null) ? new RemoteFileObject(fileSystem) : owner,
+                fileSystem, env, parent, normalizedRemotePath, cacheFile);
         if (fo.isValid()) {
             RemoteFileObjectBase result = putIfAbsent(normalizedRemotePath, fo);
             if (result instanceof RemotePlainFile && result.getParent() == parent) {
@@ -188,9 +184,9 @@ public class RemoteFileObjectFactory {
         return fo;
     }
 
-    private RemoteFileObjectBase createSpecialFile(RemoteDirectory parent, String remotePath, File cacheFile, FileType fileType, RemoteFileObject owner) {
+    private RemoteFileObjectBase createSpecialFile(final RemoteDirectory parent, final String remotePath, final File cacheFile, final FileType fileType, final RemoteFileObject owner) {
         cacheRequests++;
-        String normalizedRemotePath = PathUtilities.normalizeUnixPath(remotePath);
+        final String normalizedRemotePath = PathUtilities.normalizeUnixPath(remotePath);
         RemoteFileObjectBase fo = fileObjectsCache.get(normalizedRemotePath);
         if (fo instanceof SpecialRemoteFileObject && fo.isValid()) {
             if (fo.getParent() == parent) {
@@ -203,10 +199,8 @@ public class RemoteFileObjectFactory {
             fo.invalidate();
             fileObjectsCache.remove(normalizedRemotePath, fo);
         }
-        if (owner == null) {
-            owner = new RemoteFileObject(fileSystem);
-        }
-        fo = new SpecialRemoteFileObject(owner, fileSystem, env, parent, normalizedRemotePath, fileType);
+        fo = new SpecialRemoteFileObject((owner == null) ? new RemoteFileObject(fileSystem) : owner,
+                fileSystem, env, parent, normalizedRemotePath, fileType);
         if (fo.isValid()) {
             RemoteFileObjectBase result = putIfAbsent(normalizedRemotePath, fo);
             if (result instanceof SpecialRemoteFileObject && result.getParent() == parent) {
@@ -217,12 +211,10 @@ public class RemoteFileObjectFactory {
     }
 
 
-    private RemoteFileObjectBase createRemoteLink(RemoteFileObjectBase parent, String remotePath, String link, RemoteFileObject owner) {
-        if (owner == null) {
-            owner = new RemoteFileObject(fileSystem);
-        }
-        String normalizedRemotePath = PathUtilities.normalizeUnixPath(remotePath);
-        RemoteLink fo = new RemoteLink(owner, fileSystem, env, parent, normalizedRemotePath, link);
+    private RemoteFileObjectBase createRemoteLink(final RemoteFileObjectBase parent, final String remotePath, final String link, final RemoteFileObject owner) {
+        final String normalizedRemotePath = PathUtilities.normalizeUnixPath(remotePath);
+        RemoteLink fo = new RemoteLink((owner == null) ? new RemoteFileObject(fileSystem) : owner,
+                fileSystem, env, parent, normalizedRemotePath, link);
         RemoteFileObjectBase result = putIfAbsent(normalizedRemotePath, fo);
         if (result instanceof RemoteLink) {
             // (result == fo) means that result was placed into cache => we need to init listeners,
@@ -234,8 +226,8 @@ public class RemoteFileObjectFactory {
         return result;
     }
 
-    public RemoteFileObjectBase createRemoteLinkChild(RemoteLinkBase parent, String remotePath, RemoteFileObjectBase delegate) {
-        String normalizedRemotePath = PathUtilities.normalizeUnixPath(remotePath);
+    public RemoteFileObjectBase createRemoteLinkChild(final RemoteLinkBase parent, final String remotePath, final RemoteFileObjectBase delegate) {
+        final String normalizedRemotePath = PathUtilities.normalizeUnixPath(remotePath);
         RemoteLinkChild fo = new RemoteLinkChild(new RemoteFileObject(fileSystem), fileSystem, env, parent, normalizedRemotePath, delegate);
         RemoteFileObjectBase result = putIfAbsent(normalizedRemotePath, fo);
         if (result instanceof RemoteLinkChild) {
@@ -269,7 +261,7 @@ public class RemoteFileObjectFactory {
      * @param fo
      * @return
      */
-    private RemoteFileObjectBase putIfAbsent(String remotePath, RemoteFileObjectBase fo) {
+    private RemoteFileObjectBase putIfAbsent(String remotePath, final RemoteFileObjectBase fo) {
         fileObjectsCache.tryCleaningDeadEntries();
         synchronized (lock) {
             RemoteFileObjectBase prev = fileObjectsCache.get(remotePath);
@@ -342,7 +334,7 @@ public class RemoteFileObjectFactory {
      * @return an invalidated object or null
      */
     public RemoteFileObject invalidate(String remotePath) {
-        String normalizedRemotePath = PathUtilities.normalizeUnixPath(remotePath);
+        final String normalizedRemotePath = PathUtilities.normalizeUnixPath(remotePath);
         RemoteFileObjectBase fo = fileObjectsCache.remove(normalizedRemotePath);
         if (fo != null) {
             fo.invalidate();
@@ -391,4 +383,5 @@ public class RemoteFileObjectFactory {
     public boolean vcsIsUnconfirmedDeletion(String path) {
         return unconfirmedDeletions.get(path) != null;
     }
+
 }
