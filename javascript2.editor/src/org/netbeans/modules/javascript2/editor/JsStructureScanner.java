@@ -531,13 +531,33 @@ public class JsStructureScanner implements StructureScanner {
         @Override
         public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
-            boolean isDeprecated = getModelElement().isDeprecated();
+            JsObject clObject = getModelElement();
+            boolean isDeprecated = clObject.isDeprecated();
             if (isDeprecated) {
                 formatter.deprecated(true);
             }
-            formatter.appendText(getModelElement().getDeclarationName().getName());
+            formatter.appendText(clObject.getDeclarationName().getName());
             if (isDeprecated) {
                 formatter.deprecated(false);
+            }
+            JsObject prototype = clObject.getProperty(ModelUtils.PROTOTYPE);
+            if (prototype != null) {
+                Collection<? extends TypeUsage> assignments = prototype.getAssignments(); 
+                if (assignments != null && !assignments.isEmpty()) {
+                    // the class extends 
+                    formatter.appendHtml(FONT_GRAY_COLOR);
+                    formatter.appendText(" :: ");   // NOI18N
+                    boolean addComma = false;
+                    for (TypeUsage type : assignments) {
+                        if (addComma) {
+                            formatter.appendText(", "); // NOI18N
+                        } else {
+                            addComma = true;
+                        }
+                        formatter.appendText(type.getType());
+                    }
+                    formatter.appendHtml(CLOSE_FONT);
+                }
             }
             return formatter.getText();
         }

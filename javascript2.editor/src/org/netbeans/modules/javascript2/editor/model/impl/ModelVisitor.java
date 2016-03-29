@@ -543,6 +543,16 @@ public class ModelVisitor extends PathNodeVisitor {
             }
         }
         if (classObject != null) {
+            if (node.getClassHeritage() != null) {
+                Expression classHeritage = node.getClassHeritage();
+                if (classHeritage instanceof IdentNode) {
+                    JsObjectImpl proto = new JsObjectImpl(classObject, ModelUtils.PROTOTYPE, true, OffsetRange.NONE, EnumSet.of(Modifier.PUBLIC), classObject.getMimeType(), classObject.getSourceLabel());
+                    classObject.addProperty(ModelUtils.PROTOTYPE, proto);
+                    IdentNode type = (IdentNode)classHeritage;
+                    proto.addAssignment(new TypeUsageImpl(type.getName(), type.getStart(), true), type.getStart());
+                }
+                
+            }
             modelBuilder.setCurrentObject(classObject);
             // visit constructor
             node.getConstructor().accept(this);
@@ -644,6 +654,10 @@ public class ModelVisitor extends PathNodeVisitor {
     
     @Override
     public boolean enterFunctionNode(FunctionNode functionNode) {
+        if (functionNode.isClassConstructor() && !ModelUtils.CONSTRUCTOR.equals(functionNode.getName())) {
+            // don't process artificail constructors. 
+            return false;
+        }
          addToPath(functionNode);
         // Find the function in the model. It's has to be already there
         JsFunctionImpl fncParent = modelBuilder.getCurrentDeclarationFunction();
@@ -1153,6 +1167,11 @@ public class ModelVisitor extends PathNodeVisitor {
             // This is a name, as is represented in AST. 
             String name = fnNode.isAnonymous() ? modelBuilder.getFunctionName(fnNode) : fnNode.getIdent().getName();
             IdentifierImpl fnName = new IdentifierImpl(name, new OffsetRange(fnNode.getIdent().getStart(), fnNode.getIdent().getFinish()));
+            if (fnNode.isClassConstructor() && !ModelUtils.CONSTRUCTOR.equals(fnName.getName())) {
+                // skip artifical/ syntetic constructor nodes, that are created
+                // when a class extends different class
+                continue;
+            }
             // process parameters
             List<Identifier> parameters = new ArrayList(fnNode.getParameters().size());
             for(IdentNode node: fnNode.getParameters()) {
