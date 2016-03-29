@@ -397,7 +397,7 @@ public class PrintASTVisitor implements Visitor {
     public void visit(FieldAccess fieldAccess) {
         XMLPrintNode printNode = new XMLPrintNode(fieldAccess, "FieldAccess");
         printNode.addChild(fieldAccess.getDispatcher());
-        printNode.addChild(fieldAccess.getField());
+        printNode.addChild("Field", fieldAccess.getField());
         printNode.print(this);
     }
 
@@ -625,7 +625,7 @@ public class PrintASTVisitor implements Visitor {
     public void visit(MethodInvocation node) {
         XMLPrintNode printNode = new XMLPrintNode(node, "MethodInvocation");
         printNode.addChild(node.getDispatcher());
-        printNode.addChild(node.getMethod());
+        printNode.addChild("Method", node.getMethod());
         printNode.print(this);
     }
 
@@ -705,7 +705,7 @@ public class PrintASTVisitor implements Visitor {
     @Override
     public void visit(StaticConstantAccess node) {
         XMLPrintNode printNode = new XMLPrintNode(node, "StaticConstantAccess");
-        printNode.addChild("ClassName", node.getClassName());
+        printNode.addChild(node.getClassName());
         printNode.addChild("Constant", node.getConstant());
         printNode.addChild("Member", node.getMember());
         printNode.print(this);
@@ -714,7 +714,7 @@ public class PrintASTVisitor implements Visitor {
     @Override
     public void visit(StaticFieldAccess node) {
         XMLPrintNode printNode = new XMLPrintNode(node, "StaticFieldAccess");
-        printNode.addChild("ClassName", node.getClassName());
+        printNode.addChild(node.getClassName());
         printNode.addChild("Field", node.getField());
         printNode.addChild("Member", node.getMember());
         printNode.print(this);
@@ -723,7 +723,7 @@ public class PrintASTVisitor implements Visitor {
     @Override
     public void visit(StaticMethodInvocation node) {
         XMLPrintNode printNode = new XMLPrintNode(node, "StaticMethodInvocation");
-        printNode.addChild("ClassName", node.getClassName());
+        printNode.addChild(node.getClassName());
         printNode.addChild("Member", node.getMember());
         printNode.addChild(node.getMethod());
         printNode.print(this);
