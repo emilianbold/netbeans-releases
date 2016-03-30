@@ -860,9 +860,13 @@ public class FormatVisitor extends DefaultVisitor {
             }
         } else {
             addAllUntilOffset(node.getStartOffset());
-            formatTokens.add(new FormatToken.IndentToken(node.getStartOffset(), options.continualIndentSize));
-            super.visit(node);
-            formatTokens.add(new FormatToken.IndentToken(node.getEndOffset(), options.continualIndentSize * -1));
+            if (moveNext() && lastIndex < ts.index()) {
+                // #257241 add indent tokens after const keyword
+                addFormatToken(formatTokens);
+                formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), options.continualIndentSize));
+                super.visit(node);
+                formatTokens.add(new FormatToken.IndentToken(node.getEndOffset(), options.continualIndentSize * -1));
+            }
         }
     }
 
