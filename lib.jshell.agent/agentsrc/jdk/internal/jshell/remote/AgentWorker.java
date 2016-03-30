@@ -55,6 +55,7 @@ import java.security.ProtectionDomain;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Pattern;
 import org.netbeans.lib.jshell.agent.NbJShellAgent;
 
 /**
@@ -129,6 +130,12 @@ public class AgentWorker extends RemoteAgent implements Runnable, ClassFileTrans
      * Find out reference identity of a class.
      */
     public static final int CMD_TYPE_ID   = 101;
+    
+    private Pattern EXCLUDE_CLASSPATH_ITEMS = Pattern.compile(
+              "lib/tools.jar$|"
+            + "modules/ext/nb-custom-jshell-probe.jar$"
+    );
+        
 
     private void returnVMInfo(ObjectOutputStream o) throws IOException {
         Map<String, String>  result = new HashMap<>();
@@ -144,17 +151,24 @@ public class AgentWorker extends RemoteAgent implements Runnable, ClassFileTrans
         StringBuilder cp = new StringBuilder();
         for (URL u: loader.getURLs()) {
             try {
+                File f = new File(u.toURI());
+                String s = f.getPath();
+                if (EXCLUDE_CLASSPATH_ITEMS.matcher(s).find()) {
+                    continue;
+                }
                 if (cp.length() > 0) {
                     cp.append(":"); // NOI18N
                 }
-                File f = new File(u.toURI());
                 cp.append(f.getPath());
             } catch (URISyntaxException ex) {
                 cp.append(u.toExternalForm());
             }
         }
-        for (String s : props.getProperty("java.class.path").split(File.pathSeparator)) {
+        for (String s : props.getProperty("java.class.path").split(File.pathSeparator)) {  // NOI18N
             if (s.isEmpty()) {
+                continue;
+            }
+            if (EXCLUDE_CLASSPATH_ITEMS.matcher(s).find()) {
                 continue;
             }
             if (cp.length() > 0) {
@@ -163,7 +177,7 @@ public class AgentWorker extends RemoteAgent implements Runnable, ClassFileTrans
             cp.append(s);
         }
         
-        result.put("nb.class.path", cp.toString());
+        result.put("nb.class.path", cp.toString()); // NOI18N
         
         o.writeInt(result.size());
         for (String s : result.keySet()) {
@@ -175,7 +189,6 @@ public class AgentWorker extends RemoteAgent implements Runnable, ClassFileTrans
 
     @Override
     protected void handleUnknownCommand(int cmd, ObjectInputStream i, ObjectOutputStream o) throws IOException {
-        System.err.println("HandleUnknown: " + cmd);
         System.err.flush();
         try {
             switch (cmd) {

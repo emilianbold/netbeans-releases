@@ -110,7 +110,6 @@ public class HistoryCompletionProvider implements CompletionProvider {
     public CompletionTask createTask(int queryType, final JTextComponent component) {
         if ((queryType != COMPLETION_ALL_QUERY_TYPE && queryType != COMPLETION_QUERY_TYPE) || 
                 !isFirstJavaLine(component)) {
-            System.err.println("Completion type: " + queryType);
             return null;
         }
         // check that the caret is at the first line of the editable area:
@@ -180,7 +179,7 @@ public class HistoryCompletionProvider implements CompletionProvider {
         }
         
         private boolean shouldDisplay(ConsoleSection item) {
-            if (!item.getType().input || item == input) {
+            if (!item.getType().input || (input != null && (input.getStart() <= item.getStart()))) {
                 return false;
             }
             String text = item.getContents(model.getDocument());
@@ -292,7 +291,7 @@ public class HistoryCompletionProvider implements CompletionProvider {
 
         @Override
         public int getSortPriority() {
-            return index;
+            return 1000;
         }
 
         @Override

@@ -50,6 +50,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -59,6 +60,8 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.queries.BinaryForSourceQuery;
+import org.netbeans.api.java.queries.BinaryForSourceQuery.Result;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -70,6 +73,7 @@ import org.netbeans.modules.jshell.support.ShellSession;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Pair;
@@ -231,20 +235,28 @@ public class JShellEnvironment {
             inputOutput = IOProvider.getDefault().getIO(displayName, false);
             controlsIO = true;
         }
-        JavaPlatform platformTemp = JavaPlatformManager.getDefault().getDefaultPlatform();
+        JavaPlatform platformTemp = null;
         final Set<URL> roots = new HashSet<>();
+        final List<FileObject> fRoots = new ArrayList<>();
         
         if (project != null) {
             for (SourceGroup sg : ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
                 if (Utils.isNormalRoot(sg)) {
-                    platformTemp = Utils.findPlatform(ClassPath.getClassPath(sg.getRootFolder(), ClassPath.BOOT));
-
-                    roots.addAll(Utils.to2Roots(ClassPath.getClassPath(sg.getRootFolder(), ClassPath.EXECUTE)));
+                    if (platformTemp == null) {
+                        platformTemp = Utils.findPlatform(ClassPath.getClassPath(sg.getRootFolder(), ClassPath.BOOT));
+                    }
+                    fRoots.add(sg.getRootFolder());
+                    URL u = URLMapper.findURL(sg.getRootFolder(), URLMapper.INTERNAL);
+                    Result r = BinaryForSourceQuery.findBinaryRoots(u);
+                    roots.addAll(Arrays.asList(r.getRoots()));
+                    
                 }
             }
         }
+        if (platformTemp == null) {
+            platformTemp = JavaPlatformManager.getDefault().getDefaultPlatform();
+        }
 
-        URL[] uRoots = roots.toArray(new URL[roots.size()]);
         /*
         repl = Lookup.getDefault().lookup(REPL.Factory.class).createREPL(
                 platform, new PrintWriter(out), uRoots);
@@ -253,8 +265,13 @@ public class JShellEnvironment {
         
         snippetClassPath = ClassPathSupport.createClassPath(workRoot);
 
-        if (project != null) {
-            cpi = ClasspathInfo.create(project.getProjectDirectory());
+        if (project != null && !fRoots.isEmpty()) {
+            ClasspathInfo projectInfo = ClasspathInfo.create(fRoots.get(0));
+            cpi = ClasspathInfo.create(
+                    projectInfo.getClassPath(ClasspathInfo.PathKind.BOOT),
+                    ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()])),
+                    projectInfo.getClassPath(ClasspathInfo.PathKind.SOURCE)
+            );
         } else {
             cpi = ClasspathInfo.create(platformTemp.getBootstrapLibraries(),
                     platformTemp.getStandardLibraries(),
