@@ -226,6 +226,9 @@ public final class JsonParser {
             case "fail": // NOI18N
                 actualTest.setStatus(TestCase.Status.FAILED);
                 break;
+            case "warning": // NOI18N
+                actualTest.setStatus(TestCase.Status.PASSEDWITHERRORS);
+                break;
             case "error": // NOI18N
                 TestCase.Status testStatus = TestCase.Status.ERROR;
                 if (message != null) {
