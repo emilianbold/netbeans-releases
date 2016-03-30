@@ -143,18 +143,34 @@ public class JDIRemoteAgent implements RemoteJShellService, Executor {
     public OutputStream getCommandStream() throws IOException {
         return out;
     }
+    
+    /**
+     * Returns the agent's object reference obtained from the debugger.
+     * May return null, so the {@link #sendStopUserCode()} will stop the first
+     * running agent it finds.
+     * 
+     * @return the target agent's reference
+     */
+    protected ObjectReference  getAgentObjectReference() {
+        return null;
+    }
 
     @Override
     public boolean sendStopUserCode() throws IllegalStateException {
         vm.suspend();
         try {
+            ObjectReference myRef = getAgentObjectReference();
+
             OUTER:
             for (ThreadReference thread : vm.allThreads()) {
                 // could also tag the thread (e.g. using name), to find it easier
-                for (StackFrame frame : thread.frames()) {
+                AGENT: for (StackFrame frame : thread.frames()) {
                     String remoteAgentName = "jdk.internal.jshell.remote.RemoteAgent";
                     if (remoteAgentName.equals(frame.location().declaringType().name()) && "commandLoop".equals(frame.location().method().name())) {
                         ObjectReference thiz = frame.thisObject();
+                        if (myRef != null && myRef != thiz) {
+                            break AGENT;
+                        }
                         if (((BooleanValue) thiz.getValue(thiz.referenceType().fieldByName("inClientCode"))).value()) {
                             thiz.setValue(thiz.referenceType().fieldByName("expectingStop"), vm.mirrorOf(true));
                             ObjectReference stopInstance = (ObjectReference) thiz.getValue(thiz.referenceType().fieldByName("stopException"));

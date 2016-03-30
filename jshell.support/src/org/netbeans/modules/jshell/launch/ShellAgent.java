@@ -11,6 +11,8 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.Session;
@@ -78,7 +80,7 @@ public final class ShellAgent {
      * contain multiple JShellConnections, if multiple parallel
      * JShells is supported in the future.
      */
-    private JShellConnection connection;
+    private List<JShellConnection> connections = new ArrayList<>();
 
     public ShellAgent(ShellLaunchManager mgr, Project project, 
             ServerSocket handshakeSocket, String authKey, boolean expectDebugger) {
@@ -116,16 +118,20 @@ public final class ShellAgent {
 
     void destroy() throws IOException {
         LOG.log(Level.FINE, "ShellAgent destroyed: authKey = {0}, socket = {1}", new Object[]{authorizationKey, handshakeSocket});
+        List<JShellConnection> conns;
         synchronized (this) {
             handshakeSocket.close();
             if (closed) {
                 return;
             }
             closed = true;
+            conns = new ArrayList<>(connections);
         }
-        disconnect(connection, true);
         ShellLaunchEvent ev = new ShellLaunchEvent(mgr, this);
         mgr.fire((l) -> l.agentDestroyed(ev));
+        for (JShellConnection c : conns) {
+            disconnect(c, true);
+        }
     }
 
     public InetSocketAddress getHandshakeAddress() {
@@ -206,10 +212,10 @@ public final class ShellAgent {
      */
     void disconnect(JShellConnection c, boolean remote) {
         synchronized (this) {
-            if (c == null || connection != c) {
+            if (c == null || !connections.contains(c)) {
                 return;
             }
-            this.connection = null;
+            this.connections.remove(c);
         }
         c.shutDown();
         if (closed) {
@@ -250,15 +256,17 @@ public final class ShellAgent {
             if (expectDebugger && debuggerMachine == null) {
                 return null;
             }
-            old = connection;
-            connection = null;
+//            old = connection;
+//            connection = null;
         }
+        /*
         if (old != null) {
             old.shutDown();
             // notify about the old connection being trashed
             ShellLaunchEvent ev = new ShellLaunchEvent(mgr, old, false);
             mgr.fire((l) -> l.connectionClosed(ev));
         }
+        */
         SocketChannel sc = SocketChannel.open();
         sc.configureBlocking(true);
         Socket sock = sc.socket();
@@ -267,6 +275,7 @@ public final class ShellAgent {
         sc.configureBlocking(false);
         boolean notify = false;
         JShellConnection con = new JShellConnection(this, sock.getChannel());
+        /*
         synchronized (this) {
             if (connection == null) {
                 connection = con;
@@ -275,6 +284,7 @@ public final class ShellAgent {
                 con = connection;
             }
         }
+        */
         if (notify) {
             ShellLaunchEvent ev = new ShellLaunchEvent(mgr, con, false);
             mgr.fire((l) -> l.connectionInitiated(ev));

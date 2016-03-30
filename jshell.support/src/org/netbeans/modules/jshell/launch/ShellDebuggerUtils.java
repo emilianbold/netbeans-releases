@@ -39,60 +39,65 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.project;
+package org.netbeans.modules.jshell.launch;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Map;
+import com.sun.jdi.ObjectReference;
+import java.util.List;
 import org.netbeans.api.debugger.Session;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
+import org.netbeans.api.debugger.jpda.Field;
+import org.netbeans.api.debugger.jpda.JPDAClassType;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.modules.debugger.jpda.models.AbstractVariable;
 
 /**
  *
  * @author sdedic
  */
-public final class ProjectUtils {
-    /**
-     * Determines if the project wants to launch a JShell. 
-     * @param p the project
-     * @return true, if JShell support is enabled in the active configuration.
-     */
-    public static boolean isJShellRunEnabled(Project p) {
-        J2SEPropertyEvaluator  prjEval = p.getLookup().lookup(J2SEPropertyEvaluator.class);
-        if (prjEval == null) {
-            return false;
-        }
-        return Boolean.parseBoolean(prjEval.evaluator().evaluate("${jshell.run.enable}"));
-    }
+class ShellDebuggerUtils {
     
-    /**
-     * Determines a Project given a debugger session. Acquires a baseDir from the
-     * debugger and attempts to find a project which owns it. May return {@code null{
-     * @param s
-     * @return project or {@code null}.
-     */
-    public static Project getSessionProject(Session s) {
-        Map m = s.lookupFirst(null, Map.class);
-        if (m == null) {
+    static String getAgentKey(Session debuggerSession) {
+        JPDADebugger debugger = debuggerSession.lookupFirst(null, JPDADebugger.class);
+        if (debugger == null) {
             return null;
         }
-        Object bd = m.get("baseDir"); // NOI18N
-        if (bd instanceof File) {
-            FileObject fob = FileUtil.toFileObject((File)bd);
-            if (fob == null || !fob.isFolder()) {
-                return null;
+        List<JPDAClassType> classes = debugger.getClassesByName("org.netbeans.lib.jshell.agent.NbJShellAgent"); // NOI18N
+        if (classes == null || classes.size() != 1) {
+            return null;
+        }
+        JPDAClassType ct = classes.get(0);
+        for (Field ff : ct.staticFields()) {
+            if ("debuggerKey".equals(ff.getName())) {  // NOI18N
+                String s = ff.getValue();
+                if (s.charAt(0) != '"' || s.charAt(s.length() - 1) != '"') { // NOI18N
+                    return ""; // NOI18N
+                } 
+                return s.substring(1, s.length() -1);
             }
-            try {
-                Project p = ProjectManager.getDefault().findProject(fob);
-                return p;
-            } catch (IOException | IllegalArgumentException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
+        }
+        return null;
+    }
+    
+    static ObjectReference getWorkerHandle(Session debuggerSession, int remotePortAddress) {
+        JPDADebugger debugger = debuggerSession.lookupFirst(null, JPDADebugger.class);
+        if (debugger == null) {
+            return null;
+        }
+        List<JPDAClassType> classes = debugger.getClassesByName("jdk.internal.jshell.remote.AgentWorker"); // NOI18N
+        if (classes == null || classes.size() != 1) {
+            return null;
+        }
+        JPDAClassType ct = classes.get(0);
+        List<ObjectVariable> list = ct.getInstances(0);
+        for (ObjectVariable inst : list) {
+            Field f = inst.getField("socketPort");
+            if (f == null) {
+                continue;
+            } 
+            int check = Integer.parseInt(f.getValue());
+            if (check == remotePortAddress) {
+                // got the agent, return its ObjectVariable.
+                return (ObjectReference)((AbstractVariable)inst).getInnerValue();
             }
         }
         return null;

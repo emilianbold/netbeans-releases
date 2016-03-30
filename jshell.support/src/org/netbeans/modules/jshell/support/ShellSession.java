@@ -1229,4 +1229,11 @@ public class ShellSession {
             status == Snippet.Status.REJECTED);
     }
     
+    public void stopExecutingCode() {
+        if (!model.isExecute()) {
+            return;
+        }
+        shell.stop();
+    }
+    
 }

@@ -54,8 +54,11 @@
                         <file name="jshell-reset">
                             <attr name="position" intvalue="20002"/>
                         </file>
+                        <file name="jshell-stop">
+                            <attr name="position" intvalue="20005"/>
+                        </file>
                         <file name="jshell-save-to-class">
-                            <attr name="position" intvalue="20004"/>
+                            <attr name="position" intvalue="20010"/>
                         </file>
                     </folder>
                 </folder>

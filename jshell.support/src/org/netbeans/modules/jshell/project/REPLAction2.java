@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,64 +37,64 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2016 Sun Microsystems, Inc.
+ * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.jshell.project;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.Map;
-import org.netbeans.api.debugger.Session;
+import org.netbeans.modules.java.repl.*;
+import javax.swing.Action;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.jshell.env.Bundle;
+import org.netbeans.modules.jshell.env.JShellEnvironment;
+import org.netbeans.modules.jshell.env.ShellRegistry;
+import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
+import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author sdedic
+ * @author lahvac
  */
-public final class ProjectUtils {
-    /**
-     * Determines if the project wants to launch a JShell. 
-     * @param p the project
-     * @return true, if JShell support is enabled in the active configuration.
-     */
-    public static boolean isJShellRunEnabled(Project p) {
-        J2SEPropertyEvaluator  prjEval = p.getLookup().lookup(J2SEPropertyEvaluator.class);
-        if (prjEval == null) {
-            return false;
-        }
-        return Boolean.parseBoolean(prjEval.evaluator().evaluate("${jshell.run.enable}"));
+public class REPLAction2 implements ProjectActionPerformer {
+
+    @ActionID(category="Project", id="org.netbeans.modules.java.repl.REPLAction2")
+    @ActionReference(path = "Menu/BuildProject", separatorBefore = 93, position = 95)
+    @ActionRegistration(displayName="#DN_ProjectJavaRun")
+    @Messages({
+        "DN_ProjectJavaRun=Run Java Shell"
+    })
+    public static Action create() {
+        return ProjectSensitiveActions.projectSensitiveAction(new REPLAction2(), Bundle.DN_ProjectJavaRun(), null);
     }
-    
-    /**
-     * Determines a Project given a debugger session. Acquires a baseDir from the
-     * debugger and attempts to find a project which owns it. May return {@code null{
-     * @param s
-     * @return project or {@code null}.
-     */
-    public static Project getSessionProject(Session s) {
-        Map m = s.lookupFirst(null, Map.class);
-        if (m == null) {
-            return null;
-        }
-        Object bd = m.get("baseDir"); // NOI18N
-        if (bd instanceof File) {
-            FileObject fob = FileUtil.toFileObject((File)bd);
-            if (fob == null || !fob.isFolder()) {
-                return null;
-            }
-            try {
-                Project p = ProjectManager.getDefault().findProject(fob);
-                return p;
-            } catch (IOException | IllegalArgumentException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
+
+    @Override
+    public boolean enable(Project project) {
+        for (SourceGroup sg : ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+            if (Utils.isNormalRoot(sg)) {
+                if (Utils.findPlatform(ClassPath.getClassPath(sg.getRootFolder(), ClassPath.BOOT)) != null)
+                    return true;
             }
         }
-        return null;
+        return false;
+    }
+
+    @Override
+    public void perform(Project project) {
+        JShellEnvironment env;
+        try {
+            env = ShellRegistry.get().openProjectSession(project);
+            env.open();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 }

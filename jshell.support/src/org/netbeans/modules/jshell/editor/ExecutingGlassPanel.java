@@ -39,16 +39,16 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.env;
+package org.netbeans.modules.jshell.editor;
 
 import java.awt.event.ActionListener;
 import javax.swing.ImageIcon;
 
 /**
- *
+ * Flying panel with progress indicator and the stop button
  * @author sdedic
  */
-public class ExecutingGlassPanel extends javax.swing.JPanel {
+final class ExecutingGlassPanel extends javax.swing.JPanel {
 
     /**
      * Creates new form ExecutingGlassPanel
@@ -56,9 +56,17 @@ public class ExecutingGlassPanel extends javax.swing.JPanel {
     public ExecutingGlassPanel() {
         initComponents();
     }
-    
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        stopButton.setEnabled(true);
+    }
+
     public void addStopListener(ActionListener al) {
         this.stopButton.addActionListener(al);
+        // prevent duplicate trigger
+        this.stopButton.setEnabled(false);
     }
 
     /**
@@ -91,7 +99,6 @@ public class ExecutingGlassPanel extends javax.swing.JPanel {
         stopButton.setHorizontalAlignment(javax.swing.SwingConstants.LEADING);
         stopButton.setIconTextGap(0);
         stopButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        stopButton.setPreferredSize(new java.awt.Dimension(16, 16));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -100,7 +107,7 @@ public class ExecutingGlassPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(stopButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(stopButton)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(

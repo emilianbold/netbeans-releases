@@ -39,21 +39,20 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.env;
+package org.netbeans.modules.jshell.editor;
 
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.net.URL;
+import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
-import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -62,7 +61,11 @@ import javax.swing.text.NavigationFilter;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.document.LineDocument;
 import org.netbeans.api.editor.document.LineDocumentUtils;
-import org.netbeans.lib.editor.util.swing.PositionRegion;
+import org.netbeans.modules.jshell.env.JShellEnvironment;
+import org.netbeans.modules.jshell.env.ShellEvent;
+import org.netbeans.modules.jshell.env.ShellListener;
+import org.netbeans.modules.jshell.env.ShellRegistry;
+import org.netbeans.modules.jshell.env.ShellStatus;
 import org.netbeans.modules.jshell.model.ConsoleEvent;
 import org.netbeans.modules.jshell.model.ConsoleListener;
 import org.netbeans.modules.jshell.model.ConsoleModel;
@@ -536,6 +539,14 @@ public class ConsoleEditor extends CloneableEditor {
     }
     
     private void stopExecution(ActionEvent e) {
+        Action a = pane.getActionMap().get(StopExecutionAction.NAME);
+        a.actionPerformed(e);
+        /*
+        if (session != null) {
+            BaseProgressUtils.runOffEventDispatchThread(session::stopExecutingCode, 
+                    Bundle.LBL_AttemptingStop(), null, false, 100, 2000);
+        }
+                */
     }
     
     private JComponent progressIndicator;

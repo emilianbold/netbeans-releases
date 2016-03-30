@@ -41,6 +41,13 @@
  */
 package jdk.jshell;
 
+import com.sun.jdi.BooleanValue;
+import com.sun.jdi.ClassNotLoadedException;
+import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.InvalidTypeException;
+import com.sun.jdi.ObjectReference;
+import com.sun.jdi.StackFrame;
+import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,7 +56,6 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static jdk.internal.jshell.debug.InternalDebugControl.DBG_GEN;

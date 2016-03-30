@@ -68,7 +68,6 @@ class RemoteAgent {
         // in before out -- so we don't hang the controlling process
         while (true) {
             int cmd = in.readInt();
-            System.err.println("HandleCommand: " + cmd);
             switch (cmd) {
                 case CMD_EXIT:
                     // Terminate this process

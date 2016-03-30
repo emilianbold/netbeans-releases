@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.jshell.env;
 
+import org.netbeans.modules.jshell.editor.ConsoleEditor;
 import java.io.IOException;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditCookie;

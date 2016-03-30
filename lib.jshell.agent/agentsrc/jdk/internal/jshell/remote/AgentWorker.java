@@ -52,10 +52,7 @@ import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.ProtectionDomain;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import org.netbeans.lib.jshell.agent.NbJShellAgent;
@@ -66,15 +63,29 @@ import org.netbeans.lib.jshell.agent.NbJShellAgent;
  */
 public class AgentWorker extends RemoteAgent implements Runnable, ClassFileTransformer {
     private final NbJShellAgent   agent;
-    private Socket socket;
+    /**
+     * The control socket
+     */
+    private final Socket socket;
+    private final int   socketPort;
     
     private AgentWorker() {
         agent = null;
+        loader = new NbRemoteLoader();
+        socket = null;
+        socketPort = -1;
+    }
+
+    @Override
+    protected void prepareClassLoader() {
+        super.prepareClassLoader();
     }
     
     public AgentWorker(NbJShellAgent agent, Socket controlSocket) {
+        loader = new NbRemoteLoader();
         this.agent = agent;
         this.socket = controlSocket;
+        this.socketPort = controlSocket.getLocalPort();
         if (agent.getClassName() != null) {
             if (agent.getMethod() == null && agent.getField() == null) {
                 // hook onto class loading
@@ -109,7 +120,15 @@ public class AgentWorker extends RemoteAgent implements Runnable, ClassFileTrans
         }
     }
     
+    /**
+     * Collect and send information about the executing VM.
+     */
     public static final int CMD_VM_INFO   = 100;
+    
+    /**
+     * Find out reference identity of a class.
+     */
+    public static final int CMD_TYPE_ID   = 101;
 
     private void returnVMInfo(ObjectOutputStream o) throws IOException {
         Map<String, String>  result = new HashMap<>();

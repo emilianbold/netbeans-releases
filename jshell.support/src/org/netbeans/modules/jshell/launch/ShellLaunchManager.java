@@ -41,12 +41,9 @@
  */
 package org.netbeans.modules.jshell.launch;
 
-import com.sun.jdi.VirtualMachine;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.FilterInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -83,11 +80,8 @@ import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.jshell.project.ProjectUtils;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.InputOutput;
@@ -449,7 +443,7 @@ public final class ShellLaunchManager {
             if (s == null) {
                 return null;
             }
-            return readKey = getAgentKey(s);
+            return readKey = ShellDebuggerUtils.getAgentKey(s);
         }
     
         private boolean probe(JPDADebugger debugger, Session session) {
@@ -485,10 +479,6 @@ public final class ShellLaunchManager {
         if (debugger == null) {
             return null;
         }
-        return getAgentKey(debugger);
-    }
-    
-    private String getAgentKey(JPDADebugger debugger) {
         List<JPDAClassType> classes = debugger.getClassesByName("org.netbeans.lib.jshell.agent.NbJShellAgent"); // NOI18N
         if (classes == null || classes.size() != 1) {
             return null;

@@ -76,7 +76,7 @@ import org.openide.util.Utilities;
     iconResource = "org/netbeans/modules/jshell/resources/saveToClass.gif" // NOI18N
 )
 @ActionID(category = "Source", id = "org.netbeans.modules.jshell.editor.GenerateClassAction")
-public class GenerateClassAction extends BaseAction {
+public class GenerateClassAction extends ShellActionBase {
     public static final String NAME = "jshell-save-to-class"; // NOI18N
     
     public GenerateClassAction() {
@@ -84,27 +84,15 @@ public class GenerateClassAction extends BaseAction {
     }
 
     @Override
-    public void actionPerformed(ActionEvent evt, JTextComponent target) {
-        if (target == null) {
-            return;
+    protected void doPerformAction(ActionEvent evt, JTextComponent target, ShellSession s) {
+        Node sel = Utilities.actionsGlobalContext().lookup(Node.class);
+        FileObject anchor = null;
+        if (sel != null) {
+            anchor = sel.getLookup().lookup(FileObject.class);
         }
-        Document d = target.getDocument();
-        if (d != null) {
-            FileObject f = EditorDocumentUtils.getFileObject(d);
-            if (f != null) {
-                ShellSession s = ShellSession.get(d);
-                if (s != null) {
-                    Node sel = Utilities.actionsGlobalContext().lookup(Node.class);
-                    FileObject anchor = null;
-                    if (sel != null) {
-                        anchor = sel.getLookup().lookup(FileObject.class);
-                    }
-                    doGenerateForSession(target, s, anchor);
-                }
-            }
-        }
+        doGenerateForSession(target, s, anchor);
     }
-    
+
     @NbBundle.Messages({
         "TITLE_GenerateClassFromSnippets=Copy Snippets to Class",
         "BTN_OK=Copy",

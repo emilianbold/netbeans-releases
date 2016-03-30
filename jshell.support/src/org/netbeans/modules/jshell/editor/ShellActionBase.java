@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,61 +37,47 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.env;
+package org.netbeans.modules.jshell.editor;
 
-import java.io.IOException;
-import org.netbeans.modules.java.repl.*;
-import javax.swing.Action;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
-import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle.Messages;
+import java.awt.event.ActionEvent;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.document.EditorDocumentUtils;
+import org.netbeans.editor.BaseAction;
+import org.netbeans.modules.jshell.support.ShellSession;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author lahvac
+ * @author sdedic
  */
-public class REPLAction2 implements ProjectActionPerformer {
+public abstract class ShellActionBase extends BaseAction {
 
-    @ActionID(category="Project", id="org.netbeans.modules.java.repl.REPLAction2")
-    @ActionReference(path = "Menu/BuildProject", separatorBefore = 93, position = 95)
-    @ActionRegistration(displayName="#DN_ProjectJavaRun")
-    @Messages({
-        "DN_ProjectJavaRun=Run Java Shell"
-    })
-    public static Action create() {
-        return ProjectSensitiveActions.projectSensitiveAction(new REPLAction2(), Bundle.DN_ProjectJavaRun(), null);
+    public ShellActionBase(String name) {
+        super(name);
     }
 
-    @Override
-    public boolean enable(Project project) {
-        for (SourceGroup sg : ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-            if (Utils.isNormalRoot(sg)) {
-                if (Utils.findPlatform(ClassPath.getClassPath(sg.getRootFolder(), ClassPath.BOOT)) != null)
-                    return true;
+    public ShellActionBase(String name, int updateMask) {
+        super(name, updateMask);
+    }
+
+    public void actionPerformed(ActionEvent evt, JTextComponent target) {
+        if (target == null) {
+            return;
+        }
+        Document d = target.getDocument();
+        if (d != null) {
+            FileObject f = EditorDocumentUtils.getFileObject(d);
+            if (f != null) {
+                ShellSession s = ShellSession.get(d);
+                if (s != null) {
+                    doPerformAction(evt, target, s);
+                }
             }
         }
-        return false;
     }
-
-    @Override
-    public void perform(Project project) {
-        JShellEnvironment env;
-        try {
-            env = ShellRegistry.get().openProjectSession(project);
-            env.open();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
+    
+    protected abstract void doPerformAction(ActionEvent evt, JTextComponent target, ShellSession session);
 }

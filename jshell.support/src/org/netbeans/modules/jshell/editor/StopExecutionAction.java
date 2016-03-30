@@ -39,62 +39,40 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.project;
+package org.netbeans.modules.jshell.editor;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Map;
-import org.netbeans.api.debugger.Session;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
+import java.awt.event.ActionEvent;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorActionRegistration;
+import org.netbeans.api.progress.BaseProgressUtils;
+import org.netbeans.modules.jshell.support.ShellSession;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author sdedic
  */
-public final class ProjectUtils {
-    /**
-     * Determines if the project wants to launch a JShell. 
-     * @param p the project
-     * @return true, if JShell support is enabled in the active configuration.
-     */
-    public static boolean isJShellRunEnabled(Project p) {
-        J2SEPropertyEvaluator  prjEval = p.getLookup().lookup(J2SEPropertyEvaluator.class);
-        if (prjEval == null) {
-            return false;
-        }
-        return Boolean.parseBoolean(prjEval.evaluator().evaluate("${jshell.run.enable}"));
+@EditorActionRegistration(
+    mimeType = "text/x-repl", // NOI18N
+    name = StopExecutionAction.NAME,
+    menuPosition = 20003,
+    iconResource= "org/netbeans/modules/jshell/resources/stop.png" // NOI18N
+)
+@NbBundle.Messages(
+        "LBL_AttemptingStop=Attempting to stop JShell execution"
+)
+public class StopExecutionAction extends ShellActionBase {
+    public static final String NAME = "jshell-stop";
+
+    public StopExecutionAction() {
+        super(NAME);
+    }
+
+    @Override
+    protected void doPerformAction(ActionEvent evt, JTextComponent target, ShellSession session) {
+        BaseProgressUtils.runOffEventDispatchThread(session::stopExecutingCode, 
+                    Bundle.LBL_AttemptingStop(), new AtomicBoolean(false), false, 100, 2000);
     }
     
-    /**
-     * Determines a Project given a debugger session. Acquires a baseDir from the
-     * debugger and attempts to find a project which owns it. May return {@code null{
-     * @param s
-     * @return project or {@code null}.
-     */
-    public static Project getSessionProject(Session s) {
-        Map m = s.lookupFirst(null, Map.class);
-        if (m == null) {
-            return null;
-        }
-        Object bd = m.get("baseDir"); // NOI18N
-        if (bd instanceof File) {
-            FileObject fob = FileUtil.toFileObject((File)bd);
-            if (fob == null || !fob.isFolder()) {
-                return null;
-            }
-            try {
-                Project p = ProjectManager.getDefault().findProject(fob);
-                return p;
-            } catch (IOException | IllegalArgumentException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
-            }
-        }
-        return null;
-    }
 }

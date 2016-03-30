@@ -41,12 +41,14 @@
  */
 package org.netbeans.modules.jshell.launch;
 
+import com.sun.jdi.ObjectReference;
 import com.sun.jdi.VirtualMachine;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.channels.Channels;
 import java.nio.channels.SocketChannel;
@@ -115,6 +117,11 @@ public final class JShellConnection {
     
     private volatile boolean closed;
     
+    /**
+     * Identification of the remote agent.
+     */
+    private final ObjectReference  agentHandle;
+    
     public Project          getProject() {
         return project;
     }
@@ -131,8 +138,9 @@ public final class JShellConnection {
         this.debuggerSession = agent.getDebuggerSession();
         
         LOG.log(Level.FINE, "Allocated connection: {0}", this);
+        agentHandle = ShellDebuggerUtils.getWorkerHandle(debuggerSession, ((InetSocketAddress)controlSocket.getRemoteAddress()).getPort());
     }
-
+    
     private void disconnected(SocketChannel dummy) {
         LOG.log(Level.FINE, "Detected disconnect: {0}", this);
         theAgent.disconnect(this, true);
@@ -144,6 +152,15 @@ public final class JShellConnection {
     
     public int getId() {
         return id;
+    }
+    
+    /**
+     * Returns agent objectref, if operating through debugger. {@code null} if 
+     * debugger is no available
+     * @return agent reference or null.
+     */
+    public ObjectReference getAgentHandle() {
+        return agentHandle;
     }
     
     /**
@@ -275,6 +292,12 @@ public final class JShellConnection {
     
     public InputStream getAgentOutput() {
         return controlSocket != null ? istm : null;
+    }
+    
+    /**
+     * Sends instructions to interrupt the running user code
+     */
+    public void interrupt() {
     }
     
     private OutputStream ostm;
