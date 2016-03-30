@@ -661,6 +661,16 @@ public class JsFormatterTest extends JsTestBase {
         options.put(FmtOptions.wrapObjects, CodeStyle.WrapStyle.WRAP_IF_LONG);
         reformatFileContents("testfiles/formatter/objects11.js", options, ".objectOnlyWrapIfLong.formatted");
     }
+    
+    public void testObjects12ObjectOnlyIfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapObjects, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatter/objects12.js", options, ".objectOnlyWrapIfLong.formatted");
+    }
+
+    public void testObjects12Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/objects12.js");
+    }
 
     public void testSwitch1() throws Exception {
         reformatFileContents("testfiles/formatter/switch1.js",new IndentPrefs(4, 4));
