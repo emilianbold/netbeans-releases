@@ -580,4 +580,16 @@ public class PhpParserErrorTest extends PHPTestBase {
 //        checkErrors("testfiles/parser/uniformVariableSyntax_22.php");
 //    }
 
+    public void testGroupUse_01() throws Exception {
+        checkErrors("testfiles/parser/groupUse_01.php");
+    }
+
+    public void testGroupUse_02() throws Exception {
+        checkErrors("testfiles/parser/groupUse_02.php");
+    }
+
+    public void testGroupUse_03() throws Exception {
+        checkErrors("testfiles/parser/groupUse_03.php");
+    }
+
 }
