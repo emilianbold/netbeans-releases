@@ -615,6 +615,52 @@ public class JsFormatterTest extends JsTestBase {
         options.put(FmtOptions.wrapObjects, CodeStyle.WrapStyle.WRAP_IF_LONG);
         reformatFileContents("testfiles/formatter/objects9.js", options, ".wrapIfLong.formatted");
     }
+    
+    public void testObjects10ObjectOnlyAlways() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapObjects, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/objects10.js", options, ".objectOnlyWrapAlways.formatted");
+    }
+
+    public void testObjects10ObjectOnlyNever() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapObjects, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatter/objects10.js", options, ".objectOnlyWrapNever.formatted");
+    }
+
+    public void testObjects10ObjectOnlyIfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapObjects, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatter/objects10.js", options, ".objectOnlyWrapIfLong.formatted");
+    }
+
+    public void testObjects10PropertiesOnlyAlways() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapProperties, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/objects10.js", options, ".propertiesOnlyWrapAlways.formatted");
+    }
+    
+    public void testObjects10PropertiesOnlyNever() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapProperties, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatter/objects10.js", options, ".propertiesOnlyWrapNever.formatted");
+    }
+    
+    public void testObjects10PropertiesOnlyIfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapProperties, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatter/objects10.js", options, ".propertiesOnlyWrapIfLong.formatted");
+    }
+    
+    public void testObjects10Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/objects10.js");
+    }
+
+    public void testObjects11ObjectOnlyIfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapObjects, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatter/objects11.js", options, ".objectOnlyWrapIfLong.formatted");
+    }
 
     public void testSwitch1() throws Exception {
         reformatFileContents("testfiles/formatter/switch1.js",new IndentPrefs(4, 4));

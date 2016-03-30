@@ -273,29 +273,9 @@ public class JsFormatter implements Formatter {
                         }
                     } else if (token.getKind() == FormatToken.Kind.SOURCE_START
                             || token.getKind() == FormatToken.Kind.EOL) {
-                        // XXX refactor eol token WRAP_IF_LONG handling
                         if (started && token.getKind() != FormatToken.Kind.SOURCE_START) {
-                            // search for token which will be present just before eol
-                            FormatToken tokenBeforeEol = null;
-                            for (int j = i - 1; j >= 0; j--) {
-                                tokenBeforeEol = tokens.get(j);
-                                if (!tokenBeforeEol.isVirtual()) {
-                                    break;
-                                }
-                            }
-                            if (tokenBeforeEol.getKind() != FormatToken.Kind.SOURCE_START) {
-                                int segmentLength = tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length()
-                                        - formatContext.getCurrentLineStart() + lastOffsetDiff;
-
-                                if (segmentLength >= codeStyle.rightMargin) {
-                                    FormatContext.LineWrap lastWrap = formatContext.getLastLineWrap();
-                                    if (lastWrap != null) {
-                                        // wrap it
-                                        wrapLine(formatContext, codeStyle, lastWrap, initialIndent,
-                                                continuationIndent, continuations);
-                                    }
-                                }
-                            }
+                            wrapOnEol(tokens, formatContext, i - 1, codeStyle,
+                                    initialIndent, continuationIndent, continuations);
                         }
 
                         if (started) {
@@ -364,6 +344,9 @@ public class JsFormatter implements Formatter {
                         }
                     }
                 }
+                // if it is end of file yet we have to do wrap if needed
+                wrapOnEol(tokens, formatContext, tokens.size() - 1, codeStyle,
+                        initialIndent, continuationIndent, continuations);
                 LOGGER.log(Level.FINE, "Formatting changes: {0} ms", (System.nanoTime() - startTime) / 1000000);
             }
         });
@@ -420,6 +403,33 @@ public class JsFormatter implements Formatter {
                 lastWrap.getToken().getOffset() + lastWrap.getToken().getText().length() + 1,
                 indentationSize, Indentation.ALLOWED, lastWrap.getOffsetDiff(), codeStyle);
         formatContext.resetTabCount();
+    }
+
+    private void wrapOnEol(List<FormatToken> tokens, FormatContext formatContext, int index,
+            CodeStyle.Holder codeStyle, int initialIndent, int continuationIndent,
+            Stack<FormatContext.ContinuationBlock> continuations) {
+
+        // search for token which will be present just before eol
+        FormatToken tokenBeforeEol = null;
+        for (int j = index; j >= 0; j--) {
+            tokenBeforeEol = tokens.get(j);
+            if (!tokenBeforeEol.isVirtual()) {
+                break;
+            }
+        }
+        if (tokenBeforeEol.getKind() != FormatToken.Kind.SOURCE_START) {
+            int segmentLength = tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length()
+                    - formatContext.getCurrentLineStart() + lastOffsetDiff;
+
+            if (segmentLength >= codeStyle.rightMargin) {
+                FormatContext.LineWrap lastWrap = formatContext.getLastLineWrap();
+                if (lastWrap != null) {
+                    // wrap it
+                    wrapLine(formatContext, codeStyle, lastWrap, initialIndent,
+                            continuationIndent, continuations);
+                }
+            }
+        }
     }
 
     private void formatLineWrap(List<FormatToken> tokens, int index, FormatContext formatContext, CodeStyle.Holder codeStyle,
