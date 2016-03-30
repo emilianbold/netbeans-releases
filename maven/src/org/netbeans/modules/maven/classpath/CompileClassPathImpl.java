@@ -61,15 +61,17 @@ import org.openide.util.Utilities;
 class CompileClassPathImpl extends AbstractProjectClassPathImpl implements FlaggedClassPathImplementation {
 
     private volatile boolean incomplete;
+    private final boolean addOutputDir;
 
     /** Creates a new instance of SrcClassPathImpl */
-    public CompileClassPathImpl(NbMavenProjectImpl proj) {
+    public CompileClassPathImpl(NbMavenProjectImpl proj, boolean addOutputDir) {        
         super(proj);
+        this.addOutputDir = addOutputDir;
     }
     
     @Override
     URI[] createPath() {
-        List<URI> lst = new ArrayList<URI>();
+        List<URI> lst = new ArrayList<>();
         // according the current 2.1 sources this is almost the same as getCompileClasspath()
         //except for the fact that multiproject references are not redirected to their respective
         // output folders.. we lways retrieve stuff from local repo..
@@ -84,6 +86,10 @@ class CompileClassPathImpl extends AbstractProjectClassPathImpl implements Flagg
                 broken = true;
             } 
         }
+        if(addOutputDir) {
+            lst.add(Utilities.toURI(getProject().getProjectWatcher().getOutputDirectory(false)));
+        }
+        
         if (incomplete != broken) {
             incomplete = broken;
             firePropertyChange(PROP_FLAGS, null, null);
