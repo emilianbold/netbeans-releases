@@ -479,7 +479,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
             boolean reset = false;            
             if( (NbMavenProject.PROP_RESOURCE.equals(evt.getPropertyName()) && evt.getNewValue() instanceof URI)) {
                 File file = Utilities.toFile((URI) evt.getNewValue());
-                for (String sourceRoot : proj.getOriginalMavenProject().getTestCompileSourceRoots()) {
+                for (String sourceRoot : proj.getOriginalMavenProject().getCompileSourceRoots()) {
                     if(file.equals(new File(sourceRoot, MODULE_INFO))) {
                         reset = true;
                         break;
