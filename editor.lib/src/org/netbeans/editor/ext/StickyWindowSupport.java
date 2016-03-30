@@ -41,16 +41,19 @@
  */
 package org.netbeans.editor.ext;
 
+import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.Rectangle;
 import javax.swing.JComponent;
 import javax.swing.JInternalFrame;
 import javax.swing.JLayeredPane;
-import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.EditorUI;
+import org.netbeans.modules.editor.lib2.view.ViewHierarchy;
+import org.netbeans.modules.editor.lib2.view.ViewHierarchyEvent;
+import org.netbeans.modules.editor.lib2.view.ViewHierarchyListener;
 
 /**
  *
@@ -60,8 +63,31 @@ public class StickyWindowSupport {
 
     private final EditorUI eui;
 
-    public StickyWindowSupport(EditorUI eui) {
+    public StickyWindowSupport(final EditorUI eui) {
         this.eui = eui;
+        ViewHierarchy.get(eui.getComponent()).addViewHierarchyListener(new ViewHierarchyListener() {
+            @Override
+            public void viewHierarchyChanged(ViewHierarchyEvent evt) {
+                JTextComponent editor = eui.getComponent();
+                Container container = editor.getParent();
+                if(container instanceof JLayeredPane && evt.isChangeY()) {
+                    JLayeredPane pane = (JLayeredPane) container;
+                    double deltaY = evt.deltaY();
+                    Component[] components = pane.getComponentsInLayer(JLayeredPane.PALETTE_LAYER);
+                    Rectangle rv = null;
+                    for (Component component : components) {
+                        rv = component.getBounds(rv);
+                        if(rv.getY() > evt.startY() ||
+                                rv.contains(new Point(rv.x, (int) evt.startY())) ||
+                                rv.contains(new Point(rv.x, (int) evt.endY()))) {
+                            Point p = rv.getLocation();
+                            p.translate(0, (int) deltaY);
+                            component.setLocation(p);
+                        }
+                    }
+                }
+            }
+        });
     }
 
     public void addWindow(JComponent frame, Point location) {
