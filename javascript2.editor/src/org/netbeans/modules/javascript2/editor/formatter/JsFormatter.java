@@ -497,6 +497,10 @@ public class JsFormatter implements Formatter {
                     // wrap it
                     wrapLine(formatContext, codeStyle, lastWrap, initialIndent,
                             continuationIndent, continuations);
+
+                    FormatToken extendedTokenAfterEol = getExtendedTokenAfterEol(tokenAfterEol);
+                    moveForward(token, extendedTokenAfterEol, formatContext, codeStyle, true);
+
                     // we need to mark the current wrap
                     formatContext.setLastLineWrap(new FormatContext.LineWrap(
                             tokenBeforeEol, lastOffsetDiff + (formatContext.getOffsetDiff() - offsetBeforeChanges),
@@ -513,16 +517,7 @@ public class JsFormatter implements Formatter {
             }
         }
 
-        // contains the last eol in case of multiple empty lines
-        // otherwise equal to tokenAfterEol
-        FormatToken extendedTokenAfterEol = tokenAfterEol;
-        for (FormatToken current = tokenAfterEol; current != null && (current.getKind() == FormatToken.Kind.EOL
-                || current.getKind() == FormatToken.Kind.WHITESPACE
-                || current.isVirtual()); current = current.next()) {
-            if (current != tokenAfterEol && current.getKind() == FormatToken.Kind.EOL) {
-                extendedTokenAfterEol = current;
-            }
-        }
+        FormatToken extendedTokenAfterEol = getExtendedTokenAfterEol(tokenAfterEol);
 
         // statement like wrap is a bit special at least for now
         // we dont remove redundant eols for them
@@ -1197,6 +1192,20 @@ public class JsFormatter implements Formatter {
                 }
             }
         }
+    }
+
+    // contains the last eol in case of multiple empty lines
+    // otherwise equal to tokenAfterEol
+    private static FormatToken getExtendedTokenAfterEol(FormatToken tokenAfterEol) {
+        FormatToken extendedTokenAfterEol = tokenAfterEol;
+        for (FormatToken current = tokenAfterEol; current != null && (current.getKind() == FormatToken.Kind.EOL
+                || current.getKind() == FormatToken.Kind.WHITESPACE
+                || current.isVirtual()); current = current.next()) {
+            if (current != tokenAfterEol && current.getKind() == FormatToken.Kind.EOL) {
+                extendedTokenAfterEol = current;
+            }
+        }
+        return extendedTokenAfterEol;
     }
 
     private static boolean isStatementWrap(FormatToken token) {
