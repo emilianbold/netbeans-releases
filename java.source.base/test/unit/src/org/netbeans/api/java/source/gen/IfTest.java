@@ -575,6 +575,115 @@ public class IfTest extends GeneratorTestBase {
         System.out.println(res);
         assertEquals(golden, res);
     }
+    
+    public void test257910NestedIfs() throws Exception {
+        String source = "public class Test {\n"
+                + "    public void test() {\n"
+                + "        if (true) {\n"
+                + "            System.out.println(2);\n"
+                + "        } else if (false) {\n"
+                + "            System.out.println(1);\n"
+                + "        }\n"
+                + "    }\n"
+                + "}";
+        
+        String golden = "public class Test {\n"
+                + "    public void test() {\n"
+                + "        if (false) {\n"
+                + "            if (false) {\n"
+                + "                System.out.println(1);\n"
+                + "            }\n"
+                + "        } else {\n"
+                + "            System.out.println(2);\n"
+                + "        }\n"
+                + "    }\n"
+                + "}";
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, source);
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy copy) throws Exception {
+                if (copy.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                    return;
+                }
+
+                TreeMaker make = copy.getTreeMaker();
+                ClassTree clazz = (ClassTree) copy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                
+                BlockTree block = method.getBody();
+                IfTree originalA = (IfTree) block.getStatements().get(0);
+                
+                // swap branches
+                IfTree rewrite = make.If(
+                        make.Parenthesized(
+                            make.Literal(Boolean.FALSE)
+                        ),
+                        originalA.getElseStatement(), originalA.getThenStatement()
+                );
+                copy.rewrite(originalA, rewrite);
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.out.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void test257910NestedIfsCorrectlyPaired() throws Exception {
+        String source = "public class Test {\n"
+                + "    public void test() {\n"
+                + "        if (true) {\n"
+                + "            System.out.println(2);\n"
+                + "        } else if (false) {\n"
+                + "            System.out.println(1);\n"
+                + "        } else \n" 
+                + "            System.out.println(3);\n"
+                + "    }\n"
+                + "}";
+        
+        String golden = "public class Test {\n"
+                + "    public void test() {\n"
+                + "        if (false) if (false) {\n"
+                + "            System.out.println(1);\n"
+                + "        } else\n"
+                + "            System.out.println(3); else {\n"
+                + "            System.out.println(2);\n"
+                + "        }\n"
+                + "    }\n"
+                + "}";
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, source);
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy copy) throws Exception {
+                if (copy.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                    return;
+                }
+
+                TreeMaker make = copy.getTreeMaker();
+                ClassTree clazz = (ClassTree) copy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                
+                BlockTree block = method.getBody();
+                IfTree originalA = (IfTree) block.getStatements().get(0);
+                
+                // swap branches
+                IfTree rewrite = make.If(
+                        make.Parenthesized(
+                            make.Literal(Boolean.FALSE)
+                        ),
+                        originalA.getElseStatement(), originalA.getThenStatement()
+                );
+                copy.rewrite(originalA, rewrite);
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.out.println(res);
+        assertEquals(golden, res);
+    }
+
 
     String getGoldenPckg() {
         return "";
