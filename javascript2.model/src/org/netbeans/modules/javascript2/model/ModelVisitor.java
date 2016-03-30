@@ -551,7 +551,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     JsObjectImpl proto = new JsObjectImpl(classObject, ModelUtils.PROTOTYPE, true, OffsetRange.NONE, EnumSet.of(Modifier.PUBLIC), classObject.getMimeType(), classObject.getSourceLabel());
                     classObject.addProperty(ModelUtils.PROTOTYPE, proto);
                     IdentNode type = (IdentNode)classHeritage;
-                    proto.addAssignment(new TypeUsageImpl(type.getName(), type.getStart(), true), type.getStart());
+                    proto.addAssignment(new TypeUsage(type.getName(), type.getStart(), true), type.getStart());
                 }
                 
             }
@@ -1168,7 +1168,7 @@ public class ModelVisitor extends PathNodeVisitor {
             LOGGER.log(Level.FINEST, "        " + debugInfo(fnNode));
             // This is a name, as is represented in AST. 
             String name = fnNode.isAnonymous() ? modelBuilder.getFunctionName(fnNode) : fnNode.getIdent().getName();
-            IdentifierImpl fnName = new IdentifierImpl(name, new OffsetRange(fnNode.getIdent().getStart(), fnNode.getIdent().getFinish()));
+            Identifier fnName = new Identifier(name, new OffsetRange(fnNode.getIdent().getStart(), fnNode.getIdent().getFinish()));
             if (fnNode.isClassConstructor() && !ModelUtils.CONSTRUCTOR.equals(fnName.getName())) {
                 // skip artifical/ syntetic constructor nodes, that are created
                 // when a class extends different class
