@@ -41,8 +41,20 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.javascript2.model.api.JsFunction;
+import org.netbeans.modules.javascript2.model.api.JsElement;
+import org.netbeans.modules.javascript2.model.api.Model;
+import org.netbeans.modules.javascript2.model.api.JsObject;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -52,15 +64,24 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.csl.api.*;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.StructureItem;
+import org.netbeans.modules.csl.api.StructureScanner;
+import org.netbeans.modules.csl.api.StructureScanner.Configuration;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.csl.spi.support.CancelSupport;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
-import org.netbeans.modules.javascript2.editor.model.*;
-import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
+import org.netbeans.modules.javascript2.model.api.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.javascript2.model.api.Index;
+import org.netbeans.modules.javascript2.model.api.JsReference;
+import org.netbeans.modules.javascript2.types.api.Type;
+import org.netbeans.modules.javascript2.types.api.TypeUsage;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -86,7 +107,7 @@ public class JsStructureScanner implements StructureScanner {
         long start = System.currentTimeMillis();
         LOGGER.log(Level.FINE, "Structure scanner started at {0} ms", start);
         JsParserResult result = (JsParserResult) info;
-        final Model model = result.getModel();
+        final Model model = Model.getModel(result, false);
         model.resolve();
         JsObject globalObject = model.getGlobalObject();
         final CancelSupport cancel = CancelSupport.getDefault();
@@ -135,7 +156,7 @@ public class JsStructureScanner implements StructureScanner {
                 // don't count children for functions and methods and anonyms
                 continue;
             }
-            if (!(child instanceof JsObjectReference && ModelUtils.isDescendant(child, ((JsObjectReference)child).getOriginal()))) {
+            if (!(child instanceof JsReference && ModelUtils.isDescendant(child, ((JsReference)child).getOriginal()))) {
                 children = getEmbededItems(result, child, children, processedObjects, cancel);
             }
             if ((child.hasExactName() || child.isAnonymous() || child.getJSKind() == JsElement.Kind.CONSTRUCTOR) && child.getJSKind().isFunction()) {
@@ -174,7 +195,7 @@ public class JsStructureScanner implements StructureScanner {
         if (jsObject instanceof JsFunction) {
             JsFunction jsFunction = (JsFunction)jsObject;
             for (JsObject param: jsFunction.getParameters()) {
-                if (hasDeclaredProperty(param) && !(jsObject instanceof JsObjectReference && !((JsObjectReference)jsObject).getOriginal().isAnonymous())) { 
+                if (hasDeclaredProperty(param) && !(jsObject instanceof JsReference && !((JsReference)jsObject).getOriginal().isAnonymous())) { 
                     final List<StructureItem> items = new ArrayList<StructureItem>();
                     getEmbededItems(result, param, items, processedObjects, cancel);
                     collectedItems.add(new JsObjectStructureItem(param, items, result));
@@ -182,7 +203,7 @@ public class JsStructureScanner implements StructureScanner {
             }
             if (jsFunction.getReturnTypes().size() == 1 && !jsFunction.isAnonymous()) {
                 TypeUsage returnType = jsFunction.getReturnTypes().iterator().next();
-                JsObject returnObject = ModelUtils.findJsObjectByName(result.getModel().getGlobalObject(), returnType.getType());
+                JsObject returnObject = ModelUtils.findJsObjectByName(Model.getModel(result, false).getGlobalObject(), returnType.getType());
                 if(returnObject != null && returnObject.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
                      for (JsObject property: returnObject.getProperties().values()) {
                         final List<StructureItem> items = new ArrayList<StructureItem>();
@@ -196,7 +217,7 @@ public class JsStructureScanner implements StructureScanner {
         if (jsObject.getDeclarationName() != null) {
             Collection<? extends TypeUsage> assignmentForOffset = jsObject.getAssignmentForOffset(jsObject.getDeclarationName().getOffsetRange().getEnd());
             if (assignmentForOffset.size() == 1) {
-                JsObject assignedObject = ModelUtils.findJsObjectByName(result.getModel().getGlobalObject(), assignmentForOffset.iterator().next().getType());
+                JsObject assignedObject = ModelUtils.findJsObjectByName(Model.getModel(result, false).getGlobalObject(), assignmentForOffset.iterator().next().getType());
                 if (assignedObject != null && assignedObject.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT
                         && processedObjects.contains(assignedObject.getParent().getFullyQualifiedName())) {
                     for (JsObject property : assignedObject.getProperties().values()) {
@@ -574,7 +595,8 @@ public class JsStructureScanner implements StructureScanner {
         public JsFunctionStructureItem(JsFunction elementHandle, List<? extends StructureItem> children, JsParserResult parserResult) {
             super(elementHandle, children, "fn", parserResult); //NOI18N
             Collection<? extends TypeUsage> returnTypes = getFunctionScope().getReturnTypes();
-            resolvedTypes = new ArrayList<TypeUsage>(ModelUtils.resolveTypes(returnTypes, parserResult, true, false));
+            resolvedTypes = new ArrayList<TypeUsage>(ModelUtils.resolveTypes(returnTypes,
+                    Model.getModel(parserResult, false), Index.get(parserResult.getSnapshot().getSource().getFileObject()), false));
         }
 
         public final JsFunction getFunctionScope() {
@@ -698,7 +720,8 @@ public class JsStructureScanner implements StructureScanner {
             this.object = elementHandle;
 
             Collection<? extends TypeUsage> assignmentForOffset = object.getAssignmentForOffset(object.getDeclarationName().getOffsetRange().getEnd());
-            resolvedTypes = new ArrayList<TypeUsage>(ModelUtils.resolveTypes(assignmentForOffset, parserResult, true, false));
+            resolvedTypes = new ArrayList<TypeUsage>(ModelUtils.resolveTypes(assignmentForOffset,
+                    Model.getModel(parserResult, false), Index.get(parserResult.getSnapshot().getSource().getFileObject()), false));
         }
 
         
