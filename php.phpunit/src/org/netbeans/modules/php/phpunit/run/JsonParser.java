@@ -148,7 +148,7 @@ public final class JsonParser {
                 testFinish(data);
                 break;
             default:
-                assert false : "Unknown event: " + event;
+                assert false : "Unknown event: " + event + " [" + input + "]";
         }
         return true;
     }
@@ -173,8 +173,8 @@ public final class JsonParser {
     }
 
     private void testStart(JSONObject data) {
-        assert actualSuite != null;
-        assert actualTest == null;
+        assert actualSuite != null : data;
+        assert actualTest == null : data;
         String suite = (String) data.get("suite"); // NOI18N
         switch (suite) {
             case "": // NOI18N
@@ -197,7 +197,7 @@ public final class JsonParser {
     }
 
     private void testFinish(JSONObject data) {
-        assert actualTest != null;
+        assert actualTest != null : data;
         String suite = (String) data.get("suite"); // NOI18N
         switch (suite) {
             case "": // NOI18N
@@ -213,7 +213,7 @@ public final class JsonParser {
         if (time instanceof Double) {
             actualTest.setTime((long) (time.doubleValue() * 1000));
         } else {
-            assert time instanceof Long : time.getClass().getName();
+            assert time instanceof Long : time.getClass().getName() + " [" + data + "]";
             actualTest.setTime(time.longValue() * 1000);
         }
         String message = (String) data.get("message"); // NOI18N
@@ -225,6 +225,9 @@ public final class JsonParser {
                 break;
             case "fail": // NOI18N
                 actualTest.setStatus(TestCase.Status.FAILED);
+                break;
+            case "warning": // NOI18N
+                actualTest.setStatus(TestCase.Status.PASSEDWITHERRORS);
                 break;
             case "error": // NOI18N
                 TestCase.Status testStatus = TestCase.Status.ERROR;
@@ -240,7 +243,7 @@ public final class JsonParser {
                 actualTest.setStatus(testStatus);
                 break;
             default:
-                assert false : "Unknown status: " + status;
+                assert false : "Unknown status: " + status + " [" + data + "]";
         }
         if (message != null) {
             actualTest.addStacktrace(message);
@@ -251,7 +254,7 @@ public final class JsonParser {
             for (Object object : trace) {
                 JSONObject traceData = (JSONObject) object;
                 String file = (String) traceData.get("file"); // NOI18N
-                assert file != null : traceData;
+                assert file != null : traceData + " [" + data + "]";
                 Long line = (Long) traceData.get("line"); // NOI18N
                 actualTest.addStacktrace(file + ":" + line); // NOI18N
                 if (first) {

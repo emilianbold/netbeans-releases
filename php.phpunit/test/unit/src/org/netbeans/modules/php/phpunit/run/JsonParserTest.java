@@ -127,6 +127,23 @@ public class JsonParserTest extends NbTestCase {
         assertEquals(5L, test.getTime());
     }
 
+    public void testIssue258312() throws Exception {
+        // log file created manually (project from report does not exist anymore)
+        jsonParser.parse(readContent("issue258312.json"));
+        jsonParser.finish();
+        TestSessionVo session = handler.getSession();
+        assertNotNull(session);
+        List<TestSuiteVo> suites = session.getTestSuites();
+        assertEquals(1, suites.size());
+        TestSuiteVo suite = suites.get(0);
+        assertEquals("CalculatorTest", suite.getName());
+        List<TestCaseVo> tests = suite.getPureTestCases();
+        assertEquals(1, tests.size());
+        TestCaseVo test = tests.get(0);
+        assertEquals("testPlus", test.getName());
+        assertEquals(TestCase.Status.PASSEDWITHERRORS, test.getStatus());
+    }
+
     private String readContent(String filename) throws IOException {
         byte[] bytes = Files.readAllBytes(getPath(filename));
         return new String(bytes, StandardCharsets.UTF_8);

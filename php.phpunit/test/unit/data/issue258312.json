@@ -1,0 +1,24 @@
+{
+    "event": "suiteStart",
+    "suite": "",
+    "tests": 1
+}{
+    "event": "suiteStart",
+    "suite": "CalculatorTest",
+    "tests": 1
+}{
+    "event": "testStart",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testPlus"
+}{
+    "event": "test",
+    "suite": "CalculatorTest",
+    "test": "CalculatorTest::testPlus",
+    "status": "warning",
+    "time": 0.011131048202515,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}
