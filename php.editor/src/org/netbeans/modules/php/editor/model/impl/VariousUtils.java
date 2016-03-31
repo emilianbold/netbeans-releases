@@ -1061,6 +1061,9 @@ public final class VariousUtils {
                             metaAll.insert(0, PRE_OPERATION_TYPE_DELIMITER + VariousUtils.FIELD_TYPE_PREFIX);
                             metaAll.insert(0, translateSpecialClassName(varScope, token.text().toString()));
                             state = State.CLASSNAME;
+                        } else if (isRightBracket(token)) {
+                            rightBraces++;
+                            state = State.PARAMS;
                         } else if (isRightArryBracket(token)) {
                             arrayBrackets++;
                             state = State.IDX;
