@@ -218,7 +218,7 @@ public class PHP70UnhandledError extends UnhandledErrorRule {
         }
 
         private void checkDispatcher(StaticDispatch node) {
-            Expression dispatcher = node.getClassName();
+            Expression dispatcher = node.getDispatcher();
             if (dispatcher instanceof NamespaceName
                     || dispatcher instanceof Identifier
                     || dispatcher instanceof Variable) {

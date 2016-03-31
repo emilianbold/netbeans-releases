@@ -384,7 +384,7 @@ public class SemiAttribute extends DefaultVisitor {
                             if (ce != null && (contextClassName == null || contextClassName.equals(ce.getName()))) {
                                 thisEl = ce.lookup(name, Kind.FUNC);
                                 if (thisEl != null) {
-                                    node2Element.put(smi.getClassName(), ce);
+                                    node2Element.put(smi.getDispatcher(), ce);
                                     node2Element.put(smi, thisEl);
                                     node2Element.put(smi.getMethod(), thisEl);
                                     break;
@@ -573,7 +573,7 @@ public class SemiAttribute extends DefaultVisitor {
                 if (ce != null && ce.getName().equals(clsName)) {
                     String name = CodeUtils.extractUnqualifiedClassName(node);
                     AttributedElement thisEl = ce.lookup(name, Kind.CONST);
-                    node2Element.put(node.getClassName(), ce);
+                    node2Element.put(node.getDispatcher(), ce);
                     node2Element.put(node, thisEl);
                     node2Element.put(node.getConstant(), thisEl);
                     break;
@@ -609,7 +609,7 @@ public class SemiAttribute extends DefaultVisitor {
                         AttributedElement thisEl = ce.lookup(name, Kind.VARIABLE);
                         if (thisEl != null) {
                             Variable field = node.getField();
-                            node2Element.put(node.getClassName(), ce);
+                            node2Element.put(node.getDispatcher(), ce);
                             node2Element.put(node, thisEl);
                             node2Element.put(field, thisEl);
                             if (field instanceof ArrayAccess) {
