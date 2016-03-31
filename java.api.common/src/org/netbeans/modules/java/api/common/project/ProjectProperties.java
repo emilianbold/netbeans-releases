@@ -241,6 +241,12 @@ public final class ProjectProperties {
      */
     public static final String JAVAC_COMPILERARGS = "javac.compilerargs"; //NOI18N
     /**
+     * Name of the property holding the test specific javac extra args.
+     * Not set, just allows user to explicitely override the module options for the unit tests.
+     * @since 1.83
+     */
+    public static final String JAVAC_TEST_COMPILERARGS = "javac.test.compilerargs"; //NOI18N
+    /**
      * Name of the property holding the javac source.
      * @since 1.60
      */

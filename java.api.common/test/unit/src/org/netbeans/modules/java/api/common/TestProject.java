@@ -129,6 +129,11 @@ public final class TestProject implements Project {
     }
 
     @NonNull
+    public PropertyEvaluator getEvaluator() {
+        return evaluator;
+    }
+
+    @NonNull
     public SourceRoots getSourceRoots() {
         return src;
     }
