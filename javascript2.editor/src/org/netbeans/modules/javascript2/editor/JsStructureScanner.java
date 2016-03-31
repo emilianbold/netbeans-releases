@@ -566,6 +566,9 @@ public class JsStructureScanner implements StructureScanner {
     
     private static ImageIcon priviligedIcon = null;
     private static ImageIcon callbackIcon = null;
+    private static ImageIcon publicGenerator = null;
+    private static ImageIcon privateGenerator = null;
+    private static ImageIcon priviligedGenerator = null;
     
     private class JsFunctionStructureItem extends JsStructureItem {
 
@@ -639,17 +642,34 @@ public class JsStructureScanner implements StructureScanner {
 
         @Override
         public ImageIcon getCustomIcon() {
-            if (getModifiers().contains(Modifier.PROTECTED)) {
-                if(priviligedIcon == null) {
-                    priviligedIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/resources/methodPriviliged.png")); //NOI18N
-                }
-                return priviligedIcon;
-            }
             if (getFunctionScope().getJSKind() == JsElement.Kind.CALLBACK) {
                 if (callbackIcon == null) {
                     callbackIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/resources/methodCallback.png")); //NOI18N
                 }
                 return callbackIcon;
+            } else  if (getFunctionScope().getJSKind() == JsElement.Kind.GENERATOR) {
+                if (getModifiers().contains(Modifier.PUBLIC)) {
+                    if (publicGenerator == null) {
+                        publicGenerator = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/resources/generatorPublic.png")); //NOI18N
+                    }
+                    return publicGenerator;
+                } else if (getModifiers().contains(Modifier.PRIVATE)) {
+                    if (privateGenerator == null) {
+                        privateGenerator = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/resources/generatorPrivate.png")); //NOI18N
+                    }
+                    return privateGenerator;
+                } else if (getModifiers().contains(Modifier.PROTECTED)) {
+                    if (priviligedGenerator == null) {
+                        priviligedGenerator = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/resources/generatorPriviliged.png")); //NOI18N
+                    }
+                    return priviligedGenerator;
+                }
+            }
+            if (getModifiers().contains(Modifier.PROTECTED)) {
+                if(priviligedIcon == null) {
+                    priviligedIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/resources/methodPriviliged.png")); //NOI18N
+                }
+                return priviligedIcon;
             }
             return super.getCustomIcon();
         }

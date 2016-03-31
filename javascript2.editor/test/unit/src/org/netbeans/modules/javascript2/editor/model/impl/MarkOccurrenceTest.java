@@ -1794,6 +1794,38 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testFunctionDeclaration06_03() throws Exception {
         checkOccurrences("testfiles/markoccurences/functionDeclaration/functionDeclaration06.js", "var b = A^;", true);
     }
+
+    public void testGenerator01_01() throws Exception {
+        checkOccurrences("testfiles/ecmascript6/generators/generator01.js", "var g = gen^01();", true);
+    }
+    
+    public void testGenerator01_02() throws Exception {
+        checkOccurrences("testfiles/ecmascript6/generators/generator01.js", "var g^ = gen01();", true);
+    }
+    
+    public void testGenerator02_01() throws Exception {
+        checkOccurrences("testfiles/ecmascript6/generators/generator02.js", "console.log(Ut^ils.values().next().value);", true);
+    }
+    
+    public void testGenerator02_02() throws Exception {
+        checkOccurrences("testfiles/ecmascript6/generators/generator02.js", "console.log(Utils.val^ues().next().value);", true);
+    }
+    
+    public void testGenerator02_03() throws Exception {
+        checkOccurrences("testfiles/ecmascript6/generators/generator02.js", "console.log(Utils.values().n^ext().value);", true);
+    }
+    
+    public void testGenerator02_04() throws Exception {
+        checkOccurrences("testfiles/ecmascript6/generators/generator02.js", "console.log(Utils.values().next().val^ue);", true);
+    }
+    
+    public void testGenerator03_01() throws Exception {
+        checkOccurrences("testfiles/ecmascript6/generators/generator03.js", "console.log(n.get^Name());", true);
+    }
+    
+    public void testGenerator04_01() throws Exception {
+        checkOccurrences("testfiles/ecmascript6/generators/generator04.js", "console.log(keyboard.ke^ys().next());", true);
+    }
     
     private String getTestName() {
         String name = getName();

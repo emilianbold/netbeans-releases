@@ -694,12 +694,16 @@ public class ModelVisitor extends PathNodeVisitor {
             node.accept(this);
         }
         
-        // seting undefinded return type
-        if (fncScope.areReturnTypesEmpty()) {
-            // the function doesn't have return statement -> returns undefined
-            fncScope.addReturnType(new TypeUsageImpl(Type.UNDEFINED, -1, false));
+        if (functionNode.getKind() == FunctionNode.Kind.GENERATOR) {
+            // set the return type as Generator object
+            fncScope.addReturnType(new TypeUsageImpl("Generator", 1, true));
+        } else {
+            // seting undefinded return type
+            if (fncScope.areReturnTypesEmpty()) {
+                // the function doesn't have return statement -> returns undefined
+                fncScope.addReturnType(new TypeUsageImpl(Type.UNDEFINED, -1, false));
+            }
         }
-        
         
         if (!functionNode.isProgram() && !functionNode.isModule()) {
             processModifiersFromJsDoc(fncScope, functionNode, parserResult.getDocumentationHolder());
@@ -1389,6 +1393,11 @@ public class ModelVisitor extends PathNodeVisitor {
             }
         }
         
+        if (fn.getKind() == FunctionNode.Kind.GENERATOR) {
+            // marking the function as generator
+            jsFunction.setJsKind(JsElement.Kind.GENERATOR);
+        }
+        
         Set<Modifier> modifiers = jsFunction.getModifiers();
         if (isPrivate || isPrivilage) {
             modifiers.remove(Modifier.PUBLIC);
@@ -1632,10 +1641,11 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
             }
             
+            // process @returns tag
             List<Type> types = docHolder.getReturnType(fn);
             if (types != null && !types.isEmpty()) {
                 for(Type type : types) {
-                    jsFunction.addReturnType(new TypeUsageImpl(type.getType(), type.getOffset(), ModelUtils.isKnownGLobalType(type.getType())));
+                    jsFunction.addReturnType(new TypeUsageImpl(type.getType(), type.getOffset(), true /*ModelUtils.isKnownGLobalType(type.getType())*/));
                 }
             }
         }

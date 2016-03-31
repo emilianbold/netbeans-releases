@@ -19,7 +19,7 @@ issue247834L$1      : FUNCTION issue247834L$1 [ANONYMOUS: true, DECLARED: true -
                     # PROPERTIES
                     Async     : FUNCTION Async [ANONYMOUS: false, DECLARED: true - Async, MODIFIERS: PRIVATE, CONSTRUCTOR]
                               # RETURN TYPES
-                              issue247834L$1.Async, RESOLVED: true
+                              Async, RESOLVED: true
                               # PARAMETERS
                               OBJECT createResult [ANONYMOUS: false, DECLARED: true - createResult, MODIFIERS: PUBLIC, PARAMETER]
                               OBJECT initialResultValue [ANONYMOUS: false, DECLARED: true - initialResultValue, MODIFIERS: PUBLIC, PARAMETER]

@@ -137,6 +137,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                     case CONSTRUCTOR:
                     case METHOD:
                     case FUNCTION:
+                    case GENERATOR:
                         if(object.isDeclared() && !object.isAnonymous() && !object.getDeclarationName().getOffsetRange().isEmpty()) {
                             EnumSet<ColoringAttributes> coloring = ColoringAttributes.METHOD_SET;
                             if (object.getModifiers().contains(Modifier.PRIVATE)) {
