@@ -255,7 +255,10 @@ public class JsCompletionItem implements CompletionProposal {
         public CancelSupport cancelSupport;
     }
     
-    private static  ImageIcon priviligedIcon = null;
+    private static ImageIcon priviligedIcon = null;
+    private static ImageIcon publicGenerator = null;
+    private static ImageIcon privateGenerator = null;
+    private static ImageIcon priviligedGenerator = null;
     
     public static class JsFunctionCompletionItem extends JsCompletionItem {
         
@@ -400,6 +403,35 @@ public class JsCompletionItem implements CompletionProposal {
         }
     }
 
+    public static class JsGeneratorCompletionItem extends JsFunctionCompletionItem {
+
+        public JsGeneratorCompletionItem(ElementHandle element, CompletionRequest request, Set<String> resolvedReturnTypes, Map<String, Set<String>> parametersTypes) {
+            super(element, request, resolvedReturnTypes, parametersTypes);
+        }
+        
+        @Override
+        public ImageIcon getIcon() {
+            if (getModifiers().contains(Modifier.PUBLIC)) {
+                if (publicGenerator == null) {
+                    publicGenerator = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/resources/generatorPublic.png")); //NOI18N
+                }
+                return publicGenerator;
+            } else if (getModifiers().contains(Modifier.PRIVATE)) {
+                if (privateGenerator == null) {
+                    privateGenerator = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/resources/generatorPrivate.png")); //NOI18N
+                }
+                return privateGenerator;
+            } else if (getModifiers().contains(Modifier.PROTECTED)) {
+                if (priviligedGenerator == null) {
+                    priviligedGenerator = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/resources/generatorPriviliged.png")); //NOI18N
+                }
+                return priviligedGenerator;
+            }
+            return super.getIcon();
+        }
+        
+    }
+    
     public static class JsCallbackCompletionItem extends JsCompletionItem {
         private static ImageIcon callbackIcon = null;
         private IndexedElement.FunctionIndexedElement function;
@@ -761,6 +793,7 @@ public class JsCompletionItem implements CompletionProposal {
                         case CONSTRUCTOR:
                         case FUNCTION:
                         case METHOD:
+                        case GENERATOR:
                             Set<String> returnTypes = new HashSet<String>();
                             HashMap<String, Set<String>> allParameters = new LinkedHashMap<String, Set<String>>();
                             if (element instanceof JsFunction) {
@@ -816,7 +849,9 @@ public class JsCompletionItem implements CompletionProposal {
                             // create signature
                             String signature = createFnSignature(entry.getKey(), allParameters, returnTypes);
                             if (!signatures.containsKey(signature)) {
-                                JsCompletionItem item = new JsFunctionCompletionItem(element, request, returnTypes, allParameters);
+                                JsCompletionItem item = element.getJSKind() != JsElement.Kind.GENERATOR 
+                                        ? new JsFunctionCompletionItem(element, request, returnTypes, allParameters)
+                                        : new JsGeneratorCompletionItem(element, request, returnTypes, allParameters);
                                 signatures.put(signature, item);
                             }
                             break;

@@ -517,6 +517,22 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
         checkSemantic("testfiles/markoccurences/classes/class04.js");
     }
     
+    public void testGenerator01() throws Exception {
+        checkSemantic("testfiles/ecmascript6/generators/generator01.js");
+    }
+    
+    public void testGenerator02() throws Exception {
+        checkSemantic("testfiles/ecmascript6/generators/generator02.js");
+    }
+    
+    public void testGenerator03() throws Exception {
+        checkSemantic("testfiles/ecmascript6/generators/generator03.js");
+    }
+    
+    public void testGenerator04() throws Exception {
+        checkSemantic("testfiles/ecmascript6/generators/generator04.js");
+    }
+    
     public void testFunctionDeclaration05() throws Exception {
         checkSemantic("testfiles/markoccurences/functionDeclaration/functionDeclaration05.js");
     }
