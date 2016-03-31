@@ -12,6 +12,8 @@ PACKAGE    B                               [PUBLIC]   A
 PACKAGE    C                               [PUBLIC]   A\B
 PACKAGE    Firm                            [PUBLIC]   My
 CLASS      BoolClass                       [PUBLIC]   scalarTypeHints.php
+CLASS      Cls                             [PUBLIC]   uniformVariableSyntax01.php
+CLASS      Cls                             [PUBLIC]   uniformVariableSyntax02.php
 CLASS      ClsA                            [PUBLIC]   A
 CLASS      ClsAB                           [PUBLIC]   A\B
 CLASS      ClsABC                          [PUBLIC]   A\B\C
@@ -27,6 +29,8 @@ CLASS      Comment                         [PUBLIC]   returnTypesTyping12.php
 CLASS      CommentsIterator                [PUBLIC]   My\Firm
 CLASS      FloatClass                      [PUBLIC]   scalarTypeHints.php
 CLASS      IntClass                        [PUBLIC]   scalarTypeHints.php
+CLASS      Numbers                         [PUBLIC]   uniformVariableSyntax01.php
+CLASS      Numbers                         [PUBLIC]   uniformVariableSyntax02.php
 CLASS      Outer                           [PUBLIC]   My
 CLASS      StringClass                     [PUBLIC]   scalarTypeHints.php
 METHOD     bar()                           [PUBLIC]   My\Firm
@@ -37,6 +41,8 @@ METHOD     bazz()                          [PUBLIC]   My\Firm
 METHOD     bazz(...$data)                  [PUBLIC]   My\Firm
 METHOD     boolTypeHint(bool $arg)         [PUBLIC]   scalarTypeHints.php
 METHOD     floatTypeHint(float $arg)       [PUBLIC]   scalarTypeHints.php
+METHOD     fnc()                           [PUBLIC]   uniformVariableSyntax01.php
+METHOD     fnc()                           [PUBLIC]   uniformVariableSyntax02.php
 METHOD     foo()                           [PUBLIC]   My\Firm
 METHOD     intTypeHint(int $arg)           [PUBLIC]   scalarTypeHints.php
 METHOD     my_array_sort(array &$data)     [PUBLIC]   My\Firm

@@ -370,6 +370,15 @@ public class PHP70CodeCompletionTest extends PHPCodeCompletionTestBase {
         checkCompletion("testfiles/completion/lib/php70/anonymousClass03.php", "                return $t^his->prop2 + $this->prop3 + $this->func1();", false);
     }
 
+    public void testUniformVariableSyntax01() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/uniformVariableSyntax01.php", "fnc()->getNumbers()::^MAX;", false);
+    }
+
+    // XXX did not work properly even before php7
+//    public void testUniformVariableSyntax02() throws Exception {
+//        checkCompletion("testfiles/completion/lib/php70/uniformVariableSyntax02.php", "fnc()->getNumbers()[0]::^MAX;", false);
+//    }
+
     // XXX add tests for CC after NS aliases!
 
 }

@@ -10,6 +10,8 @@ PACKAGE    B                               [PUBLIC]   A
 PACKAGE    C                               [PUBLIC]   A\B
 PACKAGE    Firm                            [PUBLIC]   My
 CLASS      BoolClass                       [PUBLIC]   scalarTypeHints.php
+CLASS      Cls                             [PUBLIC]   uniformVariableSyntax01.php
+CLASS      Cls                             [PUBLIC]   uniformVariableSyntax02.php
 CLASS      ClsA                            [PUBLIC]   A
 CLASS      ClsAB                           [PUBLIC]   A\B
 CLASS      ClsABC                          [PUBLIC]   A\B\C
@@ -24,6 +26,8 @@ CLASS      Comment                         [PUBLIC]   returnTypesTyping11.php
 CLASS      CommentsIterator                [PUBLIC]   My\Firm
 CLASS      FloatClass                      [PUBLIC]   scalarTypeHints.php
 CLASS      IntClass                        [PUBLIC]   scalarTypeHints.php
+CLASS      Numbers                         [PUBLIC]   uniformVariableSyntax01.php
+CLASS      Numbers                         [PUBLIC]   uniformVariableSyntax02.php
 CLASS      Outer                           [PUBLIC]   My
 CLASS      StringClass                     [PUBLIC]   scalarTypeHints.php
 KEYWORD    array                                      null
