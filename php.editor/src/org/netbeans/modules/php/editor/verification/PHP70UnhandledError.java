@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.model.impl.Type;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -57,9 +58,16 @@ import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.GroupUseStatementPart;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticDispatch;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.YieldFromExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
@@ -89,7 +97,7 @@ public class PHP70UnhandledError extends UnhandledErrorRule {
     }
 
     private static boolean appliesTo(FileObject fileObject) {
-        return CodeUtils.isLessThanPhp70(fileObject);
+        return CodeUtils.isPhpVersionLessThan(fileObject, PhpVersion.PHP_70);
     }
 
     //~ Inner classes
@@ -175,6 +183,24 @@ public class PHP70UnhandledError extends UnhandledErrorRule {
             super.visit(node);
         }
 
+        @Override
+        public void visit(StaticConstantAccess node) {
+            checkDispatcher(node);
+            super.visit(node);
+        }
+
+        @Override
+        public void visit(StaticFieldAccess node) {
+            checkDispatcher(node);
+            super.visit(node);
+        }
+
+        @Override
+        public void visit(StaticMethodInvocation node) {
+            checkDispatcher(node);
+            super.visit(node);
+        }
+
         private void checkScalarTypes(List<FormalParameter> formalParameters) {
             for (FormalParameter formalParameter : formalParameters) {
                 String typeName = CodeUtils.extractUnqualifiedTypeName(formalParameter);
@@ -189,6 +215,17 @@ public class PHP70UnhandledError extends UnhandledErrorRule {
             if (returnType != null) {
                 createError(returnType);
             }
+        }
+
+        private void checkDispatcher(StaticDispatch node) {
+            Expression dispatcher = node.getClassName();
+            if (dispatcher instanceof NamespaceName
+                    || dispatcher instanceof Identifier
+                    || dispatcher instanceof Variable) {
+                // pre php7 access => ok
+                return;
+            }
+            createError(dispatcher);
         }
 
         private void createError(int startOffset, int endOffset) {
