@@ -364,6 +364,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
   ";"                            { return JsTokenId.OPERATOR_SEMICOLON; }
   ","                            { return JsTokenId.OPERATOR_COMMA; }
   "."                            { return JsTokenId.OPERATOR_DOT; }
+  "..."                          { return JsTokenId.OPERATOR_REST; }
   "="                            { return JsTokenId.OPERATOR_ASSIGNMENT; }
   ">"                            { return JsTokenId.OPERATOR_GREATER; }
   "<"                            { return JsTokenId.OPERATOR_LOWER; }

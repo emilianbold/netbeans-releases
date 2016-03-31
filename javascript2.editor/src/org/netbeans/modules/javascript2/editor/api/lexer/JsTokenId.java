@@ -104,6 +104,7 @@ public enum JsTokenId implements TokenId {
     OPERATOR_SEMICOLON(";", "separator"), // NOI18N
     OPERATOR_COMMA(",", "separator"), // NOI18N
     OPERATOR_DOT(".", "separator"), // NOI18N
+    OPERATOR_REST("...", "separator"), // NOI18N
     OPERATOR_ASSIGNMENT("=", "operator"), // NOI18N
     OPERATOR_GREATER(">", "operator"), // NOI18N
     OPERATOR_LOWER("<", "operator"), // NOI18N

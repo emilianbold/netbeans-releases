@@ -338,7 +338,19 @@ public class FormatVisitor extends NodeVisitor {
 
     @Override
     public boolean enterFunctionNode(FunctionNode functionNode) {
-        enterBlock(functionNode.getBody());
+        Block body = functionNode.getBody();
+        // default parameters are stored as assignments inside the function
+        // body block - the real block is just behind it
+        if (body.isParameterBlock()) {
+            List<Statement> statements = body.getStatements();
+            if (!statements.isEmpty()) {
+                Statement last = statements.get(statements.size() - 1);
+                if (last instanceof BlockStatement) {
+                    body = ((BlockStatement) last).getBlock();
+                }
+            }
+        }
+        enterBlock(body);
 
         if (functionNode.isProgram()) {
             return false;
@@ -837,9 +849,16 @@ public class FormatVisitor extends NodeVisitor {
 
         // place function parameters marks
         for (IdentNode param : functionNode.getParameters()) {
-            FormatToken ident = getNextToken(getStart(param), JsTokenId.IDENTIFIER);
-            if (ident != null) {
-                FormatToken beforeIdent = ident.previous();
+            FormatToken paramToken = getNextToken(getStart(param), JsTokenId.IDENTIFIER);
+            if (paramToken != null) {
+                // there might be "a, ...z" for example so we want the mark before the rest
+                // parameter
+                Token previousNonEmpty = getPreviousNonEmptyToken(paramToken.getOffset());
+                if (previousNonEmpty != null && previousNonEmpty.id() == JsTokenId.OPERATOR_REST) {
+                    paramToken = tokenStream.getToken(ts.offset());
+                }
+
+                FormatToken beforeIdent = paramToken.previous();
                 if (beforeIdent != null) {
                     appendToken(beforeIdent,
                             FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_DECLARATION_PARAMETER));

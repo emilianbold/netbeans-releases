@@ -302,6 +302,30 @@ public class JsFormatterTest extends JsTestBase {
     public void testFunctionDeclaration5Indented() throws Exception {
         reindentFileContents("testfiles/formatter/functionDeclaration5.js", null);
     }
+    
+    public void testFunctionDeclaration6Default() throws Exception {
+        reformatFileContents("testfiles/formatter/functionDeclaration6.js",
+                Collections.<String, Object>emptyMap(), ".default.formatted");
+    }
+    
+    public void testFunctionDeclaration6Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/functionDeclaration6.js");
+    }
+    
+    public void testFunctionDeclaration7Default() throws Exception {
+        reformatFileContents("testfiles/formatter/functionDeclaration7.js",
+                Collections.<String, Object>emptyMap(), ".default.formatted");
+    }
+    
+    public void testFunctionDeclaration7Always() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapMethodParams, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/functionDeclaration7.js", options, ".wrapAlways.formatted");
+    }
+    
+    public void testFunctionDeclaration7Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/functionDeclaration7.js");
+    }
 
     public void testFunctionCall1Default() throws Exception {
         reformatFileContents("testfiles/formatter/functionCall1.js",
