@@ -679,4 +679,16 @@ public class JsStructureScannerTest extends JsTestBase {
     public void testGenerator04() throws Exception {
         checkStructure("testfiles/ecmascript6/generators/generator04.js");
     }
+    
+    public void testShorthandPropertyNames01() throws Exception {
+        checkStructure("testfiles/ecmascript6/shorthands/shorthandPropertyNames.js");
+    }
+    
+    public void testShorthandMethodNames01() throws Exception {
+        checkStructure("testfiles/ecmascript6/shorthands/shorthandMethodNames.js");
+    }
+    
+    public void testComputedPropertyNames01() throws Exception {
+        checkStructure("testfiles/ecmascript6/shorthands/computedPropertyNames.js");
+    }
 }

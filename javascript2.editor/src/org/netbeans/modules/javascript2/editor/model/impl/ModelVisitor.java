@@ -1952,7 +1952,7 @@ public class ModelVisitor extends PathNodeVisitor {
 //                            new OffsetRange(lNode.getStart(), lNode.getFinish())));
 //                }
                 
-                if (fqName != null) {
+                if (fqName != null && !fqName.isEmpty()) {
                     if (ModelUtils.THIS.equals(fqName.get(0).getName())) {
                         parent = resolveThis(modelBuilder.getCurrentObject());
                         fqName.remove(0);
@@ -2153,20 +2153,38 @@ public class ModelVisitor extends PathNodeVisitor {
 
     @Override
     public boolean enterPropertyNode(PropertyNode propertyNode) {
-        if ((propertyNode.getKey() instanceof IdentNode || propertyNode.getKey() instanceof LiteralNode)
-                && !(propertyNode.getValue() instanceof ObjectNode
-                || propertyNode.getValue() instanceof FunctionNode)) {
-            JsObjectImpl scope = modelBuilder.getCurrentObject();
+        final Expression key = propertyNode.getKey();
+        final Expression value = propertyNode.getValue();
+        if ((key instanceof IdentNode || key instanceof LiteralNode)
+                && !(value instanceof ObjectNode
+                || value instanceof FunctionNode)
+                && !propertyNode.isComputed()) {
+            final JsObjectImpl parent = modelBuilder.getCurrentObject();
             Identifier name = null;
-            Node key = propertyNode.getKey();
             if (key instanceof IdentNode) {
                 name = ModelElementFactory.create(parserResult, (IdentNode)key);
             } else if (key instanceof LiteralNode) {
                 name = ModelElementFactory.create(parserResult, (LiteralNode)key);
             }
-
+            if (key instanceof IdentNode && value instanceof IdentNode) {
+                IdentNode iKey = (IdentNode)key;
+                IdentNode iValue = (IdentNode)value;
+                if (iKey.getName().equals(iValue.getName()) && iKey.getStart() == iValue.getStart() && iKey.getFinish() == iValue.getFinish()) {
+                    // it's object initializer shorthand property names
+                    // (ES6) var o = { a, b, c }; The variables a, b and c has to exists and properties are references to the orig var
+                    Collection<? extends JsObject> variables = ModelUtils.getVariables(modelBuilder.getCurrentDeclarationScope());
+                    for (JsObject variable : variables) {
+                        if (name.getName().equals(variable.getName())) {
+                            parent.addProperty(variable.getName(), variable);
+                            variable.addOccurrence(name.getOffsetRange());
+                            // don't continue. 
+                            return false;
+                        }
+                    }
+                }
+            }
             if (name != null) {
-                JsObjectImpl property = (JsObjectImpl)scope.getProperty(name.getName());
+                JsObjectImpl property = (JsObjectImpl)parent.getProperty(name.getName());
                 if (property == null) {
                     property = ModelElementFactory.create(parserResult, propertyNode, name, modelBuilder, true);
                 } else {
@@ -2193,7 +2211,6 @@ public class ModelVisitor extends PathNodeVisitor {
 //                    }
                     property.getParent().addProperty(name.getName(), property);
                     property.setDeclared(true);
-                    Node value = propertyNode.getValue();
                     if(value instanceof CallNode) {
                         // TODO for now, don't continue. There shoudl be handled cases liek
                         // in the testFiles/model/property02.js file
@@ -2209,14 +2226,16 @@ public class ModelVisitor extends PathNodeVisitor {
                                 addOccurence((IdentNode)value, false);
                             } else {
                                 // handling case like property: property
-                                if (modelBuilder.getCurrentObject().getParent() != null) {
-                                    occurrenceBuilder.addOccurrence(name.getName(), getOffsetRange(iNode), modelBuilder.getCurrentDeclarationScope(), modelBuilder.getCurrentObject().getParent(), modelBuilder.getCurrentWith(), false, false);
+                                if (parent.getParent() != null) {
+                                    occurrenceBuilder.addOccurrence(name.getName(), getOffsetRange(iNode), modelBuilder.getCurrentDeclarationScope(), parent.getParent(), modelBuilder.getCurrentWith(), false, false);
                                 }
                             }
                         }
                     }
                 }
             }
+        } if (propertyNode.isComputed()) {
+            propertyNode.getKey().accept(this);
         }
         return super.enterPropertyNode(propertyNode);
     }
