@@ -459,7 +459,29 @@ public class JsFormatterTest extends JsTestBase {
     public void testComments3() throws Exception {
         reformatFileContents("testfiles/formatter/comments3.js",new IndentPrefs(4, 4));
     }
+    
+    public void testLet1ForAlways() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapFor, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/let1.js", options, ".forWrapAlways.formatted");
+    }
 
+    public void testLet1ForNever() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapFor, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatter/let1.js", options, ".forWrapNever.formatted");
+    }
+
+    public void testLet1ForIfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapFor, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatter/let1.js", options, ".forWrapIfLong.formatted");
+    }
+
+    public void testLet1Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/let1.js");
+    }
+    
     public void testObjects1() throws Exception {
         reformatFileContents("testfiles/formatter/objects1.js",new IndentPrefs(4, 4));
     }
