@@ -1053,19 +1053,19 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         if (jsObject.getJSKind() == JsElement.Kind.METHOD) {
             jsObject = jsObject.getParent();
         }
-        
-        completeObjectMembers(jsObject, request, addedItems);
+        boolean startThis = startWithThis(request);
+        completeObjectMembers(jsObject, request, addedItems, !startThis);
         
         if (ModelUtils.PROTOTYPE.equals(jsObject.getName())) {  //NOI18N
-            completeObjectMembers(jsObject.getParent(), request, addedItems);
+            completeObjectMembers(jsObject.getParent(), request, addedItems, !startThis);
         }
     }
     
-    private void completeObjectMembers(JsObject jsObject, CompletionRequest request, Map<String, List<JsElement>> properties) {
+    private void completeObjectMembers(JsObject jsObject, CompletionRequest request, Map<String, List<JsElement>> properties, boolean includePrivate) {
         if (jsObject.getJSKind() == JsElement.Kind.OBJECT || jsObject.getJSKind() == JsElement.Kind.CONSTRUCTOR
                 || jsObject.getJSKind() == JsElement.Kind.OBJECT_LITERAL) {
             for (JsObject property : jsObject.getProperties().values()) {
-                if(!(request.completionContext == OBJECT_MEMBERS && property.getModifiers().contains(Modifier.PRIVATE) && property.getModifiers().size() == 1) && !property.isAnonymous()) {
+                if(!(request.completionContext == OBJECT_MEMBERS && property.getModifiers().contains(Modifier.PRIVATE) && !includePrivate && property.getModifiers().size() == 1) && !property.isAnonymous()) {
                     addPropertyToMap(request, properties, property);
                 }
             }
@@ -1080,6 +1080,22 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         }
     }
 
+    private boolean startWithThis(CompletionRequest request) {
+        boolean result = false;
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(request.info.getSnapshot(), request.anchor);
+        if (ts == null) {
+            return result;
+        }
+        ts.move(request.info.getSnapshot().getEmbeddedOffset(request.anchor));
+        if (ts.moveNext()) {
+            Token<? extends JsTokenId> token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.IDENTIFIER, JsTokenId.OPERATOR_DOT));
+            if (token != null && JsTokenId.KEYWORD_THIS == token.id()) {
+                result = true;
+            }
+        }
+        return result;
+    }
+    
     private void completeInWith (CompletionRequest request,HashMap <String, List<JsElement>> addedItems) {
         int offset = request.anchor;
         Collection<? extends TypeUsage> typesFromWith = ModelUtils.getTypeFromWith(request.result.getModel(), offset);

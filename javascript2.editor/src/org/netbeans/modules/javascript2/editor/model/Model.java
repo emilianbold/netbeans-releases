@@ -41,14 +41,14 @@
  */
 package org.netbeans.modules.javascript2.editor.model;
 
+import com.oracle.js.parser.ir.FunctionNode;
+import com.oracle.js.parser.ir.Node;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.URL;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelElementFactoryAccessor;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import java.text.MessageFormat;
-import jdk.nashorn.internal.ir.FunctionNode;
-import jdk.nashorn.internal.ir.Node;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -83,6 +83,7 @@ import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionReference;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
 import org.netbeans.modules.javascript2.editor.model.impl.JsWithObjectImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelExtender;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
@@ -313,6 +314,9 @@ public final class Model {
                         JsObject jsWithProperty = with.getProperty(indexedElement.getName());
                         if (jsWithProperty != null) {
                             moveProperty(fromType, jsWithProperty);
+                            if (jsWithProperty.isDeclared()) {
+                                ((JsObjectImpl)jsWithProperty).setDeclared(false);
+                            }
                         }
                     }
                 }
@@ -321,6 +325,9 @@ public final class Model {
                     JsObject jsWithProperty = with.getProperty(fromTypeProperty.getName());
                     if (jsWithProperty != null) {
                         moveProperty(fromType, jsWithProperty);
+                        if (jsWithProperty.isDeclared()) {
+                            ((JsObjectImpl)jsWithProperty).setDeclared(false);
+                        }
                     }
                 }
             } else {
@@ -396,7 +403,7 @@ public final class Model {
         JsObject parent = jsObject.getParent();
         boolean isThis = false;
         
-        if ((expression.size() > 1) && expression.get(expression.size() - 2).equals("this")) { //NOI18N
+        if ((expression.size() > 1) && expression.get(expression.size() - 2).equals(ModelUtils.THIS)) { //NOI18N
             parent = ModelUtils.findJsObject(this, expRange.getStart());
             if (parent instanceof JsWith) {
                 parent = parent.getParent();
@@ -582,6 +589,9 @@ public final class Model {
     
     private void resolveLocalTypes(JsObject object, JsDocumentationHolder docHolder, Set<String> alreadyResolvedObjects) {
         if (object instanceof JsFunctionReference && !object.isAnonymous()) {
+            return;
+        }
+        if (object instanceof JsObjectReference && object.getJSKind() == JsElement.Kind.CLASS) {
             return;
         }
         String fqn = object.getFullyQualifiedName();

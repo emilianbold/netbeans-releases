@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import jdk.nashorn.internal.ir.Node;
+import com.oracle.js.parser.ir.Node;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -50,17 +50,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.JsCompletionItem;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
@@ -91,10 +88,14 @@ import org.openide.filesystems.FileObject;
 public class ModelUtils {
       
     public static final String PROTOTYPE = "prototype"; //NOI18N
+    
+    public static final String CONSTRUCTOR = "constructor"; //NOI18N
+    
+    public static final String THIS = "this"; //NOI18N
 
     public static final String ARGUMENTS = "arguments"; //NOI18N
 
-    private static final String GENERATED_FUNCTION_PREFIX = "_L"; //NOI18N
+    private static final String GENERATED_FUNCTION_PREFIX = "L$"; //NOI18N
     
     private static final String GENERATED_ANONYM_PREFIX = "Anonym$"; //NOI18N
     
@@ -178,6 +179,12 @@ public class ModelUtils {
     public static JsObject findJsObject(JsObject object, int offset) {
         HashSet<String> visited = new HashSet<String>();
         return findJsObject(object, offset, visited);
+    }
+
+    public static void copyOccurrences(JsObject from, JsObject to) {
+        for (Occurrence oc : from.getOccurrences()) {
+            to.addOccurrence(oc.getOffsetRange());
+        }
     }
     
     public static JsObject findJsObject(JsObject object, int offset, Set<String> visited) {
@@ -446,7 +453,7 @@ public class ModelUtils {
         Collection<TypeUsage> result = new HashSet<TypeUsage>();
         SemiTypeResolverVisitor visitor = new SemiTypeResolverVisitor();
         if (expression != null) {
-            result = visitor.getSemiTypes(expression);
+            result = visitor.getSemiTypes(expression, builder);
         }
         if (builder.getCurrentWith()!= null) {
             Collection<TypeUsage> withResult = new HashSet<TypeUsage>();
@@ -470,7 +477,11 @@ public class ModelUtils {
             result.add(type);
         } else if (Type.UNDEFINED.equals(type.getType())) {
             if (object.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
-                result.add(new TypeUsageImpl(object.getFullyQualifiedName(), type.getOffset(), true));
+                if (object.getParent().getJSKind() == JsElement.Kind.CLASS) {
+                    result.add(new TypeUsageImpl(object.getParent().getFullyQualifiedName(), type.getOffset(), true));
+                } else {
+                    result.add(new TypeUsageImpl(object.getFullyQualifiedName(), type.getOffset(), true));
+                }
             } else {
                 result.add(new TypeUsageImpl(Type.UNDEFINED, type.getOffset(), true));
             }
@@ -545,7 +556,10 @@ public class ModelUtils {
         } else if(type.getType().startsWith(SemiTypeResolverVisitor.ST_VAR)){
             String name = type.getType().substring(5);
             JsFunction declarationScope = object instanceof DeclarationScope ? (JsFunction)object : (JsFunction)getDeclarationScope(object);
-            Collection<? extends JsObject> variables = ModelUtils.getVariables(declarationScope);
+            List<JsObject> variables = new ArrayList(ModelUtils.getVariables(declarationScope));
+            if (!(object instanceof DeclarationScope) && object.getParent() != null && !(object.getParent() instanceof DeclarationScope)) {
+                variables.addAll(object.getParent().getProperties().values());
+            }
             if (declarationScope != null) {
                 boolean resolved = false;
                 for (JsObject variable : variables) {
@@ -778,7 +792,7 @@ public class ModelUtils {
                     lastResolvedObjects.add(anonym);
                     continue;
                 }
-                if ("this".equals(name)) {
+                if (ModelUtils.THIS.equals(name)) {
                     JsObject thisObject = ModelUtils.findJsObject(model, offset);
                     JsObject first = thisObject;
                     while (thisObject != null && thisObject.getParent() != null && thisObject.getParent().getJSKind() != JsElement.Kind.FILE

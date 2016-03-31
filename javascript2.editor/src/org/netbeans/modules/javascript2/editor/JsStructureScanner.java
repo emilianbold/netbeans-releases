@@ -166,6 +166,8 @@ public class JsStructureScanner implements StructureScanner {
                     } else {
                         collectedItems.add(new JsObjectStructureItem(child, children, result));
                     }
+            } else if ((child.getJSKind() == JsElement.Kind.CLASS && child.isDeclared())) {
+                collectedItems.add(new JsClassStructureItem(child, children, result));
             }
          }
         
@@ -195,7 +197,8 @@ public class JsStructureScanner implements StructureScanner {
             Collection<? extends TypeUsage> assignmentForOffset = jsObject.getAssignmentForOffset(jsObject.getDeclarationName().getOffsetRange().getEnd());
             if (assignmentForOffset.size() == 1) {
                 JsObject assignedObject = ModelUtils.findJsObjectByName(result.getModel().getGlobalObject(), assignmentForOffset.iterator().next().getType());
-                if (assignedObject != null && assignedObject.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
+                if (assignedObject != null && assignedObject.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT
+                        && processedObjects.contains(assignedObject.getParent().getFullyQualifiedName())) {
                     for (JsObject property : assignedObject.getProperties().values()) {
                         final List<StructureItem> items = new ArrayList<StructureItem>();
                         getEmbededItems(result, property, items, processedObjects, cancel);
@@ -519,8 +522,53 @@ public class JsStructureScanner implements StructureScanner {
         
     }
     
+    private class JsClassStructureItem extends JsStructureItem {
+        
+        public JsClassStructureItem(JsObject elementHandle, List<? extends StructureItem> children, JsParserResult parserResult) {
+            super(elementHandle, children, "cl", parserResult); //NOI18N
+        }
+        
+        @Override
+        public String getHtml(HtmlFormatter formatter) {
+            formatter.reset();
+            JsObject clObject = getModelElement();
+            boolean isDeprecated = clObject.isDeprecated();
+            if (isDeprecated) {
+                formatter.deprecated(true);
+            }
+            formatter.appendText(clObject.getDeclarationName().getName());
+            if (isDeprecated) {
+                formatter.deprecated(false);
+            }
+            JsObject prototype = clObject.getProperty(ModelUtils.PROTOTYPE);
+            if (prototype != null) {
+                Collection<? extends TypeUsage> assignments = prototype.getAssignments(); 
+                if (assignments != null && !assignments.isEmpty()) {
+                    // the class extends 
+                    formatter.appendHtml(FONT_GRAY_COLOR);
+                    formatter.appendText(" :: ");   // NOI18N
+                    boolean addComma = false;
+                    for (TypeUsage type : assignments) {
+                        if (addComma) {
+                            formatter.appendText(", "); // NOI18N
+                        } else {
+                            addComma = true;
+                        }
+                        formatter.appendText(type.getType());
+                    }
+                    formatter.appendHtml(CLOSE_FONT);
+                }
+            }
+            return formatter.getText();
+        }
+        
+    }
+    
     private static ImageIcon priviligedIcon = null;
     private static ImageIcon callbackIcon = null;
+    private static ImageIcon publicGenerator = null;
+    private static ImageIcon privateGenerator = null;
+    private static ImageIcon priviligedGenerator = null;
     
     private class JsFunctionStructureItem extends JsStructureItem {
 
@@ -594,17 +642,34 @@ public class JsStructureScanner implements StructureScanner {
 
         @Override
         public ImageIcon getCustomIcon() {
-            if (getModifiers().contains(Modifier.PROTECTED)) {
-                if(priviligedIcon == null) {
-                    priviligedIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/resources/methodPriviliged.png")); //NOI18N
-                }
-                return priviligedIcon;
-            }
             if (getFunctionScope().getJSKind() == JsElement.Kind.CALLBACK) {
                 if (callbackIcon == null) {
                     callbackIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/resources/methodCallback.png")); //NOI18N
                 }
                 return callbackIcon;
+            } else  if (getFunctionScope().getJSKind() == JsElement.Kind.GENERATOR) {
+                if (getModifiers().contains(Modifier.PUBLIC)) {
+                    if (publicGenerator == null) {
+                        publicGenerator = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/resources/generatorPublic.png")); //NOI18N
+                    }
+                    return publicGenerator;
+                } else if (getModifiers().contains(Modifier.PRIVATE)) {
+                    if (privateGenerator == null) {
+                        privateGenerator = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/resources/generatorPrivate.png")); //NOI18N
+                    }
+                    return privateGenerator;
+                } else if (getModifiers().contains(Modifier.PROTECTED)) {
+                    if (priviligedGenerator == null) {
+                        priviligedGenerator = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/resources/generatorPriviliged.png")); //NOI18N
+                    }
+                    return priviligedGenerator;
+                }
+            }
+            if (getModifiers().contains(Modifier.PROTECTED)) {
+                if(priviligedIcon == null) {
+                    priviligedIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/resources/methodPriviliged.png")); //NOI18N
+                }
+                return priviligedIcon;
             }
             return super.getCustomIcon();
         }

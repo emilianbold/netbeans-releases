@@ -146,8 +146,8 @@ FormatToken{kind=TEXT, offset=224, text=}, id=BRACKET_RIGHT_CURLY}
 FormatToken{kind=AFTER_END_BRACE, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=225, text=
 , id=EOL}
-FormatToken{kind=BEFORE_RIGHT_BRACE, offset=-1, text=null, id=null}
 FormatToken{kind=BEFORE_OBJECT_END, offset=-1, text=null, id=null}
+FormatToken{kind=BEFORE_RIGHT_BRACE, offset=-1, text=null, id=null}
 FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=226, text=}, id=BRACKET_RIGHT_CURLY}
 FormatToken{kind=AFTER_STATEMENT, offset=-1, text=null, id=null}
@@ -198,11 +198,9 @@ FormatToken{kind=TEXT, offset=284, text=white, id=STRING}
 FormatToken{kind=TEXT, offset=289, text=', id=STRING_END}
 FormatToken{kind=TEXT, offset=290, text=:, id=OPERATOR_COLON}
 FormatToken{kind=AFTER_CASE, offset=-1, text=null, id=null}
-FormatToken{kind=INDENTATION_INC, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=291, text=
 , id=EOL}
 FormatToken{kind=WHITESPACE, offset=292, text=    , id=WHITESPACE}
-FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=296, text=case, id=KEYWORD_CASE}
 FormatToken{kind=WHITESPACE, offset=300, text= , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=301, text=', id=STRING_BEGIN}

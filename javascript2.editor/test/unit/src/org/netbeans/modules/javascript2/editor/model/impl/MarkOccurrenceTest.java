@@ -54,6 +54,13 @@ public class MarkOccurrenceTest extends JsTestBase {
     public MarkOccurrenceTest(String testName) {
         super(testName);
     }
+
+    @Override
+    protected int timeOut() {
+        return 5000;
+    }
+    
+    
     
     public void testSimpleObject01() throws Exception {
         checkOccurrences("testfiles/model/simpleObject.js", "var Car^rot = {", true);
@@ -143,13 +150,13 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/coloring/czechChars.js", "    test.anotherProperty = test.myPrope^rty;", true);
     }
     
-    public void testGetterSetterInObjectLiteral01() throws Exception {
-        checkOccurrences("testfiles/model/getterSettterInObjectLiteral.js", "set yea^rs(count){this.old = count + 1;},", true);
-    }
-
-    public void testGetterSetterInObjectLiteral02() throws Exception {
-        checkOccurrences("testfiles/model/getterSettterInObjectLiteral.js", "Dog.yea^rs = 10;", true);
-    }
+//    public void testGetterSetterInObjectLiteral01() throws Exception {
+//        checkOccurrences("testfiles/model/getterSettterInObjectLiteral.js", "set yea^rs(count){this.old = count + 1;},", true);
+//    }
+//
+//    public void testGetterSetterInObjectLiteral02() throws Exception {
+//        checkOccurrences("testfiles/model/getterSettterInObjectLiteral.js", "Dog.yea^rs = 10;", true);
+//    }
     
     public void testFunctionInGlobalSpace01() throws Exception {
         checkOccurrences("testfiles/model/functionInGlobal.js", "this.printSometh^ing();", true);
@@ -1598,6 +1605,226 @@ public class MarkOccurrenceTest extends JsTestBase {
     
     public void testIssue253129_05() throws Exception {
         checkOccurrences("testfiles/coloring/issue253129.js", "var f3, f4, f^5 = f3 = f4 = function (){", true);
+    }
+    
+    public void testClass01_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class01.js", "var p^ = new Polygon (10,20);", true);
+    }
+    
+    public void testClass01_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class01.js", "var p = new Pol^ygon (10,20);", true);
+    }
+    
+    public void testClass01_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class01.js", "console.log(p.wid^th);", true);
+    }
+    
+    public void testClass01_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class01.js", "console.log(p.hei^ght);", true);
+    }
+    
+    public void testClass01_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class01.js", "this.height = hei^ght;", true);
+    }
+    
+    public void testClass01_06() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class01.js", "const^ructor(height, width) {", true);
+    }
+    
+    public void testClass02_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class02.js", "var p^ = new Polygon (10,20);", true);
+    }
+    
+    public void testClass02_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class02.js", "var p = new Pol^ygon (10,20);", true);
+    }
+    
+    public void testClass02_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class02.js", "console.log(p.wid^th);", true);
+    }
+    
+    public void testClass02_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class02.js", "console.log(p.hei^ght);", true);
+    }
+    
+    public void testClass02_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class02.js", "this.height = hei^ght;", true);
+    }
+    
+    public void testClass02_06() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class02.js", "const^ructor(height, width) {", true);
+    }
+    
+    public void testClass03_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class03.js", "var p^ = new Polygon (10, 20);", true);
+    }
+    
+    public void testClass03_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class03.js", "var p = new Poly^gon (10, 20);", true);
+    }
+    
+    public void testClass03_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class03.js", "console.log(p.wid^th);", true);
+    }
+    
+    public void testClass03_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class03.js", "console.log(p.hei^ght);", true);
+    }
+    
+    public void testClass03_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class03.js", "this.height = hei^ght;", true);
+    }
+    
+    public void testClass03_06() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class03.js", "const^ructor(height, width) {", true);
+    }
+    
+    public void testClass03_07() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class03.js", "var p = new Polygo^n2(1,2);", true);
+    }
+    
+    public void testClass04_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class04.js", "const p1 = new Po^int(5, 5);", true);
+    }
+    
+    public void testClass04_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class04.js", "const p^1 = new Point(5, 5);", true);
+    }
+    
+    public void testClass04_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class04.js", "console.log(Point.distan^ce(p1, p2)); ", true);
+    }
+    
+    public void testClass04_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class04.js", "const d^x = a.x - b.x;", true);
+    }
+    
+    public void testClass04_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class04.js", "const dx = a^.x - b.x;", true);
+    }
+    
+    public void testClass04_06() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class04.js", "const dx = a.x^ - b.x;", true);
+    }
+    
+    public void testClass04_07() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class04.js", "const dy = a.y - b.y^;", true);
+    }
+    
+    public void testClass04_08() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class04.js", "this.x^ = x;", true);
+    }
+    
+    public void testClass04_09() throws Exception {
+        checkOccurrences("testfiles/markoccurences/classes/class04.js", "this.x = x^;", true);
+    }
+    
+    public void testFunctionDeclaration01_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/functionDeclaration/functionDeclaration01.js", "f^1(true);", true);
+    }
+    
+    public void testFunctionDeclaration01_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/functionDeclaration/functionDeclaration01.js", "if (co^nt) {", true);
+    }
+    
+    public void testFunctionDeclaration02_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/functionDeclaration/functionDeclaration02.js", "f^1(true);", true);
+    }
+    
+    public void testFunctionDeclaration02_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/functionDeclaration/functionDeclaration02.js", "if (co^nt) {", true);
+    }
+    
+    public void testFunctionDeclaration02_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/functionDeclaration/functionDeclaration02.js", "f^1(false); // inner f1 is called", true);
+    }
+    
+    public void testFunctionDeclaration03_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/functionDeclaration/functionDeclaration03.js", "f^1(true);", true);
+    }
+    
+    public void testFunctionDeclaration03_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/functionDeclaration/functionDeclaration03.js", "if (co^nt) {", true);
+    }
+    
+    public void testFunctionDeclaration03_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/functionDeclaration/functionDeclaration03.js", "f^1(false); // inner f1 is called", true);
+    }
+    
+    public void testFunctionDeclaration04_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/functionDeclaration/functionDeclaration04.js", "f^1(true); // outer f1 is called", true);
+    }
+    
+    public void testFunctionDeclaration04_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/functionDeclaration/functionDeclaration04.js", "f^1(true); // inner f1 is called", true);
+    }
+    
+    public void testFunctionDeclaration04_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/functionDeclaration/functionDeclaration04.js", "f^1(false);  // the f1 private name is called", true);
+    }
+    
+    public void testFunctionDeclaration04_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/functionDeclaration/functionDeclaration04.js", "var f1 = function f1(c^ont) {", true);
+    }
+    
+    public void testFunctionDeclaration04_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/functionDeclaration/functionDeclaration04.js", "function f1(c^ont) {", true);
+    }
+    
+    public void testFunctionDeclaration05_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/functionDeclaration/functionDeclaration05.js", "f^1(true); // inner f1 is called", true);
+    }
+    
+    public void testFunctionDeclaration05_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/functionDeclaration/functionDeclaration05.js", "function f^1(cont) {", true);
+    }
+    
+    public void testFunctionDeclaration05_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/functionDeclaration/functionDeclaration05.js", "var f1 = function f^2(cont) {", true);
+    }
+    
+    public void testFunctionDeclaration06_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/functionDeclaration/functionDeclaration06.js", "f^1(false);", true);
+    }
+    
+    public void testFunctionDeclaration06_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/functionDeclaration/functionDeclaration06.js", "A.f^1(true);", true);
+    }
+    
+    public void testFunctionDeclaration06_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/functionDeclaration/functionDeclaration06.js", "var b = A^;", true);
+    }
+
+    public void testGenerator01_01() throws Exception {
+        checkOccurrences("testfiles/ecmascript6/generators/generator01.js", "var g = gen^01();", true);
+    }
+    
+    public void testGenerator01_02() throws Exception {
+        checkOccurrences("testfiles/ecmascript6/generators/generator01.js", "var g^ = gen01();", true);
+    }
+    
+    public void testGenerator02_01() throws Exception {
+        checkOccurrences("testfiles/ecmascript6/generators/generator02.js", "console.log(Ut^ils.values().next().value);", true);
+    }
+    
+    public void testGenerator02_02() throws Exception {
+        checkOccurrences("testfiles/ecmascript6/generators/generator02.js", "console.log(Utils.val^ues().next().value);", true);
+    }
+    
+    public void testGenerator02_03() throws Exception {
+        checkOccurrences("testfiles/ecmascript6/generators/generator02.js", "console.log(Utils.values().n^ext().value);", true);
+    }
+    
+    public void testGenerator02_04() throws Exception {
+        checkOccurrences("testfiles/ecmascript6/generators/generator02.js", "console.log(Utils.values().next().val^ue);", true);
+    }
+    
+    public void testGenerator03_01() throws Exception {
+        checkOccurrences("testfiles/ecmascript6/generators/generator03.js", "console.log(n.get^Name());", true);
+    }
+    
+    public void testGenerator04_01() throws Exception {
+        checkOccurrences("testfiles/ecmascript6/generators/generator04.js", "console.log(keyboard.ke^ys().next());", true);
     }
     
     private String getTestName() {
