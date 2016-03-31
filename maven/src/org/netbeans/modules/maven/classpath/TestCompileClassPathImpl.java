@@ -61,11 +61,12 @@ import org.openide.util.Utilities;
 class TestCompileClassPathImpl extends AbstractProjectClassPathImpl implements FlaggedClassPathImplementation {
 
     private volatile boolean incomplete;
+    private final boolean addTestOutDir;
 
     /** Creates a new instance of SrcClassPathImpl */
-    public TestCompileClassPathImpl(NbMavenProjectImpl proj) {
+    public TestCompileClassPathImpl(NbMavenProjectImpl proj, boolean addTestOutDir) {
         super(proj);
-        
+        this.addTestOutDir = addTestOutDir;        
     }
     
     @Override
@@ -89,6 +90,9 @@ class TestCompileClassPathImpl extends AbstractProjectClassPathImpl implements F
         if (incomplete != broken) {
             incomplete = broken;
             firePropertyChange(PROP_FLAGS, null, null);
+        }
+        if(addTestOutDir) {
+            lst.add(0, Utilities.toURI(getMavenProject().getProjectWatcher().getOutputDirectory(true)));            
         }
         lst.add(0, Utilities.toURI(getMavenProject().getProjectWatcher().getOutputDirectory(false)));
         URI[] uris = new URI[lst.size()];

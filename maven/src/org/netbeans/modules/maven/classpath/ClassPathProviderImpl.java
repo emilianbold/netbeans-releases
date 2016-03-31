@@ -52,6 +52,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -87,7 +88,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     private static final int TYPE_UNKNOWN = -1;
     
     private final @NonNull Project proj;
-    private final ClassPath[] cache = new ClassPath[14];    
+    private final ClassPath[] cache = new ClassPath[15];    
     
     public ClassPathProviderImpl(@NonNull Project proj) {
         this.proj = proj;        
@@ -291,7 +292,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
         }
         ClassPath cp = cache[2+type];
         if (cp == null) {
-            NbMavenProjectImpl project = proj.getLookup().lookup(NbMavenProjectImpl.class);
             if (type == TYPE_SRC) {
                 cp = createMultiplexClassPath(
                     new ModuleInfoSelector(proj.getLookup().lookup(NbMavenProjectImpl.class),
@@ -301,7 +301,13 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
                     )
                  );
             } else {
-                cp = ClassPathFactory.createClassPath(new TestCompileClassPathImpl(project));
+                cp = createMultiplexClassPath(
+                    new TestCompilePathSelector(proj.getLookup().lookup(NbMavenProjectImpl.class),
+                        getCompileClasspath(),
+                        getTestCompileClasspath(),
+                        "TestCompileTimeClasspath" // NOI18N
+                    )
+                 );                
             }
             cache[2+type] = cp;
         }
@@ -365,6 +371,33 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
             
             cp = ClassPathFactory.createClassPath(new CompileClassPathImpl(proj.getLookup().lookup(NbMavenProjectImpl.class), true));
             cache[13] = cp;
+        }
+        return cp;
+    }
+
+    private synchronized ClassPath getTestCompileClasspath() {
+        ClassPath cp = cache[14];
+        if (cp == null) {
+            
+            /*
+             XXX - the classpathElements in maven-compiler-plugin always were:
+              - all artifacts from the project with the scope - COMPILE, PROFILE and SYSTEM
+              - the path given by project.build.getOutputDirectory
+            
+             until jdk9 jigsaw: 
+              CompileClassPathImpl provided only the artifacts with the respective scope,
+              but NOT the project.build.getOutputDirectory.
+             since jdk9 jigsaw (and therefore maven-compiler-plugin 2.6): 
+              it is necessary to provide also project.build.getOutputDirectory 
+              (as that is the dir where maven copies the dependand jar/modules?)
+              
+             The question at this point is if we now should do so for all compiler versions 
+             (and also for < 2.6) and jdk-s < 9 or if we should difer between m-c-p < 2.6 and >=2.6 
+             and jdk version respectively.
+            */
+            
+            cp = ClassPathFactory.createClassPath(new TestCompileClassPathImpl(proj.getLookup().lookup(NbMavenProjectImpl.class), true));
+            cache[14] = cp;
         }
         return cp;
     }
@@ -434,7 +467,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
         return cp;
     }
 
-    private ClassPath createMultiplexClassPath(ModuleInfoSelector moduleInfoSelector) {
+    private ClassPath createMultiplexClassPath(ClassPathSelector moduleInfoSelector) {
         return org.netbeans.spi.java.classpath.support.ClassPathSupport.createMultiplexClassPath(moduleInfoSelector);
     }
     
@@ -493,6 +526,90 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
         }
     }
            
+    private static class TestModulePathSelector extends TestPathSelector {
+
+        public TestModulePathSelector(NbMavenProjectImpl proj, ClassPath compilePath, ClassPath testPath, String logDesc) {
+            super(proj, compilePath, testPath, logDesc);
+        }
+
+        @Override
+        protected ClassPath getActiveClassPath(boolean hasTestModuleDescriptor, boolean hasMainModuleDescriptor) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+        
+    }
+    
+    private static class TestCompilePathSelector extends TestPathSelector {
+        
+        public TestCompilePathSelector(NbMavenProjectImpl proj, ClassPath compilePath, ClassPath testPath, String logDesc) {
+            super(proj, compilePath, testPath, logDesc);
+        }
+
+        @Override
+        protected ClassPath getActiveClassPath(boolean hasTestModuleDescriptor, boolean hasMainModuleDescriptor) {        
+            // see org.apache.maven.plugin.compiler.TestCompilerMojo
+            if ( hasTestModuleDescriptor ) {
+                if ( hasMainModuleDescriptor ) {
+                    return ClassPath.EMPTY;
+                } else {
+                    return compilePath;
+                }
+            } else {
+                return testPath;
+            }
+        }
+    }
+    
+    private abstract static class TestPathSelector extends ClassPathSelector {
+                
+        private static final String MODULE_INFO = "module-info.java"; // NOI18N
+        private static final String MODULE_INFO_CLASS = "module-info.class"; // NOI18N
+        
+        protected final ClassPath compilePath;
+        protected final ClassPath testPath;
+        private final String logDesc;
+        
+        public TestPathSelector(NbMavenProjectImpl proj, ClassPath compilePath, ClassPath testPath, String logDesc) {
+            super(proj);
+            this.compilePath = compilePath;
+            this.testPath = testPath;
+            this.logDesc = logDesc;
+        }
+
+        @Override
+        public ClassPath getActiveClassPath() {
+            ClassPath ret = active;
+            if (ret == null) {
+                MavenProject mp = proj.getOriginalMavenProject();
+                boolean hasMainModuleDescriptor = new File(mp.getBuild().getOutputDirectory(), MODULE_INFO_CLASS).exists();
+                boolean hasTestModuleDescriptor = mp.getTestCompileSourceRoots().stream().anyMatch((sourceRoot) -> (new File(sourceRoot, MODULE_INFO).exists()));
+                
+                ret = getActiveClassPath(hasTestModuleDescriptor, hasMainModuleDescriptor);
+
+                active = ret;
+            }            
+            LOGGER.log(Level.FINE, "project: {0} and classpath selector: {1} is returning active class path: {2}", new Object[]{proj.getProjectDirectory().getPath(), logDesc, ret}); // NOI18N
+            return ret;
+        }
+
+        protected abstract ClassPath getActiveClassPath(boolean hasTestModuleDescriptor, boolean hasMainModuleDescriptor);
+
+        @Override
+        protected boolean isReset(PropertyChangeEvent evt) {
+            boolean reset = false;            
+            if( (NbMavenProject.PROP_RESOURCE.equals(evt.getPropertyName()) && evt.getNewValue() instanceof URI)) {
+                File file = Utilities.toFile((URI) evt.getNewValue());
+                MavenProject mp = proj.getOriginalMavenProject();
+                reset = file.equals(new File(mp.getBuild().getOutputDirectory(), MODULE_INFO_CLASS)) ||
+                        mp.getTestCompileSourceRoots().stream().anyMatch((sourceRoot) -> (file.equals(new File(sourceRoot, MODULE_INFO))));                
+                if(reset) {
+                    LOGGER.log(Level.FINER, "{0} selector resource changed: {1}", new Object[]{logDesc, evt});
+                }
+            }
+            return reset;
+        }
+    }
+    
     private static abstract class ClassPathSelector implements org.netbeans.spi.java.classpath.support.ClassPathSupport.Selector {
         private final PropertyChangeSupport support = new PropertyChangeSupport(this);
         
