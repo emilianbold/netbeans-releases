@@ -24,3 +24,6 @@ CLASS      IntClass                        [PUBLIC]   scalarTypeHints.php
 CLASS      Numbers                         [PUBLIC]   uniformVariableSyntax01.php
 CLASS      Numbers                         [PUBLIC]   uniformVariableSyntax02.php
 CLASS      StringClass                     [PUBLIC]   scalarTypeHints.php
+CLASS      UVS1                            [PUBLIC]   uniformVariableSyntax03.php
+CLASS      UVS2                            [PUBLIC]   uniformVariableSyntax03.php
+CLASS      UVS3                            [PUBLIC]   uniformVariableSyntax03.php

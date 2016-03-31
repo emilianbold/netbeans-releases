@@ -30,6 +30,9 @@ CLASS      Numbers                         [PUBLIC]   uniformVariableSyntax01.ph
 CLASS      Numbers                         [PUBLIC]   uniformVariableSyntax02.php
 CLASS      Outer                           [PUBLIC]   My
 CLASS      StringClass                     [PUBLIC]   scalarTypeHints.php
+CLASS      UVS1                            [PUBLIC]   uniformVariableSyntax03.php
+CLASS      UVS2                            [PUBLIC]   uniformVariableSyntax03.php
+CLASS      UVS3                            [PUBLIC]   uniformVariableSyntax03.php
 KEYWORD    array                                      null
 KEYWORD    bool                                       null
 KEYWORD    callable                                   null
