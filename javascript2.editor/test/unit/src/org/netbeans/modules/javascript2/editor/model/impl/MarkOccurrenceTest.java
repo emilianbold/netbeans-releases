@@ -1827,6 +1827,54 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/ecmascript6/generators/generator04.js", "console.log(keyboard.ke^ys().next());", true);
     }
     
+    public void testShorthandPropertyNames01() throws Exception {
+        checkOccurrences("testfiles/ecmascript6/shorthands/shorthandPropertyNames.js", "console.log(c^.sayHello());  // Hello", true);
+    }
+    
+    public void testShorthandPropertyNames02() throws Exception {
+        checkOccurrences("testfiles/ecmascript6/shorthands/shorthandPropertyNames.js", "console.log(c.sa^yHello());  // Hello", true);
+    }
+    
+    public void testShorthandPropertyNames03() throws Exception {
+        checkOccurrences("testfiles/ecmascript6/shorthands/shorthandPropertyNames.js", "console.log(c.t^hird);       // 3th", true);
+    }
+    
+    public void testShorthandPropertyNames04() throws Exception {
+        checkOccurrences("testfiles/ecmascript6/shorthands/shorthandPropertyNames.js", "console.log(o.c.sec^ond);    // 2th", true);
+    }
+    
+    public void testShorthandPropertyNames05() throws Exception {
+        checkOccurrences("testfiles/ecmascript6/shorthands/shorthandPropertyNames.js", "console.log(o.b^);           // 42", true);
+    }
+    
+    public void testShorthandMethodNames01() throws Exception {
+        checkOccurrences("testfiles/ecmascript6/shorthands/shorthandMethodNames.js", "console.log(o.pro^perty);", true);
+    }
+    
+    public void testShorthandMethodNames02() throws Exception {
+        checkOccurrences("testfiles/ecmascript6/shorthands/shorthandMethodNames.js", "console.log(prop^erty);", true);
+    }
+    
+    public void testShorthandMethodNames03() throws Exception {
+        checkOccurrences("testfiles/ecmascript6/shorthands/shorthandMethodNames.js", "console.log(o.met^hod());", true);
+    }
+    
+    public void testShorthandMethodNames04() throws Exception {
+        checkOccurrences("testfiles/ecmascript6/shorthands/shorthandMethodNames.js", "prope^rty = value;  // global property", true);
+    }
+    
+    public void testShorthandMethodNames05() throws Exception {
+        checkOccurrences("testfiles/ecmascript6/shorthands/shorthandMethodNames.js", "property = val^ue;  // global property", true);
+    }
+    
+    public void testComputedPropertyNames01() throws Exception {
+        checkOccurrences("testfiles/ecmascript6/shorthands/computedPropertyNames.js", "var pro^p = \"foo\";", true);
+    }
+    
+    public void testComputedPropertyNames02() throws Exception {
+        checkOccurrences("testfiles/ecmascript6/shorthands/computedPropertyNames.js", "pr^op : \"test\"", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

@@ -536,5 +536,16 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
     public void testFunctionDeclaration05() throws Exception {
         checkSemantic("testfiles/markoccurences/functionDeclaration/functionDeclaration05.js");
     }
+   
+    public void testShorthandPropertyNames01() throws Exception {
+        checkSemantic("testfiles/ecmascript6/shorthands/shorthandPropertyNames.js");
+    }
     
+    public void testShorthandMethodNames01() throws Exception {
+        checkSemantic("testfiles/ecmascript6/shorthands/shorthandMethodNames.js");
+    }
+    
+    public void testComputedPropertyNames01() throws Exception {
+        checkSemantic("testfiles/ecmascript6/shorthands/computedPropertyNames.js");
+    }
 }
