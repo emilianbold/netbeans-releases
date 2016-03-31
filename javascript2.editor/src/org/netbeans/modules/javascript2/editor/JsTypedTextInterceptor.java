@@ -55,8 +55,8 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditorOptions;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
 import org.netbeans.modules.javascript2.editor.options.OptionsUtils;
 import org.netbeans.spi.editor.typinghooks.TypedTextInterceptor;
 
