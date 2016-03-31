@@ -73,7 +73,9 @@ import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.java.queries.CompilerOptionsQueryImplementation;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -98,15 +100,19 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
             Pattern.compile("^testng-.*\\.jar$"),       //NOI18N
             Pattern.compile("^hamcrest-.*\\.jar$")));   //NOI18N
 
+    private final PropertyEvaluator eval;
     private final SourceRoots srcRoots;
     private final SourceRoots testRoots;
     private final AtomicReference<ResultImpl> result;
 
     UnitTestsCompilerOptionsQueryImpl(
+            @NonNull final PropertyEvaluator eval,
             @NonNull final SourceRoots srcRoots,
             @NonNull final SourceRoots testRoots) {
+        Parameters.notNull("eval", eval);   //NOI18N
         Parameters.notNull("srcRoots", srcRoots);   //NOI18N
         Parameters.notNull("testRoots", testRoots); //NOI18N
+        this.eval = eval;
         this.srcRoots = srcRoots;
         this.testRoots = testRoots;
         this.result = new AtomicReference<>();
@@ -119,7 +125,7 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
             if (isArtifact(root, file)) {
                 ResultImpl res = result.get();
                 if (res == null) {
-                    res = new ResultImpl(srcRoots, testRoots);
+                    res = new ResultImpl(eval, srcRoots, testRoots);
                     if (!result.compareAndSet(null, res)) {
                         res = result.get();
                     }
@@ -139,6 +145,7 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
 
     private static final class ResultImpl extends Result implements ChangeListener,
             PropertyChangeListener, FileChangeListener {
+        private final PropertyEvaluator eval;
         private final SourceRoots srcRoots;
         private final SourceRoots testRoots;
         private final ChangeSupport cs;
@@ -154,8 +161,10 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
         private boolean listensOnRoots;
 
         ResultImpl(
+                @NonNull final PropertyEvaluator eval,
                 @NonNull final SourceRoots srcRoots,
                 @NonNull final SourceRoots testRoots) {
+            this.eval = eval;
             this.srcRoots = srcRoots;
             this.testRoots = testRoots;
             this.cs = new ChangeSupport(this);
@@ -193,7 +202,10 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
                                 testModuleInfo == null ?
                                     TestMode.INLINED:
                                     TestMode.MODULE;
-                        args = mode.createArguments(
+                        final String propVal = eval.getProperty(ProjectProperties.JAVAC_TEST_COMPILERARGS);
+                        args = propVal != null && !propVal.isEmpty() ?
+                                parseLine(propVal) :
+                                mode.createArguments(
                                 srcModuleInfo,
                                 testModuleInfo,
                                 getTestLibrariesModules((ClassPath)holder[1]));
@@ -217,6 +229,7 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
                                 listensOnRoots = true;
                                 srcRoots.addPropertyChangeListener(WeakListeners.propertyChange(this, srcRoots));
                                 testRoots.addPropertyChangeListener(WeakListeners.propertyChange(this, testRoots));
+                                eval.addPropertyChangeListener(WeakListeners.propertyChange(this, eval));
                             }
                             final Set<File> toRemove = new HashSet<>(moduleInfoListeners);
                             toRemove.removeAll(allRoots);
@@ -261,7 +274,9 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
         public void propertyChange(@NonNull final PropertyChangeEvent evt) {
             final String evtName = evt.getPropertyName();
             if (SourceRoots.PROP_ROOTS.equals(evtName) ||
-                ClassPath.PROP_ENTRIES.equals(evtName)) {
+                ClassPath.PROP_ENTRIES.equals(evtName) ||
+                ProjectProperties.JAVAC_TEST_COMPILERARGS.equals(evtName) ||
+                evt == null) {
                 reset();
             }
         }

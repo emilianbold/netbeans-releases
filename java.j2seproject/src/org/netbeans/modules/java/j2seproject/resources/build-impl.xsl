@@ -227,44 +227,8 @@ is divided into following sections:
                 </condition>
                 <property name="module.name" value=""/>
             </target>
-            <target name="-init-test-module-properties" depends="-init-source-module-properties" if="named.module.internal">
-                <pathconvert property="javac.test.addreads.internal" pathsep=",">
-                    <path path="${{javac.test.modulepath}}"/>
-                    <chainedmapper>
-                        <flattenmapper/>
-                        <firstmatchmapper>
-                            <regexpmapper from="^((junit|testng|hamcrest)-.*)\.jar$$" to="\1"/>
-                            <regexpmapper from="^.*$$" to=""/>
-                        </firstmatchmapper>
-                        <regexpmapper from="^(.*)-\d+(\..*|$$)" to="\1"/>
-                        <filtermapper>
-                            <replaceregex pattern="[^A-Z0-9]" replace="." flags="gi"/>
-                            <replaceregex pattern="(\.)(\1)+" replace="." flags="gi"/>
-                            <replaceregex pattern="^\." replace="" flags="gi"/>
-                            <replaceregex pattern="\.$$" replace="" flags="gi"/>
-                        </filtermapper>
-                    </chainedmapper>
-                </pathconvert>
-                <j2seproject3:modulename property="test.module.name">
-                    <xsl:attribute name="sourcepath">
-                            <xsl:call-template name="createPath">
-                                <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:test-roots"/>
-                            </xsl:call-template>
-                    </xsl:attribute>
-                </j2seproject3:modulename>
-                <condition property="javac.test.compilerargs" value="-XaddReads:${{test.module.name}}=${{javac.test.addreads.internal}}" else="-Xmodule:${{module.name}} -XaddReads:${{module.name}}=${{javac.test.addreads.internal}}">
-                    <and>
-                        <isset property="test.module.name"/>
-                        <length length="0" string="${{test.module.name}}" when="greater"/>
-                    </and>
-                </condition>
-            </target>
-            <target name="-init-modules-properties" depends="-init-modules-supported,-init-macrodef-modulename,-init-source-module-properties,-init-test-module-properties">
-                <property name="javac.test.compilerargs" value=""/>
-            </target>
-
             <target name="-do-init">
-                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-init-modules-properties,-init-macrodef-property</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-init-macrodef-property</xsl:attribute>
 
                 <xsl:choose>
                     <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
@@ -526,7 +490,7 @@ is divided into following sections:
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-javac-with-module" depends="-init-ap-cmdline-properties, -init-modules-properties" if="modules.supported.internal">
+            <target name="-init-macrodef-javac-with-module" depends="-init-ap-cmdline-properties,-init-source-module-properties" if="modules.supported.internal">
                 <macrodef>
                     <xsl:attribute name="name">javac</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
@@ -642,7 +606,7 @@ is divided into following sections:
                     </sequential>
                 </macrodef>
             </target>
-            <target name="-init-macrodef-javac-with-processors" depends="-init-ap-cmdline-properties" if="ap.supported.internal" unless="modules.supported.internal">
+            <target name="-init-macrodef-javac-with-processors" depends="-init-ap-cmdline-properties,-init-source-module-properties" if="ap.supported.internal" unless="modules.supported.internal">
                 <macrodef>
                     <xsl:attribute name="name">javac</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
@@ -754,7 +718,7 @@ is divided into following sections:
                     </sequential>
                 </macrodef>
             </target>
-            <target name="-init-macrodef-javac-without-processors" depends="-init-ap-cmdline-properties" unless="ap.supported.internal">
+            <target name="-init-macrodef-javac-without-processors" depends="-init-ap-cmdline-properties,-init-source-module-properties" unless="ap.supported.internal">
                 <macrodef>
                     <xsl:attribute name="name">javac</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
@@ -1761,7 +1725,7 @@ is divided into following sections:
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-java-with-module" if="named.module.internal" depends="-init-modules-properties">
+            <target name="-init-macrodef-java-with-module" if="named.module.internal" depends="-init-source-module-properties">
                 <macrodef>
                     <xsl:attribute name="name">java</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
@@ -1822,7 +1786,7 @@ is divided into following sections:
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-java-with-unnamed-module" if="unnamed.module.internal" depends="-init-modules-properties">
+            <target name="-init-macrodef-java-with-unnamed-module" if="unnamed.module.internal" depends="-init-source-module-properties">
                 <macrodef>
                     <xsl:attribute name="name">java</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
@@ -1883,7 +1847,7 @@ is divided into following sections:
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-java-without-module" unless="modules.supported.internal" depends="-init-modules-properties">
+            <target name="-init-macrodef-java-without-module" unless="modules.supported.internal" depends="-init-source-module-properties">
                 <macrodef>
                     <xsl:attribute name="name">java</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
@@ -2697,7 +2661,44 @@ is divided into following sections:
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
-            
+
+            <target name="-init-test-module-properties-with-module" depends="-init-source-module-properties" if="named.module.internal">
+                <j2seproject3:modulename property="test.module.name">
+                    <xsl:attribute name="sourcepath">
+                            <xsl:call-template name="createPath">
+                                <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:test-roots"/>
+                            </xsl:call-template>
+                    </xsl:attribute>
+                </j2seproject3:modulename>
+                <pathconvert property="javac.test.addreads.internal" pathsep=",">
+                    <path path="${{javac.test.modulepath}}"/>
+                    <chainedmapper>
+                        <flattenmapper/>
+                        <firstmatchmapper>
+                            <regexpmapper from="^((junit|testng|hamcrest)-.*)\.jar$$" to="\1"/>
+                            <regexpmapper from="^.*$$" to=""/>
+                        </firstmatchmapper>
+                        <regexpmapper from="^(.*)-\d+(\..*|$$)" to="\1"/>
+                        <filtermapper>
+                            <replaceregex pattern="[^A-Z0-9]" replace="." flags="gi"/>
+                            <replaceregex pattern="(\.)(\1)+" replace="." flags="gi"/>
+                            <replaceregex pattern="^\." replace="" flags="gi"/>
+                            <replaceregex pattern="\.$$" replace="" flags="gi"/>
+                        </filtermapper>
+                    </chainedmapper>
+                </pathconvert>
+                <condition property="javac.test.compilerargs" value="-XaddReads:${{test.module.name}}=${{javac.test.addreads.internal}}" else="-Xmodule:${{module.name}} -XaddReads:${{module.name}}=${{javac.test.addreads.internal}}">
+                    <and>
+                        <isset property="test.module.name"/>
+                        <length length="0" string="${{test.module.name}}" when="greater"/>
+                    </and>
+                </condition>
+            </target>
+            <target name="-init-test-module-properties-without-module" depends="-init-source-module-properties" unless="named.module.internal">
+                <property name="javac.test.compilerargs" value=""/>
+            </target>
+            <target name="-init-test-module-properties" depends="-init-test-module-properties-with-module,-init-test-module-properties-without-module" unless="named.module.internal"/>
+
             <target name="-compile-test-depend" if="do.depend.true">
                 <xsl:element name="j2seproject3:depend">
                     <xsl:attribute name="srcdir">
@@ -2711,7 +2712,7 @@ is divided into following sections:
             </target>
             <target name="-do-compile-test">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
-                <xsl:attribute name="depends">init,deps-jar,compile,-pre-pre-compile-test,-pre-compile-test,-compile-test-depend</xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,compile,-init-test-module-properties,-pre-pre-compile-test,-pre-compile-test,-compile-test-depend</xsl:attribute>
                 <xsl:element name="j2seproject3:javac">
                     <xsl:attribute name="srcdir">
                         <xsl:call-template name="createPath">
@@ -2752,7 +2753,7 @@ is divided into following sections:
             
             <target name="-do-compile-test-single">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
-                <xsl:attribute name="depends">init,deps-jar,compile,-pre-pre-compile-test,-pre-compile-test-single</xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar,compile,-init-test-module-properties,-pre-pre-compile-test,-pre-compile-test-single</xsl:attribute>
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
                 <xsl:element name="j2seproject3:force-recompile">
                     <xsl:attribute name="destdir">${build.test.classes.dir}</xsl:attribute>

@@ -386,7 +386,7 @@ public final class J2SEProject implements Project {
             UILookupMergerSupport.createProjectProblemsProviderMerger(),
             new J2SEProjectPlatformImpl(this),
             QuerySupport.createCompilerOptionsQuery(eval, ProjectProperties.JAVAC_COMPILERARGS),
-            QuerySupport.createUnitTestsCompilerOptionsQuery(sourceRoots, testRoots),
+            QuerySupport.createUnitTestsCompilerOptionsQuery(eval, sourceRoots, testRoots),
             LookupMergerSupport.createCompilerOptionsQueryMerger()
         );
         lookup = base; // in case LookupProvider's call Project.getLookup
