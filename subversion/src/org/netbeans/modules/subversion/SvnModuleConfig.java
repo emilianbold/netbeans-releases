@@ -110,6 +110,7 @@ public class SvnModuleConfig {
     private static final SvnModuleConfig INSTANCE = new SvnModuleConfig();    
         
     private Map<String, Object[]> urlCredentials;
+    private String userPreferredFactory = "";
     
     public static SvnModuleConfig getDefault() {
         return INSTANCE;
@@ -596,6 +597,7 @@ public class SvnModuleConfig {
             getPreferences().put(PROP_PREFERRED_FACTORY, preferredFactory);
             setForceCommnandlineClient(false);
             factory = ""; // override the global setting
+            userPreferredFactory = preferredFactory;
         }
     }
 
@@ -604,5 +606,13 @@ public class SvnModuleConfig {
             factory = System.getProperty("svnClientAdapterFactory", ""); //NOI18N
         }
         return factory;
+    }
+
+    public String getForcedSvnFactory () {
+        String fact = getGlobalSvnFactory();
+        if (fact.isEmpty()) {
+            fact = userPreferredFactory;
+        }
+        return fact;
     }
 }

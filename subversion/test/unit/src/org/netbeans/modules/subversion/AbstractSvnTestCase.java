@@ -45,6 +45,7 @@ package org.netbeans.modules.subversion;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.List;
@@ -113,7 +114,13 @@ public abstract class AbstractSvnTestCase extends NbTestCase {
 
         System.setProperty("netbeans.user", System.getProperty("work.dir") + "/cache");
         cache = Subversion.getInstance().getStatusCache();
-        cache.cleanUp();
+        if (isSvnkit()) {
+            Method m = FileStatusCache.class.getDeclaredMethod("cleanUp");
+            m.setAccessible(true);
+            m.invoke(cache);
+        } else {
+            cache.cleanUp();
+        }
         
         cleanUpWC();  
         initRepo(repoDir);  
@@ -516,8 +523,8 @@ public abstract class AbstractSvnTestCase extends NbTestCase {
         return repoUrl;
     }
     
-    protected SVNUrl copyRepo() throws MalformedURLException {
-        String repopath = repoDir.getParent() + "/repo2";
+    protected SVNUrl copyRepo(String newRepoName) throws MalformedURLException {
+        String repopath = repoDir.getParent() + "/" + newRepoName;
         File repo2Dir = new File(repopath);
         FileUtils.copyDirFiles(getRepoDir(), repo2Dir);
         return new SVNUrl(TestUtilities.formatFileURL(new File(repopath)));

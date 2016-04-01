@@ -1,10 +1,10 @@
-Name: Subversion Java-HL bindings
-Version: 1.8.4
-Description: Java bindings library for subversion client
+Name: SVNClientAdapter Library
+Version: 1.10.12
+Description: Integration library for subversion client
 License: Apache-2.0
-OSR: 9185
-Origin: http://subversion.apache.org/
-
+OSR: 4077
+Origin: http://subclipse.tigris.org/svnClientAdapter.html
+Files: svnClientAdapter-main-1.8.18.jar
 
                                  Apache License
                            Version 2.0, January 2004
