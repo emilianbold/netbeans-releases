@@ -47,7 +47,7 @@ package org.netbeans.modules.javascript2.editor.formatter.ui;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import static org.netbeans.modules.javascript2.editor.formatter.FmtOptions.*;
 import static org.netbeans.modules.javascript2.editor.formatter.FmtOptions.CategorySupport.OPTION_ID;
