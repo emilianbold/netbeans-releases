@@ -337,6 +337,15 @@ public class JsFormatterTest extends JsTestBase {
     public void testGenerator1Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/generator1.js");
     }
+    
+    public void testGenerator2Default() throws Exception {
+        reformatFileContents("testfiles/formatter/generator2.js",
+                Collections.<String, Object>emptyMap(), ".default.formatted");
+    }
+    
+    public void testGenerator2Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/generator2.js");
+    }
 
     public void testFunctionCall1Default() throws Exception {
         reformatFileContents("testfiles/formatter/functionCall1.js",
