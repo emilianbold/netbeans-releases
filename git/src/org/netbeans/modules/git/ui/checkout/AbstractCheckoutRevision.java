@@ -78,6 +78,7 @@ public abstract class AbstractCheckoutRevision implements DocumentListener, Acti
     private String branchName;
     private final Map<String, GitBranch> branches;
     private final Icon ICON_ERROR = new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/info.png")); //NOI18N
+    private boolean autoSelectedCreateBranch = true;
 
     protected AbstractCheckoutRevision (RepositoryInfo info, RevisionDialogController revisionPicker) {
         this.revisionPicker = revisionPicker;
@@ -172,6 +173,7 @@ public abstract class AbstractCheckoutRevision implements DocumentListener, Acti
     @Override
     public void actionPerformed (ActionEvent e) {
         if (e.getSource() == panel.cbCheckoutAsNewBranch) {
+            autoSelectedCreateBranch = false;
             panel.branchNameField.setEnabled(panel.cbCheckoutAsNewBranch.isSelected());
             //#229555: automatically fill in local branch name based on the remote branch name
             validateBranchCB();
@@ -222,13 +224,27 @@ public abstract class AbstractCheckoutRevision implements DocumentListener, Acti
             branchNameRecommended = true;
         }
         
-        //#229555: automatically fill in local branch name based on the remote branch name
-        if (b != null && b.isRemote() && panel.cbCheckoutAsNewBranch.isSelected()) {
-            //extract "branch_X" from "origin/branch_X" to be the default local branch name
-            final String localBranch = rev.substring(rev.indexOf("/")+1);
-            final boolean localBranchExists = branches.containsKey(localBranch);
-            if (!localBranchExists) {
-                panel.branchNameField.setText(localBranch);
+        if (b != null) {
+            if (b.isRemote()) {
+                if (autoSelectedCreateBranch) {
+                    panel.cbCheckoutAsNewBranch.setSelected(true);
+                    panel.branchNameField.setEnabled(true);
+                }
+                //#229555: automatically fill in local branch name based on the remote branch name
+                if (panel.cbCheckoutAsNewBranch.isSelected()) {
+                    //extract "branch_X" from "origin/branch_X" to be the default local branch name
+                    final String localBranch = rev.substring(rev.indexOf("/")+1);
+                    final boolean localBranchExists = branches.containsKey(localBranch);
+                    if (localBranchExists) {
+                        panel.branchNameField.setText("");
+                    } else {
+                        panel.branchNameField.setText(localBranch);
+                    }
+                }
+            } else if (autoSelectedCreateBranch) {
+                panel.cbCheckoutAsNewBranch.setSelected(false);
+                panel.branchNameField.setEnabled(false);
+                panel.branchNameField.setText("");
             }
         }
         
