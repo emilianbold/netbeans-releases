@@ -682,6 +682,10 @@ public class ASTPHP5ParserTest extends ParserTestBase {
 //        performTest("parser/uniformVariableSyntax_22");
 //    }
 
+    public void testUniformVariableSyntax_23() throws Exception {
+        performTest("parser/uniformVariableSyntax_23");
+    }
+
     public void testGroupUse_01() throws Exception {
         performTest("parser/groupUse_01");
     }

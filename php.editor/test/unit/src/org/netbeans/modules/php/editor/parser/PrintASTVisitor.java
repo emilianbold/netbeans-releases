@@ -706,7 +706,7 @@ public class PrintASTVisitor implements Visitor {
     @Override
     public void visit(StaticConstantAccess node) {
         XMLPrintNode printNode = new XMLPrintNode(node, "StaticConstantAccess");
-        printNode.addChild(node.getClassName());
+        printNode.addChild(node.getDispatcher());
         printNode.addChild("Constant", node.getConstant());
         printNode.addChild("Member", node.getMember());
         printNode.print(this);
@@ -715,7 +715,7 @@ public class PrintASTVisitor implements Visitor {
     @Override
     public void visit(StaticFieldAccess node) {
         XMLPrintNode printNode = new XMLPrintNode(node, "StaticFieldAccess");
-        printNode.addChild(node.getClassName());
+        printNode.addChild(node.getDispatcher());
         printNode.addChild("Field", node.getField());
         printNode.addChild("Member", node.getMember());
         printNode.print(this);
@@ -724,7 +724,7 @@ public class PrintASTVisitor implements Visitor {
     @Override
     public void visit(StaticMethodInvocation node) {
         XMLPrintNode printNode = new XMLPrintNode(node, "StaticMethodInvocation");
-        printNode.addChild(node.getClassName());
+        printNode.addChild(node.getDispatcher());
         printNode.addChild("Member", node.getMember());
         printNode.addChild(node.getMethod());
         printNode.print(this);

@@ -1290,7 +1290,7 @@ class OccurenceBuilder {
                 Exact fieldName = NameKind.exact(phpElement.getName());
                 for (Entry<ASTNodeInfo<StaticFieldAccess>, Scope> entry : staticFieldInvocations.entrySet()) {
                     ASTNodeInfo<StaticFieldAccess> nodeInfo = entry.getKey();
-                    QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getClassName());
+                    QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getDispatcher());
                     final Scope scope = entry.getValue().getInScope();
                     if (clzName != null && clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
                         if (clzName.getName().equalsIgnoreCase("self") || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
@@ -1356,7 +1356,7 @@ class OccurenceBuilder {
                 Exact methodName = NameKind.exact(phpElement.getName());
                 for (Entry<ASTNodeInfo<StaticMethodInvocation>, Scope> entry : staticMethodInvocations.entrySet()) {
                     ASTNodeInfo<StaticMethodInvocation> nodeInfo = entry.getKey();
-                    QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getClassName());
+                    QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getDispatcher());
                     final Scope scope = entry.getValue().getInScope();
                     if (clzName != null) {
                         if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
@@ -1421,7 +1421,7 @@ class OccurenceBuilder {
                 Exact constantName = NameKind.exact(phpElement.getName());
                 for (Entry<ASTNodeInfo<StaticConstantAccess>, Scope> entry : staticConstantInvocations.entrySet()) {
                     ASTNodeInfo<StaticConstantAccess> nodeInfo = entry.getKey();
-                    QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getClassName());
+                    QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getDispatcher());
                     final Scope scope = ModelUtils.getTypeScope(entry.getValue());
                     if (clzName != null && clzName.getKind().isUnqualified() && scope != null) {
                         if (clzName.getName().equalsIgnoreCase("self") //NOI18N
