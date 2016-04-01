@@ -379,13 +379,13 @@ public class FormatVisitor extends NodeVisitor {
                     }
 
                     FormatToken next = star.next();
-                    if (next != null && (next.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR
-                            || next.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR_WRAP)) {
+                    if (next != null && (next.getKind() == FormatToken.Kind.AFTER_BINARY_OPERATOR
+                            || next.getKind() == FormatToken.Kind.AFTER_BINARY_OPERATOR_WRAP)) {
                         tokenStream.removeToken(next);
                     }
                     next = star.next();
-                    if (next != null && (next.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR
-                            || next.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR_WRAP)) {
+                    if (next != null && (next.getKind() == FormatToken.Kind.AFTER_BINARY_OPERATOR
+                            || next.getKind() == FormatToken.Kind.AFTER_BINARY_OPERATOR_WRAP)) {
                         tokenStream.removeToken(next);
                     }
                 }

@@ -17,8 +17,6 @@ FormatToken{kind=EOL, offset=17, text=
 , id=EOL}
 FormatToken{kind=WHITESPACE, offset=18, text=        , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=26, text=*, id=OPERATOR_MULTIPLICATION}
-FormatToken{kind=AFTER_BINARY_OPERATOR, offset=-1, text=null, id=null}
-FormatToken{kind=AFTER_BINARY_OPERATOR_WRAP, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=27, text=[, id=BRACKET_LEFT_BRACKET}
 FormatToken{kind=TEXT, offset=28, text=Symbol, id=IDENTIFIER}
 FormatToken{kind=BEFORE_DOT, offset=-1, text=null, id=null}

@@ -328,10 +328,26 @@ public class JsFormatterTest extends JsTestBase {
                 Collections.<String, Object>emptyMap(), ".default.formatted");
     }
     
+
+        
     public void testGenerator1Always() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
         options.put(FmtOptions.wrapMethodParams, CodeStyle.WrapStyle.WRAP_ALWAYS);
         reformatFileContents("testfiles/formatter/generator1.js", options, ".wrapAlways.formatted");
+    }
+
+    public void testGenerator1BinaryAfterAlways() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapBinaryOps, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        options.put(FmtOptions.wrapAfterBinaryOps, true);
+        reformatFileContents("testfiles/formatter/generator1.js", options, ".binaryAfter.wrapAlways.formatted");
+    }
+    
+    public void testGenerator1BinaryBeforeAlways() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapBinaryOps, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        options.put(FmtOptions.wrapAfterBinaryOps, false);
+        reformatFileContents("testfiles/formatter/generator1.js", options, ".binaryBefore.wrapAlways.formatted");
     }
     
     public void testGenerator1Tokens() throws Exception {
