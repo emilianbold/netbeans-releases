@@ -323,8 +323,19 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/functionDeclaration7.js", options, ".wrapAlways.formatted");
     }
     
-    public void testFunctionDeclaration7Tokens() throws Exception {
-        dumpFormatTokens("testfiles/formatter/functionDeclaration7.js");
+    public void testGenerator1Default() throws Exception {
+        reformatFileContents("testfiles/formatter/generator1.js",
+                Collections.<String, Object>emptyMap(), ".default.formatted");
+    }
+    
+    public void testGenerator1Always() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapMethodParams, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/generator1.js", options, ".wrapAlways.formatted");
+    }
+    
+    public void testGenerator1Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/generator1.js");
     }
 
     public void testFunctionCall1Default() throws Exception {

@@ -362,6 +362,34 @@ public class FormatVisitor extends NodeVisitor {
             handleFunctionParameters(functionNode, leftParen);
         } else {
             int start = getStart(functionNode);
+            // the star * is not multiplication (binary operator)
+            // FIXME should this be solved in lexer?
+            if (functionNode.getKind() == FunctionNode.Kind.GENERATOR) {
+                FormatToken star = getNextToken(start, JsTokenId.OPERATOR_MULTIPLICATION);
+                if (star != null) {
+                    FormatToken prev = star.previous();
+                    if (prev != null && (prev.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR
+                            || prev.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR_WRAP)) {
+                        tokenStream.removeToken(prev);
+                    }
+                    prev = star.previous();
+                    if (prev != null && (prev.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR
+                            || prev.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR_WRAP)) {
+                        tokenStream.removeToken(prev);
+                    }
+
+                    FormatToken next = star.next();
+                    if (next != null && (next.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR
+                            || next.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR_WRAP)) {
+                        tokenStream.removeToken(next);
+                    }
+                    next = star.next();
+                    if (next != null && (next.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR
+                            || next.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR_WRAP)) {
+                        tokenStream.removeToken(next);
+                    }
+                }
+            }
 
             FormatToken leftParen = getNextToken(start, JsTokenId.BRACKET_LEFT_PAREN);
             if (leftParen != null) {
