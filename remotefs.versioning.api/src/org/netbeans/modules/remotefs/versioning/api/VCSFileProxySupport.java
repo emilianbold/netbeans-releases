@@ -352,6 +352,9 @@ public final class VCSFileProxySupport {
             return VCSFileProxy.createFileProxy(res);
         } else {
             // TODO: review it!
+            if (suffix == null) {
+                suffix = ".tmp"; //NOI18N
+            }
             return VCSFileProxy.createFileProxy(file.toFileObject().createData(prefix+Long.toString(System.currentTimeMillis()), suffix));
         }
     }
