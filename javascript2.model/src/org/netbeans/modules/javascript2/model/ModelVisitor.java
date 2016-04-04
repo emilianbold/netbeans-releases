@@ -2580,11 +2580,11 @@ public class ModelVisitor extends PathNodeVisitor {
                         Identifier propertyName = create(parserResult, varNode.getName());
                         Set<Modifier> modifiers;
                         if (isPriviliged) {
-                            modifiers = Collections.singleton(Modifier.PROTECTED);
+                            modifiers = EnumSet.of(Modifier.PROTECTED);
                         } else if (modelBuilder.getCurrentDeclarationFunction().getJSKind() == JsElement.Kind.FILE) {
-                            modifiers = Collections.singleton(Modifier.PUBLIC);
+                            modifiers = EnumSet.of(Modifier.PUBLIC);
                         } else {
-                            modifiers = Collections.singleton(Modifier.PRIVATE);
+                            modifiers = EnumSet.of(Modifier.PRIVATE);
                         }
                         JsObject property = new JsFunctionReference(modelBuilder.getCurrentObject(), propertyName, (JsFunction)parent, true, modifiers);
                         modelBuilder.getCurrentObject().addProperty(propertyName.getName(), property);
