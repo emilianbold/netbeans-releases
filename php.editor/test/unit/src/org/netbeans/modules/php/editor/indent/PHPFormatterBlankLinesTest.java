@@ -891,6 +891,7 @@ public class PHPFormatterBlankLinesTest extends PHPFormatterTestBase {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.BLANK_LINES_AFTER_OPEN_PHP_TAG, 0);
         options.put(FmtOptions.BLANK_LINES_BEFORE_NAMESPACE, 0);
+        options.put(FmtOptions.SPACE_BETWEEN_OPEN_PHP_TAG_AND_NAMESPACE, true);
         reformatFileContents("testfiles/formatting/blankLines/issue235710_01.php", options);
     }
 
@@ -953,6 +954,13 @@ public class PHPFormatterBlankLinesTest extends PHPFormatterTestBase {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.BLANK_LINES_AFTER_OPEN_PHP_TAG, 0);
         reformatFileContents("testfiles/formatting/blankLines/issue235972_02.php", options);
+    }
+
+    public void testIssue243744() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.BLANK_LINES_AFTER_OPEN_PHP_TAG, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_NAMESPACE, 0);
+        reformatFileContents("testfiles/formatting/blankLines/issue243744.php", options);
     }
 
 }

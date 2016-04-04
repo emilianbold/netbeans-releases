@@ -179,6 +179,7 @@ public final class FmtOptions {
     public static final String SPACE_CHECK_AFTER_KEYWORDS = "spaceCheckAfterKeywords"; //NOI18N
     public static final String SPACE_AFTER_SHORT_PHP_TAG = "spaceAfterShortPHPTag"; //NOI18N
     public static final String SPACE_BEFORE_CLOSE_PHP_TAG = "spaceBeforeClosePHPTag"; //NOI18N
+    public static final String SPACE_BETWEEN_OPEN_PHP_TAG_AND_NAMESPACE = "spaceBetweenOpenPHPTagAndNamespace"; //NOI18N
     public static final String PLACE_ELSE_ON_NEW_LINE = "placeElseOnNewLine"; //NOI18N
     public static final String PLACE_WHILE_ON_NEW_LINE = "placeWhileOnNewLine"; //NOI18N
     public static final String PLACE_CATCH_ON_NEW_LINE = "placeCatchOnNewLine"; //NOI18N
@@ -340,6 +341,7 @@ public final class FmtOptions {
             {SPACE_CHECK_AFTER_KEYWORDS, TRUE},
             {SPACE_AFTER_SHORT_PHP_TAG, TRUE},
             {SPACE_BEFORE_CLOSE_PHP_TAG, TRUE},
+            {SPACE_BETWEEN_OPEN_PHP_TAG_AND_NAMESPACE, FALSE},
             {ALIGN_MULTILINE_METHOD_PARAMS, FALSE}, //NOI18N
             {ALIGN_MULTILINE_CALL_ARGS, FALSE}, //NOI18N
             {ALIGN_MULTILINE_IMPLEMENTS, FALSE}, //NOI18N
