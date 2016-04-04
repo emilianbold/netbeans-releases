@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -51,19 +50,20 @@ import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.EditorOptions;
-import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.javascript2.editor.doc.JsDocumentationCompleter;
-import org.netbeans.modules.javascript2.editor.lexer.JsDocumentationTokenId;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.lexer.api.JsDocumentationTokenId;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
 import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -518,14 +518,14 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         int currentOffset = offset;
         while (currentOffset > 0) {
             if (!Utilities.isRowEmpty(doc, currentOffset) && !Utilities.isRowWhite(doc, currentOffset)
-                    && !LexUtilities.isCommentOnlyLine(doc, currentOffset, language)) {
+                    && !isCommentOnlyLine(doc, currentOffset, language)) {
                 indent = GsfUtilities.getLineIndent(doc, currentOffset);
-                int parenBalance = LexUtilities.getLineBalance(doc, currentOffset,
+                int parenBalance = getLineBalance(doc, currentOffset,
                         JsTokenId.BRACKET_LEFT_PAREN, JsTokenId.BRACKET_RIGHT_PAREN);
                 if (parenBalance < 0) {
                     break;
                 }
-                int curlyBalance = LexUtilities.getLineBalance(doc, currentOffset,
+                int curlyBalance = getLineBalance(doc, currentOffset,
                         JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY);
                 if (curlyBalance > 0) {
                     indent += IndentUtils.indentLevelSize(doc);
@@ -794,6 +794,66 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             }
         }
         return false;
+    }
+    
+    /**
+     * Return true iff the line for the given offset is a JavaScript comment line.
+     * This will return false for lines that contain comments (even when the
+     * offset is within the comment portion) but also contain code.
+     */
+    private static boolean isCommentOnlyLine(BaseDocument doc, int offset, Language<JsTokenId> language)
+            throws BadLocationException {
+
+        int begin = Utilities.getRowFirstNonWhite(doc, offset);
+
+        if (begin == -1) {
+            return false; // whitespace only
+        }
+
+        Token<? extends JsTokenId> token = LexUtilities.getToken(doc, begin, language);
+        if (token != null) {
+            return token.id() == JsTokenId.LINE_COMMENT;
+        }
+
+        return false;
+    }
+
+    /** Compute the balance of begin/end tokens on the line */
+    private static int getLineBalance(BaseDocument doc, int offset, TokenId up, TokenId down) {
+        try {
+            int begin = Utilities.getRowStart(doc, offset);
+            int end = Utilities.getRowEnd(doc, offset);
+
+            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, begin);
+            if (ts == null) {
+                return 0;
+            }
+
+            ts.move(begin);
+
+            if (!ts.moveNext()) {
+                return 0;
+            }
+
+            int balance = 0;
+
+            do {
+                Token<? extends JsTokenId> token = ts.token();
+                TokenId id = token.id();
+
+                if (id == up) {
+                    balance++;
+                } else if (id == down) {
+                    balance--;
+                }
+            } while (ts.moveNext() && (ts.offset() <= end));
+
+            return balance;
+        } catch (BadLocationException ble) {
+            Exceptions.printStackTrace(ble);
+
+            return 0;
+        }
     }
 
     @MimeRegistrations({

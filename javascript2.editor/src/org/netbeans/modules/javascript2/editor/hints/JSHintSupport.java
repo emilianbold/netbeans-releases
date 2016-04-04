@@ -50,10 +50,10 @@ import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
+import org.netbeans.modules.javascript2.model.api.ModelUtils;
+import org.netbeans.modules.javascript2.types.api.Identifier;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -64,62 +64,10 @@ public class JSHintSupport {
 
     private static String GLOBAL_DIRECTIVE = "global"; //NOI18N
 
-    public static Collection<Identifier> getDefinedGlobal(final Snapshot snapshot, final int offset) {
-        ArrayList<Identifier> names = new ArrayList<Identifier>();
-        List<JsTokenId> findToken = Arrays.asList(JsTokenId.BLOCK_COMMENT);
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(snapshot, offset);
-        if (ts == null) {
-            return names;
-        }
-        ts.move(0);
-        Token<? extends JsTokenId> token = LexUtilities.findNextIncluding(ts, findToken);
-        while (token != null && token.id() == JsTokenId.BLOCK_COMMENT) {
-            int iOffset = ts.offset();
-            String text = token.text().toString();
-            // cut /*
-            text = text.substring(2);
-            iOffset += 2;
-            while (!text.isEmpty() && text.charAt(0) == ' ') {
-                text = text.substring(1);
-                iOffset++;
-            }
-            if (text.startsWith(GLOBAL_DIRECTIVE) && text.length() > GLOBAL_DIRECTIVE.length() && text.charAt(GLOBAL_DIRECTIVE.length()) == ' ') {
-                text = text.substring(GLOBAL_DIRECTIVE.length() + 1);
-                iOffset = iOffset + GLOBAL_DIRECTIVE.length() + 1;
-                String[] parts = text.split(",");
-                for (String part : parts) {
-                    String name = part;
-                    int nameOffset = iOffset;
-                    while (!name.isEmpty() && name.charAt(0) == ' ') {
-                        name = name.substring(1);
-                        nameOffset++;
-                    }
-                    name.trim();
-                    if (name.indexOf('*') > 0) {
-                        name = name.substring(0, name.indexOf('*')).trim();
-                    }
-                    if (name.indexOf(':') > 0) {
-                        name = name.substring(0, name.indexOf(':')).trim();
-                    }
-                    if (!name.isEmpty()) {
-                        names.add(new IdentifierImpl(name, new OffsetRange(nameOffset, nameOffset + name.length())));
-                    }
-                    iOffset = iOffset + part.length() + 1;
-                }
-            }
-            if (ts.moveNext()) {
-                token = LexUtilities.findNextIncluding(ts, findToken);
-            } else {
-                break;
-            }
-        }
-        return names;
-    }
-
     public static void addGlobalInline(Snapshot snapshot, int offset, String name) throws BadLocationException {
         Document document = snapshot.getSource().getDocument(false);
         if (document != null) {
-            Collection<Identifier> definedGlobal = getDefinedGlobal(snapshot, 0);
+            Collection<Identifier> definedGlobal = ModelUtils.getDefinedGlobal(snapshot, 0);
             Identifier lastOne = null;
             for (Identifier iden : definedGlobal) {
                 if (lastOne == null || lastOne.getOffsetRange().getEnd() < iden.getOffsetRange().getEnd()) {
