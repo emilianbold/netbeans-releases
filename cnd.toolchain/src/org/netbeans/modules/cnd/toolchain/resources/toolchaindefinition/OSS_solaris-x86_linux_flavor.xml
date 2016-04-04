@@ -45,10 +45,10 @@ made subject to such option by the copyright holder.
 -->
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <toolchain name="OSS" display="Oracle Solaris Studio" family="SunStudio" aliases="OracleDeveloperStudio"/>
+    <toolchain name="OSS" display="Oracle Developer Studio" family="SunStudio" aliases="OracleDeveloperStudio"/>
     <platforms stringvalue="sun_intel,linux"/>
     <default_locations>
-        <platform os="linux" directory="/opt/oracle/solarisstudiodev/bin"/>
-        <platform os="sun_intel" directory="/opt/solarisstudiodev/bin"/>
+        <platform os="linux" directory="/opt/oracle/developerstudiodev/bin"/>
+        <platform os="sun_intel" directory="/opt/developerstudiodev/bin"/>
     </default_locations>
 </toolchaindefinition>
