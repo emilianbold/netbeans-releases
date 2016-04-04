@@ -47,6 +47,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
@@ -87,6 +89,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+import org.openide.awt.CloseButtonFactory;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -95,6 +98,7 @@ import org.openide.text.Annotation;
 import org.openide.text.AnnotationProvider;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
@@ -150,7 +154,7 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
         watchToAnnotation.put(watch, annotation);
         annotation.attach(line);
         
-        JComponent window = new JInternalFrameImpl(watch, false, false, false, false);
+        JComponent window = new StickyPanel(watch, eui);
         eui.getStickyWindowSupport().addWindow(window, pin.getLocation());
         watchToWindow.put(watch, window);
     }
@@ -252,44 +256,37 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
     public void propertyChange(PropertyChangeEvent evt) {
     }
 
-    private static final class JInternalFrameImpl extends JPanel {
+    private static final class StickyPanel extends JPanel {
         private static final String UI_PREFIX = "ToolTip"; // NOI18N
         private final JLabel label;
         private RequestProcessor annotationProcessor = new RequestProcessor("Annotation Refresh", 1);
 
         @SuppressWarnings("OverridableMethodCallInConstructor")
-        public JInternalFrameImpl(final Watch watch, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable) {
+        public StickyPanel(final Watch watch, final EditorUI eui) {
             Font font = UIManager.getFont(UI_PREFIX + ".font"); // NOI18N
             Color backColor = UIManager.getColor(UI_PREFIX + ".background"); // NOI18N
             Color foreColor = UIManager.getColor(UI_PREFIX + ".foreground"); // NOI18N
-
-            setLayout(new FlowLayout());
             
-            setOpaque(false);
-            
-            JPanel panel = new JPanel();
-            panel.setBorder(
-//                    BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(getForeground())
-//                BorderFactory.createEmptyBorder(0, 3, 0, 3)
-            );
             if (backColor != null) {
-                panel.setBackground(backColor);
+                setBackground(backColor);
             }
-            JPanel buttons = new JPanel();
-            buttons.setLayout(new BoxLayout(buttons, BoxLayout.Y_AXIS));
-            buttons.setBorder(BorderFactory.createCompoundBorder(
+            
+            setOpaque(true);
+            
+            setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(getForeground()),
                 BorderFactory.createEmptyBorder(0, 3, 0, 3)
             ));
             
-            buttons.add(new JButton("X"));
-            buttons.add(new JButton("*"));
-            buttons.add(new JButton("^"));
+            setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
             
-            add(panel);
-//            add(buttons);
-
+            Icon expIcon = ImageUtilities.loadImageIcon("org/netbeans/swing/tabcontrol/resources/win8_popup_enabled.png", false);    // NOI18N
+            JButton expButton = new JButton(expIcon);
+            expButton.setBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 5));
+            expButton.setBorderPainted(false);
+            expButton.setContentAreaFilled(false);
+            add(expButton);
+            
             annotationProcessor.post(new Runnable() {
                 @Override
                 public void run() {
@@ -308,7 +305,17 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
                 label.setBackground(backColor);
             }
             label.setBorder(new javax.swing.border.EmptyBorder(0, 3, 0, 3));
-            panel.add(label, java.awt.BorderLayout.CENTER);
+            add(label);
+            
+            JButton closeButton = org.openide.awt.CloseButtonFactory.createBigCloseButton();
+            closeButton.addActionListener(new java.awt.event.ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    eui.getStickyWindowSupport().removeWindow(StickyPanel.this);
+                }
+            });
+            add(closeButton);
+            
             MouseAdapter mouseAdapter = new java.awt.event.MouseAdapter() {
                 private Point orig;
                 @Override

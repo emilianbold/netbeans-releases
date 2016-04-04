@@ -46,7 +46,6 @@ import java.awt.Container;
 import java.awt.Point;
 import java.awt.Rectangle;
 import javax.swing.JComponent;
-import javax.swing.JInternalFrame;
 import javax.swing.JLayeredPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
@@ -95,9 +94,9 @@ public class StickyWindowSupport {
         Container container = component.getParent();
         if(container instanceof JLayeredPane) {
             JLayeredPane pane = (JLayeredPane) container;
-            Point point = SwingUtilities.convertPoint(null, location, pane);
-            frame.setLocation(point);
+            Point point = SwingUtilities.convertPoint(pane.getRootPane(), location, pane);
             pane.add(frame, JLayeredPane.PALETTE_LAYER);
+            frame.setLocation(point);
             frame.setVisible(true);
         }
     }
@@ -108,6 +107,7 @@ public class StickyWindowSupport {
         if(container instanceof JLayeredPane) {
             JLayeredPane pane = (JLayeredPane) container;
             pane.remove(frame);
+            pane.repaint(frame.getBounds());
         }
     }
     
