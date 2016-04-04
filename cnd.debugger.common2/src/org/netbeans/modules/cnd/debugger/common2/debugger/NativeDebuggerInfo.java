@@ -161,7 +161,7 @@ public abstract class NativeDebuggerInfo {
     private final Object lock = new Object();
     private volatile Project project;
     
-    public final Project getProject() {
+    /*package*/ final Project getProject() {
         synchronized (lock) {
             if (project == null) {
                 FileObject projectDir = getConfiguration().getBaseFSPath().getFileObject();
