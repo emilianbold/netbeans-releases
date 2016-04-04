@@ -922,10 +922,10 @@ is divided into following sections:
                     <xsl:attribute name="value"></xsl:attribute>
                 </property>
             </target>
-            
-            <target name="-init-macrodef-junit-single" if="${{nb.junit.single}}" unless="${{nb.junit.batch}}">
+
+            <target name="-init-macrodef-junit-prototype-with-module" depends="-init-modules-supported" if="modules.supported.internal">
                 <macrodef>
-                    <xsl:attribute name="name">junit</xsl:attribute>
+                    <xsl:attribute name="name">junit-prototype</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
                     <attribute>
                         <xsl:attribute name="name">includes</xsl:attribute>
@@ -935,16 +935,8 @@ is divided into following sections:
                         <xsl:attribute name="name">excludes</xsl:attribute>
                         <xsl:attribute name="default">${excludes}</xsl:attribute>
                     </attribute>
-                    <attribute>
-                        <xsl:attribute name="name">testincludes</xsl:attribute>
-                        <xsl:attribute name="default">**</xsl:attribute>
-                    </attribute>
-                    <attribute>
-                        <xsl:attribute name="name">testmethods</xsl:attribute>
-                        <xsl:attribute name="default"></xsl:attribute>
-                    </attribute>
                     <element>
-                        <xsl:attribute name="name">customize</xsl:attribute>
+                        <xsl:attribute name="name">customizePrototype</xsl:attribute>
                         <xsl:attribute name="optional">true</xsl:attribute>
                     </element>
                     <sequential>
@@ -953,14 +945,13 @@ is divided into following sections:
                             <xsl:attribute name="showoutput">true</xsl:attribute>
                             <xsl:attribute name="fork">true</xsl:attribute>
                             <xsl:attribute name="forkmode">${junit.forkmode}</xsl:attribute>
-                            <xsl:attribute name="dir">${work.dir}</xsl:attribute> <!-- #47474: match <java> --> 
+                            <xsl:attribute name="dir">${work.dir}</xsl:attribute> <!-- #47474: match <java> -->
                             <xsl:attribute name="failureproperty">tests.failed</xsl:attribute>
                             <xsl:attribute name="errorproperty">tests.failed</xsl:attribute>
                             <xsl:attribute name="tempdir">${build.dir}</xsl:attribute>
                             <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
-                            <test todir="${{build.test.results.dir}}" name="@{{testincludes}}" methods="@{{testmethods}}"/>
                             <syspropertyset>
                                 <propertyref prefix="test-sys-prop."/>
                                 <mapper type="glob" from="test-sys-prop.*" to="*"/>
@@ -968,13 +959,57 @@ is divided into following sections:
                             <formatter type="brief" usefile="false"/>
                             <formatter type="xml"/>
                             <jvmarg value="-ea"/>
-                            <customize/>
+                            <jvmarg line="-modulepath ${{run.test.modulepath}}"/>
+                            <jvmarg line="${{run.test.jvmargs}}"/>
+                            <customizePrototype/>
                         </junit>
                     </sequential>
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-junit-batch" if="${{nb.junit.batch}}" unless="${{nb.junit.single}}" depends="-init-test-properties">
+            <target name="-init-macrodef-junit-prototype-without-module" depends="-init-modules-supported" unless="modules.supported.internal">
+                <macrodef>
+                    <xsl:attribute name="name">junit-prototype</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">includes</xsl:attribute>
+                        <xsl:attribute name="default">${includes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">excludes</xsl:attribute>
+                        <xsl:attribute name="default">${excludes}</xsl:attribute>
+                    </attribute>
+                    <element>
+                        <xsl:attribute name="name">customizePrototype</xsl:attribute>
+                        <xsl:attribute name="optional">true</xsl:attribute>
+                    </element>
+                    <sequential>
+                        <property name="junit.forkmode" value="perTest"/>
+                        <junit>
+                            <xsl:attribute name="showoutput">true</xsl:attribute>
+                            <xsl:attribute name="fork">true</xsl:attribute>
+                            <xsl:attribute name="forkmode">${junit.forkmode}</xsl:attribute>
+                            <xsl:attribute name="dir">${work.dir}</xsl:attribute> <!-- #47474: match <java> -->
+                            <xsl:attribute name="failureproperty">tests.failed</xsl:attribute>
+                            <xsl:attribute name="errorproperty">tests.failed</xsl:attribute>
+                            <xsl:attribute name="tempdir">${build.dir}</xsl:attribute>
+                            <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
+                                <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
+                            </xsl:if>
+                            <syspropertyset>
+                                <propertyref prefix="test-sys-prop."/>
+                                <mapper type="glob" from="test-sys-prop.*" to="*"/>
+                            </syspropertyset>
+                            <formatter type="brief" usefile="false"/>
+                            <formatter type="xml"/>
+                            <jvmarg value="-ea"/>
+                            <customizePrototype/>
+                        </junit>
+                    </sequential>
+                </macrodef>
+            </target>
+
+            <target name="-init-macrodef-junit-single" depends="-init-test-properties,-init-macrodef-junit-prototype-with-module,-init-macrodef-junit-prototype-without-module" if="${{nb.junit.single}}" unless="${{nb.junit.batch}}">
                 <macrodef>
                     <xsl:attribute name="name">junit</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
@@ -993,44 +1028,63 @@ is divided into following sections:
                     <attribute>
                         <xsl:attribute name="name">testmethods</xsl:attribute>
                         <xsl:attribute name="default"></xsl:attribute>
-                    </attribute>                                        
+                    </attribute>
                     <element>
                         <xsl:attribute name="name">customize</xsl:attribute>
                         <xsl:attribute name="optional">true</xsl:attribute>
                     </element>
                     <sequential>
-                        <property name="junit.forkmode" value="perTest"/>
-                        <junit>
-                            <xsl:attribute name="showoutput">true</xsl:attribute>
-                            <xsl:attribute name="fork">true</xsl:attribute>
-                            <xsl:attribute name="forkmode">${junit.forkmode}</xsl:attribute>
-                            <xsl:attribute name="dir">${work.dir}</xsl:attribute> <!-- #47474: match <java> --> 
-                            <xsl:attribute name="failureproperty">tests.failed</xsl:attribute>
-                            <xsl:attribute name="errorproperty">tests.failed</xsl:attribute>
-                            <xsl:attribute name="tempdir">${build.dir}</xsl:attribute>
-                            <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
-                                <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
-                            </xsl:if>
-                            <batchtest todir="${{build.test.results.dir}}">
-                                <xsl:call-template name="createFilesets">
-                                    <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:test-roots"/>
-                                    <xsl:with-param name="includes">@{includes}</xsl:with-param>
-                                    <xsl:with-param name="includes2">@{testincludes}</xsl:with-param>
-                                    <xsl:with-param name="excludes">@{excludes}</xsl:with-param>
-                                </xsl:call-template>
-                                <fileset dir="${{build.test.classes.dir}}" excludes="@{{excludes}},${{excludes}},${{test.binaryexcludes}}" includes="${{test.binaryincludes}}">
-                                    <filename name="${{test.binarytestincludes}}"/>
-                                </fileset>
-                            </batchtest>
-                            <syspropertyset>
-                                <propertyref prefix="test-sys-prop."/>
-                                <mapper type="glob" from="test-sys-prop.*" to="*"/>
-                            </syspropertyset>
-                            <formatter type="brief" usefile="false"/>
-                            <formatter type="xml"/>
-                            <jvmarg value="-ea"/>
-                            <customize/>
-                        </junit>
+                        <j2seproject3:junit-prototype>
+                            <customizePrototype>
+                                <test todir="${{build.test.results.dir}}" name="@{{testincludes}}" methods="@{{testmethods}}"/>
+                                <customize/>
+                            </customizePrototype>
+                        </j2seproject3:junit-prototype>
+                    </sequential>
+                </macrodef>
+            </target>
+
+            <target name="-init-macrodef-junit-batch" depends="-init-test-properties,-init-macrodef-junit-prototype-with-module,-init-macrodef-junit-prototype-without-module" if="${{nb.junit.batch}}" unless="${{nb.junit.single}}">
+                <macrodef>
+                    <xsl:attribute name="name">junit</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">includes</xsl:attribute>
+                        <xsl:attribute name="default">${includes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">excludes</xsl:attribute>
+                        <xsl:attribute name="default">${excludes}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testincludes</xsl:attribute>
+                        <xsl:attribute name="default">**</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testmethods</xsl:attribute>
+                        <xsl:attribute name="default"></xsl:attribute>
+                    </attribute>
+                    <element>
+                        <xsl:attribute name="name">customize</xsl:attribute>
+                        <xsl:attribute name="optional">true</xsl:attribute>
+                    </element>
+                    <sequential>
+                        <j2seproject3:junit-prototype>
+                            <customizePrototype>
+                                <batchtest todir="${{build.test.results.dir}}">
+                                    <xsl:call-template name="createFilesets">
+                                        <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:test-roots"/>
+                                        <xsl:with-param name="includes">@{includes}</xsl:with-param>
+                                        <xsl:with-param name="includes2">@{testincludes}</xsl:with-param>
+                                        <xsl:with-param name="excludes">@{excludes}</xsl:with-param>
+                                    </xsl:call-template>
+                                    <fileset dir="${{build.test.classes.dir}}" excludes="@{{excludes}},${{excludes}},${{test.binaryexcludes}}" includes="${{test.binaryincludes}}">
+                                        <filename name="${{test.binarytestincludes}}"/>
+                                    </fileset>
+                                </batchtest>
+                                <customize/>
+                            </customizePrototype>
+                        </j2seproject3:junit-prototype>
                     </sequential>
                 </macrodef>
             </target>
@@ -1230,123 +1284,7 @@ is divided into following sections:
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-junit-debug" if="${{junit.available}}" unless="${{nb.junit.batch}}">
-                <macrodef>
-                    <xsl:attribute name="name">junit-debug</xsl:attribute>
-                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
-                    <attribute>
-                        <xsl:attribute name="name">includes</xsl:attribute>
-                        <xsl:attribute name="default">${includes}</xsl:attribute>
-                    </attribute>
-                    <attribute>
-                        <xsl:attribute name="name">excludes</xsl:attribute>
-                        <xsl:attribute name="default">${excludes}</xsl:attribute>
-                    </attribute>
-                    <attribute>
-                        <xsl:attribute name="name">testincludes</xsl:attribute>
-                        <xsl:attribute name="default">**</xsl:attribute>
-                    </attribute>
-                    <attribute>
-                        <xsl:attribute name="name">testmethods</xsl:attribute>
-                        <xsl:attribute name="default"></xsl:attribute>
-                    </attribute>
-                    <element>
-                        <xsl:attribute name="name">customize</xsl:attribute>
-                        <xsl:attribute name="optional">true</xsl:attribute>
-                    </element>
-                    <sequential>
-                        <property name="junit.forkmode" value="perTest"/>
-                        <junit>
-                            <xsl:attribute name="showoutput">true</xsl:attribute>
-                            <xsl:attribute name="fork">true</xsl:attribute>
-                            <xsl:attribute name="forkmode">${junit.forkmode}</xsl:attribute>
-                            <xsl:attribute name="dir">${work.dir}</xsl:attribute> <!-- #47474: match <java> --> 
-                            <xsl:attribute name="failureproperty">tests.failed</xsl:attribute>
-                            <xsl:attribute name="errorproperty">tests.failed</xsl:attribute>
-                            <xsl:attribute name="tempdir">${build.dir}</xsl:attribute>
-                            <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
-                                <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
-                            </xsl:if>
-                            <test todir="${{build.test.results.dir}}" name="@{{testincludes}}" methods="@{{testmethods}}"/>
-                            <syspropertyset>
-                                <propertyref prefix="test-sys-prop."/>
-                                <mapper type="glob" from="test-sys-prop.*" to="*"/>
-                            </syspropertyset>
-                            <formatter type="brief" usefile="false"/>
-                            <formatter type="xml"/>
-                            <jvmarg value="-ea"/>
-                            <jvmarg line="${{debug-args-line}}"/>
-                            <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
-                            <customize/>
-                        </junit>
-                    </sequential>
-                </macrodef>
-            </target>
-
-            <target name="-init-macrodef-junit-debug-batch" if="${{nb.junit.batch}}" depends="-init-test-properties">
-                <macrodef>
-                    <xsl:attribute name="name">junit-debug</xsl:attribute>
-                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
-                    <attribute>
-                        <xsl:attribute name="name">includes</xsl:attribute>
-                        <xsl:attribute name="default">${includes}</xsl:attribute>
-                    </attribute>
-                    <attribute>
-                        <xsl:attribute name="name">excludes</xsl:attribute>
-                        <xsl:attribute name="default">${excludes}</xsl:attribute>
-                    </attribute>
-                    <attribute>
-                        <xsl:attribute name="name">testincludes</xsl:attribute>
-                        <xsl:attribute name="default">**</xsl:attribute>
-                    </attribute>
-                    <attribute>
-                        <xsl:attribute name="name">testmethods</xsl:attribute>
-                        <xsl:attribute name="default"></xsl:attribute>
-                    </attribute>
-                    <element>
-                        <xsl:attribute name="name">customize</xsl:attribute>
-                        <xsl:attribute name="optional">true</xsl:attribute>
-                    </element>
-                    <sequential>
-                        <property name="junit.forkmode" value="perTest"/>
-                        <junit>
-                            <xsl:attribute name="showoutput">true</xsl:attribute>
-                            <xsl:attribute name="fork">true</xsl:attribute>
-                            <xsl:attribute name="forkmode">${junit.forkmode}</xsl:attribute>
-                            <xsl:attribute name="dir">${work.dir}</xsl:attribute> <!-- #47474: match <java> --> 
-                            <xsl:attribute name="failureproperty">tests.failed</xsl:attribute>
-                            <xsl:attribute name="errorproperty">tests.failed</xsl:attribute>
-                            <xsl:attribute name="tempdir">${build.dir}</xsl:attribute>
-                            <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
-                                <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
-                            </xsl:if>
-                            <batchtest todir="${{build.test.results.dir}}">
-                                <xsl:call-template name="createFilesets">
-                                    <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:test-roots"/>
-                                    <xsl:with-param name="includes">@{includes}</xsl:with-param>
-                                    <xsl:with-param name="includes2">@{testincludes}</xsl:with-param>
-                                    <xsl:with-param name="excludes">@{excludes}</xsl:with-param>
-                                </xsl:call-template>
-                                <fileset dir="${{build.test.classes.dir}}" excludes="@{{excludes}},${{excludes}},${{test.binaryexcludes}}" includes="${{test.binaryincludes}}">
-                                    <filename name="${{test.binarytestincludes}}"/>
-                                </fileset>
-                            </batchtest>
-                            <syspropertyset>
-                                <propertyref prefix="test-sys-prop."/>
-                                <mapper type="glob" from="test-sys-prop.*" to="*"/>
-                            </syspropertyset>
-                            <formatter type="brief" usefile="false"/>
-                            <formatter type="xml"/>
-                            <jvmarg value="-ea"/>
-                            <jvmarg line="${{debug-args-line}}"/>
-                            <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
-                            <customize/>
-                        </junit>
-                    </sequential>
-                </macrodef>
-            </target>
-
-            <target name="-init-macrodef-junit-debug-impl" depends="-init-macrodef-junit-debug,-init-macrodef-junit-debug-batch" if="${{junit.available}}">
+            <target name="-init-macrodef-junit-debug-impl" depends="-init-macrodef-junit" if="${{junit.available}}">
                 <macrodef>
                     <xsl:attribute name="name">test-debug-impl</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
@@ -1367,14 +1305,17 @@ is divided into following sections:
                         <xsl:attribute name="default"></xsl:attribute>
                     </attribute>
                     <element>
-                        <xsl:attribute name="name">customize</xsl:attribute>
+                        <xsl:attribute name="name">customizeDebuggee</xsl:attribute>
                         <xsl:attribute name="optional">true</xsl:attribute>
-                        <xsl:attribute name="implicit">true</xsl:attribute>
                     </element>
                     <sequential>
-                        <j2seproject3:junit-debug includes="@{{includes}}" excludes="@{{excludes}}" testincludes="@{{testincludes}}" testmethods="@{{testmethods}}">
-                            <customize/>
-                        </j2seproject3:junit-debug>
+                        <j2seproject3:junit includes="@{{includes}}" excludes="@{{excludes}}" testincludes="@{{testincludes}}" testmethods="@{{testmethods}}">
+                            <customize>
+                                <jvmarg line="${{debug-args-line}}"/>
+                                <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
+                                <customizeDebuggee/>
+                            </customize>
+                        </j2seproject3:junit>
                     </sequential>
                 </macrodef>
             </target>
@@ -1473,14 +1414,14 @@ is divided into following sections:
                     </attribute>
                     <sequential>
                         <j2seproject3:test-debug-impl includes="@{{includes}}" excludes="@{{excludes}}" testincludes="@{{testincludes}}" testmethods="@{{testmethods}}">
-                            <customize>
+                            <customizeDebuggee>
                                 <classpath>
                                     <path path="${{run.test.classpath}}"/>
                                 </classpath>
                                 <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                                 <jvmarg line="${{run.jvmargs}}"/>
                                 <jvmarg line="${{run.jvmargs.ide}}"/>
-                            </customize>
+                            </customizeDebuggee>
                         </j2seproject3:test-debug-impl>
                     </sequential>
                 </macrodef>
@@ -2469,28 +2410,25 @@ is divided into following sections:
                     </customize>
                 </profile>
             </target>
-            <target depends="profile-init,compile-test-single" if="profiler.info.jvmargs.agent" name="-profile-test-single-pre72">
+            <target depends="-init-macrodef-junit,profile-init,compile-test-single" if="profiler.info.jvmargs.agent" name="-profile-test-single-pre72">
                 <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
                 <nbprofiledirect>
                     <classpath>
                         <path path="${{run.test.classpath}}"/>
                     </classpath>
                 </nbprofiledirect>
-                <junit dir="${{profiler.info.dir}}" errorproperty="tests.failed" failureproperty="tests.failed" fork="true" jvm="${{profiler.info.jvm}}" showoutput="true">
-                    <env key="${{profiler.info.pathvar}}" path="${{profiler.info.agentpath}}:${{profiler.current.path}}"/>
-                    <jvmarg value="${{profiler.info.jvmargs.agent}}"/>
-                    <jvmarg line="${{profiler.info.jvmargs}}"/>
-                    <test name="${{profile.class}}"/>
-                    <classpath>
-                        <path path="${{run.test.classpath}}"/>
-                    </classpath>
-                    <syspropertyset>
-                        <propertyref prefix="test-sys-prop."/>
-                        <mapper from="test-sys-prop.*" to="*" type="glob"/>
-                    </syspropertyset>
-                    <formatter type="brief" usefile="false"/>
-                    <formatter type="xml"/>
-                </junit>
+                <j2seproject3:junit includes="${{includes}}" excludes="${{excludes}}" testincludes="${{profile.class}}" testmethods="">
+                    <customize>
+                        <jvmarg line="${{debug-args-line}}"/>
+                        <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
+                        <env key="${{profiler.info.pathvar}}" path="${{profiler.info.agentpath}}:${{profiler.current.path}}"/>
+                        <jvmarg value="${{profiler.info.jvmargs.agent}}"/>
+                        <jvmarg line="${{profiler.info.jvmargs}}"/>
+                        <classpath>
+                            <path path="${{run.test.classpath}}"/>
+                        </classpath>
+                    </customize>
+                </j2seproject3:junit>
             </target>
             <xsl:comment>
                 end of pre NB72 profiling section
@@ -2662,7 +2600,7 @@ is divided into following sections:
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
 
-            <target name="-init-test-module-properties-with-module" depends="-init-source-module-properties" if="named.module.internal">
+            <target name="-init-test-javac-module-properties-with-module" depends="-init-source-module-properties" if="named.module.internal">
                 <j2seproject3:modulename property="test.module.name">
                     <xsl:attribute name="sourcepath">
                             <xsl:call-template name="createPath">
@@ -2694,10 +2632,32 @@ is divided into following sections:
                     </and>
                 </condition>
             </target>
+            <target name="-init-test-run-module-properties" depends="-init-source-module-properties" if="named.module.internal">
+                <condition property ="run.test.addexport.source.module.internal" value="${{test.module.name}}" else="${{module.name}}">
+                    <and>
+                        <isset property="test.module.name"/>
+                        <length length="0" string="${{test.module.name}}" when="greater"/>
+                    </and>
+                </condition>
+                <dirset id="run.test.packages.internal" dir="${{build.test.classes.dir}}" includes="*"/>
+                <pathconvert refid="run.test.packages.internal" property="run.test.addexports.internal" pathsep=" ">
+                   <chainedmapper>
+                       <flattenmapper/>
+                       <globmapper from="*" to="-XaddExports:${{run.test.addexport.source.module.internal}}/*=ALL-UNNAMED"/>
+                   </chainedmapper>
+                </pathconvert>
+                <condition property ="run.test.jvmargs" value="-addmods ${{test.module.name}} -XaddReads:${{test.module.name}}=ALL-UNNAMED ${{run.test.addexports.internal}}" else="-Xpatch:${{module.name}}=${{build.test.classes.dir}} -addmods ${{module.name}} -XaddReads:${{module.name}}=ALL-UNNAMED ${{run.test.addexports.internal}}">
+                    <and>
+                        <isset property="test.module.name"/>
+                        <length length="0" string="${{test.module.name}}" when="greater"/>
+                    </and>
+                </condition>
+            </target>
             <target name="-init-test-module-properties-without-module" depends="-init-source-module-properties" unless="named.module.internal">
                 <property name="javac.test.compilerargs" value=""/>
+                <property name="run.test.jvmargs" value=""/>
             </target>
-            <target name="-init-test-module-properties" depends="-init-test-module-properties-with-module,-init-test-module-properties-without-module" unless="named.module.internal"/>
+            <target name="-init-test-module-properties" depends="-init-test-javac-module-properties-with-module,-init-test-module-properties-without-module" unless="named.module.internal"/>
 
             <target name="-compile-test-depend" if="do.depend.true">
                 <xsl:element name="j2seproject3:depend">
@@ -2812,7 +2772,7 @@ is divided into following sections:
             
             <target name="-do-test-run">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
-                <xsl:attribute name="depends">init,compile-test,-pre-test-run</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test,-init-test-run-module-properties,-pre-test-run</xsl:attribute>
                 <j2seproject3:test testincludes="**/*Test.java" includes="${{includes}}"/>
             </target>
             
@@ -2856,7 +2816,7 @@ is divided into following sections:
             
             <target name="-do-test-run-single">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
-                <xsl:attribute name="depends">init,compile-test-single,-pre-test-run-single</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test-single,-init-test-run-module-properties,-pre-test-run-single</xsl:attribute>
                 <fail unless="test.includes">Must select some files in the IDE or set test.includes</fail>
                 <j2seproject3:test includes="${{test.includes}}" excludes="" testincludes="${{test.includes}}" />
             </target>
@@ -2868,7 +2828,7 @@ is divided into following sections:
             </target>
             
             <target name="test-single">
-                <xsl:attribute name="depends">init,compile-test-single,-pre-test-run-single,-do-test-run-single,-post-test-run-single</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test-single,-init-test-run-module-properties,-pre-test-run-single,-do-test-run-single,-post-test-run-single</xsl:attribute>
                 <xsl:attribute name="description">Run single unit test.</xsl:attribute>
             </target>
             
@@ -2887,7 +2847,7 @@ is divided into following sections:
             </target>
 
             <target name="test-single-method">
-                <xsl:attribute name="depends">init,compile-test-single,-pre-test-run-single,-do-test-run-single-method,-post-test-run-single-method</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test-single,-init-test-run-module-properties,-pre-test-run-single,-do-test-run-single-method,-post-test-run-single-method</xsl:attribute>
                 <xsl:attribute name="description">Run single unit test.</xsl:attribute>
             </target>
             
@@ -2919,11 +2879,11 @@ is divided into following sections:
             </target>
             
             <target name="debug-test">
-                <xsl:attribute name="depends">init,compile-test-single,-debug-start-debugger-test,-debug-start-debuggee-test</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test-single,-init-test-run-module-properties,-debug-start-debugger-test,-debug-start-debuggee-test</xsl:attribute>
             </target>
             
             <target name="debug-test-method">
-                <xsl:attribute name="depends">init,compile-test-single,-debug-start-debugger-test,-debug-start-debuggee-test-method</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test-single,-init-test-run-module-properties,-debug-start-debugger-test,-debug-start-debuggee-test-method</xsl:attribute>
             </target>
             
             <target name="-do-debug-fix-test">
