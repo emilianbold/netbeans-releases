@@ -47,6 +47,9 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Point;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.IdentityHashMap;
@@ -249,15 +252,13 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
     public void propertyChange(PropertyChangeEvent evt) {
     }
 
-    private static final class JInternalFrameImpl extends JInternalFrame {
+    private static final class JInternalFrameImpl extends JPanel {
         private static final String UI_PREFIX = "ToolTip"; // NOI18N
         private final JLabel label;
         private RequestProcessor annotationProcessor = new RequestProcessor("Annotation Refresh", 1);
 
         @SuppressWarnings("OverridableMethodCallInConstructor")
         public JInternalFrameImpl(final Watch watch, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable) {
-            super(watch.getExpression(), resizable, closable, maximizable, iconifiable);
-            ((javax.swing.plaf.basic.BasicInternalFrameUI)this.getUI()).setNorthPane(null);
             Font font = UIManager.getFont(UI_PREFIX + ".font"); // NOI18N
             Color backColor = UIManager.getColor(UI_PREFIX + ".background"); // NOI18N
             Color foreColor = UIManager.getColor(UI_PREFIX + ".foreground"); // NOI18N
@@ -308,6 +309,27 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             }
             label.setBorder(new javax.swing.border.EmptyBorder(0, 3, 0, 3));
             panel.add(label, java.awt.BorderLayout.CENTER);
+            MouseAdapter mouseAdapter = new java.awt.event.MouseAdapter() {
+                private Point orig;
+                @Override
+                public void mouseDragged(MouseEvent e) {
+                    if(orig == null) {
+                        orig = e.getPoint();
+                    }
+                    e.translatePoint(-orig.x, -orig.y);
+                    Point p = getLocation();
+                    Point deltaP = e.getPoint();
+                    p.translate(deltaP.x, deltaP.y);
+                    setLocation(p);
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    orig = null;
+                }
+            };
+            addMouseListener(mouseAdapter);
+            addMouseMotionListener(mouseAdapter);
         }
 
         private void evaluateExpression(Watch watch) {

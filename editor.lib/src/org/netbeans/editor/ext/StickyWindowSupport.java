@@ -96,11 +96,6 @@ public class StickyWindowSupport {
         if(container instanceof JLayeredPane) {
             JLayeredPane pane = (JLayeredPane) container;
             Point point = SwingUtilities.convertPoint(null, location, pane);
-            point.translate(0, 34);
-            ((JInternalFrame)frame).pack();
-//            Dimension size = frame.getPreferredSize();
-//            Dimension size = new Dimension(200, 100);
-//            frame.setBounds(point.x, point.y, size.width, size.height);
             frame.setLocation(point);
             pane.add(frame, JLayeredPane.PALETTE_LAYER);
             frame.setVisible(true);
