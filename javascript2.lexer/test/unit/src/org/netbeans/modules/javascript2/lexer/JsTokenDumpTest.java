@@ -77,4 +77,9 @@ public class JsTokenDumpTest extends NbTestCase {
         LexerTestUtilities.checkTokenDump(this, "testfiles/scriptInputBroken.js",
                 JsTokenId.javascriptLanguage());
     }
+    
+    public void testImportExport01() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/ecma6script/importExport01.js",
+                JsTokenId.javascriptLanguage());
+    }
 }

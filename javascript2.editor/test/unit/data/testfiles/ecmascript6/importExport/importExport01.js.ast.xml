@@ -1,0 +1,36 @@
+<FunctionNode name='importExport01.js' kind='MODULE' start='0' end='67'>
+  <isProgram/>
+  <!-- FunctionNode Parameters -->
+  <!-- FunctionNode Body -->
+  <Block start='0' end='67'>
+    <isFunctionBody/>
+    <isSynthetic/>
+    <!-- Block Statements -->
+    <VarNode name='*default*' start='43' end='66'>
+      <hasInit/>
+      <isAssignment/>
+      <!-- VarNode Assignment Dest -->
+      <IdentNode start='43' end='66'>
+        <name>*default*</name>
+        <isInitializedHere/>
+      </IdentNode>
+      <!-- VarNode Init -->
+      <CallNode start='43' end='66'>
+        <!-- CallNode Arguments -->
+        <ObjectNode start='62' end='65'>
+          <!-- ObjectNode Elements -->
+        </ObjectNode>
+        <!-- CallNode Function -->
+        <AccessNode property='extend' start='43' end='61'>
+          <!-- AccessNode Base -->
+          <AccessNode property='Route' start='43' end='54'>
+            <!-- AccessNode Base -->
+            <IdentNode start='43' end='48'>
+              <name>Ember</name>
+            </IdentNode>
+          </AccessNode>
+        </AccessNode>
+      </CallNode>
+    </VarNode>
+  </Block>
+</FunctionNode>
