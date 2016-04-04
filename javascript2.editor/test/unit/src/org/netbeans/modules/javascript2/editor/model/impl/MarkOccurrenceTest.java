@@ -1535,11 +1535,11 @@ public class MarkOccurrenceTest extends JsTestBase {
     }
     
     public void testIssue252873_01() throws Exception {
-        checkOccurrences("testfiles/jsdoc/parser/issue252873.js", " * @param {*} var^iable", true);
+        checkOccurrences("testfiles/markoccurences/jsdoc/issue252873.js", " * @param {*} var^iable", true);
     }
     
     public void testIssue252873_02() throws Exception {
-        checkOccurrences("testfiles/jsdoc/parser/issue252873.js", "return !Breeze.isUndefined(variable) && var^iable !== null;", true);
+        checkOccurrences("testfiles/markoccurences/jsdoc/issue252873.js", "return !Breeze.isUndefined(variable) && var^iable !== null;", true);
     }
     
     public void testIssue237914_01() throws Exception {
