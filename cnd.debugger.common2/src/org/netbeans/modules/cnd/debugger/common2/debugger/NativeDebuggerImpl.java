@@ -328,7 +328,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         
         synchronized (lock) {
             if (pathMap == null) {
-                pathMap = new LinkedList();
+                pathMap = new LinkedList<Pair<String, String>>();
                 for (String absoluteSourceRoot : absoluteSourceRoots) {
                     try {
                         String canonicalSourceRoot = FileSystemProvider.getCanonicalPath(getExecutionEnvironment(), absoluteSourceRoot);
