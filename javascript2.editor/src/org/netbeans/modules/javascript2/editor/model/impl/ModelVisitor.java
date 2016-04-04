@@ -2449,6 +2449,9 @@ public class ModelVisitor extends PathNodeVisitor {
                 JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
                 variable.setDeprecated(docHolder.isDeprecated(varNode));
                 variable.setDocumentation(docHolder.getDocumentation(varNode));
+                if (docHolder.isConstant(varNode)) {
+                    variable.setJsKind(JsElement.Kind.CONSTANT);
+                }
                 if (init instanceof IdentNode) {
                     IdentNode iNode = (IdentNode)init;
                     if (!iNode.getName().equals(variable.getName())) {
@@ -2478,6 +2481,9 @@ public class ModelVisitor extends PathNodeVisitor {
                     for (Type type : returnTypes) {
                         variable.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset(), true), varNode.getName().getFinish());
                     }
+                }
+                if (varNode.isConst()) {
+                    variable.setJsKind(JsElement.Kind.CONSTANT);
                 }
             }
         } else if(init instanceof ObjectNode) {

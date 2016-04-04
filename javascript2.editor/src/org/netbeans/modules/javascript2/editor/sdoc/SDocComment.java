@@ -171,6 +171,11 @@ public class SDocComment extends JsComment {
     public boolean isClass() {
         return !getTagsForTypes(new SDocElementType[]{SDocElementType.CONSTRUCTOR}).isEmpty();
     }
+    
+    @Override
+    public boolean isConstant() {
+        return !getTagsForTypes(new SDocElementType[]{SDocElementType.CONSTANT}).isEmpty();
+    }
 
 //    @Override
 //    public List<String> getAuthor() {

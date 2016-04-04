@@ -239,6 +239,19 @@ public abstract class JsDocumentationHolder {
         }
         return false;
     }
+    
+    /**
+     * Says whether is examined node constant.
+     * @param node examined node
+     * @return {@code true} if the comment says "it's a constant", {@code false} otherwise
+     */
+    public boolean isConstant(Node node) {
+        JsComment comment = getCommentForOffset(node.getStart(), getCommentBlocks());
+        if (comment != null) {
+            return comment.isConstant();
+        }
+        return false;
+    }
 
     /**
      * Gets list of super classes defined by documentation for the given node.

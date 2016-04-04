@@ -150,6 +150,11 @@ public class ExtDocComment extends JsComment {
     public boolean isClass() {
         return !getTagsForTypes(new ExtDocElementType[]{ExtDocElementType.CLASS, ExtDocElementType.CONSTRUCTOR}).isEmpty();
     }
+    
+    @Override
+    public boolean isConstant() {
+        return !getTagsForTypes(new ExtDocElementType[]{ExtDocElementType.CONSTANT}).isEmpty();
+    }
 
 //    @Override
 //    public List<String> getAuthor() {

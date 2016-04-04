@@ -149,6 +149,8 @@ public abstract class JsComment {
 
     public abstract boolean isClass();
     
+    public abstract boolean isConstant();
+    
     /**
      * Gets all defined properties in the comment
      * @return  list of properties, never {@code null}

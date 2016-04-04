@@ -233,6 +233,7 @@ public abstract class JsElementImpl implements JsElement {
             case FUNCTION:
             case PROPERTY_GETTER:
             case PROPERTY_SETTER:
+            case GENERATOR:
                 result = ElementKind.METHOD;
                 break;
             case OBJECT:
@@ -240,6 +241,9 @@ public abstract class JsElementImpl implements JsElement {
             case OBJECT_LITERAL:
             case CLASS:
                 result = ElementKind.CLASS;
+                break;
+            case CONSTANT:
+                result = ElementKind.CONSTANT;
                 break;
             case PROPERTY:
                 result = ElementKind.FIELD;
