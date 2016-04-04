@@ -1,44 +1,44 @@
 <Unnamed test>
-LINE_COMMENT    "#!/usr/bin/env node", la=1, st=LexerState{zzState=93, zzLexicalState=24, canFollowLiteral=true, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-EOL             "\n", st=LexerState{zzState=90, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-EOL             "\n", st=LexerState{zzState=18, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-IDENTIFIER      "console", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-OPERATOR_DOT    ".", la=1, st=LexerState{zzState=26, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=false, isTemplateExp=false, templateExpBalance=0}
-IDENTIFIER      "log", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-BRACKET_LEFT_PAREN  "(", st=LexerState{zzState=50, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-STRING_BEGIN    "'", st=LexerState{zzState=30, zzLexicalState=8, canFollowLiteral=false, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-STRING          "Arguments:", la=1, st=LexerState{zzState=76, zzLexicalState=10, canFollowLiteral=false, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-STRING_END      "'", st=LexerState{zzState=71, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-OPERATOR_COMMA  ",", st=LexerState{zzState=55, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-WHITESPACE      " ", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-IDENTIFIER      "process", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-OPERATOR_DOT    ".", la=1, st=LexerState{zzState=26, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=false, isTemplateExp=false, templateExpBalance=0}
-IDENTIFIER      "argv", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-OPERATOR_DOT    ".", la=1, st=LexerState{zzState=26, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=false, isTemplateExp=false, templateExpBalance=0}
-IDENTIFIER      "length", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-BRACKET_RIGHT_PAREN  ")", st=LexerState{zzState=51, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-OPERATOR_SEMICOLON  ";", st=LexerState{zzState=54, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-EOL             "\n", st=LexerState{zzState=18, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-EOL             "\n", st=LexerState{zzState=18, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-ERROR           "#", st=LexerState{zzState=16, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-OPERATOR_NOT    "!", la=1, st=LexerState{zzState=22, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-REGEXP_BEGIN    "/", la=1, st=LexerState{zzState=20, zzLexicalState=20, canFollowLiteral=false, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-REGEXP          "usr", la=1, st=LexerState{zzState=168, zzLexicalState=22, canFollowLiteral=false, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-REGEXP_END      "/bin", la=1, st=LexerState{zzState=88, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-OPERATOR_DIVISION  "/", la=1, st=LexerState{zzState=20, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-IDENTIFIER      "env", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-WHITESPACE      " ", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-IDENTIFIER      "node", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-EOL             "\n", st=LexerState{zzState=18, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-WHITESPACE      "  ", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-IDENTIFIER      "console", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-OPERATOR_DOT    ".", la=1, st=LexerState{zzState=26, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=false, isTemplateExp=false, templateExpBalance=0}
-IDENTIFIER      "log", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-BRACKET_LEFT_PAREN  "(", st=LexerState{zzState=50, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-IDENTIFIER      "process", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-OPERATOR_DOT    ".", la=1, st=LexerState{zzState=26, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=false, isTemplateExp=false, templateExpBalance=0}
-IDENTIFIER      "argv", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-BRACKET_RIGHT_PAREN  ")", st=LexerState{zzState=51, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
-OPERATOR_SEMICOLON  ";", st=LexerState{zzState=54, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, isTemplateExp=false, templateExpBalance=0}
+LINE_COMMENT    "#!/usr/bin/env node", la=1, st=LexerState{zzState=93, zzLexicalState=24, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+EOL             "\n", st=LexerState{zzState=90, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+EOL             "\n", st=LexerState{zzState=18, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+IDENTIFIER      "console", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+OPERATOR_DOT    ".", la=1, st=LexerState{zzState=26, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=false, templateBalances=[]}
+IDENTIFIER      "log", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+BRACKET_LEFT_PAREN  "(", st=LexerState{zzState=50, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+STRING_BEGIN    "'", st=LexerState{zzState=30, zzLexicalState=8, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+STRING          "Arguments:", la=1, st=LexerState{zzState=76, zzLexicalState=10, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+STRING_END      "'", st=LexerState{zzState=71, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+OPERATOR_COMMA  ",", st=LexerState{zzState=55, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+WHITESPACE      " ", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+IDENTIFIER      "process", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+OPERATOR_DOT    ".", la=1, st=LexerState{zzState=26, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=false, templateBalances=[]}
+IDENTIFIER      "argv", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+OPERATOR_DOT    ".", la=1, st=LexerState{zzState=26, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=false, templateBalances=[]}
+IDENTIFIER      "length", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+BRACKET_RIGHT_PAREN  ")", st=LexerState{zzState=51, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+OPERATOR_SEMICOLON  ";", st=LexerState{zzState=54, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+EOL             "\n", st=LexerState{zzState=18, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+EOL             "\n", st=LexerState{zzState=18, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+ERROR           "#", st=LexerState{zzState=16, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+OPERATOR_NOT    "!", la=1, st=LexerState{zzState=22, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+REGEXP_BEGIN    "/", la=1, st=LexerState{zzState=20, zzLexicalState=20, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+REGEXP          "usr", la=1, st=LexerState{zzState=168, zzLexicalState=22, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+REGEXP_END      "/bin", la=1, st=LexerState{zzState=88, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+OPERATOR_DIVISION  "/", la=1, st=LexerState{zzState=20, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+IDENTIFIER      "env", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+WHITESPACE      " ", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+IDENTIFIER      "node", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+EOL             "\n", st=LexerState{zzState=18, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+WHITESPACE      "  ", la=1, st=LexerState{zzState=19, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+IDENTIFIER      "console", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+OPERATOR_DOT    ".", la=1, st=LexerState{zzState=26, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=false, templateBalances=[]}
+IDENTIFIER      "log", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+BRACKET_LEFT_PAREN  "(", st=LexerState{zzState=50, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
+IDENTIFIER      "process", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+OPERATOR_DOT    ".", la=1, st=LexerState{zzState=26, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=false, templateBalances=[]}
+IDENTIFIER      "argv", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+BRACKET_RIGHT_PAREN  ")", st=LexerState{zzState=51, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+OPERATOR_SEMICOLON  ";", st=LexerState{zzState=54, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
 ----- EOF -----
 

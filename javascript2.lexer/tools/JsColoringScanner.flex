@@ -38,6 +38,7 @@
 
 package org.netbeans.modules.javascript2.lexer;
 
+import java.util.LinkedList;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -61,9 +62,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
     private boolean canFollowKeyword = true;
 
-    private boolean isTemplateExp = false;
-
-    private int templateExpBalance = 0;
+    private LinkedList<Integer> templateBalances = new LinkedList<Integer>();
 
     public JsColoringLexer(LexerRestartInfo info) {
         this.input = info.input();
@@ -83,7 +82,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
                 && canFollowLiteral && canFollowKeyword) {
             return null;
         }
-        return new LexerState(zzState, zzLexicalState, canFollowLiteral, canFollowKeyword, isTemplateExp, templateExpBalance);
+        return new LexerState(zzState, zzLexicalState, canFollowLiteral, canFollowKeyword, templateBalances);
     }
 
     public void setState(LexerState state) {
@@ -91,8 +90,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         this.zzLexicalState = state.zzLexicalState;
         this.canFollowLiteral = state.canFollowLiteral;
         this.canFollowKeyword = state.canFollowKeyword;
-        this.isTemplateExp = state.isTemplateExp;
-        this.templateExpBalance = state.templateExpBalance;
+        this.templateBalances = new LinkedList<Integer>(state.templateBalances);
     }
 
     public JsTokenId nextToken() throws java.io.IOException {
@@ -160,17 +158,14 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         /** can be the literal used here */
         final boolean canFollowKeyword;
         /** are we in template expression */
-        final boolean isTemplateExp;
-        /** balance of { and } in template expression */
-        final int templateExpBalance;
+        final LinkedList<Integer> templateBalances;
 
-        LexerState (int zzState, int zzLexicalState, boolean canFollowLiteral, boolean canFollowKeyword, boolean isTemplateExp, int templateExpBalance) {
+        LexerState (int zzState, int zzLexicalState, boolean canFollowLiteral, boolean canFollowKeyword, LinkedList<Integer> templateBalances) {
             this.zzState = zzState;
             this.zzLexicalState = zzLexicalState;
             this.canFollowLiteral = canFollowLiteral;
             this.canFollowKeyword = canFollowKeyword;
-            this.isTemplateExp = isTemplateExp;
-            this.templateExpBalance = templateExpBalance;
+            this.templateBalances = new LinkedList<Integer>(templateBalances);
         }
 
         @Override
@@ -194,11 +189,13 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             if (this.canFollowKeyword != other.canFollowKeyword) {
                 return false;
             }
-            if (this.isTemplateExp != other.isTemplateExp) {
+            if (this.templateBalances.size() != other.templateBalances.size()) {
                 return false;
             }
-            if (this.templateExpBalance != other.templateExpBalance) {
-                return false;
+            for (int i = 0; i < this.templateBalances.size(); i++) {
+                if (this.templateBalances.get(i).equals(other.templateBalances.get(i))) {
+                    return false;
+                }
             }
             return true;
         }
@@ -210,8 +207,9 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             hash = 29 * hash + this.zzLexicalState;
             hash = 29 * hash + (this.canFollowLiteral ? 1 : 0);
             hash = 29 * hash + (this.canFollowKeyword ? 1 : 0);
-            hash = 29 * hash + (this.isTemplateExp ? 1 : 0);
-            hash = 29 * hash + this.templateExpBalance;
+            for (int i = 0; i < this.templateBalances.size(); i++) {
+                hash = 29 * hash + this.templateBalances.get(i);
+            }
             return hash;
         }
 
@@ -219,7 +217,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         public String toString() {
             return "LexerState{" + "zzState=" + zzState + ", zzLexicalState=" + zzLexicalState
                 + ", canFollowLiteral=" + canFollowLiteral + ", canFollowKeyword=" + canFollowKeyword
-                + ", isTemplateExp=" + isTemplateExp + ", templateExpBalance=" + templateExpBalance + '}';
+                + ", templateBalances=" + templateBalances + '}';
         }
     }
 
@@ -385,18 +383,21 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
   "("                            { return JsTokenId.BRACKET_LEFT_PAREN; }
   ")"                            { return JsTokenId.BRACKET_RIGHT_PAREN; }
   "{"                            { 
-                                     if (isTemplateExp) {
-                                        templateExpBalance++;
+                                     if (!templateBalances.isEmpty()) {
+                                        Integer balance = templateBalances.pop();
+                                        templateBalances.push(balance + 1);
                                      }
+
                                      return JsTokenId.BRACKET_LEFT_CURLY;
                                  }
   "}"                            { 
-                                     if (isTemplateExp) {
-                                        if (templateExpBalance == 0) {
+                                     if (!templateBalances.isEmpty()) {
+                                        Integer balance = templateBalances.pop();
+                                        if (balance == 0) {
                                             yypushback(1);
                                             yybegin(TEMPLATEEXPEND);
                                         } else {
-                                            templateExpBalance--;
+                                            templateBalances.push(balance - 1);
                                             return JsTokenId.BRACKET_RIGHT_CURLY;
                                         }
                                      } else {                                     
@@ -596,7 +597,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
 
 <TEMPLATEEXP> {
   "$"\{                          {
-                                     isTemplateExp = true;
+                                     templateBalances.push(0);
                                      yybegin(INITIAL);
                                      return JsTokenId.TEMPLATE_EXP_BEGIN;
                                  }
@@ -604,7 +605,6 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
 
 <TEMPLATEEXPEND> {
   "}"                            {
-                                     isTemplateExp = false;
                                      yybegin(TEMPLATE);
                                      return JsTokenId.TEMPLATE_EXP_END;
                                  }
