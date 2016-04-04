@@ -200,6 +200,11 @@ public class JsDocComment extends JsComment {
         return !getTagsForTypes(new JsDocElementType[]{JsDocElementType.CLASS, JsDocElementType.CONSTRUCTOR,
             JsDocElementType.CONSTRUCTS}).isEmpty();
     }
+    
+    @Override
+    public boolean isConstant() {
+        return !getTagsForTypes(new JsDocElementType[]{JsDocElementType.CONSTANT}).isEmpty();
+    }
 
 //    @Override
 //    public List<String> getAuthor() {

@@ -180,7 +180,7 @@ public class JsStructureScanner implements StructureScanner {
                 if(child.isDeclared() && (child.getModifiers().contains(Modifier.PUBLIC)
                         || !(jsObject.getParent() instanceof JsFunction)))
                 collectedItems.add(new JsSimpleStructureItem(child, "prop-", result)); //NOI18N
-            } else if (child.getJSKind() == JsElement.Kind.VARIABLE && child.isDeclared()
+            } else if ((child.getJSKind() == JsElement.Kind.VARIABLE || child.getJSKind() == JsElement.Kind.CONSTANT)&& child.isDeclared()
                 && (!jsObject.isAnonymous() || (jsObject.isAnonymous() && jsObject.getFullyQualifiedName().indexOf('.') == -1))) {
                     if (children.isEmpty()) {
                         collectedItems.add(new JsSimpleStructureItem(child, "var-", result)); //NOI18N

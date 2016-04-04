@@ -691,4 +691,8 @@ public class JsStructureScannerTest extends JsTestBase {
     public void testComputedPropertyNames01() throws Exception {
         checkStructure("testfiles/ecmascript6/shorthands/computedPropertyNames.js");
     }
+    
+    public void testConstants01() throws Exception {
+        checkStructure("testfiles/ecmascript6/constant/constant01.js");
+    }
 }

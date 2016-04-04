@@ -54,6 +54,7 @@ public enum SDocElementType {
     AUTHOR("@author", Category.DESCRIPTION), //NOI18N
     CLASS_DESCRIPTION("@classDescription", Category.DESCRIPTION), //NOI18N
     CONSTRUCTOR("@constructor", Category.SIMPLE), //NOI18N
+    CONSTANT("@constant", Category.SIMPLE), //NOI18N
     DEPRECATED("@deprecated", Category.SIMPLE), //NOI18N
     EXAMPLE("@example", Category.DESCRIPTION), //NOI18N
     EXCEPTION("@exception", Category.TYPE_DESCRIBED), //NOI18N
