@@ -148,6 +148,7 @@ public class TokenFormatter {
         public boolean spaceAfterTypeCast;
         public boolean spaceAfterShortTag;
         public boolean spaceBeforeClosePHPTag;
+        public boolean spaceBetweenOpenPHPTagAndNamespace;
         public boolean placeElseOnNewLine;
         public boolean placeWhileOnNewLine;
         public boolean placeCatchOnNewLine;
@@ -281,6 +282,7 @@ public class TokenFormatter {
             spaceAfterTypeCast = codeStyle.spaceAfterTypeCast();
             spaceAfterShortTag = codeStyle.spaceAfterShortPHPTag();
             spaceBeforeClosePHPTag = codeStyle.spaceBeforeClosePHPTag();
+            spaceBetweenOpenPHPTagAndNamespace = codeStyle.spaceBetweenOpenPHPTagAndNamespace();
 
             placeElseOnNewLine = codeStyle.placeElseOnNewLine();
             placeWhileOnNewLine = codeStyle.placeWhileOnNewLine();
@@ -700,7 +702,13 @@ public class TokenFormatter {
                                             countSpaces = indent;
                                         } else {
                                             if (newLines == 0) {
-                                                countSpaces = 1; // one space before OPEN_TAG and NS_DECLARATION - probably in one line
+                                                if (docOptions.spaceBetweenOpenPHPTagAndNamespace) {
+                                                    countSpaces = 1; // one space before OPEN_TAG and NS_DECLARATION - probably in one line  
+                                                } else {
+                                                    // for PSR-2
+                                                    newLines = 1;
+                                                    countSpaces = indent;
+                                                }
                                             }
                                             countSpaces = Math.max(indent, countSpaces);
                                         }
