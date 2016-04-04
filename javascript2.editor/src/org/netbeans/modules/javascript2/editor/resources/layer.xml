@@ -500,21 +500,6 @@
         </folder>
     </folder>
 
-    <folder name="javascript">
-        <folder name="doc">
-            <folder name="providers">
-                <file name="org-netbeans-modules-javascript2-editor-jsdoc-JsDocDocumentationProvider.instance">
-                    <attr name="position" intvalue="100"/>
-                </file>
-                <file name="org-netbeans-modules-javascript2-editor-sdoc-SDocDocumentationProvider.instance">
-                    <attr name="position" intvalue="200"/>
-                </file>
-                <file name="org-netbeans-modules-javascript2-editor-extdoc-ExtDocDocumentationProvider.instance">
-                    <attr name="position" intvalue="300"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
        <folder name="csl-hints">
         <folder name="text">
             <folder name="javascript">

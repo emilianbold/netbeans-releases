@@ -56,23 +56,29 @@ import javax.swing.ImageIcon;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.csl.api.*;
+import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTagAttribute;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
-import org.netbeans.modules.javascript2.editor.index.IndexedElement;
-import org.netbeans.modules.javascript2.editor.model.JsElement;
-import org.netbeans.modules.javascript2.editor.model.JsFunction;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.Type;
-import org.netbeans.modules.javascript2.editor.model.TypeUsage;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
-import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
+import org.netbeans.modules.javascript2.model.api.IndexedElement;
+import org.netbeans.modules.javascript2.model.api.JsElement;
+import org.netbeans.modules.javascript2.model.api.JsFunction;
+import org.netbeans.modules.javascript2.model.api.JsObject;
+import org.netbeans.modules.javascript2.types.api.Type;
+import org.netbeans.modules.javascript2.types.api.TypeUsage;
+import org.netbeans.modules.javascript2.model.api.ModelUtils;
 import org.netbeans.modules.javascript2.editor.options.OptionsUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.javascript2.editor.spi.CompletionContext;
+import org.netbeans.modules.javascript2.model.api.Index;
+import org.netbeans.modules.javascript2.model.api.Model;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
@@ -788,6 +794,10 @@ public class JsCompletionItem implements CompletionProposal {
 
                 // this helps to eleminate items that will look as the same items in the cc
                 HashMap<String, JsCompletionItem> signatures = new HashMap<String, JsCompletionItem>();
+                Index jsIndex = null;
+                if (OptionsUtils.forLanguage(JsTokenId.javascriptLanguage()).autoCompletionTypeResolution()) {
+                    jsIndex = Index.get(request.info.getSnapshot().getSource().getFileObject());
+                }
                 for (JsElement element : entry.getValue()) {
                     switch (element.getJSKind()) {
                         case CONSTRUCTOR:
@@ -798,8 +808,9 @@ public class JsCompletionItem implements CompletionProposal {
                             HashMap<String, Set<String>> allParameters = new LinkedHashMap<String, Set<String>>();
                             if (element instanceof JsFunction) {
                                 // count return types
-                                Collection<TypeUsage> resolveTypes = ModelUtils.resolveTypes(((JsFunction) element).getReturnTypes(), (JsParserResult)request.info,
-                                        OptionsUtils.forLanguage(JsTokenId.javascriptLanguage()).autoCompletionTypeResolution(), false);
+                                Collection<TypeUsage> resolveTypes = ModelUtils.resolveTypes(((JsFunction) element).getReturnTypes(),
+                                        Model.getModel(request.info, false),
+                                        jsIndex, false);
                                 returnTypes.addAll(Utils.getDisplayNames(resolveTypes));
                                 // count parameters type
                                 for (JsObject jsObject : ((JsFunction) element).getParameters()) {
@@ -808,7 +819,7 @@ public class JsCompletionItem implements CompletionProposal {
                                         Set<String> resolvedType = resolvedTypes.get(type.getType());
                                         if (resolvedType == null) {
                                             resolvedType = new HashSet(1);
-                                            String displayName = Utils.getDisplayName(type);
+                                            String displayName = ModelUtils.getDisplayName(type);
                                             if (!displayName.isEmpty()) {
                                                 resolvedType.add(displayName);
                                             }
@@ -822,10 +833,11 @@ public class JsCompletionItem implements CompletionProposal {
                                 // count return types
                                 HashSet<TypeUsage> returnTypeUsages = new HashSet<TypeUsage>();
                                 for (String type : ((IndexedElement.FunctionIndexedElement) element).getReturnTypes()) {
-                                    returnTypeUsages.add(new TypeUsageImpl(type, -1, false));
+                                    returnTypeUsages.add(new TypeUsage(type, -1, false));
                                 }
-                                Collection<TypeUsage> resolveTypes = ModelUtils.resolveTypes(returnTypeUsages, (JsParserResult)request.info,
-                                        OptionsUtils.forLanguage(JsTokenId.javascriptLanguage()).autoCompletionTypeResolution(), false);
+                                Collection<TypeUsage> resolveTypes = ModelUtils.resolveTypes(returnTypeUsages,
+                                        Model.getModel(request.info, false),
+                                        jsIndex, false);
                                 returnTypes.addAll(Utils.getDisplayNames(resolveTypes));
                                 // count parameters type
                                 LinkedHashMap<String, Collection<String>> parameters = ((IndexedElement.FunctionIndexedElement) element).getParameters();
@@ -875,7 +887,7 @@ public class JsCompletionItem implements CompletionProposal {
                                 for (TypeUsage type : assignment) {
                                     if (type.isResolved()) {
                                         if (!Type.UNDEFINED.equals(type.getType())) {
-                                            typesToDisplay.add(Utils.getDisplayName(type));
+                                            typesToDisplay.add(ModelUtils.getDisplayName(type));
                                         }
                                     } else {
                                         Set<String> resolvedType = resolvedTypes.get(type.getType());
@@ -883,10 +895,11 @@ public class JsCompletionItem implements CompletionProposal {
                                             toResolve.clear();
                                             toResolve.add(type);
                                             resolvedType = new HashSet(1);
-                                            Collection<TypeUsage> resolved = ModelUtils.resolveTypes(toResolve, request.result,
-                                                    OptionsUtils.forLanguage(JsTokenId.javascriptLanguage()).autoCompletionTypeResolution(), false);
+                                            Collection<TypeUsage> resolved = ModelUtils.resolveTypes(toResolve,
+                                                    Model.getModel(request.result, false),
+                                                    jsIndex, false);
                                             for (TypeUsage rType : resolved) {
-                                                String displayName = Utils.getDisplayName(rType);
+                                                String displayName = ModelUtils.getDisplayName(rType);
                                                 if (!displayName.isEmpty()) {
                                                     resolvedType.add(displayName);
                                                 }
