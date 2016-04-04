@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.support;
+package org.netbeans.modules.jshell.parsing;
 
 import java.util.ArrayList;
 import java.util.List;

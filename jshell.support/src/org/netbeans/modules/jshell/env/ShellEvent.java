@@ -42,42 +42,56 @@
 package org.netbeans.modules.jshell.env;
 
 import java.util.EventObject;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.jshell.support.ShellSession;
 
 /**
+ * Basic JShell state event.
  *
  * @author sdedic
  */
-public class ShellEvent extends EventObject {
+public final class ShellEvent extends EventObject {
     private ShellSession    session;
     private ShellSession    replacedSession;
     private ShellStatus     status;
     
-    public ShellEvent(JShellEnvironment source) {
+    ShellEvent(JShellEnvironment source) {
         super(source);
     }
     
-    public ShellEvent(JShellEnvironment source, ShellSession session, ShellStatus status) {
+    ShellEvent(JShellEnvironment source, ShellSession session, ShellStatus status) {
         super(source);
         this.session = session;
         this.status = status;
     }
     
-    public ShellEvent(JShellEnvironment source, ShellSession session, ShellSession replaced) {
+    ShellEvent(JShellEnvironment source, ShellSession session, ShellSession replaced) {
         super(source);
         this.session = session;
         this.replacedSession = replaced;
     }
 
+    /**
+     * The affected session. May be {@code null}, if the whole environment/process is affected.
+     * @return the session, or {@code null}
+     */
     public ShellSession getSession() {
         return session;
     }
 
-    public ShellSession getReplacedSession() {
+    /**
+     * The former session, if the JShell was restarted.
+     * @return the former session or {@code null} for first start
+     */
+    public @CheckForNull ShellSession getReplacedSession() {
         return replacedSession;
     }
     
-    public JShellEnvironment getEnvironment() {
+    /**
+     * @return the affected environment
+     */
+    public @NonNull JShellEnvironment getEnvironment() {
         return (JShellEnvironment)getSource();
     }
     

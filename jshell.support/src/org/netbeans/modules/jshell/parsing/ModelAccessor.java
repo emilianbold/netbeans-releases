@@ -39,10 +39,9 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.support;
+package org.netbeans.modules.jshell.parsing;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 import org.netbeans.modules.jshell.model.ConsoleModel;
 import org.netbeans.modules.jshell.model.ConsoleSection;

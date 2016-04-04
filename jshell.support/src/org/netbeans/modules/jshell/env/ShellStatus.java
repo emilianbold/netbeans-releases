@@ -42,9 +42,44 @@
 package org.netbeans.modules.jshell.env;
 
 /**
- *
+ * Status of a JShellEnvironment. The status changes during the JShellEnvironemnt's
+ * lifecycle as follows:
+ * <code><pre>
+ * INIT - { STARTING - { READY - EXECUTE }* - DISCONNECTED? }+ - SHUTDOWN
+ * </pre></code>
+ * The shell may go down to SHUTDOWN state at any time, which is the terminal one.
+ * 
  * @author sdedic
  */
 public enum ShellStatus {
-    INIT, STARTING, READY, EXECUTE, DISCONNECTED, SHUTDOWN
+    /**
+     * Initial state, before the ShellSession initializes. JShellEnvironment is just allocated.
+     * Shells in this state should not be observed / attached in the UI.
+     */
+    INIT, 
+    
+    /**
+     * The startup initialization sequence is pending; the JShell is executing initial commands
+     */
+    STARTING, 
+    
+    /**
+     * The shell is ready to acccept user commands
+     */
+    READY, 
+    
+    /**
+     * Shell is just executing the use command or snippet
+     */
+    EXECUTE, 
+    
+    /**
+     * The shell session is disconnected, but possibly can be run a new one
+     */
+    DISCONNECTED, 
+    
+    /**
+     * The agent or VM has shut down; the JShellEnvironment is dead
+     */
+    SHUTDOWN
 }

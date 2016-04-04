@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.repl;
+package org.netbeans.modules.jshell.editor;
 
 import java.awt.Color;
 import java.awt.Font;

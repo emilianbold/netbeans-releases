@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.jshell.support;
 
+import org.netbeans.modules.jshell.parsing.ModelAccessor;
+import org.netbeans.modules.jshell.parsing.LexerEmbeddingAdapter;
 import org.netbeans.modules.jshell.model.Rng;
 import org.netbeans.modules.jshell.model.ConsoleSection;
 import org.netbeans.modules.jshell.model.ConsoleListener;
@@ -676,7 +678,7 @@ public class ShellSession {
             // not necessary to launch  the shell, but WILL display the initial prompt
             launcher.start();
             initialSetupSnippets = new HashSet<>(shell.snippets());
-        } catch (InternalError err) {
+        } catch (IOException | InternalError err) {
             Throwable t = err.getCause();
             if (t == null) {
                 t = err;

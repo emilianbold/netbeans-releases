@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.jshell.support;
 
+import org.netbeans.modules.jshell.parsing.JShellParser;
 import org.netbeans.modules.jshell.model.ConsoleSection;
 import java.io.BufferedReader;
 import java.io.InputStream;

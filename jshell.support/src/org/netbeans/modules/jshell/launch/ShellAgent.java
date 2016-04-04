@@ -100,7 +100,10 @@ public final class ShellAgent {
         return io;
     }
 
-    void setIO(InputOutput io) {
+    public void setIO(InputOutput io) {
+        if (!connections.isEmpty() || connectAddress != null) {
+            throw new IllegalStateException("Cannot set I/O on already active agent");
+        }
         this.io = io;
     }
 

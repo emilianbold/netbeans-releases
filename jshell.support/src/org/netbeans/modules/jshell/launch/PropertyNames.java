@@ -39,41 +39,35 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.support;
-
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.ClasspathInfo.PathKind;
-import org.netbeans.modules.jshell.env.JShellEnvironment;
-import org.netbeans.modules.jshell.env.ShellRegistry;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.util.lookup.ServiceProvider;
+package org.netbeans.modules.jshell.launch;
 
 /**
  *
  * @author sdedic
  */
-@ServiceProvider(service = ClassPathProvider.class)
-public class ShellClasspathProvider implements ClassPathProvider {
-
-    @Override
-    public ClassPath findClassPath(FileObject file, String type) {
-        JShellEnvironment jshe = ShellRegistry.get().getOwnerEnvironment(file);
-        if (jshe == null) {
-            return null;
-        }
-        ShellSession ss = jshe.getSession();
-        if (ss == null) {
-            return null;
-        }
-        switch (type) {
-            case ClassPath.COMPILE:
-                return ss.getClasspathInfo().getClassPath(PathKind.COMPILE);
-            case ClassPath.SOURCE:
-                return ss.getClasspathInfo().getClassPath(PathKind.SOURCE);
-            case ClassPath.BOOT:
-                return ss.getClasspathInfo().getClassPath(PathKind.BOOT);
-        }
-        return null;
-    }
+public class PropertyNames {
+    /**
+     * JShell execution enabled for the configuration
+     */
+    public static final String JSHELL_ENABLED = "jshell.run.enable"; // NOI18N
+    
+    /**
+     * JShell class loading policy: {system, class, eval}, see LoaderPolicy enum
+     */
+    public static final String JSHELL_CLASS_LOADING = "jshell.run.classloader"; // NOI18N
+    
+    /**
+     * Reference class name, or declaring class name, depending on class loading policy
+     */
+    public static final String JSHELL_CLASSNAME = "jshell.classloader.from.class"; // NOI18N
+    
+    /**
+     * Invoked method name
+     */
+    public static final String JSHELL_FROM_METHOD = "jshell.classloader.from.method"; // NOI18N
+    
+    /**
+     * Classloader field name
+     */
+    public static final String JSHELL_FROM_FIELD = "jshell.classloader.from.field"; // NOI18N
 }

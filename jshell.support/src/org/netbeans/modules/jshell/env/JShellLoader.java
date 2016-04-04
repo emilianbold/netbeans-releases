@@ -43,13 +43,11 @@ package org.netbeans.modules.jshell.env;
 
 import java.io.IOException;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.ExtensionList;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.UniFileLoader;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -60,7 +58,7 @@ import org.openide.util.NbBundle;
     "JShellConsole=JShell Console"
 })
 @DataObject.Registration(displayName = "#JShellConsole", mimeType = "text/x-repl")
-public class JShellLoader extends UniFileLoader {                    
+public final class JShellLoader extends UniFileLoader {                    
     public JShellLoader() {
         super("org.netbeans.modules.jshell.env.JShellDataObject");
         ExtensionList extensions = new ExtensionList();
@@ -77,8 +75,6 @@ public class JShellLoader extends UniFileLoader {
         }
         return null;
     }
-    
-    
 
     @Override
     protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {

@@ -51,7 +51,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.startup.StartupExtender.StartMode;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.jshell.project.LaunchedProjectOpener;
+import org.netbeans.modules.jshell.project.ProjectUtils;
 import org.netbeans.spi.extexecution.startup.StartupExtenderImplementation;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
@@ -82,11 +84,13 @@ public class JShellStartupExtender implements StartupExtenderImplementation {
         
         InetSocketAddress isa;
         ShellAgent agent;
+        // first check that the project has JShell enabled:
+        if (!ProjectUtils.isJShellRunEnabled(p)) {
+            LOG.log(Level.FINE, "Request for agent: Project {0} does not enable jshell.", p);
+            return Collections.emptyList();
+        }
         try {
             agent = ShellLaunchManager.getInstance().openForProject(p, true);
-            if (agent == null) {
-                return Collections.emptyList();
-            }
             isa = agent.getHandshakeAddress();
         } catch (IOException ex) {
             LOG.log(Level.INFO, "Could not obtain handshake address and key: ", ex);
@@ -94,25 +98,9 @@ public class JShellStartupExtender implements StartupExtenderImplementation {
         }
         LOG.log(Level.FINE, "Connect address is: {0}:{1}", new Object[] { isa.getHostString(), isa.getPort() });
         
-        File agentJar = InstalledFileLocator.getDefault().locate("modules/ext/nb-custom-jshell-probe.jar", "org.netbeans.modules.jshell.support", false);
-        File owasm = InstalledFileLocator.getDefault().locate("core/asm-all-5.0.1.jar", "org.netbeans.core", false);
-        
-        String arg = String.format(
-                "-javaagent:%1$s=address=%2$s,port=%3$d,libraries=%4$s,key=%5$s", 
-                agentJar.toPath().toString(),
-                isa.getHostString(),
-                isa.getPort(),
-                owasm.toPath().toString(),
-                agent.getAuthorizationKey()
-                
-        );
-        LOG.log(Level.FINE, "Final arg: {0}", arg);
-
-        List<String> args = new ArrayList<>();
-        if (LOG.isLoggable(Level.FINE)) {
-            args.add("-Dorg.netbeans.lib.jshell.agent.level=400");
-        }
-        args.add(arg);
+        J2SEPropertyEvaluator  prjEval = p.getLookup().lookup(J2SEPropertyEvaluator.class);
+        List<String> args = ShellLaunchManager.buildLocalJVMAgentArgs(agent, prjEval.evaluator()::getProperty);
+        LOG.log(Level.FINE, "Final args: {0}", args);
         return args;
     }
 }

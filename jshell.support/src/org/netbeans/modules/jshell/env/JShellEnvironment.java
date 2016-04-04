@@ -66,7 +66,6 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.java.repl.Utils;
 import org.netbeans.modules.jshell.model.ConsoleEvent;
 import org.netbeans.modules.jshell.model.ConsoleListener;
 import org.netbeans.modules.jshell.support.ShellSession;
@@ -79,6 +78,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Pair;
 import org.openide.util.Task;
 import org.openide.util.WeakListeners;
+import org.openide.util.io.ReaderInputStream;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -171,8 +171,8 @@ public class JShellEnvironment {
 
         if (project != null) {
             for (SourceGroup sg : ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-                if (Utils.isNormalRoot(sg)) {
-                    platform = Utils.findPlatform(ClassPath.getClassPath(sg.getRootFolder(), ClassPath.BOOT));
+                if (org.netbeans.modules.jshell.project.ProjectUtils.isNormalRoot(sg)) {
+                    platform = org.netbeans.modules.jshell.project.ProjectUtils.findPlatform(ClassPath.getClassPath(sg.getRootFolder(), ClassPath.BOOT));
                 }
             }
         }
@@ -188,14 +188,16 @@ public class JShellEnvironment {
     private PrintStream outStream;
     private PrintStream errStream;
     
-    public InputStream getInputStream() {
+    public InputStream getInputStream() throws IOException {
         if (inputOutput == null) {
             throw new IllegalStateException("not started");
         }
-        return new ByteArrayInputStream(new byte[0]);
+        return new ReaderInputStream(
+                inputOutput.getIn(), "UTF-8" // NOI18N
+        );
     }
     
-    public PrintStream getOutputStream() {
+    public PrintStream getOutputStream() throws IOException {
         if (inputOutput == null) {
             throw new IllegalStateException("not started");
         }
@@ -209,7 +211,7 @@ public class JShellEnvironment {
         return outStream;
     }
     
-    public PrintStream getErrorStream() {
+    public PrintStream getErrorStream() throws IOException  {
         if (inputOutput == null) {
             throw new IllegalStateException("not started");
         }
@@ -241,9 +243,9 @@ public class JShellEnvironment {
         
         if (project != null) {
             for (SourceGroup sg : ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-                if (Utils.isNormalRoot(sg)) {
+                if (org.netbeans.modules.jshell.project.ProjectUtils.isNormalRoot(sg)) {
                     if (platformTemp == null) {
-                        platformTemp = Utils.findPlatform(ClassPath.getClassPath(sg.getRootFolder(), ClassPath.BOOT));
+                        platformTemp = org.netbeans.modules.jshell.project.ProjectUtils.findPlatform(ClassPath.getClassPath(sg.getRootFolder(), ClassPath.BOOT));
                     }
                     fRoots.add(sg.getRootFolder());
                     URL u = URLMapper.findURL(sg.getRootFolder(), URLMapper.INTERNAL);

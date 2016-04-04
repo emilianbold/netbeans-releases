@@ -41,23 +41,14 @@
  */
 package org.netbeans.modules.jshell.project;
 
-import com.sun.jdi.BooleanValue;
-import com.sun.jdi.ClassNotLoadedException;
-import com.sun.jdi.IncompatibleThreadStateException;
-import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.ObjectReference;
-import com.sun.jdi.StackFrame;
-import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.function.UnaryOperator;
-import static jdk.internal.jshell.debug.InternalDebugControl.DBG_GEN;
-import jdk.jshell.EnhancedJShell;
 import jdk.jshell.JDIRemoteAgent;
 import jdk.jshell.RemoteJShellService;
-import jdk.jshell.JShell;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.jshell.env.JShellEnvironment;

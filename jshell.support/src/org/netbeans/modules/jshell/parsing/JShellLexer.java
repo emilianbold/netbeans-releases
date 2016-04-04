@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.support;
+package org.netbeans.modules.jshell.parsing;
 
 import org.netbeans.modules.jshell.model.JShellToken;
 import java.util.Arrays;

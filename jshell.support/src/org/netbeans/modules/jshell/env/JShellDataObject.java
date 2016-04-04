@@ -80,7 +80,7 @@ import org.openide.windows.CloneableOpenSupport;
     mimeType="text/x-repl",
     showInFileChooser = ""
 )    
-public class JShellDataObject extends MultiDataObject {
+class JShellDataObject extends MultiDataObject {
     
     public JShellDataObject(FileObject fo, MultiFileLoader loader) throws DataObjectExistsException {
         super(fo, loader);

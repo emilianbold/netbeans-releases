@@ -39,8 +39,9 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.project;
+package org.netbeans.modules.jshell.j2se;
 
+import org.netbeans.modules.jshell.project.JShellOptions2;
 import java.util.Map;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
@@ -62,8 +63,8 @@ public class JShellRunProvider implements J2SECategoryExtensionProvider{
 
     @Override
     public JComponent createComponent(Project proj, ConfigChangeListener listener) {
-        if (component == null) {
-            component = new JShellOptions2();
+        if (component == null || component.getProject() != proj) {
+            component = new JShellOptions2(proj);
         }
         component.setConfigChangeListener(listener);
         return component;
@@ -75,5 +76,4 @@ public class JShellRunProvider implements J2SECategoryExtensionProvider{
             component.readOptions(props);
         }
     }
-    
 }

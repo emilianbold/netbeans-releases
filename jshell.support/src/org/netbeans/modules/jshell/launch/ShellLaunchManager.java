@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.jshell.launch;
 
+import com.sun.jdi.VirtualMachine;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.lang.ref.Reference;
@@ -70,8 +72,11 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Session;
@@ -80,7 +85,10 @@ import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.jshell.project.ProjectUtils;
+import org.netbeans.modules.jshell.project.RunOptionsModel;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
@@ -131,8 +139,7 @@ public final class ShellLaunchManager {
      */
     private Selector servers;
     
-    // @GuardedBy(self)
-    private List<ShellLaunchListener>   listeners = new ArrayList<>();
+    private volatile List<ShellLaunchListener>   listeners = new ArrayList<>();
     
     public static ShellLaunchManager getInstance() {
         return Lookup.getDefault().lookup(ShellLaunchManager.class);
@@ -166,11 +173,6 @@ public final class ShellLaunchManager {
      * @param debugger if true, the connection will pair with a debugger session.
      */
     public ShellAgent openForProject(Project p, boolean debugger) throws IOException {
-        // first check that the project has JShell enabled:
-        if (!ProjectUtils.isJShellRunEnabled(p)) {
-            LOG.log(Level.FINE, "Request for agent: Project {0} does not enable jshell.", p);
-            return null;
-        }
         ServerSocket ss;
         
         String encodedKey;
@@ -322,18 +324,20 @@ public final class ShellLaunchManager {
     }
     
     public void addLaunchListener(ShellLaunchListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+        List<ShellLaunchListener> ll;
+        ll = new ArrayList<>(listeners);
+        ll.add(l);
+        this.listeners = ll;
     }
     
     public void removeLaunchListener(ShellLaunchListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
+        List<ShellLaunchListener> ll;
+        ll = new ArrayList<>(listeners);
+        ll.remove(l);
+        this.listeners = ll;
     }
     
-    /* private */ void attachInputOutput(String remoteKey, InputOutput out) {
+    public void attachInputOutput(String remoteKey, InputOutput out) {
         ShellAgent ag;
         synchronized (registeredAgents) {
             ag = registeredAgents.get(remoteKey);
@@ -348,8 +352,10 @@ public final class ShellLaunchManager {
     /**
      * How many times will the debugger connector try to obtain the JDI VirtualMachine
      * before giving up. The VM is not available immediately after a session launch.
+     * Note: the limit was disabled because Maven debugger starts the session at the start
+     * of a maven build, so the session may be left uninitialized for a LONG time.
      */
-    private static final int MAX_PROBE_COUNTER = 10;
+    private static final int MAX_PROBE_COUNTER = Integer.MAX_VALUE;
     
     /**
      * Delay between attempts to get a VM for the debugging session
@@ -390,6 +396,7 @@ public final class ShellLaunchManager {
         }
         
         public void run() {
+            LOG.log(Level.FINE, "Tick at {0}", System.currentTimeMillis());
             Session session = refSession.get();
             if (stop || session == null) {
                 stop();
@@ -403,6 +410,7 @@ public final class ShellLaunchManager {
             
             debugger.addPropertyChangeListener(JPDADebugger.PROP_STATE, this);
             if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
+                LOG.log(Level.FINE, "debugge has disconnected: {0}", session);
                 stop();
                 return;
             }
@@ -411,6 +419,7 @@ public final class ShellLaunchManager {
                 if (probeCounter == 0) {
                     waitVirtualMachine(debugger, session);
                 } else if (probeCounter >= MAX_PROBE_COUNTER) {
+                    LOG.log(Level.FINE, "Max probe count reached for debugger session {0}", session);
                     stop();
                     return;
                 }
@@ -428,6 +437,7 @@ public final class ShellLaunchManager {
         private void waitVirtualMachine(JPDADebugger debugger, Session session) throws DebuggerStartException {
             LOG.log(Level.FINE, "Waiting for debugger to create VM for project {0} in thread {1}", new Object[] { project, Thread.currentThread() });
             debugger.waitRunning();
+            VirtualMachine vm = ((JPDADebuggerImpl)debugger).getVirtualMachine();
             LOG.log(Level.FINE, "Debugger VirtualMachine created for project {0} in thread {1}", new Object[] { project, Thread.currentThread() });
             synchronized (ShellLaunchManager.this) {
                 // add first, so if there's a race between agent and us, the agent will also query the debugger. We cannot hold lock over the remote call.
@@ -455,6 +465,7 @@ public final class ShellLaunchManager {
             if ("".equals(key)) { // NOI18N
                 return false;
             }
+            LOG.log(Level.FINE, "Authentication key acquired from JDI: {0}", key); // NOI18N
             this.readKey = key;
             ShellAgent agent;
             
@@ -519,7 +530,7 @@ public final class ShellLaunchManager {
         listeners.stream().forEach(c);
     }
     
-    void destroyAgent(String authKey) {
+    public void destroyAgent(String authKey) {
         if (authKey == null || "".equals(authKey)) {
             return;
         }
@@ -542,4 +553,64 @@ public final class ShellLaunchManager {
     static void queueTask(Runnable run, int delay) {
         RP.post(run);
     }
+    
+    private static final Pattern REGEXP_KEY = Pattern.compile("-javaagent:[^ ]*key=([^,]+)");
+
+    public static String getAuthKey(String args) {
+        if (args == null) {
+            return null;
+        }
+        Matcher m = REGEXP_KEY.matcher(args);
+        return m.find() ? m.group(1) : null;
+    }
+
+    /**
+     * Builds additional JVM args suitable for the agent
+     * @param agent
+     * @return 
+     */
+    public static List<String> buildLocalJVMAgentArgs(ShellAgent agent, Function<String, String> propertyEvaluator) {
+        InetSocketAddress isa = agent.getHandshakeAddress();
+        
+        File agentJar = InstalledFileLocator.getDefault().locate(
+                "modules/ext/nb-custom-jshell-probe.jar", "org.netbeans.modules.jshell.support", false);
+        File owasm = InstalledFileLocator.getDefault().locate(
+                "core/asm-all-5.0.1.jar", "org.netbeans.core", false);
+        
+        String policy = propertyEvaluator.apply(PropertyNames.JSHELL_CLASS_LOADING);
+        if (policy == null) {
+            policy = RunOptionsModel.LoaderPolicy.SYSTEM.toString().toLowerCase();
+        }
+        String clazz = propertyEvaluator.apply(PropertyNames.JSHELL_CLASSNAME);
+        if (clazz == null) {
+            clazz = ""; // NOI18N
+        }
+        String field = propertyEvaluator.apply(PropertyNames.JSHELL_FROM_FIELD);
+        if (field == null) {
+            field = ""; // NOI18N
+        }
+        String method = propertyEvaluator.apply(PropertyNames.JSHELL_FROM_METHOD);
+        if (method == null) {
+            method = ""; // NOI18N
+        }
+        
+        String arg = String.format(
+                "-javaagent:%1$s=address=%2$s,port=%3$d,libraries=%4$s,key=%5$s," +
+                        "loaderPolicy=%6$s,class=%7$s,field=%8$s,method=%9$s", 
+                agentJar.toPath().toString(),
+                isa.getHostString(),
+                isa.getPort(),
+                owasm.toPath().toString(),
+                agent.getAuthorizationKey(),
+                policy,
+                clazz, field, method
+        );
+        List<String> args = new ArrayList<>();
+        if (LOG.isLoggable(Level.FINE)) {
+            args.add("-Dorg.netbeans.lib.jshell.agent.level=400");
+        }
+        args.add(arg);
+        
+        return args;
+   }
 }

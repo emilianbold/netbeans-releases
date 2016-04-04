@@ -42,7 +42,9 @@
 package org.netbeans.modules.jshell.env;
 
 /**
- *
+ * Listener which receives basic state events from running Shell. Attach the listener
+ * to {@link JShellEnvironment}.
+ * 
  * @author sdedic
  */
 public interface ShellListener {

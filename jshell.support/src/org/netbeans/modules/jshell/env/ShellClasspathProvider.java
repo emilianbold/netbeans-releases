@@ -39,66 +39,42 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.support;
+package org.netbeans.modules.jshell.env;
 
-import org.netbeans.modules.jshell.model.ConsoleModel;
-import org.netbeans.modules.jshell.model.ConsoleResult;
-import java.util.Collection;
-import javax.swing.event.ChangeListener;
-import javax.swing.text.Document;
-import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Task;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.ParserFactory;
-import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo.PathKind;
+import org.netbeans.modules.jshell.env.JShellEnvironment;
+import org.netbeans.modules.jshell.env.ShellRegistry;
+import org.netbeans.modules.jshell.support.ShellSession;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author sdedic
  */
-public final class ConsoleMainParser extends Parser {
-    private volatile ConsoleResult result;
-    @Override
-    public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
-        Document d = snapshot.getSource().getDocument(false);
-        if (d == null) {
-            return;
-        }
-        ShellSession ss = ShellSession.get(d);
-        ConsoleModel theModel = null;
-        if (ss != null) {
-            theModel = ss.getModel();
-        }
-        this.result = new ConsoleResult(theModel, snapshot);
-    }
+@ServiceProvider(service = ClassPathProvider.class)
+public class ShellClasspathProvider implements ClassPathProvider {
 
     @Override
-    public void cancel(CancelReason reason, SourceModificationEvent event) {
-        if (event == null || event.sourceChanged()) {
-            result = null;
+    public ClassPath findClassPath(FileObject file, String type) {
+        JShellEnvironment jshe = ShellRegistry.get().getOwnerEnvironment(file);
+        if (jshe == null) {
+            return null;
         }
-    }
-
-    @Override
-    public Result getResult(Task task) throws ParseException {
-        return result;
-    }
-
-    @Override
-    public void addChangeListener(ChangeListener changeListener) {
-    }
-
-    @Override
-    public void removeChangeListener(ChangeListener changeListener) {
-    }
-    
-    @MimeRegistration(service = ParserFactory.class, mimeType = "text/x-repl")
-    public static class F extends ParserFactory {
-        @Override
-        public Parser createParser(Collection<Snapshot> snapshots) {
-            return new ConsoleMainParser();
+        ShellSession ss = jshe.getSession();
+        if (ss == null) {
+            return null;
         }
+        switch (type) {
+            case ClassPath.COMPILE:
+                return ss.getClasspathInfo().getClassPath(PathKind.COMPILE);
+            case ClassPath.SOURCE:
+                return ss.getClasspathInfo().getClassPath(PathKind.SOURCE);
+            case ClassPath.BOOT:
+                return ss.getClasspathInfo().getClassPath(PathKind.BOOT);
+        }
+        return null;
     }
 }

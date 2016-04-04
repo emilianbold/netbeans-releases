@@ -39,49 +39,67 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.support;
+package org.netbeans.modules.jshell.parsing;
 
 import org.netbeans.modules.jshell.model.ConsoleModel;
-import java.util.Collections;
-import java.util.List;
+import org.netbeans.modules.jshell.model.ConsoleResult;
+import java.util.Collection;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
-import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.modules.jshell.support.ShellSession;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.EmbeddingProvider;
+import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.ParserFactory;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 
 /**
  *
  * @author sdedic
  */
-@EmbeddingProvider.Registration(
-        mimeType = "text/x-repl", targetMimeType = "text/x-java")
-public class ConsoleEmbeddingProvider extends EmbeddingProvider {
-    
+public final class ConsoleMainParser extends Parser {
+    private volatile ConsoleResult result;
     @Override
-    public void cancel() {
-        
-    }
-    
-    @Override
-    public List<Embedding> getEmbeddings(Snapshot snapshot) {
+    public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
         Document d = snapshot.getSource().getDocument(false);
         if (d == null) {
-            return Collections.emptyList();
+            return;
         }
-        ShellSession session = ShellSession.get(d);
-        if (session == null) {
-            return Collections.emptyList();
+        ShellSession ss = ShellSession.get(d);
+        ConsoleModel theModel = null;
+        if (ss != null) {
+            theModel = ss.getModel();
         }
-        ConsoleModel model = session.getModel();
-        if (model == null) {
-            return Collections.emptyList();
+        this.result = new ConsoleResult(theModel, snapshot);
+    }
+
+    @Override
+    public void cancel(CancelReason reason, SourceModificationEvent event) {
+        if (event == null || event.sourceChanged()) {
+            result = null;
         }
-        EmbeddingProcessor p = new EmbeddingProcessor(session, model, snapshot);
-        return p.process();
+    }
+
+    @Override
+    public Result getResult(Task task) throws ParseException {
+        return result;
+    }
+
+    @Override
+    public void addChangeListener(ChangeListener changeListener) {
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener changeListener) {
     }
     
-    @Override
-    public int getPriority() {
-        return 0;
+    @MimeRegistration(service = ParserFactory.class, mimeType = "text/x-repl")
+    public static class F extends ParserFactory {
+        @Override
+        public Parser createParser(Collection<Snapshot> snapshots) {
+            return new ConsoleMainParser();
+        }
     }
 }

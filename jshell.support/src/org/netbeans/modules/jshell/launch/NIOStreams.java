@@ -53,7 +53,6 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -79,7 +78,7 @@ import org.openide.util.RequestProcessor;
  * 
  * @author sdedic
  */
-public class NIOStreams {
+class NIOStreams {
     /**
      * The preread buffer size
      */

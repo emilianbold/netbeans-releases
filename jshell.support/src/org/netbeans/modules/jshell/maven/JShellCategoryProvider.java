@@ -39,35 +39,54 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.project;
+package org.netbeans.modules.jshell.maven;
+
+import java.awt.event.ActionEvent;
+import javax.swing.JComponent;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer.CompositeCategoryProvider;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author sdedic
  */
-public class PropertyNames {
-    /**
-     * JShell execution enabled for the configuration
-     */
-    public static final String JSHELL_ENABLED = "jshell.run.enable"; // NOI18N
+@CompositeCategoryProvider.Registration(
+    projectType = "org-netbeans-modules-maven",
+    category = ModelHandle2.PANEL_RUN
+//        ,
+//    categoryLabel = "#CAT_RunJShell"
+)
+@NbBundle.Messages({
+    "CAT_RunJShell=Java Shell"
+})
+public class JShellCategoryProvider implements CompositeCategoryProvider {
+    public static final String CATEGORY = "JSHELL";
+    public static final String CATEGORY_FULL = ModelHandle2.PANEL_RUN + "/" + CATEGORY;
     
-    /**
-     * JShell class loading policy: {system, class, eval}, see LoaderPolicy enum
-     */
-    public static final String JSHELL_CLASS_LOADING = "jshell.run.classloader"; // NOI18N
-    
-    /**
-     * Reference class name, or declaring class name, depending on class loading policy
-     */
-    public static final String JSHELL_CLASSNAME = "jshell.classloader.from.class"; // NOI18N
-    
-    /**
-     * Invoked method name
-     */
-    public static final String JSHELL_FROM_METHOD = "jshell.classloader.from.method"; // NOI18N
-    
-    /**
-     * Classloader field name
-     */
-    public static final String JSHELL_FROM_FIELD = "jshell.classloader.from.field"; // NOI18N
+    @Override
+    public ProjectCustomizer.Category createCategory(Lookup context) {
+        return ProjectCustomizer.Category.create(
+                CATEGORY,
+                Bundle.CAT_RunJShell(),
+                null
+        );
+    }
+
+    @Override
+    public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
+        Project prj = context.lookup(Project.class);
+        ModelHandle2 handle = context.lookup(ModelHandle2.class);
+        if (prj == null || handle == null) {
+            return null;
+        }
+        MavenRunOptions opts = new MavenRunOptions(prj, category, handle);
+        return opts;
+    }
 }

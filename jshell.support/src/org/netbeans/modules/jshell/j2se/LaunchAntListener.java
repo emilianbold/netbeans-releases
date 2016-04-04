@@ -39,37 +39,44 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.launch;
+package org.netbeans.modules.jshell.j2se;
 
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
+import org.netbeans.modules.jshell.launch.ShellAgent;
+import org.netbeans.modules.jshell.launch.ShellLaunchManager;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.InputOutput;
 
 /**
- *
+ * Connects Ant-based projects to {@link ShellLaunchManager}. Allocate {@link ShellAgent}
+ * before the target process starts, attaches the Ant's I/O window to the agent.
+ * <p/>
+ * Note: two properties are actually used during the startup: run.jvmargs.ide and run.jvmargs. The StartupExtender
+ * is called two times, so it actually generates two agents, but at the end only one of the keys propagates to the actual
+ * VM launch, so only one agent will be created.
+ * 
  * @author sdedic
  */
 @ServiceProvider(service = AntLogger.class)
 public class LaunchAntListener extends AntLogger {
-    private String[] MONITOR_TARGETS = { 
-        "do-debug-test-single",
-        "debug-test-single-nb",
-        "do-debug-test-main",
-        "debug-test-main-nb",
-        "debug-test-with-main",
-        "debug-single",
-        "debug"
-    };
     private static final Logger LOG = Logger.getLogger(LaunchAntListener.class.getName());
+
+    private String[] MONITOR_TARGETS = { 
+        "do-debug-test-single", // NOI18N
+        "debug-test-single-nb", // NOI18N
+        "do-debug-test-main", // NOI18N
+        "debug-test-main-nb", // NOI18N
+        "debug-test-with-main", // NOI18N
+        "debug-single", // NOI18N
+        "debug" // NOI18N
+    };
     
     private ShellLaunchManager mgr;
     
@@ -77,7 +84,7 @@ public class LaunchAntListener extends AntLogger {
         if (mgr == null) {
             mgr = Lookup.getDefault().lookup(ShellLaunchManager.class);
             if (mgr == null) {
-                throw new IllegalStateException("Could not find launch manager");
+                throw new IllegalStateException("Could not find launch manager"); // NOI18N
             }
         }
         return mgr;
@@ -100,8 +107,8 @@ public class LaunchAntListener extends AntLogger {
         }
         super.targetStarted(event);
         InputOutput io = event.getSession().getIO();
-        String authKey = getAuthKey(event.evaluate("${run.jvmargs.ide}"));
-        String authKey2 = getAuthKey(event.evaluate("${run.jvmargs}"));
+        String authKey = ShellLaunchManager.getAuthKey(event.evaluate("${run.jvmargs.ide}"));  // NOI18N
+        String authKey2 = ShellLaunchManager.getAuthKey(event.evaluate("${run.jvmargs}"));  // NOI18N
         if (authKey == null && authKey2 == null) {
             return;
         }
@@ -113,40 +120,9 @@ public class LaunchAntListener extends AntLogger {
     public boolean interestedInSession(AntSession session) {
         LOG.log(Level.FINE, "Checking interestInSession: " + session);
         String s = session.getProperties().get("run.jvmargs");
-        return s != null && s.contains("netbeans-lib-jshell-agent.jar"); // NOI18N
-        /*
-        if (path == null) {
-            return false;
-        }
-        FileObject f = FileUtil.toFileObject(new File(path));
-        if (f == null) {
-            return false;
-        }
-        Project p;
-        try {
-            p = ProjectManager.getDefault().findProject(f);
-        } catch (IOException | IllegalArgumentException ex) {
-            return false;
-        }
-        if (p == null) {
-            return false;
-        }
-        boolean interested = ProjectUtils.isJShellRunEnabled(p);
-        LOG.log(Level.FINE, "Session's project is: " + p + ", interested: " + interested);
-        return interested;
-                */
+        return s != null && s.contains("nb-custom-jshell-probe.jar"); // NOI18N
     }
     
-    private static final Pattern REGEXP_KEY = Pattern.compile("-javaagent:[^ ]*key=([^,]+)");
-    
-    private String getAuthKey(String args) {
-        if (args == null) {
-            return null;
-        }
-        Matcher m = REGEXP_KEY.matcher(args);
-        return m.find() ? m.group(1) : null;
-    }
-
     @Override
     public void buildFinished(AntEvent event) {
         LOG.log(Level.FINE, "Got build finished: " + event);
@@ -154,12 +130,13 @@ public class LaunchAntListener extends AntLogger {
     }
     
     private void destroyAgent(AntEvent event) {
-        String authKey = getAuthKey(event.evaluate("${run.jvmargs.ide}"));
-        String authKey2 = getAuthKey(event.evaluate("${run.jvmargs}"));
+        String authKey = ShellLaunchManager.getAuthKey(event.evaluate("${run.jvmargs.ide}")); // NOI18N
+        String authKey2 = ShellLaunchManager.getAuthKey(event.evaluate("${run.jvmargs}")); // NOI18N
+        // do not block ANT process
         RequestProcessor.getDefault().post(() -> {
             getManager().destroyAgent(authKey);
             getManager().destroyAgent(authKey2);
-        }, 5000);
+        });
     }
 
     @Override

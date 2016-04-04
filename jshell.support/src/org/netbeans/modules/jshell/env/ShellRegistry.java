@@ -43,15 +43,19 @@ package org.netbeans.modules.jshell.env;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javafx.application.Platform;
 import jdk.jshell.JDIRemoteAgent;
 import jdk.jshell.RemoteJShellService;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -63,16 +67,29 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.Places;
+import org.openide.util.BaseUtilities;
 import org.openide.util.NbBundle;
 
 
 /**
  * Registration of all running JShells. Each project can have zero to many
- * JShell
+ * JShell. The Registry keeps and maintains work area for individual shells; the
+ * work area is cleaned up upon termination.
+ * <p/>
+ * The Registry attempts to clear everything in the work area on its first
+ * usage, then deletes JShellEnvironment's workroot when the env instance disappears.
+ * During operation, it tries to reuse existing undeleted folders.
  * 
  * @author sdedic
  */
 public class ShellRegistry {
+    private static final Logger LOG = Logger.getLogger(ShellRegistry.class.getName());
+    
+    /**
+     * Prefix for individual JShell directories created in the work area
+     */
+    private static final String WORKAREA_PREFIX = "junk"; // NOI18N
+    
     private static ShellRegistry INSTANCE = new ShellRegistry();
     
     private ShellRegistry() {}
@@ -82,6 +99,9 @@ public class ShellRegistry {
      */
     private FileObject  trashRoot;
     
+    private Set<String> ignoreNames = new HashSet<>();
+    
+    // @GuardedBy(this)
     private void createAndCleanTrashArea() throws IOException {
         if (trashRoot != null) {
             return;
@@ -90,10 +110,17 @@ public class ShellRegistry {
         if (r == null) {
             throw new IOException("Unable to create cache for generated snippets");
         }
-        for (FileObject f : r.getChildren()) {
-            f.delete();
-        }
+        LOG.log(Level.FINE, "Clearing trash area");
         trashRoot = r;
+        for (FileObject f : r.getChildren()) {
+            LOG.log(Level.FINE, "Deleting: {0}", f);
+            try {
+                f.delete();
+            } catch (IOException ex) {
+                LOG.log(Level.WARNING, "Could not delete JShell work area {0}: {1}", new Object[] { f, ex });
+                ignoreNames.add(f.getNameExt());
+            }
+        }
     }
     
     public static ShellRegistry get() {
@@ -101,16 +128,18 @@ public class ShellRegistry {
     }
     
     /**
-     * Per-project clean VM sessions
+     * Per-project clean VM sessions, initiated by {@link #openProjectSession}.
      */
     private Map<Project, JShellEnvironment>     projectSessions = new HashMap<>();
-    private Map<FileObject, JShellEnvironment>  fileIndex = new HashMap<>();
+    private Map<FileObject, Reference<JShellEnvironment>>  fileIndex = new HashMap<>();
     private JShellEnvironment                   defaultSession;
     
+    //@GuardedBy(this)
     private FileObject  createCacheRoot() throws IOException {
         List<FileObject> roots = fileIndex.keySet().stream().map((f) -> f.getParent()).collect(Collectors.toList());
         Set<FileObject> existing = new HashSet<>(Arrays.asList(trashRoot.getChildren()));
         existing.removeAll(roots);
+        existing.removeAll(ignoreNames);
         if (!existing.isEmpty()) {
             // reuse an existing root
             FileObject r = existing.iterator().next();
@@ -120,7 +149,7 @@ public class ShellRegistry {
             return r;
         }
         while (true) {
-            String n = FileUtil.findFreeFolderName(trashRoot, "junk");
+            String n = FileUtil.findFreeFolderName(trashRoot, WORKAREA_PREFIX);
             try {
                 return trashRoot.createFolder(n);
             } catch (IOException ex) {
@@ -132,6 +161,23 @@ public class ShellRegistry {
         }
     }
     
+    private void deleteCacheRoot(Reference<JShellEnvironment> ref, FileObject f) {
+        synchronized (this) {
+            if (fileIndex.get(f) != ref) {
+                // reused.
+                return;
+            }
+            fileIndex.remove(f);
+            try {
+                f.delete();
+            } catch (IOException ex) {
+                LOG.log(Level.WARNING, "Could not delete work root {0}: {1}", new Object[] { f, ex });
+                ignoreNames.add(f.getNameExt());
+            }
+        }
+    }
+    
+
     /**
      * Opens a new session for the project, or return an existin one. The method 
      * will open a clean VM session for the project. If a session has been already started,
@@ -180,13 +226,14 @@ public class ShellRegistry {
             createAndCleanTrashArea();
             FileObject r = createCacheRoot();
             env.init(r);
-            fileIndex.put(env.getConsoleFile(), env);
+            fileIndex.put(env.getConsoleFile(), new CLR(r, env));
         }
     }
     
     public JShellEnvironment get(FileObject consoleFile) {
         synchronized (this) {
-            return fileIndex.get(consoleFile);
+            Reference<JShellEnvironment> ref = fileIndex.get(consoleFile);
+            return ref == null ? null : ref.get();
         }
     }
     
@@ -200,8 +247,8 @@ public class ShellRegistry {
         JShellEnvironment current;
         
         synchronized (this) {
-            current = fileIndex.get(env.getConsoleFile());
-            if (current == env) {
+            Reference<JShellEnvironment> ref = fileIndex.get(env.getConsoleFile());
+            if (ref != null && ref.get() == env) {
                 fileIndex.remove(env.getConsoleFile());
                 projectSessions.remove(p);
             } else {
@@ -231,7 +278,17 @@ public class ShellRegistry {
         List<JShellEnvironment> env;
         
         synchronized (this) {
-            env = new ArrayList<>(fileIndex.values());
+            env = new ArrayList<>(fileIndex.size());
+            for (Iterator<Reference<JShellEnvironment>> it = fileIndex.values().iterator();
+                    it.hasNext(); ) {
+                Reference<JShellEnvironment> ref = it.next();
+                JShellEnvironment e = ref.get();
+                if (e != null) {
+                    env.add(e);
+                } else {
+                    it.remove();
+                }
+            }
         }
         for (JShellEnvironment e : env) {
             FileObject wr = e.getWorkRoot();
@@ -310,5 +367,20 @@ public class ShellRegistry {
             return cp.toString();
         }
 
+    }
+    
+    private class CLR extends WeakReference<JShellEnvironment> implements Runnable {
+        private final FileObject workRoot;
+
+        public CLR(FileObject workRoot, JShellEnvironment referent) {
+            super(referent, BaseUtilities.activeReferenceQueue());
+            this.workRoot = workRoot;
+        }
+
+        @Override
+        public void run() {
+            LOG.log(Level.FINE, "Work root {0} expired, trying to delete.", workRoot);
+            deleteCacheRoot(this, workRoot);
+        }
     }
 }

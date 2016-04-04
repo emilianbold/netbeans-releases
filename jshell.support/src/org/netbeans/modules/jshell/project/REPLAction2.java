@@ -42,7 +42,6 @@
 package org.netbeans.modules.jshell.project;
 
 import java.io.IOException;
-import org.netbeans.modules.java.repl.*;
 import javax.swing.Action;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -78,8 +77,8 @@ public class REPLAction2 implements ProjectActionPerformer {
     @Override
     public boolean enable(Project project) {
         for (SourceGroup sg : ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-            if (Utils.isNormalRoot(sg)) {
-                if (Utils.findPlatform(ClassPath.getClassPath(sg.getRootFolder(), ClassPath.BOOT)) != null)
+            if (org.netbeans.modules.jshell.project.ProjectUtils.isNormalRoot(sg)) {
+                if (org.netbeans.modules.jshell.project.ProjectUtils.findPlatform(ClassPath.getClassPath(sg.getRootFolder(), ClassPath.BOOT)) != null)
                     return true;
             }
         }

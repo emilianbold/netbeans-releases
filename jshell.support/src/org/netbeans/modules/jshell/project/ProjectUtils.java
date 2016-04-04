@@ -43,10 +43,18 @@ package org.netbeans.modules.jshell.project;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -96,5 +104,27 @@ public final class ProjectUtils {
             }
         }
         return null;
+    }
+
+    public static boolean isNormalRoot(SourceGroup sg) {
+        return UnitTestForSourceQuery.findSources(sg.getRootFolder()).length == 0;
+    }
+
+    public static JavaPlatform findPlatform(ClassPath bootCP) {
+        Set<URL> roots = to2Roots(bootCP);
+        for (JavaPlatform platform : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
+            if (roots.containsAll(to2Roots(platform.getBootstrapLibraries()))) {
+                return platform;
+            }
+        }
+        return null;
+    }
+
+    public static Set<URL> to2Roots(ClassPath bootCP) {
+        Set<URL> roots = new HashSet<>();
+        for (ClassPath.Entry e : bootCP.entries()) {
+            roots.add(e.getURL());
+        }
+        return roots;
     }
 }

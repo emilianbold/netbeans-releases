@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,47 +37,52 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.repl;
+package org.netbeans.modules.jshell.parsing;
 
-import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.ClassPath.Entry;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.queries.UnitTestForSourceQuery;
-import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.jshell.model.ConsoleModel;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.text.Document;
+import org.netbeans.modules.jshell.support.ShellSession;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 
 /**
  *
- * @author lahvac
+ * @author sdedic
  */
-public class Utils {
-
-    public static boolean isNormalRoot(SourceGroup sg) {
-        return UnitTestForSourceQuery.findSources(sg.getRootFolder()).length == 0;
+@EmbeddingProvider.Registration(
+        mimeType = "text/x-repl", targetMimeType = "text/x-java")
+public class ConsoleEmbeddingProvider extends EmbeddingProvider {
+    
+    @Override
+    public void cancel() {
+        
     }
-
-    public static JavaPlatform findPlatform(ClassPath bootCP) {
-        Set<URL> roots = to2Roots(bootCP);
-
-        for (JavaPlatform platform : JavaPlatformManager.getDefault().getInstalledPlatforms()){
-            if (roots.containsAll(to2Roots(platform.getBootstrapLibraries())))
-                return platform;
+    
+    @Override
+    public List<Embedding> getEmbeddings(Snapshot snapshot) {
+        Document d = snapshot.getSource().getDocument(false);
+        if (d == null) {
+            return Collections.emptyList();
         }
-
-        return null;
-    }
-
-    public static Set<URL> to2Roots(ClassPath bootCP) {
-        Set<URL> roots = new HashSet<>();
-        for (Entry e : bootCP.entries()) {
-            roots.add(e.getURL());
+        ShellSession session = ShellSession.get(d);
+        if (session == null) {
+            return Collections.emptyList();
         }
-        return roots;
+        ConsoleModel model = session.getModel();
+        if (model == null) {
+            return Collections.emptyList();
+        }
+        EmbeddingProcessor p = new EmbeddingProcessor(session, model, snapshot);
+        return p.process();
     }
-
+    
+    @Override
+    public int getPriority() {
+        return 0;
+    }
 }
