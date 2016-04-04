@@ -61,6 +61,10 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
     private boolean canFollowKeyword = true;
 
+    private boolean isTemplateExp = false;
+
+    private int templateExpBalance = 0;
+
     public JsColoringLexer(LexerRestartInfo info) {
         this.input = info.input();
 
@@ -79,7 +83,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
                 && canFollowLiteral && canFollowKeyword) {
             return null;
         }
-        return new LexerState(zzState, zzLexicalState, canFollowLiteral, canFollowKeyword);
+        return new LexerState(zzState, zzLexicalState, canFollowLiteral, canFollowKeyword, isTemplateExp, templateExpBalance);
     }
 
     public void setState(LexerState state) {
@@ -87,6 +91,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         this.zzLexicalState = state.zzLexicalState;
         this.canFollowLiteral = state.canFollowLiteral;
         this.canFollowKeyword = state.canFollowKeyword;
+        this.isTemplateExp = state.isTemplateExp;
+        this.templateExpBalance = state.templateExpBalance;
     }
 
     public JsTokenId nextToken() throws java.io.IOException {
@@ -153,12 +159,18 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         final boolean canFollowLiteral;
         /** can be the literal used here */
         final boolean canFollowKeyword;
+        /** are we in template expression */
+        final boolean isTemplateExp;
+        /** balance of { and } in template expression */
+        final int templateExpBalance;
 
-        LexerState (int zzState, int zzLexicalState, boolean canFollowLiteral, boolean canFollowKeyword) {
+        LexerState (int zzState, int zzLexicalState, boolean canFollowLiteral, boolean canFollowKeyword, boolean isTemplateExp, int templateExpBalance) {
             this.zzState = zzState;
             this.zzLexicalState = zzLexicalState;
             this.canFollowLiteral = canFollowLiteral;
             this.canFollowKeyword = canFollowKeyword;
+            this.isTemplateExp = isTemplateExp;
+            this.templateExpBalance = templateExpBalance;
         }
 
         @Override
@@ -182,6 +194,12 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             if (this.canFollowKeyword != other.canFollowKeyword) {
                 return false;
             }
+            if (this.isTemplateExp != other.isTemplateExp) {
+                return false;
+            }
+            if (this.templateExpBalance != other.templateExpBalance) {
+                return false;
+            }
             return true;
         }
 
@@ -192,12 +210,16 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             hash = 29 * hash + this.zzLexicalState;
             hash = 29 * hash + (this.canFollowLiteral ? 1 : 0);
             hash = 29 * hash + (this.canFollowKeyword ? 1 : 0);
+            hash = 29 * hash + (this.isTemplateExp ? 1 : 0);
+            hash = 29 * hash + this.templateExpBalance;
             return hash;
         }
 
         @Override
         public String toString() {
-            return "LexerState{" + "zzState=" + zzState + ", zzLexicalState=" + zzLexicalState + ", canFollowLiteral=" + canFollowLiteral + ", canFollowKeyword=" + canFollowKeyword + '}';
+            return "LexerState{" + "zzState=" + zzState + ", zzLexicalState=" + zzLexicalState
+                + ", canFollowLiteral=" + canFollowLiteral + ", canFollowKeyword=" + canFollowKeyword
+                + ", isTemplateExp=" + isTemplateExp + ", templateExpBalance=" + templateExpBalance + '}';
         }
     }
 
@@ -243,6 +265,7 @@ FLit3    = [0-9]+
 Exponent = [eE] [+-]? [0-9]+
 
 /* string and character literals */
+TemplateCharacter = [^`$\\]
 StringCharacter  = [^\r\n\"\\] | \\{LineTerminator}
 SStringCharacter = [^\r\n\'\\] | \\{LineTerminator}
 
@@ -256,6 +279,10 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
 %state STRINGEND
 %state SSTRING
 %state SSTRINGEND
+%state TEMPLATE
+%state TEMPLATEEND
+%state TEMPLATEEXP
+%state TEMPLATEEXPEND
 %state REGEXP
 %state REGEXPEND
 %state LCOMMENTEND
@@ -357,8 +384,25 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
 
   "("                            { return JsTokenId.BRACKET_LEFT_PAREN; }
   ")"                            { return JsTokenId.BRACKET_RIGHT_PAREN; }
-  "{"                            { return JsTokenId.BRACKET_LEFT_CURLY; }
-  "}"                            { return JsTokenId.BRACKET_RIGHT_CURLY; }
+  "{"                            { 
+                                     if (isTemplateExp) {
+                                        templateExpBalance++;
+                                     }
+                                     return JsTokenId.BRACKET_LEFT_CURLY;
+                                 }
+  "}"                            { 
+                                     if (isTemplateExp) {
+                                        if (templateExpBalance == 0) {
+                                            yypushback(1);
+                                            yybegin(TEMPLATEEXPEND);
+                                        } else {
+                                            templateExpBalance--;
+                                            return JsTokenId.BRACKET_RIGHT_CURLY;
+                                        }
+                                     } else {                                     
+                                        return JsTokenId.BRACKET_RIGHT_CURLY;
+                                     }
+                                 }
   "["                            { return JsTokenId.BRACKET_LEFT_BRACKET; }
   "]"                            { return JsTokenId.BRACKET_RIGHT_BRACKET; }
   ";"                            { return JsTokenId.OPERATOR_SEMICOLON; }
@@ -413,6 +457,11 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
   \'                             {
                                     yybegin(SSTRING);
                                     return JsTokenId.STRING_BEGIN;
+                                 }
+
+   `                             {
+                                    yybegin(TEMPLATE);
+                                    return JsTokenId.TEMPLATE_BEGIN;
                                  }
 
   /* numeric literals */
@@ -513,6 +562,51 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
   \'                             {
                                      yybegin(INITIAL);
                                      return JsTokenId.STRING_END;
+                                 }
+}
+
+<TEMPLATE> {
+  `                              {
+                                     yypushback(1);
+                                     yybegin(TEMPLATEEND);
+                                     if (tokenLength - 1 > 0) {
+                                         return JsTokenId.TEMPLATE;
+                                     }
+                                 }
+
+  {TemplateCharacter}+           { }
+
+  "$"\{                          { 
+                                     yypushback(2);
+                                     yybegin(TEMPLATEEXP);
+                                     if (tokenLength - 1 > 0) {
+                                         return JsTokenId.TEMPLATE;
+                                     }
+                                 }
+
+  \\.                            { }
+}
+
+<TEMPLATEEND> {
+  `                              {
+                                     yybegin(INITIAL);
+                                     return JsTokenId.TEMPLATE_END;
+                                 }
+}
+
+<TEMPLATEEXP> {
+  "$"\{                          {
+                                     isTemplateExp = true;
+                                     yybegin(INITIAL);
+                                     return JsTokenId.TEMPLATE_EXP_BEGIN;
+                                 }
+}
+
+<TEMPLATEEXPEND> {
+  "}"                            {
+                                     isTemplateExp = false;
+                                     yybegin(TEMPLATE);
+                                     return JsTokenId.TEMPLATE_EXP_END;
                                  }
 }
 
