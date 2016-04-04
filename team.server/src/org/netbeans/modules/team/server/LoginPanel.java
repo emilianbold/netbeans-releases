@@ -43,16 +43,18 @@
 package org.netbeans.modules.team.server;
 
 import java.awt.BorderLayout;
-import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.team.server.ui.common.AddInstanceAction;
 import org.netbeans.modules.team.server.ui.spi.LoginPanelSupport;
@@ -60,6 +62,7 @@ import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.netbeans.modules.team.server.ui.spi.TeamServerProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -74,7 +77,10 @@ public class LoginPanel extends javax.swing.JPanel implements org.netbeans.modul
     private Map<TeamServer, LoginPanelSupport> cached = new HashMap<TeamServer, LoginPanelSupport>();
 
     private static final Map<String, LoginCallable> map = new HashMap<>();
-        
+     
+    private boolean valid = false;
+    private final ChangeSupport support = new ChangeSupport(this);
+    
     /** Creates new form LoginPanel */
     private LoginPanel(TeamServer preselectedServer, TeamServerProvider listedProvider) {
         this.server = preselectedServer;
@@ -86,6 +92,18 @@ public class LoginPanel extends javax.swing.JPanel implements org.netbeans.modul
         }
     }
 
+    public void addChangeListener(ChangeListener listener) {
+        support.addChangeListener(listener);        
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        support.removeChangeListener(listener);
+    }
+    
+    boolean isLoginValid() {
+        return valid;
+    }
+    
     @Override
     public void showError (String errorMessage, String tooltipText) {
         teamCombo.setEnabled(true);
@@ -151,12 +169,14 @@ public class LoginPanel extends javax.swing.JPanel implements org.netbeans.modul
     }
 
     private void setLoginButtonEnabled(boolean enabled) {
-        try {
-            ((Container) getParent().getComponents()[1]).getComponents()[0].setEnabled(enabled);
-        } catch (Exception e) {
-            //ignore
+        if(support != null) {
+            boolean oldValid = valid;
+            valid = teamCombo.getSelectedItem() != null && enabled;
+            if(valid != oldValid) {
+                support.fireChange();
+            }
         }
-    } 
+    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -312,9 +332,9 @@ public class LoginPanel extends javax.swing.JPanel implements org.netbeans.modul
             final LoginPanel loginPanel = new LoginPanel(preselectedServer, listAllProviders || preselectedServer == null
                     ? null 
                     : preselectedServer.getProvider());
-            final String ctlLogin = NbBundle.getMessage(Utilities.class, "CTL_Login");
-            final String ctlCancel = NbBundle.getMessage(Utilities.class, "CTL_Cancel");
-            DialogDescriptor login = new DialogDescriptor(
+            final JButton ctlLogin = new JButton(NbBundle.getMessage(Utilities.class, "CTL_Login"));
+            final JButton ctlCancel = new JButton(NbBundle.getMessage(Utilities.class, "CTL_Cancel"));
+            final DialogDescriptor login = new DialogDescriptor(
                     loginPanel,
                     NbBundle.getMessage(Utilities.class, "CTL_LoginToTeam"),
                     true,
@@ -333,10 +353,17 @@ public class LoginPanel extends javax.swing.JPanel implements org.netbeans.modul
                                 parent.dispose();
                             }
                         }
+            });            
+            loginPanel.addChangeListener(new ChangeListener() {
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    ctlLogin.setEnabled(loginPanel.isLoginValid());
+                }
             });
+            ctlLogin.setEnabled(loginPanel.isLoginValid());
             login.setClosingOptions(new Object[]{ctlCancel});
             Dialog d = DialogDisplayer.getDefault().createDialog(login);
-
+            
             d.pack();
             d.setResizable(true);
             loginPanel.clearStatus();
