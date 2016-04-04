@@ -56,20 +56,20 @@ import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.doc.api.JsDocumentationSupport;
+import org.netbeans.modules.javascript2.doc.spi.JsComment;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
 import org.netbeans.modules.javascript2.editor.hints.JSHintSupport;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.JsFunction;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.Model;
-import org.netbeans.modules.javascript2.editor.model.Occurrence;
-import org.netbeans.modules.javascript2.editor.model.Type;
-import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
-import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
+import org.netbeans.modules.javascript2.types.api.Identifier;
+import org.netbeans.modules.javascript2.model.api.JsFunction;
+import org.netbeans.modules.javascript2.model.api.JsObject;
+import org.netbeans.modules.javascript2.model.api.Model;
+import org.netbeans.modules.javascript2.model.api.Occurrence;
+import org.netbeans.modules.javascript2.types.api.Type;
+import org.netbeans.modules.javascript2.model.api.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.javascript2.model.api.JsReference;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 
@@ -84,6 +84,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
     public static final EnumSet<ColoringAttributes> LOCAL_VARIABLE_DECLARATION = EnumSet.of(ColoringAttributes.LOCAL_VARIABLE_DECLARATION);
     public static final EnumSet<ColoringAttributes> LOCAL_VARIABLE_DECLARATION_UNUSED = EnumSet.of(ColoringAttributes.LOCAL_VARIABLE_DECLARATION, ColoringAttributes.UNUSED);
     public static final EnumSet<ColoringAttributes> LOCAL_VARIABLE_USE = EnumSet.of(ColoringAttributes.LOCAL_VARIABLE);
+    public static final EnumSet<ColoringAttributes> GLOBAL_DEFINITION = EnumSet.of(ColoringAttributes.GLOBAL, ColoringAttributes.CLASS);
     
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
@@ -110,9 +111,9 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
 
         Map<OffsetRange, Set<ColoringAttributes>> highlights =
                 new HashMap<OffsetRange, Set<ColoringAttributes>>(100);
-        Model model = result.getModel();
+        Model model = Model.getModel(result, false);
         JsObject global = model.getGlobalObject();
-        Collection<Identifier> definedGlobal = JSHintSupport.getDefinedGlobal(result.getSnapshot(), -1);
+        Collection<Identifier> definedGlobal = ModelUtils.getDefinedGlobal(result.getSnapshot(), -1);
         for (Identifier iden: definedGlobal) {
             globalJsHintInlines.add(iden.getOffsetRange());
         }
@@ -136,6 +137,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                     case CONSTRUCTOR:
                     case METHOD:
                     case FUNCTION:
+                    case GENERATOR:
                         if(object.isDeclared() && !object.isAnonymous() && !object.getDeclarationName().getOffsetRange().isEmpty()) {
                             EnumSet<ColoringAttributes> coloring = ColoringAttributes.METHOD_SET;
                             if (object.getModifiers().contains(Modifier.PRIVATE)) {
@@ -152,7 +154,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                             addColoring(result, highlights, object.getDeclarationName().getOffsetRange(), coloring);
                         }
                         for(JsObject param: ((JsFunction)object).getParameters()) {
-                            if (!(object instanceof JsObjectReference && !((JsObjectReference)object).getOriginal().isAnonymous())) {
+                            if (!(object instanceof JsReference && !((JsReference)object).getOriginal().isAnonymous())) {
                                 count(result, param, highlights, processedObjects);
                             }
                             if (!hasSourceOccurences(result, param)) {
@@ -181,9 +183,10 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                         break;
                     case OBJECT:
                     case OBJECT_LITERAL:
+                    case CLASS:    
                         if(!"UNKNOWN".equals(object.getName())) {
                              if (parent.getParent() == null && !GLOBAL_TYPES.contains(object.getName())) {
-                                addColoring(result, highlights, object.getDeclarationName().getOffsetRange(), ColoringAttributes.GLOBAL_SET); 
+                                addColoring(result, highlights, object.getDeclarationName().getOffsetRange(), GLOBAL_DEFINITION); 
                                 for (Occurrence occurence : object.getOccurrences()) {
                                     addColoring(result, highlights, occurence.getOffsetRange(), ColoringAttributes.GLOBAL_SET);
                                 }
@@ -233,8 +236,8 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                                         highlights.put(LexUtilities.getLexerOffsets(result, object.getDeclarationName().getOffsetRange()), ColoringAttributes.UNUSED_SET);
                                     }
                                 }
-                            } else if (object instanceof JsObjectImpl && !ModelUtils.ARGUMENTS.equals(object.getName())) {   // NOI18N
-                                if (object.getOccurrences().size() <= ((JsObjectImpl)object).getCountOfAssignments()) {
+                            } else if (object instanceof JsObject && !ModelUtils.ARGUMENTS.equals(object.getName())) {   // NOI18N
+                                if (object.getOccurrences().size() <= ((JsObject)object).getAssignmentCount()) {
                                     // probably is used only on the left site => is unused
                                     if (object.getDeclarationName().getOffsetRange().getLength() > 0) {
                                         highlights.put(LexUtilities.getLexerOffsets(result, object.getDeclarationName().getOffsetRange()), ColoringAttributes.UNUSED_SET);
@@ -261,7 +264,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                 highlights = null;
                 break;
             }
-            if (!(object instanceof JsObjectReference && ModelUtils.isDescendant(object, ((JsObjectReference)object).getOriginal()))) {
+            if (!(object instanceof JsReference && ModelUtils.isDescendant(object, ((JsReference)object).getOriginal()))) {
                 highlights = count(result, object, highlights, processedObjects);
             }
         }
@@ -322,7 +325,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
     }
 
     private boolean isInComment(JsParserResult result, OffsetRange range) {
-        for (JsComment comment : result.getDocumentationHolder().getCommentBlocks().values()) {
+        for (JsComment comment : JsDocumentationSupport.getDocumentationHolder(result).getCommentBlocks().values()) {
             if (comment.getOffsetRange().containsInclusive(range.getStart())) {
                 return true;
             }
