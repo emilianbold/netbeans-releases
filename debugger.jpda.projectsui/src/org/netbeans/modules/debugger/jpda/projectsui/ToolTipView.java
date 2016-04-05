@@ -197,8 +197,8 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
     }
     
     
-    static ExpandableTooltip createExpandableTooltip(String toolTipText) {
-        return new ExpandableTooltip(toolTipText);
+    static ExpandableTooltip createExpandableTooltip(String toolTipText, boolean expandable) {
+        return new ExpandableTooltip(toolTipText, expandable);
     }
 
     static class ExpandableTooltip extends JPanel {
@@ -211,7 +211,7 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
         private boolean widthCheck = true;
         private boolean sizeSet = false;
 
-        public ExpandableTooltip(String toolTipText) {
+        public ExpandableTooltip(String toolTipText, boolean expandable) {
             Font font = UIManager.getFont(UI_PREFIX + ".font"); // NOI18N
             Color backColor = UIManager.getColor(UI_PREFIX + ".background"); // NOI18N
             Color foreColor = UIManager.getColor(UI_PREFIX + ".foreground"); // NOI18N
@@ -226,12 +226,14 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
             ));
 
             setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-            Icon expIcon = UIManager.getIcon ("Tree.collapsedIcon");    // NOI18N
-            expButton = new JButton(expIcon);
-            expButton.setBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 5));
-            expButton.setBorderPainted(false);
-            expButton.setContentAreaFilled(false);
-            add(expButton);
+            if (expandable) {
+                Icon expIcon = UIManager.getIcon ("Tree.collapsedIcon");    // NOI18N
+                expButton = new JButton(expIcon);
+                expButton.setBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 5));
+                expButton.setBorderPainted(false);
+                expButton.setContentAreaFilled(false);
+                add(expButton);
+            }
             //JLabel l = new JLabel(toolTipText);
             // Multi-line tooltip:
             JTextArea l = createMultiLineToolTip(toolTipText, true);
@@ -280,7 +282,7 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
         @Override
         public void setSize(int width, int height) {
             Dimension prefSize = getPreferredSize();
-            Dimension button1Size = expButton.getPreferredSize();
+            Dimension button1Size = (expButton != null) ? expButton.getPreferredSize() : new Dimension(0, 0);
             Dimension button2Size = pinButton.getPreferredSize();
             if (widthCheck) {
                 Insets insets = getInsets();

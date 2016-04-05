@@ -333,13 +333,14 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         }
 
         toolTipText = truncateLongText(toolTipText);
-        if (tooltipVariable != null) {
-            final ObjectVariable var = tooltipVariable;
-            final String toolTip = toolTipText;
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    final ToolTipView.ExpandableTooltip et = ToolTipView.createExpandableTooltip(toolTip);
+        final ObjectVariable var = tooltipVariable;
+        final String toolTip = toolTipText;
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                boolean expandable = var != null;
+                final ToolTipView.ExpandableTooltip et = ToolTipView.createExpandableTooltip(toolTip, expandable);
+                if (expandable) {
                     et.addExpansionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
@@ -363,28 +364,26 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                             });
                         }
                     });
-                    et.addPinListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            EditorUI eui = Utilities.getEditorUI(ep);
-                            Point location = et.getLocation();
-                            eui.getToolTipSupport().setToolTipVisible(false);
-                            DebuggerManager dbMgr = DebuggerManager.getDebuggerManager();
-                            Watch.Pin pin = new EditorPin(fo, line.getLineNumber(), location);
-                            Watch w = dbMgr.createPinnedWatch(expression, pin);
-                        }
-                    });
-                    EditorUI eui = Utilities.getEditorUI(ep);
-                    if (eui != null) {
-                        eui.getToolTipSupport().setToolTip(et);
-                    } else {
-                        firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTip);
-                    }
                 }
-            });
-        } else {
-            firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTipText);
-        }
+                et.addPinListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        EditorUI eui = Utilities.getEditorUI(ep);
+                        Point location = et.getLocation();
+                        eui.getToolTipSupport().setToolTipVisible(false);
+                        DebuggerManager dbMgr = DebuggerManager.getDebuggerManager();
+                        Watch.Pin pin = new EditorPin(fo, line.getLineNumber(), location);
+                        Watch w = dbMgr.createPinnedWatch(expression, pin);
+                    }
+                });
+                EditorUI eui = Utilities.getEditorUI(ep);
+                if (eui != null) {
+                    eui.getToolTipSupport().setToolTip(et);
+                } else {
+                    firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTip);
+                }
+            }
+        });
     }
     
     private Variable getFormattedValue(JPDADebugger d, ObjectVariable ov) {
