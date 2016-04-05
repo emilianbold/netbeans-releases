@@ -195,6 +195,7 @@ public final class LocalTask extends AbstractLocalTask {
 
     @Override
     protected void taskModified (boolean syncStateChanged) {
+        updateTooltip();
         fireDataChanged();
     }
 

@@ -44,6 +44,7 @@ package org.netbeans.modules.maven.api.output;
 
 import java.lang.ref.WeakReference;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.regex.Matcher;
@@ -195,34 +196,38 @@ public final class OutputUtils {
             int index = sa.method.indexOf(sa.file);
             String packageName = sa.method.substring(0, index).replace('.', '/'); //NOI18N
             String resourceName = packageName + sa.file + ".class"; //NOI18N
-            FileObject resource = classPath.findResource(resourceName);
-            if (resource != null) {
-                FileObject root = classPath.findOwnerRoot(resource);
-                if (root != null) {
-                    URL url = URLMapper.findURL(root, URLMapper.INTERNAL);
-                    SourceForBinaryQuery.Result res = SourceForBinaryQuery.findSourceRoots(url);
-                    FileObject[] rootz = res.getRoots();
-                    for (int i = 0; i < rootz.length; i++) {
-                        String path = packageName + sa.file + ".java"; //NOI18N
-                        FileObject javaFo = rootz[i].getFileObject(path);
-                        if (javaFo != null) {
-                            try {
-                                DataObject obj = DataObject.find(javaFo);
-                                EditorCookie cookie = obj.getLookup().lookup(EditorCookie.class);
-                                int lineInt = Integer.parseInt(sa.lineNum);
+            // issue #258546; have to check all resources. javafx unpacks all classes to target,
+            // SourceForBinaryQuery then fails to find the according java file ...            
+            List<FileObject> resources = classPath.findAllResources(resourceName);
+            if (resources != null) {
+                for (FileObject resource : resources) {                    
+                    FileObject root = classPath.findOwnerRoot(resource);
+                    if (root != null) {
+                        URL url = URLMapper.findURL(root, URLMapper.INTERNAL);
+                        SourceForBinaryQuery.Result res = SourceForBinaryQuery.findSourceRoots(url);
+                        FileObject[] rootz = res.getRoots();
+                        for (int i = 0; i < rootz.length; i++) {
+                            String path = packageName + sa.file + ".java"; //NOI18N
+                            FileObject javaFo = rootz[i].getFileObject(path);
+                            if (javaFo != null) {
                                 try {
-                                    cookie.getLineSet().getCurrent(lineInt - 1).show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
-                                } catch (IndexOutOfBoundsException x) { // #155880
-                                    cookie.open();
+                                    DataObject obj = DataObject.find(javaFo);
+                                    EditorCookie cookie = obj.getLookup().lookup(EditorCookie.class);
+                                    int lineInt = Integer.parseInt(sa.lineNum);
+                                    try {
+                                        cookie.getLineSet().getCurrent(lineInt - 1).show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+                                    } catch (IndexOutOfBoundsException x) { // #155880
+                                        cookie.open();
+                                    }
+                                    return;
+                                } catch (DataObjectNotFoundException ex) {
+                                    Exceptions.printStackTrace(ex);
                                 }
-                                return;
-                            } catch (DataObjectNotFoundException ex) {
-                                Exceptions.printStackTrace(ex);
                             }
                         }
                     }
-                    StatusDisplayer.getDefault().setStatusText(Bundle.NoSource(sa.file));
                 }
+                StatusDisplayer.getDefault().setStatusText(Bundle.NoSource(sa.file));
             } else {
                 StatusDisplayer.getDefault().setStatusText(Bundle.NotFound(sa.file));
             }
