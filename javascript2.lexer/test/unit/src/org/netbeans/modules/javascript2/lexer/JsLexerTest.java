@@ -640,5 +640,29 @@ public class JsLexerTest extends TestCase {
         assertFalse(ts.moveNext());
     }
     
-    
+    @SuppressWarnings("unchecked")
+    public void testTemplateStack() {
+        String text = "`Something is ${a + `foo ${{b}}`} test`";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.javascriptLanguage());
+        TokenSequence<? extends JsTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.TEMPLATE_BEGIN, "`");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.TEMPLATE, "Something is ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.TEMPLATE_EXP_BEGIN, "${");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "a");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_PLUS, "+");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.TEMPLATE_BEGIN, "`");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.TEMPLATE, "foo ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.TEMPLATE_EXP_BEGIN, "${");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.BRACKET_LEFT_CURLY, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "b");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.BRACKET_RIGHT_CURLY, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.TEMPLATE_EXP_END, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.TEMPLATE_END, "`");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.TEMPLATE_EXP_END, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.TEMPLATE, " test");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.TEMPLATE_END, "`");
+        assertFalse(ts.moveNext());   
+    }
 }

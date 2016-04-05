@@ -383,6 +383,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
   "("                            { return JsTokenId.BRACKET_LEFT_PAREN; }
   ")"                            { return JsTokenId.BRACKET_RIGHT_PAREN; }
   "{"                            { 
+                                     // we are checking if we are in template expression
                                      if (!templateBalances.isEmpty()) {
                                         Integer balance = templateBalances.pop();
                                         templateBalances.push(balance + 1);
@@ -391,6 +392,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
                                      return JsTokenId.BRACKET_LEFT_CURLY;
                                  }
   "}"                            { 
+                                     // we are checking if we are in template expression
                                      if (!templateBalances.isEmpty()) {
                                         Integer balance = templateBalances.pop();
                                         if (balance == 0) {
