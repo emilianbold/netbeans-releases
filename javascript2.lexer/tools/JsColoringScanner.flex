@@ -249,9 +249,14 @@ HexIntegerLiteral = 0 [xX] 0* {HexDigit} {1,8}
 HexLongLiteral    = 0 [xX] 0* {HexDigit} {1,16} [lL]
 HexDigit          = [0-9a-fA-F]
 
-OctIntegerLiteral = 0+ [1-3]? {OctDigit} {1,15}
-OctLongLiteral    = 0+ 1? {OctDigit} {1,21} [lL]
+OctIntegerLiteral = 0 [oO] {OctDigit}+
+
+OctLegacyIntegerLiteral = 0+ [1-3]? {OctDigit} {1,15}
+OctLegacyLongLiteral    = 0+ 1? {OctDigit} {1,21} [lL]
 OctDigit          = [0-7]
+
+BinaryIntegerLiteral = 0 [bB] {BinaryDigit}+
+BinaryDigit          = [0-1]
 
 /* floating point literals */
 FloatLiteral  = ({FLit1}|{FLit2}|{FLit3}) {Exponent}? [fF]
@@ -472,11 +477,14 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
   {DecIntegerLiteral}            |
   {DecLongLiteral}               |
 
+  {BinaryIntegerLiteral}         |
+
   {HexIntegerLiteral}            |
   {HexLongLiteral}               |
 
   {OctIntegerLiteral}            |
-  {OctLongLiteral}               |
+  {OctLegacyIntegerLiteral}      |
+  {OctLegacyLongLiteral}         |
 
   {FloatLiteral}                 |
   {DoubleLiteral}                |

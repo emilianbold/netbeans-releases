@@ -665,4 +665,65 @@ public class JsLexerTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.TEMPLATE_END, "`");
         assertFalse(ts.moveNext());   
     }
+    
+    @SuppressWarnings("unchecked")
+    public void testBinaryLiteralLower() {
+        String text = "var x = 0b10101";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.javascriptLanguage());
+        TokenSequence<? extends JsTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.KEYWORD_VAR, "var");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_ASSIGNMENT, "=");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.NUMBER, "0b10101");
+        assertFalse(ts.moveNext());
+    }
+    
+    @SuppressWarnings("unchecked")
+    public void testBinaryLiteralUpper() {
+        String text = "var x = 0B10101";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.javascriptLanguage());
+        TokenSequence<? extends JsTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.KEYWORD_VAR, "var");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_ASSIGNMENT, "=");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.NUMBER, "0B10101");
+        assertFalse(ts.moveNext());
+    }
+    
+    
+    @SuppressWarnings("unchecked")
+    public void testOctalLiteralLower() {
+        String text = "var x = 0o1234567";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.javascriptLanguage());
+        TokenSequence<? extends JsTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.KEYWORD_VAR, "var");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_ASSIGNMENT, "=");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.NUMBER, "0o1234567");
+        assertFalse(ts.moveNext());
+    }
+    
+    @SuppressWarnings("unchecked")
+    public void testOctalLiteralUpper() {
+        String text = "var x = 0O1234567";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.javascriptLanguage());
+        TokenSequence<? extends JsTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.KEYWORD_VAR, "var");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "x");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_ASSIGNMENT, "=");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.NUMBER, "0O1234567");
+        assertFalse(ts.moveNext());
+    }
 }

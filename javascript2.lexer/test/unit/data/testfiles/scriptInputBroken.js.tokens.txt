@@ -23,7 +23,7 @@ EOL             "\n", st=LexerState{zzState=18, zzLexicalState=2, canFollowLiter
 ERROR           "#", st=LexerState{zzState=16, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
 OPERATOR_NOT    "!", la=1, st=LexerState{zzState=22, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
 REGEXP_BEGIN    "/", la=1, st=LexerState{zzState=20, zzLexicalState=20, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
-REGEXP          "usr", la=1, st=LexerState{zzState=168, zzLexicalState=22, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
+REGEXP          "usr", la=1, st=LexerState{zzState=170, zzLexicalState=22, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
 REGEXP_END      "/bin", la=1, st=LexerState{zzState=88, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
 OPERATOR_DIVISION  "/", la=1, st=LexerState{zzState=20, zzLexicalState=2, canFollowLiteral=true, canFollowKeyword=true, templateBalances=[]}
 IDENTIFIER      "env", la=1, st=LexerState{zzState=23, zzLexicalState=2, canFollowLiteral=false, canFollowKeyword=true, templateBalances=[]}
