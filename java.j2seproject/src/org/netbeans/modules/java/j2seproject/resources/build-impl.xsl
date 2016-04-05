@@ -2612,24 +2612,7 @@ is divided into following sections:
                             </xsl:call-template>
                     </xsl:attribute>
                 </j2seproject3:modulename>
-                <pathconvert property="javac.test.addreads.internal" pathsep=",">
-                    <path path="${{javac.test.modulepath}}"/>
-                    <chainedmapper>
-                        <flattenmapper/>
-                        <firstmatchmapper>
-                            <regexpmapper from="^((junit|testng|hamcrest)-.*)\.jar$$" to="\1"/>
-                            <regexpmapper from="^.*$$" to=""/>
-                        </firstmatchmapper>
-                        <regexpmapper from="^(.*)-\d+(\..*|$$)" to="\1"/>
-                        <filtermapper>
-                            <replaceregex pattern="[^A-Z0-9]" replace="." flags="gi"/>
-                            <replaceregex pattern="(\.)(\1)+" replace="." flags="gi"/>
-                            <replaceregex pattern="^\." replace="" flags="gi"/>
-                            <replaceregex pattern="\.$$" replace="" flags="gi"/>
-                        </filtermapper>
-                    </chainedmapper>
-                </pathconvert>
-                <condition property="javac.test.compilerargs" value="-XaddReads:${{test.module.name}}=${{javac.test.addreads.internal}}" else="-Xmodule:${{module.name}} -XaddReads:${{module.name}}=${{javac.test.addreads.internal}}">
+                <condition property="javac.test.compilerargs" value="-XaddReads:${{test.module.name}}=ALL-UNNAMED" else="-Xmodule:${{module.name}} -XaddReads:${{module.name}}=ALL-UNNAMED">
                     <and>
                         <isset property="test.module.name"/>
                         <length length="0" string="${{test.module.name}}" when="greater"/>
@@ -2661,7 +2644,7 @@ is divided into following sections:
                 <property name="javac.test.compilerargs" value=""/>
                 <property name="run.test.jvmargs" value=""/>
             </target>
-            <target name="-init-test-module-properties" depends="-init-test-javac-module-properties-with-module,-init-test-module-properties-without-module" unless="named.module.internal"/>
+            <target name="-init-test-module-properties" depends="-init-test-javac-module-properties-with-module,-init-test-module-properties-without-module"/>
 
             <target name="-compile-test-depend" if="do.depend.true">
                 <xsl:element name="j2seproject3:depend">
