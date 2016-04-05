@@ -956,8 +956,12 @@ is divided into following sections:
                                 <propertyref prefix="test-sys-prop."/>
                                 <mapper type="glob" from="test-sys-prop.*" to="*"/>
                             </syspropertyset>
+                            <classpath>
+                                <path path="${{run.test.classpath}}"/>
+                            </classpath>
                             <formatter type="brief" usefile="false"/>
                             <formatter type="xml"/>
+                            <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg value="-ea"/>
                             <jvmarg line="-modulepath ${{run.test.modulepath}}"/>
                             <jvmarg line="${{run.test.jvmargs}}"/>
@@ -1000,8 +1004,12 @@ is divided into following sections:
                                 <propertyref prefix="test-sys-prop."/>
                                 <mapper type="glob" from="test-sys-prop.*" to="*"/>
                             </syspropertyset>
+                            <classpath>
+                                <path path="${{run.test.classpath}}"/>
+                            </classpath>
                             <formatter type="brief" usefile="false"/>
                             <formatter type="xml"/>
+                            <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg value="-ea"/>
                             <customizePrototype/>
                         </junit>
@@ -1146,6 +1154,10 @@ is divided into following sections:
                                 <propertyref prefix="test-sys-prop."/>
                                 <mapper from="test-sys-prop.*" to="*" type="glob"/>
                             </propertyset>
+                            <classpath>
+                                <path path="${{run.test.classpath}}"/>
+                            </classpath>
+                            <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <customize/>
                         </testng>
                     </sequential>
@@ -1272,10 +1284,6 @@ is divided into following sections:
                     <sequential>
                         <j2seproject3:test-impl includes="@{{includes}}" excludes="@{{excludes}}" testincludes="@{{testincludes}}" testmethods="@{{testmethods}}">
                             <customize>
-                                <classpath>
-                                    <path path="${{run.test.classpath}}"/>
-                                </classpath>
-                                <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                                 <jvmarg line="${{run.jvmargs}}"/>
                                 <jvmarg line="${{run.jvmargs.ide}}"/>
                             </customize>
@@ -1415,10 +1423,6 @@ is divided into following sections:
                     <sequential>
                         <j2seproject3:test-debug-impl includes="@{{includes}}" excludes="@{{excludes}}" testincludes="@{{testincludes}}" testmethods="@{{testmethods}}">
                             <customizeDebuggee>
-                                <classpath>
-                                    <path path="${{run.test.classpath}}"/>
-                                </classpath>
-                                <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                                 <jvmarg line="${{run.jvmargs}}"/>
                                 <jvmarg line="${{run.jvmargs.ide}}"/>
                             </customizeDebuggee>
