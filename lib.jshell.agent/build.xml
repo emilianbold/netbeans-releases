@@ -9,7 +9,16 @@
 
    <target name="probe" depends="init">
         <mkdir dir="build/agent/classes"/>
-        <javac srcdir="agentsrc" destdir="build/agent/classes" debug="true" deprecation="true"/>
+        <unjar src="${agentsrc.asm.cp}" dest="build/agent/classes">
+            <patternset>
+                <exclude name="META-INF/**"/>
+            </patternset>
+        </unjar>
+        <javac srcdir="agentsrc" destdir="build/agent/classes" debug="true" deprecation="true">
+	    <classpath>
+		<pathelement path="${agentsrc.asm.cp}"/>
+	    </classpath>
+	</javac>
         <mkdir dir="${cluster}/modules/ext"/>
         <jar jarfile="${cluster}/modules/ext/nb-custom-jshell-probe.jar">
             <manifest>

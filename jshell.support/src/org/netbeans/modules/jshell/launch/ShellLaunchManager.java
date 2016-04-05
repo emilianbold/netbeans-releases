@@ -574,9 +574,6 @@ public final class ShellLaunchManager {
         
         File agentJar = InstalledFileLocator.getDefault().locate(
                 "modules/ext/nb-custom-jshell-probe.jar", "org.netbeans.modules.jshell.support", false);
-        File owasm = InstalledFileLocator.getDefault().locate(
-                "core/asm-all-5.0.1.jar", "org.netbeans.core", false);
-        
         String policy = propertyEvaluator.apply(PropertyNames.JSHELL_CLASS_LOADING);
         if (policy == null) {
             policy = RunOptionsModel.LoaderPolicy.SYSTEM.toString().toLowerCase();
@@ -595,12 +592,11 @@ public final class ShellLaunchManager {
         }
         
         String arg = String.format(
-                "-javaagent:%1$s=address=%2$s,port=%3$d,libraries=%4$s,key=%5$s," +
-                        "loaderPolicy=%6$s,class=%7$s,field=%8$s,method=%9$s", 
+                "-javaagent:%1$s=address=%2$s,port=%3$d,key=%4$s," +
+                        "loaderPolicy=%5$s,class=%6$s,field=%7$s,method=%8$s", 
                 agentJar.toPath().toString(),
                 isa.getHostString(),
                 isa.getPort(),
-                owasm.toPath().toString(),
                 agent.getAuthorizationKey(),
                 policy,
                 clazz, field, method

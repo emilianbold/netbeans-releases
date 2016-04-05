@@ -68,147 +68,151 @@ class RemoteAgent {
         // in before out -- so we don't hang the controlling process
         while (true) {
             int cmd = in.readInt();
-            switch (cmd) {
-                case CMD_EXIT:
-                    // Terminate this process
-                    return;
-                case CMD_LOAD:
-                    // Load a generated class file over the wire
-                    prepareClassLoader();
-                    try {
-                        int count = in.readInt();
-                        List<String> names = new ArrayList<>(count);
-                        for (int i = 0; i < count; ++i) {
-                            String name = in.readUTF();
-                            byte[] kb = (byte[]) in.readObject();
-                            loader.delare(name, kb);
-                            names.add(name);
-                        }
-                        for (String name : names) {
-                            Class<?> klass = loader.loadClass(name);
-                            klasses.put(name, klass);
-                            // Get class loaded to the point of, at least, preparation
-                            klass.getDeclaredMethods();
-                        }
-                        out.writeInt(RESULT_SUCCESS);
-                        out.flush();
-                    } catch (IOException | ClassNotFoundException | ClassCastException ex) {
-                        debug("*** Load failure: %s\n", ex);
-                        out.writeInt(RESULT_FAIL);
-                        out.writeUTF(ex.toString());
-                        out.flush();
+            performCommand(cmd, in, out);
+        }
+    }
+    
+    protected void performCommand(int cmd, ObjectInputStream in, ObjectOutputStream out) throws IOException {
+        switch (cmd) {
+            case CMD_EXIT:
+                // Terminate this process
+                return;
+            case CMD_LOAD:
+                // Load a generated class file over the wire
+                prepareClassLoader();
+                try {
+                    int count = in.readInt();
+                    List<String> names = new ArrayList<>(count);
+                    for (int i = 0; i < count; ++i) {
+                        String name = in.readUTF();
+                        byte[] kb = (byte[]) in.readObject();
+                        loader.delare(name, kb);
+                        names.add(name);
                     }
-                    break;
-                case CMD_INVOKE: {
-                    // Invoke executable entry point in loaded code
-                    String name = in.readUTF();
-                    Class<?> klass = klasses.get(name);
-                    if (klass == null) {
-                        debug("*** Invoke failure: no such class loaded %s\n", name);
-                        out.writeInt(RESULT_FAIL);
-                        out.writeUTF("no such class loaded: " + name);
-                        out.flush();
-                        break;
-                    }
-                    Method doitMethod;
-                    try {
-                        doitMethod = klass.getDeclaredMethod(DOIT_METHOD_NAME, new Class<?>[0]);
-                        doitMethod.setAccessible(true);
-                        Object res;
-                        try {
-                            clientCodeEnter();
-                            res = doitMethod.invoke(null, new Object[0]);
-                        } catch (InvocationTargetException ex) {
-                            if (ex.getCause() instanceof StopExecutionException) {
-                                expectingStop = false;
-                                throw (StopExecutionException) ex.getCause();
-                            }
-                            throw ex;
-                        } catch (StopExecutionException ex) {
-                            expectingStop = false;
-                            throw ex;
-                        } finally {
-                            clientCodeLeave();
-                        }
-                        out.writeInt(RESULT_SUCCESS);
-                        out.writeUTF(valueString(res));
-                        out.flush();
-                    } catch (InvocationTargetException ex) {
-                        Throwable cause = ex.getCause();
-                        StackTraceElement[] elems = cause.getStackTrace();
-                        if (cause instanceof RemoteResolutionException) {
-                            out.writeInt(RESULT_CORRALLED);
-                            out.writeInt(((RemoteResolutionException) cause).id);
-                        } else {
-                            out.writeInt(RESULT_EXCEPTION);
-                            out.writeUTF(cause.getClass().getName());
-                            out.writeUTF(cause.getMessage() == null ? "<none>" : cause.getMessage());
-                        }
-                        out.writeInt(elems.length);
-                        for (StackTraceElement ste : elems) {
-                            out.writeUTF(ste.getClassName());
-                            out.writeUTF(ste.getMethodName());
-                            out.writeUTF(ste.getFileName() == null ? "<none>" : ste.getFileName());
-                            out.writeInt(ste.getLineNumber());
-                        }
-                        out.flush();
-                    } catch (NoSuchMethodException | IllegalAccessException ex) {
-                        debug("*** Invoke failure: %s -- %s\n", ex, ex.getCause());
-                        out.writeInt(RESULT_FAIL);
-                        out.writeUTF(ex.toString());
-                        out.flush();
-                    } catch (StopExecutionException ex) {
-                        try {
-                            out.writeInt(RESULT_KILLED);
-                            out.flush();
-                        } catch (IOException err) {
-                            debug("*** Error writing killed result: %s -- %s\n", ex, ex.getCause());
-                        }
-                    }
-                    System.out.flush();
-                    break;
-                }
-                case CMD_VARVALUE: {
-                    // Retrieve a variable value
-                    String classname = in.readUTF();
-                    String varname = in.readUTF();
-                    Class<?> klass = klasses.get(classname);
-                    if (klass == null) {
-                        debug("*** Var value failure: no such class loaded %s\n", classname);
-                        out.writeInt(RESULT_FAIL);
-                        out.writeUTF("no such class loaded: " + classname);
-                        out.flush();
-                        break;
-                    }
-                    try {
-                        Field var = klass.getDeclaredField(varname);
-                        var.setAccessible(true);
-                        Object res = var.get(null);
-                        out.writeInt(RESULT_SUCCESS);
-                        out.writeUTF(valueString(res));
-                        out.flush();
-                    } catch (Exception ex) {
-                        debug("*** Var value failure: no such field %s.%s\n", classname, varname);
-                        out.writeInt(RESULT_FAIL);
-                        out.writeUTF("no such field loaded: " + varname + " in class: " + classname);
-                        out.flush();
-                    }
-                    break;
-                }
-                case CMD_CLASSPATH: {
-                    // Append to the claspath
-                    String cp = in.readUTF();
-                    for (String path : cp.split(File.pathSeparator)) {
-                        loader.addURL(new File(path).toURI().toURL());
+                    for (String name : names) {
+                        Class<?> klass = loader.loadClass(name);
+                        klasses.put(name, klass);
+                        // Get class loaded to the point of, at least, preparation
+                        klass.getDeclaredMethods();
                     }
                     out.writeInt(RESULT_SUCCESS);
                     out.flush();
+                } catch (IOException | ClassNotFoundException | ClassCastException ex) {
+                    debug("*** Load failure: %s\n", ex);
+                    out.writeInt(RESULT_FAIL);
+                    out.writeUTF(ex.toString());
+                    out.flush();
+                }
+                break;
+            case CMD_INVOKE: {
+                // Invoke executable entry point in loaded code
+                String name = in.readUTF();
+                Class<?> klass = klasses.get(name);
+                if (klass == null) {
+                    debug("*** Invoke failure: no such class loaded %s\n", name);
+                    out.writeInt(RESULT_FAIL);
+                    out.writeUTF("no such class loaded: " + name);
+                    out.flush();
                     break;
                 }
-                default:
-                    handleUnknownCommand(cmd, in, out);
-                    break;
+                Method doitMethod;
+                try {
+                    doitMethod = klass.getDeclaredMethod(DOIT_METHOD_NAME, new Class<?>[0]);
+                    doitMethod.setAccessible(true);
+                    Object res;
+                    try {
+                        clientCodeEnter();
+                        res = doitMethod.invoke(null, new Object[0]);
+                    } catch (InvocationTargetException ex) {
+                        if (ex.getCause() instanceof StopExecutionException) {
+                            expectingStop = false;
+                            throw (StopExecutionException) ex.getCause();
+                        }
+                        throw ex;
+                    } catch (StopExecutionException ex) {
+                        expectingStop = false;
+                        throw ex;
+                    } finally {
+                        clientCodeLeave();
+                    }
+                    out.writeInt(RESULT_SUCCESS);
+                    out.writeUTF(valueString(res));
+                    out.flush();
+                } catch (InvocationTargetException ex) {
+                    Throwable cause = ex.getCause();
+                    StackTraceElement[] elems = cause.getStackTrace();
+                    if (cause instanceof RemoteResolutionException) {
+                        out.writeInt(RESULT_CORRALLED);
+                        out.writeInt(((RemoteResolutionException) cause).id);
+                    } else {
+                        out.writeInt(RESULT_EXCEPTION);
+                        out.writeUTF(cause.getClass().getName());
+                        out.writeUTF(cause.getMessage() == null ? "<none>" : cause.getMessage());
+                    }
+                    out.writeInt(elems.length);
+                    for (StackTraceElement ste : elems) {
+                        out.writeUTF(ste.getClassName());
+                        out.writeUTF(ste.getMethodName());
+                        out.writeUTF(ste.getFileName() == null ? "<none>" : ste.getFileName());
+                        out.writeInt(ste.getLineNumber());
+                    }
+                    out.flush();
+                } catch (NoSuchMethodException | IllegalAccessException ex) {
+                    debug("*** Invoke failure: %s -- %s\n", ex, ex.getCause());
+                    out.writeInt(RESULT_FAIL);
+                    out.writeUTF(ex.toString());
+                    out.flush();
+                } catch (StopExecutionException ex) {
+                    try {
+                        out.writeInt(RESULT_KILLED);
+                        out.flush();
+                    } catch (IOException err) {
+                        debug("*** Error writing killed result: %s -- %s\n", ex, ex.getCause());
+                    }
+                }
+                System.out.flush();
+                break;
             }
+            case CMD_VARVALUE: {
+                // Retrieve a variable value
+                String classname = in.readUTF();
+                String varname = in.readUTF();
+                Class<?> klass = klasses.get(classname);
+                if (klass == null) {
+                    debug("*** Var value failure: no such class loaded %s\n", classname);
+                    out.writeInt(RESULT_FAIL);
+                    out.writeUTF("no such class loaded: " + classname);
+                    out.flush();
+                    break;
+                }
+                try {
+                    Field var = klass.getDeclaredField(varname);
+                    var.setAccessible(true);
+                    Object res = var.get(null);
+                    out.writeInt(RESULT_SUCCESS);
+                    out.writeUTF(valueString(res));
+                    out.flush();
+                } catch (Exception ex) {
+                    debug("*** Var value failure: no such field %s.%s\n", classname, varname);
+                    out.writeInt(RESULT_FAIL);
+                    out.writeUTF("no such field loaded: " + varname + " in class: " + classname);
+                    out.flush();
+                }
+                break;
+            }
+            case CMD_CLASSPATH: {
+                // Append to the claspath
+                String cp = in.readUTF();
+                for (String path : cp.split(File.pathSeparator)) {
+                    loader.addURL(new File(path).toURI().toURL());
+                }
+                out.writeInt(RESULT_SUCCESS);
+                out.flush();
+                break;
+            }
+            default:
+                handleUnknownCommand(cmd, in, out);
+                break;
         }
     }
     

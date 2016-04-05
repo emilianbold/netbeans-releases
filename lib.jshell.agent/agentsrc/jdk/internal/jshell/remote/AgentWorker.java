@@ -46,15 +46,17 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.security.ProtectionDomain;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executor;
 import java.util.regex.Pattern;
 import org.netbeans.lib.jshell.agent.NbJShellAgent;
 
@@ -62,37 +64,143 @@ import org.netbeans.lib.jshell.agent.NbJShellAgent;
  *
  * @author sdedic
  */
-public class AgentWorker extends RemoteAgent implements Runnable, ClassFileTransformer {
+public class AgentWorker extends RemoteAgent implements Executor, Runnable {
+    public static final String PROPERTY_EXECUTOR = "jdk.internal.jshell.remote.AgentWorker.executor"; // NOI18N
+    
+    /**
+     * Reference set by instrumented classes
+     */
+    public static volatile ClassLoader referenceClassLoader;
+            
+    /**
+     * The JShell agent main with options read from commandline
+     */
     private final NbJShellAgent   agent;
+    
     /**
      * The control socket
      */
     private final Socket socket;
     private final int   socketPort;
+
+    /**
+     * The Classloader last obtained from a field or method
+     */
+    private ClassLoader lastClassLoader;
+    private Callable<ClassLoader>   loaderProvider;
+    private Executor userExecutor;
+    // perform classloader transformation
+    private boolean doClassTransform;
     
     private AgentWorker() {
         agent = null;
-        loader = new NbRemoteLoader();
         socket = null;
         socketPort = -1;
+        
+        Executor exec = (Executor)System.getProperties().get(PROPERTY_EXECUTOR);
+        this.userExecutor = exec != null ? exec : this;
+    }
+    
+    private static class LoaderAccessor implements Callable<ClassLoader> {
+        private final ClassLoader defaultLoader;
+        
+        public LoaderAccessor(ClassLoader defaultLoader) {
+            this.defaultLoader = defaultLoader;
+        }
+
+        @Override
+        public ClassLoader call() throws Exception {
+            if (referenceClassLoader != null) {
+                return referenceClassLoader;
+            } else {
+                return defaultLoader;
+            }
+        }
+    }
+    
+    private class LoaderEvaluator implements Callable<ClassLoader> {
+        private Class   clazz;
+        private Method  method;
+        private Field   field;
+        
+        public ClassLoader call() throws Exception {
+            if (clazz == null) {
+                try {
+                    clazz = Class.forName(agent.getClassName(), false, loader);
+                } catch (ClassNotFoundException ex) {
+                    // the class may not be loaded yet, use the default loader now
+                    return loader;
+                }
+                String m = agent.getMethod();
+                String f = agent.getField();
+                if (m != null) {
+                    method = clazz.getDeclaredMethod(m);
+                    if (!method.getReturnType().isAssignableFrom(ClassLoader.class) ||
+                         (method.getModifiers() & Modifier.STATIC) == 0) {
+                        throw new IllegalStateException("Loader access method must be static and return ClassLoader");
+                    }
+                    method.setAccessible(true);
+                } else if (f != null) {
+                    field = clazz.getDeclaredField(f);
+                    field.setAccessible(true);
+                    if (!field.getType().isAssignableFrom(ClassLoader.class) ||
+                         (field.getModifiers() & Modifier.STATIC) == 0) {
+                        throw new IllegalStateException("Loader access field must be static and assignable to ClassLoader");
+                    }
+                }
+            }
+            
+            if (method != null) {
+                return (ClassLoader)method.invoke(null);
+            } else if (field != null) {
+                return (ClassLoader)field.get(null);
+            } else {
+                return loader;
+            }
+        }
+    }
+    
+    private void installNewClassLoader(ClassLoader delegate) {
+        lastClassLoader = delegate;
+        loader = new NbRemoteLoader(delegate, loader);
     }
 
     @Override
+    public void execute(Runnable command) {
+        command.run();
+    }
+    
+    @Override
     protected void prepareClassLoader() {
-        super.prepareClassLoader();
+        try {
+            ClassLoader current = loaderProvider.call();
+            if (current != lastClassLoader && current != loader) {
+                installNewClassLoader(current);
+            }
+        } catch (Exception ex) {
+            // don't touch
+        }
     }
     
     public AgentWorker(NbJShellAgent agent, Socket controlSocket) {
-        loader = new NbRemoteLoader();
+        loader = new NbRemoteLoader(ClassLoader.getSystemClassLoader(), null);
+        
         this.agent = agent;
         this.socket = controlSocket;
         this.socketPort = controlSocket.getLocalPort();
-        if (agent.getClassName() != null) {
-            if (agent.getMethod() == null && agent.getField() == null) {
-                // hook onto class loading
-                agent.getInstrumentation().addTransformer(this);
-            }
+        if (agent.getField() != null || agent.getMethod() != null) {
+            loaderProvider = new LoaderEvaluator();
+        } else if (agent.getClassName() != null) {
+            loaderProvider = new LoaderAccessor(loader);
+        } else {
+            loaderProvider = new Callable<ClassLoader>() {
+                public ClassLoader call() {
+                    return loader;
+                }
+            };
         }
+        Executor exec = (Executor)System.getProperties().get(PROPERTY_EXECUTOR);
+        this.userExecutor = exec != null ? exec : this;
     }
     
     public static void main(String[] args) throws Exception {
@@ -108,7 +216,6 @@ public class AgentWorker extends RemoteAgent implements Runnable, ClassFileTrans
     
     @Override
     public void run() {
-        loader = new RemoteClassLoader();
         // reset the classloader
         try (
             // will block, but this is necessary so the IDE eventually sets the debuggerKey
@@ -186,17 +293,32 @@ public class AgentWorker extends RemoteAgent implements Runnable, ClassFileTrans
         }
         o.flush();
     }
-
+    
     @Override
-    protected void handleUnknownCommand(int cmd, ObjectInputStream i, ObjectOutputStream o) throws IOException {
-        System.err.flush();
+    protected void performCommand(final int cmd, final ObjectInputStream in, final ObjectOutputStream out) throws IOException {
         try {
             switch (cmd) {
+                case RemoteCodes.CMD_INVOKE: {
+                    final IOException [] err = new IOException[1];
+                    userExecutor.execute(new Runnable() {
+                        public void run() {
+                            try {
+                                AgentWorker.super.performCommand(cmd, in, out);
+                            } catch (IOException ex) {
+                                err[0] = ex;
+                            }
+                        }
+                    });
+                    if (err[0] != null) {
+                        throw err[0];
+                    }
+                    break;
+                }
                 case CMD_VM_INFO:
-                    returnVMInfo(o);
+                    returnVMInfo(out);
                     break;
                 default:
-                    super.handleUnknownCommand(cmd, i, o);
+                    super.performCommand(cmd, in, out);
             }
         } catch (Exception ex) {
             ex.printStackTrace(System.err);
@@ -207,7 +329,6 @@ public class AgentWorker extends RemoteAgent implements Runnable, ClassFileTrans
     
 
     @Override
-    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
-        return null;
+    protected void handleUnknownCommand(int cmd, ObjectInputStream i, ObjectOutputStream o) throws IOException {
     }
  }

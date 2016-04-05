@@ -17,7 +17,7 @@
             <public-packages/>
             <extra-compilation-unit>
                 <package-root>agentsrc</package-root>
-                <classpath/>
+                <classpath>${agentsrc.asm.cp}</classpath>
                 <built-to>build/agent/classes</built-to>
                 <built-to>${cluster}/modules/ext/nb-custom-jshell-probe.jar</built-to>
             </extra-compilation-unit>
