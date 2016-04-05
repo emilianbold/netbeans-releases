@@ -324,10 +324,6 @@ public class FixActionProvider extends ActionsProviderSupport {
         @Override
         public void watchRemoved (Watch watch) {}
         @Override
-        public void watchPinned(Watch watch) {}
-        @Override
-        public void watchUnpinned(Watch watch) {}
-        @Override
         public void engineAdded (DebuggerEngine engine) {}
         @Override
         public void engineRemoved (DebuggerEngine engine) {}

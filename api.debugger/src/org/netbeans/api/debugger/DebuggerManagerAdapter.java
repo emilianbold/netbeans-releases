@@ -103,14 +103,6 @@ public class DebuggerManagerAdapter implements LazyDebuggerManagerListener {
     public void watchRemoved (Watch watch) {
     }
 
-    @Override
-    public void watchPinned(Watch watch) {
-    }
-
-    @Override
-    public void watchUnpinned(Watch watch) {
-    }
-
     /**
      * Called when some session is added.
      *

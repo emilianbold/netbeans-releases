@@ -132,12 +132,6 @@ public class FileMoveBreakpointsHandler implements LazyDebuggerManagerListener {
     public void watchRemoved(Watch watch) {}
 
     @Override
-    public void watchUnpinned(Watch watch) {}
-
-    @Override
-    public void watchPinned(Watch watch) {}
-
-    @Override
     public void sessionAdded(Session session) {}
 
     @Override

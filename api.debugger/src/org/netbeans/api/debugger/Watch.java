@@ -44,10 +44,8 @@
 
 package org.netbeans.api.debugger;
 
-import java.awt.Point;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import org.openide.filesystems.FileObject;
 
 /**
  * Abstract definition of watch. Each watch is created for
@@ -59,10 +57,6 @@ public final class Watch {
 
     /** Name of the property for the watched expression. */
     public static final String PROP_EXPRESSION = "expression"; // NOI18N
-    /** Name of the property for the pin. 
-     * @since XXX
-     */
-    public static final String PROP_PIN = "pin"; // NOI18N
     /** Name of the property for the value of the watched expression. This constant is not used at all. */
     public static final String PROP_VALUE = "value"; // NOI18N
     /** Name of the property for the enabled status of the watch.
@@ -73,10 +67,15 @@ public final class Watch {
     private boolean         enabled = true;
     private PropertyChangeSupport pcs;
     
-    private Pin pin;
+    private final Pin pin;
     
     Watch (String expr) {
+        this(expr, null);
+    }
+    
+    Watch (String expr, Pin pin) {
         this.expression = expr;
+        this.pin = pin;
         pcs = new PropertyChangeSupport (this);
     }
     
@@ -128,24 +127,15 @@ public final class Watch {
         pcs.firePropertyChange (PROP_EXPRESSION, old, expression);
     }
 
-    public void pinTo(FileObject fo, int line, Point location) {
-        DebuggerManager dm = DebuggerManager.getDebuggerManager ();
-        dm.pinWatch (this, fo, line, location);
-    }
-
+    /**
+     * Get a pin location, where the watch is pinned at, if any.
+     * @return The watch pin, or <code>null</code>.
+     * @since 1.54
+     */
     public Pin getPin() {
         return pin;
     }
 
-    void setPin(Pin pin) {
-        Pin old;
-        synchronized(this) {
-            old = this.pin;
-            this.pin = pin;
-        }
-        pcs.firePropertyChange(PROP_PIN, old, pin);
-    }
-    
     /**
      * Remove the watch from the list of all watches in the system.
      */
@@ -170,6 +160,16 @@ public final class Watch {
      */
     public void removePropertyChangeListener (PropertyChangeListener l) {
         pcs.removePropertyChangeListener (l);
+    }
+    
+    /**
+     * A base interface for a watch pin location. Implemented by specific
+     * platform-dependent and location-dependent implementation.
+     * See org.netbeans.spi.debugger.ui.EditorPin for the NetBeans editor pin
+     * implementation.
+     */
+    public static interface Pin {
+        
     }
 }
 

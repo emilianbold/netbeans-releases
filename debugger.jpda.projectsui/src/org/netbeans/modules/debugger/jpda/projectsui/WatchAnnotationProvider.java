@@ -79,17 +79,17 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
-import org.netbeans.api.debugger.Pin;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.*;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
-import org.openide.awt.CloseButtonFactory;
+import org.netbeans.spi.debugger.ui.EditorPin;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -118,6 +118,7 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
     public void annotate(Line.Set lines, Lookup context) {
         DataObject dobj = context.lookup(DataObject.class);
         if(dobj == null) return;
+        // TODO:
         final JEditorPane ep = EditorContextDispatcher.getDefault().getMostRecentEditor ();
         if(ep == null) return;
         EditorUI eui = Utilities.getEditorUI(ep);
@@ -126,8 +127,15 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
         synchronized (watchToAnnotation) {
             Watch[] watches = DebuggerManager.getDebuggerManager().getWatches();
             for (Watch watch : watches) {
-                if(watch.getPin() == null || !dobj.getPrimaryFile().equals(watch.getPin().getFile())) continue;
-                Line line = lines.getOriginal(watch.getPin().getLine());
+                Watch.Pin pin = watch.getPin();
+                if (!(pin instanceof EditorPin)) {
+                    continue;
+                }
+                EditorPin epin = (EditorPin) pin;
+                if (!dobj.getPrimaryFile().equals(epin.getFile())) {
+                    continue;
+                }
+                Line line = lines.getOriginal(epin.getLine());
                 pin(watch, eui, line);
             }
         }
@@ -143,16 +151,26 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             eui.getStickyWindowSupport().removeWindow(frame);
         }
         
-        Pin pin = watch.getPin();
+        final EditorPin pin = (EditorPin) watch.getPin();
         if (pin == null) return;
 
         if(line == null) {
             line = getLine(pin.getFile(), pin.getLine());
         }
         
-        DebuggerAnnotation annotation = new DebuggerAnnotation(EditorContext.WATCH_ANNOTATION_TYPE, line, null);
+        final DebuggerAnnotation annotation = new DebuggerAnnotation(EditorContext.WATCH_ANNOTATION_TYPE, line, null);
         watchToAnnotation.put(watch, annotation);
         annotation.attach(line);
+        pin.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (EditorPin.PROP_LINE.equals(evt.getPropertyName())) {
+                    annotation.detach();
+                    Line line = getLine(pin.getFile(), pin.getLine());
+                    annotation.attach(line);
+                }
+            }
+        });
         
         JComponent window = new StickyPanel(watch, eui);
         eui.getStickyWindowSupport().addWindow(window, pin.getLocation());
@@ -205,6 +223,17 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
 
     @Override
     public void watchAdded(Watch watch) {
+        Watch.Pin pin = watch.getPin();
+        if (pin instanceof EditorPin) {
+            // TODO:
+            final JEditorPane ep = EditorContextDispatcher.getDefault().getMostRecentEditor();
+            if(ep == null) return;
+            EditorUI eui = Utilities.getEditorUI(ep);
+            if(eui == null)  return;
+            synchronized(watchToAnnotation) {
+                pin(watch, eui, null);
+            }
+        }
     }
 
     @Override
@@ -219,21 +248,6 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
                 frame.setVisible(false);
             }
         }
-    }
-
-    @Override
-    public void watchPinned(Watch watch) {
-        final JEditorPane ep = EditorContextDispatcher.getDefault().getMostRecentEditor();
-        if(ep == null) return;
-        EditorUI eui = Utilities.getEditorUI(ep);
-        if(eui == null)  return;
-        synchronized(watchToAnnotation) {
-            pin(watch, eui, null);
-        }
-    }
-
-    @Override
-    public void watchUnpinned(Watch watch) {
     }
 
     @Override
@@ -266,7 +280,7 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             Font font = UIManager.getFont(UI_PREFIX + ".font"); // NOI18N
             Color backColor = UIManager.getColor(UI_PREFIX + ".background"); // NOI18N
             Color foreColor = UIManager.getColor(UI_PREFIX + ".foreground"); // NOI18N
-            
+
             if (backColor != null) {
                 setBackground(backColor);
             }
@@ -328,6 +342,14 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
                     Point deltaP = e.getPoint();
                     p.translate(deltaP.x, deltaP.y);
                     setLocation(p);
+                    int pos = eui.getComponent().viewToModel(p);
+                    int line;
+                    try {
+                        line = LineDocumentUtils.getLineIndex(eui.getDocument(), pos);
+                    } catch (BadLocationException ex) {
+                        line = ((EditorPin) watch.getPin()).getLine();
+                    }
+                    ((EditorPin) watch.getPin()).move(line, p);
                 }
 
                 @Override

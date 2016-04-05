@@ -94,20 +94,6 @@ public interface DebuggerManagerListener extends PropertyChangeListener {
      * @param watch removed watch
      */
     public void watchRemoved (Watch watch);
-    
-    /**
-     * Called when some watch is pinned.
-     *
-     * @param watch the pinned watch
-     */
-    public void watchPinned (Watch watch);
-
-    /**
-     * Called when some watch is unpinned.
-     *
-     * @param watch unpinned watch
-     */
-    public void watchUnpinned (Watch watch);
 
     /**
      * Called when some session is added.

@@ -44,7 +44,6 @@
 
 package org.netbeans.api.debugger;
 
-import java.awt.Point;
 import java.beans.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -64,7 +63,6 @@ import org.netbeans.spi.debugger.DelegatingDebuggerEngineProvider;
 import org.netbeans.spi.debugger.DelegatingSessionProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.SessionProvider;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 
@@ -667,6 +665,27 @@ public final class DebuggerManager implements ContextProvider {
         }
         return w;
     }
+    
+    /**
+     * Create a watch pinned at the specified pin location.
+     * @param expr expression to watch for (the format is the responsibility
+     *    of the debugger plug-in implementation, but it is typically
+     *    a variable name).
+     * @param pin A pin where the watch should be pinned at.
+     * @return the new watch
+     * @since 1.54
+     */
+    public Watch createPinnedWatch(String expr, Watch.Pin pin) {
+        Watch w = new Watch (expr, pin);
+        if (Boolean.TRUE.equals(watchesInitializing.get())) {
+            watches.addElement (w);
+        } else {
+            initWatches ();
+            watches.addElement (w);
+            fireWatchCreated (w);
+        }
+        return w;
+    }
 
     /**
     * Gets all shared watches in the system.
@@ -700,7 +719,7 @@ public final class DebuggerManager implements ContextProvider {
         fireWatchRemoved (w);
     }
     
-    void pinWatch(Watch w, FileObject fo, int line, Point location) {
+    /*void pinWatch(Watch w, FileObject fo, int line, Point location) {
         Pin newPin = null;
         synchronized(this) {
             if(w.getPin() == null) {
@@ -711,7 +730,7 @@ public final class DebuggerManager implements ContextProvider {
                 throw new IllegalStateException("Watch is already pinned to a document");
             }
         }
-    }
+    }*/
 
     /**
      * Reorders watches with given permutation.
@@ -1273,7 +1292,7 @@ public final class DebuggerManager implements ContextProvider {
         }
     }
     
-    private void fireWatchPinned (final Watch watch) {
+    /*private void fireWatchPinned (final Watch watch) {
         initDebuggerManagerListeners ();
         PropertyChangeEvent ev = new PropertyChangeEvent (
             this, PROP_WATCHES, null, null
@@ -1310,7 +1329,7 @@ public final class DebuggerManager implements ContextProvider {
                 }
             }
         }
-    }
+    }*/
 
     private void initWatches () {
         initDebuggerManagerListeners();

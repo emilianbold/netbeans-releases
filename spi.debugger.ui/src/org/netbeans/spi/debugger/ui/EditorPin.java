@@ -39,35 +39,104 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.api.debugger;
+package org.netbeans.spi.debugger.ui;
 
 import java.awt.Point;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import org.netbeans.api.debugger.Watch;
 import org.openide.filesystems.FileObject;
 
 /**
- *
+ * Implementation of watch pin in editor.
+ * 
  * @author Ralph Benjamin Ruijs
+ * @since 2.53
  */
-public final class Pin {
-    private int line;
-    private FileObject file;
-    private Point location;
+public final class EditorPin implements Watch.Pin {
 
-    public Pin(FileObject file, int line, Point location) {
+    /**
+     * Line property, fired when a line change.
+     */
+    public static final String PROP_LINE = "line";
+    /**
+     * Location property, fired when a location change.
+     */
+    public static final String PROP_LOCATION = "location";
+
+    private final PropertyChangeSupport pchs = new PropertyChangeSupport(this);
+
+    private final FileObject file;
+    private volatile int line;
+    private volatile Point location;
+
+    /**
+     * Create a new pin location in editor.
+     * @param file The editor's file
+     * @param line The line location of the pin
+     * @param location Coordinates of the pin location in editor
+     */
+    public EditorPin(FileObject file, int line, Point location) {
         this.file = file;
         this.line = line;
         this.location = location;
     }
 
+    /**
+     * Get the line location of the pin.
+     * @return The line.
+     */
     public int getLine() {
         return line;
     }
 
+    /**
+     * Get the file object associated with the editor containing the pin.
+     * @return The file object.
+     */
     public FileObject getFile() {
         return file;
     }
 
+    /**
+     * Location of the pin in editor.
+     * @return The location point.
+     */
     public Point getLocation() {
         return location;
+    }
+
+    /**
+     * Move the pin to a different location in the editor pane.
+     * @param line A new line
+     * @param location Coordinates of the new location
+     */
+    public void move(int line, Point location) {
+        int oldLine = this.line;
+        this.line = line;
+        if (oldLine != line) {
+            pchs.firePropertyChange(PROP_LINE, oldLine, line);
+        }
+        Point oldLocation = this.location;
+        this.location = location;
+        if (!oldLocation.equals(location)) {
+            pchs.firePropertyChange(PROP_LOCATION, oldLocation, location);
+        }
+    }
+
+    /**
+     * Add a listener for property change events to this editor pin.
+     * @param listener The listener
+     */
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        pchs.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Remove a listener for property change events from this editor pin.
+     * @param listener The listener
+     */
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        pchs.removePropertyChangeListener(listener);
     }
 }

@@ -99,6 +99,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+import org.netbeans.spi.debugger.ui.EditorPin;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -369,8 +370,8 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                             Point location = et.getLocation();
                             eui.getToolTipSupport().setToolTipVisible(false);
                             DebuggerManager dbMgr = DebuggerManager.getDebuggerManager();
-                            Watch w = dbMgr.createWatch(expression);
-                            w.pinTo(fo, line.getLineNumber(), location);
+                            Watch.Pin pin = new EditorPin(fo, line.getLineNumber(), location);
+                            Watch w = dbMgr.createPinnedWatch(expression, pin);
                         }
                     });
                     EditorUI eui = Utilities.getEditorUI(ep);
