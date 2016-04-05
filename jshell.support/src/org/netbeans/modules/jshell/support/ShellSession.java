@@ -741,9 +741,9 @@ public class ShellSession {
     }
     
     @NbBundle.Messages({
-        "MSG_JShellClosed=The Shell VM has closed the connection. You may use shell slash-commands, or re-run the process.",
-        "MSG_JShellCannotStart=The Shell VM is not reachable. You may only use shell commands, or re-run the target process.",
-        "MSG_JShellDisconnected=The remote JShell has terminated. Restart the JShell to continue"
+        "MSG_JShellClosed=The Java Shell VM has closed the connection. You may use shell slash-commands, or re-run the process.",
+        "MSG_JShellCannotStart=The Java Shell VM is not reachable. You may only use shell commands, or re-run the target process.",
+        "MSG_JShellDisconnected=The remote Java Shell has terminated. Restart the Java Shell to continue"
     })
     public void notifyClosed(JShellEnvironment env) {
         synchronized (this) {
@@ -1031,7 +1031,7 @@ public class ShellSession {
      * by {@link #acceptSnippet} when it sees a REJECTED snippet (an error).
      */
     @NbBundle.Messages({
-        "MSG_ErrorExecutingCommand=Note: You may need to restart the JShell to resume proper operation"
+        "MSG_ErrorExecutingCommand=Note: You may need to restart the Java Shell to resume proper operation"
     })
     private void doExecuteCommands() {
         ConsoleSection sec = model.processInputSection();

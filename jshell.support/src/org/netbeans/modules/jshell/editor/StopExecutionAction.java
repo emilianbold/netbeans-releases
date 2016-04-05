@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
     iconResource= "org/netbeans/modules/jshell/resources/stop.png" // NOI18N
 )
 @NbBundle.Messages(
-        "LBL_AttemptingStop=Attempting to stop JShell execution"
+        "LBL_AttemptingStop=Attempting to stop Java Shell execution"
 )
 public class StopExecutionAction extends ShellActionBase {
     public static final String NAME = "jshell-stop";

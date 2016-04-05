@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
  */
 
 @NbBundle.Messages({
-    "ACTION_Reset=Reset JShell"
+    "ACTION_Reset=Reset Java Shell"
 })
 @EditorActionRegistration(
         name = ResetAction.NAME,

@@ -50,20 +50,19 @@ import java.util.Collection;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import jdk.jshell.JShellAccessor;
 import jdk.jshell.Snippet;
+import jdk.jshell.Snippet.SubKind;
+import jdk.jshell.VarSnippet;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.templates.FileBuilder;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.java.hints.OrganizeImports;
-import org.netbeans.modules.java.source.save.Reformatter;
 import org.netbeans.modules.jshell.support.ShellSession;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -120,10 +119,21 @@ public class SnippetClassGenerator implements Runnable {
      */
     private void createStatementsText() {
         for (Snippet s : liveSnippets) {
-            if (s.kind().isPersistent || s.kind() == Snippet.Kind.IMPORT) {
+            if ((s.kind().isPersistent || s.kind() == Snippet.Kind.IMPORT) && !(
+                s.subKind() == SubKind.VAR_VALUE_SUBKIND
+            )) {
                 continue;
             }
             String text = s.source();
+//            
+//            if (s.subKind() == SubKind.TEMP_VAR_EXPRESSION_SUBKIND) {
+//                VarSnippet vs = (VarSnippet)s;
+//                executableContent.
+//                        append(vs.typeName()).
+//                        append(" ").
+//                        append(vs.name()).
+//                        append(" = ");
+//            }
             executableContent.append(text);
             if (!text.endsWith(";") && !text.endsWith("}")) {
                 executableContent.append(";");
@@ -140,10 +150,24 @@ public class SnippetClassGenerator implements Runnable {
             if (s.kind() == Snippet.Kind.IMPORT) {
                 continue;
             }
+            if (s.subKind() != null) {
+                switch (s.subKind()) {
+                    case VAR_VALUE_SUBKIND:
+                        continue; // not real commands
+                }
+            }   
             String text = s.source();
             if (declarativeConent.length() > 0) {
                 // force some newline
                 declarativeConent.append("\n"); // NOI18N
+            }
+            if (s.subKind() == SubKind.TEMP_VAR_EXPRESSION_SUBKIND) {
+                VarSnippet vs = (VarSnippet)s;
+                declarativeConent.
+                        append(vs.typeName()).
+                        append(" ").
+                        append(vs.name()).
+                        append(" = ");
             }
             declarativeConent.append(text);
             if (!text.endsWith(";") && !text.endsWith("}")) {

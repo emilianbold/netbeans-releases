@@ -41,14 +41,9 @@
  */
 package jdk.jshell;
 
-import com.sun.jdi.VirtualMachine;
 import com.sun.source.tree.Tree;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import jdk.jshell.Snippet.Status;
 import jdk.jshell.TaskFactory.ParseTask;
 import static jdk.jshell.Util.REPL_DOESNOTMATTER_CLASS_NAME;

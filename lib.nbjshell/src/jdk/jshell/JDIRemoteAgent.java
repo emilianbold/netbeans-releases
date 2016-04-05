@@ -25,7 +25,7 @@ import java.util.concurrent.Executor;
 import java.util.function.UnaryOperator;
 
 /**
- *
+ * JDI-based RemoteShellService implementation.
  * @author sdedic
  */
 public class JDIRemoteAgent implements RemoteJShellService, Executor {

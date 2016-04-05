@@ -41,27 +41,6 @@
  */
 package jdk.jshell;
 
-import com.sun.jdi.BooleanValue;
-import com.sun.jdi.ClassNotLoadedException;
-import com.sun.jdi.IncompatibleThreadStateException;
-import com.sun.jdi.InvalidTypeException;
-import com.sun.jdi.ObjectReference;
-import com.sun.jdi.ReferenceType;
-import com.sun.jdi.StackFrame;
-import com.sun.jdi.ThreadReference;
-import com.sun.jdi.VirtualMachine;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Executor;
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
-import static jdk.jshell.NbExecutionControl.defaultJavaVMParameters;
-
 /**
  * Subclasses JShell and connets certain package-private pro protected
  * services to NetBeans interfaces.
@@ -72,7 +51,7 @@ public class EnhancedJShell extends JShell {
     /**
      * The remote interface
      */
-    private RemoteJShellService execEnv;
+    private final RemoteJShellService execEnv;
     
     public EnhancedJShell(Builder b, RemoteJShellService env) {
         super(b);
@@ -87,7 +66,7 @@ public class EnhancedJShell extends JShell {
             }
             return new NbExecutionControl(null, execEnv, maps, this);
         } else {
-            // the default implementation
+            // the backward compatible implementation
             JDIEnv env = new JDIEnv(this);
             return new ExecutionControl(env, maps, this);
         }

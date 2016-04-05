@@ -1,4 +1,4 @@
-|  Welcome to NetBeans JShell integration
+|  Welcome to NetBeans Java Shell integration
 |  Type /help to get list of commands
 
 -> System.err.println("ahoj");

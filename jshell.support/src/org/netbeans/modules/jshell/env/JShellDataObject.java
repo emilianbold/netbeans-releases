@@ -71,7 +71,7 @@ import org.openide.windows.CloneableOpenSupport;
  * @author sdedic
  */
 @NbBundle.Messages({
-    "JShellResolver=JShell Cosnole"
+    "JShellResolver=Java Shell Cosnole"
 })
 @MIMEResolver.ExtensionRegistration(
     position=222,

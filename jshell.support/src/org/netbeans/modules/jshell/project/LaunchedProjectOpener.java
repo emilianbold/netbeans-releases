@@ -84,7 +84,7 @@ public class LaunchedProjectOpener implements ShellLaunchListener {
 
     @NbBundle.Messages({
         "# {0} - project name",
-        "Title_JShellOnDebugger=JShell - debugging {0}"
+        "Title_JShellOnDebugger=Java Shell - debugging {0}"
     })
     @Override
     public void handshakeCompleted(ShellLaunchEvent ev) {
@@ -93,7 +93,7 @@ public class LaunchedProjectOpener implements ShellLaunchListener {
 //        try {
 //            con = agent.createConnection();
 //        } catch (IOException ex) {
-//            StatusDisplayer.getDefault().setStatusText("Error connecting to JShell agent: " +
+//            StatusDisplayer.getDefault().setStatusText("Error connecting to Java Shell agent: " +
 //                    ex.getLocalizedMessage(), 100);
 //            return;
 //        }
@@ -167,7 +167,11 @@ public class LaunchedProjectOpener implements ShellLaunchListener {
             this.reportSession = s;
         }
         
-        @NbBundle.Messages("MSG_AgentConnectionBroken=Connection to JShell agent broken. Please re-run the project.")
+        @NbBundle.Messages({
+            "MSG_AgentConnectionBroken=Connection to Java Shell agent broken. Please re-run the project.",
+            "# {0} - error message",
+            "MSG_ErrorConnectingToAgent=Error connecting to Java Shell agent: {0}"
+        })
         private JShellConnection getConnection(boolean dontConnect) throws IOException {
             synchronized (this) {
                 if (closed || (dontConnect && shellConnection == null)) {
@@ -187,8 +191,7 @@ public class LaunchedProjectOpener implements ShellLaunchListener {
                     return this.shellConnection = x;
                 }
             } catch (IOException ex) {
-                StatusDisplayer.getDefault().setStatusText("Error connecting to JShell agent: " +
-                        ex.getLocalizedMessage(), 100);
+                StatusDisplayer.getDefault().setStatusText(Bundle.MSG_ErrorConnectingToAgent(ex.getLocalizedMessage()), 100);
                 throw ex;
             }
         }

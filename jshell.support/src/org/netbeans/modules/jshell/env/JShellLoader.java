@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
  * @author sdedic
  */
 @NbBundle.Messages({
-    "JShellConsole=JShell Console"
+    "JShellConsole=Java Shell Console"
 })
 @DataObject.Registration(displayName = "#JShellConsole", mimeType = "text/x-repl")
 public final class JShellLoader extends UniFileLoader {                    

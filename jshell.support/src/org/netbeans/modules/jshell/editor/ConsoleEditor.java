@@ -597,7 +597,7 @@ public class ConsoleEditor extends CloneableEditor {
     
     @NbBundle.Messages({
             "MSG_Evaluating=Evaluating, please wait...",
-            "MSG_Initializing=Loading and initializing JShell. Please wait..."
+            "MSG_Initializing=Loading and initializing Java Shell. Please wait..."
     })
     private void showHourglass(int offset) {
         showProgressIndicator(prepareWaitPanel(), offset + 1); // the character AFTER the termianting newline; should be on the next line.

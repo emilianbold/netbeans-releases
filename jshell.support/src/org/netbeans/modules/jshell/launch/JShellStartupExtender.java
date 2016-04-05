@@ -63,7 +63,7 @@ import org.openide.util.Lookup;
  *
  * @author sdedic
  */
-@StartupExtenderImplementation.Registration(displayName = "JShell", startMode = StartMode.DEBUG)
+@StartupExtenderImplementation.Registration(displayName = "Java Shell", startMode = StartMode.DEBUG)
 public class JShellStartupExtender implements StartupExtenderImplementation {
     private static final Logger LOG = Logger.getLogger(JShellStartupExtender.class.getName());
     
@@ -86,7 +86,7 @@ public class JShellStartupExtender implements StartupExtenderImplementation {
         ShellAgent agent;
         // first check that the project has JShell enabled:
         if (!ProjectUtils.isJShellRunEnabled(p)) {
-            LOG.log(Level.FINE, "Request for agent: Project {0} does not enable jshell.", p);
+            LOG.log(Level.FINE, "Request for agent: Project {0} does not enable Java Shell.", p);
             return Collections.emptyList();
         }
         try {

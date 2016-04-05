@@ -117,7 +117,7 @@ public class ShellRegistry {
             try {
                 f.delete();
             } catch (IOException ex) {
-                LOG.log(Level.WARNING, "Could not delete JShell work area {0}: {1}", new Object[] { f, ex });
+                LOG.log(Level.WARNING, "Could not delete Java Shell work area {0}: {1}", new Object[] { f, ex });
                 ignoreNames.add(f.getNameExt());
             }
         }
@@ -190,7 +190,7 @@ public class ShellRegistry {
      */
     @NbBundle.Messages({
         "# {0} - project name",
-        "ShellSession_CleanProject=JShell - project {0}"
+        "ShellSession_CleanProject=Java Shell - project {0}"
     })
     public JShellEnvironment openProjectSession(Project p) throws IOException {
         synchronized (this) {

@@ -278,7 +278,7 @@ public final class ShellLaunchManager {
 //                                    );
                                 processHandshake(ss);
                             } catch (IOException ex) {
-                                LOG.log(Level.INFO, "Error during JShell agent handshake", ex);
+                                LOG.log(Level.INFO, "Error during Java Shell agent handshake", ex);
                             }
                         }
                         it.remove();
@@ -307,7 +307,7 @@ public final class ShellLaunchManager {
                 agent = registeredAgents.get(authorizationKey);
             }
             if (agent == null) {
-                LOG.log(Level.INFO, "Connection on JShell agent port with improper authorization ({0}) from {1}", new Object[] {
+                LOG.log(Level.INFO, "Connection on Java Shell agent port with improper authorization ({0}) from {1}", new Object[] {
                     authorizationKey,
                     sock
                 });
@@ -459,7 +459,7 @@ public final class ShellLaunchManager {
         private boolean probe(JPDADebugger debugger, Session session) {
             String key = getKey();
             if (key == null) {
-                LOG.log(Level.FINE, "NbJshell agent did not execute far enough; queueing until the agent connects back"); // NOI18N
+                LOG.log(Level.FINE, "NB Java Shell Agent did not execute far enough; queueing until the agent connects back"); // NOI18N
                 return true;
             } 
             if ("".equals(key)) { // NOI18N
@@ -544,7 +544,7 @@ public final class ShellLaunchManager {
         try {
             agent.destroy();
         } catch (IOException ex) {
-            LOG.log(Level.INFO, "JShell agent shut down unsuccessfully:", ex);
+            LOG.log(Level.INFO, "Java Shell agent shut down unsuccessfully:", ex);
         }
         // PENDING: fire event that agent has been destroyed
     }

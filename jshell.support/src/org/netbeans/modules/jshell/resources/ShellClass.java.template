@@ -12,7 +12,7 @@ package ${package};
  *
  * @author ${user}
  * 
- * Note: This class was auto-generated from JShell session. All executable 
+ * Note: This class was auto-generated from Java Shell session. All executable 
  * commands were put inside the {@link #run} method in the order as they were
  * executed during the session.
  */
