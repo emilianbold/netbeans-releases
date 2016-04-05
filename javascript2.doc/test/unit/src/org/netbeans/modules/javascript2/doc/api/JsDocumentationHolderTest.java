@@ -45,7 +45,7 @@ import java.util.Collections;
 import org.netbeans.modules.javascript2.doc.JsDocumentationTestBase;
 import org.netbeans.modules.javascript2.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.javascript2.types.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -66,8 +66,8 @@ public class JsDocumentationHolderTest extends JsDocumentationTestBase {
         ParserManager.parse(Collections.singleton(source), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result result = resultIterator.getParserResult();
-                assertTrue(result instanceof JsParserResult);
-                JsParserResult parserResult = (JsParserResult) result;
+                assertTrue(result instanceof ParserResult);
+                ParserResult parserResult = (ParserResult) result;
 
                 JsDocumentationHolder documentationHolder = getDocumentationHolder(parserResult);
                 JsComment comment = documentationHolder.getCommentForOffset(offset, documentationHolder.getCommentBlocks());

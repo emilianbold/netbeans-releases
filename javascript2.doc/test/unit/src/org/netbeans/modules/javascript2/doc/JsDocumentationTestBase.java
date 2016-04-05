@@ -80,11 +80,11 @@ import com.oracle.js.parser.ir.WithNode;
 import com.oracle.js.parser.ir.visitor.NodeVisitor;
 import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.modules.javascript2.editor.JsTestBase;
+import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.javascript2.doc.api.JsDocumentationSupport;
 import org.netbeans.modules.javascript2.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.doc.spi.JsDocumentationProvider;
-import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.javascript2.types.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Source;
 
 /**
@@ -92,7 +92,7 @@ import org.netbeans.modules.parsing.api.Source;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public abstract class JsDocumentationTestBase extends JsTestBase {
+public abstract class JsDocumentationTestBase extends CslTestBase {
 
     public JsDocumentationTestBase(String testName) {
         super(testName);
@@ -104,7 +104,7 @@ public abstract class JsDocumentationTestBase extends JsTestBase {
      * @param parserResult parser result of the JS file
      * @return appropriate {@code JsDocumentationHolder} to given source
      */
-    public JsDocumentationHolder getDocumentationHolder(JsParserResult parserResult) {
+    public JsDocumentationHolder getDocumentationHolder(ParserResult parserResult) {
         return JsDocumentationSupport.getDocumentationHolder(parserResult);
     }
 
@@ -115,7 +115,7 @@ public abstract class JsDocumentationTestBase extends JsTestBase {
      * @param provider which provider should be used to create the {@code JsDocumentationHolder}
      * @return requested type of {@code JsDocumentationHolder}
      */
-    public JsDocumentationHolder getDocumentationHolder(JsParserResult parserResult, JsDocumentationProvider provider) {
+    public JsDocumentationHolder getDocumentationHolder(ParserResult parserResult, JsDocumentationProvider provider) {
         return provider.createDocumentationHolder(parserResult.getSnapshot());
     }
 
@@ -126,10 +126,10 @@ public abstract class JsDocumentationTestBase extends JsTestBase {
      * @param offset offset of examined node
      * @return {@code Node} which correspond to given offset
      */
-    public Node getNodeForOffset(JsParserResult parserResult, int offset) {
+    public Node getNodeForOffset(ParserResult parserResult, int offset) {
         Node nearestNode = null;
         int nearestNodeDistance = Integer.MAX_VALUE;
-        FunctionNode root = parserResult.getRoot();
+        FunctionNode root = parserResult.getLookup().lookup(FunctionNode.class);
         OffsetVisitor offsetVisitor = new OffsetVisitor(offset);
         root.accept(offsetVisitor);
         for (Node node : offsetVisitor.getNodes()) {

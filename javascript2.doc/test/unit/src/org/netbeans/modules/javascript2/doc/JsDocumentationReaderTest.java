@@ -42,14 +42,14 @@
 package org.netbeans.modules.javascript2.doc;
 
 import java.util.Set;
-import org.netbeans.modules.javascript2.editor.JsTestBase;
+import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.parsing.api.Source;
 
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class JsDocumentationReaderTest extends JsTestBase {
+public class JsDocumentationReaderTest extends CslTestBase {
 
     public JsDocumentationReaderTest(String name) {
         super(name);
