@@ -590,7 +590,7 @@ RegexpFirstCharacter = [^*\x5b/\r\n\\] | {RegexpBackslashSequence} | {RegexpClas
   "$"\{                          { 
                                      yypushback(2);
                                      yybegin(TEMPLATEEXP);
-                                     if (tokenLength - 1 > 0) {
+                                     if (tokenLength - 2 > 0) {
                                          return JsTokenId.TEMPLATE;
                                      }
                                  }

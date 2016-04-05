@@ -52,11 +52,11 @@ import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
  * Test tokens dump of JavaScript code input. Based on the Ruby one.
  */
 public class JsTokenDumpTest extends NbTestCase {
-    
+
     public JsTokenDumpTest(String testName) {
         super(testName);
     }
-    
+
     @Override
     protected void setUp() throws java.lang.Exception {
         // Set-up testing environment
@@ -77,9 +77,34 @@ public class JsTokenDumpTest extends NbTestCase {
         LexerTestUtilities.checkTokenDump(this, "testfiles/scriptInputBroken.js",
                 JsTokenId.javascriptLanguage());
     }
-    
+
     public void testImportExport01() throws Exception {
         LexerTestUtilities.checkTokenDump(this, "testfiles/importExport01.js",
+                JsTokenId.javascriptLanguage());
+    }
+
+    public void testComments() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/comments.js",
+                JsTokenId.javascriptLanguage());
+    }
+
+    public void testKeywordsAsIdent() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/keywordsAsIdent.js",
+                JsTokenId.javascriptLanguage());
+    }
+
+    public void testRegularExpression() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/regularExpression.js",
+                JsTokenId.javascriptLanguage());
+    }
+
+    public void testTemplates() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/templates.js",
+                JsTokenId.javascriptLanguage());
+    }
+
+    public void testSpread() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/spread.js",
                 JsTokenId.javascriptLanguage());
     }
 }
