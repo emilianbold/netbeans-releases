@@ -50,6 +50,7 @@ import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
@@ -131,15 +132,18 @@ import org.netbeans.modules.terminal.support.TerminalPinSupport;
 import org.netbeans.modules.terminal.support.TerminalPinSupport.DetailsStateListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.cookies.InstanceCookie;
+import org.openide.NotifyDescriptor;
+import org.openide.cookies.*;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.text.Line;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.MultiTransferObject;
@@ -172,6 +176,7 @@ import org.openide.windows.OutputListener;
  */
 public final class Terminal extends JComponent {
 
+    private final RequestProcessor RP = new RequestProcessor("Open Terminal hyperlink"); //NOI18N
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     private final IOContainer ioContainer;
@@ -485,15 +490,35 @@ public final class Terminal extends JComponent {
         term.setActionListener(new ActiveTermListener() {
             @Override
             public void action(ActiveRegion r, InputEvent e) {
-                if (r.getUserObject() instanceof OutputListener) {
+                final Object userObject = r.getUserObject();
+                if (userObject == null) {
+                    return;
+                }
+                if (r.isLink() && userObject instanceof String) {
+                    String text = (String) userObject;
+
+                    int lineNumber = -1;
+                    String filePath = text;
+
+                    int colonIdx = text.lastIndexOf(':');
+                    // Shortest file path
+                    if (colonIdx > 2) {
+                        try {
+                            lineNumber = Integer.valueOf(text.substring(colonIdx + 1));
+                            filePath = text.substring(0, colonIdx);
+                        } catch (NumberFormatException x) {
+                        }
+                    }
+                    RP.post(new OpenInEditorAction(filePath, lineNumber));
+                } 
+                else if (userObject instanceof OutputListener) {
                     OutputListener ol = (OutputListener) r.getUserObject();
                     if (ol == null) {
                         return;
                     }
                     Extent extent = r.getExtent();
                     String text = term.textWithin(extent.begin, extent.end);
-                    OutputEvent oe
-                            = new TerminalOutputEvent(Terminal.this.tio, text);
+                    OutputEvent oe = new TerminalOutputEvent(Terminal.this.tio, text);
                     ol.outputLineAction(oe);
                 }
             }
@@ -1077,7 +1102,6 @@ public final class Terminal extends JComponent {
      * <b>ESC</b>]10;<i>clientData</i>;<i>text</i><b>BEL</b>
      * @author ivan
      */
-    /* LATER
     public interface HyperlinkListener {
 	public void action(String clientData);
     }
@@ -1092,7 +1116,6 @@ public final class Terminal extends JComponent {
 	    }
 	});
     }
-     */
 
     void scrollTo(Coord coord) {
         term.possiblyNormalize(coord);
@@ -1179,7 +1202,61 @@ public final class Terminal extends JComponent {
 	    }
 	}
     }
-    
+
+    private static class OpenInEditorAction implements Runnable {
+
+        private final String file;
+        private final int lineNumber;
+
+        private LineCookie lc;
+
+        public OpenInEditorAction(String file, int lineNumber) {
+            this.file = file;
+            this.lineNumber = lineNumber;
+        }
+
+        public @Override
+        void run() {
+            if (SwingUtilities.isEventDispatchThread()) {
+                doEDT();
+            } else {
+                doWork();
+            }
+        }
+
+        private void doEDT() {
+            if (lc != null) {
+                Line l = lc.getLineSet().getOriginal(lineNumber);
+                l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+            }
+        }
+
+        private void doWork() {
+            FileObject fobj = FileUtil.toFileObject(new File(file));
+
+            if (fobj == null) {
+                return;
+            }
+
+            try {
+                DataObject dobj = DataObject.find(fobj);
+                EditorCookie ed = dobj.getLookup().lookup(EditorCookie.class);
+                if (ed != null && fobj == dobj.getPrimaryFile()) {
+                    if (lineNumber == -1) {
+                        ed.open();
+                    } else {
+                        lc = (LineCookie) dobj.getLookup().lookup(LineCookie.class);
+                        SwingUtilities.invokeLater(this);
+                    }
+                } else {
+                    Toolkit.getDefaultToolkit().beep();
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
     private static class SupportStream extends TermStream {
 
 	@Override
