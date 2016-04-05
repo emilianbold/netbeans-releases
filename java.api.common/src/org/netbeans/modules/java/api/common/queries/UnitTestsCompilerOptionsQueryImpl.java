@@ -48,8 +48,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -60,18 +58,13 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.java.queries.CompilerOptionsQueryImplementation;
@@ -95,10 +88,6 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
     private static final Logger LOG = Logger.getLogger(UnitTestsCompilerOptionsQueryImpl.class.getName());
     private static final String MODULE_INFO_JAVA = "module-info.java";  //NOI18N
     private static final SpecificationVersion JDK9 = new SpecificationVersion("9"); //NOI18N
-    private static final Collection<? extends Pattern> KNOWN_TEST_LIBRARIES = Collections.unmodifiableList(Arrays.asList(
-            Pattern.compile("^junit-.*\\.jar$"),        //NOI18N
-            Pattern.compile("^testng-.*\\.jar$"),       //NOI18N
-            Pattern.compile("^hamcrest-.*\\.jar$")));   //NOI18N
 
     private final PropertyEvaluator eval;
     private final SourceRoots srcRoots;
@@ -156,8 +145,6 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
         //@GuardedBy("this")
         private SourceLevelQuery.Result sourceLevel;
         //@GuardedBy("this")
-        private ClassPath testModulePath;
-        //@GuardedBy("this")
         private boolean listensOnRoots;
 
         ResultImpl(
@@ -175,11 +162,10 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
         @Override
         public List<? extends String> getArguments() {
             List<String> args;
-            Object[] holder = new Object[2];
+            SourceLevelQuery.Result[] slq = new SourceLevelQuery.Result[1];
             synchronized (this) {
                 args = cache;
-                holder[0] = sourceLevel;
-                holder[1] = testModulePath;
+                slq[0] = sourceLevel;
             }
             if (args == null) {
                 if (reenter.get() == Boolean.TRUE) {
@@ -190,8 +176,8 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
                         TestMode mode;
                         final Collection<File> allRoots = new HashSet<>();
                         final FileObject srcModuleInfo = findModuleInfo(srcRoots, allRoots, null);
-                        final FileObject testModuleInfo = findModuleInfo(testRoots, allRoots, holder);
-                        final boolean isLegacy = Optional.ofNullable((SourceLevelQuery.Result)holder[0])
+                        final FileObject testModuleInfo = findModuleInfo(testRoots, allRoots, slq);
+                        final boolean isLegacy = Optional.ofNullable(slq[0])
                             .map((r) -> r.getSourceLevel())
                             .map((sl) -> JDK9.compareTo(new SpecificationVersion(sl)) > 0)
                             .orElse(Boolean.TRUE);
@@ -207,23 +193,18 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
                                 parseLine(propVal) :
                                 mode.createArguments(
                                 srcModuleInfo,
-                                testModuleInfo,
-                                getTestLibrariesModules((ClassPath)holder[1]));
+                                testModuleInfo);
                         synchronized (this) {
                             if (cache == null) {
                                 cache = args;
                             } else {
                                 args = cache;
                             }
-                            if (sourceLevel == null && holder[0] != null) {
-                                sourceLevel = (SourceLevelQuery.Result) holder[0];
+                            if (sourceLevel == null && slq[0] != null) {
+                                sourceLevel = slq[0];
                                 if (sourceLevel.supportsChanges()) {
                                     sourceLevel.addChangeListener(WeakListeners.change(this, sourceLevel));
                                 }
-                            }
-                            if (testModulePath == null && holder[1] != null) {
-                                testModulePath = (ClassPath) holder[1];
-                                testModulePath.addPropertyChangeListener(WeakListeners.propertyChange(this, testModulePath));
                             }
                             if (!listensOnRoots) {
                                 listensOnRoots = true;
@@ -274,7 +255,6 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
         public void propertyChange(@NonNull final PropertyChangeEvent evt) {
             final String evtName = evt.getPropertyName();
             if (SourceRoots.PROP_ROOTS.equals(evtName) ||
-                ClassPath.PROP_ENTRIES.equals(evtName) ||
                 ProjectProperties.JAVAC_TEST_COMPILERARGS.equals(evtName) ||
                 evt == null) {
                 reset();
@@ -321,15 +301,12 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
         private static FileObject findModuleInfo(
                 @NonNull final SourceRoots roots,
                 @NonNull final Collection<? super File> rootCollector,
-                @NullAllowed final Object[] holder) {
+                @NullAllowed final SourceLevelQuery.Result[] holder) {
             FileObject result = null;
             for (FileObject root : roots.getRoots()) {
                 if (holder != null) {
                     if (holder[0] == null) {
                         holder[0] = SourceLevelQuery.getSourceLevel2(root);
-                    }
-                    if (holder[1] == null) {
-                        holder[1] = ClassPath.getClassPath(root, JavaClassPathConstants.MODULE_COMPILE_PATH);
                     }
                 }
                 Optional.ofNullable(FileUtil.toFile(root))
@@ -374,32 +351,6 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
             }
         }
 
-        private static boolean isKnownTestLibrary(@NonNull final URL root) {
-            return Optional.ofNullable(FileUtil.archiveOrDirForURL(root))
-                    .map((f)->{
-                        final String name = f.getName();
-                        for (Pattern knownLib : KNOWN_TEST_LIBRARIES) {
-                            if (knownLib.matcher(name).matches()) {
-                                return true;
-                            }
-                        }
-                        return false;
-                    })
-                    .orElse(Boolean.FALSE);
-        }
-
-        private static List<? extends String> getTestLibrariesModules(
-                @NullAllowed final ClassPath modulePath) {
-            if (modulePath == null) {
-                return Collections.emptyList();
-            }
-            return modulePath.entries().stream()
-                    .map((e)->e.getURL())
-                    .filter(UnitTestsCompilerOptionsQueryImpl.ResultImpl::isKnownTestLibrary)
-                    .map((url) -> SourceUtils.getModuleName(url))
-                    .collect(Collectors.toList());
-        }
-
         private static enum TestMode {
             /**
              * Tests for pre JDK9 sources.
@@ -408,8 +359,7 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
                 @Override
                 List<String> createArguments(
                         @NullAllowed final FileObject srcModuleInfo,
-                        @NullAllowed final FileObject testModuleInfo,
-                        @NonNull final List<? extends String> testLibModules) {
+                        @NullAllowed final FileObject testModuleInfo) {
                     return Collections.emptyList();
                 }
             },
@@ -420,8 +370,7 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
                 @Override
                 List<String> createArguments(
                         @NullAllowed final FileObject srcModuleInfo,
-                        @NullAllowed final FileObject testModuleInfo,
-                        @NonNull final List<? extends String> testLibModules) {
+                        @NullAllowed final FileObject testModuleInfo) {
                     return Collections.emptyList();
                 }
             },
@@ -432,21 +381,16 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
                 @Override
                 List<String> createArguments(
                         @NullAllowed final FileObject srcModuleInfo,
-                        @NullAllowed final FileObject testModuleInfo,
-                        @NonNull final List<? extends String> testLibModules) {
+                        @NullAllowed final FileObject testModuleInfo) {
                     final String moduleName = getModuleName(srcModuleInfo);
                     if (moduleName == null) {
                         return Collections.emptyList();
                     }
-                    final List<String> result = new ArrayList<>(2);
-                    result.add(String.format("-Xmodule:%s", moduleName));       //NOI18N
-                    if (!testLibModules.isEmpty()) {
-                        result.add(String.format("-XaddReads:%s=%s",            //NOI18N
-                                        moduleName,
-                                        testLibModules.stream()
-                                            .collect(Collectors.joining(","))   //NOI18N
-                                ));
-                    }
+                    final List<String> result = Arrays.asList(
+                    String.format("-Xmodule:%s", moduleName),      //NOI18N
+                    String.format("-XaddReads:%s=ALL-UNNAMED",     //NOI18N
+                                    moduleName
+                    ));
                     return Collections.unmodifiableList(result);
                 }
             },
@@ -457,16 +401,13 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
                 @Override
                 List<String> createArguments(
                         @NullAllowed final FileObject srcModuleInfo,
-                        @NullAllowed final FileObject testModuleInfo,
-                        @NonNull final List<? extends String> testLibModules) {
+                        @NullAllowed final FileObject testModuleInfo) {
                     final String moduleName = getModuleName(testModuleInfo);
-                    return moduleName == null || testLibModules.isEmpty()?
+                    return moduleName == null ?
                             Collections.emptyList() :
                             Collections.singletonList(
-                                    String.format("-XaddReads:%s=%s",           //NOI18N
-                                        moduleName,
-                                        testLibModules.stream()
-                                            .collect(Collectors.joining(","))   //NOI18N
+                                    String.format("-XaddReads:%s=ALL-UNNAMED",  //NOI18N
+                                        moduleName
                                 ));
                 }
             };
@@ -474,8 +415,7 @@ final class UnitTestsCompilerOptionsQueryImpl implements CompilerOptionsQueryImp
             @NonNull
             abstract List<String> createArguments(
                     @NullAllowed final FileObject srcModuleInfo,
-                    @NullAllowed final FileObject testModuleInfo,
-                    @NonNull final List<? extends String> testLibModules);
+                    @NullAllowed final FileObject testModuleInfo);
         }
     }
 }

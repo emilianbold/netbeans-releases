@@ -41,24 +41,18 @@
  */
 package org.netbeans.modules.java.api.common.queries;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.queries.SourceLevelQuery;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
@@ -70,7 +64,6 @@ import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.spi.java.queries.CompilerOptionsQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
@@ -87,8 +80,6 @@ public class UnitTestsCompilerOptionsQueryImplTest extends NbTestCase {
     private TestProject project;
     private SourceRoots srcRoots;
     private SourceRoots testRoots;
-    private FileObject mockTestLibRoot;
-    private String mockTestLibModuleName;
 
     public UnitTestsCompilerOptionsQueryImplTest(final String name) {
         super(name);
@@ -119,20 +110,10 @@ public class UnitTestsCompilerOptionsQueryImplTest extends NbTestCase {
         assertEquals(testRoots.getRoots()[0], tst);
         assertNotNull(ClassPath.getClassPath(tst, ClassPath.SOURCE));
         assertEquals(Collections.singletonList(tst), Arrays.asList(ClassPath.getClassPath(tst, ClassPath.SOURCE).getRoots()));
-        final FileObject mockTestLib = createJar(lib,"junit-4.12.jar");   //NOI18N
-        mockTestLibRoot = FileUtil.getArchiveRoot(mockTestLib);
-        mockTestLibModuleName = SourceUtils.getModuleName(mockTestLibRoot.toURL());
-        assertNotNull(mockTestLibModuleName);
-        setPath(project, ProjectProperties.JAVAC_TEST_CLASSPATH);
-        setPath(project, ProjectProperties.JAVAC_TEST_MODULEPATH, mockTestLib);
-        assertNotNull(ClassPath.getClassPath(tst, JavaClassPathConstants.MODULE_COMPILE_PATH));
     }
 
     public void testJDK8() {
         setSourceLevel(project, "1.8"); //NOI18N
-        assertEquals(
-                Collections.emptyList(),
-                Arrays.asList(ClassPath.getClassPath(testRoots.getRoots()[0], JavaClassPathConstants.MODULE_COMPILE_PATH).getRoots()));
         final CompilerOptionsQueryImplementation impl = QuerySupport.createUnitTestsCompilerOptionsQuery(project.getEvaluator(), srcRoots, testRoots);
         assertNotNull(impl);
         assertNull(impl.getOptions(srcRoots.getRoots()[0]));
@@ -144,9 +125,6 @@ public class UnitTestsCompilerOptionsQueryImplTest extends NbTestCase {
 
     public void testJDK9_UnnamedModule() {
         setSourceLevel(project, "9"); //NOI18N
-        assertEquals(
-                Collections.singletonList(mockTestLibRoot),
-                Arrays.asList(ClassPath.getClassPath(testRoots.getRoots()[0], JavaClassPathConstants.MODULE_COMPILE_PATH).getRoots()));
         final CompilerOptionsQueryImplementation impl = QuerySupport.createUnitTestsCompilerOptionsQuery(project.getEvaluator(), srcRoots, testRoots);
         assertNotNull(impl);
         assertNull(impl.getOptions(srcRoots.getRoots()[0]));
@@ -158,9 +136,6 @@ public class UnitTestsCompilerOptionsQueryImplTest extends NbTestCase {
 
     public void testJDK9_TestInlinedIntoSourceModule() throws IOException {
         setSourceLevel(project, "9"); //NOI18N
-        assertEquals(
-                Collections.singletonList(mockTestLibRoot),
-                Arrays.asList(ClassPath.getClassPath(testRoots.getRoots()[0], JavaClassPathConstants.MODULE_COMPILE_PATH).getRoots()));
         final String srcModuleName = "org.nb.App";  //NOI18N
         createModuleInfo(srcRoots.getRoots()[0], srcModuleName);
         final CompilerOptionsQueryImplementation impl = QuerySupport.createUnitTestsCompilerOptionsQuery(project.getEvaluator(), srcRoots, testRoots);
@@ -172,16 +147,13 @@ public class UnitTestsCompilerOptionsQueryImplTest extends NbTestCase {
         assertEquals(
             Arrays.asList(
                 String.format("-Xmodule:%s", srcModuleName),    //NOI18N
-                String.format("-XaddReads:%s=%s", srcModuleName, mockTestLibModuleName) //NOI18N
+                String.format("-XaddReads:%s=ALL-UNNAMED", srcModuleName) //NOI18N
             ),
             args);
     }
 
     public void testJDK9_TestModule() throws IOException {
         setSourceLevel(project, "9"); //NOI18N
-        assertEquals(
-                Collections.singletonList(mockTestLibRoot),
-                Arrays.asList(ClassPath.getClassPath(testRoots.getRoots()[0], JavaClassPathConstants.MODULE_COMPILE_PATH).getRoots()));
         final String srcModuleName = "org.nb.App";  //NOI18N
         final String testModuleName = "org.nb.AppTest";  //NOI18N
         createModuleInfo(srcRoots.getRoots()[0], srcModuleName);
@@ -194,7 +166,7 @@ public class UnitTestsCompilerOptionsQueryImplTest extends NbTestCase {
         final List<? extends String> args = r.getArguments();
         assertEquals(
             Arrays.asList(
-                String.format("-XaddReads:%s=%s", testModuleName, mockTestLibModuleName) //NOI18N
+                String.format("-XaddReads:%s=ALL-UNNAMED", testModuleName) //NOI18N
             ),
             args);
     }
@@ -206,9 +178,6 @@ public class UnitTestsCompilerOptionsQueryImplTest extends NbTestCase {
                 "-Xlint:deprecation"    //NOI18N
         );
         setTestJavacArgs(project,options.stream().collect(Collectors.joining(" ")));    //NOI18N
-        assertEquals(
-                Collections.singletonList(mockTestLibRoot),
-                Arrays.asList(ClassPath.getClassPath(testRoots.getRoots()[0], JavaClassPathConstants.MODULE_COMPILE_PATH).getRoots()));
         final CompilerOptionsQueryImplementation impl = QuerySupport.createUnitTestsCompilerOptionsQuery(project.getEvaluator(), srcRoots, testRoots);
         assertNotNull(impl);
         assertNull(impl.getOptions(srcRoots.getRoots()[0]));
@@ -220,9 +189,6 @@ public class UnitTestsCompilerOptionsQueryImplTest extends NbTestCase {
 
     public void testSourceLevelChanges() throws IOException {
         setSourceLevel(project, "1.8"); //NOI18N
-        assertEquals(
-                Collections.emptyList(),
-                Arrays.asList(ClassPath.getClassPath(testRoots.getRoots()[0], JavaClassPathConstants.MODULE_COMPILE_PATH).getRoots()));
         final String srcModuleName = "org.nb.App";  //NOI18N
         createModuleInfo(srcRoots.getRoots()[0], srcModuleName);
         final CompilerOptionsQueryImplementation impl = QuerySupport.createUnitTestsCompilerOptionsQuery(project.getEvaluator(), srcRoots, testRoots);
@@ -234,21 +200,18 @@ public class UnitTestsCompilerOptionsQueryImplTest extends NbTestCase {
         final MockChangeListener mcl = new MockChangeListener();
         r.addChangeListener(mcl);
         setSourceLevel(project, "9"); //NOI18N
-        mcl.assertEventCount(2);    //2 events - one for source level, second for empty -> unnempty module path
+        mcl.assertEventCount(1);
         args = r.getArguments();
         assertEquals(
             Arrays.asList(
                 String.format("-Xmodule:%s", srcModuleName),    //NOI18N
-                String.format("-XaddReads:%s=%s", srcModuleName, mockTestLibModuleName) //NOI18N
+                String.format("-XaddReads:%s=ALL-UNNAMED", srcModuleName) //NOI18N
             ),
             args);
     }
 
     public void testRootsChanges() throws IOException {
         setSourceLevel(project, "9"); //NOI18N
-        assertEquals(
-                Collections.singletonList(mockTestLibRoot),
-                Arrays.asList(ClassPath.getClassPath(testRoots.getRoots()[0], JavaClassPathConstants.MODULE_COMPILE_PATH).getRoots()));
         final FileObject src2 = srcRoots.getRoots()[0].getParent().createFolder("src2");
         final String srcModuleName = "org.nb.App";  //NOI18N
         createModuleInfo(src2, srcModuleName);
@@ -272,16 +235,13 @@ public class UnitTestsCompilerOptionsQueryImplTest extends NbTestCase {
         assertEquals(
             Arrays.asList(
                 String.format("-Xmodule:%s", srcModuleName),    //NOI18N
-                String.format("-XaddReads:%s=%s", srcModuleName, mockTestLibModuleName) //NOI18N
+                String.format("-XaddReads:%s=ALL-UNNAMED", srcModuleName) //NOI18N
             ),
             args);
     }
 
     public void testModuleInfoCreation() throws IOException {
         setSourceLevel(project, "9"); //NOI18N
-        assertEquals(
-                Collections.singletonList(mockTestLibRoot),
-                Arrays.asList(ClassPath.getClassPath(testRoots.getRoots()[0], JavaClassPathConstants.MODULE_COMPILE_PATH).getRoots()));
         final CompilerOptionsQueryImplementation impl = QuerySupport.createUnitTestsCompilerOptionsQuery(project.getEvaluator(), srcRoots, testRoots);
         assertNotNull(impl);
         assertNull(impl.getOptions(srcRoots.getRoots()[0]));
@@ -298,16 +258,13 @@ public class UnitTestsCompilerOptionsQueryImplTest extends NbTestCase {
         assertEquals(
             Arrays.asList(
                 String.format("-Xmodule:%s", srcModuleName),    //NOI18N
-                String.format("-XaddReads:%s=%s", srcModuleName, mockTestLibModuleName) //NOI18N
+                String.format("-XaddReads:%s=ALL-UNNAMED", srcModuleName) //NOI18N
             ),
             args);
     }
 
     public void testModuleInfoChanges() throws IOException {
         setSourceLevel(project, "9"); //NOI18N
-        assertEquals(
-                Collections.singletonList(mockTestLibRoot),
-                Arrays.asList(ClassPath.getClassPath(testRoots.getRoots()[0], JavaClassPathConstants.MODULE_COMPILE_PATH).getRoots()));
         final String srcModuleName = "org.nb.App";  //NOI18N
         createModuleInfo(srcRoots.getRoots()[0], srcModuleName);
         final CompilerOptionsQueryImplementation impl = QuerySupport.createUnitTestsCompilerOptionsQuery(project.getEvaluator(), srcRoots, testRoots);
@@ -319,7 +276,7 @@ public class UnitTestsCompilerOptionsQueryImplTest extends NbTestCase {
         assertEquals(
             Arrays.asList(
                 String.format("-Xmodule:%s", srcModuleName),    //NOI18N
-                String.format("-XaddReads:%s=%s", srcModuleName, mockTestLibModuleName) //NOI18N
+                String.format("-XaddReads:%s=ALL-UNNAMED", srcModuleName) //NOI18N
             ),
             args);
         final MockChangeListener mcl = new MockChangeListener();
@@ -331,55 +288,13 @@ public class UnitTestsCompilerOptionsQueryImplTest extends NbTestCase {
         assertEquals(
             Arrays.asList(
                 String.format("-Xmodule:%s", newSrcModuleName),    //NOI18N
-                String.format("-XaddReads:%s=%s", newSrcModuleName, mockTestLibModuleName) //NOI18N
-            ),
-            args);
-    }
-
-    public void testModulePathChanges() throws IOException {
-        setSourceLevel(project, "9"); //NOI18N
-        assertEquals(
-                Collections.singletonList(mockTestLibRoot),
-                Arrays.asList(ClassPath.getClassPath(testRoots.getRoots()[0], JavaClassPathConstants.MODULE_COMPILE_PATH).getRoots()));
-        final String srcModuleName = "org.nb.App";  //NOI18N
-        createModuleInfo(srcRoots.getRoots()[0], srcModuleName);
-        final CompilerOptionsQueryImplementation impl = QuerySupport.createUnitTestsCompilerOptionsQuery(project.getEvaluator(), srcRoots, testRoots);
-        assertNotNull(impl);
-        final CompilerOptionsQueryImplementation.Result r = impl.getOptions(testRoots.getRoots()[0]);
-        assertNotNull(r);
-        List<? extends String> args = r.getArguments();
-        assertEquals(
-            Arrays.asList(
-                String.format("-Xmodule:%s", srcModuleName),    //NOI18N
-                String.format("-XaddReads:%s=%s", srcModuleName, mockTestLibModuleName) //NOI18N
-            ),
-            args);
-        final FileObject mockTestLib2 = createJar(
-            FileUtil.getArchiveFile(mockTestLibRoot).getParent(),
-            "hamcrest-core-1.3.jar");   //NOI18N
-        final String mockTestLib2ModuleName = SourceUtils.getModuleName(
-                FileUtil.getArchiveRoot(mockTestLib2).toURL());
-        assertNotNull(mockTestLib2ModuleName);
-        final MockChangeListener mcl = new MockChangeListener();
-        r.addChangeListener(mcl);
-        setPath(project, ProjectProperties.JAVAC_TEST_MODULEPATH,
-                FileUtil.getArchiveFile(mockTestLibRoot),
-                mockTestLib2);
-        mcl.assertEventCount(1);
-        args = r.getArguments();
-        assertEquals(
-            Arrays.asList(
-                String.format("-Xmodule:%s", srcModuleName),    //NOI18N
-                String.format("-XaddReads:%s=%s,%s", srcModuleName, mockTestLibModuleName, mockTestLib2ModuleName) //NOI18N
+                String.format("-XaddReads:%s=ALL-UNNAMED", newSrcModuleName) //NOI18N
             ),
             args);
     }
 
     public void testJavacTestCompilerargsChanges() {
         setSourceLevel(project, "9"); //NOI18N
-        assertEquals(
-                Collections.singletonList(mockTestLibRoot),
-                Arrays.asList(ClassPath.getClassPath(testRoots.getRoots()[0], JavaClassPathConstants.MODULE_COMPILE_PATH).getRoots()));
         final CompilerOptionsQueryImplementation impl = QuerySupport.createUnitTestsCompilerOptionsQuery(project.getEvaluator(), srcRoots, testRoots);
         assertNotNull(impl);
         final CompilerOptionsQueryImplementation.Result r = impl.getOptions(testRoots.getRoots()[0]);
@@ -439,29 +354,6 @@ public class UnitTestsCompilerOptionsQueryImplTest extends NbTestCase {
         });
     }
 
-    private static void setPath(
-        @NonNull final TestProject prj,
-        @NonNull final String pathProperty,
-        @NonNull final FileObject... artifacts) {
-        assertNotNull(prj);
-        assertNotNull(pathProperty);
-        assertNotNull(artifacts);
-        ProjectManager.mutex().writeAccess(()-> {
-            try {
-                final UpdateHelper helper = prj.getUpdateHelper();
-                final EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                final String path = Arrays.stream(artifacts)
-                        .map((fo)->PropertyUtils.relativizeFile(FileUtil.toFile(prj.getProjectDirectory()), FileUtil.toFile(fo)))
-                        .collect(Collectors.joining(":"));  //NOI18N
-                ep.setProperty(pathProperty, path);
-                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-                ProjectManager.getDefault().saveProject(prj);
-            } catch (IOException ioe) {
-                throw new RuntimeException(ioe);
-            }
-        });
-    }
-
     private static FileObject createModuleInfo(
         @NonNull final FileObject root,
         @NonNull final String moduleName) throws IOException {
@@ -471,16 +363,6 @@ public class UnitTestsCompilerOptionsQueryImplTest extends NbTestCase {
                 String.format(
                     "module %s {}", //NOI18N
                     moduleName));
-    }
-
-    private static FileObject createJar(
-        @NonNull final FileObject folder,
-        @NonNull final String name) throws IOException {
-        final File f = new File (FileUtil.toFile(folder), name);
-        try (final ZipOutputStream out = new ZipOutputStream(new FileOutputStream(f))) {
-            out.putNextEntry(new ZipEntry("META-INF/MANIFEST.MF")); //NOI18N
-        }
-        return FileUtil.toFileObject(f);
     }
 
 }
