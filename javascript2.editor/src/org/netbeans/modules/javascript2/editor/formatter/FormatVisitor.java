@@ -1482,7 +1482,7 @@ public class FormatVisitor extends NodeVisitor {
             return finish;
         }
         Token<? extends JsTokenId> token = ts.token();
-        if (token.id() == JsTokenId.STRING_END) {
+        if (token.id() == JsTokenId.STRING_END || token.id() == JsTokenId.TEMPLATE_END) {
             return finish + 1;
         }
 

@@ -1872,6 +1872,44 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/partialFormat6.js", Collections.<String, Object>emptyMap());
     }
 
+    public void testTemplates1() throws Exception {
+        reformatFileContents("testfiles/formatter/templates1.js",new IndentPrefs(4, 4));
+    }
+
+    public void testTemplates1Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/templates1.js");
+    }
+    
+    public void testTemplates2() throws Exception {
+        reformatFileContents("testfiles/formatter/templates2.js",new IndentPrefs(4, 4));
+    }
+
+    public void testTemplates2ObjectOnlyAlways() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapObjects, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/templates2.js", options, ".objectOnlyWrapAlways.formatted");
+    }
+    
+    public void testTemplates2Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/templates2.js");
+    }
+    
+    public void testTemplates3() throws Exception {
+        reformatFileContents("testfiles/formatter/templates3.js",new IndentPrefs(4, 4));
+    }
+
+    public void testTemplates3Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/templates3.js");
+    }
+    
+    public void testTemplates4() throws Exception {
+        reformatFileContents("testfiles/formatter/templates4.js",new IndentPrefs(4, 4));
+    }
+
+    public void testTemplates4Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/templates4.js");
+    }
+    
     public void testTernary1() throws Exception {
         reformatFileContents("testfiles/formatter/ternary1.js",new IndentPrefs(4, 4));
     }
