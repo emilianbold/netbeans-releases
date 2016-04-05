@@ -483,16 +483,19 @@ public final class Terminal extends JComponent {
         // Set up to convert clicks on active regions, created by OutputWriter.
         // println(), to outputLineAction notifications.
         term.setActionListener(new ActiveTermListener() {
-	    @Override
+            @Override
             public void action(ActiveRegion r, InputEvent e) {
-                OutputListener ol = (OutputListener) r.getUserObject();
-                if (ol == null)
-                    return;
-                Extent extent = r.getExtent();
-                String text = term.textWithin(extent.begin, extent.end);
-                OutputEvent oe =
-                    new TerminalOutputEvent(Terminal.this.tio, text);
-                ol.outputLineAction(oe);
+                if (r.getUserObject() instanceof OutputListener) {
+                    OutputListener ol = (OutputListener) r.getUserObject();
+                    if (ol == null) {
+                        return;
+                    }
+                    Extent extent = r.getExtent();
+                    String text = term.textWithin(extent.begin, extent.end);
+                    OutputEvent oe
+                            = new TerminalOutputEvent(Terminal.this.tio, text);
+                    ol.outputLineAction(oe);
+                }
             }
         });
 
