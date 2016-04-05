@@ -9,6 +9,8 @@ adad = /sdsdsd/
 
 /dfdfdf/
 
+`token ${`nested ${`deeply` + {name: "petr"}.name.toUpperCase()} blah`}`
+
 // nice and simple function
 function println(text) {
     document.writeln(text + "<br/>");
