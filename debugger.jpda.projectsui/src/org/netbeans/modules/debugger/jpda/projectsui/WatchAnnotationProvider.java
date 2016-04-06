@@ -46,6 +46,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -68,6 +70,7 @@ import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
@@ -272,11 +275,14 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
 
     private static final class StickyPanel extends JPanel {
         private static final String UI_PREFIX = "ToolTip"; // NOI18N
+        private final EditorPin pin;
         private final JLabel label;
+        private JTextField commentField;
         private RequestProcessor annotationProcessor = new RequestProcessor("Annotation Refresh", 1);
 
         @SuppressWarnings("OverridableMethodCallInConstructor")
         public StickyPanel(final Watch watch, final EditorUI eui) {
+            this.pin = (EditorPin) watch.getPin();
             Font font = UIManager.getFont(UI_PREFIX + ".font"); // NOI18N
             Color backColor = UIManager.getColor(UI_PREFIX + ".background"); // NOI18N
             Color foreColor = UIManager.getColor(UI_PREFIX + ".foreground"); // NOI18N
@@ -287,19 +293,23 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             
             setOpaque(true);
             
-            setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(getForeground()),
-                BorderFactory.createEmptyBorder(0, 3, 0, 3)
-            ));
+            setBorder(BorderFactory.createLineBorder(getForeground()));
             
-            setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+            setLayout(new GridBagLayout());
+            GridBagConstraints gridConstraints = new GridBagConstraints();
             
             Icon expIcon = ImageUtilities.loadImageIcon("org/netbeans/swing/tabcontrol/resources/win8_popup_enabled.png", false);    // NOI18N
             JButton expButton = new JButton(expIcon);
-            expButton.setBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 5));
+            expButton.setBorder(new javax.swing.border.EmptyBorder(0, 3, 0, 5));
             expButton.setBorderPainted(false);
             expButton.setContentAreaFilled(false);
-            add(expButton);
+            add(expButton, gridConstraints);
+            expButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    addCommentListener();
+                }
+            });
             
             annotationProcessor.post(new Runnable() {
                 @Override
@@ -319,8 +329,9 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
                 label.setBackground(backColor);
             }
             label.setBorder(new javax.swing.border.EmptyBorder(0, 3, 0, 3));
-            add(label);
-            
+            gridConstraints.gridx = 1;
+            add(label, gridConstraints);
+
             JButton closeButton = org.openide.awt.CloseButtonFactory.createBigCloseButton();
             closeButton.addActionListener(new java.awt.event.ActionListener() {
                 @Override
@@ -328,8 +339,13 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
                     eui.getStickyWindowSupport().removeWindow(StickyPanel.this);
                 }
             });
-            add(closeButton);
-            
+            gridConstraints.gridx = 2;
+            add(closeButton, gridConstraints);
+
+            if (pin.getComment() != null) {
+                addCommentField(pin.getComment());
+            }
+
             MouseAdapter mouseAdapter = new java.awt.event.MouseAdapter() {
                 private Point orig;
                 @Override
@@ -359,6 +375,35 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             };
             addMouseListener(mouseAdapter);
             addMouseMotionListener(mouseAdapter);
+        }
+
+        private void addCommentField(String text) {
+            commentField = new JTextField(text);
+            commentField.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    commentUpdated();
+                }
+            });
+            GridBagConstraints gridConstraints = new GridBagConstraints();
+            gridConstraints.gridy = 1;
+            gridConstraints.gridwidth = 3;
+            gridConstraints.fill = GridBagConstraints.HORIZONTAL;
+            add(commentField, gridConstraints);
+        }
+
+        private void addCommentListener() {
+            if (commentField == null) {
+                addCommentField("");
+                setSize(getPreferredSize());
+                revalidate();
+                repaint();
+            }
+            commentField.requestFocusInWindow();
+        }
+
+        private void commentUpdated() {
+            pin.setComment(commentField.getText());
         }
 
         private void evaluateExpression(Watch watch) {

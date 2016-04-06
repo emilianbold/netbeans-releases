@@ -44,6 +44,7 @@ package org.netbeans.spi.debugger.ui;
 import java.awt.Point;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Objects;
 import org.netbeans.api.debugger.Watch;
 import org.openide.filesystems.FileObject;
 
@@ -63,12 +64,17 @@ public final class EditorPin implements Watch.Pin {
      * Location property, fired when a location change.
      */
     public static final String PROP_LOCATION = "location";
+    /**
+     * Comment property, fired when a comment change.
+     */
+    public static final String PROP_COMMENT = "comment";
 
     private final PropertyChangeSupport pchs = new PropertyChangeSupport(this);
 
     private final FileObject file;
     private volatile int line;
     private volatile Point location;
+    private volatile String comment;
 
     /**
      * Create a new pin location in editor.
@@ -122,6 +128,26 @@ public final class EditorPin implements Watch.Pin {
         if (!oldLocation.equals(location)) {
             pchs.firePropertyChange(PROP_LOCATION, oldLocation, location);
         }
+    }
+
+    /**
+     * Set a textual comment to this pin.
+     * @param comment The user comment.
+     */
+    public void setComment(String comment) {
+        String oldComment = this.comment;
+        this.comment = comment;
+        if (!Objects.equals(oldComment, comment)) {
+            pchs.firePropertyChange(PROP_COMMENT, oldComment, comment);
+        }
+    }
+
+    /**
+     * Get the comment of this pin.
+     * @return The comment or <code>null</code> when no comment is set.
+     */
+    public String getComment() {
+        return comment;
     }
 
     /**
