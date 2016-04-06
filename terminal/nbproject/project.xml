@@ -89,11 +89,11 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.util.ui</code-name-base>
+                    <code-name-base>org.openide.text</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>9.3</specification-version>
+                        <specification-version>6.67</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -110,6 +110,14 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>8.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util.ui</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>9.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

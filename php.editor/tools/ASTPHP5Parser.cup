@@ -389,7 +389,6 @@ non terminal VariableBase unset_variable;
 non terminal Expression use_filename;
 non terminal Expression foreach_optional_arg;
 non terminal Expression foreach_variable;
-non terminal Expression foreach_variable_or_list;
 non terminal Statement for_statement;
 non terminal Statement foreach_statement;
 non terminal Statement declare_statement;
@@ -981,7 +980,7 @@ T_CURLY_OPEN:token inner_statement_list:statementList T_CURLY_CLOSE:end
 	RESULT = expressionStatement;
 :}
 
-| T_FOREACH:token T_OPEN_PARENTHESE variable:expr T_AS foreach_variable_or_list:var foreach_optional_arg:arg T_CLOSE_PARENTHESE foreach_statement:statement
+| T_FOREACH:token T_OPEN_PARENTHESE variable:expr T_AS foreach_variable:var foreach_optional_arg:arg T_CLOSE_PARENTHESE foreach_statement:statement
 {:
 	ForEachStatement forEachStatement = null;
 	if (arg == null) {
@@ -992,7 +991,7 @@ T_CURLY_OPEN:token inner_statement_list:statementList T_CURLY_CLOSE:end
 	RESULT = forEachStatement;
 :}
 
-| T_FOREACH:token T_OPEN_PARENTHESE expr_without_variable:expr T_AS foreach_variable_or_list:var foreach_optional_arg:arg T_CLOSE_PARENTHESE foreach_statement:statement
+| T_FOREACH:token T_OPEN_PARENTHESE expr_without_variable:expr T_AS foreach_variable:var foreach_optional_arg:arg T_CLOSE_PARENTHESE foreach_statement:statement
 {:
 	ForEachStatement forEachStatement = null;
 	if (arg == null) {
@@ -1396,22 +1395,9 @@ foreach_optional_arg ::=
 	RESULT = null;
 :}
 
-|	T_DOUBLE_ARROW foreach_variable:var
+| T_DOUBLE_ARROW foreach_variable:var
 {:
 	RESULT = var;
-:}
-;
-
-foreach_variable_or_list ::=
-foreach_variable:foreachVar
-{:
-	RESULT = foreachVar;
-:}
-
-| T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:end
-{:
-	ListVariable vars = new ListVariable(startleft, endright, varList);
-	RESULT = vars;
 :}
 ;
 
@@ -1425,6 +1411,12 @@ variable:var
 {:
 	Reference reference = new Reference (startleft, varright, var);
 	RESULT = reference;
+:}
+
+| T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:end
+{:
+	ListVariable vars = new ListVariable(startleft, endright, varList);
+	RESULT = vars;
 :}
 ;
 
