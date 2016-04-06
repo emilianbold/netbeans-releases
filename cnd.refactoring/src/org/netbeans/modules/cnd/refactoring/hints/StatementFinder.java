@@ -413,7 +413,7 @@ public class StatementFinder {
                              }
                         }
                         if (en.isStronglyTyped()) {
-                            scopeToAdd += en.getQualifiedName() + "::";  //NOI18N
+                            scopeToAdd += en.getName() + "::";  //NOI18N
                         }
                         for(CsmEnumerator e : en.getEnumerators()) {
                             if (caseSet.contains(e)) {

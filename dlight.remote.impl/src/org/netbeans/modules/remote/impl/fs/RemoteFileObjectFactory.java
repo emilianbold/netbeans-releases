@@ -119,7 +119,7 @@ public class RemoteFileObjectFactory {
         }  else if (entry.isLink()) {
             fo = createRemoteLink(parent, childPath, entry.getLinkTarget(), owner);
         } else if (entry.isPlainFile()) {
-            fo = createRemotePlainFile(parent, childPath, childCache, FileType.Regular, owner);
+            fo = createRemotePlainFile(parent, childPath, childCache, owner);
         } else {
             fo = createSpecialFile(parent, childPath, childCache, entry.getFileType(), owner);
         }
@@ -158,7 +158,7 @@ public class RemoteFileObjectFactory {
         return fo;
     }
 
-    private RemoteFileObjectBase createRemotePlainFile(RemoteDirectory parent, String remotePath, File cacheFile, FileType fileType, RemoteFileObject owner) {
+    private RemoteFileObjectBase createRemotePlainFile(RemoteDirectory parent, String remotePath, File cacheFile, RemoteFileObject owner) {
         cacheRequests++;
         String normalizedRemotePath = PathUtilities.normalizeUnixPath(remotePath);
         RemoteFileObjectBase fo = fileObjectsCache.get(normalizedRemotePath);
@@ -176,7 +176,7 @@ public class RemoteFileObjectFactory {
         if (owner == null) {
             owner = new RemoteFileObject(fileSystem);
         }
-        fo = new RemotePlainFile(owner, fileSystem, env, parent, normalizedRemotePath, cacheFile, fileType);
+        fo = new RemotePlainFile(owner, fileSystem, env, parent, normalizedRemotePath, cacheFile);
         if (fo.isValid()) {
             RemoteFileObjectBase result = putIfAbsent(normalizedRemotePath, fo);
             if (result instanceof RemotePlainFile && result.getParent() == parent) {
@@ -292,13 +292,15 @@ public class RemoteFileObjectFactory {
         if (fo == null) {
             synchronized (lock) {
                 fo = getCachedFileObject(normalizedPath);
-                if (fo != null) {
+                if (fo == null) {
                     List<FileChangeListener> listeners = pendingListeners.get(normalizedPath);
                     if (listeners == null) {
                         listeners = new ArrayList<>();
                         pendingListeners.put(normalizedPath, listeners);
                     }
                     listeners.add(listener);
+                } else {
+                    fo.addFileChangeListener(listener);
                 }
             }
         } else {
@@ -312,11 +314,13 @@ public class RemoteFileObjectFactory {
         if (fo == null) {
             synchronized (lock) {
                 fo = getCachedFileObject(normalizedPath);
-                if (fo != null) {
+                if (fo == null) {
                     List<FileChangeListener> listeners = pendingListeners.get(normalizedPath);
                     if (listeners != null) {
                         listeners.remove(listener);
                     }
+                } else {
+                    fo.removeFileChangeListener(listener);
                 }
             }
         } else {

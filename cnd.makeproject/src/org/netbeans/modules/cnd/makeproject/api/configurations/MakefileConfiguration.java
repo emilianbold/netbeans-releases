@@ -62,6 +62,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -94,8 +95,8 @@ public class MakefileConfiguration implements Cloneable {
     public MakefileConfiguration(MakeConfiguration makeConfiguration) {
         this.makeConfiguration = makeConfiguration;
         buildCommandWorkingDir = new StringConfiguration(null, "."); // NOI18N
-        buildCommand = new StringConfiguration(null, "${MAKE}"); // NOI18N
-        cleanCommand = new StringConfiguration(null, "${MAKE} clean"); // NOI18N
+        buildCommand = new StringConfiguration(null, BuildSupport.MAKE_MACRO); // NOI18N
+        cleanCommand = new StringConfiguration(null, BuildSupport.MAKE_MACRO+" clean"); // NOI18N
         output = new StringConfiguration(null, ""); // NOI18N
     }
     

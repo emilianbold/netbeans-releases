@@ -496,7 +496,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         if (PREFER_STUDIO) {
             for (CompilerSet cs : sets) {
                 if (cs.getCompilerFlavor().isSunStudioCompiler()) {
-                    if ("OracleSolarisStudio".equals(cs.getName())) { // NOI18N
+                    if ("OracleDeveloperStudio".equals(cs.getName())) { // NOI18N
                         setDefault(cs);
                         return;
                     }

@@ -2370,10 +2370,7 @@ abstract public class CsmCompletionQuery {
                         case PLUS:
                         case MINUS:
                             if (findType && mtdList.isEmpty() && lastType == null) {
-                                if (item.getParameterCount() > 0) {
-                                    lastType = resolveType(item.getParameter(0));
-                                    staticOnly = false;
-                                }
+                                findStandardCommonType(item);
                                 break;
                             }
                             // nobreak;
@@ -2398,25 +2395,8 @@ abstract public class CsmCompletionQuery {
                                     if (filtered.size() > 0) {
                                         mtdList = filtered;
                                         lastType = CompletionSupport.extractFunctionType(this, mtdList, null, typeList);
-                                    } else if (item.getParameterCount() > 1) {
-                                        CsmType type0 = resolveType(item.getParameter(0));
-                                        CsmType type1 = resolveType(item.getParameter(1));
-                                        if(type0 != null && type1 != null) {
-                                            lastType = sup.getCommonType(this, type1, type0, item.getTokenID(0));
-                                            if(lastType == null) {
-                                                if(type0.isBuiltInBased(true)) {
-                                                    lastType = type1;
-                                                } else {
-                                                    lastType = type0;
-                                                }
-                                            }
-                                        } else {
-                                            lastType = type0;
-                                        }
-                                        staticOnly = false;
-                                    } else if (item.getParameterCount() > 0) {
-                                        lastType = resolveType(item.getParameter(0));
-                                        staticOnly = false;
+                                    } else {
+                                        findStandardCommonType(item);
                                     }
                                 }
                                 if(lastType == null) {
@@ -3231,6 +3211,29 @@ abstract public class CsmCompletionQuery {
             return func;
         }
         
+        private void findStandardCommonType(CsmCompletionExpression item) {
+            if (item.getParameterCount() > 1) {
+                CsmType type0 = resolveType(item.getParameter(0));
+                CsmType type1 = resolveType(item.getParameter(1));
+                if (type0 != null && type1 != null) {
+                    lastType = sup.getCommonType(this, type1, type0, item.getTokenID(0));
+                    if (lastType == null) {
+                        if (type0.isBuiltInBased(true)) {
+                            lastType = type1;
+                        } else {
+                            lastType = type0;
+                        }
+                    }
+                } else {
+                    lastType = type0;
+                }
+                staticOnly = false;
+            } else if (item.getParameterCount() > 0) {
+                lastType = resolveType(item.getParameter(0));
+                staticOnly = false;
+            }
+        }
+        
         private boolean shouldDoADLLookup(boolean first, boolean methodOpen) {
             return first && !methodOpen 
                 && lastType == null && lastNamespace == null
@@ -3601,18 +3604,112 @@ abstract public class CsmCompletionQuery {
         }
 
         private List<CsmType> getTypeList(CsmCompletionExpression item, int firstChildIdx) {
-            int parmCnt = item.getParameterCount();
             List<CsmType> typeList = new ArrayList<CsmType>();
-            if (parmCnt > firstChildIdx) { // will try to filter by parameters
-                for (int i = firstChildIdx; i < parmCnt; i++) {
-                    CsmCompletionExpression parm = item.getParameter(i);
-                    CsmType typ = resolveType(parm);
-                    if(!((parmCnt - firstChildIdx) == 1 && typ != null && "void".equals(typ.getCanonicalText().toString()))) { // NOI18N
-                        typeList.add(typ);
+            List<CsmCompletionExpression> fixedParams = fixTypeReferences(item, firstChildIdx);
+            if (fixedParams != null) {
+                for (CsmCompletionExpression param : fixedParams) {
+                    insertTypeOfParam(param, fixedParams.size() == 1, typeList);
+                }
+            } else {
+                int parmCnt = item.getParameterCount();
+                if (parmCnt > firstChildIdx) { // will try to filter by parameters
+                    for (int i = firstChildIdx; i < parmCnt; i++) {
+                        insertTypeOfParam(item.getParameter(i), ((parmCnt - firstChildIdx) == 1), typeList);
                     }
                 }
             }
             return typeList;
+        }
+        
+        private List<CsmCompletionExpression> fixTypeReferences(CsmCompletionExpression item, int firstChildIdx) {
+            CsmContext context = compResolver.getResult().getContext();
+            if (context != null) {
+                CsmScope lastScope = context.getLastScope();
+                // Inside variable shouldn't be type references.
+                if (!CsmKindUtilities.isVariable(context.getLastObject())) {
+                    if (!CsmKindUtilities.isCompoundStatement(lastScope)) {
+                        // Let's fix ast only in compound scope
+                        return null;
+                    }
+                    if (!CsmKindUtilities.isScopeElement(lastScope)) {
+                        // Compound statement must be in some scope
+                        return null;
+                    }
+                    if (!CsmKindUtilities.isFunctionDefinition(((CsmScopeElement) lastScope).getScope())) {
+                        // That scope must be a function definition
+                        return null;
+                    }
+                }
+            } else {
+                // No context => we cannot check whether type references are valid or not
+                return null;
+            }
+            int paramCnt = item.getParameterCount();
+            if (paramCnt > firstChildIdx) {
+                List<CsmCompletionExpression> paramsAsts = null;
+                for (int i = firstChildIdx; i < paramCnt; i++) {
+                    CsmCompletionExpression param = item.getParameter(i);
+                    CsmCompletionExpression typeRef = null;
+                    CsmCompletionExpression argument = null;
+                    if (param.getExpID() == CsmCompletionExpression.VARIABLE) {
+                        if (param.getParameterCount() == 1 
+                                && param.getParameter(0).getExpID() == CsmCompletionExpression.TYPE_REFERENCE) {
+                            typeRef = param.getParameter(0);
+                            if (typeRef.getParameterCount() == 1) {
+                                if (typeRef.getParameter(0).getExpID() == CsmCompletionExpression.TYPE) {
+                                    argument = typeRef.getParameter(0);
+                                }
+                            }
+                        }
+                    }
+                    if (typeRef != null && argument != null && argument.getTokenCount() > 0) {
+                        if (paramsAsts == null) {
+                            paramsAsts = initParamAstsList(item, firstChildIdx, i);
+                        }
+                        CsmCompletionExpression operator = CsmCompletionExpression.createTokenExp(
+                                CsmCompletionExpression.OPERATOR, typeRef
+                        );
+                        operator.addParameter(CsmCompletionExpression.createTokenExp(
+                                CsmCompletionExpression.VARIABLE, param
+                        ));
+                        switch (argument.getTokenID(0)) {
+                            case SCOPE:
+                                operator.addParameter(CsmCompletionExpression.createTokenExp(
+                                        CsmCompletionExpression.SCOPE, argument, true
+                                )); 
+                                break;
+                            case IDENTIFIER:
+                                operator.addParameter(CsmCompletionExpression.createTokenExp(
+                                        CsmCompletionExpression.VARIABLE, argument, true
+                                )); 
+                                break;
+                            default:
+                                operator.addParameter(argument);
+                                break;
+                        }
+                        paramsAsts.add(operator);
+                    } else if (paramsAsts != null) {
+                        paramsAsts.add(param);
+                    }
+                }
+                return paramsAsts;
+            }
+            return null;
+        }
+        
+        private List<CsmCompletionExpression> initParamAstsList(CsmCompletionExpression item, int from, int to) {
+            List<CsmCompletionExpression> params = new ArrayList<CsmCompletionExpression>();
+            for (int i = from; i < to; i++) {
+                params.add(item.getParameter(i));
+            }
+            return params;
+        }
+        
+        private void insertTypeOfParam(CsmCompletionExpression param, boolean isTheOnlyParam, List<CsmType> typeList) {
+            CsmType typ = resolveType(param);
+            if(!(isTheOnlyParam && typ != null && "void".equals(typ.getCanonicalText().toString()))) { // NOI18N
+                typeList.add(typ);
+            }
         }
 
         private boolean isInNamespaceOnlyUsage(final int tokenOffset) {

@@ -156,4 +156,17 @@ public class FileModel3Test extends TraceModelTestBase {
     public void test_va_arg_using() throws Exception {
         performTest("va_arg_using.cpp");
     }
+    
+    public void test_atomic() throws Exception {
+        performTest("atomic.c");
+    }
+
+    //public void test_atomic_2() throws Exception {
+    //    performTest("atomic_2.c");
+    //}
+
+    public void test_align_local_assert() throws Exception {
+        //_Alignas, _Alignof, _Static_assert and _Thread_local
+        performTest("align_local_assert.c");
+    }
 }

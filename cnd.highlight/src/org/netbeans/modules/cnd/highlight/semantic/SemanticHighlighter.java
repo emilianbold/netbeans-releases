@@ -55,6 +55,7 @@ import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.Position;
 import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -78,6 +79,7 @@ import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.support.CancelSupport;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -303,7 +305,15 @@ public final class SemanticHighlighter extends HighlighterBase {
     private void addHighlightsToBag(Document doc, PositionsBag bag, int start, int end, AttributeSet attr, String nameToStateInLog) {
         try {
             if (doc != null) {
-                bag.addHighlight(doc.createPosition(start), doc.createPosition(end), attr);
+                if (SemanticEntitiesProvider.InactiveCodeProvider.INACTIVE_NAME.equals(nameToStateInLog)) {
+                    // inactive code bias is <-[code]->
+                    bag.addHighlight(NbDocument.createPosition(doc, start, Position.Bias.Backward), 
+                                     NbDocument.createPosition(doc, end, Position.Bias.Forward), attr);
+                } else {
+                    // all others use bias as [-> ID <-]
+                    bag.addHighlight(NbDocument.createPosition(doc, start, Position.Bias.Forward), 
+                                     NbDocument.createPosition(doc, end, Position.Bias.Backward), attr);
+                }
             }
         } catch (BadLocationException ex) {
             LOG.log(Level.FINE, "Can't add highlight <" + start + ", " + end + ", " + nameToStateInLog + ">", ex);

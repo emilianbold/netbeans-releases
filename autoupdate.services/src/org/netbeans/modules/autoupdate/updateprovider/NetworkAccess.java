@@ -71,6 +71,8 @@ public class NetworkAccess {
 
     private static final RequestProcessor NETWORK_ACCESS = new RequestProcessor("autoupdate-network-access", 10, false);
 
+    private static final int MAX_REDIRECTS = 10;
+
     private NetworkAccess () {}
     
     public static Task createNetworkAcessTask (URL url, int timeout, NetworkListener networkAcesssListener) {
@@ -161,32 +163,32 @@ public class NetworkAccess {
                     if(conn instanceof HttpsURLConnection){
                         NetworkAccess.initSSL((HttpsURLConnection) conn);
                     }
-                    //for HTTP or HTTPS: conenct and read response - redirection or not?
-                    if (conn instanceof HttpURLConnection) {
-                        conn.connect();
-                        if (((HttpURLConnection) conn).getResponseCode() == HttpURLConnection.HTTP_MOVED_TEMP) {
-                            // in case of redirection, try to obtain new URL
-                            String redirUrl = conn.getHeaderField("Location"); //NOI18N
-                            if (null != redirUrl && !redirUrl.isEmpty()) {
-                                //create connection to redirected url and substitute original conn
-                                URL redirectedUrl = new URL(redirUrl);
-                                URLConnection connRedir = redirectedUrl.openConnection();
-                                connRedir.setRequestProperty("User-Agent", "NetBeans");
-                                connRedir.setConnectTimeout(timeout);
-                                conn = (HttpURLConnection) connRedir;
-                            }
-                        }
+
+                    // handle redirection here
+                    int redirCount = 0;
+                    URLConnection redir = conn;
+                    do {
+                       conn = redir;
+                       redir = checkRedirect(conn, timeout);
+                       redirCount++;
+                    } while (conn != redir && redirCount <= MAX_REDIRECTS);
+
+                    if (conn != redir) {
+                        throw new IOException("Too many redirects for " + url);
                     }
+
                     InputStream is = conn.getInputStream ();
                     contentLength = conn.getContentLength();
-                    Map <String, List <String>> map = conn.getHeaderFields();
-                    StringBuilder sb = new StringBuilder("Connection opened for:\n");
-                    sb.append("    Url: ").append(conn.getURL()).append("\n");
-                    for(String field : map.keySet()) {
-                       sb.append("    ").append(field==null ? "Status" : field).append(": ").append(map.get(field)).append("\n");
+                    if (err.isLoggable(Level.FINE)) {
+                        Map <String, List <String>> map = conn.getHeaderFields();
+                        StringBuilder sb = new StringBuilder("Connection opened for:\n");
+                        sb.append("    Url: ").append(conn.getURL()).append("\n");
+                        for(String field : map.keySet()) {
+                           sb.append("    ").append(field==null ? "Status" : field).append(": ").append(map.get(field)).append("\n");
+                        }
+                        sb.append("\n");
+                        err.log(Level.FINE, sb.toString());
                     }
-                    sb.append("\n");
-                    err.log(Level.FINE, sb.toString());
                     return new BufferedInputStream (is);
                 }
             };
@@ -243,5 +245,31 @@ public class NetworkAccess {
                 throw new IOException(ex);
             }
         }
+    }
+
+    private static URLConnection checkRedirect(URLConnection conn, int timeout) throws IOException {
+        if (conn instanceof HttpURLConnection) {
+            conn.connect();
+            int code = ((HttpURLConnection) conn).getResponseCode();
+            if (code == HttpURLConnection.HTTP_MOVED_TEMP
+                    || code == HttpURLConnection.HTTP_MOVED_PERM) {
+                // in case of redirection, try to obtain new URL
+                String redirUrl = conn.getHeaderField("Location"); //NOI18N
+                if (null != redirUrl && !redirUrl.isEmpty()) {
+                    //create connection to redirected url and substitute original conn
+                    URL redirectedUrl = new URL(redirUrl);
+                    URLConnection connRedir = redirectedUrl.openConnection();
+                    // XXX is this neede
+                    connRedir.setRequestProperty("User-Agent", "NetBeans"); // NOI18N
+                    connRedir.setConnectTimeout(timeout);
+                    connRedir.setReadTimeout(timeout);
+                    if (connRedir instanceof HttpsURLConnection) {
+                        NetworkAccess.initSSL((HttpsURLConnection) connRedir);
+                    }
+                    return connRedir;
+                }
+            }
+        }
+        return conn;
     }
 }

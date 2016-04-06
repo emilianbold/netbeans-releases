@@ -330,14 +330,8 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
             }
             if (actionType == ProjectActionEvent.PredefinedType.PRE_BUILD) {
                 ArrayList<String> expandedArgs = new ArrayList<>();
-                if (isCygwinCompilerSet(cs)) {
-                    for(String s :args) {
-                        expandedArgs.add(PreBuildSupport.expandMacrosCygwin(s, cs));
-                    }
-                } else {
-                    for(String s :args) {
-                        expandedArgs.add(PreBuildSupport.expandMacros(s, cs));
-                    }
+                for(String s :args) {
+                    expandedArgs.add(PreBuildSupport.expandMacros(s, cs));
                 }
                 args = expandedArgs;
             }
@@ -431,12 +425,13 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
     }
     
     private String getExecutable(CompilerSet cs) {
-        if (pae.getExecutable().contains("cmake")) { // NOI18N
+        String executable = pae.getExecutable();
+        if (executable.contains("cmake")) { // NOI18N
             if (isCygwinCompilerSet(cs)) {
                 return PreBuildSupport.getCmakePath(cs);
             }
         }
-        return pae.getExecutable();
+        return executable;
     }
 
     @Override

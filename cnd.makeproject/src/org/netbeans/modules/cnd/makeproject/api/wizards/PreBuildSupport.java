@@ -57,6 +57,7 @@ import org.openide.util.Lookup;
  * @author Alexander Simon
  */
 public final class PreBuildSupport {
+    public static final String CMAKE_MACRO = "${CMAKE}"; //NOI18N
     public static final String C_COMPILER_MACRO = "${IDE_CC}"; //NOI18N
     public static final String CPP_COMPILER_MACRO = "${IDE_CXX}"; //NOI18N
     
@@ -118,31 +119,33 @@ public final class PreBuildSupport {
     }
     
     public static String expandMacros(String command, CompilerSet cs) {
+        if (command.contains(CMAKE_MACRO)) {
+            String path = getCmakePath(cs);
+            command = command.replace(CMAKE_MACRO, path);
+        }
         if (command.contains(C_COMPILER_MACRO)) {
             String path = getDefaultC(cs);
+            if (cs.getCompilerFlavor().isCygwinCompiler()) {
+                path = WindowsSupport.getInstance().convertToCygwinPath(path);
+            }
             command = command.replace(C_COMPILER_MACRO, path);
         }
         if (command.contains(CPP_COMPILER_MACRO)) {
             String path = getDefaultCpp(cs);
+            if (cs.getCompilerFlavor().isCygwinCompiler()) {
+                path = WindowsSupport.getInstance().convertToCygwinPath(path);
+            }
             command = command.replace(CPP_COMPILER_MACRO, path);
         }
         return command;
     }
     
-    public static String expandMacrosCygwin(String command, CompilerSet cs) {
-        if (command.contains(C_COMPILER_MACRO)) {
-            String path = getDefaultC(cs);
-            command = command.replace(C_COMPILER_MACRO, WindowsSupport.getInstance().convertToCygwinPath(path));
-        }
-        if (command.contains(CPP_COMPILER_MACRO)) {
-            String path = getDefaultCpp(cs);
-            command = command.replace(CPP_COMPILER_MACRO, WindowsSupport.getInstance().convertToCygwinPath(path));
-        }
-        return command;
-    }
-    
     public static String getCmakePath(CompilerSet cs) {
-        return getToolPath(cs, PredefinedToolKind.CMakeTool);
+        String toolPath = getToolPath(cs, PredefinedToolKind.CMakeTool);
+        if (toolPath == null || toolPath.isEmpty()) {
+            toolPath = "cmake"; //NOI18N
+        }
+        return toolPath;
     }
     
     private static String getDefaultC(CompilerSet compilerSet){

@@ -331,6 +331,25 @@ public class CsmCompletionExpression {
         empty.addToken(CppTokenId.IDENTIFIER, pos, "");
         return empty;
     }
+    
+    /** Create expression with the given id from old expression. */
+    static CsmCompletionExpression createTokenExp(int id, CsmCompletionExpression oldExpression) {
+        return createTokenExp(id, oldExpression, false);
+    }
+
+    /** Create expression with the given id from old expression. */
+    static CsmCompletionExpression createTokenExp(int id, CsmCompletionExpression oldExpression, boolean withParams) {
+        CsmCompletionExpression exp = new CsmCompletionExpression(id);
+        for (int i = 0; i < oldExpression.getTokenCount(); i++) {
+            exp.addToken(oldExpression.getTokenID(i), oldExpression.getTokenOffset(i), oldExpression.getTokenText(i));
+        }
+        if (withParams) {
+            for (int i = 0; i < oldExpression.getParameterCount(); i++) {
+                exp.addParameter(oldExpression.getParameter(i));
+            }
+        }
+        return exp;
+    }
 
     static boolean isSeparatorOrOperator(CppTokenId tokenID) {
         return CndLexerUtilities.isSeparatorOrOperator(tokenID);

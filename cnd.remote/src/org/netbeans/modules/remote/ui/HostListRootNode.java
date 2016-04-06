@@ -59,6 +59,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.RemoteStatistics;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
@@ -182,7 +184,9 @@ public final class HostListRootNode extends AbstractNode {
         }
     }
 
-    private static class AddHostAction extends AbstractAction implements Runnable {
+    @ActionID(id = "AddNewHostAction", category = "NativeRemote")
+    @ActionRegistration(displayName = "#AddNewHostAction")
+    public static class AddHostAction extends AbstractAction implements Runnable {
         private static final RequestProcessor RP = new RequestProcessor("AddHostAction", 1); // NOI18N
 
         public AddHostAction() {

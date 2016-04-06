@@ -43,8 +43,6 @@
 package org.netbeans.modules.cnd.spi.model.services;
 
 import java.util.Collection;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -86,4 +84,15 @@ public interface CsmSymbolResolverImplementation {
      * @return all entities which have the same declaration text
      */    
     Collection<CsmOffsetable> resolveSymbol(CsmProject project, CharSequence declText);        
+
+    /**
+     * Resolves function by name in global namespace.
+     * Does not wait until project parse is finished.
+     * 
+     * @param project
+     * @param functionName
+     * 
+     * @return all function definitions with name
+     */    
+    Collection<CsmOffsetable> resolveGlobalFunction(NativeProject project, CharSequence functionName);
 }
