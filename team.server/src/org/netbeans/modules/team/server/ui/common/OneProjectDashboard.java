@@ -313,9 +313,11 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
     }
 
     private ProjectHandle<P> getProject(String id, ArrayList<ProjectHandle<P>> projects) {
-        for (ProjectHandle ph : projects) {
-            if(id.equals(ph.getId())) {
-                return ph;
+        synchronized( LOCK ) {
+            for (ProjectHandle ph : projects) {
+                if(id.equals(ph.getId())) {
+                    return ph;
+                }
             }
         }
         return null;
@@ -1065,11 +1067,13 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                 return;
             }
             if(res[0] != null) {
-                if(memberProjects.remove(res[0])) {
-                    memberProjects.add(res[0]);
-                } else {
-                    otherProjects.remove(res[0]);
-                    otherProjects.add(res[0]);
+                synchronized( LOCK ) {
+                    if(memberProjects.remove(res[0])) {
+                        memberProjects.add(res[0]);
+                    } else {
+                        otherProjects.remove(res[0]);
+                        otherProjects.add(res[0]);
+                    }
                 }
                 switchProject(res[0], getProjectNode(res[0]), false, forceRefresh);
             } 

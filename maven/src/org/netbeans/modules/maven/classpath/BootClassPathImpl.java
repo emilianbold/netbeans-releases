@@ -45,7 +45,6 @@ package org.netbeans.modules.maven.classpath;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -58,6 +57,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -66,7 +66,6 @@ import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -175,7 +174,7 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
             return pm.getDefaultPlatform();
         }
         else {
-            JavaPlatform[] installedPlatforms = pm.getPlatforms(null, new Specification ("j2se",null));   //NOI18N
+            JavaPlatform[] installedPlatforms = pm.getPlatforms(null, new Specification (CommonProjectUtils.J2SE_PLATFORM_TYPE, null));   //NOI18N
             for (int i=0; i<installedPlatforms.length; i++) {
                 String antName = installedPlatforms[i].getProperties().get("platform.ant.name");        //NOI18N
                 if (antName != null && antName.equals(activePlatformId)) {
