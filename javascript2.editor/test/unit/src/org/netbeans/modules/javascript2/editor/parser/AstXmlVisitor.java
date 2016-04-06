@@ -56,7 +56,6 @@ import com.oracle.js.parser.ir.LiteralNode;
 import com.oracle.js.parser.ir.Node;
 import com.oracle.js.parser.ir.ObjectNode;
 import com.oracle.js.parser.ir.PropertyNode;
-import com.oracle.js.parser.ir.Symbol;
 import com.oracle.js.parser.ir.UnaryNode;
 import com.oracle.js.parser.ir.VarNode;
 import com.oracle.js.parser.ir.visitor.NodeVisitor;
@@ -341,7 +340,10 @@ public class AstXmlVisitor extends NodeVisitor {
         processAttribute(node.isSubclassConstructor(), "isSubclassConstructor");
         processAttribute(node.isVarArg(), "isVarArg");
         processAttribute(node);
-        
+
+        if (node.isModule()) {
+            node.visitImports(this);
+        }
         processWithComment(node.getParameters(), "FunctionNode Parameters");
         processWithComment(node.getBody(), "FunctionNode Body");
         createCloseTag(node);
