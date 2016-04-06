@@ -64,7 +64,12 @@ public class JShellAccessor {
     public static void addCompileClasspath(JShell instance, String classpath) {
         instance.taskFactory.addToClasspath(classpath);
     }
-    
+
+    /**
+     * Resets the compile classpath: set it to the desired strng.
+     * @param instance
+     * @param classpath 
+     */
     public static void resetCompileClasspath(JShell instance, String classpath) {
         try {
             Field f = TaskFactory.class.getDeclaredField("classpath");
@@ -84,11 +89,22 @@ public class JShellAccessor {
     public static Object snippetKey(Snippet snip) {
         return snip.key();
     }
-    
+
+    /**
+     * Name of class generated from the snippet
+     * @param snip
+     * @return 
+     */
     public static String snippetClass(Snippet snip) {
         return snip.className();
     }
     
+    /**
+     * Converts position in the original source into position in the wrapped text
+     * @param snip snippet which contains the source
+     * @param snippetPos index in the original rouce
+     * @return index in wrapped snippet code
+     */
     public static int getWrappedPosition(Snippet snip, int snippetPos) {
         OuterWrap wrap = snip.outerWrap();
         return wrap == null ? -1 : snip.outerWrap().snippetIndexToWrapIndex(snippetPos);
@@ -134,6 +150,12 @@ public class JShellAccessor {
         return new ErrWrapper(s, ow, s.kind());
     }
 
+    /**
+     * Generates a wrapping for a text without declaring a new Snippet
+     * @param state JShell instance
+     * @param input source text
+     * @return wrapped source
+     */
     public static SnippetWrapping wrapInput(JShell state, String input) {
         //XXX: modifiers/comments!
         String compileSource = new MaskCommentsAndModifiers(input, true).cleared();
@@ -263,6 +285,13 @@ public class JShellAccessor {
         }
     }
     
+    /**
+     * Finds dependent snippets. Only persistent snippets are returned.
+     * 
+     * @param state shell instance
+     * @param snip dependency target
+     * @return persistent snippets which depend on 'snip'.
+     */
     public static List<Snippet> getDependents(JShell state, Snippet snip) {
         return state.maps.getDependents(snip);
     }
