@@ -896,7 +896,7 @@ public class ConsoleModel {
     private Map<ConsoleSection, List<SnippetHandle>> snippets = new HashMap<>();
     
     public Stream<Snippet> inactiveSnippets() {
-        return sections.keySet().stream().filter(s -> !JShellAccessor.snippetStatus(s).isActive);
+        return sections.keySet().stream().filter(s -> !shell.status(s).isActive);
     }
     
     private void registerNewSnippet(Snippet snip) {

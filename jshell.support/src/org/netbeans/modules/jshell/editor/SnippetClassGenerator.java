@@ -45,11 +45,16 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ImportTree;
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Deque;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import jdk.jshell.JShellAccessor;
 import jdk.jshell.Snippet;
 import jdk.jshell.Snippet.SubKind;
 import jdk.jshell.VarSnippet;
@@ -78,6 +83,12 @@ public class SnippetClassGenerator implements Runnable {
     private StringBuilder executableContent = new StringBuilder();
     private StringBuilder declarativeConent = new StringBuilder();
     private List<Snippet> liveSnippets;
+    
+    /**
+     * Snippets which have been processed already.
+     */
+    private Set<Snippet>  processed = new HashSet<>();
+    private Set<Snippet>  declared = new HashSet<>();
     
     private Throwable error;
 
@@ -119,27 +130,63 @@ public class SnippetClassGenerator implements Runnable {
      */
     private void createStatementsText() {
         for (Snippet s : liveSnippets) {
-            if ((s.kind().isPersistent || s.kind() == Snippet.Kind.IMPORT) && !(
-                s.subKind() == SubKind.VAR_VALUE_SUBKIND
-            )) {
+            
+            if (s.kind().isPersistent) {
+                // exclude temporaries, the unreferenced ones should be generated
+                // as expression statements.
+                if (s.subKind() != SubKind.TEMP_VAR_EXPRESSION_SUBKIND) {
+                    continue;
+                }
+            }
+            
+            
+            if (!processed.add(s)) {
+                // already processed
                 continue;
             }
+            
             String text = s.source();
-//            
-//            if (s.subKind() == SubKind.TEMP_VAR_EXPRESSION_SUBKIND) {
-//                VarSnippet vs = (VarSnippet)s;
-//                executableContent.
-//                        append(vs.typeName()).
-//                        append(" ").
-//                        append(vs.name()).
-//                        append(" = ");
-//            }
+            
+            if (s.subKind() == SubKind.TEMP_VAR_EXPRESSION_SUBKIND) {
+                VarSnippet vs = (VarSnippet)s;
+                if (!declared.contains(s)) {
+                    // those tmp vars not used by persistent snippets are declared locally
+                    executableContent.
+                            append(vs.typeName()).append(" ");
+                }
+                executableContent.
+                        append(vs.name()).
+                        append(" = ");
+            }
             executableContent.append(text);
-            if (!text.endsWith(";") && !text.endsWith("}")) {
-                executableContent.append(";");
+            if (!text.endsWith(";") && !text.endsWith("}")) {   // NOI18N
+                executableContent.append(";");  // NOI18N
             }
             executableContent.append("\n"); // NOI18N
         }
+    }
+    
+    private boolean declarationsDependsOn(Snippet snip) {
+        Deque<Snippet> candidates = new ArrayDeque();
+        candidates.add(snip);
+        while (!candidates.isEmpty()) {
+            Snippet c = candidates.poll();
+            List<Snippet> deps = JShellAccessor.getDependents(shellSession.getShell(), c);
+            for (Snippet s : deps) {
+                if (!s.kind().isPersistent) {
+                    continue;
+                }
+                if (s.kind() == Snippet.Kind.IMPORT) {
+                    continue;
+                }
+                if (s.subKind() == SubKind.TEMP_VAR_EXPRESSION_SUBKIND) {
+                    candidates.push(s);
+                } else {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     
     private void prepareDeclarations() {
@@ -150,28 +197,28 @@ public class SnippetClassGenerator implements Runnable {
             if (s.kind() == Snippet.Kind.IMPORT) {
                 continue;
             }
-            if (s.subKind() != null) {
-                switch (s.subKind()) {
-                    case VAR_VALUE_SUBKIND:
-                        continue; // not real commands
-                }
-            }   
-            String text = s.source();
+            if (s.subKind() == SubKind.TEMP_VAR_EXPRESSION_SUBKIND &&
+                !declarationsDependsOn(s)) {
+                // include ONLY if the snippet is referenced from others
+                continue;
+            } 
+            declared.add(s);
+            String text;
             if (declarativeConent.length() > 0) {
                 // force some newline
                 declarativeConent.append("\n"); // NOI18N
             }
             if (s.subKind() == SubKind.TEMP_VAR_EXPRESSION_SUBKIND) {
                 VarSnippet vs = (VarSnippet)s;
-                declarativeConent.
-                        append(vs.typeName()).
-                        append(" ").
-                        append(vs.name()).
-                        append(" = ");
+                text = vs.typeName() + " " + vs.name(); // NOI18N
+                declarativeConent.append(text);
+            } else {
+                text = s.source();
+                declarativeConent.append(text);
+                processed.add(s);
             }
-            declarativeConent.append(text);
-            if (!text.endsWith(";") && !text.endsWith("}")) {
-                declarativeConent.append(";");
+            if (!text.endsWith(";") && !text.endsWith("}")) {   // NOI18N
+                declarativeConent.append(";");  // NOI18N
             }
             declarativeConent.append("\n"); // NOI18N
         }

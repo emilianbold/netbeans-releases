@@ -1225,7 +1225,7 @@ public class ShellSession {
     }
 
     private boolean validSnippet(Snippet s) {
-        Snippet.Status status = JShellAccessor.snippetStatus(s);
+        Snippet.Status status = shell.status(s);
         return !(status == Snippet.Status.DROPPED ||
             status == Snippet.Status.OVERWRITTEN ||
             status == Snippet.Status.REJECTED);

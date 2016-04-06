@@ -46,6 +46,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.instrument.ClassDefinition;
+import java.lang.instrument.UnmodifiableClassException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -57,6 +59,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.lib.jshell.agent.NbJShellAgent;
 
@@ -233,6 +237,12 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
      */
     public static final int CMD_VM_INFO   = 100;
     
+    public static final int CMD_REDEFINE   = 101;
+    
+    public static final int CMD_STOP        = 102;
+    
+    public static final int CMD_CLASSID     = 103;
+    
     /**
      * Find out reference identity of a class.
      */
@@ -300,6 +310,7 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
             switch (cmd) {
                 case RemoteCodes.CMD_INVOKE: {
                     final IOException [] err = new IOException[1];
+                    // for Graalists :)
                     userExecutor.execute(new Runnable() {
                         public void run() {
                             try {
@@ -317,6 +328,14 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
                 case CMD_VM_INFO:
                     returnVMInfo(out);
                     break;
+                case CMD_REDEFINE:
+                    performRedefineClass(in, out);
+                    break;
+                case CMD_CLASSID:
+                    performClassId(in, out);
+                    break;
+                case CMD_STOP:
+                    break;
                 default:
                     super.performCommand(cmd, in, out);
             }
@@ -326,7 +345,36 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
         }
     }
     
+    private void performRedefineClass(ObjectInputStream in, ObjectOutputStream out) throws IOException {
+        long classId = in.readLong();
+        try {
+            byte[] replaceBytecode = (byte[])in.readObject();
+            Class defined = ((NbRemoteLoader)loader).getClassOfId(classId);
+            
+            agent.getInstrumentation().redefineClasses(
+                new ClassDefinition(defined, replaceBytecode)
+            );
+            out.writeInt(RemoteCodes.RESULT_SUCCESS);
+            out.writeLong(classId);
+        } catch (ClassNotFoundException | UnmodifiableClassException ex) {
+            Logger.getLogger(AgentWorker.class.getName()).log(Level.SEVERE, null, ex);
+            out.writeInt(RemoteCodes.RESULT_FAIL);
+            out.writeUTF(ex.toString());
+        }
+        out.flush();
+    }
     
+    private void performClassId(ObjectInputStream in, ObjectOutputStream out) throws IOException {
+        String className = in.readUTF();
+        Long id = ((NbRemoteLoader)loader).getClassId(className);
+        out.writeInt(RemoteCodes.RESULT_SUCCESS);
+        if (id == null) {
+            out.writeLong(-1);
+        } else {
+            out.writeLong(id);
+        }
+        out.flush();
+    }
 
     @Override
     protected void handleUnknownCommand(int cmd, ObjectInputStream i, ObjectOutputStream o) throws IOException {

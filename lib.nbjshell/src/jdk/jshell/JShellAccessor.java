@@ -85,15 +85,6 @@ public class JShellAccessor {
         return snip.key();
     }
     
-    /**
-     * Status of a snippet
-     * @param snip
-     * @return 
-     */
-    public static Status snippetStatus(Snippet snip) {
-        return snip.status();
-    }
-    
     public static String snippetClass(Snippet snip) {
         return snip.className();
     }
@@ -270,6 +261,10 @@ public class JShellAccessor {
         public int getWrappedPosition(int pos) {
             return snippet.outerWrap().snippetIndexToWrapIndex(pos);
         }
+    }
+    
+    public static List<Snippet> getDependents(JShell state, Snippet snip) {
+        return state.maps.getDependents(snip);
     }
     
     public static NbExecutionControl getNbExecControl(JShell state) {

@@ -45,7 +45,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 /**
@@ -54,14 +56,43 @@ import java.util.NoSuchElementException;
  */
 class NbRemoteLoader extends RemoteClassLoader {
     private final NbRemoteLoader oldDelegate;
-
+    private final Map<String, Long> classIds;
+    private final Map<Long, Class>  definedClasses;
+    
     public NbRemoteLoader(ClassLoader parent, ClassLoader oldDelegate) {
+        
         if (oldDelegate != null && !(oldDelegate instanceof NbRemoteLoader)) {
             throw new IllegalArgumentException("Invalid classloader: " + oldDelegate);
         }
         this.oldDelegate = (NbRemoteLoader)oldDelegate;
+        if (oldDelegate == null) {
+            classIds = new HashMap<>();
+            definedClasses = new HashMap<>();
+        } else {
+            classIds = this.oldDelegate.classIds;
+            definedClasses = this.oldDelegate.definedClasses;
+        }
     }
-
+    
+    private Class registerClass(Class c) {
+        Long ret = (long)classIds.size() + 1;
+        String className = c.getName();
+        classIds.put(className, ret);
+        definedClasses.put(ret, c);
+        return c;
+    }
+    
+    Long getClassId(String className) {
+        return classIds.get(className);
+    }
+    
+    Class getClassOfId(Long id) {
+        if (id == null) {
+            return null;
+        }
+        return definedClasses.get(id);
+    }
+    
     /**
      * Finds the class.
      * The order should be:
@@ -83,11 +114,13 @@ class NbRemoteLoader extends RemoteClassLoader {
         }
         if (oldDelegate != null) {
             try {
-                return oldDelegate.findClass(name);
+                c = oldDelegate.findClass(name);
+                return registerClass(c);
             } catch (ClassNotFoundException ex) {
             }
         }
-        return super.findClass(name);
+        c = super.findClass(name);
+        return registerClass(c);
     }
 
     @Override
