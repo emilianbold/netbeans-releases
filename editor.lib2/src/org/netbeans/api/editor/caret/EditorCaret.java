@@ -1586,6 +1586,10 @@ public final class EditorCaret implements Caret {
                     }
                     CaretItem lastCaretItem = getLastCaretItem();
                     // Use "low" index (which is higher than "high" at end of binary-search)
+                    // If scrolling the view to caret's position start with the last caret at least.
+                    if (scrollViewToCaret && low >= caretsSize) {
+                        low = caretsSize - 1;
+                    }
                     for (int i = low; i < caretsSize; i++) {
                         CaretInfo caretInfo = sortedCarets.get(i);
                         CaretItem caretItem = caretInfo.getCaretItem();
@@ -2130,7 +2134,6 @@ public final class EditorCaret implements Caret {
                     // Manually shift carets at offset zero - do this always even when inside atomic lock
                     runTransaction(CaretTransaction.RemoveType.DOCUMENT_INSERT_ZERO_OFFSET, evt.getLength(), null, null);
                 }
-                // [TODO] proper undo solution
                 modified = true;
                 modifiedUpdate(true, offset);
                 
@@ -2140,7 +2143,6 @@ public final class EditorCaret implements Caret {
         public @Override void removeUpdate(DocumentEvent evt) {
             JTextComponent c = component;
             if (c != null) {
-                // [TODO] proper undo solution
                 modified = true;
                 int offset = evt.getOffset();
                 runTransaction(CaretTransaction.RemoveType.DOCUMENT_REMOVE, offset, null, null);
@@ -2209,7 +2211,7 @@ public final class EditorCaret implements Caret {
                                 try {
                                     Position pos = doc.createPosition(offset);
                                     runTransaction(CaretTransaction.RemoveType.NO_REMOVE, 0, 
-                                            new CaretItem[] { new CaretItem(EditorCaret.this, pos, pos) }, null);
+                                             new CaretItem[] { new CaretItem(EditorCaret.this, pos, pos) }, null);
                                 } catch (BadLocationException ex) {
                                     // Do nothing
                                 }

@@ -140,8 +140,8 @@ made subject to such option by the copyright holder.
     <bind actionName="move-selection-else-line-up" key="OS-KP_UP"/>
     <bind actionName="move-selection-else-line-down" key="OS-DOWN"/>
     <bind actionName="move-selection-else-line-down" key="OS-KP_DOWN"/>
-    <bind actionName="add-selection-else-caret-up" key="OS-OPEN_BRACKET"/>
-    <bind actionName="add-selection-else-caret-down" key="OS-CLOSE_BRACKET"/>
+    <bind actionName="add-caret-up" key="OS-OPEN_BRACKET"/>
+    <bind actionName="add-caret-down" key="OS-CLOSE_BRACKET"/>
     <bind actionName="remove-last-caret" key="OS-U"/>
     <bind actionName="move-code-element-up" key="OS-PAGE_UP"/>
     <bind actionName="move-code-element-down" key="OS-PAGE_DOWN"/>

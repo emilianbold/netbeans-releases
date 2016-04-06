@@ -234,6 +234,31 @@ public final class EditorRegistry {
     }
     
     /**
+     * Find a component that uses the given document.
+     * <br/>
+     * Scan the component registry starting from the most recently focused text component
+     * and test if {@link JTextComponent#getDocument()} returns the document passed
+     * as parameter to this method and if so return the component.
+     *
+     * @since 2.8.0
+     */
+    public static synchronized JTextComponent findComponent(Document doc) {
+        Item item = items;
+        while (item != null) {
+            JTextComponent c = item.get();
+            if (c == null) {
+                item = removeFromItemList(item);
+                continue;
+            }
+            if (c.getDocument() == doc) {
+                return c;
+            }
+            item = item.next;
+        }
+        return null;
+    }
+    
+    /**
      * Add a property change listener for either of the following properties:
      * <ul>
      *   <li>{@link #FOCUS_GAINED_PROPERTY}</li>
