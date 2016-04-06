@@ -320,8 +320,13 @@ public class PhpParserErrorTest extends PHPTestBase {
         checkErrors("testfiles/parser/finally_03.php");
     }
 
-    public void testListInForeach() throws Exception {
-        checkErrors("testfiles/parser/listInForeach.php");
+    public void testListInForeach_01() throws Exception {
+        checkErrors("testfiles/parser/listInForeach_01.php");
+    }
+
+    public void testListInForeach_02() throws Exception {
+        // #257945
+        checkErrors("testfiles/parser/listInForeach_02.php");
     }
 
     public void testExpressionArrayAccess_01() throws Exception {
