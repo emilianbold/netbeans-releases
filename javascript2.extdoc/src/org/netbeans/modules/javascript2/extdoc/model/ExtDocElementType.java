@@ -56,7 +56,7 @@ public enum ExtDocElementType {
     // common ExtDoc tags
     CFG("@cfg", Category.TYPE_NAMED), //NOI18N
     CLASS("@class", Category.IDENT_DESCRIBED), //NOI18N
-    CONSTANT("@constructor", Category.SIMPLE), //NOI18N
+    CONSTANT("@constant", Category.SIMPLE), //NOI18N
     CONSTRUCTOR("@constructor", Category.SIMPLE), //NOI18N
     EVENT("@event", Category.IDENT_DESCRIBED), //NOI18N
     EXTENDS("@extends", Category.IDENT_SIMPLE), //NOI18N
