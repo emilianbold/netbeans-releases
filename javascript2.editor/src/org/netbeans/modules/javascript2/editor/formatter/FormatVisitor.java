@@ -70,6 +70,7 @@ import com.oracle.js.parser.ir.WithNode;
 import com.oracle.js.parser.ir.visitor.NodeVisitor;
 import com.oracle.js.parser.TokenType;
 import com.oracle.js.parser.ir.ClassNode;
+import com.oracle.js.parser.ir.ImportNode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -338,6 +339,10 @@ public class FormatVisitor extends NodeVisitor {
 
     @Override
     public boolean enterFunctionNode(FunctionNode functionNode) {
+        if (functionNode.isModule()) {
+            functionNode.visitImports(this);
+        }
+
         Block body = functionNode.getBody();
         // default parameters are stored as assignments inside the function
         // body block - the real block is just behind it
@@ -431,12 +436,23 @@ public class FormatVisitor extends NodeVisitor {
         }
         return false;
     }
-    
+
     @Override
     public Node leaveFunctionNode(FunctionNode functionNode) {
         leaveBlock(functionNode.getBody());
 
         return null;
+    }
+
+    @Override
+    public boolean enterImportNode(ImportNode importNode) {
+        int finish = getFinish(importNode);
+        FormatToken token = getNextToken(finish, JsTokenId.OPERATOR_SEMICOLON);
+        if (token != null) {
+            // we treat the import as statement
+            appendTokenAfterLastVirtual(token, FormatToken.forFormat(FormatToken.Kind.AFTER_STATEMENT));
+        }
+        return false;
     }
 
     @Override
@@ -1028,16 +1044,8 @@ public class FormatVisitor extends NodeVisitor {
     private void handleBlockContent(Block block) {
         handleBlockContent(block.getStatements());
     }
-    
-    private void handleBlockContent(List<Statement> statements) {
-        // functions
-// TRUFFLE
-//        if (block instanceof FunctionNode) {
-//            for (FunctionNode function : ((FunctionNode) block).getFunctions()) {
-//                function.accept(this);
-//            }
-//        }
 
+    private void handleBlockContent(List<Statement> statements) {
         // statements
         //List<Statement> statements = block.getStatements();
         for (int i = 0; i < statements.size(); i++) {
