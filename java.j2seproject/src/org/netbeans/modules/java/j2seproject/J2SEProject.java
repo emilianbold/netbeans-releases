@@ -870,7 +870,11 @@ public final class J2SEProject implements Project {
                 if (!ep.containsKey("build.generated.sources.dir")) { // NOI18N
                     ep.setProperty("build.generated.sources.dir", "${build.dir}/generated-sources"); // NOI18N
                 }
-                J2SEProjectBuilder.createDefaultModuleProperties(ep, testRoots.getRoots().length > 0);
+                J2SEProjectBuilder.createDefaultModuleProperties(
+                        ep,
+                        testRoots.getRoots().length > 0,
+                        Arrays.stream(sourceRoots.getRoots())
+                            .anyMatch((fo) -> fo.getFileObject("module-info.java") != null));   //NOI18N
                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
             }
         };

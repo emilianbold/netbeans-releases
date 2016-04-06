@@ -50,6 +50,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -393,10 +394,12 @@ public class J2SEProjectBuilder {
      * Sets default module system properties if they are not set.
      * @param ep the {@link EditableProperties} to write the properties into.
      * @param hasUnitTests true if the project has unit tests
+     * @param boolean isModular true if the project is JDK 9 modular project
      */
     public static void createDefaultModuleProperties(
             @NonNull final EditableProperties ep,
-            final boolean hasUnitTests) {
+            final boolean hasUnitTests,
+            final boolean isModular) {
         if (ep.getProperty(ProjectProperties.JAVAC_MODULEPATH) == null) {
             ep.setProperty(ProjectProperties.JAVAC_MODULEPATH, new String[0]);
         }
@@ -413,26 +416,39 @@ public class J2SEProjectBuilder {
         }
         if (ep.getProperty(ProjectProperties.JAVAC_TEST_MODULEPATH) == null) {
             ep.setProperty(ProjectProperties.JAVAC_TEST_MODULEPATH,
-               hasUnitTests ?
-                    new String[] {
-                        ref(ProjectProperties.JAVAC_MODULEPATH, false),
-                        ref(ProjectProperties.BUILD_CLASSES_DIR, false),
-                        ref("libs.junit.classpath", false), // NOI18N
-                        ref("libs.junit_4.classpath", true)  //NOI18N
-                    } :
-                    new String[] {
-                        ref(ProjectProperties.JAVAC_MODULEPATH, false),
-                        ref(ProjectProperties.BUILD_CLASSES_DIR, true)
-                    });
+                new String[] {
+                    ref(ProjectProperties.JAVAC_MODULEPATH, false),
+                    ref(ProjectProperties.BUILD_CLASSES_DIR, true)
+                });
         }
         if (ep.getProperty(ProjectProperties.RUN_TEST_MODULEPATH) == null) {
             ep.setProperty(ProjectProperties.RUN_TEST_MODULEPATH, new String[] {
-                ref(ProjectProperties.JAVAC_TEST_MODULEPATH, false),
-                ref(ProjectProperties.BUILD_TEST_CLASSES_DIR, true)
+                ref(ProjectProperties.JAVAC_TEST_MODULEPATH, true)
             });
         }
         if (ep.getProperty(ProjectProperties.DEBUG_TEST_MODULEPATH) == null) {
-            ep.setProperty(ProjectProperties.DEBUG_TEST_MODULEPATH, new String[] {ref(ProjectProperties.RUN_TEST_MODULEPATH, true)});
+            ep.setProperty(ProjectProperties.DEBUG_TEST_MODULEPATH, new String[] {
+                ref(ProjectProperties.RUN_TEST_MODULEPATH, true)
+            });
+        }
+        if (isModular) {
+            removeRef(ep,
+                    ProjectProperties.JAVAC_TEST_CLASSPATH,
+                    ref(ProjectProperties.BUILD_CLASSES_DIR,true));
+            removeRef(ep,
+                    ProjectProperties.RUN_TEST_CLASSPATH,
+                    ref(ProjectProperties.BUILD_TEST_CLASSES_DIR,true));
+        } else {
+            addRefIfAbsent(ep,
+                    ProjectProperties.JAVAC_TEST_CLASSPATH,
+                    ref(ProjectProperties.BUILD_CLASSES_DIR,true),
+                    ref(ProjectProperties.JAVAC_CLASSPATH,true)
+                    );
+            addRefIfAbsent(ep,
+                    ProjectProperties.RUN_TEST_CLASSPATH,
+                    ref(ProjectProperties.BUILD_TEST_CLASSES_DIR,true),
+                    ref(ProjectProperties.JAVAC_TEST_CLASSPATH, true)
+                    );
         }
     }
 
@@ -587,7 +603,7 @@ public class J2SEProjectBuilder {
                 false);
         ep.setProperty(J2SEProjectProperties.JAVAC_EXTERNAL_VM, "true");    //NOI18N
         //Modules
-        createDefaultModuleProperties(ep, !skipTests);
+        createDefaultModuleProperties(ep, !skipTests, false);
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE, "true"); // NOI18N
@@ -761,6 +777,59 @@ public class J2SEProjectBuilder {
                 "${%s}%s",  //NOI18N
                 propertyName,
                 lastEntry ? "" : ":");  //NOI18N
+    }
+
+    private static void removeRef(
+        @NonNull final EditableProperties ep,
+        @NonNull final String pathId,
+        @NonNull final String elementToRemove) {
+        Optional.ofNullable(ep.getProperty(pathId))
+                    .map((val)->{
+                        return Arrays.stream(PropertyUtils.tokenizePath(val))
+                                .filter((element) -> !elementToRemove.equals(element))
+                                .toArray((len) -> new String[len]);
+                    })
+                    .ifPresent((val) -> {
+                        ep.setProperty(pathId, addPathSeparators(val));
+                    });
+    }
+
+    private static void addRefIfAbsent(
+        @NonNull final EditableProperties ep,
+        @NonNull final String pathId,
+        @NonNull final String elementToAdd,
+        @NullAllowed final String insertAfter) {
+        Optional.ofNullable(ep.getProperty(pathId))
+                    .map((val)-> {
+                        String[] path = PropertyUtils.tokenizePath(val);
+                        if(!Arrays.stream(path).anyMatch((element) -> elementToAdd.equals(element))) {
+                            final List<String> newPath = new ArrayList<>(path.length + 1);
+                            boolean added = false;
+                            for (int i=0; i< path.length; i++) {
+                                newPath.add(path[i]);
+                                if (insertAfter != null && insertAfter.equals(path[i])) {
+                                    added = true;
+                                    newPath.add(elementToAdd);
+                                }
+                            }
+                            if (!added) {
+                                newPath.add(elementToAdd);
+                            }
+                            path = newPath.toArray(new String[newPath.size()]);
+                        }
+                        return path;
+                    })
+                    .ifPresent((val) -> ep.setProperty(pathId, addPathSeparators(val)));
+    }
+
+    @NonNull
+    private static String[] addPathSeparators(@NonNull final String... path) {
+        for (int i = 0; i < path.length; i++) {
+            path[i] = i+1 == path.length ?
+                    path[i] :
+                    String.format("%s:", path[i]);  //NOI18N
+        }
+        return path;
     }
 
 }
