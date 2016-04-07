@@ -548,4 +548,8 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
     public void testComputedPropertyNames01() throws Exception {
         checkSemantic("testfiles/ecmascript6/shorthands/computedPropertyNames.js");
     }
+    
+    public void testNumberLiterals() throws Exception {
+        checkSemantic("testfiles/completion/general/numberLiterals01.js");
+    }
 }

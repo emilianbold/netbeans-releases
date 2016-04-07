@@ -85,6 +85,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
     public static final EnumSet<ColoringAttributes> LOCAL_VARIABLE_DECLARATION_UNUSED = EnumSet.of(ColoringAttributes.LOCAL_VARIABLE_DECLARATION, ColoringAttributes.UNUSED);
     public static final EnumSet<ColoringAttributes> LOCAL_VARIABLE_USE = EnumSet.of(ColoringAttributes.LOCAL_VARIABLE);
     public static final EnumSet<ColoringAttributes> GLOBAL_DEFINITION = EnumSet.of(ColoringAttributes.GLOBAL, ColoringAttributes.CLASS);
+    public static final EnumSet<ColoringAttributes> NUMBER_OXB_CHAR = EnumSet.of(ColoringAttributes.CUSTOM1);
     
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
@@ -118,7 +119,8 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
             globalJsHintInlines.add(iden.getOffsetRange());
         }
         highlights = count(result, global, highlights, new ArrayList<String>());
-
+        highlights = processNumbers(result, highlights);
+        
         if (highlights != null && highlights.size() > 0) {
             semanticHighlights = highlights;
         } else {
@@ -272,6 +274,23 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
         return highlights;
     }
 
+    private Map<OffsetRange, Set<ColoringAttributes>> processNumbers (JsParserResult result, Map<OffsetRange, Set<ColoringAttributes>> highlights) {
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(result.getSnapshot(), 0);
+        if (ts != null) {
+            ts.move(0);
+            
+            List<JsTokenId> lookFor = Arrays.asList(JsTokenId.NUMBER);
+            Token<? extends JsTokenId> token;
+            while (ts.moveNext() && (token = LexUtilities.findNextToken(ts, lookFor)) != null) {
+                String number = token.text().toString().toLowerCase();
+                if (number.startsWith("0b") || number.startsWith("0x") || number.startsWith("0o")) { //NOI18N
+                    highlights.put(LexUtilities.getLexerOffsets(result, new OffsetRange(ts.offset() + 1, ts.offset() + 2)), NUMBER_OXB_CHAR);
+                }
+            }
+        }
+        return highlights;
+    }
+    
     private void addColoring(JsParserResult result, Map<OffsetRange, Set<ColoringAttributes>> highlights, OffsetRange astRange, Set<ColoringAttributes> coloring) {
         int start = result.getSnapshot().getOriginalOffset(astRange.getStart());
         int end = result.getSnapshot().getOriginalOffset(astRange.getEnd());

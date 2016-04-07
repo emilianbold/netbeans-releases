@@ -242,6 +242,10 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                     break;
                 case OBJECT_PROPERTY_NAME:
                     completeObjectPropertyName(request, added);
+                    break;
+                case NUMBER:
+                    completeNumberProperties(request, added);
+                    break;
                 default:
                     break;
             }
@@ -612,7 +616,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             boolean addFunctionProp = processTypeInModel(request, Model.getModel(request.result, false), typeUsage, lastResolvedObjects, expChain.get(1).equals("@pro"), jsIndex, addedProperties);
             isFunction = isFunction || addFunctionProp;
             if (typeUsage.isResolved()) {
-                addObjectPropertiesFromIndex(typeUsage.getType(), jsIndex, request, addedProperties);
+                addObjectPropertiesFromIndex(typeUsage.getType(), jsIndex, request, addedProperties, true);
             }
         }
         boolean isPublic = lastResolvedObjects.isEmpty();
@@ -623,7 +627,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             addObjectPropertiesToCC(resolved, request, addedProperties);
             if (!resolved.isDeclared()) {
                 // if the object is not defined here, look to the index as well
-                addObjectPropertiesFromIndex(resolved.getFullyQualifiedName(), jsIndex, request, addedProperties);
+                addObjectPropertiesFromIndex(resolved.getFullyQualifiedName(), jsIndex, request, addedProperties, true);
                 isPublic = true;
             } else {
                 if (!resolved.getModifiers().contains(Modifier.PRIVATE)) {
@@ -633,13 +637,13 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         }
 
         if (isFunction) {
-            addObjectPropertiesFromIndex("Function", jsIndex, request, addedProperties); //NOI18N
+            addObjectPropertiesFromIndex("Function", jsIndex, request, addedProperties, true); //NOI18N
         }
 
         if (request.cancelSupport.isCancelled()) {
             return addedProperties;
         }
-        addObjectPropertiesFromIndex("Object", jsIndex, request, addedProperties); //NOI18N
+        addObjectPropertiesFromIndex("Object", jsIndex, request, addedProperties, true); //NOI18N
         
         if (isPublic) {
             // now look to the index again for declared item outside
@@ -844,12 +848,19 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                 }
                 if (!possibleTypes.isEmpty()) {
                     for (TypeUsage type : possibleTypes) {
-                        addObjectPropertiesFromIndex(type.getType(), jsIndex, request, addedItems);
+                        addObjectPropertiesFromIndex(type.getType(), jsIndex, request, addedItems, true);
                     }
                 }
             }
         }
         
+    }
+    
+    private void completeNumberProperties(CompletionRequest request, Map<String, List<JsElement>> addedItems) {
+        FileObject fo = request.info.getSnapshot().getSource().getFileObject();
+        Index jsIndex = Index.get(fo);
+        addObjectPropertiesFromIndex("Number", jsIndex, request, addedItems, false); // NOI18N
+        addObjectPropertiesFromIndex("Object", jsIndex, request, addedItems, false); // NOI18N
     }
     
     private List<String> resolveExpressionChainFromString(CompletionRequest request) {
@@ -1113,7 +1124,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                     addObjectPropertiesToCC(localObject, request, addedItems);
                 } 
                 
-                addObjectPropertiesFromIndex(type.getType(), jsIndex, request, addedItems);
+                addObjectPropertiesFromIndex(type.getType(), jsIndex, request, addedItems, true);
             }
         }
     }
@@ -1249,7 +1260,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                 }
             }
             if (!isObject) {
-                addObjectPropertiesFromIndex(type.getType(), index, request, addedProperties);
+                addObjectPropertiesFromIndex(type.getType(), index, request, addedProperties, true);
             }
         } else if (jsObject.getDeclarationName() != null) {
             Collection<? extends TypeUsage> assignments = jsObject.getAssignmentForOffset(jsObject.getDeclarationName().getOffsetRange().getEnd());
@@ -1278,14 +1289,16 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         }
     }
     
-    private void addObjectPropertiesFromIndex(String fqn, Index jsIndex, CompletionRequest request, Map<String, List<JsElement>> addedProperties) {
+    private void addObjectPropertiesFromIndex(String fqn, Index jsIndex, CompletionRequest request, Map<String, List<JsElement>> addedProperties, boolean includeStatic) {
         Collection<IndexedElement> properties = jsIndex.getProperties(fqn);
         for (IndexedElement indexedElement : properties) {
-            addPropertyToMap(request, addedProperties, indexedElement);
-            if (ModelUtils.PROTOTYPE.equals(indexedElement.getName())) {
-                Collection<IndexedElement> protoProperties = jsIndex.getProperties(indexedElement.getFQN());
-                for (IndexedElement protoProperty : protoProperties) {
-                    addPropertyToMap(request, addedProperties, protoProperty);
+            if(includeStatic || (!includeStatic && !indexedElement.getModifiers().contains(Modifier.STATIC))) {
+                addPropertyToMap(request, addedProperties, indexedElement);
+                if (ModelUtils.PROTOTYPE.equals(indexedElement.getName())) {
+                    Collection<IndexedElement> protoProperties = jsIndex.getProperties(indexedElement.getFQN());
+                    for (IndexedElement protoProperty : protoProperties) {
+                        addPropertyToMap(request, addedProperties, protoProperty);
+                    }
                 }
             }
         }

@@ -1875,6 +1875,10 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/ecmascript6/shorthands/computedPropertyNames.js", "pr^op : \"test\"", true);
     }
     
+    public void testNumberLiterals() throws Exception {
+        checkOccurrences("testfiles/completion/general/numberLiterals01.js", "console.log(0o676.toF^ixed(3));", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

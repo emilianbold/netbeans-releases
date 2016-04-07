@@ -67,4 +67,5 @@ public class JsCodeCompletionES6Test extends JsCodeCompletionBase {
     }
     
     
+    
 }

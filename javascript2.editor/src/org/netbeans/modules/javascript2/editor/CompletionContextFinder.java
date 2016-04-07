@@ -73,6 +73,11 @@ public class CompletionContextFinder {
         new Object[]{JsTokenId.KEYWORD_THIS, JsTokenId.OPERATOR_DOT},
         new Object[]{JsTokenId.KEYWORD_THIS, JsTokenId.OPERATOR_DOT, JsTokenId.IDENTIFIER}
     );
+    
+    private static final List<Object[]> NUMBER_TOKENCHAINS = Arrays.asList(
+        new Object[]{JsTokenId.NUMBER, JsTokenId.OPERATOR_DOT},
+        new Object[]{JsTokenId.NUMBER, JsTokenId.OPERATOR_DOT, JsTokenId.IDENTIFIER}
+    );
        
     @NonNull
     static CompletionContext findCompletionContext(ParserResult info, int offset){
@@ -124,9 +129,13 @@ public class CompletionContextFinder {
             }
             return CompletionContext.STRING;
         }
-        
+
         if (acceptTokenChains(ts, OBJECT_THIS_TOKENCHAINS, true)) {
             return CompletionContext.OBJECT_MEMBERS;
+        }
+
+        if (acceptTokenChains(ts, NUMBER_TOKENCHAINS, tokenId != JsTokenId.OPERATOR_DOT)) {
+            return CompletionContext.NUMBER;
         }
         
         if (acceptTokenChains(ts, OBJECT_PROPERTY_TOKENCHAINS, tokenId != JsTokenId.OPERATOR_DOT)) {

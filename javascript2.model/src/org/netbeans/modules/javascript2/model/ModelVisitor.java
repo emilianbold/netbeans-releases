@@ -2800,13 +2800,21 @@ public class ModelVisitor extends PathNodeVisitor {
                         new OffsetRange(aaNode.getFinish() - aaNode.getProperty().length(), aaNode.getFinish())));
             }
         }
+        Identifier baseIdent = null;
         if (base instanceof IdentNode) {
-            if (name.size() > 0) {
-                IdentNode ident = (IdentNode) base;
-//                if (!ModelUtils.THIS.equals(ident.getName())) {
-                    name.add(new Identifier(ident.getName(), getOffsetRange(ident)));
-//                }
+            IdentNode ident = (IdentNode) base;
+            baseIdent = new Identifier(ident.getName(), getOffsetRange(ident));
+        } else if (base instanceof LiteralNode) {
+            // we fake Number object to handel mark occurrences
+            LiteralNode lNode= (LiteralNode) base;
+            if (lNode.isNumeric()) {
+                baseIdent = new Identifier("Number", OffsetRange.NONE); //NOI8N
             }
+        } 
+        
+        
+        if (baseIdent != null) {
+            name.add(baseIdent);
             Collections.reverse(name);
             return name;
         } else {
