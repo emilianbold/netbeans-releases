@@ -102,7 +102,7 @@ public class LaunchedProjectOpener implements ShellLaunchListener {
             return;
         }
         
-        final JShellEnvironment attachEnv = new DebugShellEnv(agent, p, 
+        final JShellEnvironment attachEnv = new ProjectShellEnv(agent, p, 
                 Bundle.Title_JShellOnDebugger(ProjectUtils.getInformation(p).getDisplayName()));
 
         boolean ok = false;
@@ -119,31 +119,6 @@ public class LaunchedProjectOpener implements ShellLaunchListener {
         }
     }
     
-    private static class DebugShellEnv extends JShellEnvironment {
-        private final ShellAgent agent;
-
-        public DebugShellEnv(ShellAgent agent, Project project, String displayName) {
-            super(project, displayName);
-            this.agent = agent;
-        }
-
-        @Override
-        protected InputOutput createInputOutput() {
-            return agent.getIO();
-        }
-        
-        public RemoteJShellService createExecutionEnv() {
-            return new DebugExecutionEnvironment(getSession(), agent, this);
-        }
-        
-        protected void reportClosedBridge(ShellSession s, boolean disconnectOrShutdown) {
-            if (disconnectOrShutdown) {
-                notifyDisconnected(s);
-            } else {
-                notifyShutdown();
-            }
-        }
-    }
 
     @Override
     public void agentDestroyed(ShellLaunchEvent ev) { }
@@ -151,125 +126,4 @@ public class LaunchedProjectOpener implements ShellLaunchListener {
     @Override
     public void connectionClosed(ShellLaunchEvent ev) { }
     
-    static class DebugExecutionEnvironment extends JDIRemoteAgent implements ShellLaunchListener {
-        private boolean             added;
-        volatile JShellConnection    shellConnection;
-        private boolean             closed;
-        
-        final ShellAgent          agent;
-        final DebugShellEnv   shellEnv;
-        final ShellSession    reportSession;
-        
-        public DebugExecutionEnvironment(ShellSession s, ShellAgent agent, DebugShellEnv env) {
-            super(UnaryOperator.identity());
-            this.shellEnv = env;
-            this.agent = agent;
-            this.reportSession = s;
-        }
-        
-        @NbBundle.Messages({
-            "MSG_AgentConnectionBroken=Connection to Java Shell agent broken. Please re-run the project.",
-            "# {0} - error message",
-            "MSG_ErrorConnectingToAgent=Error connecting to Java Shell agent: {0}"
-        })
-        private JShellConnection getConnection(boolean dontConnect) throws IOException {
-            synchronized (this) {
-                if (closed || (dontConnect && shellConnection == null)) {
-                    throw new IOException(Bundle.MSG_AgentConnectionBroken());
-                }
-                if (shellConnection != null) {
-                    return shellConnection;
-                }
-            }
-            try {
-                JShellConnection x = agent.createConnection();
-                synchronized (this) {
-                    if (!added) {
-                        ShellLaunchManager.getInstance().addLaunchListener(this);
-                        added = true;
-                    }
-                    return this.shellConnection = x;
-                }
-            } catch (IOException ex) {
-                StatusDisplayer.getDefault().setStatusText(Bundle.MSG_ErrorConnectingToAgent(ex.getLocalizedMessage()), 100);
-                throw ex;
-            }
-        }
-        
-        @Override
-        public OutputStream getCommandStream() throws IOException {
-            return getConnection(true).getAgentInput();
-        }
-
-        @Override
-        public InputStream getResponseStream() throws IOException {
-            return getConnection(true).getAgentOutput();
-        }
-
-        @Override
-        public synchronized void closeStreams() {
-            if (shellConnection == null) {
-                return;
-            }
-            try {
-                OutputStream os = shellConnection.getAgentInput();
-                os.close();
-            } catch (IOException ex) {
-            }
-            try {
-                InputStream is = shellConnection.getAgentOutput();
-                is.close();
-            } catch (IOException ex) {
-            }
-            
-            requestShutdown();
-        }
-
-        @Override
-        protected ObjectReference getAgentObjectReference() {
-            return shellConnection.getAgentHandle();
-        }
-
-        @Override
-        protected VirtualMachine acquireVirtualMachine() throws IOException {
-            return getConnection(false).getVirtualMachine();
-        }
-
-        @Override
-        public boolean requestShutdown() {
-            agent.closeConnection(shellConnection);
-            return false;
-        }
-
-        @Override
-        public void connectionInitiated(ShellLaunchEvent ev) {
-        }
-
-        @Override
-        public void handshakeCompleted(ShellLaunchEvent ev) {
-        }
-        
-        @Override
-        public  void connectionClosed(ShellLaunchEvent ev) {
-            synchronized (this) {
-                if (closed) {
-                    return;
-                }
-                closed = true;
-            }
-            shellEnv.reportClosedBridge(reportSession, true);
-        }
-
-        @Override
-        public void agentDestroyed(ShellLaunchEvent ev) {
-            synchronized (this) {
-                if (ev.getAgent() != agent || closed) {
-                    return;
-                }
-                this.shellConnection = null;
-                closed = true;
-            }
-            shellEnv.reportClosedBridge(reportSession, false);
-        }
-    }
 }

@@ -71,6 +71,10 @@ public class NbExecutionControl extends ExecutionControl {
     private static final Logger LOG = Logger.getLogger(NbExecutionControl.class.getName());
     
     public static final int CMD_VERSION_INFO = 100;
+
+    public static final int CMD_REDEFINE   =    101;
+    public static final int CMD_STOP        =   102;
+    public static final int CMD_CLASSID     =   103;
     
     private final RemoteJShellService  execEnv;
     private final JDIEnv jdi;
@@ -132,7 +136,8 @@ public class NbExecutionControl extends ExecutionControl {
             try {
                 proc.debug(DBG_GEN, "Attempting to stop the client code...\n");
                 execEnv.sendStopUserCode();
-            } catch (IllegalStateException ex) {
+            } catch (IllegalStateException | IOException ex) {
+                ex.printStackTrace();
                 proc.debug(DBG_GEN, "Exception on remote stop: %s\n", ex.getCause());
             }
         }
@@ -143,9 +148,9 @@ public class NbExecutionControl extends ExecutionControl {
         OutputStream os = execEnv.getCommandStream();
         InputStream is = execEnv.getResponseStream();
         out = os instanceof ObjectOutputStream ? (ObjectOutputStream)os : 
-                new ObjectOutputStream(execEnv.getCommandStream());
+                new ObjectOutputStream(os);
         in = is instanceof ObjectInputStream ? (ObjectInputStream)is : 
-                new ObjectInputStream(execEnv.getResponseStream());
+                new ObjectInputStream(is);
 
         /*
         try (ServerSocket listener = new ServerSocket(0)) {

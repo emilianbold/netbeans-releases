@@ -108,6 +108,7 @@ class RemoteAgent {
                 // Invoke executable entry point in loaded code
                 String name = in.readUTF();
                 Class<?> klass = klasses.get(name);
+                prepareClassLoader();
                 if (klass == null) {
                     debug("*** Invoke failure: no such class loaded %s\n", name);
                     out.writeInt(RESULT_FAIL);
@@ -124,9 +125,9 @@ class RemoteAgent {
                         clientCodeEnter();
                         res = doitMethod.invoke(null, new Object[0]);
                     } catch (InvocationTargetException ex) {
-                        if (ex.getCause() instanceof StopExecutionException) {
+                        if (ex.getCause() instanceof ThreadDeath) {
                             expectingStop = false;
-                            throw (StopExecutionException) ex.getCause();
+                            throw (ThreadDeath) ex.getCause();
                         }
                         throw ex;
                     } catch (StopExecutionException ex) {

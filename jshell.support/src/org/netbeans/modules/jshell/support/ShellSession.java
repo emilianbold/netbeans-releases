@@ -694,7 +694,7 @@ public class ShellSession {
             this.shell = shell;
             // it's possible that the shell's startup will terminate the session
             if (isValid()) {
-                shell.onShutdown(sh -> closed());
+                shell.onShutdown(sh -> closedDelayed());
                 model.attach(shell);
                 // must first give chance to the model to map the snippet to console contents
                 model.forwardSnippetEvent(this::acceptSnippet);
@@ -890,8 +890,21 @@ public class ShellSession {
     }
 
     private void closed() {
-        this.closed = true;
+        synchronized (this) {
+            if (closed) {
+                return;
+            }
+            this.closed = true;
+        }
         propSupport.firePropertyChange(PROP_ACTIVE, true, false);
+    }
+    
+    private void closedDelayed() {
+        FORCE_CLOSE_RP.post(new Runnable() {
+            public void run() {
+                closed();
+            }
+        }, 300);
     }
 
     private synchronized void init(ShellSession prev) {

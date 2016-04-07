@@ -294,4 +294,18 @@ public final class ShellAgent {
         }
         return con;
     }
+    
+    public RemoteJShellAccessor createRemoteService() throws IOException {
+        if (closed) {
+            throw new IOException("Closed");
+        }
+        if (expectDebugger) {
+            if (debuggerSession == null) {
+                throw new IOException("Debugger unavailable");
+            }
+            return new DebugExecutionEnvironment(this);
+        } else {
+            return new RunExecutionEnvironment(this);
+        }
+    }
 }

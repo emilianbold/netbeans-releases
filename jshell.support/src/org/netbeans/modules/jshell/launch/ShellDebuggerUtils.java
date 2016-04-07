@@ -79,6 +79,9 @@ class ShellDebuggerUtils {
     }
     
     static ObjectReference getWorkerHandle(Session debuggerSession, int remotePortAddress) {
+        if (debuggerSession == null) {
+            return null;
+        }
         JPDADebugger debugger = debuggerSession.lookupFirst(null, JPDADebugger.class);
         if (debugger == null) {
             return null;

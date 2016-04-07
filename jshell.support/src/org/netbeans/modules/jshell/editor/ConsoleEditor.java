@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.jshell.editor;
 
+import com.sun.source.util.Trees;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -61,6 +62,7 @@ import javax.swing.text.NavigationFilter;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.document.LineDocument;
 import org.netbeans.api.editor.document.LineDocumentUtils;
+import org.netbeans.modules.java.preprocessorbridge.spi.WrapperFactory;
 import org.netbeans.modules.jshell.env.JShellEnvironment;
 import org.netbeans.modules.jshell.env.ShellEvent;
 import org.netbeans.modules.jshell.env.ShellListener;
@@ -210,6 +212,14 @@ public class ConsoleEditor extends CloneableEditor {
         });
         
         (pane = getEditorPane()).setNavigationFilter(new NavFilter());
+        
+        d.putProperty(WrapperFactory.class, new WrapperFactory() {
+            @Override
+            public Trees wrapTrees(Trees trees) {
+                return new CompletionFilter(trees);
+            }
+            
+        });
         SwingUtilities.invokeLater(this::updateHourglass);
     }
     

@@ -24,7 +24,7 @@ public interface RemoteJShellService {
      * 
      * @param redefines handle-to-classfile contents map.
      */
-    public void         redefineClasses(Map<Object, byte[]> redefines);
+    public void         redefineClasses(Map<Object, byte[]> redefines) throws IOException, IllegalStateException;
     
     /**
      * Returns handle that corresponds to a named class. Returns null, 
@@ -71,7 +71,7 @@ public interface RemoteJShellService {
      * @return true, if the implementation even attempted to stop
      * the machine.
      */
-    public boolean sendStopUserCode() throws IllegalStateException;
+    public boolean sendStopUserCode() throws IllegalStateException, IOException;
     
     /**
      * Decorates launcher arguments. Results undefined, if the environment

@@ -62,6 +62,7 @@ import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import static jdk.internal.jshell.remote.RemoteCodes.RESULT_KILLED;
 import org.netbeans.lib.jshell.agent.NbJShellAgent;
 
 /**
@@ -69,7 +70,9 @@ import org.netbeans.lib.jshell.agent.NbJShellAgent;
  * @author sdedic
  */
 public class AgentWorker extends RemoteAgent implements Executor, Runnable {
-    public static final String PROPERTY_EXECUTOR = "jdk.internal.jshell.remote.AgentWorker.executor"; // NOI18N
+    private static final Logger LOG = Logger.getLogger("org.netbeans.lib.jshell.agent.AgentWorker"); // NOI18N
+    
+    public static final String PROPERTY_EXECUTOR = "org.netbeans.lib.jshell.agent.AgentWorker.executor"; // NOI18N
     
     /**
      * Reference set by instrumented classes
@@ -91,18 +94,46 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
      * The Classloader last obtained from a field or method
      */
     private ClassLoader lastClassLoader;
+    
+    /**
+     * Provider for the classloader. Contacted before every user invocation
+     * and before every class load.
+     */
     private Callable<ClassLoader>   loaderProvider;
+    
+
+    /**
+     * Executor for user's code. Can be provided from the environment using System.properties,
+     * see {@link #PROPERTY_EXECUTOR}.
+     */
     private Executor userExecutor;
-    // perform classloader transformation
-    private boolean doClassTransform;
+    
+    /**
+     * Threads which execute user code, keyed by agent's socket local port.
+     */
+    // @GuardedBy(self)
+    private final static Map<Integer, Thread>     userCodeExecutingThreads = new HashMap<>();
     
     private AgentWorker() {
         agent = null;
         socket = null;
         socketPort = -1;
-        
-        Executor exec = (Executor)System.getProperties().get(PROPERTY_EXECUTOR);
-        this.userExecutor = exec != null ? exec : this;
+        this.userExecutor = findExecutor();
+    }
+    
+    private Executor findExecutor() {
+        Object o = System.getProperties().get(PROPERTY_EXECUTOR);;
+        if (o instanceof Executor) {
+            this.userExecutor = (Executor)o;
+        } else if (o instanceof String) {
+            try {
+                Class executorClazz = Class.forName((String)o);
+                return (Executor)executorClazz.newInstance();
+            } catch (ReflectiveOperationException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            }
+        }
+        return this;
     }
     
     private static class LoaderAccessor implements Callable<ClassLoader> {
@@ -203,8 +234,7 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
                 }
             };
         }
-        Executor exec = (Executor)System.getProperties().get(PROPERTY_EXECUTOR);
-        this.userExecutor = exec != null ? exec : this;
+        this.userExecutor = findExecutor();
     }
     
     public static void main(String[] args) throws Exception {
@@ -227,6 +257,8 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
             // will read immediately
             ObjectInputStream ism = new ObjectInputStream(socket.getInputStream())) {
             commandLoop(ism, osm);
+        } catch (EOFException ex) {
+            // expected.
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -263,6 +295,7 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
             }
             result.put(s, props.getProperty(s));
         }
+        LOG.log(Level.FINE, "Sending properties: " + props);
         
         prepareClassLoader();
         StringBuilder cp = new StringBuilder();
@@ -293,7 +326,7 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
             }
             cp.append(s);
         }
-        
+        LOG.log(Level.FINE, "Classloader path: " + cp);
         result.put("nb.class.path", cp.toString()); // NOI18N
         
         o.writeInt(result.size());
@@ -302,6 +335,52 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
             o.writeUTF(result.get(s));
         }
         o.flush();
+    }
+    
+    private ClassLoader contextLoader;
+    
+    void clientCodeEnter() {
+        LOG.log(Level.FINER, "Entering client code");
+        this.contextLoader = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(loader);
+    }
+    
+    private boolean killed;
+    
+    /**
+     * Removes our thread from the user-executing map.
+     * It's important that clientCodeLeave is called BEFORE the agent starts to send
+     * response code: either the thread is removed here, and the response code is sent by
+     * the original Agent's code, or the entry is removed by the killer agent before/while
+     * executing agent is waiting to lock the map - and in that case the `killed' will be set 
+     * to true and response code is produced in performExecute. Since ThreadDeath is thrown, 
+     * the executing agent will not complete the synchronized block normally
+     */
+    void clientCodeLeave() {
+        LOG.log(Level.FINER, "Exiting client code");
+        Thread.currentThread().setContextClassLoader(contextLoader);
+        synchronized (userCodeExecutingThreads) {
+            killed = !userCodeExecutingThreads.remove(socketPort, Thread.currentThread());
+            LOG.log(Level.FINER, "User code killed: {0}", killed);
+        }
+    }
+    
+    private void performExecute(int cmd, ObjectInputStream in, ObjectOutputStream out) throws IOException {
+        killed = false;
+        try {
+            synchronized (userCodeExecutingThreads) {
+                userCodeExecutingThreads.put(socketPort, Thread.currentThread());
+            }
+            super.performCommand(cmd, in, out);
+            return;
+        } catch (ThreadDeath td) {
+            LOG.log(Level.FINE, "Received ThreadDeath, killed: {0}", killed);
+            if (!killed) {
+                throw td;
+            }
+        }
+        out.writeInt(RESULT_KILLED);
+        out.flush();
     }
     
     @Override
@@ -314,7 +393,7 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
                     userExecutor.execute(new Runnable() {
                         public void run() {
                             try {
-                                AgentWorker.super.performCommand(cmd, in, out);
+                                performExecute(cmd, in, out);
                             } catch (IOException ex) {
                                 err[0] = ex;
                             }
@@ -329,12 +408,13 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
                     returnVMInfo(out);
                     break;
                 case CMD_REDEFINE:
-                    performRedefineClass(in, out);
+                    performRedefineClasses(in, out);
                     break;
                 case CMD_CLASSID:
                     performClassId(in, out);
                     break;
                 case CMD_STOP:
+                    performStop(in, out);
                     break;
                 default:
                     super.performCommand(cmd, in, out);
@@ -345,19 +425,54 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
         }
     }
     
-    private void performRedefineClass(ObjectInputStream in, ObjectOutputStream out) throws IOException {
-        long classId = in.readLong();
-        try {
-            byte[] replaceBytecode = (byte[])in.readObject();
-            Class defined = ((NbRemoteLoader)loader).getClassOfId(classId);
-            
-            agent.getInstrumentation().redefineClasses(
-                new ClassDefinition(defined, replaceBytecode)
-            );
+    /**
+     * Executes STOP command. Note that STOP comes through <b>different</b> agent than
+     * the one which should stop the user's code; the controlling process opens connection
+     * and instructs the VM to stop running thread.
+     * @param in
+     * @param out
+     * @throws IOException 
+     */
+    @SuppressWarnings({"deprecation", "CallToThreadStopSuspendOrResumeManager"})
+    private void performStop(ObjectInputStream in, ObjectOutputStream out) throws IOException {
+        int agentId = in.readInt();
+        Thread targetThread;
+        
+        synchronized (userCodeExecutingThreads) {
+            targetThread = userCodeExecutingThreads.remove(agentId);
+            if (targetThread != null) {
+                // throw ThreadDeath in the target thread
+                targetThread.stop();
+            }
+        }
+        if (targetThread != null) {
             out.writeInt(RemoteCodes.RESULT_SUCCESS);
-            out.writeLong(classId);
-        } catch (ClassNotFoundException | UnmodifiableClassException ex) {
-            Logger.getLogger(AgentWorker.class.getName()).log(Level.SEVERE, null, ex);
+        } else {
+            out.writeInt(RemoteCodes.RESULT_FAIL);
+        }
+        out.flush();
+    }
+    
+    private void performRedefineClasses(ObjectInputStream in, ObjectOutputStream out) throws IOException {
+        int count = in.readInt();
+        try {
+            for (int i = 0; i < count; i++) {
+                long classId = in.readLong();
+                byte[] replaceBytecode = (byte[]) in.readObject();
+                Class defined = ((NbRemoteLoader) loader).getClassOfId(classId);
+
+                agent.getInstrumentation().redefineClasses(
+                        new ClassDefinition(defined, replaceBytecode)
+                );
+            }
+            out.writeInt(RemoteCodes.RESULT_SUCCESS);
+        } catch (UnsupportedOperationException ex) {
+            LOG.log(Level.FINE, "Class redefinition failed");
+            out.writeInt(RemoteCodes.RESULT_FAIL);
+            out.writeInt(RemoteCodes.RESULT_SUCCESS);
+        } catch (LinkageError | NullPointerException | ClassNotFoundException | UnmodifiableClassException ex) {
+            LOG.log(Level.WARNING, "Could not redefine class: ", ex);
+            out.writeInt(RemoteCodes.RESULT_FAIL);
             out.writeInt(RemoteCodes.RESULT_FAIL);
             out.writeUTF(ex.toString());
         }

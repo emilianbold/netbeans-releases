@@ -75,7 +75,8 @@ public class LaunchAntListener extends AntLogger {
         "debug-test-main-nb", // NOI18N
         "debug-test-with-main", // NOI18N
         "debug-single", // NOI18N
-        "debug" // NOI18N
+        "debug", // NOI18N
+        "run",
     };
     
     private ShellLaunchManager mgr;

@@ -39,23 +39,23 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.launch;
+package org.netbeans.modules.jshell.j2se;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.startup.StartupExtender.StartMode;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
+import org.netbeans.modules.jshell.launch.ShellAgent;
+import org.netbeans.modules.jshell.launch.ShellLaunchManager;
 import org.netbeans.modules.jshell.project.LaunchedProjectOpener;
 import org.netbeans.modules.jshell.project.ProjectUtils;
 import org.netbeans.spi.extexecution.startup.StartupExtenderImplementation;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 
 /**
@@ -63,7 +63,10 @@ import org.openide.util.Lookup;
  *
  * @author sdedic
  */
-@StartupExtenderImplementation.Registration(displayName = "Java Shell", startMode = StartMode.DEBUG)
+@StartupExtenderImplementation.Registration(displayName = "Java Shell", startMode = {
+    StartMode.DEBUG,
+    StartMode.NORMAL,
+})
 public class JShellStartupExtender implements StartupExtenderImplementation {
     private static final Logger LOG = Logger.getLogger(JShellStartupExtender.class.getName());
     
@@ -71,10 +74,6 @@ public class JShellStartupExtender implements StartupExtenderImplementation {
     public List<String> getArguments(Lookup context, StartMode mode) {
         LaunchedProjectOpener.init();
         
-        if (mode != StartMode.DEBUG &&
-            mode != StartMode.TEST_DEBUG) {
-            return Collections.emptyList();
-        }
         Project p = context.lookup(Project.class);
         if (p == null) {
             return Collections.emptyList();
@@ -90,7 +89,8 @@ public class JShellStartupExtender implements StartupExtenderImplementation {
             return Collections.emptyList();
         }
         try {
-            agent = ShellLaunchManager.getInstance().openForProject(p, true);
+            agent = ShellLaunchManager.getInstance().openForProject(p, 
+                    mode == StartMode.DEBUG || mode == StartMode.TEST_DEBUG);
             isa = agent.getHandshakeAddress();
         } catch (IOException ex) {
             LOG.log(Level.INFO, "Could not obtain handshake address and key: ", ex);

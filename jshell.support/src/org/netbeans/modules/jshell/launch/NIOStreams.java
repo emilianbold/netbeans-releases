@@ -310,7 +310,7 @@ class NIOStreams {
             byte out = (byte)(b & 0xff);
             singleBuffer.clear();
             singleBuffer.put(out);
-          
+            singleBuffer.flip();
             int sel;
             
             do {

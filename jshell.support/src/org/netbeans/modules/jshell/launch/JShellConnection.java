@@ -81,7 +81,7 @@ import org.openide.util.Exceptions;
  * The connection is only valid during its operational time.
  * @author sdedic
  */
-public final class JShellConnection {
+public final class JShellConnection implements AutoCloseable {
     private static final Logger LOG = Logger.getLogger(JShellConnection.class.getName());
     
     private static final int WRITE_TIMEOUT = 10000;
@@ -163,6 +163,14 @@ public final class JShellConnection {
         return agentHandle;
     }
     
+    public int getRemoteAgentId() {
+        try {
+            return ((InetSocketAddress)controlSocket.getRemoteAddress()).getPort();
+        } catch (IOException ex) {
+            return -1;
+        }
+    }
+    
     /**
      * Simple wrapper, which interprets close() call as local close and will
      * fire appropriate disconnect events
@@ -203,6 +211,10 @@ public final class JShellConnection {
     
     public ShellAgent   getMachineAgent() {
         return theAgent;
+    }
+    
+    public void close() {
+        shutDown();
     }
     
     /**
