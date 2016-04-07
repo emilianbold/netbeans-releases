@@ -70,6 +70,7 @@ import com.oracle.js.parser.ir.WithNode;
 import com.oracle.js.parser.ir.visitor.NodeVisitor;
 import com.oracle.js.parser.TokenType;
 import com.oracle.js.parser.ir.ClassNode;
+import com.oracle.js.parser.ir.ExportNode;
 import com.oracle.js.parser.ir.ImportNode;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -447,6 +448,17 @@ public class FormatVisitor extends NodeVisitor {
     @Override
     public boolean enterImportNode(ImportNode importNode) {
         int finish = getFinish(importNode);
+        FormatToken token = getNextToken(finish, JsTokenId.OPERATOR_SEMICOLON);
+        if (token != null) {
+            // we treat the import as statement
+            appendTokenAfterLastVirtual(token, FormatToken.forFormat(FormatToken.Kind.AFTER_STATEMENT));
+        }
+        return false;
+    }
+
+    @Override
+    public boolean enterExportNode(ExportNode exportNode) {
+        int finish = getFinish(exportNode);
         FormatToken token = getNextToken(finish, JsTokenId.OPERATOR_SEMICOLON);
         if (token != null) {
             // we treat the import as statement

@@ -10,6 +10,24 @@
       <StringLiteralNode value='ember' start='19' end='17'/>
     </FromNode>
   </ImportNode>
+  <ExportNode start='28' end='66'>
+    <CallNode start='43' end='66'>
+      <!-- CallNode Arguments -->
+      <ObjectNode start='62' end='65'>
+        <!-- ObjectNode Elements -->
+      </ObjectNode>
+      <!-- CallNode Function -->
+      <AccessNode property='extend' start='43' end='61'>
+        <!-- AccessNode Base -->
+        <AccessNode property='Route' start='43' end='54'>
+          <!-- AccessNode Base -->
+          <IdentNode start='43' end='48'>
+            <name>Ember</name>
+          </IdentNode>
+        </AccessNode>
+      </AccessNode>
+    </CallNode>
+  </ExportNode>
   <!-- FunctionNode Parameters -->
   <!-- FunctionNode Body -->
   <Block start='0' end='67'>
@@ -19,6 +37,7 @@
     <VarNode name='*default*' start='43' end='66'>
       <hasInit/>
       <isAssignment/>
+      <isSynthetic/>
       <!-- VarNode Assignment Dest -->
       <IdentNode start='43' end='66'>
         <name>*default*</name>
