@@ -48,6 +48,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.lexer.Token;
@@ -282,7 +283,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
             List<JsTokenId> lookFor = Arrays.asList(JsTokenId.NUMBER);
             Token<? extends JsTokenId> token;
             while (ts.moveNext() && (token = LexUtilities.findNextToken(ts, lookFor)) != null) {
-                String number = token.text().toString().toLowerCase();
+                String number = token.text().toString().toLowerCase(Locale.ENGLISH);
                 if (number.startsWith("0b") || number.startsWith("0x") || number.startsWith("0o")) { //NOI18N
                     highlights.put(LexUtilities.getLexerOffsets(result, new OffsetRange(ts.offset() + 1, ts.offset() + 2)), NUMBER_OXB_CHAR);
                 }
