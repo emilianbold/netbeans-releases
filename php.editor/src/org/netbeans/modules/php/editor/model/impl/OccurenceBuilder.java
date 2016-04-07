@@ -946,9 +946,23 @@ class OccurenceBuilder {
 
     private void buildStaticMethods(final Index index, FileScopeImpl fileScope, final List<Occurence> occurences) {
         final Exact methodName = NameKind.exact(elementInfo.getName());
-        QualifiedName clzName = elementInfo.getTypeQualifiedName();
         final Set<MethodElement> methods = new HashSet<>();
-        Scope scope = elementInfo.getScope().getInScope();
+        final Scope scope = elementInfo.getScope().getInScope();
+        ASTNodeInfo nodeInfo = elementInfo.getNodeInfo();
+        if (nodeInfo != null) {
+            ASTNode originalNode = nodeInfo.getOriginalNode();
+            if (originalNode instanceof StaticDispatch) {
+                // possible uniform variable syntax
+                if (CodeUtils.extractUnqualifiedName(((StaticDispatch) originalNode).getDispatcher()) == null) {
+                    // uniform variable syntax => simply build all methods (is it correct or not?)
+                    buildMethods(index, fileScope, occurences);
+                    buildStaticMethodInvocations(elementInfo, fileScope, occurences);
+                    buildMethodDeclarations(elementInfo, fileScope, occurences);
+                    return;
+                }
+            }
+        }
+        QualifiedName clzName = elementInfo.getTypeQualifiedName();
         if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
             if (clzName.getName().equalsIgnoreCase("self") || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
                 clzName = ((TypeScope) scope).getFullyQualifiedName();
@@ -1356,9 +1370,10 @@ class OccurenceBuilder {
                 Exact methodName = NameKind.exact(phpElement.getName());
                 for (Entry<ASTNodeInfo<StaticMethodInvocation>, Scope> entry : staticMethodInvocations.entrySet()) {
                     ASTNodeInfo<StaticMethodInvocation> nodeInfo = entry.getKey();
-                    QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getDispatcher());
-                    final Scope scope = entry.getValue().getInScope();
+                    final Expression dispatcher = nodeInfo.getOriginalNode().getDispatcher();
+                    QualifiedName clzName = QualifiedName.create(dispatcher);
                     if (clzName != null) {
+                        final Scope scope = entry.getValue().getInScope();
                         if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
                             if (clzName.getName().equalsIgnoreCase("self") || clzName.getName().equals("static")) {  //NOI18N
                                 clzName = QualifiedName.create(((TypeScope) scope).getName());
@@ -1401,6 +1416,23 @@ class OccurenceBuilder {
                                 occurences.add(new OccurenceImpl(phpElement, nodeInfo.getRange()));
                             } else {
                                 notMatchingTypeNames.add(clzName);
+                            }
+                        }
+                    } else {
+                        // uniform variable syntax
+                        if (methodName.matchesName(PhpElementKind.METHOD, nodeInfo.getName())) {
+                            Collection<? extends TypeScope> types = getClassName((VariableScope) entry.getValue(), dispatcher);
+                            FIND_TYPE:
+                            for (TypeScope type : types) {
+                                QualifiedName fqn = type.getFullyQualifiedName();
+                                final Exact typeName = NameKind.exact(fqn);
+                                for (QualifiedName matchingName : matchingTypeNames) {
+                                    if (typeName.matchesName(PhpElementKind.CLASS, matchingName)) {
+                                        matchingTypeNames.add(fqn);
+                                        occurences.add(new OccurenceImpl(phpElement, nodeInfo.getRange()));
+                                        break FIND_TYPE;
+                                    }
+                                }
                             }
                         }
                     }
@@ -2020,6 +2052,11 @@ class OccurenceBuilder {
         String vartype = VariousUtils.extractTypeFroVariableBase(varBase,
                 Collections.<String, AssignmentImpl>emptyMap());
         return VariousUtils.getType(scp, vartype, varBase.getStartOffset(), true);
+    }
+
+    private static Collection<? extends TypeScope> getClassName(VariableScope scp, Expression expression) {
+        String vartype = VariousUtils.extractVariableTypeFromExpression(expression, Collections.emptyMap());
+        return VariousUtils.getType(scp, vartype, expression.getStartOffset(), false);
     }
 
     private static boolean isNameEquality(ElementInfo query, ASTNodeInfo node, ModelElement nodeScope) {
