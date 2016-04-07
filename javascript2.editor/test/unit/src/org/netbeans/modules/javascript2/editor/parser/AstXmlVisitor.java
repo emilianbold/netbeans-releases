@@ -343,6 +343,7 @@ public class AstXmlVisitor extends NodeVisitor {
 
         if (node.isModule()) {
             node.visitImports(this);
+            node.visitExports(this);
         }
         processWithComment(node.getParameters(), "FunctionNode Parameters");
         processWithComment(node.getBody(), "FunctionNode Body");
@@ -454,7 +455,8 @@ public class AstXmlVisitor extends NodeVisitor {
         processAttribute(node.isConst(), "isConst");
         processAttribute(node.isFunctionDeclaration(), "isFunctionDeclaration");
         processAttribute(node.isLet(), "isLet");
-        
+        processAttribute(node.isSynthetic(), "isSynthetic");
+
         processWithComment(node.getAssignmentDest(), "VarNode Assignment Dest");
         processWithComment(node.getInit(), "VarNode Init");
         if (node.getAssignmentSource() != node.getInit()) {

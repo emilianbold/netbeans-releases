@@ -1,5 +1,13 @@
 <FunctionNode name='export-default-expression.js' kind='MODULE' start='0' end='24'>
   <isProgram/>
+  <ExportNode start='0' end='22'>
+    <BinaryNode type='ADD' start='16' end='21'>
+      <!-- BinaryNode lhs -->
+      <NumberLiteralNode value='1' start='16' end='17'/>
+      <!-- BinaryNode rhs -->
+      <NumberLiteralNode value='2' start='20' end='21'/>
+    </BinaryNode>
+  </ExportNode>
   <!-- FunctionNode Parameters -->
   <!-- FunctionNode Body -->
   <Block start='0' end='23'>
@@ -9,6 +17,7 @@
     <VarNode name='*default*' start='15' end='22'>
       <hasInit/>
       <isAssignment/>
+      <isSynthetic/>
       <!-- VarNode Assignment Dest -->
       <IdentNode start='15' end='22'>
         <name>*default*</name>
