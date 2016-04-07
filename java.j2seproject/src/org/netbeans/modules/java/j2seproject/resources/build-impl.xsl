@@ -940,6 +940,7 @@ is divided into following sections:
                         <xsl:attribute name="optional">true</xsl:attribute>
                     </element>
                     <sequential>
+                        <property name="empty.dir" location="${{build.dir}}/empty"/>
                         <property name="junit.forkmode" value="perTest"/>
                         <junit>
                             <xsl:attribute name="showoutput">true</xsl:attribute>
@@ -963,7 +964,7 @@ is divided into following sections:
                             <formatter type="xml"/>
                             <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg value="-ea"/>
-                            <jvmarg line="-modulepath ${{run.test.modulepath}}"/>
+                            <jvmarg line="-modulepath ${{run.test.modulepath}}:${{empty.dir}}"/>
                             <jvmarg line="${{run.test.jvmargs}}"/>
                             <customizePrototype/>
                         </junit>

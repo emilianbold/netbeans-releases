@@ -872,9 +872,7 @@ public final class J2SEProject implements Project {
                 }
                 J2SEProjectBuilder.createDefaultModuleProperties(
                         ep,
-                        testRoots.getRoots().length > 0,
-                        Arrays.stream(sourceRoots.getRoots())
-                            .anyMatch((fo) -> fo.getFileObject("module-info.java") != null));   //NOI18N
+                        testRoots.getRoots().length > 0);
                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
             }
         };

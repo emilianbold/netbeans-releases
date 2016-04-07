@@ -172,6 +172,21 @@ public class J2SEProjectUtil {
     }
 
     /**
+     * Creates reference to property.
+     * @param propertyName the name of property
+     * @param lastEntry if true, the path separator is not added
+     * @return the reference
+     */
+    public static String ref(
+            @NonNull final String propertyName,
+            final boolean lastEntry) {
+        return String.format(
+                "${%s}%s",  //NOI18N
+                propertyName,
+                lastEntry ? "" : ":");  //NOI18N
+    }
+
+    /**
      * Returns a list of property names which need to be tested for broken references.
      * @param project to return property names for
      * @return the list of breakable properties
