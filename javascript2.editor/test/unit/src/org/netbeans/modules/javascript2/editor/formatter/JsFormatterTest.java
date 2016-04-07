@@ -1029,6 +1029,14 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/importExport3.js");
     }
 
+    public void testImportExport4() throws Exception {
+        reformatFileContents("testfiles/formatter/importExport4.js",new IndentPrefs(4, 4));
+    }
+
+    public void testImportExport4Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/importExport4.js");
+    }
+
     public void testDoWhile1() throws Exception {
         reformatFileContents("testfiles/formatter/dowhile1.js",new IndentPrefs(4, 4));
     }
