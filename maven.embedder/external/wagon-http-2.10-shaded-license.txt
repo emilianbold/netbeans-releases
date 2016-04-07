@@ -1,5 +1,5 @@
 Name: Apache Maven HTTP Wagon
-Version: 2.0
+Version: 2.10
 Description: An implementation of Wagon provider for HTTP access.
 License: Apache-2.0
 Origin: http://maven.apache.org/

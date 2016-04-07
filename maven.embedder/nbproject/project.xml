@@ -370,16 +370,16 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>../maven/lib/sisu-inject-plexus-2.3.0.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/wagon-file-2.4.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/wagon-file-2.10.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/wagon-http-2.4-shaded.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/wagon-http-2.10-shaded.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/wagon-provider-api-2.4.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/wagon-http-shared-2.10.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>../maven/lib/ext/wagon-http-2.8-shaded.jar</runtime-relative-path>
+                <runtime-relative-path>../maven/lib/wagon-provider-api-2.10.jar</runtime-relative-path>
             </class-path-extension>
         </data>
     </configuration>
