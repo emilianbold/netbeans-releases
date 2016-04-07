@@ -84,7 +84,7 @@ public final class SymfonyScript {
     // #239750
     private static final String SHELL_INTERACTIVE = "SHELL_INTERACTIVE"; // NOI18N
 
-    private static final List<String> CACHE_CLEAR_COMMAND = Collections.singletonList("cache:clear"); // NOI18N
+    private static final List<String> CACHE_CLEAR_COMMAND = Arrays.asList("cache:clear", "--verbose"); // NOI18N
     private static final List<String> CACHE_WARMUP_COMMAND = Collections.singletonList("cache:warmup"); // NOI18N
     private static final List<String> LIST_COMMANDS_COMMAND = Arrays.asList("list", "--format", "xml"); // NOI18N
 
