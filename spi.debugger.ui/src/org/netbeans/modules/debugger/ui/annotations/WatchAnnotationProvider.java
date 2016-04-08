@@ -159,7 +159,7 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             line = getLine(pin.getFile(), pin.getLine());
         }
         
-        final DebuggerAnnotation annotation = new DebuggerAnnotation(PinWatchUISupport.WATCH_ANNOTATION_TYPE, line);
+        final DebuggerAnnotation annotation = new DebuggerAnnotation(DebuggerAnnotation.WATCH_ANNOTATION_TYPE, line);
         annotation.setWatch(watch);
         watchToAnnotation.put(watch, annotation);
         annotation.attach(line);
@@ -257,7 +257,7 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             }
             JComponent frame = watchToWindow.remove(watch);
             if(frame != null) {
-                EditorUI eui = Utilities.getEditorUI((JTextComponent) frame.getParent());
+                EditorUI eui = ((StickyPanel) frame).eui;
                 eui.getStickyWindowSupport().removeWindow(frame);
             }
         }
@@ -286,14 +286,17 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
     private static final class StickyPanel extends JPanel {
         private static final String UI_PREFIX = "ToolTip"; // NOI18N
         private final Watch watch;
+        private final EditorUI eui;
         private final JLabel label;
         private JTextField commentField;
         private final ValueProvider valueProvider;
+        private final String evaluatingValue;
         private String lastValue;
 
         @SuppressWarnings("OverridableMethodCallInConstructor")
         public StickyPanel(final Watch watch, final EditorUI eui) {
             this.watch = watch;
+            this.eui = eui;
             EditorPin pin = (EditorPin) watch.getPin();
             Font font = UIManager.getFont(UI_PREFIX + ".font"); // NOI18N
             Color backColor = UIManager.getColor(UI_PREFIX + ".background"); // NOI18N
@@ -325,6 +328,7 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             
 //            label = createMultiLineToolTip(value, true);
             valueProvider = PIN_SUPPORT_ACCESS.getValueProvider(pin);
+            evaluatingValue = valueProvider.getEvaluatingText();
             label = new JLabel();
             valueProvider.setChangeListener(watch, new ValueChangeListener() {
                 @Override
@@ -437,6 +441,9 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
         private String getWatchText(Watch watch, ValueProvider vp) {
             String value = vp.getValue(watch);
             //System.err.println("WatchAnnotationProvider.getWatchText("+watch.getExpression()+"): value = "+value+", lastValue = "+lastValue);
+            if (value == evaluatingValue) {
+                return "<html>" + watch.getExpression() + " = " + "<font color=\"red\">" + value + "</font>" + "</html>";
+            }
             boolean bold = false;
             boolean old = false;
             if (value != null) {

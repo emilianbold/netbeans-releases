@@ -70,6 +70,9 @@ import org.openide.util.lookup.Lookups;
  */
 public class DebuggerAnnotation extends Annotation implements Lookup.Provider {
 
+    /** Annotation type constant. */
+    static final String WATCH_ANNOTATION_TYPE = "PinnedWatch";
+
     private final Line        line;
     private final String      type;
     private Watch             watch;
@@ -102,7 +105,7 @@ public class DebuggerAnnotation extends Annotation implements Lookup.Provider {
     @NbBundle.Messages("TOOLTIP_WATCH_PIN=Watch")
     @Override
     public String getShortDescription () {
-        if (type == PinWatchUISupport.WATCH_ANNOTATION_TYPE) {
+        if (type == WATCH_ANNOTATION_TYPE) {
             return Bundle.TOOLTIP_WATCH_PIN();
         }
         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("Unknown annotation type '"+type+"'."));

@@ -130,6 +130,8 @@ public final class PinWatchValueProvider implements PinWatchUISupport.ValueProvi
             }
             for (ValueListeners vl : vls) {
                 vl.watchEv.setEvaluated(null);
+                vl.value = getEvaluatingText();
+                vl.listener.valueChanged(vl.watchEv.getWatch());
                 refrModel.fireTableValueChangedChanged(vl.watchEv, null);
             }
         } else {

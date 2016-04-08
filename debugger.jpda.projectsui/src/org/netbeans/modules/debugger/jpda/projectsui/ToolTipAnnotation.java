@@ -382,7 +382,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                             public void run() {
                                 try {
                                     PinWatchUISupport.getDefault().pin(w, "org.netbeans.modules.debugger.jpda.PIN_VALUE_PROVIDER"); // NOI18N
-                                } catch (IllegalArgumentException | DataObjectNotFoundException ex) {
+                                } catch (IllegalArgumentException ex) {
                                     Exceptions.printStackTrace(ex);
                                 }
                             }

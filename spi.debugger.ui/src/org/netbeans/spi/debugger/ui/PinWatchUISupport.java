@@ -55,17 +55,27 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.Watch.Pin;
 import org.netbeans.modules.debugger.ui.annotations.WatchAnnotationProvider;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- *
- * @author martin
+ * Access to the default UI implementation of pin watches in editor.
+ * Watches that are to be pinned by this support class, need to use the
+ * {@link EditorPin} as the {@link Watch#getPin()} and an implementation
+ * of {@link ValueProvider} needs to be register via {@link DebuggerServiceRegistration},
+ * which acts as a supplier of the watch value.
+ * <p>
+ * Use {@link #pin(org.netbeans.api.debugger.Watch, java.lang.String)} to pin
+ * the watch into editor where the corresponding {@link EditorPin} points at
+ * and provide <code>valueProviderId</code> of the corresponding registered
+ * {@link ValueProvider} which handles the value updates.
+ * 
+ * @author Martin Entlicher
+ * @since 2.53
  */
 public final class PinWatchUISupport {
-    
-    /** Annotation type constant. */
-    public static final String WATCH_ANNOTATION_TYPE = "PinnedWatch";
     
     private static final PinWatchUISupport INSTANCE = new PinWatchUISupport();
     private final Object valueProvidersLock = new Object();
@@ -95,11 +105,27 @@ public final class PinWatchUISupport {
         );
     }
     
+    /**
+     * Get the default instance of this class.
+     * @return An instance of {@link PinWatchUISupport} class.
+     */
     public static PinWatchUISupport getDefault() {
         return INSTANCE;
     }
     
-    public void pin(Watch watch, String valueProviderId) throws IllegalArgumentException, DataObjectNotFoundException {
+    /**
+     * Pin the watch into an editor.
+     * The pinned watch need to return {@link EditorPin} from {@link Watch#getPin()}
+     * and a {@link ValueProvider} needs to be registered for the provided
+     * <code>valueProviderId</code>.
+     * @param watch A watch to pin at the location determined by the {@link EditorPin}.
+     * @param valueProviderId An id of a registered {@link ValueProvider}.
+     * @throws IllegalArgumentException is thrown when {@link Watch#getPin()}
+     *                                  does not return an {@link EditorPin}, or
+     *                                  when we're not able to find the editor
+     *                                  where {@link EditorPin} points at.
+     */
+    public void pin(Watch watch, String valueProviderId) throws IllegalArgumentException {
         Pin wpin = watch.getPin();
         if (!(wpin instanceof EditorPin)) {
             throw new IllegalArgumentException("Unsupported pin: "+wpin);
@@ -111,7 +137,11 @@ public final class PinWatchUISupport {
         }
         EditorPin pin = (EditorPin) wpin;
         pin.setVpId(valueProviderId);
-        WatchAnnotationProvider.PIN_SUPPORT_ACCESS.pin(watch);
+        try {
+            WatchAnnotationProvider.PIN_SUPPORT_ACCESS.pin(watch);
+        } catch (DataObjectNotFoundException ex) {
+            throw new IllegalArgumentException("Unable to find the pin's editor.", ex);
+        }
     }
     
     private Map<String, DelegatingValueProvider> getValueProviders() {
@@ -149,7 +179,7 @@ public final class PinWatchUISupport {
                     }
                     dvp.setDelegate(provider);
                 }
-                Set<String> staleProviderIds = new HashSet(valueProviders.keySet());
+                Set<String> staleProviderIds = new HashSet<>(valueProviders.keySet());
                 staleProviderIds.removeAll(existingProviderIds);
                 for (String staleId : staleProviderIds) {
                     valueProviders.get(staleId).setDelegate(null);
@@ -216,21 +246,70 @@ public final class PinWatchUISupport {
         
     }
     
+    /**
+     * Provider of pinned watch value.
+     * Register an implementation of this class via {@link DebuggerServiceRegistration}
+     * for the corresponding debugger session ID path.
+     */
     public static interface ValueProvider {
         
-        @NbBundle.Messages("WATCH_EVALUATING=Evaluating...")
-        public static String VALUE_EVALUATING = Bundle.WATCH_EVALUATING();
-        
+        /**
+         * Get a unique ID of this value provider.
+         * Use this ID when pinning a watch via {@link #pin(org.netbeans.api.debugger.Watch, java.lang.String)}.
+         * @return An ID of this value provider.
+         */
         String getId();
         
+        /**
+         * Get current value of pinned watch. This method must not block,
+         * it's called synchronously in the EQ thread. This method should return
+         * most recent value of the watch, or the same instance which
+         * {@link #getEvaluatingText()} returns when the watch value is being computed,
+         * or <code>null</code> when the watch can not be resolved.
+         * @param watch the watch whose value is to be returned.
+         * @return The current value of the watch, or {@link #getEvaluatingText()},
+         *         or <code>null</code>.
+         */
         String getValue(Watch watch);
         
+        /**
+         * Get a localized text to be displayed when the watch is being evaluated.
+         * The pin watch UI highlights changed values. It uses this string to
+         * distinguish real watch values. Return the same instance from
+         * {@link #getValue(org.netbeans.api.debugger.Watch)} when the watch is
+         * being computed.
+         * @return A localized text displayed while the watch is evaluating.
+         */
+        @NbBundle.Messages("WATCH_EVALUATING=Evaluating...")
+        default String getEvaluatingText() {
+            return Bundle.WATCH_EVALUATING();
+        }
+
+        /**
+         * Allows to set a value change listener for a specific watch.
+         * @param watch The watch to listen for changes
+         * @param chl The value change listener.
+         */
         void setChangeListener(Watch watch, ValueChangeListener chl);
         
+        /**
+         * Unset a value change listener for a specific watch.
+         * Use this method to unregister the listeners and free up associated resources.
+         * @param watch The watch to unset the listener from.
+         */
         void unsetChangeListener(Watch watch);
         
+        /**
+         * Listener for watch value changes.
+         */
         public static interface ValueChangeListener {
             
+            /**
+             * Notify that a watch value has changed.
+             * {@link ValueProvider#getValue(org.netbeans.api.debugger.Watch)}
+             * then returns the new value.
+             * @param watch The watch whose value has changed.
+             */
             void valueChanged(Watch watch);
         }
     }
