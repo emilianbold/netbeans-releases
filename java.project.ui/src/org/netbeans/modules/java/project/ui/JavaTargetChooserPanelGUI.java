@@ -122,6 +122,8 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
             documentNameTextField.setEditable (false);
         } else if (type == Type.MODULE_INFO) {
             documentNameTextField.setEditable (false);
+            packageLabel.setVisible(false);
+            packageComboBox.setVisible(false);
         }
         else {
             packageComboBox.getEditor().addActionListener( this );
