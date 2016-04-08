@@ -101,7 +101,9 @@ public final class ModulePathsProblemsProvider implements ProjectProblemsProvide
     //@GuardedBy("this")
     private Collection<ProjectProblem> cache;
     //@GuardedBy("this")
-    private boolean listens;
+    private boolean listensOnRoots;
+    //@GuardedBy("this")
+    private boolean listensOnEval;
 
     public ModulePathsProblemsProvider(@NonNull final Lookup baseLkp) {
         this.project = baseLkp.lookup(J2SEProject.class);
@@ -145,12 +147,15 @@ public final class ModulePathsProblemsProvider implements ProjectProblemsProvide
                         modularTests);
             }
             synchronized (this) {
+                if (!listensOnEval) {
+                    listensOnEval = true;
+                    project.evaluator().addPropertyChangeListener(WeakListeners.propertyChange(this, project.evaluator()));
+                }
                 if (src != null && test != null) {
-                    if (!listens) {
-                        listens = true;
+                    if (!listensOnRoots) {
+                        listensOnRoots = true;
                         src.addPropertyChangeListener(WeakListeners.propertyChange(this, src));
                         test.addPropertyChangeListener(WeakListeners.propertyChange(this, test));
-                        project.evaluator().addPropertyChangeListener(WeakListeners.propertyChange(this, project.evaluator()));
                     }
                 }
                 if (roots != null) {
@@ -198,7 +203,8 @@ public final class ModulePathsProblemsProvider implements ProjectProblemsProvide
             ProjectProperties.JAVAC_TEST_CLASSPATH.equals(propName) ||
             ProjectProperties.JAVAC_TEST_MODULEPATH.equals(propName) ||
             ProjectProperties.RUN_TEST_CLASSPATH.equals(propName) ||
-            ProjectProperties.RUN_TEST_MODULEPATH.equals(propName)) {
+            ProjectProperties.RUN_TEST_MODULEPATH.equals(propName) ||
+            propName.contains(PROP_TEST_MODULE_PATHS_CHECK)) {
             reset();
         }
     }
