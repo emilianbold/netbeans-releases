@@ -165,8 +165,9 @@ public final class Watch {
     /**
      * A base interface for a watch pin location. Implemented by specific
      * platform-dependent and location-dependent implementation.
-     * See org.netbeans.spi.debugger.ui.EditorPin for the NetBeans editor pin
-     * implementation.
+     * See <code>org.netbeans.spi.debugger.ui.EditorPin</code> for the NetBeans
+     * editor pin implementation.
+     * @since 1.54
      */
     public static interface Pin {
         

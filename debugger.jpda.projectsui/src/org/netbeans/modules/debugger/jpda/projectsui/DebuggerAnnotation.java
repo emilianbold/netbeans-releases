@@ -120,10 +120,6 @@ public class DebuggerAnnotation extends Annotation implements Lookup.Provider {
             return NbBundle.getMessage 
                 (DebuggerAnnotation.class, "TOOLTIP_CURRENT_PC"); // NOI18N
         }
-        if (type == EditorContext.WATCH_ANNOTATION_TYPE) {
-            return NbBundle.getMessage
-                (DebuggerAnnotation.class, "TOOLTIP_WATCH_PIN"); //NOI18N
-        }
         if (type == EditorContext.CURRENT_EXPRESSION_CURRENT_LINE_ANNOTATION_TYPE) {
             return NbBundle.getMessage 
                 (DebuggerAnnotation.class, "TOOLTIP_CURRENT_EXP_LINE"); // NOI18N
