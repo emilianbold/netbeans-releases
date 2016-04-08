@@ -99,9 +99,13 @@ public class ClassPathListCellRenderer extends DefaultListCellRenderer {
     // Contains well known paths in the WebProject
     private static final Map<String, String> WELL_KNOWN_PATHS_NAMES = new HashMap<String, String>();
     static {
+        WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.JAVAC_MODULEPATH, NbBundle.getMessage( ClassPathListCellRenderer.class, "LBL_JavacModulepath_DisplayName" ) );
         WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.JAVAC_CLASSPATH, NbBundle.getMessage( ClassPathListCellRenderer.class, "LBL_JavacClasspath_DisplayName" ) );
+        WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.JAVAC_TEST_MODULEPATH, NbBundle.getMessage( ClassPathListCellRenderer.class,"LBL_JavacTestModulepath_DisplayName") );
         WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.JAVAC_TEST_CLASSPATH, NbBundle.getMessage( ClassPathListCellRenderer.class,"LBL_JavacTestClasspath_DisplayName") );
+        WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.RUN_MODULEPATH, NbBundle.getMessage( ClassPathListCellRenderer.class, "LBL_RunModulepath_DisplayName" ) );
         WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.RUN_CLASSPATH, NbBundle.getMessage( ClassPathListCellRenderer.class, "LBL_RunClasspath_DisplayName" ) );
+        WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.RUN_TEST_MODULEPATH, NbBundle.getMessage( ClassPathListCellRenderer.class, "LBL_RunTestModulepath_DisplayName" ) );
         WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.RUN_TEST_CLASSPATH, NbBundle.getMessage( ClassPathListCellRenderer.class, "LBL_RunTestClasspath_DisplayName" ) );
         WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.BUILD_CLASSES_DIR, NbBundle.getMessage( ClassPathListCellRenderer.class, "LBL_BuildClassesDir_DisplayName" ) );
         WELL_KNOWN_PATHS_NAMES.put( ProjectProperties.BUILD_TEST_CLASSES_DIR, NbBundle.getMessage (ClassPathListCellRenderer.class,"LBL_BuildTestClassesDir_DisplayName") );

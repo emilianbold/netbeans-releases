@@ -98,6 +98,11 @@ public final class ProjectProperties {
      */
     public static final String JAVAC_MODULEPATH = "javac.modulepath";    //NOI18N
     /**
+     * The name of the property holding the processor modulepath.
+     * @since 1.80
+     */
+    public static final String JAVAC_PROCESSORMODULEPATH = "javac.processormodulepath";    //NOI18N
+    /**
      * The name of the property holding the test compilation modulepath.
      * @since 1.80
      */

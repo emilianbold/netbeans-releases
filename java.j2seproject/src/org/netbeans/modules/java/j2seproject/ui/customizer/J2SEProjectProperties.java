@@ -173,9 +173,13 @@ public class J2SEProjectProperties {
     // CustomizerLibraries
     DefaultListModel JAVAC_MODULEPATH_MODEL;
     DefaultListModel JAVAC_CLASSPATH_MODEL;
+    DefaultListModel JAVAC_PROCESSORMODULEPATH_MODEL;
     DefaultListModel JAVAC_PROCESSORPATH_MODEL;
+    DefaultListModel JAVAC_TEST_MODULEPATH_MODEL;
     DefaultListModel JAVAC_TEST_CLASSPATH_MODEL;
+    DefaultListModel RUN_MODULEPATH_MODEL;
     DefaultListModel RUN_CLASSPATH_MODEL;
+    DefaultListModel RUN_TEST_MODULEPATH_MODEL;
     DefaultListModel RUN_TEST_CLASSPATH_MODEL;
     DefaultListModel ENDORSED_CLASSPATH_MODEL;
     ComboBoxModel PLATFORM_MODEL;
@@ -306,8 +310,14 @@ public class J2SEProjectProperties {
         String processorPath = projectProperties.get(ProjectProperties.JAVAC_PROCESSORPATH);
         processorPath = processorPath == null ? "${javac.classpath}" : processorPath;
         JAVAC_PROCESSORPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(processorPath));
+        String processorModulePath = projectProperties.get(ProjectProperties.JAVAC_PROCESSORMODULEPATH);
+        processorModulePath = processorModulePath == null ? "${javac.modulepath}" : processorModulePath;
+        JAVAC_PROCESSORMODULEPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(processorModulePath));
+        JAVAC_TEST_MODULEPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.JAVAC_TEST_MODULEPATH)));
         JAVAC_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.JAVAC_TEST_CLASSPATH)));
+        RUN_MODULEPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.RUN_MODULEPATH)));
         RUN_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.RUN_CLASSPATH)));
+        RUN_TEST_MODULEPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.RUN_TEST_MODULEPATH)));
         RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.RUN_TEST_CLASSPATH)));
         ENDORSED_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.ENDORSED_CLASSPATH)));
         final Collection<? extends PlatformFilter> filters = project.getLookup().lookupAll(PlatformFilter.class);
@@ -537,9 +547,13 @@ public class J2SEProjectProperties {
         // Encode all paths (this may change the project properties)
         String[] javac_mp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_MODULEPATH_MODEL ) );
         String[] javac_cp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_CLASSPATH_MODEL ) );
+        String[] javac_pmp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_PROCESSORMODULEPATH_MODEL ) );
         String[] javac_pp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_PROCESSORPATH_MODEL ) );
+        String[] javac_test_mp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_TEST_MODULEPATH_MODEL ) );
         String[] javac_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ) );
+        String[] run_mp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_MODULEPATH_MODEL ) );
         String[] run_cp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_CLASSPATH_MODEL ) );
+        String[] run_test_mp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_TEST_MODULEPATH_MODEL ) );
         String[] run_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ) );
         String[] endorsed_cp = cs.encodeToStrings( ClassPathUiSupport.getList( ENDORSED_CLASSPATH_MODEL ) );
                 
@@ -597,9 +611,13 @@ public class J2SEProjectProperties {
         // Save all paths
         projectProperties.setProperty(ProjectProperties.JAVAC_MODULEPATH, javac_mp );
         projectProperties.setProperty( ProjectProperties.JAVAC_CLASSPATH, javac_cp );
+        projectProperties.setProperty( ProjectProperties.JAVAC_PROCESSORMODULEPATH, javac_pmp );
         projectProperties.setProperty( ProjectProperties.JAVAC_PROCESSORPATH, javac_pp );
+        projectProperties.setProperty( ProjectProperties.JAVAC_TEST_MODULEPATH, javac_test_mp );
         projectProperties.setProperty( ProjectProperties.JAVAC_TEST_CLASSPATH, javac_test_cp );
+        projectProperties.setProperty( ProjectProperties.RUN_MODULEPATH, run_mp );
         projectProperties.setProperty( ProjectProperties.RUN_CLASSPATH, run_cp );
+        projectProperties.setProperty( ProjectProperties.RUN_TEST_MODULEPATH, run_test_mp );
         projectProperties.setProperty( ProjectProperties.RUN_TEST_CLASSPATH, run_test_cp );
         projectProperties.setProperty( ProjectProperties.ENDORSED_CLASSPATH, endorsed_cp );
         
@@ -677,18 +695,28 @@ public class J2SEProjectProperties {
         // Create a set of old and new artifacts.
         Set<ClassPathSupport.Item> oldArtifacts = new HashSet<ClassPathSupport.Item>();
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
+        oldArtifacts.addAll( cs.itemsList( projectProperties.get( ProjectProperties.JAVAC_MODULEPATH ) ) );
         oldArtifacts.addAll( cs.itemsList( projectProperties.get( ProjectProperties.JAVAC_CLASSPATH ) ) );
+        oldArtifacts.addAll( cs.itemsList( projectProperties.get( ProjectProperties.JAVAC_PROCESSORMODULEPATH ) ) );
         oldArtifacts.addAll( cs.itemsList( projectProperties.get( ProjectProperties.JAVAC_PROCESSORPATH ) ) );
+        oldArtifacts.addAll( cs.itemsList( projectProperties.get( ProjectProperties.JAVAC_TEST_MODULEPATH ) ) );
         oldArtifacts.addAll( cs.itemsList( projectProperties.get( ProjectProperties.JAVAC_TEST_CLASSPATH ) ) );
+        oldArtifacts.addAll( cs.itemsList( projectProperties.get( ProjectProperties.RUN_MODULEPATH ) ) );
         oldArtifacts.addAll( cs.itemsList( projectProperties.get( ProjectProperties.RUN_CLASSPATH ) ) );
+        oldArtifacts.addAll( cs.itemsList( projectProperties.get( ProjectProperties.RUN_TEST_MODULEPATH ) ) );
         oldArtifacts.addAll( cs.itemsList( projectProperties.get( ProjectProperties.RUN_TEST_CLASSPATH ) ) );
         oldArtifacts.addAll( cs.itemsList( projectProperties.get( ProjectProperties.ENDORSED_CLASSPATH ) ) );
                    
         Set<ClassPathSupport.Item> newArtifacts = new HashSet<ClassPathSupport.Item>();
+        newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_MODULEPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_CLASSPATH_MODEL ) );
+        newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_PROCESSORMODULEPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_PROCESSORPATH_MODEL ) );
+        newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_TEST_MODULEPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ) );
+        newArtifacts.addAll( ClassPathUiSupport.getList( RUN_MODULEPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( RUN_CLASSPATH_MODEL ) );
+        newArtifacts.addAll( ClassPathUiSupport.getList( RUN_TEST_MODULEPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( ENDORSED_CLASSPATH_MODEL ) );
                 
