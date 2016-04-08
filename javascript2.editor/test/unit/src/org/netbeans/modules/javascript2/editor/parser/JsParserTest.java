@@ -43,7 +43,7 @@ package org.netbeans.modules.javascript2.editor.parser;
 
 import javax.swing.text.Document;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.javascript2.editor.parser.SanitizingParser.Context;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
@@ -266,12 +266,12 @@ public class JsParserTest extends JsTestBase {
             + "           \n"
             + "    date: [c_from, c_to],\n"
             + "    current: new Date(c_to.getFullYear(), c_to.getMonth(), 1),\n"
-            + "           \n"
+            + "  _UNKNOWN_\n"
             + "    onChange: function(dates,el) {\n"
             + "         \n"
             + "      }\n"
             + "});",
-            3,
+            2,
             SanitizingParser.Sanitize.PREVIOUS_LINES);
     }
 
