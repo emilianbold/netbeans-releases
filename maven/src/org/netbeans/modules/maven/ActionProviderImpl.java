@@ -75,6 +75,7 @@ import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
+import org.netbeans.modules.maven.customizer.ActionMappings;
 import org.netbeans.modules.maven.customizer.WarnPanel;
 import org.netbeans.modules.maven.execute.ActionToGoalUtils;
 import org.netbeans.modules.maven.execute.BeanRunConfig;
@@ -339,7 +340,8 @@ public class ActionProviderImpl implements ActionProvider {
         "# {0} - artifactId", "TXT_ApplyCodeChanges=Apply Code Changes ({0})",
         "# {0} - artifactId", "TXT_Profile=Profile ({0})",
         "# {0} - artifactId", "TXT_Test=Test ({0})",
-        "# {0} - artifactId", "TXT_Build=Build ({0})"
+        "# {0} - artifactId", "TXT_Build=Build ({0})",
+        "# {0} - action name", "# {1} - project name", "TXT_CustomNamed={0} ({1})"
     })
     private static void setupTaskName(String action, RunConfig config, Lookup lkp) {
         assert config instanceof BeanRunConfig;
@@ -374,7 +376,15 @@ public class ActionProviderImpl implements ActionProvider {
         } else if ("debug.fix".equals(action)) {
             title = TXT_ApplyCodeChanges(prjLabel);
         } else {
-            title = TXT_Build(prjLabel);
+            if("custom".equals(action)) {
+                String name = config.getActionName();
+                if(name != null && name.startsWith(ActionMappings.CUSTOM_ACTION_PREFIX)) {
+                    name = name.substring(ActionMappings.CUSTOM_ACTION_PREFIX.length());
+                } 
+                title = name != null ? TXT_CustomNamed(name, prjLabel) : TXT_Build(prjLabel);                    
+            } else {
+                title = TXT_Build(prjLabel);                                                                    
+            }                          
         }
         bc.setTaskDisplayName(title);
         bc.setExecutionName(title);
@@ -439,6 +449,7 @@ public class ActionProviderImpl implements ActionProvider {
                     @Override
                     public void run() {
                         ModelRunConfig rc = createCustomRunConfig(conf);
+                        setupTaskName("custom", rc, context);
                         RunUtils.run(rc);
                     }
                 });
