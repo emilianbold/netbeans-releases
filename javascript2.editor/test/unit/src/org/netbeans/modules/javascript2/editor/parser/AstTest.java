@@ -2881,7 +2881,7 @@ public class AstTest extends CslTestBase {
         Snapshot snapshot = source.createSnapshot();
 
         JsParser parser = new JsParser();
-        SanitizingParser.Context context = new JsParser.Context(testFO.getNameExt(), snapshot, -1);
+        SanitizingParser.Context context = new JsParser.Context(testFO.getNameExt(), snapshot, -1, JsTokenId.javascriptLanguage());
         JsErrorManager manager = new JsErrorManager(snapshot, JsTokenId.javascriptLanguage());
         FunctionNode program = parser.parseSource(snapshot, testFO.getNameExt(), snapshot.getText().toString(), -1, manager, context.isModule());
         

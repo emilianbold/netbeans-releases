@@ -38,6 +38,7 @@
 package org.netbeans.modules.javascript2.editor.parser;
 
 import com.oracle.js.parser.ir.FunctionNode;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -45,6 +46,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
@@ -105,7 +107,7 @@ public abstract class SanitizingParser extends Parser {
     
     private JsParserResult parseSource(Snapshot snapshot, SourceModificationEvent event,
             Sanitize sanitizing, JsErrorManager errorManager) throws Exception {
-        
+
         FileObject fo = snapshot.getSource().getFileObject();
         long startTime = System.nanoTime();
         String scriptName;
@@ -119,7 +121,7 @@ public abstract class SanitizingParser extends Parser {
         }
         int caretOffset = GsfUtilities.getLastKnownCaretOffset(snapshot, event);
         
-        JsParserResult result = parseContext(new Context(scriptName, snapshot, caretOffset),
+        JsParserResult result = parseContext(new Context(scriptName, snapshot, caretOffset, language),
                 sanitizing, errorManager);
 
         if (LOGGER.isLoggable(Level.FINE)) {
@@ -536,11 +538,19 @@ public abstract class SanitizingParser extends Parser {
      */
     static class Context {
 
+        private static final List<JsTokenId> IMPORT_EXPORT = new ArrayList<JsTokenId>(2);
+
+        static {
+            Collections.addAll(IMPORT_EXPORT, JsTokenId.KEYWORD_IMPORT, JsTokenId.KEYWORD_EXPORT);
+        }
+        
         private final String name;
         
         private final Snapshot snapshot;
 
         private final int caretOffset;
+        
+        private final Language<JsTokenId> language;
         
         private String source;
 
@@ -550,10 +560,11 @@ public abstract class SanitizingParser extends Parser {
         
         private Boolean isModule = null;
 
-        public Context(String name, Snapshot snapshot, int caretOffset) {
+        public Context(String name, Snapshot snapshot, int caretOffset, Language<JsTokenId> language) {
             this.name = name;
             this.snapshot = snapshot;
             this.caretOffset = caretOffset;
+            this.language = language;
         }
 
         public String getName() {
@@ -600,10 +611,43 @@ public abstract class SanitizingParser extends Parser {
 
         public boolean isModule() {
             if (isModule == null) {
-                String text = snapshot.getText().toString();
-                isModule = (text.contains("export ") || text.contains("import "));  // TODO terible hack. Needs to be done in proper way
+                isModule = isModule(snapshot, language);
             }
             return isModule;
+        }
+
+        private static boolean isModule(Snapshot snapshot, Language<JsTokenId> language) {
+            if (JsParserResult.isEmbedded(snapshot)) {
+                return isModule(snapshot, language, 0, Integer.MAX_VALUE);
+            } else {
+                TokenSequence<? extends JsTokenId> seq = LexUtilities.getJsPositionedSequence(snapshot, 0);
+                if (seq == null) {
+                    return false;
+                } else {
+                    Token<? extends JsTokenId> token = LexUtilities.findNextToken(seq, IMPORT_EXPORT);
+                    if (token != null && IMPORT_EXPORT.contains(token.id())) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private static boolean isModule(Snapshot snapshot, Language<JsTokenId> language, int offset, int max) {
+            assert JsParserResult.isEmbedded(snapshot);
+            TokenSequence<? extends JsTokenId> seq = LexUtilities.getNextJsTokenSequence(
+                snapshot, offset, Integer.MAX_VALUE, language);
+            if (seq != null) {
+                Token<? extends JsTokenId> token = LexUtilities.findNextToken(seq, IMPORT_EXPORT);
+                if (token != null) {
+                    if (IMPORT_EXPORT.contains(token.id())) {
+                        return true;
+                    } else {
+                        return isModule(snapshot, language, seq.offset() + token.length(), max);
+                    }
+                }
+            }
+            return false;
         }
     }
 

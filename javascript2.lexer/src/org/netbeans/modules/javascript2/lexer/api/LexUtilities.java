@@ -152,7 +152,20 @@ public final class LexUtilities {
     /** Find the NEXT JavaScript sequence in the buffer starting from the given offset */
     @SuppressWarnings("unchecked")
     public static TokenSequence<? extends JsTokenId> getNextJsTokenSequence(Document doc, int fromOffset, int max, Language<JsTokenId> language) {
-        TokenHierarchy<Document> th = TokenHierarchy.get(doc);
+        TokenHierarchy<?> th = TokenHierarchy.get(doc);
+        return getNextJsTokenSequence(th, fromOffset, max, language);
+    }
+    
+    /** Find the NEXT JavaScript sequence in the buffer starting from the given offset */
+    @SuppressWarnings("unchecked")
+    public static TokenSequence<? extends JsTokenId> getNextJsTokenSequence(Snapshot snapshot, int fromOffset, int max, Language<JsTokenId> language) {
+        TokenHierarchy<?> th = snapshot.getTokenHierarchy();
+        return getNextJsTokenSequence(th, fromOffset, max, language);
+    }
+
+    /** Find the NEXT JavaScript sequence in the buffer starting from the given offset */
+    @SuppressWarnings("unchecked")
+    public static TokenSequence<? extends JsTokenId> getNextJsTokenSequence(TokenHierarchy<?> th, int fromOffset, int max, Language<JsTokenId> language) {
         TokenSequence<?> ts = th.tokenSequence();
         ts.move(fromOffset);
 

@@ -286,7 +286,7 @@ public class JsParserTest extends JsTestBase {
         JsParser parser = new JsParser();
         Document doc = getDocument(original);
         Snapshot snapshot = Source.create(doc).createSnapshot();
-        Context context = new JsParser.Context("test.js", snapshot, -1);
+        Context context = new JsParser.Context("test.js", snapshot, -1, JsTokenId.javascriptLanguage());
         JsErrorManager manager = new JsErrorManager(snapshot, JsTokenId.javascriptLanguage());
         parser.parseContext(context, JsParser.Sanitize.NONE, manager);
         

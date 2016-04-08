@@ -136,7 +136,7 @@ public class JsonParserTest extends JsonTestBase {
         JsonParser parser = new JsonParser();
         Document doc = getDocument(original);
         Snapshot snapshot = Source.create(doc).createSnapshot();
-        Context context = new JsParser.Context("test.json", snapshot, -1);
+        Context context = new JsParser.Context("test.json", snapshot, -1, JsTokenId.jsonLanguage());
         JsErrorManager manager = new JsErrorManager(snapshot, JsTokenId.jsonLanguage());
         parser.parseContext(context, JsParser.Sanitize.NEVER, manager);
 
