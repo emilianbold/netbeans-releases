@@ -59,6 +59,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.lib.profiler.ui.results.PackageColor;
 import org.netbeans.lib.profiler.ui.results.PackageColorer;
@@ -146,7 +148,7 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
                 fg = (Color)value;
             }
             public void setForeground(Color color) {
-                if (Objects.equals(color, _fg)) super.setForeground(fg);
+                if (fg != null && Objects.equals(color, _fg)) super.setForeground(fg);
                 else super.setForeground(color);
             }
         };
@@ -168,7 +170,18 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
         c.insets = new Insets(0, htab, 0, 0);
         add(colorsContainer, c);
         
-        JButton addButton = new SmallButton("A");
+        JButton addButton = new SmallButton("A") {
+            {
+                setToolTipText("Add New Filter");
+            }
+            protected void fireActionPerformed(ActionEvent e) {
+                PackageColor newColor = ColorCustomizer.customize(new PackageColor("", "", null)); // NOI18N
+                if (newColor != null) {
+                    colors.add(newColor);
+                    colorsModel.fireTableDataChanged();
+                }
+            }
+        };
         c = new GridBagConstraints();
         c.gridx = 1;
         c.gridy = y++;
@@ -177,9 +190,13 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
         c.insets = new Insets(0, htab, 0, 0);
         add(addButton, c);
         
-        JButton editButton = new SmallButton("E") {
+        final JButton editButton = new SmallButton("E") {
+            {
+                setToolTipText("Edit Selected Filter");
+            }
             protected void fireActionPerformed(ActionEvent e) {
-                int row = colorsTable.convertRowIndexToModel(colorsTable.getSelectedRow());
+                int row = colorsTable.getSelectedRow();
+                if (row == -1) return;
                 PackageColor selected = colors.get(row);
                 PackageColor edited = ColorCustomizer.customize(selected);
                 if (edited != null) {
@@ -198,7 +215,17 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
         c.insets = new Insets(0, htab, 0, 0);
         add(editButton, c);
         
-        JButton removeButton = new SmallButton("R");
+        final JButton removeButton = new SmallButton("D") {
+            {
+                setToolTipText("Delete Selected Filter");
+            }
+            protected void fireActionPerformed(ActionEvent e) {
+                int row = colorsTable.getSelectedRow();
+                if (row == -1) return;
+                colors.remove(row);
+                colorsModel.fireTableDataChanged();
+            }
+        };
         c = new GridBagConstraints();
         c.gridx = 1;
         c.gridy = y++;
@@ -207,7 +234,18 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
         c.insets = new Insets(0, htab, vgap * 2, 0);
         add(removeButton, c);
         
-        JButton upButton = new SmallButton(Icons.getIcon(GeneralIcons.UP));
+        final JButton upButton = new SmallButton(Icons.getIcon(GeneralIcons.UP)) {
+            {
+                setToolTipText("Move Selected Filter Up");
+            }
+            protected void fireActionPerformed(ActionEvent e) {
+                int row = colorsTable.getSelectedRow();
+                if (row < 1) return;
+                PackageColor color = colors.remove(row);
+                colors.add(row - 1, color);
+                colorsModel.fireTableDataChanged();
+            }
+        };
         c = new GridBagConstraints();
         c.gridx = 1;
         c.gridy = y++;
@@ -216,7 +254,18 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
         c.insets = new Insets(0, htab, 0, 0);
         add(upButton, c);
         
-        JButton downButton = new SmallButton(Icons.getIcon(GeneralIcons.DOWN));
+        final JButton downButton = new SmallButton(Icons.getIcon(GeneralIcons.DOWN)) {
+            {
+                setToolTipText("Move Selected Filter Down");
+            }
+            protected void fireActionPerformed(ActionEvent e) {
+                int row = colorsTable.getSelectedRow();
+                if (row == -1 || row > colorsTable.getRowCount() - 2) return;
+                PackageColor color = colors.remove(row);
+                colors.add(row + 1, color);
+                colorsModel.fireTableDataChanged();
+            }
+        };
         c = new GridBagConstraints();
         c.gridx = 1;
         c.gridy = y++;
@@ -225,6 +274,24 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
         c.insets = new Insets(0, htab, 0, 0);
         add(downButton, c);
         
+        ListSelectionListener selection = new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                int row = colorsTable.getSelectedRow();
+                if (row == -1) {
+                    editButton.setEnabled(false);
+                    removeButton.setEnabled(false);
+                    upButton.setEnabled(false);
+                    downButton.setEnabled(false);
+                } else {
+                    editButton.setEnabled(true);
+                    removeButton.setEnabled(true);
+                    upButton.setEnabled(row > 0);
+                    downButton.setEnabled(row < colorsTable.getRowCount() - 1);
+                }
+            }
+        };
+        colorsTable.getSelectionModel().addListSelectionListener(selection);
+        selection.valueChanged(null);
     }
     
     
