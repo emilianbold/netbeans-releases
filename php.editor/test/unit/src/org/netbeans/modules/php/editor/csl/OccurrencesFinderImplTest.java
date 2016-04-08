@@ -1667,13 +1667,13 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
         checkOccurrences(getTestPath(), "UVS3::myStatic3()::myStatic2()::mySta^tic1()::MAX;", true);
     }
 
-//    public void testUniformVariableSyntax01_05() throws Exception {
-//        checkOccurrences(getTestPath(), "UVS3::myStatic3()::myStatic2()::myStatic1()::MA^X;", true);
-//    }
-//
-//    public void testUniformVariableSyntax01_06() throws Exception {
-//        checkOccurrences(getTestPath(), "UVS3::myStatic3()::myStatic2()::myStatic1()::$M^IN;", true);
-//    }
+    public void testUniformVariableSyntax01_05() throws Exception {
+        checkOccurrences(getTestPath(), "UVS3::myStatic3()::myStatic2()::myStatic1()::MA^X;", true);
+    }
+
+    public void testUniformVariableSyntax01_06() throws Exception {
+        checkOccurrences(getTestPath(), "UVS3::myStatic3()::myStatic2()::myStatic1()::AV^G;", true);
+    }
 
     public void testUniformVariableSyntax01_07() throws Exception {
         checkOccurrences(getTestPath(), "UVS3::myStatic3()::myStatic2()::myStatic1()::mySt^atic2();", true);
@@ -1689,6 +1689,14 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
 
     public void testUniformVariableSyntax01_10() throws Exception {
         checkOccurrences(getTestPath(), "UVS3::myStatic3()->myStatic2()::myStatic1()->myS^tatic2();", true);
+    }
+
+    public void testUniformVariableSyntax01_11() throws Exception {
+        checkOccurrences(getTestPath(), "UVS3::myStatic3()::myStatic2()::myStatic1()::$M^IN;", true);
+    }
+
+    public void testUniformVariableSyntax01_12() throws Exception {
+        checkOccurrences(getTestPath(), "UVS3::myStatic3()->myStatic2()::myStatic1()->te^st;", true);
     }
 
     public void testUniformVariableSyntax02_01() throws Exception {

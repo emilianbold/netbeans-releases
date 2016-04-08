@@ -2,7 +2,11 @@
 
 class UVS1 {
     const MAX = 99;
+    const AVG = 50;
     static $MIN = "MIN";
+    static $TOTAL = "TOTAL";
+
+    public $test = null;
 
     /**
      * @return self
@@ -29,6 +33,9 @@ class UVS3 {
 
 UVS3::myStatic3()::myStatic2();
 UVS3::myStatic3()::myStatic2()::myStatic1()::MAX;
+UVS3::myStatic3()::myStatic2()::myStatic1()::AVG;
 UVS3::myStatic3()::myStatic2()::myStatic1()::$MIN;
+UVS3::myStatic3()::myStatic2()::myStatic1()::$TOTAL;
 UVS3::myStatic3()::myStatic2()::myStatic1()::myStatic2();
 UVS3::myStatic3()->myStatic2()::myStatic1()->myStatic2();
+UVS3::myStatic3()->myStatic2()::myStatic1()->test;

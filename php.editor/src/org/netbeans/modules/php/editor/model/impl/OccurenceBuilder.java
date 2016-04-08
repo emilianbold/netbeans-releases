@@ -750,30 +750,51 @@ class OccurenceBuilder {
 
     private void buildStaticFields(final Index index, FileScopeImpl fileScope, final List<Occurence> occurences) {
         final Exact fieldName = NameKind.exact(elementInfo.getName());
-        QualifiedName clzName = elementInfo.getTypeQualifiedName();
-        final Set<FieldElement> fields = new HashSet<>();
-        Scope scope = elementInfo.getScope().getInScope();
-        if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
-            if (clzName.getName().equalsIgnoreCase("self") || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
-                clzName = ((TypeScope) scope).getFullyQualifiedName();
-            } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) {
-                clzName = ((ClassScope) scope).getSuperClassName();
+        ASTNodeInfo nodeInfo = elementInfo.getNodeInfo();
+        QualifiedName fullyQualifiedName = null;
+        if (nodeInfo != null) {
+            ASTNode originalNode = nodeInfo.getOriginalNode();
+            if (originalNode instanceof StaticDispatch) {
+                Expression dispatcher = ((StaticDispatch) originalNode).getDispatcher();
+                // possible uniform variable syntax
+                if (CodeUtils.isUniformVariableSyntax(dispatcher)) {
+                    // uniform variable syntax => simply build all constants (is it correct or not?)
+                    Collection<? extends TypeScope> types = getClassName((VariableScope) elementInfo.getScope(), dispatcher);
+                    // use the first one??
+                    if (!types.isEmpty()) {
+                        fullyQualifiedName = types.iterator().next().getFullyQualifiedName();
+                    }
+                }
             }
         }
-        if (clzName != null && clzName.toString().length() > 0) {
-            QualifiedName fullyQualifiedName = clzName;
-            if (!fullyQualifiedName.getKind().isFullyQualified()) {
-                fullyQualifiedName = VariousUtils.getFullyQualifiedName(clzName.toName(), elementInfo.getRange().getStart(), scope);
+        if (fullyQualifiedName == null) {
+            QualifiedName clzName = elementInfo.getTypeQualifiedName();
+            Scope scope = elementInfo.getScope().getInScope();
+            if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
+                if (clzName.getName().equalsIgnoreCase("self") || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
+                    clzName = ((TypeScope) scope).getFullyQualifiedName();
+                } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) { // NOI18N
+                    clzName = ((ClassScope) scope).getSuperClassName();
+                }
             }
+            if (clzName != null && clzName.toString().length() > 0) {
+                fullyQualifiedName = clzName;
+                if (!fullyQualifiedName.getKind().isFullyQualified()) {
+                    fullyQualifiedName = VariousUtils.getFullyQualifiedName(clzName.toName(), elementInfo.getRange().getStart(), scope);
+                }
+            }
+        }
+        if (fullyQualifiedName != null) {
+            final Set<FieldElement> fields = new HashSet<>();
             for (TypeElement typeElement : index.getTypes(NameKind.exact(fullyQualifiedName))) {
                 fields.addAll(ElementFilter.forName(fieldName).filter(index.getAlllFields(typeElement)));
             }
-        }
-        if (elementInfo.setDeclarations(fields)) {
-            occurences.clear();
-            buildStaticFieldInvocations(elementInfo, fileScope, occurences);
-            buildFieldDeclarations(elementInfo, fileScope, occurences);
-            buildDocTagsForFields(elementInfo, fileScope, occurences);
+            if (elementInfo.setDeclarations(fields)) {
+                occurences.clear();
+                buildStaticFieldInvocations(elementInfo, fileScope, occurences);
+                buildFieldDeclarations(elementInfo, fileScope, occurences);
+                buildDocTagsForFields(elementInfo, fileScope, occurences);
+            }
         }
     }
 
@@ -917,25 +938,46 @@ class OccurenceBuilder {
     }
 
     private void buildTypeConstants(final Index index, FileScopeImpl fileScope, final List<Occurence> occurences) {
-        final Exact methodName = NameKind.exact(elementInfo.getName());
-        QualifiedName clzName = elementInfo.getTypeQualifiedName();
-        final Set<TypeConstantElement> constants = new HashSet<>();
-        Scope scope = ModelUtils.getTypeScope(elementInfo.getScope());
-        if (clzName.getKind().isUnqualified() && scope != null) {
-            if (clzName.getName().equalsIgnoreCase("self") //NOI18N
-                    || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
-                clzName = QualifiedName.create(((TypeScope) scope).getName());
-            } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) { //NOI18N
-                clzName = ((ClassScope) scope).getSuperClassName();
+        final Exact typeConstantName = NameKind.exact(elementInfo.getName());
+        ASTNodeInfo nodeInfo = elementInfo.getNodeInfo();
+        QualifiedName fullyQualifiedName = null;
+        if (nodeInfo != null) {
+            ASTNode originalNode = nodeInfo.getOriginalNode();
+            if (originalNode instanceof StaticDispatch) {
+                Expression dispatcher = ((StaticDispatch) originalNode).getDispatcher();
+                // possible uniform variable syntax
+                if (CodeUtils.isUniformVariableSyntax(dispatcher)) {
+                    // uniform variable syntax => simply build all constants (is it correct or not?)
+                    Collection<? extends TypeScope> types = getClassName((VariableScope) elementInfo.getScope(), dispatcher);
+                    // use the first one??
+                    if (!types.isEmpty()) {
+                        fullyQualifiedName = types.iterator().next().getFullyQualifiedName();
+                    }
+                }
             }
         }
-        if (clzName != null && clzName.toString().length() > 0) {
-            QualifiedName fullyQualifiedName = clzName;
-            if (!fullyQualifiedName.getKind().isFullyQualified()) {
-                fullyQualifiedName = VariousUtils.getFullyQualifiedName(clzName.toName(), elementInfo.getRange().getStart(), scope);
+        if (fullyQualifiedName == null) {
+            QualifiedName clzName = elementInfo.getTypeQualifiedName();
+            TypeScope scope = ModelUtils.getTypeScope(elementInfo.getScope());
+            if (clzName.getKind().isUnqualified() && scope != null) {
+                if (clzName.getName().equalsIgnoreCase("self") //NOI18N
+                        || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
+                    clzName = QualifiedName.create(scope.getName());
+                } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) { //NOI18N
+                    clzName = ((ClassScope) scope).getSuperClassName();
+                }
             }
+            if (clzName != null && clzName.toString().length() > 0) {
+                fullyQualifiedName = clzName;
+                if (!fullyQualifiedName.getKind().isFullyQualified()) {
+                    fullyQualifiedName = VariousUtils.getFullyQualifiedName(clzName.toName(), elementInfo.getRange().getStart(), scope);
+                }
+            }
+        }
+        if (fullyQualifiedName != null) {
+            final Set<TypeConstantElement> constants = new HashSet<>();
             for (TypeElement typeElement : index.getTypes(NameKind.exact(fullyQualifiedName))) {
-                constants.addAll(ElementFilter.forName(methodName).filter(index.getAllTypeConstants(typeElement)));
+                constants.addAll(ElementFilter.forName(typeConstantName).filter(index.getAllTypeConstants(typeElement)));
             }
             if (elementInfo.setDeclarations(constants)) {
                 buildStaticConstantInvocations(elementInfo, fileScope, cachedOccurences);
@@ -953,7 +995,7 @@ class OccurenceBuilder {
             ASTNode originalNode = nodeInfo.getOriginalNode();
             if (originalNode instanceof StaticDispatch) {
                 // possible uniform variable syntax
-                if (CodeUtils.extractUnqualifiedName(((StaticDispatch) originalNode).getDispatcher()) == null) {
+                if (CodeUtils.isUniformVariableSyntax(((StaticDispatch) originalNode))) {
                     // uniform variable syntax => simply build all methods (is it correct or not?)
                     buildMethods(index, fileScope, occurences);
                     buildStaticMethodInvocations(elementInfo, fileScope, occurences);
@@ -1304,52 +1346,72 @@ class OccurenceBuilder {
                 Exact fieldName = NameKind.exact(phpElement.getName());
                 for (Entry<ASTNodeInfo<StaticFieldAccess>, Scope> entry : staticFieldInvocations.entrySet()) {
                     ASTNodeInfo<StaticFieldAccess> nodeInfo = entry.getKey();
-                    QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getDispatcher());
-                    final Scope scope = entry.getValue().getInScope();
-                    if (clzName != null && clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
-                        if (clzName.getName().equalsIgnoreCase("self") || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
-                            clzName = QualifiedName.create(((TypeScope) scope).getName());
-                        } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) {
-                            clzName = ((ClassScope) scope).getSuperClassName();
-                        }
-                    }
-                    if (clzName != null && clzName.toString().length() > 0) {
-                        clzName = VariousUtils.getFullyQualifiedName(clzName, nodeInfo.getOriginalNode().getStartOffset(), scope);
-                        if (fieldName.matchesName(PhpElementKind.FIELD, nodeInfo.getName())) {
-                            QualifiedName fullyQualified = VariousUtils.getFullyQualifiedName(clzName, elementInfo.getRange().getStart(), scope);
-                            final Exact typeName = NameKind.exact(fullyQualified);
-                            boolean isTheSame = false;
-                            //matches with other matching names
-                            for (QualifiedName matchingName : matchingTypeNames) {
-                                if (typeName.matchesName(PhpElementKind.CLASS, matchingName)) {
-                                    isTheSame = true;
-                                    break;
-                                }
+                    Expression dispatcher = nodeInfo.getOriginalNode().getDispatcher();
+                    if (!CodeUtils.isUniformVariableSyntax(dispatcher)) {
+                        QualifiedName clzName = QualifiedName.create(dispatcher);
+                        final Scope scope = entry.getValue().getInScope();
+                        if (clzName != null && clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
+                            if (clzName.getName().equalsIgnoreCase("self") || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
+                                clzName = QualifiedName.create(((TypeScope) scope).getName());
+                            } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) {
+                                clzName = ((ClassScope) scope).getSuperClassName();
                             }
-                            //if not then query to index
-                            if (!isTheSame) {
-                                boolean skipIt = false;
-                                for (QualifiedName notMatchingName : notMatchingTypeNames) {
-                                    if (typeName.matchesName(PhpElementKind.CLASS, notMatchingName)) {
-                                        skipIt = true;
+                        }
+                        if (clzName != null && clzName.toString().length() > 0) {
+                            clzName = VariousUtils.getFullyQualifiedName(clzName, nodeInfo.getOriginalNode().getStartOffset(), scope);
+                            if (fieldName.matchesName(PhpElementKind.FIELD, nodeInfo.getName())) {
+                                QualifiedName fullyQualified = VariousUtils.getFullyQualifiedName(clzName, elementInfo.getRange().getStart(), scope);
+                                final Exact typeName = NameKind.exact(fullyQualified);
+                                boolean isTheSame = false;
+                                //matches with other matching names
+                                for (QualifiedName matchingName : matchingTypeNames) {
+                                    if (typeName.matchesName(PhpElementKind.CLASS, matchingName)) {
+                                        isTheSame = true;
                                         break;
                                     }
                                 }
-                                if (skipIt) {
-                                    continue;
+                                //if not then query to index
+                                if (!isTheSame) {
+                                    boolean skipIt = false;
+                                    for (QualifiedName notMatchingName : notMatchingTypeNames) {
+                                        if (typeName.matchesName(PhpElementKind.CLASS, notMatchingName)) {
+                                            skipIt = true;
+                                            break;
+                                        }
+                                    }
+                                    if (skipIt) {
+                                        continue;
+                                    }
+                                    final IndexScope indexScope = ModelUtils.getIndexScope(fileScope);
+                                    final Index index = indexScope.getIndex();
+                                    final ElementFilter forTheSameType = ElementFilter.forMembersOfType(fieldElement.getType());
+                                    final Set<FieldElement> expectedFields = forTheSameType.filter(index.getAlllFields(NameKind.exact(clzName), fieldName));
+                                    isTheSame = !expectedFields.isEmpty();
                                 }
-                                final IndexScope indexScope = ModelUtils.getIndexScope(fileScope);
-                                final Index index = indexScope.getIndex();
-                                final ElementFilter forTheSameType = ElementFilter.forMembersOfType(fieldElement.getType());
-                                final Set<FieldElement> expectedFields = forTheSameType.filter(index.getAlllFields(NameKind.exact(clzName), fieldName));
-                                isTheSame = !expectedFields.isEmpty();
+                                if (isTheSame) {
+                                    //add into matching names
+                                    matchingTypeNames.add(clzName);
+                                    occurences.add(new OccurenceImpl(phpElement, nodeInfo.getRange()));
+                                } else {
+                                    notMatchingTypeNames.add(clzName);
+                                }
                             }
-                            if (isTheSame) {
-                                //add into matching names
-                                matchingTypeNames.add(clzName);
-                                occurences.add(new OccurenceImpl(phpElement, nodeInfo.getRange()));
-                            } else {
-                                notMatchingTypeNames.add(clzName);
+                        }
+                    } else {
+                        // uniform variable syntax
+                        if (fieldName.matchesName(PhpElementKind.FIELD, nodeInfo.getName())) {
+                            Collection<? extends TypeScope> types = getClassName((VariableScope) entry.getValue(), dispatcher);
+                            for (TypeScope type : types) {
+                                QualifiedName fqn = type.getFullyQualifiedName();
+                                final Exact typeName = NameKind.exact(fqn);
+                                for (QualifiedName matchingName : matchingTypeNames) {
+                                    if (typeName.matchesName(PhpElementKind.CLASS, matchingName)) {
+                                        matchingTypeNames.add(fqn);
+                                        occurences.add(new OccurenceImpl(phpElement, nodeInfo.getRange()));
+                                    } else {
+                                        notMatchingTypeNames.add(fqn);
+                                    }
+                                }
                             }
                         }
                     }
@@ -1420,9 +1482,9 @@ class OccurenceBuilder {
                         }
                     } else {
                         // uniform variable syntax
+                        assert CodeUtils.isUniformVariableSyntax(dispatcher) : dispatcher;
                         if (methodName.matchesName(PhpElementKind.METHOD, nodeInfo.getName())) {
                             Collection<? extends TypeScope> types = getClassName((VariableScope) entry.getValue(), dispatcher);
-                            FIND_TYPE:
                             for (TypeScope type : types) {
                                 QualifiedName fqn = type.getFullyQualifiedName();
                                 final Exact typeName = NameKind.exact(fqn);
@@ -1430,7 +1492,8 @@ class OccurenceBuilder {
                                     if (typeName.matchesName(PhpElementKind.CLASS, matchingName)) {
                                         matchingTypeNames.add(fqn);
                                         occurences.add(new OccurenceImpl(phpElement, nodeInfo.getRange()));
-                                        break FIND_TYPE;
+                                    } else {
+                                        notMatchingTypeNames.add(fqn);
                                     }
                                 }
                             }
@@ -1450,55 +1513,76 @@ class OccurenceBuilder {
                 TypeConstantElement constantElement = (TypeConstantElement) phpElement;
                 matchingTypeNames.add(constantElement.getType().getFullyQualifiedName());
                 matchingTypeNames.add(nodeCtxInfo.getTypeQualifiedName());
-                Exact constantName = NameKind.exact(phpElement.getName());
+                final Exact constantName = NameKind.exact(phpElement.getName());
                 for (Entry<ASTNodeInfo<StaticConstantAccess>, Scope> entry : staticConstantInvocations.entrySet()) {
                     ASTNodeInfo<StaticConstantAccess> nodeInfo = entry.getKey();
-                    QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getDispatcher());
-                    final Scope scope = ModelUtils.getTypeScope(entry.getValue());
-                    if (clzName != null && clzName.getKind().isUnqualified() && scope != null) {
-                        if (clzName.getName().equalsIgnoreCase("self") //NOI18N
-                                || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
-                            clzName = QualifiedName.create(((TypeScope) scope).getName());
-                        } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) {
-                            clzName = ((ClassScope) scope).getSuperClassName();
-                        }
-                    }
-                    if (clzName != null && clzName.toString().length() > 0) {
-                        clzName = VariousUtils.getFullyQualifiedName(clzName, nodeInfo.getOriginalNode().getStartOffset(), scope);
-                        if (constantName.matchesName(PhpElementKind.TYPE_CONSTANT, nodeInfo.getName())) {
-                            final Exact typeName = NameKind.exact(clzName);
-                            boolean isTheSame = false;
-                            //matches with other matching names
-                            for (QualifiedName matchingName : matchingTypeNames) {
-                                if (typeName.matchesName(PhpElementKind.CLASS, matchingName)) {
-                                    isTheSame = true;
-                                    break;
-                                }
+                    final Expression dispatcher = nodeInfo.getOriginalNode().getDispatcher();
+                    QualifiedName clzName = QualifiedName.create(dispatcher);
+                    if (clzName != null) {
+                        final TypeScope scope = ModelUtils.getTypeScope(entry.getValue());
+                        if (clzName.getKind().isUnqualified() && scope != null) {
+                            if (clzName.getName().equalsIgnoreCase("self") //NOI18N
+                                    || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
+                                clzName = QualifiedName.create(scope.getName());
+                            } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) {
+                                clzName = ((ClassScope) scope).getSuperClassName();
                             }
-                            //if not then query to index
-                            if (!isTheSame) {
-                                boolean skipIt = false;
-                                for (QualifiedName notMatchingName : notMatchingTypeNames) {
-                                    if (typeName.matchesName(PhpElementKind.CLASS, notMatchingName)) {
-                                        skipIt = true;
+                        }
+                        if (clzName != null && clzName.toString().length() > 0) {
+                            clzName = VariousUtils.getFullyQualifiedName(clzName, nodeInfo.getOriginalNode().getStartOffset(), scope);
+                            if (constantName.matchesName(PhpElementKind.TYPE_CONSTANT, nodeInfo.getName())) {
+                                final Exact typeName = NameKind.exact(clzName);
+                                boolean isTheSame = false;
+                                //matches with other matching names
+                                for (QualifiedName matchingName : matchingTypeNames) {
+                                    if (typeName.matchesName(PhpElementKind.CLASS, matchingName)) {
+                                        isTheSame = true;
                                         break;
                                     }
                                 }
-                                if (skipIt) {
-                                    continue;
+                                //if not then query to index
+                                if (!isTheSame) {
+                                    boolean skipIt = false;
+                                    for (QualifiedName notMatchingName : notMatchingTypeNames) {
+                                        if (typeName.matchesName(PhpElementKind.CLASS, notMatchingName)) {
+                                            skipIt = true;
+                                            break;
+                                        }
+                                    }
+                                    if (skipIt) {
+                                        continue;
+                                    }
+                                    final IndexScope indexScope = ModelUtils.getIndexScope(fileScope);
+                                    final Index index = indexScope.getIndex();
+                                    final ElementFilter forTheSameType = ElementFilter.forMembersOfType(constantElement.getType());
+                                    final Set<TypeConstantElement> expectedConstants = forTheSameType.filter(index.getAllTypeConstants(NameKind.exact(clzName), constantName));
+                                    isTheSame = !expectedConstants.isEmpty();
                                 }
-                                final IndexScope indexScope = ModelUtils.getIndexScope(fileScope);
-                                final Index index = indexScope.getIndex();
-                                final ElementFilter forTheSameType = ElementFilter.forMembersOfType(constantElement.getType());
-                                final Set<TypeConstantElement> expectedConstants = forTheSameType.filter(index.getAllTypeConstants(NameKind.exact(clzName), constantName));
-                                isTheSame = !expectedConstants.isEmpty();
+                                if (isTheSame) {
+                                    //add into matching names
+                                    matchingTypeNames.add(clzName);
+                                    occurences.add(new OccurenceImpl(phpElement, nodeInfo.getRange()));
+                                } else {
+                                    notMatchingTypeNames.add(clzName);
+                                }
                             }
-                            if (isTheSame) {
-                                //add into matching names
-                                matchingTypeNames.add(clzName);
-                                occurences.add(new OccurenceImpl(phpElement, nodeInfo.getRange()));
-                            } else {
-                                notMatchingTypeNames.add(clzName);
+                        }
+                    } else {
+                        // uniform variable syntax
+                        assert CodeUtils.isUniformVariableSyntax(dispatcher) : dispatcher;
+                        if (constantName.matchesName(PhpElementKind.TYPE_CONSTANT, nodeInfo.getName())) {
+                            Collection<? extends TypeScope> types = getClassName((VariableScope) entry.getValue(), dispatcher);
+                            for (TypeScope type : types) {
+                                QualifiedName fqn = type.getFullyQualifiedName();
+                                final Exact typeName = NameKind.exact(fqn);
+                                for (QualifiedName matchingName : matchingTypeNames) {
+                                    if (typeName.matchesName(PhpElementKind.CLASS, matchingName)) {
+                                        matchingTypeNames.add(fqn);
+                                        occurences.add(new OccurenceImpl(phpElement, nodeInfo.getRange()));
+                                    } else {
+                                        notMatchingTypeNames.add(fqn);
+                                    }
+                                }
                             }
                         }
                     }
@@ -2187,6 +2271,7 @@ class OccurenceBuilder {
                     }
                 }
                 if (originalNode instanceof StaticDispatch) {
+                    // XXX
                     QualifiedName pureQualifiedName = ASTNodeInfo.toQualifiedName(originalNode, true);
                     qualifiedName = VariousUtils.getFullyQualifiedName(pureQualifiedName, originalNode.getStartOffset(), getScope());
                 } else {
