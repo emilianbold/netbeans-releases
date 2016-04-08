@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.CodeUtils;
@@ -1249,7 +1250,10 @@ class OccurenceBuilder {
             if (phpElement instanceof FieldElement) {
                 FieldElement fieldElement = (FieldElement) phpElement;
                 matchingTypeNames.add(fieldElement.getType().getFullyQualifiedName());
-                matchingTypeNames.add(nodeCtxInfo.getTypeQualifiedName());
+                QualifiedName typeQualifiedName = nodeCtxInfo.getTypeQualifiedName();
+                if (typeQualifiedName != null) {
+                    matchingTypeNames.add(typeQualifiedName);
+                }
                 Exact fieldName = NameKind.exact(phpElement.getName());
                 for (Entry<ASTNodeInfo<StaticFieldAccess>, Scope> entry : staticFieldInvocations.entrySet()) {
                     ASTNodeInfo<StaticFieldAccess> nodeInfo = entry.getKey();
@@ -1335,7 +1339,10 @@ class OccurenceBuilder {
             if (phpElement instanceof MethodElement) {
                 MethodElement methodElement = (MethodElement) phpElement;
                 matchingTypeNames.add(methodElement.getType().getFullyQualifiedName());
-                matchingTypeNames.add(nodeCtxInfo.getTypeQualifiedName());
+                QualifiedName typeQualifiedName = nodeCtxInfo.getTypeQualifiedName();
+                if (typeQualifiedName != null) {
+                    matchingTypeNames.add(typeQualifiedName);
+                }
                 Exact methodName = NameKind.exact(phpElement.getName());
                 for (Entry<ASTNodeInfo<StaticMethodInvocation>, Scope> entry : staticMethodInvocations.entrySet()) {
                     ASTNodeInfo<StaticMethodInvocation> nodeInfo = entry.getKey();
@@ -1419,7 +1426,10 @@ class OccurenceBuilder {
             if (phpElement instanceof TypeConstantElement) {
                 TypeConstantElement constantElement = (TypeConstantElement) phpElement;
                 matchingTypeNames.add(constantElement.getType().getFullyQualifiedName());
-                matchingTypeNames.add(nodeCtxInfo.getTypeQualifiedName());
+                QualifiedName typeQualifiedName = nodeCtxInfo.getTypeQualifiedName();
+                if (typeQualifiedName != null) {
+                    matchingTypeNames.add(typeQualifiedName);
+                }
                 final Exact constantName = NameKind.exact(phpElement.getName());
                 for (Entry<ASTNodeInfo<StaticConstantAccess>, Scope> entry : staticConstantInvocations.entrySet()) {
                     ASTNodeInfo<StaticConstantAccess> nodeInfo = entry.getKey();
@@ -2064,6 +2074,7 @@ class OccurenceBuilder {
             }
         }
         QualifiedName clzName = elementInfo.getTypeQualifiedName();
+        assert clzName != null : elementInfo.getQualifiedName();
         TypeScope scope = ModelUtils.getTypeScope(elementInfo.getScope());
         if (scope != null
                 && clzName.getKind().isUnqualified()) {
@@ -2205,6 +2216,7 @@ class OccurenceBuilder {
             return ModelUtils.getNamespaceScope(scope);
         }
 
+        @CheckForNull
         public QualifiedName getTypeQualifiedName() {
             ASTNodeInfo nodeInfo = getNodeInfo();
             QualifiedName qualifiedName;
@@ -2216,7 +2228,9 @@ class OccurenceBuilder {
                     }
                 }
                 if (originalNode instanceof StaticDispatch) {
-                    // XXX
+                    if (CodeUtils.isUniformVariableSyntax((StaticDispatch) originalNode)) {
+                        return null;
+                    }
                     QualifiedName pureQualifiedName = ASTNodeInfo.toQualifiedName(originalNode, true);
                     qualifiedName = VariousUtils.getFullyQualifiedName(pureQualifiedName, originalNode.getStartOffset(), getScope());
                 } else {
