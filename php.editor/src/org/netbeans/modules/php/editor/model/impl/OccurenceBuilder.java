@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.model.impl;
 
@@ -758,7 +758,7 @@ class OccurenceBuilder {
                 Expression dispatcher = ((StaticDispatch) originalNode).getDispatcher();
                 // possible uniform variable syntax
                 if (CodeUtils.isUniformVariableSyntax(dispatcher)) {
-                    // uniform variable syntax => simply build all constants (is it correct or not?)
+                    // uniform variable syntax => try to resolve class
                     Collection<? extends TypeScope> types = getClassName((VariableScope) elementInfo.getScope(), dispatcher);
                     // use the first one??
                     if (!types.isEmpty()) {
@@ -947,7 +947,7 @@ class OccurenceBuilder {
                 Expression dispatcher = ((StaticDispatch) originalNode).getDispatcher();
                 // possible uniform variable syntax
                 if (CodeUtils.isUniformVariableSyntax(dispatcher)) {
-                    // uniform variable syntax => simply build all constants (is it correct or not?)
+                    // uniform variable syntax => try to resolve class
                     Collection<? extends TypeScope> types = getClassName((VariableScope) elementInfo.getScope(), dispatcher);
                     // use the first one??
                     if (!types.isEmpty()) {
@@ -990,33 +990,40 @@ class OccurenceBuilder {
         final Exact methodName = NameKind.exact(elementInfo.getName());
         final Set<MethodElement> methods = new HashSet<>();
         final Scope scope = elementInfo.getScope().getInScope();
+        QualifiedName fullyQualifiedName = null;
         ASTNodeInfo nodeInfo = elementInfo.getNodeInfo();
         if (nodeInfo != null) {
             ASTNode originalNode = nodeInfo.getOriginalNode();
             if (originalNode instanceof StaticDispatch) {
                 // possible uniform variable syntax
-                if (CodeUtils.isUniformVariableSyntax(((StaticDispatch) originalNode))) {
-                    // uniform variable syntax => simply build all methods (is it correct or not?)
-                    buildMethods(index, fileScope, occurences);
-                    buildStaticMethodInvocations(elementInfo, fileScope, occurences);
-                    buildMethodDeclarations(elementInfo, fileScope, occurences);
-                    return;
+                Expression dispatcher = ((StaticDispatch) originalNode).getDispatcher();
+                if (CodeUtils.isUniformVariableSyntax(dispatcher)) {
+                    // uniform variable syntax => try to resolve class
+                    Collection<? extends TypeScope> types = getClassName((VariableScope) elementInfo.getScope(), dispatcher);
+                    // use the first one??
+                    if (!types.isEmpty()) {
+                        fullyQualifiedName = types.iterator().next().getFullyQualifiedName();
+                    }
                 }
             }
         }
-        QualifiedName clzName = elementInfo.getTypeQualifiedName();
-        if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
-            if (clzName.getName().equalsIgnoreCase("self") || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
-                clzName = ((TypeScope) scope).getFullyQualifiedName();
-            } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) { //NOI18N
-                clzName = ((ClassScope) scope).getSuperClassName();
+        if (fullyQualifiedName == null) {
+            QualifiedName clzName = elementInfo.getTypeQualifiedName();
+            if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
+                if (clzName.getName().equalsIgnoreCase("self") || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
+                    clzName = ((TypeScope) scope).getFullyQualifiedName();
+                } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) { //NOI18N
+                    clzName = ((ClassScope) scope).getSuperClassName();
+                }
+            }
+            if (clzName != null && clzName.toString().length() > 0) {
+                fullyQualifiedName = clzName;
+                if (!fullyQualifiedName.getKind().isFullyQualified()) {
+                    fullyQualifiedName = VariousUtils.getFullyQualifiedName(clzName.toName(), elementInfo.getRange().getStart(), scope);
+                }
             }
         }
-        if (clzName != null && clzName.toString().length() > 0) {
-            QualifiedName fullyQualifiedName = clzName;
-            if (!fullyQualifiedName.getKind().isFullyQualified()) {
-                fullyQualifiedName = VariousUtils.getFullyQualifiedName(clzName.toName(), elementInfo.getRange().getStart(), scope);
-            }
+        if (fullyQualifiedName != null) {
             for (TypeElement typeElement : index.getTypes(NameKind.exact(fullyQualifiedName))) {
                 methods.addAll(ElementFilter.forName(methodName).filter(index.getAllMethods(typeElement)));
             }
