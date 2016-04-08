@@ -45,8 +45,10 @@
 package org.netbeans.modules.cnd.discovery.wizard.api;
 
 import java.util.List;
+import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
+import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.openide.filesystems.FileSystem;
 
@@ -75,7 +77,8 @@ public interface DiscoveryDescriptor {
     public static final WizardConstants.WizardConstant<List<ProjectConfiguration>> CONFIGURATIONS = new WizardConstants.WizardConstant<>("DW:configurations"); // NOI18N
     public static final WizardConstants.WizardConstant<List<String>> INCLUDED = new WizardConstants.WizardConstant<>("DW:included"); // NOI18N
     public static final WizardConstants.WizardConstant<Boolean> INVOKE_PROVIDER = new WizardConstants.WizardConstant<>("DW:invokeProvider"); // NOI18N
-    public static final WizardConstants.WizardConstant<List<String>>  BUILD_ARTIFACTS = new WizardConstants.WizardConstant<>("DW:buildArtifacts"); // NOI18N
+    public static final WizardConstants.WizardConstant<List<String>> BUILD_ARTIFACTS = new WizardConstants.WizardConstant<>("DW:buildArtifacts"); // NOI18N
+    public static final WizardConstants.WizardConstant<Map<ItemProperties.LanguageKind, Map<String, Integer>>> BUILD_TOOLS = new WizardConstants.WizardConstant<>("DW:buildTools"); // NOI18N
     public static final WizardConstants.WizardConstant<Boolean> INCREMENTAL = new WizardConstants.WizardConstant<>("DW:incremental"); // NOI18N
 
     Project getProject();
@@ -132,6 +135,9 @@ public interface DiscoveryDescriptor {
 
     List<String> getBuildArtifacts();
     void setBuildArtifacts(List<String> buildArtifacts);
+
+    Map<ItemProperties.LanguageKind, Map<String, Integer>> getBuildTools();
+    void setBuildTools(Map<ItemProperties.LanguageKind, Map<String, Integer>> buildTools);
 
     List<String> getSearchPaths();
     void setSearchPaths(List<String> searchPaths);

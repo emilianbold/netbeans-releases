@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
+import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
@@ -283,6 +284,11 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                 public List<String> getBuildArtifacts() {
                     return null;
                 }
+
+                @Override
+                public Map<ItemProperties.LanguageKind, Map<String, Integer>> getBuildTools() {
+                    return null;
+                }
                 
                 @Override
                 public List<SourceFileProperties> getSourcesConfiguration() {
@@ -292,12 +298,12 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                         if (set != null && set.length() > 0) {
                             String[] add = LIBRARIES_PROPERTY.getValue();
                             if (add == null || add.length==0) {
-                                myFileProperties = getSourceFileProperties(new String[]{set},null, project, myDependencies, null, new CompileLineStorage());
+                                myFileProperties = getSourceFileProperties(new String[]{set},null, project, myDependencies, null, null, new CompileLineStorage());
                             } else {
                                 String[] all = new String[add.length+1];
                                 all[0] = set;
                                 System.arraycopy(add, 0, all, 1, add.length);
-                                myFileProperties = getSourceFileProperties(all,null, project, myDependencies, null, new CompileLineStorage());
+                                myFileProperties = getSourceFileProperties(all,null, project, myDependencies, null, null, new CompileLineStorage());
                             }
                             store(project);
                         }

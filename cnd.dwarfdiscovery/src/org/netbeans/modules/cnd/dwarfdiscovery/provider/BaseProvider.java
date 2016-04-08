@@ -52,6 +52,7 @@ import java.util.logging.Level;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
+import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
@@ -202,7 +203,8 @@ public abstract class BaseProvider implements DiscoveryProvider {
         return myCommpilerSettings;
     }    
 
-    abstract protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage);
+    abstract protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls,
+            List<String> buildArtifacts, Map<ItemProperties.LanguageKind,Map<String,Integer>> buildTools, CompileLineStorage storage);
     
     protected void before() {
     }
@@ -211,7 +213,7 @@ public abstract class BaseProvider implements DiscoveryProvider {
     }
     
     protected final List<SourceFileProperties> getSourceFileProperties(String[] objFileName, Progress progress, ProjectProxy project,
-            Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage){
+            Set<String> dlls, List<String> buildArtifacts, Map<ItemProperties.LanguageKind,Map<String,Integer>> buildTools, CompileLineStorage storage){
         try{
             before();
             Map<String,SourceFileProperties> map = new ConcurrentHashMap<String,SourceFileProperties>();
@@ -219,7 +221,7 @@ public abstract class BaseProvider implements DiscoveryProvider {
                 String oldThreadName = Thread.currentThread().getName();
                 try {
                     Thread.currentThread().setName("Analyzing "+objFileName[0]); // NOI18N
-                    processArtifactFile(objFileName[0], map, progress, project, dlls, buildArtifacts, storage);
+                    processArtifactFile(objFileName[0], map, progress, project, dlls, buildArtifacts, buildTools, storage);
                 } catch (Throwable ex) {
                     ex.printStackTrace(System.err);
                 }
@@ -228,7 +230,7 @@ public abstract class BaseProvider implements DiscoveryProvider {
                 CountDownLatch countDownLatch = new CountDownLatch(objFileName.length);
                 RequestProcessor rp = new RequestProcessor("Parallel analyzing", CndUtils.getNumberCndWorkerThreads()); // NOI18N
                 for (String file : objFileName) {
-                    MyRunnable r = new MyRunnable(countDownLatch, file, map, progress, project, dlls, buildArtifacts, storage);
+                    MyRunnable r = new MyRunnable(countDownLatch, file, map, progress, project, dlls, buildArtifacts, buildTools, storage);
                     rp.post(r);
                 }
                 try {
@@ -333,7 +335,8 @@ public abstract class BaseProvider implements DiscoveryProvider {
         return null;
     }
         
-    private boolean processArtifactFile(String file, Map<String, SourceFileProperties> map, Progress progress, ProjectProxy project, Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage) {
+    private boolean processArtifactFile(String file, Map<String, SourceFileProperties> map, Progress progress, ProjectProxy project, Set<String> dlls,
+            List<String> buildArtifacts, Map<ItemProperties.LanguageKind,Map<String,Integer>> buildTools, CompileLineStorage storage) {
         if (isStoped.get()) {
             return true;
         }
@@ -349,7 +352,7 @@ public abstract class BaseProvider implements DiscoveryProvider {
         if (restrictCompileRoot != null && !restrictCompileRoot.isEmpty()) {
             restrictCompileRoot = CndFileUtils.normalizeAbsolutePath(fileSystem, restrictCompileRoot);
         }
-        for (SourceFileProperties f : getSourceFileProperties(file, map, project, dlls, buildArtifacts, storage)) {
+        for (SourceFileProperties f : getSourceFileProperties(file, map, project, dlls, buildArtifacts, buildTools, storage)) {
             if (isStoped.get()) {
                 break;
             }
@@ -440,10 +443,11 @@ public abstract class BaseProvider implements DiscoveryProvider {
         private final ProjectProxy project;
         private final Set<String> dlls;
         private final List<String> buildArtifacts;
+        private final Map<ItemProperties.LanguageKind,Map<String,Integer>> buildTools;
         private final CompileLineStorage storage;
 
         private MyRunnable(CountDownLatch countDownLatch, String file, Map<String, SourceFileProperties> map, Progress progress, ProjectProxy project,
-                Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage){
+                Set<String> dlls, List<String> buildArtifacts, Map<ItemProperties.LanguageKind,Map<String,Integer>> buildTools, CompileLineStorage storage){
             this.file = file;
             this.map = map;
             this.progress = progress;
@@ -451,6 +455,7 @@ public abstract class BaseProvider implements DiscoveryProvider {
             this.project = project;
             this.dlls = dlls;
             this.buildArtifacts = buildArtifacts;
+            this.buildTools = buildTools;
             this.storage = storage;
         }
         @Override
@@ -458,7 +463,7 @@ public abstract class BaseProvider implements DiscoveryProvider {
             try {
                 if (!isStoped.get()) {
                     Thread.currentThread().setName("Parallel analyzing "+file); // NOI18N
-                    processArtifactFile(file, map, progress, project, dlls, buildArtifacts, storage);
+                    processArtifactFile(file, map, progress, project, dlls, buildArtifacts, buildTools, storage);
                 }
             } finally {
                 countDownLatch.countDown();

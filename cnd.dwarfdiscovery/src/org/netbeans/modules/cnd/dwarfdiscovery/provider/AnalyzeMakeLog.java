@@ -48,9 +48,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
+import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
@@ -191,22 +193,25 @@ public class AnalyzeMakeLog extends BaseProvider {
     }
 
     @Override
-    protected List<SourceFileProperties> getSourceFileProperties(String logFileName, Map<String,SourceFileProperties> map, ProjectProxy project, Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage){
+    protected List<SourceFileProperties> getSourceFileProperties(String logFileName, Map<String,SourceFileProperties> map, ProjectProxy project, Set<String> dlls,
+            List<String> buildArtifacts, Map<ItemProperties.LanguageKind,Map<String,Integer>> buildTools, CompileLineStorage storage){
         String root = RESTRICT_COMPILE_ROOT_PROPERTY.getValue();
         if (root == null) {
             root = ""; //NOI18N
         }
-        List<SourceFileProperties> res = runLogReader(getLog(logFileName), root, progress, project, buildArtifacts, storage);
+        List<SourceFileProperties> res = runLogReader(getLog(logFileName), root, progress, project, buildArtifacts, buildTools, storage);
         progress = null;
         return res;
 
     }
     
-    private List<SourceFileProperties> runLogReader(FileObject logFileObject, String root, Progress progress, ProjectProxy project, List<String> buildArtifacts, CompileLineStorage storage){
+    private List<SourceFileProperties> runLogReader(FileObject logFileObject, String root, Progress progress, ProjectProxy project,
+            List<String> buildArtifacts, Map<ItemProperties.LanguageKind,Map<String,Integer>> buildTools, CompileLineStorage storage){
         FileSystem fileSystem = getFileSystem(project);
         MakeLogReader reader = new MakeLogReader(logFileObject, root, project, getRelocatablePathMapper(), fileSystem);
         List<SourceFileProperties> list = reader.getResults(progress, getStopInterrupter(), storage);
         buildArtifacts.addAll(reader.getArtifacts(progress, getStopInterrupter(), storage));
+        buildTools.putAll(reader.getTools(progress, getStopInterrupter(), storage));
         return list;
     }
 
@@ -222,6 +227,7 @@ public class AnalyzeMakeLog extends BaseProvider {
             Configuration conf = new Configuration(){
                 private List<SourceFileProperties> myFileProperties;
                 private List<String> myBuildArtifacts;
+                private Map<ItemProperties.LanguageKind,Map<String,Integer>> buildTools;
                 private List<String> myIncludedFiles = new ArrayList<String>();;
                 @Override
                 public List<ProjectProperties> getProjectConfiguration() {
@@ -236,25 +242,23 @@ public class AnalyzeMakeLog extends BaseProvider {
                 @Override
                 public List<String> getBuildArtifacts() {
                     if (myBuildArtifacts == null){
-                        String set = MAKE_LOG_PROPERTY.getValue();
-                        if (set != null && set.length() > 0) {
-                            myBuildArtifacts = Collections.synchronizedList(new ArrayList<String>());
-                            myFileProperties = getSourceFileProperties(new String[]{set},null, project, null, myBuildArtifacts, new CompileLineStorage());
-                            store(project);
-                        }
+                        process();
                     }
                     return myBuildArtifacts;
                 }
-                
+
+                @Override
+                public Map<ItemProperties.LanguageKind, Map<String, Integer>> getBuildTools() {
+                    if (buildTools == null){
+                        process();
+                    }
+                    return buildTools;
+                }
+
                 @Override
                 public List<SourceFileProperties> getSourcesConfiguration() {
                     if (myFileProperties == null){
-                        String set = MAKE_LOG_PROPERTY.getValue();
-                        if (set != null && set.length() > 0) {
-                            myBuildArtifacts = Collections.synchronizedList(new ArrayList<String>());
-                            myFileProperties = getSourceFileProperties(new String[]{set},null, project, null, myBuildArtifacts, new CompileLineStorage());
-                            store(project);
-                        }
+                        process();
                     }
                     return myFileProperties;
                 }
@@ -262,6 +266,16 @@ public class AnalyzeMakeLog extends BaseProvider {
                 @Override
                 public List<String> getIncludedFiles(){
                     return myIncludedFiles;
+                }
+
+                private void process() {
+                    String set = MAKE_LOG_PROPERTY.getValue();
+                    if (set != null && set.length() > 0) {
+                        myBuildArtifacts = Collections.synchronizedList(new ArrayList<String>());
+                        buildTools = new ConcurrentHashMap<ItemProperties.LanguageKind, Map<String, Integer>>();
+                        myFileProperties = getSourceFileProperties(new String[]{set},null, project, null, myBuildArtifacts, buildTools, new CompileLineStorage());
+                        store(project);
+                    }
                 }
             };
             confs.add(conf);
