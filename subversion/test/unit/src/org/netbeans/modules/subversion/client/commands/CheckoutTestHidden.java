@@ -190,7 +190,7 @@ public class CheckoutTestHidden extends AbstractCommandTestCase {
         } else {
             assertStatus(SVNStatusKind.NORMAL, chFolder1);
         }
-        assertStatus(SVNStatusKind.UNVERSIONED, chFile); 
+        assertStatus(SVNStatusKind.NONE, chFile); 
         
         assertNotifiedFiles(new File[] {});
     }
@@ -233,7 +233,7 @@ public class CheckoutTestHidden extends AbstractCommandTestCase {
         assertStatus(SVNStatusKind.NORMAL, checkout);                
         assertStatus(SVNStatusKind.NORMAL, chFolder1);        
         assertStatus(SVNStatusKind.NORMAL, chFile);                
-        assertStatus(SVNStatusKind.UNVERSIONED, chAddedFile);                
+        assertStatus(SVNStatusKind.NONE, chAddedFile);                
         
         assertNotifiedFiles(new File[] {chFolder1, chFile});
     }

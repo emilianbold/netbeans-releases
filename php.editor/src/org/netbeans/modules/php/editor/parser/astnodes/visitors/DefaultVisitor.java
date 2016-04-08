@@ -470,19 +470,19 @@ public class DefaultVisitor implements Visitor {
 
     @Override
     public void visit(StaticConstantAccess node) {
-        scan(node.getClassName());
+        scan(node.getDispatcher());
         scan(node.getConstant());
     }
 
     @Override
     public void visit(StaticFieldAccess node) {
-        scan(node.getClassName());
+        scan(node.getDispatcher());
         scan(node.getField());
     }
 
     @Override
     public void visit(StaticMethodInvocation node) {
-        scan(node.getClassName());
+        scan(node.getDispatcher());
         scan(node.getMethod());
     }
 

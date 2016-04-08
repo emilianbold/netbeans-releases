@@ -64,7 +64,9 @@ import javax.swing.plaf.UIResource;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
+import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
@@ -577,7 +579,7 @@ public class CompilePanel extends javax.swing.JPanel implements HelpCtx.Provider
         }
 
         protected void getPlatforms(JavaPlatformManager jpm) {
-            data = jpm.getInstalledPlatforms();
+            data = jpm.getPlatforms(null, new Specification (CommonProjectUtils.J2SE_PLATFORM_TYPE, null));
             if(LOG.isLoggable(Level.FINE)) {
                 for (JavaPlatform jp : data) {
                     LOG.log(Level.FINE, "Adding JavaPlaform: {0}", jp.getDisplayName());

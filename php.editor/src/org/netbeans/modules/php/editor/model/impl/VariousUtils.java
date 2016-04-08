@@ -898,9 +898,9 @@ public final class VariousUtils {
         } else if (varBase instanceof StaticMethodInvocation) {
             StaticMethodInvocation staticMethodInvocation = (StaticMethodInvocation) varBase;
             String className = null;
-            Expression classNameExpression = staticMethodInvocation.getClassName();
-            if (classNameExpression instanceof Identifier || classNameExpression instanceof NamespaceName) {
-                className = CodeUtils.extractQualifiedName(classNameExpression);
+            Expression dispatcher = staticMethodInvocation.getDispatcher();
+            if (dispatcher instanceof Identifier || dispatcher instanceof NamespaceName) {
+                className = CodeUtils.extractQualifiedName(dispatcher);
             }
             String methodName = CodeUtils.extractFunctionName(staticMethodInvocation.getMethod());
 
@@ -921,7 +921,7 @@ public final class VariousUtils {
             }
         } else if (varBase instanceof StaticFieldAccess) {
             StaticFieldAccess fieldAccess = (StaticFieldAccess) varBase;
-            String clsName = CodeUtils.extractUnqualifiedName(fieldAccess.getClassName());
+            String clsName = CodeUtils.extractUnqualifiedName(fieldAccess.getDispatcher());
             String fldName = CodeUtils.extractVariableName(fieldAccess.getField());
             if (clsName != null && fldName != null) {
                 return PRE_OPERATION_TYPE_DELIMITER + STATIC_FIELD_TYPE_PREFIX + clsName + '.' + fldName;
@@ -1061,6 +1061,9 @@ public final class VariousUtils {
                             metaAll.insert(0, PRE_OPERATION_TYPE_DELIMITER + VariousUtils.FIELD_TYPE_PREFIX);
                             metaAll.insert(0, translateSpecialClassName(varScope, token.text().toString()));
                             state = State.CLASSNAME;
+                        } else if (isRightBracket(token)) {
+                            rightBraces++;
+                            state = State.PARAMS;
                         } else if (isRightArryBracket(token)) {
                             arrayBrackets++;
                             state = State.IDX;

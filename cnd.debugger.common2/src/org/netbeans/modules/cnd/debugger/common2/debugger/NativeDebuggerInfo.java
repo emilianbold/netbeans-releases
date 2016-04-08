@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.debugger.common2.DbgActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.*;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
@@ -56,6 +58,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineDescriptor;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
+import org.openide.filesystems.FileObject;
 import org.openide.windows.InputOutput;
 
 
@@ -153,6 +156,24 @@ public abstract class NativeDebuggerInfo {
 
     public final void setConfiguration(Configuration configuration) {
 	this.configuration = configuration;
+    }
+    
+    private final Object lock = new Object();
+    private volatile Project project;
+    
+    /*package*/ final Project getProject() {
+        synchronized (lock) {
+            if (project == null) {
+                FileObject projectDir = getConfiguration().getBaseFSPath().getFileObject();
+                for (Project openProject : OpenProjects.getDefault().getOpenProjects()) {
+                    if (openProject.getProjectDirectory().equals(projectDir)) {
+                        project = openProject;
+                    }
+                }
+            }
+        }
+        
+        return project;
     }
 
     private DebugTarget debugtarget;

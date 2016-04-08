@@ -74,22 +74,26 @@ public class JavaOutputListenerProvider implements OutputProcessor {
     private final Pattern failPattern;
     private String windowsDrive; // #197381
     /** @see org.codehaus.plexus.compiler.javac.JavacCompiler#compile */
-    private static final Pattern windowsDriveInfoPattern = Pattern.compile("Compiling \\d+ source files? to ([A-Za-z]:)\\\\.+");
+    private static final String GROUP_CLAZZ_NAME = "clazz";
+    private static final String GROUP_LINE_NR = "linenr";
+    private static final String GROUP_TEXT = "text";
+    private static final String GROUP_DRIVE_NAME = "drive";
+    private static final Pattern windowsDriveInfoPattern = Pattern.compile("(?:\\[INFO\\] )?Compiling \\d+ source files? to (?<" + GROUP_DRIVE_NAME + ">[A-Za-z]:)\\\\.+");
     
     /** Creates a new instance of JavaOutputListenerProvider */
     public JavaOutputListenerProvider() {
         //[javac] required because of forked compilation
         //DOTALL seems to fix MEVENIDE-455 on windows. one of the characters seems to be a some kind of newline and that's why the line doesnt' get matched otherwise.
-        failPattern = Pattern.compile("\\s*(?:\\[WARNING\\])?(?:\\[javac\\])?(?:Compilation failure)?\\s*(.*)\\.java\\:\\[([0-9]*),([0-9]*)\\] (.*)", Pattern.DOTALL); //NOI18N
+        failPattern = Pattern.compile("\\s*(?:\\[(WARNING|ERROR)\\])?(?:\\[javac\\])?(?:Compilation failure)?\\s*(?<" + GROUP_CLAZZ_NAME + ">.*)\\.java\\:\\[(?<" + GROUP_LINE_NR + ">[0-9]*),([0-9]*)\\] (?<" + GROUP_TEXT + ">.*)", Pattern.DOTALL); //NOI18N
     }
     
     @Override
     public void processLine(String line, OutputVisitor visitor) {
             Matcher match = failPattern.matcher(line);
             if (match.matches()) {
-                String clazz = match.group(1);
-                String lineNum = match.group(2);
-                String text = match.group(4);
+                String clazz = match.group(GROUP_CLAZZ_NAME);
+                String lineNum = match.group(GROUP_LINE_NR);
+                String text = match.group(GROUP_TEXT);
                 File clazzfile;
                 if (clazz.startsWith("\\") && !clazz.startsWith("\\\\") && windowsDrive != null) {
                     clazzfile = FileUtil.normalizeFile(new File(windowsDrive + clazz + ".java"));
@@ -122,8 +126,8 @@ public class JavaOutputListenerProvider implements OutputProcessor {
             }
         match = windowsDriveInfoPattern.matcher(line);
         if (match.matches()) {
-            windowsDrive = match.group(1);
-        }
+            windowsDrive = match.group(GROUP_DRIVE_NAME);
+        }        
     }
 
     @Override

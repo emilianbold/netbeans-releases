@@ -444,6 +444,10 @@ public final class CodeStyle {
         return preferences.getBoolean(SPACE_BEFORE_CLOSE_PHP_TAG, getDefaultAsBoolean(SPACE_BEFORE_CLOSE_PHP_TAG));
     }
 
+    public boolean spaceBetweenOpenPHPTagAndNamespace() {
+        return preferences.getBoolean(SPACE_BETWEEN_OPEN_PHP_TAG_AND_NAMESPACE, getDefaultAsBoolean(SPACE_BETWEEN_OPEN_PHP_TAG_AND_NAMESPACE));
+    }
+
     // alignment
     public boolean alignMultilineMethodParams() {
         return preferences.getBoolean(ALIGN_MULTILINE_METHOD_PARAMS, getDefaultAsBoolean(ALIGN_MULTILINE_METHOD_PARAMS));

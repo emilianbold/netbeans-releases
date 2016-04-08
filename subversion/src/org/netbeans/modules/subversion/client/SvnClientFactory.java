@@ -284,11 +284,12 @@ public class SvnClientFactory {
         String jhlInitFile = Places.getUserDirectory().getAbsolutePath() + "/config/svn/jhlinit";
         File initFile = new File(jhlInitFile);
 
-        if(checkJavahlCrash(initFile)) {
+        if(checkJavahlCrash(initFile) && !SvnClientFactory.FACTORY_TYPE_JAVAHL.equals(SvnModuleConfig.getDefault().getForcedSvnFactory())) {
             return false;
         }
         try {
-            if(!initFile.exists()) initFile.createNewFile();
+            initFile.delete();
+            initFile.createNewFile();
         } catch (IOException ex) {
             // should not happen
             LOG.log(Level.INFO, null, ex);

@@ -3962,29 +3962,6 @@ public class BaseKit extends DefaultEditorKit {
         }
     } // End of DefaultSyntaxTokenContext class
 
-    private static class CaretEdit extends AbstractUndoableEdit {
-
-        private final JTextComponent target;
-        private final List<Position> offsets;
-
-        public CaretEdit(List<Position> offsets, JTextComponent target) {
-            this.target = target;
-            this.offsets = offsets;
-        }
-
-        @Override
-        public void undo() throws CannotUndoException {
-            EditorCaret caret = (EditorCaret) target.getCaret();
-            caret.replaceCarets(offsets);
-        }
-
-        @Override
-        public void redo() throws CannotRedoException {
-            EditorCaret caret = (EditorCaret) target.getCaret();
-            caret.replaceCarets(offsets);
-        }
-    }
-    
     private class KeybindingsAndPreferencesTracker implements LookupListener, PreferenceChangeListener {
         
         private final String mimeType;

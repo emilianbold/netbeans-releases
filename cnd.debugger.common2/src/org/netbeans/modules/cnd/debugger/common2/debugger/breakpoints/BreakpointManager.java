@@ -158,7 +158,7 @@ public final class BreakpointManager {
         private Kind kind;
         private int routingToken;
         private final NativeBreakpoint target;
-        private /* LATER final */ NativeBreakpoint template;
+        private /* LATER final */ volatile NativeBreakpoint template;
         private final NativeBreakpoint midlevel;
         private Gen gen;
 
@@ -351,7 +351,7 @@ public final class BreakpointManager {
         final Map<Integer, BreakpointJob> map = breakpointJobs.map;
         for (BreakpointJob breakpointJob : map.values()) {
             NativeBreakpoint bp = breakpointJob.template();
-            if (bp.matchesLine(fileName, lineNo)) {
+            if (bp != null && bp.matchesLine(fileName, lineNo)) {
                 return true;
             }
         }

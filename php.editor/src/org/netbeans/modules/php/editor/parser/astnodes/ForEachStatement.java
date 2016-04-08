@@ -47,7 +47,13 @@ package org.netbeans.modules.php.editor.parser.astnodes;
  * foreach (array_expression as $value)
  *   statement;
  *
+ * foreach (array_expression as list($v1, $v2))
+ *   statement;
+ *
  * foreach (array_expression as $key => $value)
+ *   statement;
+ *
+ * foreach (array_expression as $key => list($v1, $v2))
  *   statement;
  *
  * foreach (array_expression as $key => $value):

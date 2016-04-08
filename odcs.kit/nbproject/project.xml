@@ -52,6 +52,11 @@
                     <run-dependency/>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.eclipse.mylyn.wikitext.markdown.core</code-name-base>
+                    <build-prerequisite/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
                     <code-name-base>org.eclipse.mylyn.wikitext.core</code-name-base>
                     <build-prerequisite/>
                     <run-dependency/>

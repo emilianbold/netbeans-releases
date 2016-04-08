@@ -52,6 +52,7 @@ import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
+import org.tigris.subversion.svnclientadapter.SVNStatusKind;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -363,7 +364,7 @@ public class StatusTestHidden extends AbstractCommandTestCase {
     private File createExternal(String fileName) throws Exception {
         File externals = createFolder(fileName);                
         add(externals);
-        SVNUrl repo2Url = copyRepo();
+        SVNUrl repo2Url = copyRepo("createExternal-" + System.currentTimeMillis());
 
         try {
             mkdir(repo2Url.appendPath("e1"));

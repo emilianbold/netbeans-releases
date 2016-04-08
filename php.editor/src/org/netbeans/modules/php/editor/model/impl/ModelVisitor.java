@@ -668,11 +668,11 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 scan(method);
             }
         }
-        Expression className = node.getClassName();
-        if (className instanceof Variable) {
-            scan(className);
-        } else if (className instanceof NamespaceName) {
-            occurencesBuilder.prepare((NamespaceName) className, scope);
+        Expression dispatcher = node.getDispatcher();
+        if (dispatcher instanceof Variable) {
+            scan(dispatcher);
+        } else if (dispatcher instanceof NamespaceName) {
+            occurencesBuilder.prepare((NamespaceName) dispatcher, scope);
         }
         scan(node.getMethod().getParameters());
     }
@@ -705,12 +705,12 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     public void visit(StaticConstantAccess node) {
         Scope scope = modelBuilder.getCurrentScope();
         occurencesBuilder.prepare(node, scope);
-        Expression className = node.getClassName();
-        if (className instanceof Variable) {
-            scan(className);
-        } else if (className instanceof NamespaceName) {
+        Expression dispatcher = node.getDispatcher();
+        if (dispatcher instanceof Variable) {
+            scan(dispatcher);
+        } else if (dispatcher instanceof NamespaceName) {
             Kind[] kinds = {Kind.CLASS, Kind.IFACE};
-            occurencesBuilder.prepare(kinds, (NamespaceName) className, scope);
+            occurencesBuilder.prepare(kinds, (NamespaceName) dispatcher, scope);
         }
         Expression constant = node.getConstant();
         if (constant instanceof ExpressionArrayAccess) {
@@ -928,8 +928,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             }
         } else if (leftHandSide instanceof StaticFieldAccess) {
             StaticFieldAccess staticFieldAccess = (StaticFieldAccess) leftHandSide;
-            Expression className = staticFieldAccess.getClassName();
-            String unqualifiedClassName = CodeUtils.extractUnqualifiedName(className);
+            Expression dispatcher = staticFieldAccess.getDispatcher();
+            String unqualifiedClassName = CodeUtils.extractUnqualifiedName(dispatcher);
             if (VariousUtils.isStaticClassName(unqualifiedClassName)) {
                 VariableNameImpl varN = findVariable(modelBuilder.getCurrentScope(), "$this"); //NOI18N
                 if (varN != null) {
@@ -1149,11 +1149,11 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     public void visit(StaticFieldAccess node) {
         Scope scope = modelBuilder.getCurrentScope();
         occurencesBuilder.prepare(node, scope);
-        Expression className = node.getClassName();
-        if (className instanceof Variable) {
-            scan(className);
-        } else if (className instanceof NamespaceName) {
-            occurencesBuilder.prepare((NamespaceName) className, scope);
+        Expression dispatcher = node.getDispatcher();
+        if (dispatcher instanceof Variable) {
+            scan(dispatcher);
+        } else if (dispatcher instanceof NamespaceName) {
+            occurencesBuilder.prepare((NamespaceName) dispatcher, scope);
         }
         Variable field = node.getField();
         if (field instanceof ArrayAccess) {

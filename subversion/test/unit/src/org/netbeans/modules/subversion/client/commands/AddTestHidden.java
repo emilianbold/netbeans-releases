@@ -117,7 +117,7 @@ public class AddTestHidden extends AbstractCommandTestCase {
     public void testAddNoFile() throws Exception {
         File file = new File(getWC(), "fail");
 
-        assertStatus(SVNStatusKind.UNVERSIONED, file);
+        assertStatus(SVNStatusKind.NONE, file);
 
         ISVNClientAdapter c = getNbClient();
 
@@ -223,7 +223,7 @@ public class AddTestHidden extends AbstractCommandTestCase {
     public void testAddNoDirectory() throws Exception {
         File file = new File(getWC(), "fail");
 
-        assertStatus(SVNStatusKind.UNVERSIONED, file);
+        assertStatus(SVNStatusKind.NONE, file);
 
         SVNClientException e = null;
         try {

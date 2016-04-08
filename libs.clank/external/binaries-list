@@ -1,6 +1,6 @@
-#changeset:   17119:7fc21a01933d
+#changeset:   17314:3f81f6453a4c
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Mon Mar 21 01:19:00 2016 +0300
-#summary:     fixed #258439 - [newcodemodel] UnsupportedOperationException: View 'posix' not available (binary)
-38DAC4EB409E96D3AABD4D3F5807505BB751C043 clank_0.3.6.zip
+#date:        Wed Apr 06 23:47:36 2016 +0300
+#summary:     fixed #258692: [newcodemodel] a lot of PTH files remains in TMP on windows
+5BCBF262BE818340875EEBBAE1D1EF4F949DB8E3 clank_0.3.6.zip

@@ -99,8 +99,6 @@ public final class CodeUtils {
     public static final String STATIC_METHOD_TYPE_PREFIX = "@static.mtd:";
     private static final Logger LOGGER = Logger.getLogger(CodeUtils.class.getName());
 
-    private static final boolean PHP7 = Boolean.getBoolean("nb.php7"); // NOI18N
-
 
     private CodeUtils() {
     }
@@ -176,11 +174,6 @@ public final class CodeUtils {
                 && name.charAt(0) == '#'; // NOI18N
     }
 
-    // XXX remove!
-    public static boolean isLessThanPhp70(FileObject file) {
-        return !PHP7;
-    }
-
     public static boolean isPhpVersion(FileObject file, PhpVersion version) {
         assert file != null;
         assert version != null;
@@ -241,10 +234,11 @@ public final class CodeUtils {
         return null;
     }
 
+    // XXX not only class name anymore in php7+
     public static String extractUnqualifiedClassName(StaticDispatch dispatch) {
         Parameters.notNull("dispatch", dispatch);
-        Expression clsName = dispatch.getClassName();
-        return extractUnqualifiedName(clsName);
+        Expression dispatcher = dispatch.getDispatcher();
+        return extractUnqualifiedName(dispatcher);
     }
 
     public static String extractUnqualifiedTypeName(FormalParameter param) {
@@ -495,14 +489,12 @@ public final class CodeUtils {
             return "array()"; //NOI18N
         } else if (expr instanceof StaticConstantAccess) {
             StaticConstantAccess staticConstantAccess = (StaticConstantAccess) expr;
-            Expression className = staticConstantAccess.getClassName();
-
-            if (className instanceof Identifier) {
-                Identifier i = (Identifier) className;
-
+            Expression dispatcher = staticConstantAccess.getDispatcher();
+            if (dispatcher instanceof Identifier) {
+                Identifier i = (Identifier) dispatcher;
                 return i.getName() + "::" + staticConstantAccess.getConstantName().getName(); // NOI18N
-            } else if (className instanceof NamespaceName) {
-                NamespaceName namespace = (NamespaceName) className;
+            } else if (dispatcher instanceof NamespaceName) {
+                NamespaceName namespace = (NamespaceName) dispatcher;
                 StringBuilder sb = new StringBuilder(extractQualifiedName(namespace));
                 return sb.append("::").append(staticConstantAccess.getConstantName().getName()).toString(); // NOI18N
             }

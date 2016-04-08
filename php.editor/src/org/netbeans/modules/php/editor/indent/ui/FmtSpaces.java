@@ -323,7 +323,8 @@ public final class FmtSpaces extends JPanel implements TreeCellRenderer, MouseLi
                 new Item(SPACE_AFTER_TYPE_CAST),
                 new Item(SPACE_CHECK_AFTER_KEYWORDS),
                 new Item(SPACE_AFTER_SHORT_PHP_TAG),
-                new Item(SPACE_BEFORE_CLOSE_PHP_TAG))
+                new Item(SPACE_BEFORE_CLOSE_PHP_TAG),
+                new Item(SPACE_BETWEEN_OPEN_PHP_TAG_AND_NAMESPACE))
 
         };
 

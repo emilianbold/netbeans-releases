@@ -41,14 +41,16 @@
  */
 package org.netbeans.modules.bugtracking.commons;
 
-import org.netbeans.modules.bugtracking.commons.LinkButton;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -69,9 +71,35 @@ public final class CollapsibleSectionPanel extends javax.swing.JPanel implements
      */
     public CollapsibleSectionPanel () {
         initComponents();
+        setColors();
+        sectionButton1.addFocusListener(this);
+    }
+
+    private void setColors() {
         Color c = getHeaderBackground();
         headerPanel.setBackground(c);
-        sectionButton1.addFocusListener(this);
+        setForeground(headerPanel);
+    }
+
+    private void setForeground(Container container) {
+        for (Component cmp : container.getComponents()) {
+            Color c = sectionButton1.getForeground();
+            if(cmp instanceof LinkButton) {
+                LinkButton lb = (LinkButton)cmp;
+                if (sectionButton1.isFocusOwner()) {
+                    lb.setAlternativeLinkColor(c);
+                } else {
+                    lb.setAlternativeLinkColor(null);                    
+                }
+                lb.setForeground(lb.getLinkColor());
+            } else if(cmp instanceof JButton) {
+                ((JButton) cmp).setForeground(c);
+            } else if(cmp instanceof JLabel) {
+                ((JLabel) cmp).setForeground(c);
+            } else if(cmp instanceof Container) {
+                setForeground((Container) cmp);
+            }
+        }        
     }
 
     public void setLabel (String label) {
@@ -137,7 +165,7 @@ public final class CollapsibleSectionPanel extends javax.swing.JPanel implements
             }
             return UIManager.getColor("PropSheet.setBackground"); //NOI18N
         }
-    }
+    }    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -248,8 +276,7 @@ public final class CollapsibleSectionPanel extends javax.swing.JPanel implements
 
     private void focusEvent (FocusEvent e) {
         if (sectionButton1 == e.getSource()) {
-            Color c = getHeaderBackground();
-            headerPanel.setBackground(c);
+            setColors();
         }
     }
 

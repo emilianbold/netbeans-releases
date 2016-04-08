@@ -42,10 +42,13 @@
 
 package org.netbeans.modules.subversion.client;
 
+import java.lang.reflect.Method;
 import org.netbeans.modules.subversion.client.commands.*;
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.subversion.FileStatusCache;
 
 /**
  * intended to be run with 1.8 client
@@ -64,35 +67,36 @@ public class SvnKitClientTest extends NbTestCase {
     }
     
     public static Test suite() throws Exception {
-
-        System.setProperty("svnClientAdapterFactory", "svnkit");
-
-        TestSuite suite = new TestSuite();        
-        suite.addTestSuite(AddTestHidden.class);
-        suite.addTestSuite(BlameTestHidden.class);
-        suite.addTestSuite(CatTestHidden.class);
-        suite.addTestSuite(CheckoutTestHidden.class);
-        suite.addTestSuite(CommitTestHidden.class);
-        suite.addTestSuite(CopyTestHidden.class);
-        suite.addTestSuite(DifferentWorkingDirsTestHidden.class);
-        suite.addTestSuite(ImportTestHidden.class);
-        suite.addTestSuite(InfoTestHidden.class);
-        suite.addTestSuite(ListTestHidden.class);
-        suite.addTestSuite(LogTestHidden.class);
-        suite.addTestSuite(MergeTestHidden.class);
-        suite.addTestSuite(MkdirTestHidden.class);
-        suite.addTestSuite(MoveTestHidden.class);
-        suite.addTestSuite(ParsedStatusTestHidden.class);
-        suite.addTestSuite(PropertyTestHidden.class);
-        suite.addTestSuite(RelocateTestHidden.class);
-        suite.addTestSuite(RemoveTestHidden.class);
-        suite.addTestSuite(ResolvedTestHidden.class);
-        suite.addTestSuite(RevertTestHidden.class);
-        suite.addTestSuite(StatusTestHidden.class);
-        suite.addTestSuite(TreeConflictsTestHidden.class);
-        suite.addTestSuite(SwitchToTestHidden.class);
-        suite.addTestSuite(UpdateTestHidden.class);
         
-        return suite;
+        System.setProperty("svnClientAdapterFactory", "svnkit");
+        // svnkit uses its own version of javahl types,
+        // test needs to run with NB module system to load classes properly
+        return NbModuleSuite.emptyConfiguration()
+                .addTest(AddTestHidden.class)
+                .addTest(BlameTestHidden.class)
+                .addTest(CatTestHidden.class)
+                .addTest(CheckoutTestHidden.class)
+                .addTest(CommitTestHidden.class)
+                .addTest(CopyTestHidden.class)
+                .addTest(DifferentWorkingDirsTestHidden.class)
+                .addTest(ImportTestHidden.class)
+                .addTest(InfoTestHidden.class)
+                .addTest(ListTestHidden.class)
+                .addTest(LogTestHidden.class)
+                .addTest(MergeTestHidden.class)
+                .addTest(MkdirTestHidden.class)
+                .addTest(MoveTestHidden.class)
+                .addTest(ParsedStatusTestHidden.class)
+                .addTest(PropertyTestHidden.class)
+                .addTest(RelocateTestHidden.class)
+                .addTest(RemoveTestHidden.class)
+                .addTest(ResolvedTestHidden.class)
+                .addTest(RevertTestHidden.class)
+                .addTest(StatusTestHidden.class)
+                .addTest(TreeConflictsTestHidden.class)
+                .addTest(SwitchToTestHidden.class)
+                .addTest(UpdateTestHidden.class)
+                .gui(false)
+                .suite();
     }
 }

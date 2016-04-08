@@ -54,7 +54,7 @@ large C/C++ applications are as follows:</p>
 
 <p>
 In the IDE configuration file, you can set the heap size for the JVM on which the IDE runs. </p>
-<ul class="note"><li>If you are using Oracle Solaris Studio, see <a href="#oss">To change the heap size for Oracle Solaris Studio.</a></li></ul>
+<ul class="note"><li>If you are using Oracle Developer Studio, see <a href="#oss">To change the heap size for Oracle Developer Studio.</a></li></ul>
 <a name="nb"> <p><b>To change the heap size for NetBeans IDE:</b></p></a>
 <ol>
 <li>Copy the <tt>netbeans.conf</tt> from the <tt>etc</tt> folder in the NetBeans 
@@ -79,15 +79,15 @@ running, you can also add the garbage collector switches <tt>-J-XX:+UseConcMarkS
 (concurrent collector) and <tt>-J-XX:+UseParNewGC</tt> (parallel collector) to the 
 <tt>netbeans.conf</tt> file.</p>
 
-<a name="oss"> <p><b>To change the heap size for Oracle Solaris Studio IDE:</b></p></a>
+<a name="oss"> <p><b>To change the heap size for Oracle Developer Studio IDE:</b></p></a>
 <ol>
-<li>In your <tt>$HOME/.solstudio/ide-<i>version-platform</i></tt> directory, create the <tt>etc</tt> directory.</li>
-<li>Copy the file <tt><i>solstudio-intall-dir</i>/lib/solstudio/etc/solstudio.conf</tt> to the <tt>$HOME/.solstudio/ide-<i>version-platform</i>/etc</tt> directory.
+<li>In your <tt>$HOME/.developer/ide-<i>version-platform</i></tt> directory, create the <tt>etc</tt> directory.</li>
+<li>Copy the file <tt><i>devstudio-intall-dir</i>/lib/devstudio/etc/devstudio.conf</tt> to the <tt>$HOME/.devstudio/ide-<i>version-platform</i>/etc</tt> directory.
 <br>
 For example:
-<pre>cp /opt/solarisstudio12.4/lib/solstudio/etc/solstudio.conf $HOME/.solstudio/ide-12.4-SunOS-sparc/etc</pre>
+<pre>cp /opt/developerstudio12.5/lib/devstudio/etc/devstudio.conf $HOME/.devstudio/ide-Oracle_Developer_Studio12.5-SunOS-sparc/etc</pre>
 </li>
-<li>In your copy of the <tt>solstudio.conf</tt> file, add the <tt>-J-Xmx</tt>
+<li>In your copy of the <tt>devstudio.conf</tt> file, add the <tt>-J-Xmx</tt>
 command line Java startup switch (bolded below).
 In this example, the heap is set to 2 Gb.
 <pre>

@@ -165,15 +165,15 @@ public final class EditorActionNames {
     public static final String gotoNextOccurrence = "next-marked-occurrence"; // NOI18N
     
     /**
-     * Add a caret to the line above at the same position.
+     * Add a new caret at the line above (at the same column) for all existing carets.
      * @since 2.6
      */
-    public static final String addSelectionElseCaretUpAction = "add-selection-else-caret-up"; // NOI18N
+    public static final String addCaretUp = "add-caret-up"; // NOI18N
     
     /**
-     * Add a caret to the line below at the same position.
+     * Add a new caret at the line below (at the same column) for all existing carets.
      * @since 2.6
      */
-    public static final String addSelectionElseCaretDownAction = "add-selection-else-caret-down"; // NOI18N
+    public static final String addCaretDown = "add-caret-down"; // NOI18N
 
 }

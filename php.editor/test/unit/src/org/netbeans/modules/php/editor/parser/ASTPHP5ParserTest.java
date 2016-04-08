@@ -464,8 +464,13 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("parser/finally_03");
     }
 
-    public void testListInForeach() throws Exception {
-        performTest("parser/listInForeach");
+    public void testListInForeach_01() throws Exception {
+        performTest("parser/listInForeach_01");
+    }
+
+    public void testListInForeach_02() throws Exception {
+        // #257945
+        performTest("parser/listInForeach_02");
     }
 
     public void testExpressionArrayAccess_01() throws Exception {
@@ -681,6 +686,10 @@ public class ASTPHP5ParserTest extends ParserTestBase {
 //    public void testUniformVariableSyntax_22() throws Exception {
 //        performTest("parser/uniformVariableSyntax_22");
 //    }
+
+    public void testUniformVariableSyntax_23() throws Exception {
+        performTest("parser/uniformVariableSyntax_23");
+    }
 
     public void testGroupUse_01() throws Exception {
         performTest("parser/groupUse_01");

@@ -1072,8 +1072,14 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         return result[0];
     }
 
-    boolean updateModelAndRefresh () {
-        return updateModel() && refresh();
+    void updateModelAndRefresh () {
+        runWithModelLoaded(new Runnable() {
+            @Override
+            public void run() {
+                updateModel();
+                refresh();
+            }
+        });
     }
     
     public boolean refresh() {

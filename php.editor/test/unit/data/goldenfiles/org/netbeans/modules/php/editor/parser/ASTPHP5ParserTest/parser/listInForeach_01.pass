@@ -1,4 +1,4 @@
-<testresult testFile='listInForeach.php'>
+<testresult testFile='listInForeach_01.php'>
     <scanner>
         <token id='T_VARIABLE' start='6' end='12'>
             <text>$array</text>

@@ -3698,7 +3698,7 @@ abstract public class CsmCompletionQuery {
         }
         
         private List<CsmCompletionExpression> initParamAstsList(CsmCompletionExpression item, int from, int to) {
-            List<CsmCompletionExpression> params = new ArrayList<>();
+            List<CsmCompletionExpression> params = new ArrayList<CsmCompletionExpression>();
             for (int i = from; i < to; i++) {
                 params.add(item.getParameter(i));
             }

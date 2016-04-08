@@ -572,7 +572,7 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
         @Override
         public void visit(StaticMethodInvocation node) {
             forceVariableAsUsed = true;
-            scan(node.getClassName());
+            scan(node.getDispatcher());
             forceVariableAsUsed = false;
             scan(node.getMethod());
         }

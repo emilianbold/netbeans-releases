@@ -147,7 +147,7 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
     }
 
     @Messages({
-        "Progress_Download=Downloading Maven dependencies",
+        "Progress_Download=Downloading Maven dependencies for {0}",
         "TIT_Error=Panel loading error.",
         "BTN_CLOSE=&Close"
     })
@@ -164,7 +164,7 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
                     @Override
                 public void run() {
                     MavenEmbedder embedder = EmbedderFactory.getOnlineEmbedder();
-                    AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(Progress_Download(),
+                    AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(Progress_Download(artifact.getId()),
                                 new ProgressContributor[] {
                                     AggregateProgressFactory.createProgressContributor("zaloha") },  //NOI18N
                                 ProgressTransferListener.cancellable(), null);

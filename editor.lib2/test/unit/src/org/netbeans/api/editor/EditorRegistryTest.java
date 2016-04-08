@@ -123,6 +123,9 @@ public class EditorRegistryTest extends NbTestCase {
         jtcList = EditorRegistry.componentList();
         assertSame(3, jtcList.size());
         assertSame(c3, jtcList.get(0));
+        
+        assertSame(c1, EditorRegistry.findComponent(c1.getDocument()));
+        assertSame(c2, EditorRegistry.findComponent(c2.getDocument()));
 
         // Simulate document change of focused component
         Document oldDoc = c3.getDocument();

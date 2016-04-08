@@ -167,24 +167,24 @@ public class PHP53UnhandledError extends UnhandledErrorRule {
 
         @Override
         public void visit(StaticMethodInvocation node) {
-            if (node.getClassName() instanceof Variable) {
-                createError(node.getClassName());
+            if (node.getDispatcher() instanceof Variable) {
+                createError(node.getDispatcher());
             }
             super.visit(node);
         }
 
         @Override
         public void visit(StaticFieldAccess node) {
-            if (node.getClassName() instanceof Variable) {
-                createError(node.getClassName());
+            if (node.getDispatcher() instanceof Variable) {
+                createError(node.getDispatcher());
             }
             super.visit(node);
         }
 
         @Override
         public void visit(StaticConstantAccess node) {
-            if (node.getClassName() instanceof Variable) {
-                createError(node.getClassName());
+            if (node.getDispatcher() instanceof Variable) {
+                createError(node.getDispatcher());
             }
             super.visit(node);
         }

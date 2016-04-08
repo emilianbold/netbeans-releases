@@ -90,7 +90,11 @@ public class TreeConflictsTestHidden extends AbstractCommandTestCase {
         prepareTestStatusLocalEditIncomingDelete(c);
 
         c.remove(new File[] { f2 }, true);
-        assertStatus(f2, false, SVNStatusKind.UNVERSIONED);
+        try {
+            assertStatus(f2, false, SVNStatusKind.UNVERSIONED);
+        } catch (AssertionError err) {
+            assertStatus(f2, false, SVNStatusKind.NONE);
+        }
         assertFalse(f2.exists());
     }
 
@@ -179,7 +183,7 @@ public class TreeConflictsTestHidden extends AbstractCommandTestCase {
         assertStatus(f2, true, isJavahl() ? SVNStatusKind.NONE : SVNStatusKind.MISSING);
 
         c.resolved(f2);
-        assertStatus(f2, false, SVNStatusKind.UNVERSIONED);
+        assertStatus(f2, false, SVNStatusKind.NONE);
         assertFalse(f2.exists());
         c.resolved(fcopy2);
         assertTrue(fcopy2.exists());
@@ -218,7 +222,7 @@ public class TreeConflictsTestHidden extends AbstractCommandTestCase {
         assertStatus(folder2, true, isJavahl() ? SVNStatusKind.NONE : SVNStatusKind.MISSING);
 
         c.resolved(folder2);
-        assertStatus(folder2, false, SVNStatusKind.UNVERSIONED);
+        assertStatus(folder2, false, SVNStatusKind.NONE);
         assertFalse(folder2.exists());
         c.resolved(folderCopy2);
         assertTrue(folderCopy2.exists());

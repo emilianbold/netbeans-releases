@@ -116,10 +116,12 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
     private ArrayList<String> runningTestClasses;
     private ArrayList<String> runningTestClassesInParallel;
     
+    private static final String GROUP_FILE_NAME = "dir";
+    
     public JUnitOutputListenerProvider(RunConfig config) {
-        runningPattern = Pattern.compile("(?:\\[surefire\\] )?Running (.*)", Pattern.DOTALL); //NOI18N
-        outDirPattern = Pattern.compile("Surefire report directory\\: (.*)", Pattern.DOTALL); //NOI18N
-        outDirPattern2 = Pattern.compile("Setting reports dir\\: (.*)", Pattern.DOTALL); //NOI18N
+        runningPattern = Pattern.compile("(?:\\[surefire\\] )?Running (.*)", Pattern.DOTALL); //NOI18N        
+        outDirPattern = Pattern.compile ("(?:\\[INFO\\] )?Surefire report directory\\: (?<" + GROUP_FILE_NAME + ">.*)", Pattern.DOTALL); //NOI18N
+        outDirPattern2 = Pattern.compile("(?:\\[INFO\\] )?Setting reports dir\\: (?<" + GROUP_FILE_NAME + ">.*)", Pattern.DOTALL); //NOI18N
         this.config = config;
         usedNames = new HashSet<String>();
         startTimeStamp = System.currentTimeMillis();
@@ -180,7 +182,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
     public @Override void processLine(String line, OutputVisitor visitor) {
         Matcher match = outDirPattern.matcher(line);
         if (match.matches()) {
-            outputDir = new File(match.group(1));
+            outputDir = new File(match.group(GROUP_FILE_NAME));
             if (session == null) {
                 createSession(outputDir);
             }
@@ -188,7 +190,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         }
         match = outDirPattern2.matcher(line);
         if (match.matches()) {
-            outputDir = new File(match.group(1));
+            outputDir = new File(match.group(GROUP_FILE_NAME));
             if (session == null) {
                 createSession(outputDir);
             }
