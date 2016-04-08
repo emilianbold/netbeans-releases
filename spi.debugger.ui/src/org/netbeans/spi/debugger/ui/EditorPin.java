@@ -75,6 +75,7 @@ public final class EditorPin implements Watch.Pin {
     private volatile int line;
     private volatile Point location;
     private volatile String comment;
+    private String vpId;
 
     /**
      * Create a new pin location in editor.
@@ -148,6 +149,14 @@ public final class EditorPin implements Watch.Pin {
      */
     public String getComment() {
         return comment;
+    }
+    
+    void setVpId(String vpId) {
+        this.vpId = vpId;
+    }
+
+    String getVpId() {
+        return vpId;
     }
 
     /**

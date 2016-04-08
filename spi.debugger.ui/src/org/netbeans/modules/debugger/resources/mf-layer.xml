@@ -542,6 +542,7 @@ made subject to such option by the copyright holder.
             <file name="mixed_BP_broken.xml" url="mixed_BP_broken.xml"/>
             <file name="PC_mixedBP.xml" url="PC_mixedBP.xml"/>
             <file name="PC_mixedBP_broken.xml" url="PC_mixedBP_broken.xml"/>
+            <file name="WatchPin.xml" url="WatchPin.xml"/>
 
 	<!-- following are invisible annotation types which are used for combining -->
             <file name="_multi_BP.xml" url="_multi_BP.xml"/>

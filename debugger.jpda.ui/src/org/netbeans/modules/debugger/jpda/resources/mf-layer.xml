@@ -120,7 +120,6 @@ made subject to such option by the copyright holder.
             <file name="FieldBreakpoint.xml" url="FieldBreakpoint.xml"/>
             <file name="MethodBreakpoint.xml" url="MethodBreakpoint.xml"/>
             <file name="ClassBreakpoint.xml" url="ClassBreakpoint.xml"/>
-            <file name="WatchPin.xml" url="WatchPin.xml"/>
             <file name="DisabledFieldBreakpoint_stroke.xml" url="DisabledFieldBreakpoint_stroke.xml"/>
             <file name="DisabledMethodBreakpoint_stroke.xml" url="DisabledMethodBreakpoint_stroke.xml"/>
             <file name="DisabledClassBreakpoint_stroke.xml" url="DisabledClassBreakpoint_stroke.xml"/>

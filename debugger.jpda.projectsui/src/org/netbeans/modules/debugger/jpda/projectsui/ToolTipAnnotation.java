@@ -100,14 +100,17 @@ import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.netbeans.spi.debugger.ui.EditorPin;
+import org.netbeans.spi.debugger.ui.PinWatchUISupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Annotation;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.Line;
 import org.openide.text.Line.Part;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 
@@ -373,7 +376,17 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                         eui.getToolTipSupport().setToolTipVisible(false);
                         DebuggerManager dbMgr = DebuggerManager.getDebuggerManager();
                         Watch.Pin pin = new EditorPin(fo, line.getLineNumber(), location);
-                        Watch w = dbMgr.createPinnedWatch(expression, pin);
+                        final Watch w = dbMgr.createPinnedWatch(expression, pin);
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    PinWatchUISupport.getDefault().pin(w, "org.netbeans.modules.debugger.jpda.PIN_VALUE_PROVIDER"); // NOI18N
+                                } catch (IllegalArgumentException | DataObjectNotFoundException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                        });
                     }
                 });
                 EditorUI eui = Utilities.getEditorUI(ep);

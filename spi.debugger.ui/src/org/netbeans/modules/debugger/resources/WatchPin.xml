@@ -43,9 +43,9 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
 
 <!DOCTYPE type PUBLIC "-//NetBeans//DTD annotation type 1.1//EN" "http://www.netbeans.org/dtds/annotation-type-1_1.dtd">
 <type
-    name='Watch'
+    name='PinnedWatch'
     description_key='HINT_WATCH_PIN'
-    localizing_bundle='org.netbeans.modules.debugger.jpda.resources.Bundle'
+    localizing_bundle='org.netbeans.modules.debugger.resources.Bundle'
     visible='true'
     glyph='nbresloc:/org/netbeans/editor/resources/pin.png'
     type='line'

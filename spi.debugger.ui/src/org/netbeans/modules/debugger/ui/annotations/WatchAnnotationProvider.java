@@ -39,12 +39,10 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.projectsui;
+package org.netbeans.modules.debugger.ui.annotations;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -53,46 +51,39 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.IdentityHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
-import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.border.EmptyBorder;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import static javax.swing.text.JTextComponent.addKeymap;
-import javax.swing.text.Keymap;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
-import org.netbeans.api.debugger.jpda.*;
 import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
-import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.netbeans.spi.debugger.ui.EditorPin;
+import org.netbeans.spi.debugger.ui.PinWatchUISupport;
+import org.netbeans.spi.debugger.ui.PinWatchUISupport.ValueProvider;
+import org.netbeans.spi.debugger.ui.PinWatchUISupport.ValueProvider.ValueChangeListener;
+import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -100,10 +91,8 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Annotation;
 import org.openide.text.AnnotationProvider;
 import org.openide.text.Line;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -113,9 +102,18 @@ import org.openide.util.RequestProcessor;
 @DebuggerServiceRegistration(types={LazyDebuggerManagerListener.class})
 public class WatchAnnotationProvider implements AnnotationProvider, LazyDebuggerManagerListener {
     
+    @SuppressWarnings("PublicField")
+    public static PinSupportedAccessor PIN_SUPPORT_ACCESS; // Set from PinWatchSupport.getDefault()
+    private static WatchAnnotationProvider INSTANCE;
+    
     private static final Map<Watch, Annotation> watchToAnnotation = new IdentityHashMap<>();
     private static final Map<Watch, JComponent> watchToWindow = new IdentityHashMap<>();
     private Set<PropertyChangeListener> dataObjectListeners;
+    
+    public WatchAnnotationProvider() {
+        PinWatchUISupport.getDefault(); // To initialize PIN_SUPPORT_ACCESS
+        INSTANCE = this;
+    }
 
     @Override
     public void annotate(Line.Set lines, Lookup context) {
@@ -161,7 +159,8 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             line = getLine(pin.getFile(), pin.getLine());
         }
         
-        final DebuggerAnnotation annotation = new DebuggerAnnotation(EditorContext.WATCH_ANNOTATION_TYPE, line, null);
+        final DebuggerAnnotation annotation = new DebuggerAnnotation(PinWatchUISupport.WATCH_ANNOTATION_TYPE, line);
+        annotation.setWatch(watch);
         watchToAnnotation.put(watch, annotation);
         annotation.attach(line);
         pin.addPropertyChangeListener(new PropertyChangeListener() {
@@ -175,9 +174,17 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             }
         });
         
-        JComponent window = new StickyPanel(watch, eui);
+        final JComponent window = new StickyPanel(watch, eui);
         eui.getStickyWindowSupport().addWindow(window, pin.getLocation());
         watchToWindow.put(watch, window);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                Dimension size = window.getPreferredSize();
+                Point loc = window.getLocation();
+                window.setBounds(loc.x, loc.y, size.width, size.height);
+            }
+        });
     }
     
     private Line getLine (FileObject file, int lineNumber) {
@@ -226,6 +233,7 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
 
     @Override
     public void watchAdded(Watch watch) {
+        /*
         Watch.Pin pin = watch.getPin();
         if (pin instanceof EditorPin) {
             // TODO:
@@ -237,6 +245,7 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
                 pin(watch, eui, null);
             }
         }
+        */
     }
 
     @Override
@@ -246,9 +255,10 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             if(annotation != null) {
                 annotation.detach();
             }
-            JComponent frame = watchToWindow.get(watch);
+            JComponent frame = watchToWindow.remove(watch);
             if(frame != null) {
-                frame.setVisible(false);
+                EditorUI eui = Utilities.getEditorUI((JTextComponent) frame.getParent());
+                eui.getStickyWindowSupport().removeWindow(frame);
             }
         }
     }
@@ -275,14 +285,16 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
 
     private static final class StickyPanel extends JPanel {
         private static final String UI_PREFIX = "ToolTip"; // NOI18N
-        private final EditorPin pin;
+        private final Watch watch;
         private final JLabel label;
         private JTextField commentField;
-        private RequestProcessor annotationProcessor = new RequestProcessor("Annotation Refresh", 1);
+        private final ValueProvider valueProvider;
+        private String lastValue;
 
         @SuppressWarnings("OverridableMethodCallInConstructor")
         public StickyPanel(final Watch watch, final EditorUI eui) {
-            this.pin = (EditorPin) watch.getPin();
+            this.watch = watch;
+            EditorPin pin = (EditorPin) watch.getPin();
             Font font = UIManager.getFont(UI_PREFIX + ".font"); // NOI18N
             Color backColor = UIManager.getColor(UI_PREFIX + ".background"); // NOI18N
             Color foreColor = UIManager.getColor(UI_PREFIX + ".foreground"); // NOI18N
@@ -311,14 +323,25 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
                 }
             });
             
-            annotationProcessor.post(new Runnable() {
+//            label = createMultiLineToolTip(value, true);
+            valueProvider = PIN_SUPPORT_ACCESS.getValueProvider(pin);
+            label = new JLabel();
+            valueProvider.setChangeListener(watch, new ValueChangeListener() {
                 @Override
-                public void run() {
-                    evaluateExpression(watch);
+                public void valueChanged(Watch w) {
+                    final String text = getWatchText(watch, valueProvider);
+                    javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            label.setText(text);
+                            Dimension size = getPreferredSize();
+                            Point loc = getLocation();
+                            setBounds(loc.x, loc.y, size.width, size.height);
+                        }
+                    });
                 }
             });
-//            label = createMultiLineToolTip(value, true);
-            label = new JLabel("Evaluating ...");
+            label.setText(getWatchText(watch, valueProvider));
             if (font != null) {
                 label.setFont(font);
             }
@@ -402,148 +425,42 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             commentField.requestFocusInWindow();
         }
 
+        @Override
+        public void removeNotify() {
+            valueProvider.unsetChangeListener(watch);
+        }
+
         private void commentUpdated() {
-            pin.setComment(commentField.getText());
+            ((EditorPin) watch.getPin()).setComment(commentField.getText());
         }
 
-        private void evaluateExpression(Watch watch) {
-            String expression = watch.getExpression();
-            DebuggerEngine engine = DebuggerManager.getDebuggerManager().getCurrentEngine();
-            if(engine != null) {
-                final JPDADebugger d = engine.lookupFirst(null, JPDADebugger.class);
-                if (d != null) {
-                    JPDAThread t = d.getCurrentThread();
-                    String toolTipText;
-                        try {
-                            Variable v = null;
-//                            List<Operation> operations = t.getLastOperations();
-//                            if (operations != null) {
-//                                for (Operation operation: operations) {
-//                                    if (!expression.endsWith(operation.getMethodName())) {
-//                                        continue;
-//                                    }
-//                                    if (operation.getMethodStartPosition().getOffset() <= offset &&
-//                                        offset <= operation.getMethodEndPosition().getOffset()) {
-//                                        v = operation.getReturnValue();
-//                                    }
-//                                }
-//                            }
-                            if (v == null) {
-//                                if (isMethodPtr[0]) {
-//                                    return ; // We do not evaluate methods
-//                                }
-//                                String fieldClass = fieldOfPtr[0];
-//                                if (fieldClass != null) {
-//                                    CallStackFrame currentCallStackFrame = d.getCurrentCallStackFrame();
-//                                    if (currentCallStackFrame != null) {
-//                                        v = findField(currentCallStackFrame, fieldClass, expression);
-//                                    }
-//                                }
-//                                if (v == null) {
-                                    v = d.evaluate (expression);
-//                                }
-                            }
-                            if (v == null) {
-                                return ; // Something went wrong...
-                            }
-                            String type = v.getType ();
-                            if (v instanceof ObjectVariable) {
-                                ObjectVariable tooltipVariable = (ObjectVariable) v;
-                                try {
-                                    Object jdiValue = v.getClass().getMethod("getJDIValue").invoke(v);
-                                    if (jdiValue == null) {
-                                        tooltipVariable = null;
-                                    }
-                                } catch (Exception ex) {}
-                                if (tooltipVariable != null) {
-                                    try {
-                                        v = (Variable) d.getClass().getMethod("getFormattedValue", ObjectVariable.class).invoke(d, v);
-                                    } catch (Exception ex) {}
-                                }
-                            }
-                            if (v instanceof ObjectVariable) {
-                                try {
-                                    String toString = ((ObjectVariable) v).getToStringValue();
-                                    toolTipText = expression + " = " +
-                                            (type.length () == 0 ?
-                                            "" :
-                                            "(" + type + ") ") +
-                                            toString;
-                                } catch (InvalidExpressionException ex) {
-                                    toolTipText = expression + " = " +
-                                        (type.length () == 0 ?
-                                            "" :
-                                            "(" + type + ") ") +
-                                        v.getValue ();
-                                }
-                            } else {
-                                toolTipText = expression + " = " +
-                                    (type.length () == 0 ?
-                                        "" :
-                                        "(" + type + ") ") +
-                                    v.getValue ();
-                            }
-                        } catch (InvalidExpressionException e) {
-                            toolTipText = expression + " = >" + e.getMessage () + "<";
-                        }
-                        final String value = toolTipText;
-                        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                label.setText(value);
-                                Dimension size = getPreferredSize();
-                                Point loc = getLocation();
-                                setBounds(loc.x, loc.y, size.width, size.height);
-                            }
-                        });
-                }
+        private String getWatchText(Watch watch, ValueProvider vp) {
+            String value = vp.getValue(watch);
+            //System.err.println("WatchAnnotationProvider.getWatchText("+watch.getExpression()+"): value = "+value+", lastValue = "+lastValue);
+            boolean bold = false;
+            boolean old = false;
+            if (value != null) {
+                bold = (lastValue != null && !lastValue.equals(value));
+                lastValue = value;
+            } else {
+                old = true;
+                value = lastValue;
             }
+            String s1, s2;
+            if (bold) {
+                s1 = "<b>";
+                s2 = "</b>";
+            } else if (old) {
+                s1 = "<font color=\"gray\">";
+                s2 = "</font>";
+            } else {
+                s1 = s2 = "";
+            }
+            //System.err.println("  return: "+"<html>" + watch.getExpression() + " = " + s1 + value + s2 + "</html>");
+            return "<html>" + watch.getExpression() + " = " + s1 + value + s2 + "</html>";
         }
         
-        /**
-         * Search for a field in a className class, that is accessible from 'this'.
-         * 
-         * @param csf the current stack frame
-         * @param fieldClass the class that declares the field
-         * @param fieldName the name of the field
-         * @return the field, or <code>null</code> when not found.
-         */
-        private Variable findField(CallStackFrame csf, String fieldClass, String fieldName) {
-           This thisVariable = csf.getThisVariable();
-           if (thisVariable == null) {
-               return null;
-           }
-
-           // Search for the field in parent classes/interfaces first:
-           Field field = thisVariable.getField(fieldName);
-           if (field != null && field.getDeclaringClass().getName().equals(fieldClass)) {
-               return field;
-           }
-
-           // Test outer classes then:
-           ObjectVariable outer = null;
-           int i;
-           for (i = 0; i < 10; i++) {
-               outer = (ObjectVariable) thisVariable.getField("this$"+i);          // NOI18N
-               if (outer != null) {
-                   break;
-               }
-           }
-           while (outer != null) {
-               field = outer.getField(fieldName);
-               if (field != null && field.getDeclaringClass().getName().equals(fieldClass)) {
-                   return field;
-               }
-               if (i == 0) {
-                   break;
-               }
-               // Go to the next outer class:
-               i--;
-               outer = (ObjectVariable) outer.getField("this$"+i);                 // NOI18N
-           }
-           return null;
-        }
-        
+        /*
         private static JTextArea createMultiLineToolTip(String toolTipText, boolean wrapLines) {
             JTextArea ta = new TextToolTip(wrapLines);
             ta.setText(toolTipText);
@@ -609,6 +526,38 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
                 //a default action will be set to the Keymap of this component below,
                 //so it is necessary to use a Keymap that is not shared with other JTextAreas
                 super.setKeymap(addKeymap(null, map));
+            }
+        }
+         */
+    }
+
+    public static abstract class PinSupportedAccessor {
+
+        public abstract ValueProvider getValueProvider(EditorPin pin);
+        
+        public final void pin(Watch watch) throws DataObjectNotFoundException {
+            EditorPin pin = (EditorPin) watch.getPin();
+            DataObject dobj = DataObject.find(pin.getFile());
+            EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
+            JEditorPane[] openedPanes = ec.getOpenedPanes();
+            if (openedPanes == null) {
+                throw new IllegalArgumentException("No editor panes opened for file "+pin.getFile());
+            }
+            LineCookie lineCookie = dobj.getLookup().lookup(LineCookie.class);
+            if (lineCookie == null) {
+                throw new IllegalArgumentException("No line cookie in "+pin.getFile());
+            }
+            Line.Set ls = lineCookie.getLineSet();
+            Line line;
+            try {
+                line = ls.getCurrent(pin.getLine());
+            } catch (IndexOutOfBoundsException e) {
+                throw new IllegalArgumentException("Wrong line: "+pin.getLine(), e);
+            }
+            for (JEditorPane pane : openedPanes) {
+                JEditorPane ep = EditorContextDispatcher.getDefault().getMostRecentEditor();
+                EditorUI editorUI = Utilities.getEditorUI(pane);
+                WatchAnnotationProvider.INSTANCE.pin(watch, editorUI, line);
             }
         }
     }
