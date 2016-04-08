@@ -749,44 +749,11 @@ class OccurenceBuilder {
     }
 
     private void buildStaticFields(final Index index, FileScopeImpl fileScope, final List<Occurence> occurences) {
-        final Exact fieldName = NameKind.exact(elementInfo.getName());
-        ASTNodeInfo nodeInfo = elementInfo.getNodeInfo();
-        QualifiedName fullyQualifiedName = null;
-        if (nodeInfo != null) {
-            ASTNode originalNode = nodeInfo.getOriginalNode();
-            if (originalNode instanceof StaticDispatch) {
-                Expression dispatcher = ((StaticDispatch) originalNode).getDispatcher();
-                // possible uniform variable syntax
-                if (CodeUtils.isUniformVariableSyntax(dispatcher)) {
-                    // uniform variable syntax => try to resolve class
-                    Collection<? extends TypeScope> types = getClassName((VariableScope) elementInfo.getScope(), dispatcher);
-                    // use the first one??
-                    if (!types.isEmpty()) {
-                        fullyQualifiedName = types.iterator().next().getFullyQualifiedName();
-                    }
-                }
-            }
-        }
-        if (fullyQualifiedName == null) {
-            QualifiedName clzName = elementInfo.getTypeQualifiedName();
-            Scope scope = elementInfo.getScope().getInScope();
-            if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
-                if (clzName.getName().equalsIgnoreCase("self") || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
-                    clzName = ((TypeScope) scope).getFullyQualifiedName();
-                } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) { // NOI18N
-                    clzName = ((ClassScope) scope).getSuperClassName();
-                }
-            }
-            if (clzName != null && clzName.toString().length() > 0) {
-                fullyQualifiedName = clzName;
-                if (!fullyQualifiedName.getKind().isFullyQualified()) {
-                    fullyQualifiedName = VariousUtils.getFullyQualifiedName(clzName.toName(), elementInfo.getRange().getStart(), scope);
-                }
-            }
-        }
-        if (fullyQualifiedName != null) {
+        Collection<? extends TypeElement> types = resolveTypes(index, elementInfo);
+        if (!types.isEmpty()) {
+            final Exact fieldName = NameKind.exact(elementInfo.getName());
             final Set<FieldElement> fields = new HashSet<>();
-            for (TypeElement typeElement : index.getTypes(NameKind.exact(fullyQualifiedName))) {
+            for (TypeElement typeElement : types) {
                 fields.addAll(ElementFilter.forName(fieldName).filter(index.getAlllFields(typeElement)));
             }
             if (elementInfo.setDeclarations(fields)) {
@@ -938,45 +905,11 @@ class OccurenceBuilder {
     }
 
     private void buildTypeConstants(final Index index, FileScopeImpl fileScope, final List<Occurence> occurences) {
-        final Exact typeConstantName = NameKind.exact(elementInfo.getName());
-        ASTNodeInfo nodeInfo = elementInfo.getNodeInfo();
-        QualifiedName fullyQualifiedName = null;
-        if (nodeInfo != null) {
-            ASTNode originalNode = nodeInfo.getOriginalNode();
-            if (originalNode instanceof StaticDispatch) {
-                Expression dispatcher = ((StaticDispatch) originalNode).getDispatcher();
-                // possible uniform variable syntax
-                if (CodeUtils.isUniformVariableSyntax(dispatcher)) {
-                    // uniform variable syntax => try to resolve class
-                    Collection<? extends TypeScope> types = getClassName((VariableScope) elementInfo.getScope(), dispatcher);
-                    // use the first one??
-                    if (!types.isEmpty()) {
-                        fullyQualifiedName = types.iterator().next().getFullyQualifiedName();
-                    }
-                }
-            }
-        }
-        if (fullyQualifiedName == null) {
-            QualifiedName clzName = elementInfo.getTypeQualifiedName();
-            TypeScope scope = ModelUtils.getTypeScope(elementInfo.getScope());
-            if (clzName.getKind().isUnqualified() && scope != null) {
-                if (clzName.getName().equalsIgnoreCase("self") //NOI18N
-                        || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
-                    clzName = QualifiedName.create(scope.getName());
-                } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) { //NOI18N
-                    clzName = ((ClassScope) scope).getSuperClassName();
-                }
-            }
-            if (clzName != null && clzName.toString().length() > 0) {
-                fullyQualifiedName = clzName;
-                if (!fullyQualifiedName.getKind().isFullyQualified()) {
-                    fullyQualifiedName = VariousUtils.getFullyQualifiedName(clzName.toName(), elementInfo.getRange().getStart(), scope);
-                }
-            }
-        }
-        if (fullyQualifiedName != null) {
+        Collection<? extends TypeElement> types = resolveTypes(index, elementInfo);
+        if (!types.isEmpty()) {
+            final Exact typeConstantName = NameKind.exact(elementInfo.getName());
             final Set<TypeConstantElement> constants = new HashSet<>();
-            for (TypeElement typeElement : index.getTypes(NameKind.exact(fullyQualifiedName))) {
+            for (TypeElement typeElement : types) {
                 constants.addAll(ElementFilter.forName(typeConstantName).filter(index.getAllTypeConstants(typeElement)));
             }
             if (elementInfo.setDeclarations(constants)) {
@@ -987,44 +920,11 @@ class OccurenceBuilder {
     }
 
     private void buildStaticMethods(final Index index, FileScopeImpl fileScope, final List<Occurence> occurences) {
-        final Exact methodName = NameKind.exact(elementInfo.getName());
-        final Set<MethodElement> methods = new HashSet<>();
-        final Scope scope = elementInfo.getScope().getInScope();
-        QualifiedName fullyQualifiedName = null;
-        ASTNodeInfo nodeInfo = elementInfo.getNodeInfo();
-        if (nodeInfo != null) {
-            ASTNode originalNode = nodeInfo.getOriginalNode();
-            if (originalNode instanceof StaticDispatch) {
-                // possible uniform variable syntax
-                Expression dispatcher = ((StaticDispatch) originalNode).getDispatcher();
-                if (CodeUtils.isUniformVariableSyntax(dispatcher)) {
-                    // uniform variable syntax => try to resolve class
-                    Collection<? extends TypeScope> types = getClassName((VariableScope) elementInfo.getScope(), dispatcher);
-                    // use the first one??
-                    if (!types.isEmpty()) {
-                        fullyQualifiedName = types.iterator().next().getFullyQualifiedName();
-                    }
-                }
-            }
-        }
-        if (fullyQualifiedName == null) {
-            QualifiedName clzName = elementInfo.getTypeQualifiedName();
-            if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
-                if (clzName.getName().equalsIgnoreCase("self") || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
-                    clzName = ((TypeScope) scope).getFullyQualifiedName();
-                } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) { //NOI18N
-                    clzName = ((ClassScope) scope).getSuperClassName();
-                }
-            }
-            if (clzName != null && clzName.toString().length() > 0) {
-                fullyQualifiedName = clzName;
-                if (!fullyQualifiedName.getKind().isFullyQualified()) {
-                    fullyQualifiedName = VariousUtils.getFullyQualifiedName(clzName.toName(), elementInfo.getRange().getStart(), scope);
-                }
-            }
-        }
-        if (fullyQualifiedName != null) {
-            for (TypeElement typeElement : index.getTypes(NameKind.exact(fullyQualifiedName))) {
+        Collection<? extends TypeElement> types = resolveTypes(index, elementInfo);
+        if (!types.isEmpty()) {
+            final Exact methodName = NameKind.exact(elementInfo.getName());
+            final Set<MethodElement> methods = new HashSet<>();
+            for (TypeElement typeElement : types) {
                 methods.addAll(ElementFilter.forName(methodName).filter(index.getAllMethods(typeElement)));
             }
             if (elementInfo.setDeclarations(methods)) {
@@ -2148,6 +2048,44 @@ class OccurenceBuilder {
     private static Collection<? extends TypeScope> getClassName(VariableScope scp, Expression expression) {
         String vartype = VariousUtils.extractVariableTypeFromExpression(expression, Collections.emptyMap());
         return VariousUtils.getType(scp, vartype, expression.getStartOffset(), false);
+    }
+
+    private static Collection<? extends TypeElement> resolveTypes(Index index, ElementInfo elementInfo) {
+        ASTNodeInfo nodeInfo = elementInfo.getNodeInfo();
+        if (nodeInfo != null) {
+            ASTNode originalNode = nodeInfo.getOriginalNode();
+            if (originalNode instanceof StaticDispatch) {
+                Expression dispatcher = ((StaticDispatch) originalNode).getDispatcher();
+                // possible uniform variable syntax
+                if (CodeUtils.isUniformVariableSyntax(dispatcher)) {
+                    // uniform variable syntax => try to resolve class
+                    return getClassName((VariableScope) elementInfo.getScope(), dispatcher);
+                }
+            }
+        }
+        QualifiedName clzName = elementInfo.getTypeQualifiedName();
+        TypeScope scope = ModelUtils.getTypeScope(elementInfo.getScope());
+        if (scope != null
+                && clzName.getKind().isUnqualified()) {
+            final String name = clzName.getName();
+            if (name.equalsIgnoreCase("self") // NOI18N
+                    || name.equalsIgnoreCase("static")) { // NOI18N
+                clzName = scope.getFullyQualifiedName();
+            } else if (name.equalsIgnoreCase("parent") // NOI18N
+                    && scope instanceof ClassScope) {
+                clzName = ((ClassScope) scope).getSuperClassName();
+            }
+        }
+        if (clzName != null
+                && clzName.toString().length() > 0) {
+            if (!clzName.getKind().isFullyQualified()) {
+                clzName = VariousUtils.getFullyQualifiedName(clzName.toName(), elementInfo.getRange().getStart(), scope);
+            }
+        }
+        if (clzName != null) {
+            return index.getTypes(NameKind.exact(clzName));
+        }
+        return Collections.emptyList();
     }
 
     private static boolean isNameEquality(ElementInfo query, ASTNodeInfo node, ModelElement nodeScope) {
