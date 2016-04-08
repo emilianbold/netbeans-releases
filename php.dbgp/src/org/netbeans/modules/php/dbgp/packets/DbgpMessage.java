@@ -87,7 +87,7 @@ public abstract class DbgpMessage {
     protected static final String HTML_AMP = "&amp"; // NOI18N
     protected static final String HTML_LT = "&lt"; // NOI18N
     protected static final String HTML_GT = "&gt"; // NOI18N
-    protected static final java.util.Map<String, Character> ENTITIES = new HashMap<>();
+    private static final java.util.Map<String, Character> ENTITIES = new HashMap<>();
     private static DocumentBuilder builder;
     private static AtomicInteger myMaxDataSize = new AtomicInteger(MAX_PACKET_SIZE);
     private Node myNode;

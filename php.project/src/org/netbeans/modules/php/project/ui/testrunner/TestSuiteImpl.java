@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.project.ui.testrunner;
 
+import org.netbeans.modules.gsf.testrunner.api.Report;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.php.spi.testing.run.TestCase;
@@ -56,6 +57,7 @@ public class TestSuiteImpl implements TestSuite {
     private final FileObject location;
 
     private volatile boolean finished = false;
+    private volatile long totalTime = 0;
 
 
     TestSuiteImpl(TestSessionImpl testSession, org.netbeans.modules.gsf.testrunner.api.TestSuite testSuite, FileObject location) {
@@ -78,6 +80,7 @@ public class TestSuiteImpl implements TestSuite {
             testCase.setLocation(FileUtil.toFile(location).getAbsolutePath());
         }
         session.addTestCase(testCase);
+        updateReport(0, false);
         return new TestCaseImpl(this, testCase);
     }
 
@@ -86,8 +89,8 @@ public class TestSuiteImpl implements TestSuite {
         checkFrozen();
         checkFinished();
         finished = true;
-        TestSession session = testSession.getTestSession();
-        testSession.getManager().displayReport(session, session.getReport(time));
+        totalTime = time;
+        updateReport(0, true);
     }
 
     public TestSessionImpl getTestSession() {
@@ -110,6 +113,14 @@ public class TestSuiteImpl implements TestSuite {
         if (finished) {
             throw new IllegalStateException("Test suite " + testSuite.getName() + " is already finished");
         }
+    }
+
+    void updateReport(long time, boolean completed) {
+        totalTime += time;
+        TestSession session = testSession.getTestSession();
+        Report report = testSession.getReport();
+        report.update(session.getReport(totalTime));
+        testSession.getManager().displayReport(session, report, completed);
     }
 
 }

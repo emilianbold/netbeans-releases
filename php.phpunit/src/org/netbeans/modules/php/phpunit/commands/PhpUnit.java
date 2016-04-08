@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.php.phpunit.commands;
@@ -79,12 +79,20 @@ import org.netbeans.modules.php.phpunit.options.PhpUnitOptions;
 import org.netbeans.modules.php.phpunit.options.PhpUnitOptionsValidator;
 import org.netbeans.modules.php.phpunit.preferences.PhpUnitPreferences;
 import org.netbeans.modules.php.phpunit.preferences.PhpUnitPreferencesValidator;
+import org.netbeans.modules.php.phpunit.run.JsonParser;
+import org.netbeans.modules.php.phpunit.run.TestCaseVo;
+import org.netbeans.modules.php.phpunit.run.TestSessionVo;
+import org.netbeans.modules.php.phpunit.run.TestSuiteVo;
 import org.netbeans.modules.php.phpunit.ui.PhpUnitTestGroupsPanel;
 import org.netbeans.modules.php.phpunit.ui.customizer.PhpUnitCustomizer;
 import org.netbeans.modules.php.phpunit.ui.options.PhpUnitOptionsPanelController;
+import org.netbeans.modules.php.spi.testing.locate.Locations;
+import org.netbeans.modules.php.spi.testing.run.TestCase;
 import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo.TestInfo;
+import org.netbeans.modules.php.spi.testing.run.TestSession;
+import org.netbeans.modules.php.spi.testing.run.TestSuite;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -100,9 +108,10 @@ import org.openide.util.NbBundle;
  */
 public final class PhpUnit {
 
-    private static final Logger LOGGER = Logger.getLogger(PhpUnit.class.getName());
+    static final Logger LOGGER = Logger.getLogger(PhpUnit.class.getName());
 
-    static final ExecutionDescriptor.LineConvertorFactory PHPUNIT_LINE_CONVERTOR_FACTORY = new PhpUnitLineConvertorFactory();
+    static final ExecutionDescriptor.LineConvertorFactory PHPUNIT_OUT_LINE_CONVERTOR_FACTORY = new PhpUnitOutLineConvertorFactory();
+    static final ExecutionDescriptor.LineConvertorFactory PHPUNIT_ERR_LINE_CONVERTOR_FACTORY = new PhpUnitErrLineConvertorFactory();
 
     public static final String SCRIPT_NAME = "phpunit"; // NOI18N
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
@@ -118,7 +127,8 @@ public final class PhpUnit {
 
     // cli options
     private static final String COLORS_PARAM = "--colors"; // NOI18N
-    private static final String JUNIT_LOG_PARAM = "--log-junit"; // NOI18N
+    private static final String JSON_LOG_PARAM = "--log-json"; // NOI18N
+    private static final String JSON_LOG_FILE = "php://stderr"; // NOI18N
     private static final String FILTER_PARAM = "--filter"; // NOI18N
     private static final String COVERAGE_LOG_PARAM = "--coverage-clover"; // NOI18N
     private static final String LIST_GROUPS_PARAM = "--list-groups"; // NOI18N
@@ -133,7 +143,6 @@ public final class PhpUnit {
     private static final List<String> DEFAULT_PARAMS = Arrays.asList(COLORS_PARAM);
 
     // output files
-    public static final File XML_LOG;
     public static final File COVERAGE_LOG;
 
     // suite file
@@ -150,7 +159,8 @@ public final class PhpUnit {
 
     private static final char DIRECTORY_SEPARATOR = '/'; // NOI18N
 
-    public static final Pattern LINE_PATTERN = Pattern.compile("(?:.+\\(\\) )?(.+):(\\d+)"); // NOI18N
+    public static final Pattern OUT_LINE_PATTERN = Pattern.compile("(?:.+\\(\\) )?(.+):(\\d+)"); // NOI18N
+    public static final Pattern ERR_LINE_PATTERN = Pattern.compile("\\#(?:\\d+| in) (.+)(?:\\(| on line )(\\d+)(\\):.+)?"); // NOI18N
 
     // #200489
     private static volatile File suite; // ok if it is fetched more times
@@ -172,7 +182,6 @@ public final class PhpUnit {
             }
         }
         LOGGER.log(Level.FINE, "Directory for PhpUnit logs: {0}", logDirName);
-        XML_LOG = new File(logDirName, "nb-phpunit-log.xml"); // NOI18N
         COVERAGE_LOG = new File(logDirName, "nb-phpunit-coverage.xml"); // NOI18N
     }
 
@@ -253,15 +262,109 @@ public final class PhpUnit {
     }
 
     @CheckForNull
-    public Integer runTests(PhpModule phpModule, TestRunInfo runInfo) throws TestRunException {
+    public Integer runTests(PhpModule phpModule, TestRunInfo runInfo, TestSession testSession) throws TestRunException {
         PhpExecutable phpUnit = getExecutable(phpModule);
         if (phpUnit == null) {
             return null;
         }
 
+        File workingDirectory = getWorkingDirectory(phpModule);
+        if (workingDirectory != null) {
+            phpUnit.workDir(workingDirectory);
+        }
+        phpUnit.additionalParameters(getTestParams(phpModule, runInfo));
+        ExecutionDescriptor descriptor = getTestDescriptor(phpModule, testSession);
+        try {
+            if (runInfo.getSessionType() == TestRunInfo.SessionType.TEST) {
+                return phpUnit.runAndWait(descriptor, "Running PhpUnit tests..."); // NOI18N
+            }
+            List<FileObject> startFiles = runInfo.getStartFiles();
+            assert startFiles.size() == 1 : "Exactly one file expected for debugging but got " + startFiles;
+            return phpUnit.debug(startFiles.get(0), descriptor, null);
+        } catch (CancellationException ex) {
+            // canceled
+            LOGGER.log(Level.FINE, "Test running cancelled", ex);
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            if (PhpUnitPreferences.isPhpUnitEnabled(phpModule)) {
+                // custom phpunit
+                UiUtils.processExecutionException(ex, phpModule, PhpUnitCustomizer.IDENTIFIER);
+            } else {
+                UiUtils.processExecutionException(ex, PhpUnitOptionsPanelController.OPTIONS_SUB_PATH);
+            }
+            throw new TestRunException(ex);
+        }
+        return null;
+    }
+
+    @CheckForNull
+    private List<String> getTestGroups(PhpModule phpModule) throws TestRunException {
+        PhpExecutable phpUnit = getExecutable(phpModule);
+        assert phpUnit != null;
+
+        File workingDirectory = getWorkingDirectory(phpModule);
+        if (workingDirectory == null) {
+            return null;
+        }
+        phpUnit.workDir(workingDirectory);
+
         List<String> params = createParams(true);
-        params.add(JUNIT_LOG_PARAM);
-        params.add(XML_LOG.getAbsolutePath());
+        addBootstrap(phpModule, params);
+        addConfiguration(phpModule, params);
+        params.add(LIST_GROUPS_PARAM);
+        // list test groups from the current workdir
+        params.add("."); // NOI18N
+        phpUnit.additionalParameters(params);
+
+        TestGroupsOutputProcessorFactory testGroupsProcessorFactory = new TestGroupsOutputProcessorFactory();
+        try {
+            phpUnit.runAndWait(getGroupsDescriptor(), testGroupsProcessorFactory, "Fetching test groups..."); // NOI18N
+            if (!testGroupsProcessorFactory.hasTestGroups()
+                    && testGroupsProcessorFactory.hasOutput) {
+                // some error
+                throw new TestRunException("Test groups cannot be listed. Review Output window for details.");
+            }
+            return testGroupsProcessorFactory.getTestGroups();
+        } catch (CancellationException ex) {
+            // cancelled
+            LOGGER.log(Level.FINE, "Test groups getting cancelled", ex);
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            UiUtils.processExecutionException(ex, PhpUnitOptionsPanelController.OPTIONS_SUB_PATH);
+            throw new TestRunException(ex);
+        }
+        return null;
+    }
+
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "PhpUnit.run.title=PHPUnit ({0})",
+    })
+    @CheckForNull
+    private PhpExecutable getExecutable(PhpModule phpModule) {
+        FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory == null) {
+            org.netbeans.modules.php.phpunit.ui.UiUtils.warnNoSources(phpModule.getDisplayName());
+            return null;
+        }
+
+        return new PhpExecutable(phpUnitPath)
+                .optionsSubcategory(PhpUnitOptionsPanelController.OPTIONS_SUB_PATH)
+                .displayName(Bundle.PhpUnit_run_title(phpModule.getDisplayName()));
+    }
+
+    private List<String> createParams(boolean withDefaults) {
+        List<String> params = new ArrayList<>();
+        if (withDefaults) {
+            params.addAll(DEFAULT_PARAMS);
+        }
+        return params;
+    }
+
+    private List<String> getTestParams(PhpModule phpModule, TestRunInfo runInfo) throws TestRunException {
+        List<String> params = createParams(true);
+        params.add(JSON_LOG_PARAM);
+        params.add(JSON_LOG_FILE);
         addBootstrap(phpModule, params);
         addConfiguration(phpModule, params);
         if (runInfo.isCoverageEnabled()) {
@@ -316,103 +419,22 @@ public final class PhpUnit {
             // custom suite
             params.add(PhpUnitPreferences.getCustomSuitePath(phpModule));
         } else {
-            // standard suite
-            // #218607 - hotfix
-            //params.add(SUITE_NAME)
-            params.add(getNbSuite().getAbsolutePath());
-            // #254276
-            params.add(PARAM_SEPARATOR);
-            params.add(String.format(SUITE_RUN, joinPaths(runInfo.getStartFiles(), SUITE_PATH_DELIMITER)));
-        }
-
-        File workingDirectory = getWorkingDirectory(phpModule);
-        if (workingDirectory != null) {
-            phpUnit.workDir(workingDirectory);
-        }
-        phpUnit.additionalParameters(params);
-        try {
-            if (runInfo.getSessionType() == TestRunInfo.SessionType.TEST) {
-                return phpUnit.runAndWait(getDescriptor(), "Running PhpUnit tests..."); // NOI18N
-            }
+            boolean useNbSuite = true;
             List<FileObject> startFiles = runInfo.getStartFiles();
-            assert startFiles.size() == 1 : "Exactly one file expected for debugging but got " + startFiles;
-            return phpUnit.debug(startFiles.get(0), getDescriptor(), null);
-        } catch (CancellationException ex) {
-            // canceled
-            LOGGER.log(Level.FINE, "Test running cancelled", ex);
-        } catch (ExecutionException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-            if (PhpUnitPreferences.isPhpUnitEnabled(phpModule)) {
-                // custom phpunit
-                UiUtils.processExecutionException(ex, phpModule, PhpUnitCustomizer.IDENTIFIER);
-            } else {
-                UiUtils.processExecutionException(ex, PhpUnitOptionsPanelController.OPTIONS_SUB_PATH);
+            if (PhpUnitPreferences.getRunPhpUnitOnly(phpModule)
+                    && phpModule.getTestDirectories().equals(startFiles)) {
+                // only test dir and use 'phpunit' command only
+                useNbSuite = false;
             }
-            throw new TestRunException(ex);
-        }
-        return null;
-    }
-
-    @CheckForNull
-    private List<String> getTestGroups(PhpModule phpModule) throws TestRunException {
-        PhpExecutable phpUnit = getExecutable(phpModule);
-        assert phpUnit != null;
-
-        File workingDirectory = getWorkingDirectory(phpModule);
-        if (workingDirectory == null) {
-            return null;
-        }
-        phpUnit.workDir(workingDirectory);
-
-        List<String> params = createParams(true);
-        addBootstrap(phpModule, params);
-        addConfiguration(phpModule, params);
-        params.add(LIST_GROUPS_PARAM);
-        // list test groups from the current workdir
-        params.add("."); // NOI18N
-        phpUnit.additionalParameters(params);
-
-        TestGroupsOutputProcessorFactory testGroupsProcessorFactory = new TestGroupsOutputProcessorFactory();
-        try {
-            phpUnit.runAndWait(getDescriptor(), testGroupsProcessorFactory, "Fetching test groups..."); // NOI18N
-            if (!testGroupsProcessorFactory.hasTestGroups()
-                    && testGroupsProcessorFactory.hasOutput) {
-                // some error
-                throw new TestRunException("Test groups cannot be listed. Review Output window for details.");
+            if (useNbSuite) {
+                // standard suite
+                // #218607 - hotfix
+                //params.add(SUITE_NAME)
+                params.add(getNbSuite().getAbsolutePath());
+                // #254276
+                params.add(PARAM_SEPARATOR);
+                params.add(String.format(SUITE_RUN, joinPaths(startFiles, SUITE_PATH_DELIMITER)));
             }
-            return testGroupsProcessorFactory.getTestGroups();
-        } catch (CancellationException ex) {
-            // cancelled
-            LOGGER.log(Level.FINE, "Test groups getting cancelled", ex);
-        } catch (ExecutionException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-            UiUtils.processExecutionException(ex, PhpUnitOptionsPanelController.OPTIONS_SUB_PATH);
-            throw new TestRunException(ex);
-        }
-        return null;
-    }
-
-    @NbBundle.Messages({
-        "# {0} - project name",
-        "PhpUnit.run.title=PHPUnit ({0})",
-    })
-    @CheckForNull
-    private PhpExecutable getExecutable(PhpModule phpModule) {
-        FileObject sourceDirectory = phpModule.getSourceDirectory();
-        if (sourceDirectory == null) {
-            org.netbeans.modules.php.phpunit.ui.UiUtils.warnNoSources(phpModule.getDisplayName());
-            return null;
-        }
-
-        return new PhpExecutable(phpUnitPath)
-                .optionsSubcategory(PhpUnitOptionsPanelController.OPTIONS_SUB_PATH)
-                .displayName(Bundle.PhpUnit_run_title(phpModule.getDisplayName()));
-    }
-
-    private List<String> createParams(boolean withDefaults) {
-        List<String> params = new ArrayList<>();
-        if (withDefaults) {
-            params.addAll(DEFAULT_PARAMS);
         }
         return params;
     }
@@ -431,17 +453,20 @@ public final class PhpUnit {
         }
     }
 
-    private ExecutionDescriptor getDescriptor() {
+    private ExecutionDescriptor getTestDescriptor(PhpModule phpModule, TestSession testSession) {
         // #236397 - cannot be controllable
         return new ExecutionDescriptor()
                 .optionsPath(PhpUnitOptionsPanelController.OPTIONS_PATH)
-                .outConvertorFactory(PHPUNIT_LINE_CONVERTOR_FACTORY)
-                .preExecution(new Runnable() {
-                    @Override
-                    public void run() {
-                        cleanupLogFiles();
-                    }
-                });
+                .outConvertorFactory(PHPUNIT_OUT_LINE_CONVERTOR_FACTORY)
+                .errConvertorFactory(PHPUNIT_ERR_LINE_CONVERTOR_FACTORY)
+                .errProcessorFactory(new JsonLogProcessorFactory(phpModule, testSession))
+                .preExecution(this::cleanupLogFiles);
+    }
+
+    private ExecutionDescriptor getGroupsDescriptor() {
+        // #236397 - cannot be controllable
+        return new ExecutionDescriptor()
+                .optionsPath(PhpUnitOptionsPanelController.OPTIONS_PATH);
     }
 
     // #170120
@@ -460,11 +485,6 @@ public final class PhpUnit {
     }
 
     void cleanupLogFiles() {
-        if (PhpUnit.XML_LOG.exists()) {
-            if (!PhpUnit.XML_LOG.delete()) {
-                LOGGER.log(Level.INFO, "Cannot delete PHPUnit log {0}", PhpUnit.XML_LOG);
-            }
-        }
         if (PhpUnit.COVERAGE_LOG.exists()) {
             if (!PhpUnit.COVERAGE_LOG.delete()) {
                 LOGGER.log(Level.INFO, "Cannot delete code coverage log {0}", PhpUnit.COVERAGE_LOG);
@@ -721,10 +741,162 @@ public final class PhpUnit {
 
     //~ Inner classes
 
-    static final class PhpUnitLineConvertorFactory implements ExecutionDescriptor.LineConvertorFactory {
+    private static final class JsonLogProcessorFactory implements ExecutionDescriptor.InputProcessorFactory2 {
+
+        private final PhpModule phpModule;
+        private final TestSession testSession;
+
+
+        JsonLogProcessorFactory(PhpModule phpModule, TestSession testSession) {
+            assert phpModule != null;
+            assert testSession != null;
+            this.phpModule = phpModule;
+            this.testSession = testSession;
+        }
+
+        @Override
+        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+            return new JsonLogInputProcessor(defaultProcessor, phpModule, testSession);
+        }
+
+    }
+
+    private static final class JsonLogInputProcessor implements InputProcessor, JsonParser.Handler {
+
+        private final InputProcessor defaultProcessor;
+        private final TestSession testSession;
+        private final JsonParser jsonParser;
+
+        private TestSuite actualTestSuite;
+        private TestCase actualTestCase;
+
+
+        JsonLogInputProcessor(InputProcessor defaultProcessor, PhpModule phpModule, TestSession testSession) {
+            assert defaultProcessor != null;
+            assert phpModule != null;
+            assert testSession != null;
+            this.defaultProcessor = defaultProcessor;
+            this.testSession = testSession;
+            jsonParser = new JsonParser(this, getCustomTestSuite(phpModule));
+        }
+
+        @Override
+        public void processInput(char[] chars) throws IOException {
+            boolean parsed = false;
+            try {
+                parsed = jsonParser.parse(new String(chars));
+            } catch (Throwable ex) {
+                assert false : ex;
+                LOGGER.log(Level.INFO, "JSON parse error", ex);
+            }
+            if (!parsed) {
+                defaultProcessor.processInput(chars);
+            }
+        }
+
+        @Override
+        public void reset() throws IOException {
+            defaultProcessor.reset();
+        }
+
+        @Override
+        public void close() throws IOException {
+            jsonParser.finish();
+            defaultProcessor.close();
+        }
+
+        @Override
+        public void onSessionStart(TestSessionVo testSessionVo) {
+            testSession.setOutputLineHandler(testSessionVo.getOutputLineHandler());
+            String initMessage = testSessionVo.getInitMessage();
+            if (initMessage != null) {
+                testSession.printMessage(initMessage, false);
+                testSession.printMessage("", false); // NOI18N
+            }
+        }
+
+        @Override
+        public void onSessionFinish(TestSessionVo testSessionVo) {
+            String finishMessage = testSessionVo.getFinishMessage();
+            if (finishMessage != null) {
+                testSession.printMessage(finishMessage, false);
+                testSession.printMessage("", false); // NOI18N
+            }
+            String finishError = testSessionVo.getFinishError();
+            if (finishError != null) {
+                testSession.printMessage(finishError, true);
+                testSession.printMessage("", false); // NOI18N
+            }
+        }
+
+        @Override
+        public void onSuiteStart(TestSuiteVo testSuiteVo) {
+            assert actualTestSuite == null : actualTestSuite;
+            actualTestSuite = testSession.addTestSuite(testSuiteVo.getName(), testSuiteVo.getLocation());
+        }
+
+        @Override
+        public void onSuiteFinish(TestSuiteVo testSuiteVo) {
+            assert actualTestSuite != null;
+            actualTestSuite.finish(testSuiteVo.getTime());
+            actualTestSuite = null;
+        }
+
+        @Override
+        public void onTestStart(TestCaseVo testCaseVo) {
+            assert actualTestCase == null : actualTestCase;
+            actualTestCase = actualTestSuite.addTestCase(testCaseVo.getName(), testCaseVo.getType());
+            String className = testCaseVo.getClassName();
+            if (className != null) {
+                actualTestCase.setClassName(className);
+            }
+        }
+
+        @Override
+        public void onTestFinish(TestCaseVo testCaseVo) {
+            assert actualTestCase != null;
+            Locations.Line location = testCaseVo.getLocation();
+            if (location != null) {
+                actualTestCase.setLocation(location);
+            }
+            actualTestCase.setStatus(testCaseVo.getStatus());
+            if (testCaseVo.hasFailureInfo()) {
+                String[] stackTrace = testCaseVo.getStackTrace();
+                // #251749
+                String[] tmp;
+                if (stackTrace.length == 1) {
+                    tmp = new String[0];
+                } else {
+                    tmp = new String[stackTrace.length - 1];
+                    System.arraycopy(stackTrace, 1, tmp, 0, stackTrace.length - 1);
+                }
+                actualTestCase.setFailureInfo(stackTrace[0], tmp, testCaseVo.isError(), testCaseVo.getDiff());
+            }
+            actualTestCase.setTime(testCaseVo.getTime());
+            actualTestCase = null;
+        }
+
+        private String getCustomTestSuite(PhpModule phpModule) {
+            if (PhpUnitPreferences.isCustomSuiteEnabled(phpModule)) {
+                return PhpUnitPreferences.getCustomSuitePath(phpModule);
+            }
+            return null;
+        }
+
+    }
+
+    static final class PhpUnitOutLineConvertorFactory implements ExecutionDescriptor.LineConvertorFactory {
         @Override
         public LineConvertor newLineConvertor() {
-            return LineConvertors.filePattern(null, PhpUnit.LINE_PATTERN, null, 1, 2);
+            return LineConvertors.filePattern(null, PhpUnit.OUT_LINE_PATTERN, null, 1, 2);
+        }
+
+    }
+
+    static final class PhpUnitErrLineConvertorFactory implements ExecutionDescriptor.LineConvertorFactory {
+        @Override
+        public LineConvertor newLineConvertor() {
+            return LineConvertors.filePattern(null, PhpUnit.ERR_LINE_PATTERN, null, 1, 2);
         }
 
     }

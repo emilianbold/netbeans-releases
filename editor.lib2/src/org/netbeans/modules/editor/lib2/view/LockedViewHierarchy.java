@@ -37,6 +37,7 @@
  */
 package org.netbeans.modules.editor.lib2.view;
 
+import java.awt.Rectangle;
 import java.awt.Shape;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
@@ -44,10 +45,10 @@ import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * Locked view hierarchy as result of {@link ViewHierarchy#lock() }.
- * <br/>
+ * <br>
  * Underlying document of the view hierarchy's text component must be
  * read-locked to guarantee stability of offsets passed to methods of this class.
- * <br/>
+ * <br>
  * If editor view hierarchy is not installed into text component
  * (text component's root view is not an instance of DocumentView)
  * the methods return default values as described in their documentation.
@@ -82,7 +83,7 @@ public final class LockedViewHierarchy {
 
     /**
      * Get text component that this view hierarchy is associated with.
-     * <br/>
+     * <br>
      * 
      * @return non-null text component.
      */
@@ -93,10 +94,10 @@ public final class LockedViewHierarchy {
     
     /**
      * Get y coordinate of a visual row that corresponds to given offset.
-     * <br/>
+     * <br>
      * Underlying document of the view hierarchy's text component should be read-locked
      * to guarantee stability of passed offset.
-     * <br/>
+     * <br>
      * If editor view hierarchy is not installed into text component this method
      * delegates to {@link JTextComponent#modelToView(int) }.
      *
@@ -133,6 +134,18 @@ public final class LockedViewHierarchy {
     }
 
     /**
+     * Return bounds around the visual mapping of character at the given offset.
+     *
+     * @param offset
+     * @param bias
+     * @return rectangle corresponding to the given offset.
+     */
+    public Rectangle modelToViewBounds(int offset, Position.Bias bias) {
+        Shape shape = modelToView(offset, bias);
+        return (shape != null) ? shape.getBounds() : null;
+    }
+
+    /**
      * Map visual point to an offset.
      *
      * @param x
@@ -162,11 +175,23 @@ public final class LockedViewHierarchy {
      * Map y to index of paragraph view.
      *
      * @param y
-     * @return offset corresponding to given visual point.
+     * @return offset corresponding to given visual point. Returns -1 if the view hierarchy is not active.
      */
     public int yToParagraphViewIndex(double y) {
         checkValid();
         return impl.yToParagraphViewIndex(docView, y);
+    }
+    
+    /**
+     * Map y to start offset of paragraph view that "contains" the y coordinate.
+     *
+     * @param y
+     * @return start offset of paragraph view containing the y. Returns 0 if the view hierarchy is not active.
+     */
+    public int yToParagraphStartOffset(double y) {
+        checkValid();
+        int index = yToParagraphViewIndex(y);
+        return (index != -1) ? docView.getView(index).getStartOffset() : 0;
     }
     
     /**
@@ -197,9 +222,9 @@ public final class LockedViewHierarchy {
 
     /**
      * Get height of a visual row of text.
-     * <br/>
+     * <br>
      * For wrapped lines (containing multiple visual rows) this is height of a single visual row.
-     * <br/>
+     * <br>
      * Current editor view hierarchy implementation uses uniform row height for all the rows.
      * 
      * @return height of a visual row.
@@ -211,7 +236,7 @@ public final class LockedViewHierarchy {
     
     /**
      * Get width of a typical character of a default font used by view hierarchy.
-     * <br/>
+     * <br>
      * In case mixed fonts (non-monospaced) are used this gives a little value
      * but certain tools such as rectangular selection may use this value.
      */
@@ -222,10 +247,10 @@ public final class LockedViewHierarchy {
     
     /**
      * Return true if the view hierarchy is actively managing its contained views.
-     * <br/>
+     * <br>
      * Infrastructure may turn the view hierarchy inactive in case there are many
      * edits performed in the document (mainly during code reformatting).
-     * <br/>
+     * <br>
      * Also the view hierarchy is not active when a document modification was performed
      * but the view hierarchy did not update itself accordingly yet (its DocumentListener
      * was not called yet).

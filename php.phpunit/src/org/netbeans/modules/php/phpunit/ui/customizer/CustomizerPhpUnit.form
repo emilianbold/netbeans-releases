@@ -22,17 +22,6 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="configurationCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="suiteCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="bootstrapCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="runTestUsingUnitCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="askForTestGroupsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="scriptCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="32767" attributes="0"/>
-          </Group>
-          <Group type="102" attributes="0">
               <EmptySpace min="21" pref="21" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
@@ -81,6 +70,18 @@
                   </Group>
               </Group>
           </Group>
+          <Group type="102" attributes="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="configurationCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="suiteCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="bootstrapCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="runTestUsingUnitCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="askForTestGroupsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="scriptCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="runPhpUnitOnlyCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="32767" attributes="0"/>
+          </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -124,10 +125,13 @@
                   <Component id="scriptTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="scriptBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Component id="runPhpUnitOnlyCheckBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="runTestUsingUnitCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="askForTestGroupsCheckBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -422,6 +426,13 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="scriptBrowseButtonActionPerformed"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="runPhpUnitOnlyCheckBox">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/phpunit/ui/customizer/Bundle.properties" key="CustomizerPhpUnit.runPhpUnitOnlyCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="runTestUsingUnitCheckBox">
       <Properties>

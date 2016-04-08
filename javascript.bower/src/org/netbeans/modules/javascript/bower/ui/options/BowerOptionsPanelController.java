@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript.bower.ui.options;
 
@@ -81,6 +81,7 @@ public class BowerOptionsPanelController extends OptionsPanelController implemen
         if (firstOpening || !isChanged()) { // if panel is not modified by the user and he switches back to this panel, set to default
             firstOpening = false;
             getPanel().setBower(getBowerOptions().getBower());
+            getPanel().setIgnoreBowerComponents(getBowerOptions().isIgnoreBowerComponents());
         }
         changed = false;
     }
@@ -91,6 +92,7 @@ public class BowerOptionsPanelController extends OptionsPanelController implemen
             @Override
             public void run() {
                 getBowerOptions().setBower(getPanel().getBower());
+                getBowerOptions().setIgnoreBowerComponents(getPanel().isIgnoreBowerComponents());
                 changed = false;
             }
         });
@@ -100,6 +102,7 @@ public class BowerOptionsPanelController extends OptionsPanelController implemen
     public void cancel() {
         if (isChanged()) { // if panel is modified by the user and options window closes, discard any changes
             getPanel().setBower(getBowerOptions().getBower());
+            getPanel().setIgnoreBowerComponents(getBowerOptions().isIgnoreBowerComponents());
         }
     }
 
@@ -129,7 +132,10 @@ public class BowerOptionsPanelController extends OptionsPanelController implemen
     public boolean isChanged() {
         String saved = getBowerOptions().getBower();
         String current = getPanel().getBower().trim();
-        return saved == null ? !current.isEmpty() : !saved.equals(current);
+        if (saved == null ? !current.isEmpty() : !saved.equals(current)) {
+            return true;
+        }
+        return getBowerOptions().isIgnoreBowerComponents() != getPanel().isIgnoreBowerComponents();
     }
 
     @Override

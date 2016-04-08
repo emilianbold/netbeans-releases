@@ -49,10 +49,10 @@ import org.openide.util.Exceptions;
 
 /**
  * Char sequence with additional attributes.
- * <br/>
+ * <br>
  * Method operate with javax.swing.text.AttributeSet which they transfer
  * to corresponding TextAttribute constants.
- * <br/>
+ * <br>
  * After creation the series of addTextRun() is called followed by setText()
  * which completes modification and makes the object ready for clients.
  *

@@ -328,26 +328,31 @@ public class CompilerSet2Configuration implements PropertyChangeListener, Clonea
     private static String mapOldToNew(String flavor, int version) {
         if (version <= 43) {
             if ("Sun".equals(flavor)) { // NOI18N
-                return "SunStudio"; // NOI18N
+                flavor = "SunStudio"; // NOI18N
             } else if ("SunExpress".equals(flavor)) { // NOI18N
-                return "SunStudioExpress"; // NOI18N
+                flavor = "SunStudioExpress"; // NOI18N
             } else if ("Sun12".equals(flavor)) { // NOI18N
-                return "SunStudio_12"; // NOI18N
+                flavor = "SunStudio_12"; // NOI18N
             } else if ("Sun11".equals(flavor)) { // NOI18N
-                return "SunStudio_11"; // NOI18N
+                flavor = "SunStudio_11"; // NOI18N
             } else if ("Sun10".equals(flavor)) { // NOI18N
-                return "SunStudio_10"; // NOI18N
+                flavor = "SunStudio_10"; // NOI18N
             } else if ("Sun9".equals(flavor)) { // NOI18N
-                return "SunStudio_9"; // NOI18N
+                flavor = "SunStudio_9"; // NOI18N
             } else if ("Sun8".equals(flavor)) { // NOI18N
-                return "SunStudio_8"; // NOI18N
+                flavor = "SunStudio_8"; // NOI18N
             } else if ("DJGPP".equals(flavor)) { // NOI18N
-                return "GNU"; // NOI18N
+                flavor = "GNU"; // NOI18N
             } else if ("Interix".equals(flavor)) { // NOI18N
-                return "GNU"; // NOI18N
+                flavor = "GNU"; // NOI18N
             } else if (CompilerSet.UNKNOWN.equals(flavor)) {
-                return "GNU"; // NOI18N
+                flavor = "GNU"; // NOI18N
             }
+        }
+        if ("Sun".equals(flavor) || // NOI18N
+            "SunStudio".equals(flavor) || // NOI18N
+            "OracleSolarisStudio".equals(flavor)) { // NOI18N
+            flavor = "OracleDeveloperStudio"; // NOI18N
         }
         return flavor;
     }

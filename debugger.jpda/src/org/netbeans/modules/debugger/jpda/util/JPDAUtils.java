@@ -68,9 +68,25 @@ import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 * @author Jan Jancura
 */
 public class JPDAUtils {
-    public static final boolean IS_JDK_160_02 = !System.getProperty("java.version").equals("1.6.0") &&
-                                                             !System.getProperty("java.version").equals("1.6.0_01");
+    private static final String JAVA_VERSION = System.getProperty("java.version");
+    /**
+     * <code>true</code> when the current JDK version is 1.8.0 update 40, or newer.
+     */
+    public static final boolean IS_JDK_180_40 = !JAVA_VERSION.startsWith("1.8.0") || // we know that it's 1.8.0 at least
+                                                getVersionUpdate(JAVA_VERSION) >= 40;
 
+
+    private static int getVersionUpdate(String javaVersion) {
+        if (javaVersion.length() < 7) {
+            return 0;
+        }
+        String update = javaVersion.substring(6);
+        try {
+            return Integer.parseInt(update);
+        } catch (NumberFormatException nfex) {
+            return 0;
+        }
+    }
 
     public static final ReferenceType getPreferredReferenceType(List<ReferenceType> referenceTypes, Logger logger) throws VMDisconnectedExceptionWrapper {
         ReferenceType preferredType; // The preferred reference type from the list

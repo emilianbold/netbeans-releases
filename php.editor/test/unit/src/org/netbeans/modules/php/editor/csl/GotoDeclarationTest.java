@@ -408,6 +408,103 @@ public class GotoDeclarationTest extends PHPNavTestBase {
         checkDeclaration(getTestPath(), "print Ca^t::KIND;", "class ^Cat extends Mammal {");
     }
 
+    // #250579
+    public void testConstantArrayAccess_01() throws Exception {
+        checkDeclaration(getTestPath(), "const GLOBAL_CONSTANT2 = GLOBAL_CON^STANT1[0];", "const ^GLOBAL_CONSTANT1 = [0, 1];");
+    }
+
+    public void testConstantArrayAccess_02() throws Exception {
+        checkDeclaration(getTestPath(), "const GLOBAL_CONSTANT3 = GLOBAL_CONST^ANT1[GLOBAL_CONSTANT1[0] + GLOBAL_CONSTANT1[0]];", "const ^GLOBAL_CONSTANT1 = [0, 1];");
+    }
+
+    public void testConstantArrayAccess_03() throws Exception {
+        checkDeclaration(getTestPath(), "const GLOBAL_CONSTANT3 = GLOBAL_CONSTANT1[GLOBAL_CO^NSTANT1[0] + GLOBAL_CONSTANT1[0]];", "const ^GLOBAL_CONSTANT1 = [0, 1];");
+    }
+
+    public void testConstantArrayAccess_04() throws Exception {
+        checkDeclaration(getTestPath(), "const GLOBAL_CONSTANT3 = GLOBAL_CONSTANT1[GLOBAL_CONSTANT1[0] + GLOBAL_CONST^ANT1[0]];", "const ^GLOBAL_CONSTANT1 = [0, 1];");
+    }
+
+    public void testConstantArrayAccess_05() throws Exception {
+        checkDeclaration(getTestPath(), "const GLOBAL_CONSTANT5 = GLOBAL_CONST^ANT4[\"b\"][GLOBAL_CONSTANT1[1]];", "const ^GLOBAL_CONSTANT4 = [\"a\" => [0, 1], \"b\" => [\"c\", \"d\"]];");
+    }
+
+    public void testConstantArrayAccess_06() throws Exception {
+        checkDeclaration(getTestPath(), "const GLOBAL_CONSTANT5 = GLOBAL_CONSTANT4[\"b\"][GLOBAL_CONS^TANT1[1]];", "const ^GLOBAL_CONSTANT1 = [0, 1];");
+    }
+
+    public void testConstantArrayAccess_07() throws Exception {
+        checkDeclaration(getTestPath(), "GLOBAL_CO^NSTANT1[$index];", "const ^GLOBAL_CONSTANT1 = [0, 1];");
+    }
+
+    public void testConstantArrayAccess_08() throws Exception {
+        checkDeclaration(getTestPath(), "[1][GLOBAL_CONSTA^NT1[0]];", "const ^GLOBAL_CONSTANT1 = [0, 1];");
+    }
+
+    public void testConstantArrayAccess_09() throws Exception {
+        checkDeclaration(getTestPath(), "echo GLOBAL_CONSTANT4[\"a\"][GLOBAL_CONST^ANT1[$index]];", "const ^GLOBAL_CONSTANT1 = [0, 1];");
+    }
+
+    public void testConstantArrayAccess_10() throws Exception {
+        checkDeclaration(getTestPath(), "const CLASS_CONSTANT2 = self::CLA^SS_CONSTANT1[0];", "const ^CLASS_CONSTANT1 = [\"a\", \"b\"];");
+    }
+
+    public void testConstantArrayAccess_11() throws Exception {
+        checkDeclaration(getTestPath(), "const CLASS_CONSTANT3 = GLOBAL_CONS^TANT1[0] + GLOBAL_CONSTANT1[1];", "const ^GLOBAL_CONSTANT1 = [0, 1];");
+    }
+
+    public void testConstantArrayAccess_12() throws Exception {
+        checkDeclaration(getTestPath(), "self::CLASS_CONST^ANT1[GLOBAL_CONSTANT1[1]];", "const ^CLASS_CONSTANT1 = [\"a\", \"b\"];");
+    }
+
+    public void testConstantArrayAccess_13() throws Exception {
+        checkDeclaration(getTestPath(), "self::CLASS_CONSTANT1[GLOBAL_CO^NSTANT1[1]];", "const ^GLOBAL_CONSTANT1 = [0, 1];");
+    }
+
+    public void testConstantArrayAccess_14() throws Exception {
+        checkDeclaration(getTestPath(), "self::CLASS_CON^STANT1[ConstantClass::CLASS_CONSTANT4[self::CLASS_CONSTANT4[0]]];", "const ^CLASS_CONSTANT1 = [\"a\", \"b\"];");
+    }
+
+    public void testConstantArrayAccess_15() throws Exception {
+        checkDeclaration(getTestPath(), "self::CLASS_CONSTANT1[C^onstantClass::CLASS_CONSTANT4[self::CLASS_CONSTANT4[0]]];", "class ^ConstantClass implements ConstantInterface {");
+    }
+
+    public void testConstantArrayAccess_16() throws Exception {
+        checkDeclaration(getTestPath(), "self::CLASS_CONSTANT1[ConstantClass::CLASS_CO^NSTANT4[self::CLASS_CONSTANT4[0]]];", "const ^CLASS_CONSTANT4 = [0, 1];");
+    }
+
+    public void testConstantArrayAccess_17() throws Exception {
+        checkDeclaration(getTestPath(), "self::CLASS_CONSTANT1[ConstantClass::CLASS_CONSTANT4[self::CLASS^_CONSTANT4[0]]];", "const ^CLASS_CONSTANT4 = [0, 1];");
+    }
+
+    public void testConstantArrayAccess_18() throws Exception {
+        checkDeclaration(getTestPath(), "\"String\"[ConstantClass::CLASS_CONST^ANT4[0]];", "const ^CLASS_CONSTANT4 = [0, 1];");
+    }
+
+    public void testConstantArrayAccess_19() throws Exception {
+        checkDeclaration(getTestPath(), "const INTERFACE_CONSTANT2 = self::INT^ERFACE_CONSTANT1[0];", "const ^INTERFACE_CONSTANT1 = [\"a\", \"b\"];");
+    }
+
+    public void testConstantArrayAccess_20() throws Exception {
+        checkDeclaration(getTestPath(), "const INTERFACE_CONSTANT3 = ConstantInterface::INTERFACE^_CONSTANT1[0] . GLOBAL_CONSTANT1[1];", "const ^INTERFACE_CONSTANT1 = [\"a\", \"b\"];");
+    }
+
+    public void testConstantArrayAccess_21() throws Exception {
+        checkDeclaration(getTestPath(), "const INTERFACE_CONSTANT3 = ConstantInterface::INTERFACE_CONSTANT1[0] . GLOBAL_CON^STANT1[1];", "const ^GLOBAL_CONSTANT1 = [0, 1];");
+    }
+
+    public void testConstantArrayAccess_22() throws Exception {
+        checkDeclaration(getTestPath(), "const INTERFACE_CONSTANT3 = Constant^Interface::INTERFACE_CONSTANT1[0] . GLOBAL_CONSTANT1[1];", "interface ^ConstantInterface {");
+    }
+
+    public void testConstantArrayAccess_23() throws Exception {
+        checkDeclaration(getTestPath(), "ConstantInterface::INTERFACE_CONS^TANT1[GLOBAL_CONSTANT1[1]];", "const ^INTERFACE_CONSTANT1 = [\"a\", \"b\"];");
+    }
+
+    public void testConstantArrayAccess_24() throws Exception {
+        checkDeclaration(getTestPath(), "ConstantInterface::INTERFACE_CONSTANT1[GLOBAL_CON^STANT1[1]];", "const ^GLOBAL_CONSTANT1 = [0, 1];");
+    }
+
     public void testStaticMethodInvocation_First() throws Exception {
         checkDeclaration(getTestPath(), "echo Mammal::$co^unt;", "public static $^count = 0, $animal;");
     }

@@ -49,6 +49,7 @@ import java.util.List;
  * Represents a class or namespace constant declaration
  * <pre>e.g.<pre> const MY_CONST = 5;
  * const MY_CONST = 5, YOUR_CONSTANT = 8;
+ * const CONSTANT = [0, 1];
  */
 public class ConstantDeclaration extends Statement {
 

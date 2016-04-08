@@ -84,6 +84,7 @@ public final class MessDetector {
     private static final String SUFFIXES_PARAM = "--suffixes"; // NOI18N
 
     // rule sets
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "MS_MUTABLE_COLLECTION", justification = "It is immutable") // NOI18N
     public static final List<String> RULE_SETS = Arrays.asList(
             "codesize", // NOI18N
             "controversial", // NOI18N

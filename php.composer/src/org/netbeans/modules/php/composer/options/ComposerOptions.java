@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,11 +37,12 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.composer.options;
 
 import java.util.List;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.composer.commands.Composer;
@@ -50,7 +51,13 @@ import org.openide.util.NbPreferences;
 /**
  * Composer options.
  */
-public class ComposerOptions {
+public final class ComposerOptions {
+
+    public static final String COMPOSER_PATH = "composer.path"; // NOI18N
+    public static final String VENDOR = "vendor"; // NOI18N
+    public static final String AUTHOR_NAME = "author.name"; // NOI18N
+    public static final String AUTHOR_EMAIL = "author.email"; // NOI18N
+    public static final String IGNORE_VENDOR = "ignore.vendor"; // NOI18N
 
     // Do not change arbitrary - consult with layer's folder OptionsExport
     // Path to Preferences node for storing these preferences
@@ -58,21 +65,29 @@ public class ComposerOptions {
 
     private static final ComposerOptions INSTANCE = new ComposerOptions();
 
-    // composer
-    private static final String COMPOSER_PATH = "composer.path"; // NOI18N
-    private static final String VENDOR = "vendor"; // NOI18N
-    private static final String AUTHOR_NAME = "author.name"; // NOI18N
-    private static final String AUTHOR_EMAIL = "author.email"; // NOI18N
+    private final Preferences preferences;
 
     private volatile boolean composerSearched = false;
 
+
+    private ComposerOptions() {
+        preferences = NbPreferences.forModule(ComposerOptions.class).node(PREFERENCES_PATH);
+    }
 
     public static ComposerOptions getInstance() {
         return INSTANCE;
     }
 
+    public void addPreferenceChangeListener(PreferenceChangeListener listener) {
+        preferences.addPreferenceChangeListener(listener);
+    }
+
+    public void removePreferenceChangeListener(PreferenceChangeListener listener) {
+        preferences.removePreferenceChangeListener(listener);
+    }
+
     public String getComposerPath() {
-        String composerPath = getPreferences().get(COMPOSER_PATH, null);
+        String composerPath = preferences.get(COMPOSER_PATH, null);
         if (composerPath == null && !composerSearched) {
             composerSearched = true;
             List<String> paths = FileUtils.findFileOnUsersPath(Composer.COMPOSER_FILENAMES.toArray(new String[0]));
@@ -85,35 +100,39 @@ public class ComposerOptions {
     }
 
     public void setComposerPath(String composerPath) {
-        getPreferences().put(COMPOSER_PATH, composerPath);
+        preferences.put(COMPOSER_PATH, composerPath);
     }
 
     public String getVendor() {
-        return getPreferences().get(VENDOR, "vendor"); // NOI18N
+        return preferences.get(VENDOR, "vendor"); // NOI18N
     }
 
     public void setVendor(String vendor) {
-        getPreferences().put(VENDOR, vendor);
+        preferences.put(VENDOR, vendor);
     }
 
     public String getAuthorName() {
-        return getPreferences().get(AUTHOR_NAME, System.getProperty("user.name")); // NOI18N
+        return preferences.get(AUTHOR_NAME, System.getProperty("user.name")); // NOI18N
     }
 
     public void setAuthorName(String authorName) {
-        getPreferences().put(AUTHOR_NAME, authorName);
+        preferences.put(AUTHOR_NAME, authorName);
     }
 
     public String getAuthorEmail() {
-        return getPreferences().get(AUTHOR_EMAIL, "your@email.here"); // NOI18N
+        return preferences.get(AUTHOR_EMAIL, "your@email.here"); // NOI18N
     }
 
     public void setAuthorEmail(String authorEmail) {
-        getPreferences().put(AUTHOR_EMAIL, authorEmail);
+        preferences.put(AUTHOR_EMAIL, authorEmail);
     }
 
-    private Preferences getPreferences() {
-        return NbPreferences.forModule(ComposerOptions.class).node(PREFERENCES_PATH);
+    public boolean isIgnoreVendor() {
+        return preferences.getBoolean(IGNORE_VENDOR, true);
+    }
+
+    public void setIgnoreVendor(boolean ignoreVendor) {
+        preferences.putBoolean(IGNORE_VENDOR, ignoreVendor);
     }
 
 }

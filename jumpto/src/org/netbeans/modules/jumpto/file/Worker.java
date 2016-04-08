@@ -77,6 +77,7 @@ import org.netbeans.spi.jumpto.file.FileProviderFactory;
 import org.netbeans.spi.jumpto.support.NameMatcher;
 import org.netbeans.spi.jumpto.support.NameMatcherFactory;
 import org.netbeans.spi.jumpto.type.SearchType;
+import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -583,7 +584,7 @@ final class Worker implements Runnable {
                     // the file has been deleted in the meantime
                     continue;
                 }
-                final Project project = FileOwnerQuery.getOwner(file);
+                final Project project = ProjectConvertors.getNonConvertorOwner(file);
                 FileDescriptor fd = new FileDescription(
                         file,
                         r.getRelativePath(),
@@ -692,7 +693,7 @@ final class Worker implements Runnable {
                         if (file.isFolder()) continue;
 
                         if (matcher.accept(file.getNameExt())) {
-                            Project project = FileOwnerQuery.getOwner(file);
+                            Project project = ProjectConvertors.getNonConvertorOwner(file);
                             boolean preferred = false;
                             String relativePath = null;
                             if(project != null) { // #176495

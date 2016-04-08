@@ -234,7 +234,7 @@ public final class VariousUtils {
         if (returnType != null) {
             QualifiedName name = QualifiedName.create(returnType);
             assert name != null : returnType;
-            return name.getName();
+            return name.toString();
         }
         return getReturnTypeFromPHPDoc(root, functionDeclaration);
     }
@@ -511,9 +511,9 @@ public final class VariousUtils {
                         String clsName = frgs[0];
                         if (clsName != null) {
                             QualifiedName fullyQualifiedName = getFullyQualifiedName(createQuery(clsName, varScope), offset, varScope);
-                            Collection<? extends ClassScope> classes = IndexScopeImpl.getClasses(fullyQualifiedName, varScope);
-                            for (ClassScope cls : classes) {
-                                Collection<? extends FieldElement> fields = IndexScopeImpl.getFields(cls, frgs[1], varScope, PhpModifiers.ALL_FLAGS);
+                            Collection<? extends TypeScope> types = IndexScopeImpl.getTypes(fullyQualifiedName, varScope);
+                            for (TypeScope type : types) {
+                                Collection<? extends FieldElement> fields = IndexScopeImpl.getFields(type, frgs[1], varScope, PhpModifiers.ALL_FLAGS);
                                 for (FieldElement field : fields) {
                                     newRecentTypes.addAll(field.getTypes(offset));
                                 }
@@ -525,14 +525,14 @@ public final class VariousUtils {
                         Set<TypeScope> newRecentTypes = new HashSet<>();
                         String[] frgs = frag.split("\\."); //NOI18N
                         assert frgs.length == 2;
-                        String clsName = frgs[0];
-                        if (clsName != null) {
-                            QualifiedName fullyQualifiedName = getFullyQualifiedName(createQuery(clsName, varScope), offset, varScope);
-                            Collection<? extends ClassScope> classes = IndexScopeImpl.getClasses(fullyQualifiedName, varScope);
-                            for (ClassScope cls : classes) {
-                                Collection<? extends MethodScope> inheritedMethods = IndexScopeImpl.getMethods(cls, frgs[1], varScope, PhpModifiers.ALL_FLAGS);
+                        String typeName = frgs[0];
+                        if (typeName != null) {
+                            QualifiedName fullyQualifiedName = getFullyQualifiedName(createQuery(typeName, varScope), offset, varScope);
+                            Collection<? extends TypeScope> types = IndexScopeImpl.getTypes(fullyQualifiedName, varScope);
+                            for (TypeScope type : types) {
+                                Collection<? extends MethodScope> inheritedMethods = IndexScopeImpl.getMethods(type, frgs[1], varScope, PhpModifiers.ALL_FLAGS);
                                 for (MethodScope meth : inheritedMethods) {
-                                    newRecentTypes.addAll(meth.getReturnTypes(true, classes));
+                                    newRecentTypes.addAll(meth.getReturnTypes(true, types));
                                 }
                             }
                         }

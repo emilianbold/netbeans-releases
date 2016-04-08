@@ -434,7 +434,7 @@ public abstract class RemotePathMap extends PathMap {
             BufferedWriter out = null;
             try {
                 // create file
-                validationFile = File.createTempFile("cnd", "tmp", path); // NOI18N
+                validationFile = File.createTempFile("cnd", ".pathmap", path); // NOI18N
                 if (validationFile.exists()) {
                     out = Files.newBufferedWriter(validationFile.toPath(), Charset.forName("UTF-8")); //NOI18N
                     String validationLine = Double.toString(Math.random());

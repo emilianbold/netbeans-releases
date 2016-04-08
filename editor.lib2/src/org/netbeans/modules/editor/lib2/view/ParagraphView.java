@@ -66,9 +66,9 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 /**
  * View of a line typically spans a single textual line of a corresponding document
  * but it may span several lines if it contains a fold view for collapsed code fold.
- * <br/>
+ * <br>
  * It is capable to do a word-wrapping.
- * <br/>
+ * <br>
  * It is not tight to any element (its element is null).
  * Its contained views may span multiple lines (e.g. in case of code folding).
  * 
@@ -82,15 +82,15 @@ public final class ParagraphView extends EditorView implements EditorView.Parent
 
     /**
      * Whether children are non-null and contain up-to-date views.
-     * <br/>
+     * <br>
      * If false then either children == null (children not computed yet)
      * or some (or all) child views are marked as invalid (they should be recomputed
      * since some highlight factories reported particular text span as changed).
-     * <br/>
+     * <br>
      * The local offset range of invalid children can be obtained (if children != null)
      * by children.getStartInvalidChildrenLocalOffset()
      * and children.getEndInvalidChildrenLocalOffset()).
-     * <br/>
+     * <br>
      * When all children are dropped (children == null) then LAYOUT_VALID is cleared too.
      */
     private static final int CHILDREN_VALID = 1;
@@ -98,11 +98,11 @@ public final class ParagraphView extends EditorView implements EditorView.Parent
     /**
      * Whether layout information is valid for this paragraph view
      * (note that layout may be valid even when some children were marked as invalid).
-     * <br/>
+     * <br>
      * Since span of child views is initialized upon views replace
      * the layout updating means checking whether the pView is too wide
      * and thus needs to compute wrap lines and building of those wrap lines.
-     * <br/>
+     * <br>
      * Whether particular operation (mainly model-to-view, view-to-model and painting operations)
      * needs an up-to-date layout is upon decision of each operation
      * (done in DocumentViewChildren).
@@ -255,7 +255,7 @@ public final class ParagraphView extends EditorView implements EditorView.Parent
     
     /**
      * Check whether layout must be updated.
-     * <br/>
+     * <br>
      * It should only be called when children != null.
      *
      * @return true if layout update was necessary or false otherwise.

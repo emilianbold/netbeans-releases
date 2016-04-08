@@ -207,10 +207,8 @@ public class SearchPanel extends javax.swing.JPanel {
                 new AlphabeticLibraryComparator() :
                 new PopularityLibraryComparator());
         DefaultListModel<Library> listModel = new DefaultListModel<>();
-        if (libraries != null) {
-            for (Library library : libraries) {
-                listModel.addElement(library);
-            }
+        for (Library library : libraries) {
+            listModel.addElement(library);
         }
         return listModel;
     }
@@ -694,6 +692,8 @@ public class SearchPanel extends javax.swing.JPanel {
         }
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "SE_COMPARATOR_SHOULD_BE_SERIALIZABLE",
+            justification = "No need to be serializable")
     static class AlphabeticLibraryComparator implements Comparator<Library> {
         @Override
         public int compare(Library library1, Library library2) {
@@ -701,6 +701,8 @@ public class SearchPanel extends javax.swing.JPanel {
         }
     };
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "SE_COMPARATOR_SHOULD_BE_SERIALIZABLE",
+            justification = "No need to be serializable")
     static class PopularityLibraryComparator implements Comparator<Library> {
         @Override
         public int compare(Library library1, Library library2) {

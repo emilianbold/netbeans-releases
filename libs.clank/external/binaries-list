@@ -1,6 +1,6 @@
-#changeset:   16686:0996102551bf
+#changeset:   17119:7fc21a01933d
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Fri Feb 19 00:20:37 2016 +0300
-#summary:     move static methods from interface to be 1.7 compatible
-688488BF9E65AC39749AF959A5653F536EDABACD clank_0.3.6.zip
+#date:        Mon Mar 21 01:19:00 2016 +0300
+#summary:     fixed #258439 - [newcodemodel] UnsupportedOperationException: View 'posix' not available (binary)
+38DAC4EB409E96D3AABD4D3F5807505BB751C043 clank_0.3.6.zip

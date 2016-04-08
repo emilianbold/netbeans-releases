@@ -67,6 +67,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -131,7 +132,7 @@ public class RemoteServices {
     
     private static final String REMOTE_CLASSES_ZIPFILE = "/org/netbeans/modules/debugger/jpda/visual/resources/debugger-remote.zip";
     
-    private static final Map<JPDADebugger, ClassObjectReference> remoteServiceClasses = new WeakHashMap<JPDADebugger, ClassObjectReference>();
+    private static final Map<JPDADebugger, Map<ServiceType, ClassObjectReference>> remoteServiceClasses = new WeakHashMap<>();
     private static final Map<JPDADebugger, Boolean> remoteServiceAccess = new WeakHashMap<JPDADebugger, Boolean>();
     
     private static final RequestProcessor AUTORESUME_AFTER_SUSPEND_RP = new RequestProcessor("Autoresume after suspend", 1);
@@ -289,17 +290,26 @@ public class RemoteServices {
                 }
                 if (basicClass != null) {
                     // Initialize the class:
-                    ClassType theClass = getClass(vm, Class.class.getName());
-                    // Perhaps it's not 100% correct, we should be calling the new class' newInstance() method, not Class.newInstance() method.
-                    Method newInstance = ClassTypeWrapper.concreteMethodByName(theClass, "newInstance", "()Ljava/lang/Object;");
-                    ObjectReference newInstanceOfBasicClass = (ObjectReference) ObjectReferenceWrapper.invokeMethod(basicClass, tawt, newInstance, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                    ClassType bc = ((ClassType) basicClass.reflectedType());
+                    if (!bc.isInitialized()) {
+                        // Trying to initialize the class
+                        ClassType theClass = getClass(vm, Class.class.getName());
+                        // Call some method that will prepare the class:
+                        Method aMethod = ClassTypeWrapper.concreteMethodByName(theClass, "getConstructors", "()[Ljava/lang/reflect/Constructor;");
+                        ObjectReferenceWrapper.invokeMethod(basicClass, tawt, aMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                    }
                 }
             } finally {
                 t.accessLock.writeLock().unlock();
             }
             if (basicClass != null) {
                 synchronized (remoteServiceClasses) {
-                    remoteServiceClasses.put(t.getDebugger(), basicClass);
+                    Map<ServiceType, ClassObjectReference> basicClassesByType = remoteServiceClasses.get(t.getDebugger());
+                    if (basicClassesByType == null) {
+                        basicClassesByType = new HashMap<>();
+                        remoteServiceClasses.put(t.getDebugger(), basicClassesByType);
+                    }
+                    basicClassesByType.put(sType, basicClass);
                     t.getDebugger().addPropertyChangeListener(new RemoteServiceDebuggerListener());
                 }
                 fireServiceClass(t.getDebugger());
@@ -310,8 +320,8 @@ public class RemoteServices {
         }
     }
     
-    static Pair<ClassType, Field> setPreferredEQThread(JPDAThread t) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
-        ClassObjectReference serviceClassObject = RemoteServices.getServiceClass(((JPDAThreadImpl) t).getDebugger());
+    static Pair<ClassType, Field> setPreferredEQThread(JPDAThread t, ServiceType sType) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
+        ClassObjectReference serviceClassObject = RemoteServices.getServiceClass(((JPDAThreadImpl) t).getDebugger(), sType);
         if (serviceClassObject == null) {
             return null;
         }
@@ -430,7 +440,7 @@ public class RemoteServices {
         lock.lock();
         Pair<ClassType, Field> setPreferredEQThreadField;
         try {
-            setPreferredEQThreadField = setPreferredEQThread(thread);
+            setPreferredEQThreadField = setPreferredEQThread(thread, sType);
         } catch (InternalExceptionWrapper | VMDisconnectedExceptionWrapper ex) {
             return ;
         }
@@ -448,7 +458,12 @@ public class RemoteServices {
                 VirtualMachine vm = ((JPDAThreadImpl) thread).getThreadReference().virtualMachine();
                 ClassObjectReference serviceClassObject;
                 synchronized (remoteServiceClasses) {
-                    serviceClassObject = remoteServiceClasses.get(((JPDAThreadImpl) thread).getDebugger());
+                    Map<ServiceType, ClassObjectReference> sc = remoteServiceClasses.get(((JPDAThreadImpl) thread).getDebugger());
+                    if (sc != null) {
+                        serviceClassObject = sc.get(sType);
+                    } else {
+                        serviceClassObject = null;
+                    }
                 }
                 if (serviceClassObject == null) {
                     // The debugger session has finished already, do not run anything.
@@ -541,7 +556,7 @@ public class RemoteServices {
         final ObjectReference component = ci.getComponent();
         Pair<ClassType, Field> setPreferredEQThreadField;
         try {
-            setPreferredEQThreadField = setPreferredEQThread(thread);
+            setPreferredEQThreadField = setPreferredEQThread(thread, ServiceType.AWT);
         } catch (InternalExceptionWrapper | VMDisconnectedExceptionWrapper ex) {
             return rlisteners;
         }
@@ -952,7 +967,7 @@ public class RemoteServices {
                 }
                 ClassObjectReference serviceClassObject;
                 synchronized (remoteServiceClasses) {
-                    serviceClassObject = remoteServiceClasses.get(thread.getDebugger());
+                    serviceClassObject = remoteServiceClasses.get(thread.getDebugger()).get(ServiceType.AWT);
                 }
                 try {
                     ClassType serviceClass = (ClassType) ClassObjectReferenceWrapper.reflectedType(serviceClassObject);//getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService");
@@ -992,7 +1007,7 @@ public class RemoteServices {
                 ThreadReference t = thread.getThreadReference();
                 ClassObjectReference serviceClassObject;
                 synchronized (remoteServiceClasses) {
-                    serviceClassObject = remoteServiceClasses.get(thread.getDebugger());
+                    serviceClassObject = remoteServiceClasses.get(thread.getDebugger()).get(ServiceType.AWT);
                 }
                 try {
                     ClassType serviceClass = (ClassType) ClassObjectReferenceWrapper.reflectedType(serviceClassObject);
@@ -1035,7 +1050,13 @@ public class RemoteServices {
     static void attachHierarchyListeners(final boolean attach, ServiceType sType) {
         final Set<Entry<JPDADebugger, ClassObjectReference>> serviceClasses;
         synchronized (remoteServiceClasses) {
-            serviceClasses = new HashSet<Entry<JPDADebugger, ClassObjectReference>>(remoteServiceClasses.entrySet());
+            serviceClasses = new HashSet<>();
+            remoteServiceClasses.entrySet().forEach(entry -> {
+                ClassObjectReference cor = entry.getValue().get(sType);
+                if (cor != null) {
+                    serviceClasses.add(new AbstractMap.SimpleEntry<>(entry.getKey(), cor));
+                }
+            });
         }
         
         for (Entry<JPDADebugger, ClassObjectReference> serviceEntry : serviceClasses) {
@@ -1072,7 +1093,9 @@ public class RemoteServices {
                                     if (res instanceof StringReference) {
                                         String reason = ((StringReference) res).value();
                                         InputOutput io = ((JPDAThreadImpl) t).getDebugger().getConsoleIO().getIO();
-                                        io.getErr().println(NbBundle.getMessage(VisualDebuggerListener.class, "MSG_NoTrackingOfComponentChanges", reason));
+                                        if (io != null) {
+                                            io.getErr().println(NbBundle.getMessage(VisualDebuggerListener.class, "MSG_NoTrackingOfComponentChanges", reason));
+                                        }
                                     }
                                 } else {
                                     Method stopHierarchyListenerMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, "stopHierarchyListener", "()V");
@@ -1098,8 +1121,11 @@ public class RemoteServices {
     }
     
     public static boolean hasServiceAccess(JPDADebugger debugger) {
-        ClassObjectReference serviceClass = getServiceClass(debugger);
-        if (serviceClass != null) {
+        Map<ServiceType, ClassObjectReference> cs;
+        synchronized (remoteServiceClasses) {
+            cs = remoteServiceClasses.get(debugger);
+        }
+        if (cs != null) {
             Boolean has;
             synchronized (remoteServiceAccess) {
                 has = remoteServiceAccess.get(debugger);
@@ -1110,9 +1136,14 @@ public class RemoteServices {
         }
     }
     
-    public static ClassObjectReference getServiceClass(JPDADebugger debugger) {
+    public static ClassObjectReference getServiceClass(JPDADebugger debugger, ServiceType sType) {
         synchronized (remoteServiceClasses) {
-            return remoteServiceClasses.get(debugger);
+            Map<ServiceType, ClassObjectReference> cs = remoteServiceClasses.get(debugger);
+            if (cs == null) {
+                return null;
+            } else {
+                return cs.get(sType);
+            }
         }
         
     }

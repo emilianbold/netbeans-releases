@@ -158,7 +158,7 @@ public final class URLWait {
                 }
 
                 try {
-                    if (dm.isProxyMisconfigured()) {
+                    if (dm != null && dm.isProxyMisconfigured()) {
                         con = (HttpURLConnection) url.openConnection(Proxy.NO_PROXY);
                     } else {
                         con = (HttpURLConnection) url.openConnection();
@@ -176,7 +176,9 @@ public final class URLWait {
                     }
                     int code = con.getResponseCode();
                     if (code == HttpURLConnection.HTTP_BAD_GATEWAY) {
-                        dm.setProxyMisconfigured(true);
+                        if (dm != null) {
+                            dm.setProxyMisconfigured(true);
+                        }
                     } else {
                         boolean error = (code == -1)
                                 // with no index page we will get 403 - FORBIDDEN
@@ -189,10 +191,12 @@ public final class URLWait {
                     }
                 } catch (IOException ioe) {
                     // try without proxy in next loop
-                    if (ioe.getMessage() != null && ioe.getMessage().contains(Integer.toString(HttpURLConnection.HTTP_BAD_GATEWAY))) {
-                        dm.setProxyMisconfigured(true);
-                    } else {
-                        dm.setProxyMisconfigured(false);
+                    if (dm != null) {
+                        if (ioe.getMessage() != null && ioe.getMessage().contains(Integer.toString(HttpURLConnection.HTTP_BAD_GATEWAY))) {
+                            dm.setProxyMisconfigured(true);
+                        } else {
+                            dm.setProxyMisconfigured(false);
+                        }
                     }
                     LOGGER.log(Level.FINE, null, ioe);
                 } finally {

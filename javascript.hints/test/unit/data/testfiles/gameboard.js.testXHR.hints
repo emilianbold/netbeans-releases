@@ -1,6 +1,0 @@
-            return new XMLHttpRequest();
-                       --------------
-HINT:Function XMLHttpRequest is not supported by all of your targeted browsers
-FIX:Show more detailed information
-FIX:Don't report usages of XMLHttpRequest
-FIX:Change targeted browsers in the JavaScript options panel

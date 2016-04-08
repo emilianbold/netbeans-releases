@@ -47,7 +47,7 @@ import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 
 /**
  * Additional info related to view rendering.
- * <br/>
+ * <br>
  * Provided by {@link EditorView.Parent }.
  *
  * @author Miloslav Metelka
@@ -72,7 +72,7 @@ public final class ViewRenderContext {
 
     /**
      * Get special highlighting sequence that is a merge of attributes of the
-     * view with top painting highlights. <br/> It's only allowed to call this
+     * view with top painting highlights. <br> It's only allowed to call this
      * method (and use the returned value) during view's paint() methods
      * execution otherwise it throws an IllegalStateException.
      *
@@ -88,7 +88,7 @@ public final class ViewRenderContext {
 
     /**
      * Get row height of an single row of views being rendered by a paragraph view.
-     * <br/>
+     * <br>
      * For views that only render text the views should return this height
      * as their vertical span since the user may forcibly decrease row height
      * (see DocumentViewOp.rowHeightCorrection).
@@ -113,7 +113,7 @@ public final class ViewRenderContext {
     /**
      * Get font for text rendering that incorporates a possible text zoom
      * (Alt+MouseWheel function).
-     * <br/>
+     * <br>
      * Ideally all the fonts rendered by views should be "translated" by this method.
      */
     public Font getRenderFont(Font font) {

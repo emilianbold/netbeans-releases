@@ -47,6 +47,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.prefs.Preferences;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
@@ -55,7 +56,6 @@ import org.netbeans.modules.php.spi.testing.PhpTestingProviders;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -119,6 +119,7 @@ public class PhpModuleImpl implements PhpModule {
         if (lookup == null) {
             Lookup projectLookup = phpProject.getLookup();
             lookup = Lookups.fixed(
+                    (Project) phpProject,
                     projectLookup.lookup(CustomizerProvider2.class),
                     projectLookup.lookup(org.netbeans.modules.php.api.queries.PhpVisibilityQuery.class),
                     projectLookup.lookup(PhpTestingProviders.class),
@@ -130,7 +131,7 @@ public class PhpModuleImpl implements PhpModule {
 
     @Override
     public String toString() {
-        return getDisplayName() + " (" + FileUtil.getFileDisplayName(getSourceDirectory()) + ")"; // NOI18N
+        return "PhpModuleImpl{" + "directory=" + phpProject.getProjectDirectory() + '}'; // NOI18N
     }
 
     @Override
@@ -152,7 +153,7 @@ public class PhpModuleImpl implements PhpModule {
         private final PhpProject phpProject;
 
 
-        public PhpModulePropertiesFactory(PhpProject phpProject) {
+        PhpModulePropertiesFactory(PhpProject phpProject) {
             assert phpProject != null;
             this.phpProject = phpProject;
         }

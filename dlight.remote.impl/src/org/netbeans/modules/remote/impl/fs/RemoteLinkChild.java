@@ -42,7 +42,9 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Set;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.openide.filesystems.FileLock;
@@ -57,6 +59,8 @@ public class RemoteLinkChild extends RemoteLinkBase {
 
     private final RemoteFileObjectBase delegate;
 
+    private static final boolean NO_CYCLIC_LINKS = RemoteFileSystemUtils.getBoolean("remote.block.cyclic.links", true);
+
     /*package*/ RemoteLinkChild(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, RemoteLinkBase parent, String remotePath, RemoteFileObjectBase delegate) {
         super(wrapper, fileSystem, execEnv, parent, remotePath);
         Parameters.notNull("delegate", delegate);
@@ -64,7 +68,62 @@ public class RemoteLinkChild extends RemoteLinkBase {
     }
 
     @Override
+    protected void initListeners(boolean add) {
+        if (add) {
+            if (NO_CYCLIC_LINKS && hasCycle()) {
+                setFlag(MASK_CYCLIC_LINK, true);
+            }
+            delegate.addFileChangeListener(this);
+        } else {
+            delegate.removeFileChangeListener(this);
+        }
+    }
+
+    private boolean hasCycle() {
+        RemoteFileObjectBase dlg = getCanonicalDelegate();
+        RemoteFileObjectBase p = getParent();
+        while (p instanceof RemoteLinkChild) {
+            if (p == dlg) {
+                return true;
+            }
+            p = p.getParent();
+        }
+        return false;
+    }
+
+    @Override
+    public RemoteFileObject[] getChildren() {
+        if (getFlag(MASK_CYCLIC_LINK)) {
+            return new RemoteFileObject[0];
+        } else {
+            return super.getChildren();
+        }
+    }
+
+    @Override
+    public RemoteFileObject getFileObject(String relativePath, Set<String> antiLoop) {
+        if (getFlag(MASK_CYCLIC_LINK)) {
+            return null;
+        } else {
+            return super.getFileObject(relativePath, antiLoop);
+        }
+    }
+
+    @Override
     public RemoteFileObjectBase getCanonicalDelegate() {
+// It seems that the fix below is not complete and leads to inconsistency.
+// Soon after I wrote it I got exception
+// IllegalArgumentException: All children must have the same parent - see
+// http://statistics.netbeans.org/analytics/exception.do?id=812814
+// This should be moved into constructor or factory method,
+// but this needs RemoteFileObjectFactory top be refactored
+//        // We previously returned just a delegate.
+//        // In the case of links to links or cyclic links this leads to too deep delegation
+//        RemoteFileObjectBase d = delegate;
+//        while (d instanceof RemoteLinkChild) {
+//            d = ((RemoteLinkChild) d).delegate;
+//        }
+//        return d;
         return delegate;
     }
 
@@ -85,17 +144,28 @@ public class RemoteLinkChild extends RemoteLinkBase {
     
     @Override
     public boolean isValid() {
-        return super.isValid() && delegate.isValid();
+        if (isValidFastWithParents()) {
+            return delegate.isValid();
+        }
+        return false;
     }
     
     @Override
     protected void postDeleteOrCreateChild(RemoteFileObject child, DirEntryList entryList) {
-        getCanonicalDelegate().postDeleteOrCreateChild(child, entryList);
+        RemoteFileObjectBase canonicalDelegate = getCanonicalDelegate();
+        if (canonicalDelegate != null) {
+            canonicalDelegate.postDeleteOrCreateChild(child, entryList);
+        }
     }
 
     @Override
     protected DirEntryList deleteImpl(FileLock lock) throws IOException {
-        return getCanonicalDelegate().deleteImpl(lock);
+        RemoteFileObjectBase canonicalDelegate = getCanonicalDelegate();
+        if (canonicalDelegate != null) {
+            return canonicalDelegate.deleteImpl(lock);
+        } else {
+            throw new FileNotFoundException(getDisplayName() + " does not exist"); //NOI18Ns
+        }
     }
 
     protected void renameImpl(FileLock lock, String name, String ext, RemoteFileObjectBase orig) throws IOException {

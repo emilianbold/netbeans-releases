@@ -69,7 +69,7 @@ final class ViewGapStorage {
 
     /**
      * Start of the visual gap in child views along their major axis.
-     * <br/>
+     * <br>
      * Place it above end of all views initially.
      */
     double visualGapStart; // 8-super + 8 = 16 bytes
@@ -86,7 +86,7 @@ final class ViewGapStorage {
     /**
      * Start of the offset gap used for managing end offsets of HighlightsView views.
      * It is not used for paragraph views.
-     * <br/>
+     * <br>
      * Place it above end of all views initially.
      */
     int offsetGapStart; // 28 + 4 = 32 bytes

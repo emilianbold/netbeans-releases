@@ -50,12 +50,12 @@ public interface ViewHierarchyListener extends EventListener {
 
     /**
      * Notification about visual change that occurred in view hierarchy.
-     * <br/>
+     * <br>
      * Notification may come in response to document modification but also in response
      * to a model&lt;-&gt;view query to view hierarchy (due to fact that view hierarchy is computed lazily).
-     * <br/>
+     * <br>
      * Notification may come from any thread.
-     * <br/>
+     * <br>
      * When this event is notified the listeners must make no
      * queries to view hierarchy synchronously (they should only mark what has changed and
      * ask later).

@@ -55,14 +55,14 @@ import org.netbeans.lib.editor.util.ListenerList;
 
 /**
  * SPI class allowing to produce views.
- * <br/>
+ * <br>
  * There are two main factories: for folds and for highlights (the default one).
  * The factories have a priority and factory with highest priority
  * will always "win" in terms that its view will surely be created as desired.
  * Factories at lower levels will receive a limitOffset into createView()
  * being a start offset of the view produced by a higher level factory.
  * The factory may decide whether it will create view with limiting offset or not.
- * <br/>
+ * <br>
  * Factory generally operates in two modes:<ul>
  * <li>Regular mode when the factory produces views</li>
  * <li>Offset mode when the factory only returns bounds of the produced views
@@ -152,7 +152,7 @@ public abstract class EditorViewFactory {
     /**
      * Notify next offset area where views will be created in case endCreationOffset
      * in {@link #restart(int, int)} was exceeded.
-     * <br/>
+     * <br>
      * This method may be called multiple times if views building still does not match
      * original views boundaries.
      *
@@ -165,7 +165,7 @@ public abstract class EditorViewFactory {
 
     /**
      * Return starting offset of the next view to be produced by this view factory.
-     * <br/>
+     * <br>
      * This method gets called after restarting of this view factory
      * (with a <code>startOffset</code> parameter passed to {@link #restart(int)})
      * and also after any of the registered view factories created a view
@@ -181,7 +181,7 @@ public abstract class EditorViewFactory {
      * Create a view at the given offset. The view factory must determine
      * the appropriate end offset of the produced view and set its length
      * returned by {@link EditorView#getLength()} appropriately.
-     * <br/>
+     * <br>
      * This method is only called if the factory is in view-producing mode
      * (its {@link #viewEndOffset(startOffset, limitOffset)} is not called).
      *
@@ -197,10 +197,10 @@ public abstract class EditorViewFactory {
      * @param origView original view located at the given position (it may have a different
      *  physical offset due to just performed modification but it corresponds to the same text
      *  in the document). It may be null if there is no view to reuse.
-     *  <br/>
+     *  <br>
      *  The factory may not return the given instance but it may reuse an arbitrary information
      *  from it.
-     *  <br/>
+     *  <br>
      *  For example for text layout reuse the highlights view factory will first check if the view
      *  is non-null and matches views produced by it then it will check
      *  if the new view has same length as the original one and that the view attributes
@@ -222,7 +222,7 @@ public abstract class EditorViewFactory {
 
     /**
      * Return to-be-created view's end offset.
-     * <br/>
+     * <br>
      * This method is only called when createViews parameter
      * in {@link #restart(int, int, boolean)} is false. In such mode no physical views
      * are created and only view boundaries of potential views are being determined.
@@ -240,7 +240,7 @@ public abstract class EditorViewFactory {
 
     /**
      * Finish this round of views creation.
-     * <br/>
+     * <br>
      * {@link #restart(int) } may be called subsequently to init a new round
      * of views creation.
      */
@@ -263,7 +263,7 @@ public abstract class EditorViewFactory {
 
     /**
      * Schedule repaint request on the view hierarchy.
-     * <br/>
+     * <br>
      * Document must be read-locked prior calling this method.
      *
      * @param startOffset
@@ -277,12 +277,12 @@ public abstract class EditorViewFactory {
      *  Signal that this view factory is no longer able to produce
      *  valid views due to some serious changes that it processes
      *  (for example highlights change for HighlightsViewFactory).
-     *  <br/>
+     *  <br>
      *  View creation may be stopped immediately by the caller and restarted to get
      *  the correct views. However if it would fail periodically the caller may decide
      *  to continue the creation to have at least some views. In both cases
      *  the view factory should be able to continue working normally.
-     *  <br/>
+     *  <br>
      *  This method can be called from any thread.
      */
     protected final void notifyStaleCreation() {
@@ -303,7 +303,7 @@ public abstract class EditorViewFactory {
     /**
      * Notification that this factory is no longer being used so it should
      * release its resources - for example detach all listeners.
-     * <br/>
+     * <br>
      * It's called upon document view receives setParent(null) which typically signals
      * that a new document view will be created for the particular editor pane.
      */

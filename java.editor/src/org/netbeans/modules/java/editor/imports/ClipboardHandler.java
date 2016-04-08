@@ -97,6 +97,7 @@ import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MethodTree;
+import java.awt.Component;
 import java.util.Set;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
@@ -550,12 +551,14 @@ public class ClipboardHandler {
         }
 
         @Override
-        public boolean importData(TransferSupport support) {
-            return delegate.importData(support);
+        public boolean importData(JComponent comp, Transferable t) {
+            return delegate.importData(comp, t);
         }
 
         @Override
-        public boolean importData(JComponent comp, Transferable t) {
+        public boolean importData(TransferSupport support) {
+            Transferable t = support.getTransferable();
+            Component comp = support.getComponent();
             if (t.isDataFlavorSupported(IMPORT_FLAVOR) && comp instanceof JTextComponent && !insideToken((JTextComponent)comp, JavaTokenId.STRING_LITERAL, JavaTokenId.BLOCK_COMMENT, JavaTokenId.JAVADOC_COMMENT, JavaTokenId.LINE_COMMENT)) {
                 boolean result = false;
 
@@ -563,7 +566,7 @@ public class ClipboardHandler {
                     final JTextComponent tc = (JTextComponent) comp;
                     final int caret = tc.getSelectionStart();
 
-                    if (result = delegatedImportData(comp, t)) {
+                    if (result = delegatedImportData(support)) {
                         final ImportsWrapper imports = (ImportsWrapper) t.getTransferData(IMPORT_FLAVOR);
                         final FileObject file = NbEditorUtilities.getFileObject(tc.getDocument());
                         final Document doc = tc.getDocument();
@@ -610,11 +613,13 @@ public class ClipboardHandler {
                 return result;
             }
 
-            return delegatedImportData(comp, t);
+            return delegatedImportData(support);
         }
         
-        private boolean delegatedImportData(final JComponent comp, final Transferable t) {
-            if (comp instanceof JTextComponent && !t.isDataFlavorSupported(COPY_FROM_STRING_FLAVOR) && insideToken((JTextComponent) comp, JavaTokenId.STRING_LITERAL)) {
+        private boolean delegatedImportData(final TransferSupport support) {
+            JComponent comp = (JComponent) support.getComponent();
+            if (comp instanceof JTextComponent && !support.isDataFlavorSupported(COPY_FROM_STRING_FLAVOR) && insideToken((JTextComponent) comp, JavaTokenId.STRING_LITERAL)) {
+                final Transferable t = support.getTransferable();
                 return delegate.importData(comp, new Transferable() {
                     @Override
                     public DataFlavor[] getTransferDataFlavors() {
@@ -654,7 +659,7 @@ public class ClipboardHandler {
                     }
                 });
             }
-            return delegate.importData(comp, t);
+            return delegate.importData(support);
         }
         
         private boolean insideToken(final JTextComponent jtc, final JavaTokenId first, final JavaTokenId... rest) {

@@ -52,7 +52,7 @@ import java.lang.annotation.Target;
 /**
  * Registration of an editor action so that it's automatically added into the list
  * of editor actions even without being explicitly created by <code>BaseKit.createActions()</code>.
- * <br/>
+ * <br>
  * The corresponding annotation processor will build a xml-layer entry file
  * in the corresponding <i>/Editors/&lt;mime-type&gt;/Actions</code> folder.
  *
@@ -65,7 +65,7 @@ public @interface EditorActionRegistration {
 
     /**
      * Name of the action that will appear as <code>Action.NAME</code> attribute's value.
-     * <br/>
+     * <br>
      * The Swing's text package actions use convention of lowercase letters with hyphens
      * e.g. "caret-end-word" - see String constants in {@link javax.swing.text.DefaultEditorKit}.
      *
@@ -75,7 +75,7 @@ public @interface EditorActionRegistration {
 
     /**
      * Mime type for which the action will be registered.
-     * <br/>
+     * <br>
      * It implies the target folder of the registration <i>/Editors/&lt;mime-type&gt;/Actions</code>.
      *
      * @return mime-type of the action registration (for example "text/x-java"
@@ -117,10 +117,10 @@ public @interface EditorActionRegistration {
      * Menu text bundle key of the registered action.
      * If an empty string is used (the default) it will be set to the same value
      * like action's short description.
-     * <br/>
+     * <br>
      * Value starting with a hash "#key" searches in a bundle in the same package
      * as the action's class.
-     * <br/>
+     * <br>
      * "bundle#key" allows specification of both bundle and a corresponding key.
      */
     String menuText() default "";
@@ -129,10 +129,10 @@ public @interface EditorActionRegistration {
      * Popup menu text bundle key of the registered action.
      * If an empty string is used (the default) it will be set to the same value
      * like menu text.
-     * <br/>
+     * <br>
      * Value starting with a hash "#key" searches in a bundle in the same package
      * as the action's class.
-     * <br/>
+     * <br>
      * "bundle#key" allows specification of both bundle and a corresponding key.
      */
     String popupText() default "";
@@ -144,7 +144,7 @@ public @interface EditorActionRegistration {
 
     /**
      * Integer position of the main menu item among the other menu items.
-     * <br/>
+     * <br>
      * The default Integer.MAX_VALUE value means no menu representation.
      */
     int menuPosition() default Integer.MAX_VALUE;
@@ -157,21 +157,21 @@ public @interface EditorActionRegistration {
 
     /**
      * Integer position of the popup menu item among the other popup menu (or submenu) items.
-     * <br/>
+     * <br>
      * The default Integer.MAX_VALUE value means no popup menu representation.
      */
     int popupPosition() default Integer.MAX_VALUE;
 
     /**
      * Integer position of this action in editor toolbar.
-     * <br/>
+     * <br>
      * The default Integer.MAX_VALUE value means no toolbar representation.
      */
     int toolBarPosition() default Integer.MAX_VALUE;
     
     /**
      * True if the action should not display its icon in menu.
-     * <br/>
+     * <br>
      * False by default (icon visible in menu).
      * @since 1.74
      */
@@ -179,7 +179,7 @@ public @interface EditorActionRegistration {
     
     /**
      * True if the action should not be displayed in customizer for key bindings assignment.
-     * <br/>
+     * <br>
      * False by default (key binding can be configured for the action).
      * @since 1.74
      */
@@ -187,7 +187,7 @@ public @interface EditorActionRegistration {
 
     /**
      * Boolean key in preferences that corresponds to action's selected state.
-     * <br/>
+     * <br>
      * If set to non-empty string the action will be represented by a check-box
      * in menu and popup menu and the corresponding key will be set in
      * global mime-lookup <code>MimeLookup.getLookup(MimePath.EMPTY)</code>.
@@ -196,7 +196,7 @@ public @interface EditorActionRegistration {
     
     /**
      * Whether or not the action should be in checked state by default.
-     * <br/>
+     * <br>
      * If the preference should default to true or to false. Only valid in conjunction
      * with {@link #preferencesKey() }.
      * 

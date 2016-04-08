@@ -99,6 +99,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
 import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
 import org.netbeans.modules.cnd.makeproject.platform.Platform;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
@@ -564,7 +565,11 @@ public class ConfigurationMakefileWriter {
              oicLibOptionsPrefix = provider.getLibraryOptionsPrefix(projectDescriptor, conf);
              oicLibOptionsPostfix = provider.getLibraryOptionsPostfix(projectDescriptor, conf);
         }
-        bw.write("LDLIBSOPTIONS=" + oicLibOptionsPrefix + conf.getLinkerConfiguration().getLibraryItems() + oicLibOptionsPostfix + "\n"); // NOI18N
+        String explicitDot = "";
+//        if (conf.isLinkerConfiguration() && conf.getLinkerConfiguration().getCopyLibrariesConfiguration().getValue()) {
+//            explicitDot = " -L. -L${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}";
+//        }
+        bw.write("LDLIBSOPTIONS=-Wl,-rpath,'.' " + oicLibOptionsPrefix + conf.getLinkerConfiguration().getLibraryItems() + oicLibOptionsPostfix + explicitDot + "\n"); // NOI18N
         bw.write("\n"); // NOI18N
 
         if (conf.isQmakeConfiguration()) {
@@ -689,12 +694,12 @@ public class ConfigurationMakefileWriter {
         String output = getOutput(projectDescriptor, conf, compilerSet);
         bw.write("# Build Targets\n"); // NOI18N
         bw.write(".build-conf: ${BUILD_SUBPROJECTS} nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk\n"); // NOI18N
-        bw.write("\t\"${MAKE}\" -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk " + output + "\n\n"); // NOI18N
+        bw.write("\t\""+BuildSupport.MAKE_MACRO+"\" -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk " + output + "\n\n"); // NOI18N
 
         // #179140 compile single file (qt project)
         // redirect any request for building an object file to the qmake-generated makefile
         bw.write(MakeConfiguration.CND_BUILDDIR_MACRO+"/" + conf.getName() + "/%.o: nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk\n"); // NOI18N
-        bw.write("\t${MAKE} -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk \"$@\"\n"); // NOI18N
+        bw.write("\t"+BuildSupport.MAKE_MACRO+" -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk \"$@\"\n"); // NOI18N
     }
 
     public static void writeBuildTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
@@ -702,9 +707,28 @@ public class ConfigurationMakefileWriter {
         String output = getOutput(projectDescriptor, conf, compilerSet);
         bw.write("# Build Targets\n"); // NOI18N
         bw.write(".build-conf: ${BUILD_SUBPROJECTS}\n"); // NOI18N
-        bw.write("\t\"${MAKE}\" " // NOI18N
-                + " -f nbproject/Makefile-"+MakeConfiguration.CND_CONF_MACRO+".mk " // NOI18N
-                + output + "\n\n"); // NOI18N
+        bw.write("\t\""+BuildSupport.MAKE_MACRO+"\" " // NOI18N
+                + " -f nbproject/Makefile-" + MakeConfiguration.CND_CONF_MACRO + ".mk " // NOI18N
+                + output + "\n"); // NOI18N
+
+        if (conf.isLinkerConfiguration() && conf.getLinkerConfiguration().getCopyLibrariesConfiguration().getValue()) {
+            Set<String> paths = conf.getLinkerConfiguration().getLibrariesConfiguration().getSharedLibraries();
+            if (!paths.isEmpty()) {
+                String outputDir = CndPathUtilities.getDirName(output);
+                boolean isMac = conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX;
+
+                for (String path : paths) {
+                    String libPath = CndPathUtilities.escapeOddCharacters(CndPathUtilities.normalizeSlashes(path));
+                    bw.write("\t${CP} " + libPath + " " + outputDir + "\n"); //NOI18N
+                    if (isMac) {
+                        String baseName = CndPathUtilities.getBaseName(libPath);
+                        outputDir = CndPathUtilities.trimSlashes(outputDir);
+                        bw.write("\t-install_name_tool -change " + baseName + " @rpath/" + outputDir + "/" + baseName + " " + output + "\n"); //NOI18N
+                    }
+                }
+            }
+        }
+        bw.write("\n"); //NOI18N
     }
 
     public static void writeBuildTestTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
@@ -1465,7 +1489,9 @@ public class ConfigurationMakefileWriter {
         if (conf.isCompileConfiguration()) {
             CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
             bw.write("\t${RM} -r " + MakeConfiguration.CND_BUILDDIR_MACRO + '/'+MakeConfiguration.CND_CONF_MACRO+ "\n"); // UNIX path // NOI18N
-            bw.write("\t${RM} " + getOutput(projectDescriptor, conf, compilerSet) + "\n"); // NOI18N
+            String output = getOutput(projectDescriptor, conf, compilerSet);
+            String outputDir = CndPathUtilities.getDirName(output);
+            bw.write("\t${RM} -r " + outputDir + "\n"); // NOI18N
             if (compilerSet != null
                     && compilerSet.getCompilerFlavor().isSunStudioCompiler()
                     && conf.hasCPPFiles(projectDescriptor)) {
@@ -1512,7 +1538,7 @@ public class ConfigurationMakefileWriter {
 
             bw.write("\tcd " + CndPathUtilities.escapeOddCharacters(CndPathUtilities.normalizeSlashes(cwd)) + " && " + command + "\n"); // NOI18N
         } else if (conf.isQmakeConfiguration()) {
-            bw.write("\t${MAKE} -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk distclean\n"); // NOI18N
+            bw.write("\t"+BuildSupport.MAKE_MACRO+" -f nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk distclean\n"); // NOI18N
         }
 
         writeSubProjectCleanTargets(projectDescriptor, conf, bw);

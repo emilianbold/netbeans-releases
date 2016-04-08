@@ -183,32 +183,37 @@ public final class WebLogicDeployer {
                             if ("AppDeployment".equals(type)) { // NOI18N
                                 String moduleType = (String) connection.getAttribute(bean, "ModuleType"); // NOI18N
                                 String contextRoot = null;
-                                List<URL> urls = null;
+                                List<URL> urls = new ArrayList<>();
                                 ObjectName[] targets = (ObjectName[]) connection.getAttribute(bean, "Targets"); // NOI18N
                                 if (targets != null && targets.length > 0) {
-                                    String server = (String) connection.getAttribute(targets[0], "Name"); // NOI18N
-                                    ObjectName serverRuntime = (ObjectName) connection.invoke(
-                                            service, "lookupServerRuntime", new Object[]{server}, new String[] {"java.lang.String"}); // NOI18N
-                                    if (serverRuntime != null) {
-                                        ObjectName appRuntime = (ObjectName) connection.invoke(
-                                                serverRuntime, "lookupApplicationRuntime", new Object[]{name}, new String[] {"java.lang.String"}); // NOI18N
-                                        if (appRuntime != null) {
-                                            ObjectName[] runtimes = (ObjectName[]) connection.getAttribute(appRuntime, "ComponentRuntimes"); // NOI18N
-                                            if (runtimes != null) {
-                                                for (ObjectName runtime : runtimes) {
-                                                    String runtimeType = (String) connection.getAttribute(runtime, "Type"); // NOI18N
-                                                    if ("WebAppComponentRuntime".equals(runtimeType)) { // NOI18N
-                                                        contextRoot = (String) connection.getAttribute(runtime, "ContextRoot"); // NOI18N
-                                                        if (contextRoot != null) {
-                                                            // XXX may there be multiple web apps in ear?
-                                                            break;
+                                    // FIXME should the Application include all DeploymentTargets
+                                    for (int i = 0; i < targets.length; i++) {
+                                        String server = (String) connection.getAttribute(targets[i], "Name"); // NOI18N
+                                        ObjectName serverRuntime = (ObjectName) connection.invoke(
+                                                service, "lookupServerRuntime", new Object[]{server}, new String[]{"java.lang.String"}); // NOI18N
+                                        if (serverRuntime != null) {
+                                            ObjectName appRuntime = (ObjectName) connection.invoke(
+                                                    serverRuntime, "lookupApplicationRuntime", new Object[]{name}, new String[]{"java.lang.String"}); // NOI18N
+                                            if (appRuntime != null) {
+                                                ObjectName[] runtimes = (ObjectName[]) connection.getAttribute(appRuntime, "ComponentRuntimes"); // NOI18N
+                                                if (runtimes != null) {
+                                                    for (ObjectName runtime : runtimes) {
+                                                        String runtimeType = (String) connection.getAttribute(runtime, "Type"); // NOI18N
+                                                        if ("WebAppComponentRuntime".equals(runtimeType)) { // NOI18N
+                                                            String contextRootCurrent = (String) connection.getAttribute(runtime, "ContextRoot"); // NOI18N
+                                                            if (contextRootCurrent != null) {
+                                                                urls.addAll(getServerUrls(connection, serverRuntime, contextRootCurrent));
+                                                                if (contextRoot == null) {
+                                                                    // XXX may there be multiple web apps in ear?
+                                                                    // XXX may there be different context root on different servers ?
+                                                                    // hope not
+                                                                    contextRoot = contextRootCurrent;
+                                                                }
+                                                            }
                                                         }
                                                     }
                                                 }
                                             }
-                                        }
-                                        if (contextRoot != null) {
-                                            urls = getServerUrls(connection, serverRuntime, contextRoot);
                                         }
                                     }
                                 }
@@ -249,12 +254,25 @@ public final class WebLogicDeployer {
     @NonNull
     public Future<Void> redeploy(@NonNull String name, @NonNull File file,
             @NullAllowed BatchDeployListener listener) {
-        return performRedeploy(Collections.singletonList(name), Collections.singletonList(file), listener);
+        return performRedeploy(Collections.singletonList(name), Collections.singletonList(file),
+                Collections.<DeploymentTarget>emptyList(), listener);
+    }
+    
+    @NonNull
+    public Future<Void> redeploy(@NonNull String name, @NonNull File file, @NonNull Collection<DeploymentTarget> targets,
+            @NullAllowed BatchDeployListener listener) {
+        return performRedeploy(Collections.singletonList(name), Collections.singletonList(file), targets, listener);
     }
 
     @NonNull
     public Future<Void> redeploy(@NonNull List<String> names, @NullAllowed BatchDeployListener listener) {
-        return performRedeploy(names, null, listener);
+        return performRedeploy(names, null, Collections.<DeploymentTarget>emptyList(), listener);
+    }
+    
+    @NonNull
+    public Future<Void> redeploy(@NonNull List<String> names, @NonNull Collection<DeploymentTarget> targets,
+            @NullAllowed BatchDeployListener listener) {
+        return performRedeploy(names, null, targets, listener);
     }
 
     @NonNull
@@ -550,7 +568,7 @@ public final class WebLogicDeployer {
     }
 
     private Future<Void> performRedeploy(@NonNull final List<String> names, @NullAllowed final List<File> files,
-            @NullAllowed final BatchDeployListener listener) {
+            @NonNull final Collection<DeploymentTarget> targets, @NullAllowed final BatchDeployListener listener) {
 
         assert files == null || files.size() == names.size();
 
@@ -575,8 +593,19 @@ public final class WebLogicDeployer {
                     if (files != null) {
                         parameters.add("-source"); // NOI18N
                         parameters.add(files.get(i++).getAbsolutePath());
-
                     }
+                    if (!targets.isEmpty()) {
+                        StringBuilder sb = new StringBuilder();
+                        for (DeploymentTarget t : targets) {
+                            if (sb.length() > 0) {
+                                sb.append(','); // NOI18N
+                            }
+                            sb.append(t.getName());
+                        }
+                        parameters.add("-targets"); // NOI18N
+                        parameters.add(sb.toString());
+                    }
+
                     BaseExecutionService service = createService("-redeploy", // NOI18N
                             lineProcessor, parameters.toArray(new String[parameters.size()]));
                     if (listener != null) {
@@ -633,6 +662,12 @@ public final class WebLogicDeployer {
 
     public Future<Void> deploy(@NonNull final List<Artifact> artifacts,
             @NullAllowed final BatchDeployListener listener) {
+        return deploy(artifacts, Collections.<DeploymentTarget>emptyList(), listener);
+    }
+
+    public Future<Void> deploy(@NonNull final List<Artifact> artifacts,
+            @NonNull final Collection<DeploymentTarget> targets,
+            @NullAllowed final BatchDeployListener listener) {
 
         if (listener != null) {
             listener.onStart();
@@ -648,6 +683,17 @@ public final class WebLogicDeployer {
                     parameters.add("-upload"); // NOI18N
                     if (config.isRemote()) {
                         parameters.add("-remote"); // NOI18N
+                    }
+                    if (!targets.isEmpty()) {
+                        StringBuilder sb = new StringBuilder();
+                        for (DeploymentTarget t : targets) {
+                            if (sb.length() > 0) {
+                                sb.append(','); // NOI18N
+                            }
+                            sb.append(t.getName());
+                        }
+                        parameters.add("-targets"); // NOI18N
+                        parameters.add(sb.toString());
                     }
                     String name = getName(artifact.getFile(), artifact.getName());
                     parameters.add("-name"); // NOI18N

@@ -54,7 +54,7 @@ import java.util.logging.Logger;
 /**
  * Cache containing paragraph-view references of lines where text layouts
  * are actively held or where children are actively maintained.
- * <br/>
+ * <br>
  * This class is not multi-thread safe.
  * 
  * @author Miloslav Metelka

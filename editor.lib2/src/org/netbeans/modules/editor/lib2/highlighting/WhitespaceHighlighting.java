@@ -60,7 +60,7 @@ import org.openide.util.WeakListeners;
 
 /**
  * Highlighting of indentation and trailing whitespace.
- * <br/>
+ * <br>
  * If there's no non-WS text on the line the whitespace is treated as trailing.
  *
  * @author Miloslav Metelka

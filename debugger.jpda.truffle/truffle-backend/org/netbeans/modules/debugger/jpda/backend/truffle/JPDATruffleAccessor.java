@@ -143,11 +143,12 @@ public class JPDATruffleAccessor extends Object {
     }
     
     static JPDATruffleDebugManager setUpDebugManagerFor(/*ExecutionEvent*/Object event, boolean doStepInto) {
+        //System.err.println("setUpDebugManagerFor("+event+", "+doStepInto+")");
         ExecutionEvent execEvent = (ExecutionEvent) event;
         Debugger debugger = execEvent.getDebugger();
         PolyglotEngine tvm;
         try {
-            Field vmField = debugger.getClass().getDeclaredField("vm");
+            Field vmField = debugger.getClass().getDeclaredField("engine");
             vmField.setAccessible(true);
             tvm = (PolyglotEngine) vmField.get(debugger);
         } catch (IllegalAccessException | IllegalArgumentException |
@@ -157,7 +158,11 @@ public class JPDATruffleAccessor extends Object {
         if (doStepInto) {
             execEvent.prepareStepInto();
         }
-        debugManager = JPDATruffleDebugManager.setUp(debugger, tvm, (ExecutionEvent) event);
+        if (debugManager == null || debugManager.getDebugger() != debugger) {
+            debugManager = JPDATruffleDebugManager.setUp(debugger, tvm, (ExecutionEvent) event);
+        } else {
+            debugManager.setExecutionEvent((ExecutionEvent) event);
+        }
         return debugManager;
     }
     
@@ -406,12 +411,11 @@ public class JPDATruffleAccessor extends Object {
                 frameInfos.append(visualizer.displaySourceLocation(fi.getCallNode()));
                 frameInfos.append('\n');
             } else {
-                frameInfos.append(fi.getCallTarget().toString());
+                frameInfos.append(DebuggerVisualizer.getDisplayName(fi.getCallTarget()));
                 frameInfos.append('\n');
-                frameInfos.append(fi.getCallNode().toString());
+                frameInfos.append(DebuggerVisualizer.getMethodName(fi.getCallNode().getRootNode()));
                 frameInfos.append('\n');
-                SourceSection ss = fi.getCallNode().getSourceSection();
-                frameInfos.append((ss != null) ? ss.getShortDescription() : "unknown");
+                frameInfos.append(DebuggerVisualizer.getSourceLocation(fi.getCallNode()));
                 frameInfos.append('\n');
             }
             if (fi.getCallNode() == null) {
@@ -482,6 +486,7 @@ public class JPDATruffleAccessor extends Object {
     private static Breakpoint doSetLineBreakpoint(String path, int line,
                                                   int ignoreCount, String condition,
                                                   boolean oneShot) {
+        /*
         try {
             return doSetLineBreakpoint(new File(path).toURI().toURL(), line,
                                        ignoreCount, condition, oneShot);
@@ -489,6 +494,7 @@ public class JPDATruffleAccessor extends Object {
             System.err.println(muex.getLocalizedMessage());
             muex.printStackTrace();
         }
+        */
         Source source;
         try {
             source = Source.fromFileName(path);

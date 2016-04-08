@@ -290,8 +290,8 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         }
         Set<TraitScope> traitScopes = new HashSet<>(getTraits());
         for (TraitScope traitScope : traitScopes) {
-            Set<MethodElement> indexedMethods =
-                    org.netbeans.modules.php.editor.api.elements.ElementFilter.forPrivateModifiers(false).filter(index.getAllMethods(traitScope));
+            // don't filter private methods because it can be used in a class
+            Set<MethodElement> indexedMethods = index.getAllMethods(traitScope);
             for (MethodElement methodElement : indexedMethods) {
                 TypeElement type = methodElement.getType();
                 if (type.isTrait()) {
@@ -391,19 +391,10 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     @Override
     public void addSelfToIndex(IndexDocument indexDocument) {
         indexDocument.addPair(PHPIndexer.FIELD_CLASS, getIndexSignature(), true, true);
+        final NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
         QualifiedName superClassName = getSuperClassName();
         if (superClassName != null) {
             final String name = superClassName.getName();
-            // anonymous classes can be "nested" so find the nearest namespace
-            NamespaceScope namespaceScope = null;
-            Scope scope = getInScope();
-            for (;;) {
-                if (scope instanceof NamespaceScope) {
-                    namespaceScope = (NamespaceScope) scope;
-                    break;
-                }
-                scope = scope.getInScope();
-            }
             final String namespaceName = VariousUtils.getFullyQualifiedName(
                     superClassName,
                     getOffset(),
@@ -416,7 +407,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
             final String namespaceName = VariousUtils.getFullyQualifiedName(
                     superIfaceName,
                     getOffset(),
-                    (NamespaceScope) getInScope()).getNamespaceName();
+                    namespaceScope).getNamespaceName();
             indexDocument.addPair(PHPIndexer.FIELD_SUPER_IFACE, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
         }
         for (QualifiedName qualifiedName : getUsedTraits()) {
@@ -424,7 +415,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
             final String namespaceName = VariousUtils.getFullyQualifiedName(
                     qualifiedName,
                     getOffset(),
-                    (NamespaceScope) getInScope()).getNamespaceName();
+                    namespaceScope).getNamespaceName();
             indexDocument.addPair(PHPIndexer.FIELD_USED_TRAIT, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
         }
         indexDocument.addPair(PHPIndexer.FIELD_TOP_LEVEL, getName().toLowerCase(), true, true);

@@ -682,6 +682,8 @@ class SearchPanel extends javax.swing.JPanel {
     /**
      * Comparator for sorting of libraries in libraries list.
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "SE_COMPARATOR_SHOULD_BE_SERIALIZABLE",
+            justification = "No need to be serializable")
     static class LibraryComparator implements Comparator<Library> {
 
         @Override

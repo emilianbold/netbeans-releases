@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
 import org.netbeans.modules.cnd.toolchain.execution.impl.ToolchainSPIAccessor;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -137,8 +138,8 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
                 true,
                 true,
                 "../hello1lib",
-                "${MAKE} -f Makefile CONF=Debug",
-                "${MAKE} -f Makefile CONF=Debug clean",
+                BuildSupport.MAKE_MACRO+" -f Makefile CONF=Debug",
+                BuildSupport.MAKE_MACRO+" -f Makefile CONF=Debug clean",
                 "dist/Debug/.../libhello1lib.a",
                 conf));
         conf.getLinkerConfiguration().getLibrariesConfiguration().add(projectItem);
@@ -149,8 +150,8 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
                 true,
                 true,
                 "../hello3lib",
-                "${MAKE} -f Makefile CONF=Debug",
-                "${MAKE} -f Makefile CONF=Debug clean",
+                BuildSupport.MAKE_MACRO+" -f Makefile CONF=Debug",
+                BuildSupport.MAKE_MACRO+" -f Makefile CONF=Debug clean",
                 "dist/Debug/.../libhello3lib." + libsuffix,
                 conf));
         conf.getLinkerConfiguration().getLibrariesConfiguration().add(projectItem);
@@ -401,7 +402,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/xxx: ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}\n");
         golden.append("\t${LINK.cc} -o "+MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/xxx ${OBJECTFILES} ${LDLIBSOPTIONS}\n");
-        testAppWithLibraries("Main_SunStudio_Solaris_Intel", "SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL, golden.toString());
+        testAppWithLibraries("Main_SunStudio_Solaris_Intel", "OracleDeveloperStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL, golden.toString());
     }
 
     @Test
@@ -470,7 +471,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         golden.append("${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libXxx."+MakeConfiguration.CND_DLIB_EXT_MACRO+": ${OBJECTFILES}\n");
         golden.append("\t${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}\n");
         golden.append("\t${LINK.cc} -o "+MakeConfiguration.CND_DISTDIR_MACRO+"/"+MakeConfiguration.CND_CONF_MACRO+"/"+MakeConfiguration.CND_PLATFORM_MACRO+"/libXxx." + MakeConfiguration.CND_DLIB_EXT_MACRO + " ${OBJECTFILES} ${LDLIBSOPTIONS} -G -KPIC -norunpath -h libXxx."+MakeConfiguration.CND_DLIB_EXT_MACRO+"\n");
-        testDynamicLibrary("DynLib_SunStudio_Solaris_Intel", "SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL, golden.toString());
+        testDynamicLibrary("DynLib_SunStudio_Solaris_Intel", "OracleDeveloperStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL, golden.toString());
     }
 
     @Test

@@ -73,7 +73,7 @@ import org.openide.util.actions.Presenter;
 /**
  * Action that represents a named editor action in main menu, popup menu
  * and editor toolbar.
- * <br/>
+ * <br>
  * The actions are registered into "Editors/ActionPresenters" regardless
  * of the mime-type for which the actions get created.
  */

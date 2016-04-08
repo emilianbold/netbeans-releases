@@ -68,6 +68,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
 /**
@@ -126,17 +127,6 @@ final class CompletionContextFinder {
             new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
             new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN},
             new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_FUNCTION, COMBINED_USE_STATEMENT_TOKENS});
-    private static final List<Object[]> USE_TRAIT_KEYWORD_TOKENS = Arrays.asList(
-            new Object[]{TYPE_KEYWORD, PHPTokenId.WHITESPACE, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE},
-            new Object[]{TYPE_KEYWORD, PHPTokenId.WHITESPACE, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE},
-            new Object[]{TYPE_KEYWORD, PHPTokenId.WHITESPACE, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-            new Object[]{TYPE_KEYWORD, PHPTokenId.WHITESPACE, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN},
-            new Object[]{TYPE_KEYWORD, PHPTokenId.WHITESPACE, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE, COMBINED_USE_STATEMENT_TOKENS},
-            new Object[]{TYPE_KEYWORD, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE},
-            new Object[]{TYPE_KEYWORD, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE},
-            new Object[]{TYPE_KEYWORD, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-            new Object[]{TYPE_KEYWORD, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN},
-            new Object[]{TYPE_KEYWORD, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE, PHPTokenId.PHP_USE, COMBINED_USE_STATEMENT_TOKENS});
     private static final List<Object[]> NAMESPACE_KEYWORD_TOKENS = Arrays.asList(
             new Object[]{PHPTokenId.PHP_NAMESPACE},
             new Object[]{PHPTokenId.PHP_NAMESPACE, PHPTokenId.WHITESPACE},
@@ -293,8 +283,30 @@ final class CompletionContextFinder {
             return CompletionContext.PHPDOC;
         } else if (acceptTokenChains(tokenSequence, CATCH_TOKENCHAINS, moveNextSucces)) {
             return CompletionContext.CATCH;
-        } else if (acceptTokenChains(tokenSequence, USE_TRAIT_KEYWORD_TOKENS, moveNextSucces)) {
-            return CompletionContext.USE_TRAITS;
+        } else if (acceptTokenChains(tokenSequence, NAMESPACE_KEYWORD_TOKENS, moveNextSucces)) {
+            return CompletionContext.NAMESPACE_KEYWORD;
+        } else if (acceptTokenChains(tokenSequence, INSTANCEOF_TOKENCHAINS, moveNextSucces)) {
+            return CompletionContext.TYPE_NAME;
+        } else if (isInsideInterfaceDeclarationBlock(info, caretOffset, tokenSequence)) {
+            CompletionContext paramContext = getParamaterContext(token, caretOffset, tokenSequence);
+            if (paramContext != null) {
+                return paramContext;
+            }
+            return CompletionContext.INTERFACE_CONTEXT_KEYWORDS;
+        } else if (isInsideClassOrTraitDeclarationBlock(info, caretOffset, tokenSequence)) {
+            if (acceptTokenChains(tokenSequence, USE_KEYWORD_TOKENS, moveNextSucces)) {
+                return CompletionContext.USE_TRAITS;
+            } else if (acceptTokenChains(tokenSequence, METHOD_NAME_TOKENCHAINS, moveNextSucces)) {
+                return CompletionContext.METHOD_NAME;
+            } else {
+                CompletionContext paramContext = getParamaterContext(token, caretOffset, tokenSequence);
+                if (paramContext != null) {
+                    return paramContext;
+                } else if (acceptTokenChains(tokenSequence, CLASS_CONTEXT_KEYWORDS_TOKENCHAINS, moveNextSucces)) {
+                    return CompletionContext.CLASS_CONTEXT_KEYWORDS;
+                }
+                return CompletionContext.NONE;
+            }
         } else if (acceptTokenChains(tokenSequence, GROUP_USE_KEYWORD_TOKENS, moveNextSucces)) {
             return CompletionContext.GROUP_USE_KEYWORD;
         } else if (acceptTokenChains(tokenSequence, GROUP_USE_CONST_KEYWORD_TOKENS, moveNextSucces)) {
@@ -307,28 +319,6 @@ final class CompletionContextFinder {
             return CompletionContext.USE_CONST_KEYWORD;
         } else if (acceptTokenChains(tokenSequence, USE_FUNCTION_KEYWORD_TOKENS, moveNextSucces)) {
             return CompletionContext.USE_FUNCTION_KEYWORD;
-        } else if (acceptTokenChains(tokenSequence, NAMESPACE_KEYWORD_TOKENS, moveNextSucces)) {
-            return CompletionContext.NAMESPACE_KEYWORD;
-        } else if (acceptTokenChains(tokenSequence, INSTANCEOF_TOKENCHAINS, moveNextSucces)) {
-            return CompletionContext.TYPE_NAME;
-        } else if (isInsideInterfaceDeclarationBlock(info, caretOffset, tokenSequence)) {
-            CompletionContext paramContext = getParamaterContext(token, caretOffset, tokenSequence);
-            if (paramContext != null) {
-                return paramContext;
-            }
-            return CompletionContext.INTERFACE_CONTEXT_KEYWORDS;
-        } else if (isInsideClassDeclarationBlock(info, caretOffset, tokenSequence)) {
-            if (acceptTokenChains(tokenSequence, METHOD_NAME_TOKENCHAINS, moveNextSucces)) {
-                return CompletionContext.METHOD_NAME;
-            } else {
-                CompletionContext paramContext = getParamaterContext(token, caretOffset, tokenSequence);
-                if (paramContext != null) {
-                    return paramContext;
-                } else if (acceptTokenChains(tokenSequence, CLASS_CONTEXT_KEYWORDS_TOKENCHAINS, moveNextSucces)) {
-                    return CompletionContext.CLASS_CONTEXT_KEYWORDS;
-                }
-                return CompletionContext.NONE;
-            }
         } else if (acceptTokenChains(tokenSequence, FUNCTION_NAME_TOKENCHAINS, moveNextSucces)) {
             return CompletionContext.NONE;
         } else if (isCommonCommentToken(tokenSequence)) {
@@ -982,34 +972,35 @@ final class CompletionContextFinder {
         return retval;
     }
 
-    private static synchronized boolean isInsideClassDeclarationBlock(ParserResult info,
+    private static synchronized boolean isInsideClassOrTraitDeclarationBlock(ParserResult info,
             int caretOffset, TokenSequence tokenSequence) {
         List<ASTNode> nodePath = NavUtils.underCaret(info, lexerToASTOffset(info, caretOffset));
         boolean methDecl = false;
         boolean funcDecl = false;
-        boolean clsDecl = false;
-        boolean isClassInsideFunc = false;
-        boolean isFuncInsideClass = false;
+        boolean typeDecl = false;
+        boolean isTypeInsideFunc = false;
+        boolean isFuncInsideType = false;
         for (ASTNode aSTNode : nodePath) {
             if (aSTNode instanceof FunctionDeclaration) {
                 funcDecl = true;
-                if (clsDecl) {
-                    isFuncInsideClass = true;
+                if (typeDecl) {
+                    isFuncInsideType = true;
                 }
             } else if (aSTNode instanceof MethodDeclaration) {
                 methDecl = true;
-            } else if (aSTNode instanceof ClassDeclaration) {
+            } else if (aSTNode instanceof ClassDeclaration
+                    || aSTNode instanceof TraitDeclaration) {
                 if (aSTNode.getEndOffset() != caretOffset) {
-                    clsDecl = true;
+                    typeDecl = true;
                     if (funcDecl) {
-                        isClassInsideFunc = true;
+                        isTypeInsideFunc = true;
                     }
                 } else {
                     return false;
                 }
             }
         }
-        if (funcDecl && !methDecl && !clsDecl) {
+        if (funcDecl && !methDecl && !typeDecl) {
             final StringBuilder sb = new StringBuilder();
             new DefaultVisitor() {
 
@@ -1023,7 +1014,7 @@ final class CompletionContextFinder {
                 return false;
             }
         }
-        if (isClassInsideFunc && !isFuncInsideClass) {
+        if (isTypeInsideFunc && !isFuncInsideType) {
             return true;
         }
         int orgOffset = tokenSequence.offset();
@@ -1046,9 +1037,9 @@ final class CompletionContextFinder {
                         || id.equals(PHPTokenId.PHP_CATCH))
                         && (curlyOpen > curlyClose)) {
                     return false;
-                } else if (id.equals(PHPTokenId.PHP_CLASS)) {
-                    boolean isClassScope = curlyOpen > 0 && (curlyOpen > curlyClose);
-                    return isClassScope;
+                } else if (id.equals(PHPTokenId.PHP_CLASS) || id.equals(PHPTokenId.PHP_TRAIT)) {
+                    boolean isTypeScope = curlyOpen > 0 && (curlyOpen > curlyClose);
+                    return isTypeScope;
                 }
             }
         } finally {

@@ -130,8 +130,7 @@ public final class ExecLogReader {
         } else {
             this.root = root;
         }
-    } //NOI18N
-    //NOI18N
+    }
 
     private PathMap getPathMapper(ProjectProxy project) {
         if (project != null) {
@@ -587,8 +586,7 @@ public final class ExecLogReader {
                     }
                     String s2 = CndPathUtilities.quoteIfNecessary(s);
                     if (s.equals(s2)) {
-                        if (s.indexOf('"') > 0) {
-                            // NOI18N
+                        if (s.indexOf('"') > 0) { // NOI18N
                             int j = s.indexOf("\\\""); // NOI18N
                             if (j < 0) {
                                 s = s.replace("\"", "\\\""); // NOI18N
@@ -693,8 +691,11 @@ public final class ExecLogReader {
                     // probably it is just created binary. Try to refresh folder.
                     FileObject folder = fileSystem.findResource(compilePath);
                     if (folder != null && folder.isValid() && folder.isFolder()) {
-                        folder.refresh();
-                        f = fileSystem.findResource(fullName);
+                        if (!refresedFolders.contains(folder)) {
+                            folder.refresh();
+                            refresedFolders.add(folder);
+                            f = fileSystem.findResource(fullName);
+                        }
                     }
                 }
                 if (f != null && f.isValid() && f.isData()) {
@@ -708,6 +709,8 @@ public final class ExecLogReader {
             }
         }
     }
+    
+    private Set<FileObject> refresedFolders = new HashSet<FileObject>();
     
     private static final class ExecSource extends RelocatableImpl implements SourceFileProperties {
 

@@ -191,8 +191,9 @@ public class QmakeScriptSupport implements PreBuildArtifactProvider {
                     if (tool != null && !tool.getPath().isEmpty()) {
                         return null;
                     }
+                    return NbBundle.getMessage(QmakeScriptSupport.class, "NotFoundQMakeTool", compilerSet.getName()); //NOI18N
                 }
-                return NbBundle.getMessage(QmakeScriptSupport.class, "NotFoundQMakeTool"); //NOI18N
+                return NbBundle.getMessage(QmakeScriptSupport.class, "NotFoundQMakeTool", ""); //NOI18N
             }
             return NbBundle.getMessage(QmakeScriptSupport.class, "CONFIGUREFILEISNOTEXECUTABLE"); //NOI18N
         }

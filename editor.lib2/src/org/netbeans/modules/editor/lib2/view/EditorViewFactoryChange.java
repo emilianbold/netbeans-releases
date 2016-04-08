@@ -43,7 +43,7 @@ import java.util.List;
 
 /**
  * Offset range describing change in particular view factory.
- * <br/>
+ * <br>
  * Each factory may fire a list of changes of different types at once.
  * 
  * @author Miloslav Metelka

@@ -106,6 +106,19 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="GapListAddAll">
+          <summary>Added methods to append elements to a GapList</summary>
+          <version major="1" minor="64"/>
+          <date day="22" month="2" year="2016"/>
+          <author login="mmetelka"/>
+          <compatibility addition="yes" deletion="no" modification="no" binary="compatible" semantic="compatible"/>
+          <description>
+              Added supplementary methods to GapList to accompany the existing
+              methods to add elements.
+          </description>
+          <class name="GapList" package="org.netbeans.lib.editor.util"/>
+          <issue number="257888"/>
+      </change>
       <change id="EventPropertyStorage.test">
           <summary>Added test for property storage support on events</summary>
           <version major="1" minor="60"/>

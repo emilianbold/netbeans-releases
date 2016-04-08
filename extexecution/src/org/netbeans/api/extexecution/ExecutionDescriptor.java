@@ -921,7 +921,9 @@ public final class ExecutionDescriptor {
             this.outConvertorFactory = descriptor.outConvertorFactory;
             this.errConvertorFactory = descriptor.errConvertorFactory;
             this.outProcessorFactory = descriptor.outProcessorFactory;
+            this.outProcessorFactory2 = descriptor.outProcessorFactory2;
             this.errProcessorFactory = descriptor.errProcessorFactory;
+            this.errProcessorFactory2 = descriptor.errProcessorFactory2;
             this.inputOutput = descriptor.inputOutput;
             this.rerunCondition = descriptor.rerunCondition;
             this.rerunCallback = descriptor.rerunCallback;

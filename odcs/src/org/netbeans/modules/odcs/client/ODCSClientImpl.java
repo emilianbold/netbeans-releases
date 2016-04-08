@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import oracle.clouddev.server.profile.activity.client.api.Activity;
-import oracle.clouddev.server.profile.activity.client.api.ActivityType;
 import org.apache.commons.httpclient.HttpClient;
 import org.eclipse.mylyn.commons.net.WebUtil;
 import org.netbeans.modules.odcs.client.api.ActivityTypes;
@@ -336,7 +335,7 @@ public class ODCSClientImpl implements ODCSClient {
         return scmServiceClient;        
     }
 
-    private TaskServiceClient getTasksClient(String projectId) {
+    public TaskServiceClient getTasksClient(String projectId) {
         if (tasksServiceClient == null) {
             tasksServiceClient = new TaskServiceClient();
             tasksServiceClient.setBaseUrl(url + "s/" + projectId + "/tasks/");
@@ -373,5 +372,14 @@ public class ODCSClientImpl implements ODCSClient {
         if (originalContextCL != null) {
             Thread.currentThread().setContextClassLoader(originalContextCL);
         }
+    }        
+    
+    public void deleteProject(Project p) throws EntityNotFoundException {
+        getProfileClient().deleteProject(p.getIdentifier());        
     }
+    
+    public void addMember(Project project, String user) throws EntityNotFoundException {
+        getProfileClient().addProjectTeamMember(project.getIdentifier(), user);        
+    }
+    
 }

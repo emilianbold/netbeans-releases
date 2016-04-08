@@ -96,7 +96,7 @@ public class GroupUseStatementPart extends UseStatementPart {
             sb.append(item);
         }
         sb.append('}'); // NOI18N
-        return super.toString(); //To change body of generated methods, choose Tools | Templates.
+        return sb.toString();
     }
 
 

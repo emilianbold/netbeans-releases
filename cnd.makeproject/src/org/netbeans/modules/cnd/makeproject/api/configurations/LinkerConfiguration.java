@@ -43,8 +43,10 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -52,6 +54,7 @@ import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.LinkerDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration.OptionToString;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
@@ -85,6 +88,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
     private OptionsConfiguration additionalDependencies;
     private IntConfiguration runTimeSearchPath;
     private LibrariesConfiguration librariesConfiguration;
+    private BooleanConfiguration copyLibrariesConfiguration;
     private StringConfiguration tool;
 
     public static final int SEARCH_PATH_NONE = 0;
@@ -112,6 +116,10 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
         additionalDependencies = new OptionsConfiguration();
         additionalDependencies.setPreDefined(getAdditionalDependenciesPredefined());
         librariesConfiguration = new LibrariesConfiguration();
+        
+        boolean isMac = makeConfiguration.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX;
+        copyLibrariesConfiguration = new BooleanConfiguration(isMac);
+        
         tool = new StringConfiguration(null, ""); // NOI18N
         runTimeSearchPath = new IntConfiguration(null, SEARCH_PATH_RELATIVE_TO_WORKING_DIR, SEARCH_PATH_NAMES, null);
     }
@@ -128,6 +136,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
                 || getAdditionalDependencies().getModified()
                 || getTool().getModified()
                 || getLibrariesConfiguration().getModified()
+                || getCopyLibrariesConfiguration().getModified()
                 || getCommandLineConfiguration().getModified();
     }
 
@@ -235,6 +244,15 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
         this.librariesConfiguration = librariesConfiguration;
     }
 
+    // CopyLibrariesConfiguration
+    public BooleanConfiguration getCopyLibrariesConfiguration() {
+        return copyLibrariesConfiguration;
+    }
+
+    public void setCopyLibrariesConfiguration(BooleanConfiguration copyLibrariesConfiguration) {
+        this.copyLibrariesConfiguration = copyLibrariesConfiguration;
+    }
+
     // LibrariesConfiguration
     public IntConfiguration getLibrariesRunTimeSearchPathKind() {
         return runTimeSearchPath;
@@ -268,6 +286,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
         getLibrariesRunTimeSearchPathKind().assign(conf.getLibrariesRunTimeSearchPathKind());
         getNameassignOption().assign(conf.getNameassignOption());
         getLibrariesConfiguration().assign(conf.getLibrariesConfiguration());
+        getCopyLibrariesConfiguration().assign(conf.getCopyLibrariesConfiguration());
         getTool().assign(conf.getTool());
     }
 
@@ -286,6 +305,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
         clone.setLibrariesRunTimeSearchPathKind(getLibrariesRunTimeSearchPathKind().clone());
         clone.setNameassignOption(getNameassignOption().clone());
         clone.setLibrariesConfiguration(getLibrariesConfiguration().clone());
+        clone.setCopyLibrariesConfiguration(getCopyLibrariesConfiguration().clone());
         clone.setTool(getTool().clone());
         return clone;
     }
@@ -464,6 +484,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
         set5.setShortDescription(getString("LibrariesHint"));
         set5.put(new LibrariesNodeProp(getLibrariesConfiguration(), project, conf, getMakeConfiguration().getBaseFSPath(), texts));
         set5.put(new IntNodeProp(getLibrariesRunTimeSearchPathKind(), true, "RunTimeSerchPath", getString("RunTimeSerchPathTxt"), getString("RunTimeSerchPathHint"))); // NOI18N
+        set5.put(new BooleanNodeProp(getCopyLibrariesConfiguration(), true, "CopyLibraries", getString("CopyLibrariesTxt"), getString("CopyLibrariesHint")));
         sheet.put(set5);
 
         if (!isQtMode) {
@@ -563,6 +584,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
                 " stripOption=" + stripOption + " picOption=" + picOption + " norunpathOption=" + norunpathOption + // NOI18N
                 " nameassignOption=" + nameassignOption + " commandLineConfiguration=" + commandLineConfiguration + // NOI18N
                 " additionalDependencies=" + additionalDependencies + " librariesConfiguration=" + librariesConfiguration + // NOI18N
+                " copyLibrariesConfiguration=" + copyLibrariesConfiguration + // NOI18N
                 " tool=" + tool + '}'; // NOI18N
     }
 

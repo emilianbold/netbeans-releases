@@ -289,11 +289,9 @@
                                     <Identifier start='102' end='105' name='ONE'/>
                                 </NamespaceName>
                                 <StaticConstantAccess start='108' end='119'>
-                                    <ClassName>
-                                        <NamespaceName start='108' end='112' isCurrent='false' isGlobal='false'>
-                                            <Identifier start='108' end='112' name='self'/>
-                                        </NamespaceName>
-                                    </ClassName>
+                                    <NamespaceName start='108' end='112' isCurrent='false' isGlobal='false'>
+                                        <Identifier start='108' end='112' name='self'/>
+                                    </NamespaceName>
                                     <Constant>
                                         <Identifier start='114' end='119' name='THREE'/>
                                     </Constant>
@@ -312,11 +310,9 @@
                             <InfixExpression start='142' end='178' operator='CONCAT'>
                                 <Scalar start='142' end='166' type='STRING' value='&apos;The value of THREE is &apos;'/>
                                 <StaticConstantAccess start='167' end='178'>
-                                    <ClassName>
-                                        <NamespaceName start='167' end='171' isCurrent='false' isGlobal='false'>
-                                            <Identifier start='167' end='171' name='self'/>
-                                        </NamespaceName>
-                                    </ClassName>
+                                    <NamespaceName start='167' end='171' isCurrent='false' isGlobal='false'>
+                                        <Identifier start='167' end='171' name='self'/>
+                                    </NamespaceName>
                                     <Constant>
                                         <Identifier start='173' end='178' name='THREE'/>
                                     </Constant>
@@ -345,11 +341,9 @@
                                                 <Identifier start='208' end='211' name='ONE'/>
                                             </NamespaceName>
                                             <StaticConstantAccess start='214' end='225'>
-                                                <ClassName>
-                                                    <NamespaceName start='214' end='218' isCurrent='false' isGlobal='false'>
-                                                        <Identifier start='214' end='218' name='self'/>
-                                                    </NamespaceName>
-                                                </ClassName>
+                                                <NamespaceName start='214' end='218' isCurrent='false' isGlobal='false'>
+                                                    <Identifier start='214' end='218' name='self'/>
+                                                </NamespaceName>
                                                 <Constant>
                                                     <Identifier start='220' end='225' name='THREE'/>
                                                 </Constant>
@@ -381,26 +375,26 @@
                                 </Parameters>
                             </ClassInstanceCreation>
                         </AnonymousObjectVariable>
-                        <FunctionInvocation start='271' end='274'>
-                            <FucntionName start='271' end='272'>
-                                <Variable start='271' end='272' isDollared='false'>
-                                    <Identifier start='271' end='272' name='f'/>
-                                </Variable>
-                            </FucntionName>
-                            <Parameters>
-                            </Parameters>
-                        </FunctionInvocation>
+                        <Method>
+                            <FunctionInvocation start='271' end='274'>
+                                <FucntionName start='271' end='272'>
+                                    <Variable start='271' end='272' isDollared='false'>
+                                        <Identifier start='271' end='272' name='f'/>
+                                    </Variable>
+                                </FucntionName>
+                                <Parameters>
+                                </Parameters>
+                            </FunctionInvocation>
+                        </Method>
                     </MethodInvocation>
                     <Scalar start='275' end='279' type='STRING' value='"\n"'/>
                 </InfixExpression>
             </EchoStatement>
             <EchoStatement start='281' end='298'>
                 <StaticConstantAccess start='286' end='297'>
-                    <ClassName>
-                        <NamespaceName start='286' end='287' isCurrent='false' isGlobal='false'>
-                            <Identifier start='286' end='287' name='C'/>
-                        </NamespaceName>
-                    </ClassName>
+                    <NamespaceName start='286' end='287' isCurrent='false' isGlobal='false'>
+                        <Identifier start='286' end='287' name='C'/>
+                    </NamespaceName>
                     <Constant>
                         <Identifier start='289' end='297' name='SENTENCE'/>
                     </Constant>

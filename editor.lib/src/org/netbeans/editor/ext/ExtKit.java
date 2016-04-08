@@ -177,11 +177,6 @@ public class ExtKit extends BaseKit {
     public ExtKit() {
     }
 
-    /** Create caret to navigate through document */
-    public @Override Caret createCaret() {
-        return new ExtCaret();
-    }
-
     public @Override SyntaxSupport createSyntaxSupport(BaseDocument doc) {
         return new ExtSyntaxSupport(doc);
     }

@@ -44,6 +44,7 @@ package org.netbeans.modules.debugger.jpda;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.io.InputOutput;
 import org.netbeans.modules.debugger.jpda.console.DebuggerOutput;
@@ -63,6 +64,7 @@ public final class DebuggerConsoleIO {
         this.output = new DebuggerOutput(debugger, lookupProvider);
     }
     
+    @CheckForNull
     public InputOutput getIO() {
         return output.getIOManager().getIO();
     }

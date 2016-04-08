@@ -46,15 +46,18 @@ package org.netbeans.modules.php.editor.parser.astnodes;
  */
 public abstract class StaticDispatch extends VariableBase {
 
-    private Expression className;
+    private final Expression dispatcher;
 
-    public StaticDispatch(int start, int end, Expression className) {
+
+    public StaticDispatch(int start, int end, Expression dispatcher) {
         super(start, end);
-        this.className = className;
+        assert dispatcher != null;
+        this.dispatcher = dispatcher;
     }
 
+    // XXX rename to getDispatcher() & handle all uses!
     public Expression getClassName() {
-        return className;
+        return dispatcher;
     }
 
     public abstract ASTNode getMember();

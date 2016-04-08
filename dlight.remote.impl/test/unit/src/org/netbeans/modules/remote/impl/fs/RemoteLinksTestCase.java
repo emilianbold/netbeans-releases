@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import junit.framework.Test;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -200,14 +201,14 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
             FileObject granpaFO = FileSystemProvider.getFileObject(env, PathUtilities.getDirName(baseDir));
             assertNotNull(granpaFO);
             granpaFO.refresh();
-            
+
             String script =
                     "cd " + baseDir + ";"
-                    + "mkdir real_dir;" 
-                    + "ln -s real_dir link_dir;" 
-                    + "cd real_dir;" 
+                    + "mkdir real_dir;"
+                    + "ln -s real_dir link_dir;"
+                    + "cd real_dir;"
                     + "mkdir -p intel-S2/lib;"
-                    + "cd intel-S2/lib;"                    
+                    + "cd intel-S2/lib;"
                     + "mkdir -p ../LEGAL;"
                     + "echo \"Oracle Solaris Studio 13\" > ../LEGAL/ProductName;"
                     + "ln -s ../LEGAL/ProductName SolarisStudio;";
@@ -217,30 +218,30 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
             final String parentPath = baseDir + "/link_dir/intel-S2/lib";
             final FileObject parentFO = FileSystemProvider.getFileObject(env, parentPath);
             final String refText = "Oracle Solaris Studio 13\n";
-            
+
             for (String childPath : new String[] { "../LEGAL/ProductName", "SolarisStudio"}) {
                 FileObject childFO = parentFO.getFileObject(childPath);
                 String actualText = childFO.asText();
                 assertEquals("Content for " + childPath, refText, actualText);
-                
+
 //                FileObject parentFO2 = childFO.getParent();
 //                System.out.printf("%s\n", childPath);
 //                System.out.printf("parent1: %s\n", parentFO);
 //                System.out.printf("parent1: %s\n", parentFO);
 //                System.out.printf("child:   %s\n", childFO);
-//                System.out.printf("parent2: %s\n", parentFO2);                
+//                System.out.printf("parent2: %s\n", parentFO2);
 //                System.out.printf("text: %s\n", actualText);
 //                System.out.printf("size: %d\n", childFO.getSize());
 //                System.out.printf("readFile: %s\n", readFile(childFO));
 //                System.out.printf("readFile: %s\n", childFO.asLines().get(0));
-            }            
+            }
         } finally {
             if (baseDir != null) {
                 CommonTasksSupport.rmDir(env, baseDir, true, new OutputStreamWriter(System.err)).get();
             }
-        }        
+        }
     }
-    
+
     @ForAllEnvironments
     public void testIZ_242509() throws Exception {
 //        if (Utilities.isUnix()) {
@@ -248,7 +249,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
 //        }
         doTestIZ_242509(execEnv);
     }
-    
+
     @ForAllEnvironments
     public void testDirectoryLink() throws Exception {
         String baseDir = null;
@@ -261,7 +262,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
             String realFile = realDir + "/file";
             String linkFile = linkDir + "/file";
 
-            String script = 
+            String script =
                     "cd " + baseDir + "; " +
                     "mkdir -p " + realDir + "; " +
                     "ln -s " + realDir + ' ' + linkDirName + "; " +
@@ -278,13 +279,13 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
             writeFile(linkFO, content);
             CharSequence readContent = readFile(realFO);
             assertEquals("File content differ", content.toString(), readContent.toString());
-            
+
             FileObject linkDirFO = getFileObject(linkDir);
             FileObject[] children = linkDirFO.getChildren();
             for (FileObject child : children) {
                 String childPath = child.getPath();
                 String parentPath = linkDirFO.getPath();
-                assertTrue("Incorrect link child path: " + childPath + " should start with parent path " + parentPath, 
+                assertTrue("Incorrect link child path: " + childPath + " should start with parent path " + parentPath,
                         child.getPath().startsWith(parentPath));
             }
             FileObject linkFO2;
@@ -304,21 +305,21 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
         try {
             baseDir = mkTempAndRefreshParent(true);
             String linkName = "link";
-            String script = 
+            String script =
                     "cd " + baseDir + "; " +
                     "ln -s " + linkName + ' ' + linkName;
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
             assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
 
             FileObject linkFO;
-            
+
             linkFO = getFileObject(baseDir + '/' + linkName);
             linkFO.canRead();
         } finally {
             removeRemoteDirIfNotNull(baseDir);
         }
     }
-    
+
     @ForAllEnvironments
     public void testCyclicLinksRefresh() throws Exception {
         String baseDir = null;
@@ -328,7 +329,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
             String linkName1 = "link1";
             String linkName2 = "link2";
             String baseDirlinkName = "linkToDir";
-            String script = 
+            String script =
                     "cd " + baseDir + "; " +
                     "ln -s " + selfLinkName + ' ' + selfLinkName + ";" +
                     "ln -s " + linkName1 + ' ' + linkName2 + ";" +
@@ -336,7 +337,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
                     "ln -s " + baseDir + ' ' + baseDirlinkName;
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
             assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
-            
+
             FileObject baseDirFO = getFileObject(baseDir);
             baseDirFO.refresh();
             FileObject[] children = baseDirFO.getChildren(); // otherwise existent children are empty => refresh won't cycle
@@ -371,7 +372,6 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
                     "ln -s " + baseDir + ' ' + baseDirlinkName;
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
             assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
-
             FileObject baseDirFO = getFileObject(baseDir);
             baseDirFO.refresh();
             FileObject[] children = baseDirFO.getChildren(); // otherwise existent children are empty => refresh won't cycle
@@ -380,20 +380,20 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
             removeRemoteDirIfNotNull(baseDir);
         }
     }
-    
+
     @ForAllEnvironments
     public void testCyclicLinksNonExistentIsFolder() throws Exception {
         //bz#216212 - StackOverflowError at org.netbeans.modules.remote.impl.fs.RemoteDirectory.getStorageFile
         String baseDir = null;
         try {
             baseDir = mkTempAndRefreshParent(true);
-            String folderName = "folder";            
+            String folderName = "folder";
             String selfLinkName = "linkToFolder";
             String script =
                     "cd " + baseDir + "; " +
-                    "mkdir " + folderName + ";" + 
+                    "mkdir " + folderName + ";" +
                     "ln -s " + folderName + ' ' + selfLinkName + ";" +
-                    " rm -rf " + folderName + ";" + 
+                    " rm -rf " + folderName + ";" +
                     "ln -s " + selfLinkName + ' ' + folderName + ";";
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
             assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
@@ -407,12 +407,12 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
             assertTrue(!folderFO.isFolder());
             assertTrue(!linkFO.canRead());
             assertTrue(linkFO.isData());
-            assertTrue(!linkFO.isFolder());            
+            assertTrue(!linkFO.isFolder());
         } finally {
             removeRemoteDirIfNotNull(baseDir);
         }
-    }    
-    
+    }
+
     @ForAllEnvironments
     public void testLinkLastModificationTime() throws Exception {
         String baseDir = null;
@@ -420,25 +420,25 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
             baseDir = mkTempAndRefreshParent(true);
             String linkName = "link";
             String fileName = "data";
-            String script = 
+            String script =
                     "cd " + baseDir + "; " +
                     "touch " + baseDir + "/" + fileName + ";" +
                     "sleep 10;" +
                     "ln -s " + fileName + ' ' + linkName;
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
             assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
-           
+
             FileObject linkFO = getFileObject(baseDir + '/' + linkName);
             FileObject fileFO = getFileObject(baseDir + '/' + fileName);
-            assertEquals("Link and it's target modification time should be the same (as with java.io.File)", linkFO.lastModified(), fileFO.lastModified());            
+            assertEquals("Link and it's target modification time should be the same (as with java.io.File)", linkFO.lastModified(), fileFO.lastModified());
         } finally {
             removeRemoteDirIfNotNull(baseDir);
-        }        
+        }
     }
 
     @ForAllEnvironments
     public void testCreateDataAndFolder() throws Exception {
-                
+
         String baseDir = null;
         try {
             baseDir = mkTempAndRefreshParent(true);
@@ -447,14 +447,14 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
             String linkDirName = "link_dir";
             String linkDir = baseDir + '/' + linkDirName;
 
-            String script = 
+            String script =
                     "cd " + baseDir + "; " +
                     "mkdir -p " + realDir + "; " +
                     "ln -s " + realDir + ' ' + linkDirName;
 
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
             assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
-           
+
             FileObject linkDirFO = getFileObject(linkDir);
 
             {
@@ -485,6 +485,42 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
             }
         } finally {
             removeRemoteDirIfNotNull(baseDir);
+        }
+    }
+
+    @ForAllEnvironments
+    public void testIZ_258298_disallow_deep_cycles() throws Exception {
+
+        String baseDir = null;
+        try {
+            baseDir = mkTempAndRefreshParent(true);
+            String[] struct = new String[]{
+                "d real_dir_1",
+                "- real_dir_1/file_1",
+                "d real_dir_1/subdir_1",
+                "- real_dir_1/subdir_1/file_2",
+                "l ../.. real_dir_1/subdir_1/lnk_up_1",
+            };
+            createDirStructure(execEnv, baseDir, struct);
+            RemoteFileObject baseFO = getFileObject(baseDir);
+            baseFO.refresh();
+            AtomicInteger cnt = new AtomicInteger();
+            System.out.println("### Recursing " + baseFO);
+            recurse(baseFO, cnt, 100);
+            //System.out.println("### CNT " + cnt.get());
+            assertEquals("File objects count", 12, cnt.get());
+        } finally {
+            removeRemoteDirIfNotNull(baseDir);
+        }
+    }
+
+    private void recurse(FileObject fo, AtomicInteger cnt, int max) {
+        cnt.incrementAndGet();
+        if (cnt.get() > max) {
+            return;
+        }
+        for (FileObject child : fo.getChildren()) {
+            recurse(child, cnt, max);
         }
     }
 

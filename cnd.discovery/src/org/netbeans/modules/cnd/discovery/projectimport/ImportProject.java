@@ -112,6 +112,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
 import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.wizards.PreBuildSupport;
@@ -148,8 +149,8 @@ import org.openide.util.RequestProcessor;
  */
 public class ImportProject implements PropertyChangeListener {
 
-    private static final String BUILD_COMMAND = "${MAKE} -f Makefile";  // NOI18N
-    private static final String CLEAN_COMMAND = "${MAKE} -f Makefile clean";  // NOI18N
+    private static final String BUILD_COMMAND = BuildSupport.MAKE_MACRO+" -f Makefile";  // NOI18N
+    private static final String CLEAN_COMMAND = BuildSupport.MAKE_MACRO+" -f Makefile clean";  // NOI18N
     static final boolean TRACE = Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
     public static final Logger logger;
     static {
@@ -965,7 +966,13 @@ public class ImportProject implements PropertyChangeListener {
                 Exceptions.printStackTrace(ex);
             }
         }
-        List<String> vars = ImportUtils.parseEnvironment(configureArguments);
+        List<String> vars;
+        if (configureArguments != null) {
+            configureArguments = PreBuildSupport.expandMacros(configureArguments, toolchain);
+            vars = ImportUtils.parseEnvironment(configureArguments);
+        } else {
+            vars = new ArrayList<>();
+        }
         if (execLog != null) {
             ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
             MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
@@ -1119,7 +1126,6 @@ public class ImportProject implements PropertyChangeListener {
                     done = discoveryByDwarf(done);
                 }
             }
-            switchModel(true);
             postModelDiscovery();
         } catch (Throwable ex) {
             isFinished = true;
@@ -1259,25 +1265,18 @@ public class ImportProject implements PropertyChangeListener {
         CsmModel model = CsmModelAccessor.getModel();
         if (model != null && makeProject != null) {
             final NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
-            final CsmProject p = model.getProject(np);
-            if (p == null) {
-                if (TRACE) {
-                    logger.log(Level.INFO, "#discovery cannot be done by model"); // NOI18N
-                }
-                isFinished = true;
-                return;
-            }
             CsmProgressListener listener = new CsmProgressAdapter() {
 
                 @Override
-                public void projectParsingFinished(CsmProject project) {
-                    if (project.equals(p)) {
-                        ImportProject.listeners.remove(p);
+                public void projectParsingFinished(final CsmProject project) {
+                    final Object id = project.getPlatformProject();
+                    if (id != null && id.equals(np)) {
+                        ImportProject.listeners.remove(np);
                         CsmListeners.getDefault().removeProgressListener(this); // ignore java warning "usage of this in anonymous class"
                         RP.post(new Runnable() {
                             @Override
                             public void run() {
-                                postModelDiscovery(np, p);
+                                postModelDiscovery(np, project);
                             }
                         });
                     }
@@ -1285,7 +1284,8 @@ public class ImportProject implements PropertyChangeListener {
 
             };
             CsmListeners.getDefault().addProgressListener(listener);
-            ImportProject.listeners.put(p, listener);
+            ImportProject.listeners.put(np, listener);
+            switchModel(true);
         } else {
             isFinished = true;
         }
@@ -1392,7 +1392,7 @@ public class ImportProject implements PropertyChangeListener {
         }
     }
 
-    private static final Map<CsmProject, CsmProgressListener> listeners = new WeakHashMap<>();
+    private static final Map<NativeProject, CsmProgressListener> listeners = new WeakHashMap<>();
 
     private boolean discoveryByExecLog(DoubleFile execLog, boolean done) {
         final DiscoveryExtensionInterface extension = (DiscoveryExtensionInterface) Lookup.getDefault().lookup(IteratorExtension.class);

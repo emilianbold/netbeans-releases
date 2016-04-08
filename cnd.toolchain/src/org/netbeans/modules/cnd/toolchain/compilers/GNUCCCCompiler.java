@@ -44,9 +44,11 @@ package org.netbeans.modules.cnd.toolchain.compilers;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.dwarfdump.source.Driver;
 import static org.netbeans.modules.cnd.toolchain.compilers.CCCCompiler.addUnique;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -179,7 +181,7 @@ import org.openide.util.NbBundle;
                    } else {
                        line = cutIncludePrefix(line);
                        if (line.endsWith(" (framework directory)")) { // NOI18N
-                           line = line.substring(0, line.lastIndexOf('(')).trim();
+                           line = line.substring(0, line.lastIndexOf('(')).trim()+Driver.FRAMEWORK;
                        }
                        addUnique(pair.systemIncludeDirectoriesList, applyPathPrefix(line));
                        

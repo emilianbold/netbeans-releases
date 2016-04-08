@@ -1397,5 +1397,33 @@ public class Css3ParserTest extends CssTestBase {
         CssParserResult result = TestUtil.parse(source);
         assertEquals(1, result.getDiagnostics().size());
     }
-
+    
+    public void testNthChildInMedia(){
+        assertParses("@media all and (min-width : 980px) {\n"
+                + "    /* OK */\n"
+                + "    div {\n"
+                + "        color:#000;\n"
+                + "    }\n"
+                + "\n"
+                + "    /* OK */\n"
+                + "    div#withId {\n"
+                + "        color:#000;\n"
+                + "    }\n"
+                + "\n"
+                + "    /* Error - Unexpected dot found, Unexpected brace found */\n"
+                + "    div:nth-child(1) {\n"
+                + "        color:#000;\n"
+                + "    }\n"
+                + "\n"
+                + "    /* Error - Unexpected dot found, Unexpected brace found */\n"
+                + "    div.withClassAndNthChild:nth-child(1) {\n"
+                + "        color:#000;\n"
+                + "    }\n"
+                + "\n"
+                + "    /* Errror - Unexpected hash found, Unexpected brace found */\n"
+                + "    div#withIdAndNthChild:nth-child(1) {\n"
+                + "        color:#000;\n"
+                + "    }\n"
+                + "}");
+    }
 }

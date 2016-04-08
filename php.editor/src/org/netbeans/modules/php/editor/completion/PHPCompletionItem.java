@@ -201,7 +201,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     public String getLhsHtml(HtmlFormatter formatter) {
         formatter.name(getKind(), true);
         String name = getName();
-        if (CodeUtils.isSynteticTypeName(name)) {
+        if (CodeUtils.isSyntheticTypeName(name)) {
             // anonymous class
             name = "{}"; // NOI18N
         }
@@ -364,7 +364,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             TypeMemberElement classMember = (TypeMemberElement) element;
             TypeElement type = classMember.getType();
             String name = type.getName();
-            if (CodeUtils.isSynteticTypeName(name)) {
+            if (CodeUtils.isSyntheticTypeName(name)) {
                 // anonymous class
                 formatter.appendText("{}"); // NOI18N
                 return formatter.getText();
@@ -1092,7 +1092,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             if (keyword.startsWith("$")) { //NOI18N
                 if (className != null) {
                     formatter.type(true);
-                    formatter.appendText(CodeUtils.isSynteticTypeName(className) ? "{}" : className); // NOI18N
+                    formatter.appendText(CodeUtils.isSyntheticTypeName(className) ? "{}" : className); // NOI18N
                     formatter.type(false);
                 }
                 formatter.appendText(" "); //NOI18N
@@ -1637,7 +1637,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 if (typeResolver.isResolved()) {
                     QualifiedName qualifiedName = typeResolver.getTypeName(false);
                     if (qualifiedName != null) {
-                        if (CodeUtils.isSynteticTypeName(qualifiedName.getName())) {
+                        if (CodeUtils.isSyntheticTypeName(qualifiedName.getName())) {
                             // anonymous class
                             typeName = "{}"; // NOI18N
                         } else {

@@ -46,6 +46,7 @@ package org.netbeans.modules.j2ee.deployment.impl.projects;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import org.openide.filesystems.FileUtil;
 import java.util.logging.Level;
@@ -65,6 +66,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ServerString;
 import org.netbeans.modules.j2ee.deployment.impl.TargetModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.WebTargetModuleID;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -208,7 +210,7 @@ public final class DeploymentTarget {
             return null;
         }
         if (getModule() == client) { // stand-alone web
-            return module.getWebURL();
+            return getUrl(module);
         }
         
         ServerInstance instance = ServerRegistry.getInstance().getServerInstance(module.getInstanceUrl());
@@ -222,7 +224,7 @@ public final class DeploymentTarget {
         for (int i=0; children != null && i<children.length; i++) {
             // remember when see one, just for a rainy day
             if (urlString == null || urlString.trim().equals("")) {
-                urlString = children[i].getWebURL();
+                urlString = getUrl(children[i]);
             }
             
             String uri = children[i].getModuleID(); //NOI18N
@@ -243,19 +245,29 @@ public final class DeploymentTarget {
         }
         // prefer the matched
         if (tmid != null) {
-            urlString = tmid.getWebURL();
+            urlString = getUrl(tmid);
         } else if (children == null || children.length == 0) {
-            urlString = module.getWebURL();
+            urlString = getUrl(module);
         }
         
         return urlString;
     }
     
-    private String normalizeUri(String uri) {
+    private static String normalizeUri(String uri) {
         if (!uri.startsWith("/")) { // NOI18N
             return "/" + uri; // NOI18N
         }
         return uri;
+    }
+
+    private static String getUrl(TargetModuleID id) {
+        if (id instanceof WebTargetModuleID) {
+            URL u = ((WebTargetModuleID) id).resolveWebURL();
+            if (u != null) {
+                return u.toString();
+            }
+        }
+        return id.getWebURL();
     }
     
     public File getConfigurationFile() {

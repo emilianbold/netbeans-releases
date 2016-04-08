@@ -59,8 +59,10 @@ import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableName;
+import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.model.nodes.MagicMethodDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
@@ -118,9 +120,11 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
     public Collection<? extends VariableName> getDeclaredVariables() {
         scan();
         final Scope inScope = getInScope();
-        if (inScope instanceof ClassScope) {
-            ClassScope classScope = (ClassScope) inScope;
-            return ModelUtils.merge(classScope.getDeclaredVariables(), super.getDeclaredVariables());
+        if (inScope instanceof ClassScope || inScope instanceof TraitScope) {
+            if (inScope instanceof VariableScope) {
+                VariableScope variableScope = (VariableScope) inScope;
+                return ModelUtils.merge(variableScope.getDeclaredVariables(), super.getDeclaredVariables());
+            }
         }
         return super.getDeclaredVariables();
     }

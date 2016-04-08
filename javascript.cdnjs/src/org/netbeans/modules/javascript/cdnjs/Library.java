@@ -134,6 +134,7 @@ public final class Library {
      * 
      * @return versions of this library.
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "EI_EXPOSE_REP", justification = "Internal usage only")
     public Version[] getVersions() {
         return versions;
     }
@@ -202,6 +203,7 @@ public final class Library {
          * 
          * @return files of this version.
          */
+        @org.netbeans.api.annotations.common.SuppressWarnings(value = "EI_EXPOSE_REP", justification = "Internal usage only")
         public String[] getFiles() {
             return files;
         }
@@ -213,6 +215,7 @@ public final class Library {
          * @return local files of this version (or {@code null} when
          * this library version is not installed).
          */
+        @org.netbeans.api.annotations.common.SuppressWarnings(value = "EI_EXPOSE_REP", justification = "Internal usage only")
         public String[] getLocalFiles() {
             return localFiles;
         }

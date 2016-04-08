@@ -85,6 +85,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
 import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.ProjectKind;
@@ -515,8 +516,8 @@ public class ImportExecutable implements PropertyChangeListener {
         }
         if (configure.makefile != null) {
             activeConfiguration.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(configure.makefile.getParent().getPath());
-            activeConfiguration.getMakefileConfiguration().getBuildCommand().setValue("${MAKE} -f "+configure.makefile.getName()); // NOI18N
-            activeConfiguration.getMakefileConfiguration().getCleanCommand().setValue("${MAKE} -f "+configure.makefile.getName()+" clean"); // NOI18N
+            activeConfiguration.getMakefileConfiguration().getBuildCommand().setValue(BuildSupport.MAKE_MACRO+" -f "+configure.makefile.getName()); // NOI18N
+            activeConfiguration.getMakefileConfiguration().getCleanCommand().setValue(BuildSupport.MAKE_MACRO+" -f "+configure.makefile.getName()+" clean"); // NOI18N
             Folder externalItemFolder = configurationDescriptor.getExternalItemFolder();
             for(Item item : externalItemFolder.getAllItemsAsArray()){
                 if (MIMENames.MAKEFILE_MIME_TYPE.equals(item.getMIMEType())) {

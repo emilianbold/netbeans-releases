@@ -18,6 +18,12 @@
                     <run-dependency/>
                 </dependency>
                 <dependency>
+                    <code-name-base>net.java.html.geo</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
                     <code-name-base>net.java.html.boot.fx</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -31,6 +37,10 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.html.ko4j</code-name-base>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.html.xhr4j</code-name-base>
                     <run-dependency/>
                 </dependency>
                 <dependency>

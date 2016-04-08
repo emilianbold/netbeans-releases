@@ -133,8 +133,8 @@ public class WildFlyProperties {
         this.manager = manager;
         ip = manager.getInstanceProperties();
         File serverPath = new File(ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR));
-        version = WildflyPluginUtils.getServerVersion(serverPath);
-        wildfly = WildflyPluginUtils.isWildFly(serverPath);
+        version = manager.getServerVersion();
+        wildfly = manager.isWildfly();
         servletOnly = WildflyPluginUtils.isWildFlyServlet(serverPath);
     }
 

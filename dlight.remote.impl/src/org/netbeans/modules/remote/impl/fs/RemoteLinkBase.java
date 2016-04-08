@@ -77,10 +77,19 @@ import org.openide.util.NbBundle;
 public abstract class RemoteLinkBase extends RemoteFileObjectBase implements FileChangeListener {
     
     protected RemoteLinkBase(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, RemoteFileObjectBase parent, String remotePath) {
-        super(wrapper, fileSystem, execEnv, parent, remotePath, null);
+        super(wrapper, fileSystem, execEnv, parent, remotePath);
     }
-    
-    protected final void initListeners(boolean add) {
+
+    /**
+     * That's a kind of addition to constructor + kind of "destructor"
+     * It will be called each time the instance is created *and* used
+     * (i.e. not thrown away - see RemoteFileObjectFactor.putIfAbsent())
+     * RemoteFileObjectFactory creates an instance each time before calling putIfAbsent,
+     * so constructor should be very lightweight.
+     *
+     * It is also called after changing link target
+     */
+    protected void initListeners(boolean add) {
         if (add) {
             getFileSystem().getFactory().addFileChangeListener(getDelegateNormalizedPath(), this);
         } else {
@@ -91,7 +100,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     public abstract RemoteFileObjectBase getCanonicalDelegate();
     protected abstract String getDelegateNormalizedPath();
     protected abstract RemoteFileObjectBase getDelegateImpl();
- 
+
     protected FileNotFoundException fileNotFoundException(String operation) {
         return RemoteExceptions.createFileNotFoundException(NbBundle.getMessage(RemoteLinkBase.class,
                 "EXC_CantPerformOpOnDeadLink", operation, getDisplayName())); //NOI18N
@@ -268,7 +277,9 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
         }
         RemoteFileObjectBase delegate = getCanonicalDelegate();
         // For link we need to refresh both delegate and link metadata itself
-        refreshThisFileMetadataImpl(recursive, antiLoop, expected, refreshMode, timeoutMillis);
+        if (refreshMode != RefreshMode.FROM_PARENT) {
+            refreshThisFileMetadataImpl(recursive, antiLoop, expected, refreshMode, timeoutMillis);
+        }
         if (delegate != null) {
             delegate.refreshImpl(recursive, antiLoop, expected, refreshMode, timeoutMillis);
         } else {
@@ -341,7 +352,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
         fireFileRenamedEvent(getListeners(), (FileRenameEvent)transform(fe));
     }
 
-    public boolean isCyclicLink() {
+    private boolean isCyclicLink() {
         Set<RemoteFileObjectBase> antiCycle = new HashSet<>();
         RemoteFileObjectBase delegate = getCanonicalDelegate();
         if (delegate == null && getPath() != null) {

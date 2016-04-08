@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import java.util.regex.Pattern;
+import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -90,14 +91,14 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
     }
 
     @Override
-    public List<FSPath> getItemUserIncludePaths(List<FSPath> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
-        List<FSPath> res =new ArrayList<>();
+    public List<IncludePath> getItemUserIncludePaths(List<IncludePath> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
+        List<IncludePath> res =new ArrayList<>();
         if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){
             ExecutionEnvironment env = getExecutionEnvironment(makeConfiguration);
             FileSystem fs = FileSystemProvider.getFileSystem(env);
             for(PackageConfiguration pc : getPackages(compilerOptions.getAllOptions(compiler), makeConfiguration)) {
                 for (String path : pc.getIncludePaths()) {
-                    res.add(new FSPath(fs, path));
+                    res.add(new IncludePath(fs, path));
                 }
             }
         }
@@ -129,7 +130,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
     @Override
     public String getItemImportantFlags(AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
         if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE) {
-            if (compiler != null) {
+            if (compiler != null && compiler.getDescriptor() != null) {
                 String importantFlags = compiler.getDescriptor().getImportantFlags();
                 if (importantFlags != null && importantFlags.length() > 0) {
                     StringBuilder buf = new StringBuilder();
@@ -149,6 +150,10 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
                                     buf.append(' ');
                                 }
                                 buf.append(s);
+                                if (Driver.ISYSROOT_FLAG.equals(s) && i+1 < split.length) { // NOI18N
+                                    buf.append(' ');
+                                    buf.append(split[i+1]);
+                                }
                             }
                         }
                     }

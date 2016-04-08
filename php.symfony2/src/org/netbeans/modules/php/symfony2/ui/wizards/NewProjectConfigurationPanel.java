@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.symfony2.ui.wizards;
 
@@ -56,15 +56,15 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.php.api.validation.ValidationResult;
-import org.netbeans.modules.php.symfony2.options.Symfony2Options;
-import org.netbeans.modules.php.symfony2.options.Symfony2OptionsValidator;
-import org.netbeans.modules.php.symfony2.ui.options.Symfony2OptionsPanelController;
+import org.netbeans.modules.php.symfony2.options.SymfonyOptions;
+import org.netbeans.modules.php.symfony2.options.SymfonyOptionsValidator;
+import org.netbeans.modules.php.symfony2.ui.options.SymfonyOptionsPanelController;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
- * Symfony2 new project panel.
+ * Symfony 2/3 new project panel.
  */
 public class NewProjectConfigurationPanel extends JPanel implements ChangeListener {
 
@@ -82,13 +82,13 @@ public class NewProjectConfigurationPanel extends JPanel implements ChangeListen
 
     @Override
     public void addNotify() {
-        Symfony2Options.getInstance().addChangeListener(this);
+        SymfonyOptions.getInstance().addChangeListener(this);
         super.addNotify();
     }
 
     @Override
     public void removeNotify() {
-        Symfony2Options.getInstance().removeChangeListener(this);
+        SymfonyOptions.getInstance().removeChangeListener(this);
         super.removeNotify();
     }
 
@@ -106,7 +106,7 @@ public class NewProjectConfigurationPanel extends JPanel implements ChangeListen
 
     public String getErrorMessage() {
         // treat all as errors here
-        ValidationResult result = new Symfony2OptionsValidator()
+        ValidationResult result = new SymfonyOptionsValidator()
                 .validate()
                 .getResult();
         if (result.hasErrors()) {
@@ -142,7 +142,7 @@ public class NewProjectConfigurationPanel extends JPanel implements ChangeListen
     private void setComponents() {
         String info;
         boolean showOther;
-        if (Symfony2Options.getInstance().isUseInstaller()) {
+        if (SymfonyOptions.getInstance().isUseInstaller()) {
             info = Bundle.NewProjectConfigurationPanel_info_installer();
             showOther = true;
         } else {
@@ -224,7 +224,7 @@ public class NewProjectConfigurationPanel extends JPanel implements ChangeListen
     }//GEN-LAST:event_optionsLabelMouseEntered
 
     private void optionsLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_optionsLabelMousePressed
-        OptionsDisplayer.getDefault().open(Symfony2OptionsPanelController.getOptionsPath());
+        OptionsDisplayer.getDefault().open(SymfonyOptionsPanelController.getOptionsPath());
     }//GEN-LAST:event_optionsLabelMousePressed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

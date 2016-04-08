@@ -97,9 +97,9 @@ public class UsedNamesCollector {
 
     private Map<String, List<UsedNamespaceName>> filterNamesWithoutUses(final Collection<? extends UseScope> declaredUses) {
         final Map<String, List<UsedNamespaceName>> result = new HashMap<>();
-        for (String typeName : possibleNames.keySet()) {
-            if (!existsUseForTypeName(declaredUses, QualifiedName.create(typeName))) {
-                result.put(typeName, possibleNames.get(typeName));
+        for (Map.Entry<String, List<UsedNamespaceName>> entry : possibleNames.entrySet()) {
+            if (!existsUseForTypeName(declaredUses, QualifiedName.create(entry.getKey()))) {
+                result.put(entry.getKey(), entry.getValue());
             }
         }
         return result;

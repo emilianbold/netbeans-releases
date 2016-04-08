@@ -194,7 +194,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     /* Completion providers registered for the active component (its mime-type). Changed in AWT only. */
     private CompletionProvider[] activeProviders = null;
     
-    /** Mapping of mime-path to array of providers. Changed in AWT only. */
+    /** Mapping of mime-type to array of providers. Changed in AWT only. */
     private HashMap<String, CompletionProvider[]> providersCache = new HashMap<String, CompletionProvider[]>();
 
     /**
@@ -526,7 +526,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     
     private void initActiveProviders(JTextComponent component) {
         activeProviders = (component != null)
-                ? getCompletionProvidersForComponent(component, true)
+                ? getCompletionProvidersForComponent(component, getMimePathBasic(component), true)
                 : null;
         if (LOG.isLoggable(Level.FINE)) {
             StringBuffer sb = new StringBuffer("Completion PROVIDERS:\n"); // NOI18N
@@ -544,8 +544,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     }
     
     private boolean ensureActiveProviders() {
+        String mime = getMimePath(getActiveComponent());
         if (activeProviders != null) {
-            String mime = getMimePath(getActiveComponent());
             if (mime == null) {
                 return false;
             }
@@ -555,7 +555,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         }
         JTextComponent component = getActiveComponent();
         activeProviders = (component != null)
-                ? getCompletionProvidersForComponent(component, false)
+                ? getCompletionProvidersForComponent(component, mime, false)
                 : null;
         if (LOG.isLoggable(Level.FINE)) {
             StringBuffer sb = new StringBuffer("Completion PROVIDERS:\n"); // NOI18N
@@ -589,6 +589,26 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         docAutoPopupTimer.restart();    
     }
     
+    private String getMimePathBasic(JTextComponent component) {
+        final Document doc = component.getDocument();
+        // original mimeType code
+        Object mimeTypeObj =  DocumentUtilities.getMimeType(doc);  //NOI18N
+        String mimeType;
+
+        if (mimeTypeObj instanceof String) {
+            mimeType = (String) mimeTypeObj;
+        } else {
+            BaseKit kit = Utilities.getKit(component);
+            
+            if (kit == null) {
+                return null;
+            }
+            
+            mimeType = kit.getContentType();
+        }
+        return mimeType;
+    }
+    
     /**
      * Gives MimePath of the caret position as String
      * @param component
@@ -618,23 +638,9 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         });
         if (mimePathR[0] != null) {
             return mimePathR[0].getPath();
-        }
-        // original mimeType code
-        Object mimeTypeObj =  DocumentUtilities.getMimeType(doc);  //NOI18N
-        String mimeType;
-
-        if (mimeTypeObj instanceof String) {
-            mimeType = (String) mimeTypeObj;
         } else {
-            BaseKit kit = Utilities.getKit(component);
-            
-            if (kit == null) {
-                return null;
-            }
-            
-            mimeType = kit.getContentType();
+            return getMimePathBasic(component);
         }
-        return mimeType;
     }
     
     private String currentMimePath;
@@ -665,14 +671,12 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
      * @param asyncWarmUp
      * @return 
      */
-    private CompletionProvider[] getCompletionProvidersForComponent(JTextComponent component, boolean asyncWarmUp) {
+    private CompletionProvider[] getCompletionProvidersForComponent(JTextComponent component, String mimePathString, boolean asyncWarmUp) {
         assert (SwingUtilities.isEventDispatchThread());
 
         if (component == null)
             return null;
         
-        String mimePathString = getMimePath(component);
-
         if (mimePathString == null) {
             return null;
         }

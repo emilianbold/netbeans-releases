@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,26 +37,30 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript.bower.misc;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URI;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.javascript.bower.file.BowerrcJson;
+import org.netbeans.modules.javascript.bower.options.BowerOptions;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
-public final class SharabilityQueryImpl  implements SharabilityQueryImplementation2, PropertyChangeListener {
+public final class SharabilityQueryImpl  implements SharabilityQueryImplementation2, PropertyChangeListener, PreferenceChangeListener {
 
     final BowerrcJson bowerrcJson;
 
     private volatile URI bowerComponentsDir = null;
+    private volatile Boolean versioningIgnored;
 
 
     private SharabilityQueryImpl(Project project) {
@@ -67,6 +71,8 @@ public final class SharabilityQueryImpl  implements SharabilityQueryImplementati
     private static SharabilityQueryImplementation2 create(Project project) {
         SharabilityQueryImpl sharabilityQuery = new SharabilityQueryImpl(project);
         sharabilityQuery.bowerrcJson.addPropertyChangeListener(WeakListeners.propertyChange(sharabilityQuery, sharabilityQuery.bowerrcJson));
+        BowerOptions bowerOptions = BowerOptions.getInstance();
+        bowerOptions.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, sharabilityQuery, bowerOptions));
         return sharabilityQuery;
     }
 
@@ -92,7 +98,8 @@ public final class SharabilityQueryImpl  implements SharabilityQueryImplementati
 
     @Override
     public SharabilityQuery.Sharability getSharability(URI uri) {
-        if (uri.equals(getBowerComponentsDir())) {
+        if (isVersioningIgnored()
+                && uri.equals(getBowerComponentsDir())) {
             return SharabilityQuery.Sharability.NOT_SHARABLE;
         }
         return SharabilityQuery.Sharability.UNKNOWN;
@@ -110,6 +117,20 @@ public final class SharabilityQueryImpl  implements SharabilityQueryImplementati
             bowerComponentsDir = Utilities.toURI(bowerrcJson.getBowerComponentsDir());
         }
         return bowerComponentsDir;
+    }
+
+    public boolean isVersioningIgnored() {
+        if (versioningIgnored == null) {
+            versioningIgnored = BowerOptions.getInstance().isIgnoreBowerComponents();
+        }
+        return versioningIgnored;
+    }
+
+    @Override
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        if (BowerOptions.IGNORE_BOWER_COMPONENTS.equals(evt.getKey())) {
+            versioningIgnored = null;
+        }
     }
 
 }

@@ -775,7 +775,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             if (isCancelled()) {
                 return;
             }
-            Identifier constant = node.getConstant();
+            Identifier constant = node.getConstantName();
             if (constant != null) {
                 addColoringForNode(constant, ColoringAttributes.STATIC_FIELD_SET);
             }
@@ -860,7 +860,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
             @Override
             public void visit(ArrayAccess node) {
-                scan(node.getName());
+                super.scan(node.getName());
                 // don't scan(scan(node.getDimension()); issue #194535
             }
 

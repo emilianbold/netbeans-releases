@@ -81,6 +81,7 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchListener;
+import org.netbeans.modules.cnd.api.project.IncludePath;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
@@ -1508,17 +1509,17 @@ public final class MakeProject implements Project, MakeProjectListener {
                 nativeProject.getSourceRoots(),
                 extensions);
 
-        List<FSPath> sysIncPaths = nativeProject.getSystemIncludePaths();
+        List<IncludePath> sysIncPaths = nativeProject.getSystemIncludePaths();
         if (sysIncPaths != null && !sysIncPaths.isEmpty()) {
             ExecutionEnvironment env = null;
             List<String> paths = new ArrayList<>(sysIncPaths.size());
-            for (FSPath fsp : sysIncPaths) {
+            for (IncludePath fsp : sysIncPaths) {
                 if (env == null) {
                     env = FileSystemProvider.getExecutionEnvironment(fsp.getFileSystem());
                 } else {
                     CndUtils.assertTrue(env.equals(FileSystemProvider.getExecutionEnvironment(fsp.getFileSystem())));
                 }
-                paths.add(fsp.getPath());
+                paths.add(fsp.getFSPath().getPath());
             }
             FileSystemProvider.warmup(FileSystemProvider.WarmupMode.FILES_CONTENT, env, paths, null);
         }        

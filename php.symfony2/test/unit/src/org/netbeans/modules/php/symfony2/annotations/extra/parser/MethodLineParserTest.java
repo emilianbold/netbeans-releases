@@ -62,7 +62,7 @@ public class MethodLineParserTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        parser = Symfony2ExtraAnnotationLineParser.getDefault();
+        parser = SymfonyExtraAnnotationLineParser.getDefault();
     }
 
     public void testIsAnnotationLineParser() throws Exception {

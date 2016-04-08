@@ -860,9 +860,13 @@ public class FormatVisitor extends DefaultVisitor {
             }
         } else {
             addAllUntilOffset(node.getStartOffset());
-            formatTokens.add(new FormatToken.IndentToken(node.getStartOffset(), options.continualIndentSize));
-            super.visit(node);
-            formatTokens.add(new FormatToken.IndentToken(node.getEndOffset(), options.continualIndentSize * -1));
+            if (moveNext() && lastIndex < ts.index()) {
+                // #257241 add indent tokens after const keyword
+                addFormatToken(formatTokens);
+                formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), options.continualIndentSize));
+                super.visit(node);
+                formatTokens.add(new FormatToken.IndentToken(node.getEndOffset(), options.continualIndentSize * -1));
+            }
         }
     }
 
@@ -1178,6 +1182,7 @@ public class FormatVisitor extends DefaultVisitor {
         scan(node.getRight());
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "BC_IMPOSSIBLE_INSTANCEOF", justification = "Incorrect FB analysis") // NOI18N
     @Override
     public void visit(IfStatement node) {
         addAllUntilOffset(node.getCondition().getStartOffset());

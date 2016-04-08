@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.project.ui.testrunner;
 
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.gsf.testrunner.api.Report;
 import org.netbeans.modules.gsf.testrunner.ui.api.Manager;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.php.spi.testing.coverage.Coverage;
@@ -63,6 +64,7 @@ public class TestSessionImpl implements TestSession {
     private volatile boolean coverageSet = false;
     private volatile boolean frozen = false;
     private volatile boolean testException = false;
+    private volatile Report report;
 
 
     TestSessionImpl(Manager manager, org.netbeans.modules.gsf.testrunner.api.TestSession testSession, PhpTestingProvider testingProvider) {
@@ -85,8 +87,9 @@ public class TestSessionImpl implements TestSession {
         checkFrozen();
         String suiteName = Bundle.TestSessionImpl_suite_name(testingProvider.getDisplayName(), name);
         org.netbeans.modules.gsf.testrunner.api.TestSuite testSuite = new org.netbeans.modules.gsf.testrunner.api.TestSuite(suiteName);
-        manager.displaySuiteRunning(testSession, suiteName);
         testSession.addSuite(testSuite);
+        report = testSession.getReport(0);
+        manager.displaySuiteRunning(testSession, testSuite);
         return new TestSuiteImpl(this, testSuite, location);
     }
 
@@ -127,6 +130,11 @@ public class TestSessionImpl implements TestSession {
 
     public org.netbeans.modules.gsf.testrunner.api.TestSession getTestSession() {
         return testSession;
+    }
+
+    public Report getReport() {
+        assert report != null;
+        return report;
     }
 
     public boolean isTestException() {

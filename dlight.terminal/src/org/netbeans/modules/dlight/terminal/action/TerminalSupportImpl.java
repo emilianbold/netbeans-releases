@@ -46,6 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.ConnectException;
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -73,6 +74,7 @@ import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.PathUtils;
 import org.netbeans.modules.terminal.api.IONotifier;
 import org.netbeans.modules.terminal.api.IOTerm;
 import org.netbeans.modules.terminal.api.IOVisibility;
@@ -179,7 +181,7 @@ public final class TerminalSupportImpl {
                     OutputWriter out = ioRef.get().getOut();
                     
                     long id = TerminalPinSupport.getDefault().createPinDetails(TerminalCreationDetails.create(IOTerm.term(ioRef.get()), termId, env.getDisplayName(), pwdFlag));
-                    
+
                     if (!ConnectionManager.getInstance().isConnectedTo(env)) {
                         try {
                             if (verbose) {
@@ -213,6 +215,7 @@ public final class TerminalSupportImpl {
                     }
 
                     final HostInfo hostInfo;
+                    String expandedDir = null;
                     try {
                         // There is still a chance of env being disconnected
                         // (exception supressed in FetchHostInfoTask.compute)
@@ -221,10 +224,18 @@ public final class TerminalSupportImpl {
                         }
 
                         try {
-                            if (dir != null && !HostInfoUtils.directoryExists(env, dir)) {
-                                // Displaying this message always, not just for remote envs.
-                                out.print(NbBundle.getMessage(TerminalSupportImpl.class, "LOG_DirNotExist", dir, env.getDisplayName()));
-                                return;
+                            if (dir != null) {
+                                try {
+                                    expandedDir = PathUtils.expandPath(dir, env);
+                                } catch (ParseException ex) {
+                                    // If path, for some reason, was not expanded, we won't create Terminal
+                                }
+                                if (expandedDir == null || !HostInfoUtils.directoryExists(env, expandedDir)) {
+                                    // Displaying this message always, not just for remote envs.
+                                    // Logging dir instead of expandedDir, so user can understand the possible problem is macro.
+                                    out.print(NbBundle.getMessage(TerminalSupportImpl.class, "LOG_DirNotExist", dir, env.getDisplayName()));
+                                    return;
+                                }
                             }
                         } catch (ConnectException ex) {
                             Exceptions.printStackTrace(ex);
@@ -315,8 +326,8 @@ public final class TerminalSupportImpl {
                         }
 
                         String shell = hostInfo.getLoginShell();
-                        if (dir != null) {
-                            npb.setWorkingDirectory(dir);
+                        if (expandedDir != null) {
+                            npb.setWorkingDirectory(expandedDir);
                         }
 //                            npb.setWorkingDirectory("${HOME}");
                         npb.setExecutable(shell);

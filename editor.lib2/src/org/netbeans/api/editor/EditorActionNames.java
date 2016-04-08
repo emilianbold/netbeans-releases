@@ -81,7 +81,7 @@ public final class EditorActionNames {
 
     /**
      * Zoom text in by increasing default font size.
-     * <br/>
+     * <br>
      * textComponent.getClientProperty("text-zoom") contains positive (or negative)
      * integer of how many points the font size should be increased (decreased).
      * @since 1.45
@@ -136,6 +136,19 @@ public final class EditorActionNames {
      * @since 1.64
      */
     public static final String organizeMembers = "organize-members"; // NOI18N
+
+
+    /**
+     * Toggle caret between regular insert mode and overwrite mode.
+     * @since 2.6
+     */
+    public static final String toggleTypingMode = "toggle-typing-mode"; // NOI18N
+    
+    /**
+     * Remove the last added caret.
+     * @since 2.6
+     */
+    public static final String removeLastCaret = "remove-last-caret"; // NOI18N
     
     /**
      * Navigates to the previous occurence of the symbol under the caret. The action
@@ -150,4 +163,17 @@ public final class EditorActionNames {
      * @since 2.3
      */
     public static final String gotoNextOccurrence = "next-marked-occurrence"; // NOI18N
+    
+    /**
+     * Add a caret to the line above at the same position.
+     * @since 2.6
+     */
+    public static final String addSelectionElseCaretUpAction = "add-selection-else-caret-up"; // NOI18N
+    
+    /**
+     * Add a caret to the line below at the same position.
+     * @since 2.6
+     */
+    public static final String addSelectionElseCaretDownAction = "add-selection-else-caret-down"; // NOI18N
+
 }

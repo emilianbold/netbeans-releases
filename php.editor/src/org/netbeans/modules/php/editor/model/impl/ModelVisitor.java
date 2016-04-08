@@ -105,6 +105,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.ExpressionArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
@@ -117,6 +118,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
 import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.GroupUseStatementPart;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.InstanceOfExpression;
@@ -155,6 +157,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.Variadic;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.project.api.PhpEditorExtender;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
@@ -545,6 +548,15 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             markerBuilder.prepare(node, modelBuilder.getCurrentScope());
             scan(node.getFunction().getReturnType());
             checkComments(node);
+            // scan all anonymous classes
+            Block body = node.getFunction().getBody();
+            if (body != null) {
+                AnonymousClassesVisitor anonymousClassesVisitor = new AnonymousClassesVisitor();
+                anonymousClassesVisitor.visit(body);
+                for (ClassInstanceCreation classInstanceCreation : anonymousClassesVisitor.getAnonymousClasses()) {
+                    scan(classInstanceCreation);
+                }
+            }
         }
         try {
             if (!lazyScan) {
@@ -700,6 +712,17 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             Kind[] kinds = {Kind.CLASS, Kind.IFACE};
             occurencesBuilder.prepare(kinds, (NamespaceName) className, scope);
         }
+        Expression constant = node.getConstant();
+        if (constant instanceof ExpressionArrayAccess) {
+            ExpressionArrayAccess access = (ExpressionArrayAccess) constant;
+            scan(access.getDimension());
+            Expression name = access.getExpression();
+            while (name instanceof ExpressionArrayAccess) {
+                ExpressionArrayAccess access1 = (ExpressionArrayAccess) name;
+                scan(access1.getDimension());
+                name = access1.getExpression();
+            }
+        }
     }
 
     @Override
@@ -720,6 +743,27 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     @Override
     public void visit(SingleFieldDeclaration node) {
         scan(node.getValue());
+    }
+
+    @Override
+    public void visit(ExpressionArrayAccess node) {
+        // CONSTANT[0], "String"[0], [1][0]
+        scan(node.getDimension());
+        Expression expression = node.getExpression();
+        while (expression instanceof ExpressionArrayAccess) {
+            ExpressionArrayAccess access = (ExpressionArrayAccess) expression;
+            scan(access.getDimension());
+            expression = access.getExpression();
+        }
+
+        if (expression instanceof Identifier) {
+            // global const
+            Identifier identifier = (Identifier) expression;
+            String name = identifier.getName();
+            if(!NavUtils.isQuoted(name)) {
+                occurencesBuilder.prepare(Kind.CONSTANT, expression, modelBuilder.getCurrentScope());
+            }
+        }
     }
 
     @Override
@@ -1479,6 +1523,27 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         if (singleUseStatementPart.getAlias() != null) {
             occurencesBuilder.prepare(Kind.USE_ALIAS, singleUseStatementPart.getAlias(), currentScope);
         }
+    }
+
+    //~ Inner classes
+
+    private static final class AnonymousClassesVisitor extends DefaultVisitor {
+
+        private final List<ClassInstanceCreation> anonymousClasses = new ArrayList<>();
+
+
+        @Override
+        public void visit(ClassInstanceCreation node) {
+            if (node.isAnonymous()) {
+                anonymousClasses.add(node);
+                super.visit(node);
+            }
+        }
+
+        public List<ClassInstanceCreation> getAnonymousClasses() {
+            return Collections.unmodifiableList(anonymousClasses);
+        }
+
     }
 
 }

@@ -109,6 +109,7 @@ import org.openide.windows.WindowManager;
 @org.netbeans.api.annotations.common.SuppressWarnings("Se") // is it ever serialized?
 public final class RemoteFileSystem extends FileSystem implements ConnectionListener {
 
+    /*package*/ static final boolean COLLECT_STATSISTICS = Boolean.getBoolean("remote.fs.statsistics");
     private static final boolean ATTR_STATS = Boolean.getBoolean("remote.attr.stats");
 
     public static final String ATTRIBUTES_FILE_NAME = ".rfs_attr"; // NOI18N
@@ -132,8 +133,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private final AtomicInteger fileCopyCount = new AtomicInteger(0);
     /** Directory synchronization statistics */
     private final AtomicInteger dirSyncCount = new AtomicInteger(0);
-    private static final Object mainLock = new Object();
-    private static final Map<File, WeakReference<ReadWriteLock>> locks = new HashMap<>();
+    private final RemoteLockSupport lockSupport = new RemoteLockSupport();
     private final AtomicBoolean readOnlyConnectNotification = new AtomicBoolean(false);
     private static final List<FileSystemProblemListener> globalProblemListeners = new CopyOnWriteArrayList<>();
     private final List<FileSystemProblemListener> problemListeners =
@@ -349,6 +349,9 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             connectionTask.schedule(0);
         }
         if (ATTR_STATS) { dumpAttrStat(); }
+        if (COLLECT_STATSISTICS) {
+            lockSupport.printStatistics(this);
+        }
     }
     
     public ExecutionEnvironment getExecutionEnvironment() {
@@ -380,16 +383,8 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         return cache;
     }
 
-    public static ReadWriteLock getLock(File file) {
-        synchronized (mainLock) {
-            WeakReference<ReadWriteLock> ref = locks.get(file);
-            ReadWriteLock result = (ref == null) ? null : ref.get();
-            if (result == null) {
-                result = new ReentrantReadWriteLock();
-                locks.put(file, new WeakReference<>(result));
-            }
-            return result;
-        }
+    public RemoteLockSupport getLockSupport() {
+        return lockSupport;
     }
 
     /*package-local test method*/ final void resetStatistic() {
@@ -1199,11 +1194,6 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         @Override
         public boolean isValid() {
             return true;
-        }
-
-        @Override
-        public RemoteDirectory getParent() {
-            return null;
         }
 
         @Override

@@ -220,5 +220,7 @@ public interface CompletionResolver {
         public Collection<? extends CsmObject> addResulItemsToCol(Collection<? extends CsmObject> orig);
         
         public int size();
+        
+        public CsmContext getContext();
     }
 }

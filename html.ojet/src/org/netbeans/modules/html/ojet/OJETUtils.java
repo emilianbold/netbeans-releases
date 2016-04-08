@@ -64,6 +64,7 @@ import org.openide.util.NbBundle;
 public class OJETUtils {
 
     public static final String OJ_COMPONENT = "ojComponent";  //NOI18N
+    public static final String OJ_MODULE = "ojModule"; //NOI18N
 
     @StaticResource
     public static final String OJET_ICON_PATH = "org/netbeans/modules/html/ojet/ui/resources/ojet-icon.png"; // NOI18N

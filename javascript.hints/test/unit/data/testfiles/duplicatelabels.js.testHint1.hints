@@ -1,6 +1,0 @@
-    foo1: function() {
-    ----
-HINT:Duplicate label
-    foo1: function() {
-    ----
-HINT:Duplicate label

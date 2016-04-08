@@ -60,6 +60,7 @@ import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
+import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -218,7 +219,7 @@ public class JsIndexSearcher implements IndexSearcher{
         private void initProjectInfo() {
             FileObject fo = element.getFileObject();
             if (fo != null) {
-                Project p = FileOwnerQuery.getOwner(fo);
+                Project p = ProjectConvertors.getNonConvertorOwner(fo);
                 if (p != null) {
                     ProjectInformation pi = ProjectUtils.getInformation(p);
                     projectName = pi.getDisplayName();

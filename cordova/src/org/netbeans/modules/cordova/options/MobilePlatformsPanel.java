@@ -63,6 +63,7 @@ import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 @OptionsPanelController.Keywords(keywords={"#KW.MobilePlatformsPanel"}, location="Html5", tabTitle= "Mobile Platforms")
@@ -74,6 +75,7 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
     private Collection<? extends ProvisioningProfile> provisioningProfiles;
     private String provisioningProfilePath;
     private boolean inited = false;
+    private RequestProcessor.Task versionTask;
 
     @NbBundle.Messages("LBL_PleaseWait=Please Wait...")
     MobilePlatformsPanel(MobilePlatformsOptionsPanelController controller) {
@@ -104,6 +106,10 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
         provisioningProfile = new javax.swing.JLabel();
         provisioningCombo = new javax.swing.JComboBox();
         cordovaVersionLabel = new javax.swing.JLabel();
+        cordovaPathField = new javax.swing.JTextField();
+        cordovaVersionBrowse = new javax.swing.JButton();
+        cordovaPathLabel = new javax.swing.JLabel();
+        cordovaPathDescLabel = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(provisioningBrowse, org.openide.util.NbBundle.getMessage(MobilePlatformsPanel.class, "MobilePlatformsPanel.androidSdkBrowse.text")); // NOI18N
 
@@ -135,14 +141,13 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
                 .addGroup(androidPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(androidPanelLayout.createSequentialGroup()
                         .addComponent(androidSdkLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(androidPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(androidPanelLayout.createSequentialGroup()
-                                .addComponent(androidSdkField, javax.swing.GroupLayout.DEFAULT_SIZE, 357, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGap(6, 6, 6)
+                        .addGroup(androidPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, androidPanelLayout.createSequentialGroup()
+                                .addComponent(androidSdkField, javax.swing.GroupLayout.PREFERRED_SIZE, 357, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(androidSdkBrowse))
                             .addGroup(androidPanelLayout.createSequentialGroup()
-                                .addGap(6, 6, 6)
                                 .addComponent(androidVersion, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(androidSdkDownload, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
@@ -189,7 +194,7 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
                     .addComponent(provisioningProfile))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(iOSPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(identityTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE)
+                    .addComponent(identityTextField)
                     .addComponent(provisioningCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(100, 100, 100))
         );
@@ -209,6 +214,17 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(cordovaVersionLabel, org.openide.util.NbBundle.getMessage(MobilePlatformsPanel.class, "LBL_Cordova_Version")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(cordovaVersionBrowse, org.openide.util.NbBundle.getMessage(MobilePlatformsPanel.class, "MobilePlatformsPanel.cordovaVersionBrowse.text")); // NOI18N
+        cordovaVersionBrowse.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cordovaVersionBrowseActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(cordovaPathLabel, org.openide.util.NbBundle.getMessage(MobilePlatformsPanel.class, "MobilePlatformsPanel.cordovaPathLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(cordovaPathDescLabel, org.openide.util.NbBundle.getMessage(MobilePlatformsPanel.class, "MobilePlatformsPanel.cordovaPathDescLabel.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -216,12 +232,25 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(androidPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(iOSPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(iOSPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(cordovaVersionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(cordovaPathLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(cordovaPathDescLabel)
+                                        .addGap(0, 0, Short.MAX_VALUE))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(cordovaPathField)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(cordovaVersionBrowse)))))))
                 .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(cordovaVersionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -229,8 +258,15 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
                 .addComponent(androidPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(iOSPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cordovaVersionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(cordovaPathField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cordovaPathLabel)
+                    .addComponent(cordovaVersionBrowse))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cordovaPathDescLabel)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -254,34 +290,68 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
         fireChanged();
     }//GEN-LAST:event_provisioningComboItemStateChanged
 
+    private void cordovaVersionBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cordovaVersionBrowseActionPerformed
+        
+    }//GEN-LAST:event_cordovaVersionBrowseActionPerformed
+
     void load() {
         final MobilePlatform iosPlatform = PlatformManager.getPlatform(PlatformManager.IOS_TYPE);
         codeSignIdentity = iosPlatform.getCodeSignIdentity();
         provisioningProfiles = iosPlatform.getProvisioningProfiles();
         provisioningProfilePath = iosPlatform.getProvisioningProfilePath();
         SwingUtilities.invokeLater(new Runnable() {
-
             @Override
             public void run() {
                 setupComponenets();
+                loadVersion(0);
             }
         });
-        final Version cordovaVersion = CordovaPlatform.getDefault().getVersion();
-        if (cordovaVersion != null) {
-            CordovaPlatform.getDefault().isReady();
+    }
+
+    private void loadVersion(int delay) {
+        if(versionTask == null) {
+            versionTask = new RequestProcessor("MobilePlatformOptions").create(new Runnable() {
+                @Override
+                public void run() {
+                    final Version cordovaVersion = CordovaPlatform.getDefault().getVersion(cordovaPathField.getText());
+                    if (cordovaVersion != null) {
+                        CordovaPlatform.getDefault().isReady();
+                    }
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            displayCordovaVersion(cordovaVersion);
+                        }
+                    });
+                }
+            });
         }
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                displayCordovaVersion(cordovaVersion);
-            }
-        });
+        versionTask.schedule(delay);
     }
 
     void setupComponenets() {
         if (!inited) {
             removeAll();
-            initComponents();
+            initComponents();            
+            
+            cordovaPathField.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
+                public void insertUpdate(DocumentEvent e) {
+                    update();
+                }
+                @Override
+                public void removeUpdate(DocumentEvent e) {
+                    update();
+                }
+                @Override
+                public void changedUpdate(DocumentEvent e) {
+                    update();
+                }
+                private void update() {
+                    loadVersion(1000);
+                }
+            });
+            
             boolean androidHomeSet = System.getenv("ANDROID_HOME") != null; //NOI18N
             envVarWarnLabel.setVisible(Utilities.isUnix() && !Utilities.isMac() && !androidHomeSet);
             documentL = new DocumentListener() {
@@ -329,7 +399,8 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
     private void displayCordovaVersion(Version cordovaVersion) {
         if (cordovaVersion != null) {
             cordovaVersionLabel.setText(NbBundle.getMessage(MobilePlatformsPanel.class, "LBL_Cordova_Version", cordovaVersion.getApiVersion().toString())); //NOI18N
-        } else {
+            cordovaVersionLabel.setForeground(cordovaPathLabel.getForeground());
+        } else {            
             cordovaVersionLabel.setText(NbBundle.getMessage(MobilePlatformsPanel.class, "LBL_Cordova_Not_Found")); //NOI18N
             cordovaVersionLabel.setForeground(Color.red);
         }
@@ -398,6 +469,10 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
     private javax.swing.JTextField androidSdkField;
     private javax.swing.JLabel androidSdkLabel;
     private javax.swing.JLabel androidVersion;
+    private javax.swing.JLabel cordovaPathDescLabel;
+    private javax.swing.JTextField cordovaPathField;
+    private javax.swing.JLabel cordovaPathLabel;
+    private javax.swing.JButton cordovaVersionBrowse;
     private javax.swing.JLabel cordovaVersionLabel;
     private javax.swing.JLabel envVarWarnLabel;
     private javax.swing.JPanel iOSPanel;

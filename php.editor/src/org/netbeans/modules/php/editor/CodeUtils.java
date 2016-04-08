@@ -99,6 +99,9 @@ public final class CodeUtils {
     public static final String STATIC_METHOD_TYPE_PREFIX = "@static.mtd:";
     private static final Logger LOGGER = Logger.getLogger(CodeUtils.class.getName());
 
+    private static final boolean PHP7 = Boolean.getBoolean("nb.php7"); // NOI18N
+
+
     private CodeUtils() {
     }
 
@@ -162,19 +165,20 @@ public final class CodeUtils {
     }
 
     /**
-     * Checks whether the given name is syntetic name. It means that
+     * Checks whether the given name is synthetic name. It means that
      * the name starts with "#".
      * @param name name to be checked
-     * @return {@code true} if the given name is syntetic
+     * @return {@code true} if the given name is synthetic
      */
-    public static boolean isSynteticTypeName(String name) {
+    public static boolean isSyntheticTypeName(String name) {
         assert name != null;
-        return name.startsWith("#"); // NOI18N
+        return !name.isEmpty()
+                && name.charAt(0) == '#'; // NOI18N
     }
 
     // XXX remove!
     public static boolean isLessThanPhp70(FileObject file) {
-        return CodeUtils.isPhpVersionLessThan(file, PhpVersion.PHP_56);
+        return !PHP7;
     }
 
     public static boolean isPhpVersion(FileObject file, PhpVersion version) {
@@ -496,11 +500,11 @@ public final class CodeUtils {
             if (className instanceof Identifier) {
                 Identifier i = (Identifier) className;
 
-                return i.getName() + "::" + staticConstantAccess.getConstant().getName(); // NOI18N
+                return i.getName() + "::" + staticConstantAccess.getConstantName().getName(); // NOI18N
             } else if (className instanceof NamespaceName) {
                 NamespaceName namespace = (NamespaceName) className;
                 StringBuilder sb = new StringBuilder(extractQualifiedName(namespace));
-                return sb.append("::").append(staticConstantAccess.getConstant().getName()).toString(); // NOI18N
+                return sb.append("::").append(staticConstantAccess.getConstantName().getName()).toString(); // NOI18N
             }
         }
         return expr == null ? null : " "; //NOI18N

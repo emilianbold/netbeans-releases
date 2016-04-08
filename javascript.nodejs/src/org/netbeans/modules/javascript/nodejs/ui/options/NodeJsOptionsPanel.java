@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript.nodejs.ui.options;
 
@@ -121,6 +121,7 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
         DefaultItemListener defaultItemListener = new DefaultItemListener();
         stopAtFirstLineCheckBox.addItemListener(defaultItemListener);
         liveEditCheckBox.addItemListener(defaultItemListener);
+        npmIgnoreNodeModulesCheckBox.addItemListener(defaultItemListener);
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
         npmTextField.getDocument().addDocumentListener(defaultDocumentListener);
         expressTextField.getDocument().addDocumentListener(defaultDocumentListener);
@@ -187,6 +188,14 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
         npmTextField.setText(npm);
     }
 
+    public boolean isNpmIgnoreNodeModules() {
+        return npmIgnoreNodeModulesCheckBox.isSelected();
+    }
+
+    public void setNpmIgnoreNodeModules(boolean npmIgnoreNodeModules) {
+        npmIgnoreNodeModulesCheckBox.setSelected(npmIgnoreNodeModules);
+    }
+
     public String getExpress() {
         return expressTextField.getText();
     }
@@ -226,6 +235,7 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
         npmBrowseButton = new JButton();
         npmSearchButton = new JButton();
         npmHintLabel = new JLabel();
+        npmIgnoreNodeModulesCheckBox = new JCheckBox();
         expressHeaderLabel = new JLabel();
         expressSeparator = new JSeparator();
         expressLabel = new JLabel();
@@ -267,6 +277,8 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
         });
 
         Mnemonics.setLocalizedText(npmHintLabel, "HINT"); // NOI18N
+
+        Mnemonics.setLocalizedText(npmIgnoreNodeModulesCheckBox, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.npmIgnoreNodeModulesCheckBox.text")); // NOI18N
 
         Mnemonics.setLocalizedText(expressHeaderLabel, NbBundle.getMessage(NodeJsOptionsPanel.class, "NodeJsOptionsPanel.expressHeaderLabel.text")); // NOI18N
 
@@ -353,7 +365,8 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                             .addComponent(liveEditInfo2Label)
                             .addComponent(liveEditInfo1Label)))
-                    .addComponent(stopAtFirstLineCheckBox))
+                    .addComponent(stopAtFirstLineCheckBox)
+                    .addComponent(npmIgnoreNodeModulesCheckBox))
                 .addGap(0, 0, Short.MAX_VALUE))
         );
 
@@ -386,6 +399,8 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
                     .addComponent(npmBrowseButton))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(npmHintLabel)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(npmIgnoreNodeModulesCheckBox)
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
                     .addComponent(expressHeaderLabel)
@@ -482,6 +497,7 @@ public final class NodeJsOptionsPanel extends JPanel implements ChangeListener {
     private JButton npmBrowseButton;
     private JLabel npmHeaderLabel;
     private JLabel npmHintLabel;
+    private JCheckBox npmIgnoreNodeModulesCheckBox;
     private JLabel npmLabel;
     private JButton npmSearchButton;
     private JSeparator npmSeparator;

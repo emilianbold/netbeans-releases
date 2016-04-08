@@ -113,7 +113,7 @@ public final class ExternalExecutable {
     private String executableName = null;
     private String displayName = null;
     private String optionsPath = null;
-    private boolean redirectErrorStream = true;
+    private boolean redirectErrorStream = false;
     private File workDir = null;
     private boolean warnUser = true;
     private List<String> additionalParameters = Collections.<String>emptyList();
@@ -217,7 +217,7 @@ public final class ExternalExecutable {
     /**
      * Set error stream redirection.
      * <p>
-     * The default value is {@code true} (it means that the error stream is redirected to the standard output).
+     * The default value is {@code false} (it means that the error stream is not redirected to the standard output).
      * @param redirectErrorStream {@code true} if error stream should be redirected, {@code false} otherwise
      * @return the external executable instance itself
      */

@@ -129,11 +129,10 @@ final class FrameInfo {
         }*/
         //System.err.println("  stack trace = "+java.util.Arrays.toString(stackTrace));
         //System.err.println("  stack names = "+Arrays.toString(stackNames));
-        if (visualizer != null) {
-            topFrame = visualizer.displayCallTargetName(astNode.getRootNode().getCallTarget()) + "\n" + visualizer.displayMethodName(astNode) + "\n" + visualizer.displaySourceLocation(astNode) + "\n" + position.id + "\n" + position.name + "\n" + position.path + "\n" + position.line;
-        } else {
-            topFrame = astNode.getRootNode().getCallTarget().toString() + "\n" + astNode.toString() + "\n" + astNode.getSourceSection().getShortDescription() + "\n" + position.id + "\n" + position.name + "\n" + position.path + "\n" + position.line;
-        }
+        topFrame = DebuggerVisualizer.getDisplayName(astNode.getRootNode().getCallTarget()) + "\n" +
+                   DebuggerVisualizer.getMethodName(astNode.getRootNode()) + "\n" +
+                   DebuggerVisualizer.getSourceLocation(astNode) + "\n" +
+                   position.id + "\n" + position.name + "\n" + position.path + "\n" + position.line;
         //System.err.println("  top frame = \n'"+topFrame+"'");
     }
     

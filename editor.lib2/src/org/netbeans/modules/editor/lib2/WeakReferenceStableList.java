@@ -50,7 +50,7 @@ import java.util.NoSuchElementException;
 
 /**
  * List holding non-null items weakly with automatic collection of GCed items.
- * <br/>
+ * <br>
  * Add and remove operations do not affect a list previously obtained by {@link #getList() }
  * so it may be used in a similar way like ListenerList holding all listener instances
  * by a weak reference.
