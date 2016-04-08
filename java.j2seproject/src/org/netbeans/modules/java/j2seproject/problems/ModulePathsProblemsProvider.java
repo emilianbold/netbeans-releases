@@ -52,6 +52,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -141,10 +142,12 @@ public final class ModulePathsProblemsProvider implements ProjectProblemsProvide
                 roots = new HashSet<>();
                 final boolean modularSources = hasModuleInfo(src, roots);
                 final boolean modularTests = hasModuleInfo(test, roots);
-                res = createProblems(
-                        project,
-                        modularSources,
-                        modularTests);
+                res = test.getRoots().length == 0 ?
+                        Collections.emptySet() :
+                        createProblems(
+                            project,
+                            modularSources,
+                            modularTests);
             }
             synchronized (this) {
                 if (!listensOnEval) {
@@ -311,6 +314,24 @@ public final class ModulePathsProblemsProvider implements ProjectProblemsProvide
             this.project = project;
             this.modularSources = modularSources;
             this.modularTests = modularTests;
+        }
+
+        @Override
+        public boolean equals(@NullAllowed final Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (!(obj instanceof FixBrokenModulePaths)) {
+                return false;
+            }
+            return Objects.equals(
+                project.getProjectDirectory(),
+                ((FixBrokenModulePaths)obj).project.getProjectDirectory());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(project.getProjectDirectory());
         }
 
         @Override
