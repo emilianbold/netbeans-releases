@@ -63,11 +63,13 @@ import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -284,6 +286,8 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
     }
 
     private static final class StickyPanel extends JPanel {
+        @StaticResource
+        private static final String ICON_COMMENT = "org/netbeans/modules/debugger/resources/actions/Comment.png";   // NOI18N
         private static final String UI_PREFIX = "ToolTip"; // NOI18N
         private final Watch watch;
         private final EditorUI eui;
@@ -299,13 +303,6 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             this.eui = eui;
             EditorPin pin = (EditorPin) watch.getPin();
             Font font = UIManager.getFont(UI_PREFIX + ".font"); // NOI18N
-            Color backColor = UIManager.getColor(UI_PREFIX + ".background"); // NOI18N
-            Color foreColor = UIManager.getColor(UI_PREFIX + ".foreground"); // NOI18N
-
-            if (backColor != null) {
-                setBackground(backColor);
-            }
-            
             setOpaque(true);
             
             setBorder(BorderFactory.createLineBorder(getForeground()));
@@ -313,7 +310,7 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             setLayout(new GridBagLayout());
             GridBagConstraints gridConstraints = new GridBagConstraints();
             
-            Icon expIcon = ImageUtilities.loadImageIcon("org/netbeans/swing/tabcontrol/resources/win8_popup_enabled.png", false);    // NOI18N
+            /*Icon expIcon = ImageUtilities.loadImageIcon(ICON_COMMENT, false);
             JButton expButton = new JButton(expIcon);
             expButton.setBorder(new javax.swing.border.EmptyBorder(0, 3, 0, 5));
             expButton.setBorderPainted(false);
@@ -324,7 +321,7 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
                 public void actionPerformed(ActionEvent e) {
                     addCommentListener();
                 }
-            });
+            });*/
             
 //            label = createMultiLineToolTip(value, true);
             valueProvider = PIN_SUPPORT_ACCESS.getValueProvider(pin);
@@ -349,29 +346,47 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             if (font != null) {
                 label.setFont(font);
             }
-            if (foreColor != null) {
-                label.setForeground(foreColor);
-            }
-            if (backColor != null) {
-                label.setBackground(backColor);
-            }
             label.setBorder(new javax.swing.border.EmptyBorder(0, 3, 0, 3));
-            gridConstraints.gridx = 1;
+            gridConstraints.gridx++;
             add(label, gridConstraints);
+
+            JSeparator iconsSeparator = new JSeparator(JSeparator.VERTICAL);
+            gridConstraints.gridx++;
+            gridConstraints.weighty = 1;
+            gridConstraints.fill = GridBagConstraints.VERTICAL;
+            add(iconsSeparator, gridConstraints);
+            gridConstraints.weighty = 0;
+            gridConstraints.fill = GridBagConstraints.NONE;
+
+            Icon commentIcon = ImageUtilities.loadImageIcon(ICON_COMMENT, false);
+            JButton commentButton = new JButton(commentIcon);
+            commentButton.setBorder(new javax.swing.border.EmptyBorder(0, 3, 0, 3));
+            commentButton.setBorderPainted(false);
+            commentButton.setContentAreaFilled(false);
+            gridConstraints.gridx++;
+            add(commentButton, gridConstraints);
 
             JButton closeButton = org.openide.awt.CloseButtonFactory.createBigCloseButton();
             closeButton.addActionListener(new java.awt.event.ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     eui.getStickyWindowSupport().removeWindow(StickyPanel.this);
+                    watch.remove();
                 }
             });
-            gridConstraints.gridx = 2;
+            gridConstraints.gridx++;
             add(closeButton, gridConstraints);
 
+            final int gridwidth = gridConstraints.gridx + 1;
             if (pin.getComment() != null) {
-                addCommentField(pin.getComment());
+                addCommentField(pin.getComment(), gridwidth);
             }
+            commentButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    addCommentListener(gridwidth);
+                }
+            });
 
             MouseAdapter mouseAdapter = new java.awt.event.MouseAdapter() {
                 private Point orig;
@@ -385,7 +400,8 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
                     Point deltaP = e.getPoint();
                     p.translate(deltaP.x, deltaP.y);
                     setLocation(p);
-                    int pos = eui.getComponent().viewToModel(p);
+                    Point linePoint = new Point(p.x, p.y + label.getHeight()/2);
+                    int pos = eui.getComponent().viewToModel(linePoint);
                     int line;
                     try {
                         line = LineDocumentUtils.getLineIndex(eui.getDocument(), pos);
@@ -404,7 +420,7 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             addMouseMotionListener(mouseAdapter);
         }
 
-        private void addCommentField(String text) {
+        private void addCommentField(String text, int gridwidth) {
             commentField = new JTextField(text);
             commentField.addActionListener(new ActionListener() {
                 @Override
@@ -414,19 +430,27 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             });
             GridBagConstraints gridConstraints = new GridBagConstraints();
             gridConstraints.gridy = 1;
-            gridConstraints.gridwidth = 3;
+            gridConstraints.gridwidth = gridwidth;
             gridConstraints.fill = GridBagConstraints.HORIZONTAL;
             add(commentField, gridConstraints);
         }
 
-        private void addCommentListener() {
+        private void addCommentListener(int gridwidth) {
             if (commentField == null) {
-                addCommentField("");
+                addCommentField("", gridwidth);
                 setSize(getPreferredSize());
                 revalidate();
                 repaint();
+            } else {
+                boolean visible = !commentField.isVisible();
+                commentField.setVisible(visible);
+                setSize(getPreferredSize());
+                revalidate();
+                repaint();
+                if (visible) {
+                    commentField.requestFocusInWindow();
+                }
             }
-            commentField.requestFocusInWindow();
         }
 
         @Override
