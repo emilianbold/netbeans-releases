@@ -49,8 +49,12 @@ import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.IdentityHashMap;
@@ -292,6 +296,8 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
         private final Watch watch;
         private final EditorUI eui;
         private final JLabel label;
+        private final JLabel valueLabel;
+        private final JTextField valueField;
         private JTextField commentField;
         private final ValueProvider valueProvider;
         private final String evaluatingValue;
@@ -326,15 +332,18 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
 //            label = createMultiLineToolTip(value, true);
             valueProvider = PIN_SUPPORT_ACCESS.getValueProvider(pin);
             evaluatingValue = valueProvider.getEvaluatingText();
-            label = new JLabel();
+            label = new JLabel(watch.getExpression() + " = ");
+            valueLabel = new JLabel();
+            valueField = new JTextField();
+            valueField.setVisible(false);
             valueProvider.setChangeListener(watch, new ValueChangeListener() {
                 @Override
                 public void valueChanged(Watch w) {
-                    final String text = getWatchText(watch, valueProvider);
+                    final String text = getWatchValueText(watch, valueProvider);
                     javax.swing.SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            label.setText(text);
+                            valueLabel.setText(text);
                             Dimension size = getPreferredSize();
                             Point loc = getLocation();
                             setBounds(loc.x, loc.y, size.width, size.height);
@@ -342,13 +351,84 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
                     });
                 }
             });
-            label.setText(getWatchText(watch, valueProvider));
+            valueLabel.setText(getWatchValueText(watch, valueProvider));
             if (font != null) {
                 label.setFont(font);
+                valueLabel.setFont(font);
             }
-            label.setBorder(new javax.swing.border.EmptyBorder(0, 3, 0, 3));
+            label.setBorder(new javax.swing.border.EmptyBorder(0, 3, 0, 0));
+            valueLabel.setBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 3));
             gridConstraints.gridx++;
             add(label, gridConstraints);
+            gridConstraints.gridx++;
+            add(valueLabel, gridConstraints);
+            add(valueField, gridConstraints);
+            valueLabel.addMouseListener(new MouseListener() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    String editableValue = valueProvider.getEditableValue(watch);
+                    if (editableValue != null) {
+                        valueLabel.setVisible(false);
+                        valueField.setVisible(true);
+                        valueField.setPreferredSize(null);
+                        valueField.setText(editableValue);
+                        Dimension fieldSize = valueField.getPreferredSize();
+                        int minWidth = 4*fieldSize.height;  // Have some reasonable minimum width
+                        if (fieldSize.width < minWidth) {
+                            fieldSize.width = minWidth;
+                            valueField.setPreferredSize(fieldSize);
+                        }
+                        valueField.requestFocusInWindow();
+                        Dimension size = getPreferredSize();
+                        Point loc = getLocation();
+                        setBounds(loc.x, loc.y, size.width, size.height);
+                    }
+                }
+                @Override
+                public void mousePressed(MouseEvent e) {}
+                @Override
+                public void mouseReleased(MouseEvent e) {}
+                @Override
+                public void mouseEntered(MouseEvent e) {}
+                @Override
+                public void mouseExited(MouseEvent e) {}
+            });
+            valueLabel.addMouseMotionListener(new MouseMotionListener() {
+                @Override
+                public void mouseDragged(MouseEvent e) {
+                    valueLabel.getParent().dispatchEvent(e);
+                }
+
+                @Override
+                public void mouseMoved(MouseEvent e) {}
+            });
+            valueField.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    String newValue = valueField.getText();
+                    if (valueProvider.setValue(watch, newValue)) {
+                        valueLabel.setText(getWatchValueText(watch, valueProvider));
+                    }
+                    valueLabel.setVisible(true);
+                    valueField.setVisible(false);
+                    Dimension size = getPreferredSize();
+                    Point loc = getLocation();
+                    setBounds(loc.x, loc.y, size.width, size.height);
+                }
+            });
+            valueField.addFocusListener(new FocusListener() {
+                @Override
+                public void focusGained(FocusEvent e) {}
+
+                @Override
+                public void focusLost(FocusEvent e) {
+                    valueLabel.setVisible(true);
+                    valueField.setVisible(false);
+                    Dimension size = getPreferredSize();
+                    Point loc = getLocation();
+                    setBounds(loc.x, loc.y, size.width, size.height);
+                }
+            });
 
             JSeparator iconsSeparator = new JSeparator(JSeparator.VERTICAL);
             gridConstraints.gridx++;
@@ -462,11 +542,11 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             ((EditorPin) watch.getPin()).setComment(commentField.getText());
         }
 
-        private String getWatchText(Watch watch, ValueProvider vp) {
+        private String getWatchValueText(Watch watch, ValueProvider vp) {
             String value = vp.getValue(watch);
             //System.err.println("WatchAnnotationProvider.getWatchText("+watch.getExpression()+"): value = "+value+", lastValue = "+lastValue);
             if (value == evaluatingValue) {
-                return "<html>" + watch.getExpression() + " = " + "<font color=\"red\">" + value + "</font>" + "</html>";
+                return "<html>" + "<font color=\"red\">" + value + "</font>" + "</html>";
             }
             boolean bold = false;
             boolean old = false;
@@ -488,7 +568,7 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
                 s1 = s2 = "";
             }
             //System.err.println("  return: "+"<html>" + watch.getExpression() + " = " + s1 + value + s2 + "</html>");
-            return "<html>" + watch.getExpression() + " = " + s1 + value + s2 + "</html>";
+            return "<html>" + s1 + value + s2 + "</html>";
         }
         
         /*

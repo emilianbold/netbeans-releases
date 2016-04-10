@@ -65,6 +65,9 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.ui.PinWatchUISupport;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
 
@@ -122,6 +125,59 @@ public final class PinWatchValueProvider implements PinWatchUISupport.ValueProvi
     }
 
     @Override
+    public String getEditableValue(Watch watch) {
+        ValueListeners vl;
+        synchronized (valueListeners) {
+            vl = valueListeners.get(watch);
+        }
+        if (vl == null) {
+            return null;
+        }
+        String valueOnly = vl.valueOnly;
+        if (valueOnly == null) {
+            return null;
+        }
+        if (!VariablesTableModel.isReadOnlyVar(vl.watchEv, debugger)) {
+            return valueOnly;
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public boolean setValue(final Watch watch, final String value) {
+        final ValueListeners vl;
+        synchronized (valueListeners) {
+            vl = valueListeners.get(watch);
+        }
+        if (vl == null) {
+            return false;
+        }
+        final String lastValue = vl.value;
+        final String lastValueOnly = vl.valueOnly;
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    vl.watchEv.setValue(value);
+                    vl.watchEv.setEvaluated(null);
+                    //vl.watchEv = new JPDAWatchEvaluating(refrModel, watch, debugger);
+                    updateValueFrom(vl.watchEv);
+                } catch (InvalidExpressionException ex) {
+                    NotifyDescriptor msg = new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notifyLater(msg);
+                    vl.value = lastValue;
+                    vl.valueOnly = lastValueOnly;
+                    vl.listener.valueChanged(watch);
+                }
+            }
+        });
+        vl.value = getEvaluatingText();
+        vl.valueOnly = null;
+        return true;
+    }
+
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (debugger.getCurrentCallStackFrame() != null) {
             List<ValueListeners> vls;
@@ -131,6 +187,7 @@ public final class PinWatchValueProvider implements PinWatchUISupport.ValueProvi
             for (ValueListeners vl : vls) {
                 vl.watchEv.setEvaluated(null);
                 vl.value = getEvaluatingText();
+                vl.valueOnly = null;
                 vl.listener.valueChanged(vl.watchEv.getWatch());
                 refrModel.fireTableValueChangedChanged(vl.watchEv, null);
             }
@@ -138,6 +195,7 @@ public final class PinWatchValueProvider implements PinWatchUISupport.ValueProvi
             synchronized (valueListeners) {
                 for (Map.Entry<Watch, ValueListeners> wvl : valueListeners.entrySet()) {
                     wvl.getValue().value = null;
+                    wvl.getValue().valueOnly = null;
                     wvl.getValue().listener.valueChanged(wvl.getKey());
                 }
             }
@@ -219,6 +277,7 @@ public final class PinWatchValueProvider implements PinWatchUISupport.ValueProvi
                         value = ew.getValue();
                     }
                     vl.value = (type.isEmpty() ? "" : "(" + type + ") ") + value;
+                    vl.valueOnly = value;
                     vl.listener.valueChanged(watch);
                 }
             });
@@ -235,6 +294,9 @@ public final class PinWatchValueProvider implements PinWatchUISupport.ValueProvi
         @Override
         public void fireTableValueChangedChanged(Object node, String propertyName) {
             JPDAWatchEvaluating watchEv = (JPDAWatchEvaluating) node;
+            if (watchEv.isCurrent()) {
+                watchEv.setEvaluated(null);
+            }
             updateValueFrom(watchEv);
         }
 
@@ -247,6 +309,7 @@ public final class PinWatchValueProvider implements PinWatchUISupport.ValueProvi
     private static final class ValueListeners {
         
         volatile String value = null;//PinWatchUISupport.ValueProvider.VALUE_EVALUATING;
+        volatile String valueOnly = null;
         
         ValueChangeListener listener;
         JPDAWatchEvaluating watchEv;

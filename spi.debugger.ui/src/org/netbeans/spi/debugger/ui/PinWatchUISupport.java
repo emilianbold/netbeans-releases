@@ -214,6 +214,36 @@ public final class PinWatchUISupport {
         }
 
         @Override
+        public String getEvaluatingText() {
+            ValueProvider vp = delegate;
+            if (vp != null) {
+                return vp.getEvaluatingText();
+            } else {
+                return ValueProvider.super.getEvaluatingText();
+            }
+        }
+
+        @Override
+        public String getEditableValue(Watch watch) {
+            ValueProvider vp = delegate;
+            if (vp != null) {
+                return vp.getEditableValue(watch);
+            } else {
+                return ValueProvider.super.getEditableValue(watch);
+            }
+        }
+
+        @Override
+        public boolean setValue(Watch watch, String value) {
+            ValueProvider vp = delegate;
+            if (vp != null) {
+                return vp.setValue(watch, value);
+            } else {
+                return ValueProvider.super.setValue(watch, value);
+            }
+        }
+
+        @Override
         public synchronized void setChangeListener(Watch watch, ValueChangeListener chl) {
             ValueProvider vp = delegate;
             if (vp != null) {
@@ -283,6 +313,41 @@ public final class PinWatchUISupport {
         @NbBundle.Messages("WATCH_EVALUATING=Evaluating...")
         default String getEvaluatingText() {
             return Bundle.WATCH_EVALUATING();
+        }
+
+        /**
+         * Determine whether the current watch value is editable and if yes,
+         * return the value to edit.
+         * The value returned by {@link #getValue(org.netbeans.api.debugger.Watch)}
+         * might not be the proper value to edit. It may contain type description
+         * or more descriptive information about the value. This method should
+         * provide a raw textual representation of the value to edit,
+         * or <code>null</code> when the value is not editable.<br>
+         * The default implementation return <code>null</code>.
+         * @param watch The watch to return the editable value for
+         * @return The string representation of the editable value,
+         * or <code>null</code> when the value is not editable.
+         */
+        default String getEditableValue(Watch watch) {
+            return null;
+        }
+
+        /**
+         * Set a watch value as a response to finished editing.
+         * This method is called only when a prior call to
+         * {@link #getEditableValue(org.netbeans.api.debugger.Watch)} returns
+         * a non-null value.<br>
+         * The default implementation throws {@link UnsupportedOperationException}.
+         * @param watch The watch to set the value for.
+         * @param value The new watch value.
+         * @return <code>true</code> when the value was set successfully and
+         *         the UI should get updated from {@link #getValue(org.netbeans.api.debugger.Watch)},
+         *         <code>false</code> when the set fails and the last watch value
+         *         should stay. The implementation is responsible for any error
+         *         reporting when the set fails.
+         */
+        default boolean setValue(Watch watch, String value) {
+            throw new UnsupportedOperationException("Watch not editable.");
         }
 
         /**
