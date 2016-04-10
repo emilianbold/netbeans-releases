@@ -170,12 +170,12 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
         c.insets = new Insets(0, htab, 0, 0);
         add(colorsContainer, c);
         
-        JButton addButton = new SmallButton("A") {
+        JButton addButton = new SmallButton(Icons.getIcon(GeneralIcons.ADD)) {
             {
-                setToolTipText("Add New Filter");
+                setToolTipText("Add new filter");
             }
             protected void fireActionPerformed(ActionEvent e) {
-                PackageColor newColor = ColorCustomizer.customize(new PackageColor("", "", null)); // NOI18N
+                PackageColor newColor = ColorCustomizer.customize(new PackageColor("", "", null), true); // NOI18N
                 if (newColor != null) {
                     colors.add(newColor);
                     colorsModel.fireTableDataChanged();
@@ -190,15 +190,15 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
         c.insets = new Insets(0, htab, 0, 0);
         add(addButton, c);
         
-        final JButton editButton = new SmallButton("E") {
+        final JButton editButton = new SmallButton(Icons.getIcon(GeneralIcons.EDIT)) {
             {
-                setToolTipText("Edit Selected Filter");
+                setToolTipText("Edit selected filter");
             }
             protected void fireActionPerformed(ActionEvent e) {
                 int row = colorsTable.getSelectedRow();
                 if (row == -1) return;
                 PackageColor selected = colors.get(row);
-                PackageColor edited = ColorCustomizer.customize(selected);
+                PackageColor edited = ColorCustomizer.customize(selected, false);
                 if (edited != null) {
                     selected.setName(edited.getName());
                     selected.setValue(edited.getValue());
@@ -215,9 +215,9 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
         c.insets = new Insets(0, htab, 0, 0);
         add(editButton, c);
         
-        final JButton removeButton = new SmallButton("D") {
+        final JButton removeButton = new SmallButton(Icons.getIcon(GeneralIcons.REMOVE)) {
             {
-                setToolTipText("Delete Selected Filter");
+                setToolTipText("Delete selected filter");
             }
             protected void fireActionPerformed(ActionEvent e) {
                 int row = colorsTable.getSelectedRow();
@@ -236,7 +236,7 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
         
         final JButton upButton = new SmallButton(Icons.getIcon(GeneralIcons.UP)) {
             {
-                setToolTipText("Move Selected Filter Up");
+                setToolTipText("Move selected filter up");
             }
             protected void fireActionPerformed(ActionEvent e) {
                 int row = colorsTable.getSelectedRow();
@@ -256,7 +256,7 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
         
         final JButton downButton = new SmallButton(Icons.getIcon(GeneralIcons.DOWN)) {
             {
-                setToolTipText("Move Selected Filter Down");
+                setToolTipText("Move selected filter down");
             }
             protected void fireActionPerformed(ActionEvent e) {
                 int row = colorsTable.getSelectedRow();
@@ -328,7 +328,7 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
     
     private static class ColorCustomizer {
         
-        static PackageColor customize(PackageColor color) {
+        static PackageColor customize(PackageColor color, boolean newFilter) {
             final PackageColor customized = new PackageColor(color);
             JTextField nameF = new JTextField(customized.getName());
             JTextArea valueA = new JTextArea(customized.getValue());
@@ -401,7 +401,7 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
             p.add(new JScrollPane(valueA), c);
             
             HelpCtx helpCtx = new HelpCtx("PackageColorCustomizer.HelpCtx"); // NOI18N
-            DialogDescriptor dd = new DialogDescriptor(p, "Edit Filter", true,
+            DialogDescriptor dd = new DialogDescriptor(p, newFilter ? "Add Filter" : "Edit Filter", true,
                                   new Object[] { DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION }, 
                                   DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN,
                                   helpCtx, null);
