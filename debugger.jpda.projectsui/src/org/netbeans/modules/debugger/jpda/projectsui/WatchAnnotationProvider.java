@@ -88,6 +88,7 @@ import org.netbeans.api.debugger.jpda.*;
 import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Utilities;
+import org.netbeans.editor.ext.StickyWindowSupport;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.jpda.EditorContext;
@@ -100,7 +101,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Annotation;
 import org.openide.text.AnnotationProvider;
 import org.openide.text.Line;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -115,7 +115,6 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
     
     private static final Map<Watch, Annotation> watchToAnnotation = new IdentityHashMap<>();
     private static final Map<Watch, JComponent> watchToWindow = new IdentityHashMap<>();
-    private Set<PropertyChangeListener> dataObjectListeners;
 
     @Override
     public void annotate(Line.Set lines, Lookup context) {
@@ -149,9 +148,10 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
         Annotation ann = watchToAnnotation.remove(watch); // just to be sure
         if(ann != null) ann.detach();
         JComponent frame = watchToWindow.remove(watch);
+        StickyWindowSupport stickyWindowSupport = eui.getStickyWindowSupport();
         if(frame != null) {
             frame.setVisible(false);
-            eui.getStickyWindowSupport().removeWindow(frame);
+            stickyWindowSupport.removeWindow(frame);
         }
         
         final EditorPin pin = (EditorPin) watch.getPin();
@@ -176,7 +176,8 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
         });
         
         JComponent window = new StickyPanel(watch, eui);
-        eui.getStickyWindowSupport().addWindow(window, pin.getLocation());
+        stickyWindowSupport.addWindow(window);
+        window.setLocation(stickyWindowSupport.convertPoint(pin.getLocation()));
         watchToWindow.put(watch, window);
     }
     
