@@ -37,9 +37,10 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
-import jdk.nashorn.internal.parser.Token;
-import jdk.nashorn.internal.parser.TokenType;
-import jdk.nashorn.internal.runtime.ErrorManager;
+import com.oracle.js.parser.Token;
+import com.oracle.js.parser.TokenType;
+import com.oracle.js.parser.ErrorManager;
+import com.oracle.js.parser.ParserException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -51,16 +52,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import jdk.nashorn.internal.runtime.ParserException;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.css.lib.api.FilterableError;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import static org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId.values;
-import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 
@@ -114,7 +113,7 @@ public class JsErrorManager extends ErrorManager {
     private final static Map<String, JsTokenId> JS_TEXT_TOKENS = new HashMap<String, JsTokenId>();
 
     static {
-        for (JsTokenId jsTokenId : values()) {
+        for (JsTokenId jsTokenId : JsTokenId.values()) {
             if (jsTokenId.fixedText() != null) {
                 JS_TEXT_TOKENS.put(jsTokenId.fixedText(), jsTokenId);
             }

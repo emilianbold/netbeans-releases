@@ -1,7 +1,7 @@
 /**
  * @constructor
  */
-var MyLib = new function |>METHOD:MyLib<|() {
+var |>GLOBAL:MyLib<| = new function |>METHOD,UNUSED:MyLib<|() {
     
     function |>METHOD,UNUSED:fn1<|() {
         fn2().toLowerCase();  // test
