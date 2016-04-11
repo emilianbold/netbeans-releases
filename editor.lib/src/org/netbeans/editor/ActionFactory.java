@@ -1386,6 +1386,14 @@ public class ActionFactory {
                 Caret caret = target.getCaret();
                 final BaseDocument doc = Utilities.getDocument(target);
 
+                if(caret instanceof EditorCaret) {
+                    EditorCaret editorCaret = (EditorCaret) caret;
+                    if(editorCaret.getCarets().size() > 1) {
+                        target.getToolkit().beep();
+                        return;
+                    }
+                }
+                
                 // Possibly remove selection
                 if (Utilities.isSelectionShowing(caret)) {
                     target.replaceSelection(null);
