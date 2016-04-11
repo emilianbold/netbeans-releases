@@ -5,6 +5,7 @@ Code completion result for source line:
 OTHER      @alias {type}                              SDoc
 OTHER      @author text                               SDoc
 OTHER      @classDescription text                     SDoc
+OTHER      @constant                                  SDoc
 OTHER      @constructor                               SDoc
 OTHER      @deprecated                                SDoc
 OTHER      @example text                              SDoc

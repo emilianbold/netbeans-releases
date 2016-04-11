@@ -4,6 +4,7 @@ Code completion result for source line:
 ------------------------------------
 OTHER      @cfg {type} name description               ExtDoc
 OTHER      @class identifier description              ExtDoc
+OTHER      @constant                                  ExtDoc
 OTHER      @constructor                               ExtDoc
 OTHER      @event identifier description              ExtDoc
 OTHER      @extends identifier                        ExtDoc
