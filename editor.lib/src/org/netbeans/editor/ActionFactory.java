@@ -2452,18 +2452,44 @@ public class ActionFactory {
                 public void run() {
                     try {
                         Caret caret = target.getCaret();
+                        if (caret instanceof EditorCaret) {
+                            EditorCaret editorCaret = (EditorCaret) caret;
+                            editorCaret.moveCarets(new CaretMoveHandler() {
+                                @Override
+                                public void moveCarets(CaretMoveContext context) {
+                                    for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
+                                        try {
+                                            BaseDocument doc = (BaseDocument) context.getDocument();
+                                            // insert new line, caret moves to the new line
+                                            int eolDot = Utilities.getRowEnd(doc, caretInfo.getDot());
+                                            doc.insertString(eolDot, "\n", null); //NOI18N
 
-                        // insert new line, caret moves to the new line
-                        int eolDot = Utilities.getRowEnd(target, caret.getDot());
-                        doc.insertString(eolDot, "\n", null); //NOI18N
+                                            // reindent the new line
+                                            Position newDotPos = doc.createPosition(eolDot + 1);
+                                            indenter.reindent(eolDot + 1);
 
-                        // reindent the new line
-                        Position newDotPos = doc.createPosition(eolDot + 1);
-                        indenter.reindent(eolDot + 1);
+                                            context.setDot(caretInfo, newDotPos);
+                                        } catch (BadLocationException ex) {
+                                            ex.printStackTrace();
+                                        }
+                                    }
+                                }
+                            });
+                        } else {
+                            try {
+                                // insert new line, caret moves to the new line
+                                int eolDot = Utilities.getRowEnd(target, caret.getDot());
+                                doc.insertString(eolDot, "\n", null); //NOI18N
 
-                        caret.setDot(newDotPos.getOffset());
-                    } catch (BadLocationException ex) {
-                        ex.printStackTrace();
+                                // reindent the new line
+                                Position newDotPos = doc.createPosition(eolDot + 1);
+                                indenter.reindent(eolDot + 1);
+
+                                caret.setDot(newDotPos.getOffset());
+                            } catch (BadLocationException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
                     } finally {
                         indenter.unlock();
                     }
