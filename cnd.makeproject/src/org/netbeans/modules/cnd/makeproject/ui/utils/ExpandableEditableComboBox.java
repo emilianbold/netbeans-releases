@@ -103,7 +103,7 @@ public final class ExpandableEditableComboBox extends EditableComboBox {
 
         public String expand(String in) {
             try {
-                if (in.startsWith("~") && homeDir != null) {
+                if (in.startsWith("~") && homeDir != null) { //NOI18N
                     in = homeDir+in.substring(1);
                 }
                 return expander != null ? expander.expandMacros(in, envVariables) : in;
