@@ -72,6 +72,28 @@ public class ConfigurationLinuxPanel extends javax.swing.JPanel implements Confi
     }
 
     @Override
+    public void setInputEnabled(boolean enabled) {
+        nameTextField.setEnabled(enabled);
+        socketRadioButton.setEnabled(enabled);
+        urlRadioButton.setEnabled(enabled);
+
+        if (!enabled) {
+            socketTextField.setEnabled(enabled);
+            socketBrowseButton.setEnabled(enabled);
+            urlTextField.setEnabled(enabled);
+            certTextField.setEnabled(enabled);
+            certBrowseButton.setEnabled(enabled);
+        } else {
+            boolean socketSelected = socketRadioButton.isSelected();
+            socketTextField.setEnabled(socketSelected);
+            socketBrowseButton.setEnabled(socketSelected);
+            urlTextField.setEnabled(!socketSelected);
+            certTextField.setEnabled(!socketSelected);
+            certBrowseButton.setEnabled(!socketSelected);
+        }
+    }
+
+    @Override
     public void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }

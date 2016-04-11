@@ -46,8 +46,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.api.DockerAction;
@@ -58,12 +60,19 @@ import org.openide.WizardValidationException;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
-@NbBundle.Messages("MSG_InaccessibleSocket=Socket is not accessible.")
+@NbBundle.Messages({
+    "MSG_ConnectionPassed=Connection sucessfull.",
+    "MSG_CannotConnect=Cannot establish connection.",
+    "MSG_InaccessibleSocket=Socket is not accessible."
+})
 public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchronousValidatingPanel<WizardDescriptor>, ChangeListener {
 
     private static final Pattern REMOTE_HOST_PATTERN = Pattern.compile("^(tcp://)[^/:](:\\d+)($|/.*)"); // NOI18N
+
+    private static final String CONNECTION_TEST = "connection_test";
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -84,7 +93,7 @@ public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchron
     @Override
     public DockerConnectionVisual getComponent() {
         if (component == null) {
-            component = new DockerConnectionVisual();
+            component = new DockerConnectionVisual(this);
             component.addChangeListener(this);
         }
         return component;
@@ -115,6 +124,18 @@ public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchron
         wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
         wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
         wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, null);
+
+        // process the connection test validation
+        Boolean result = (Boolean) wizard.getProperty(CONNECTION_TEST);
+        if (result != null) {
+            wizard.putProperty(CONNECTION_TEST, null);
+            if (result) {
+                wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, Bundle.MSG_ConnectionPassed());
+            } else {
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_CannotConnect());
+            }
+            return result;
+        }
 
         Configuration panel = component.getConfiguration();
         String displayName = panel.getDisplayName();
@@ -152,6 +173,10 @@ public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchron
                 realUrl = new URL(url);
                 if (!"http".equals(realUrl.getProtocol()) // NOI18N
                         && !"https".equals(realUrl.getProtocol())) { // NOI18N
+                    urlWrong = true;
+                }
+                int port = realUrl.getPort();
+                if (port > 65535) {
                     urlWrong = true;
                 }
             } catch (MalformedURLException ex) {
@@ -213,7 +238,6 @@ public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchron
         component.setWaitingState(false);
     }
 
-    @NbBundle.Messages("MSG_CannotConnect=Cannot establish connection.")
     @Override
     public void validate() throws WizardValidationException {
         try {
@@ -251,7 +275,8 @@ public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchron
                 String error = Bundle.MSG_CannotConnect();
                 throw new WizardValidationException(component, error, error);
             }
-        } catch (MalformedURLException ex) {
+        // runtime exception may happen
+        } catch (Exception ex) {
             String error = Bundle.MSG_CannotConnect();
             throw new WizardValidationException(component, error, error);
         }
@@ -326,6 +351,37 @@ public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchron
     @Override
     public void stateChanged(ChangeEvent e) {
         changeSupport.fireChange();
+    }
+
+    public void testConnection() {
+        assert SwingUtilities.isEventDispatchThread();
+
+        prepareValidation();
+        final AtomicReference<Exception> ref = new AtomicReference<>();
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    validate();
+                } catch (WizardValidationException ex) {
+                    ref.set(ex);
+                } finally {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            finishValidation();
+                            Exception ex = ref.get();
+                            if (ex != null) {
+                                wizard.putProperty(CONNECTION_TEST, false);
+                            } else {
+                                wizard.putProperty(CONNECTION_TEST, true);
+                            }
+                            changeSupport.fireChange();
+                        }
+                    });
+                }
+            }
+        });
     }
 
     private static File getDefaultSocket() {
