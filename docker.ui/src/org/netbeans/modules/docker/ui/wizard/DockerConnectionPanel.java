@@ -417,12 +417,23 @@ public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchron
 
         if (url == null) {
             if (Utilities.isMac() || Utilities.isWindows()) {
-                if (new File(System.getProperty("user.home"), ".docker").isDirectory()) { // NOI18N
-                    // dockertoolbox
-                    url = "https://192.168.99.100:2376"; // NOI18N
-                } else {
-                    // obsolete boot2docker
-                    url = "https://192.168.59.103:2376"; // NOI18N
+                if (Utilities.isWindows()) {
+                    String appData = System.getenv("APPDATA"); // NOI18N
+                    // docker beta detection
+                    if (appData != null && new File(appData, "Docker" + File.separatorChar + ".trackid").isFile()) { // NOI18N
+                        url = "http://127.0.0.1:2375"; // NOI18N
+                    }
+                } else if (Utilities.isMac()) {
+                    // FIXME beta detection
+                }
+                if (url == null) {
+                    if (new File(System.getProperty("user.home"), ".docker").isDirectory()) { // NOI18N
+                        // dockertoolbox
+                        url = "https://192.168.99.100:2376"; // NOI18N
+                    } else {
+                        // obsolete boot2docker
+                        url = "https://192.168.59.103:2376"; // NOI18N
+                    }
                 }
             } else {
                 url = "http://127.0.0.1:2375"; // NOI18N
