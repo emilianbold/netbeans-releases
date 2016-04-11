@@ -49,20 +49,24 @@ import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchy;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchyEvent;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchyListener;
 
 /**
- *
- * @author ralph
+ * Support for Sticky Windows in the editor. JComponents can be added to a layer
+ * on top of the editor. Components will update their vertical position on editor
+ * changes.
+ * @author Ralph Benjamin Ruijs <ralphbenjamin@netbeans.org>
+ * @since 4.6
  */
 public class StickyWindowSupport {
 
     private final EditorUI eui;
 
-    public StickyWindowSupport(final EditorUI eui) {
+    StickyWindowSupport(final EditorUI eui) {
         this.eui = eui;
         ViewHierarchy.get(eui.getComponent()).addViewHierarchyListener(new ViewHierarchyListener() {
             @Override
@@ -89,25 +93,51 @@ public class StickyWindowSupport {
         });
     }
 
-    public void addWindow(JComponent frame, Point location) {
+    /**
+     * Add a sticky window to the editor.
+     * @param window the JComponent to add to the editor
+     */
+    public void addWindow(JComponent window) {
         JTextComponent component = eui.getComponent();
         Container container = component.getParent();
         if(container instanceof JLayeredPane) {
             JLayeredPane pane = (JLayeredPane) container;
-            Point point = SwingUtilities.convertPoint(pane.getRootPane(), location, pane);
-            pane.add(frame, JLayeredPane.PALETTE_LAYER);
-            frame.setLocation(point);
-            frame.setVisible(true);
+            pane.add(window, JLayeredPane.PALETTE_LAYER);
+            window.setVisible(true);
         }
     }
-
-    public void removeWindow(JComponent frame) {
+    
+    /**
+     * Convert a <code>aPoint</code> in root component coordinate system to the
+     * editor coordinate system. <code>aPoint</code> is assumed to be in the
+     * root component coordinate system of the editor. If conversion is not
+     * possible, return <code>aPoint</code> without any conversion.
+     *
+     * @param aPoint the Point to convert
+     * @return aPoint converted to editor coordinate system
+     */
+    public @NonNull Point convertPoint(Point aPoint) {
+        Point value = aPoint;
         JTextComponent component = eui.getComponent();
         Container container = component.getParent();
         if(container instanceof JLayeredPane) {
             JLayeredPane pane = (JLayeredPane) container;
-            pane.remove(frame);
-            pane.repaint(frame.getBounds());
+            value = SwingUtilities.convertPoint(pane.getRootPane(), value, pane);
+        }
+        return value;
+    }
+
+    /**
+     * Remove a sticky window from the editor.
+     * @param window the JComponent to remove
+     */
+    public void removeWindow(JComponent window) {
+        JTextComponent component = eui.getComponent();
+        Container container = component.getParent();
+        if(container instanceof JLayeredPane) {
+            JLayeredPane pane = (JLayeredPane) container;
+            pane.remove(window);
+            pane.repaint(window.getBounds());
         }
     }
     

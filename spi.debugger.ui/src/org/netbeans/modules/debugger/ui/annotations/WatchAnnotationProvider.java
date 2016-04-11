@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.debugger.ui.annotations;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -72,7 +71,6 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.JTextComponent;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -83,6 +81,7 @@ import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Utilities;
+import org.netbeans.editor.ext.StickyWindowSupport;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.netbeans.spi.debugger.ui.EditorPin;
@@ -153,9 +152,10 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
         Annotation ann = watchToAnnotation.remove(watch); // just to be sure
         if(ann != null) ann.detach();
         JComponent frame = watchToWindow.remove(watch);
+        StickyWindowSupport stickyWindowSupport = eui.getStickyWindowSupport();
         if(frame != null) {
             frame.setVisible(false);
-            eui.getStickyWindowSupport().removeWindow(frame);
+            stickyWindowSupport.removeWindow(frame);
         }
         
         final EditorPin pin = (EditorPin) watch.getPin();
@@ -180,8 +180,9 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             }
         });
         
-        final JComponent window = new StickyPanel(watch, eui);
-        eui.getStickyWindowSupport().addWindow(window, pin.getLocation());
+        JComponent window = new StickyPanel(watch, eui);
+        stickyWindowSupport.addWindow(window);
+        window.setLocation(stickyWindowSupport.convertPoint(pin.getLocation()));
         watchToWindow.put(watch, window);
         SwingUtilities.invokeLater(new Runnable() {
             @Override
