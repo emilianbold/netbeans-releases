@@ -440,20 +440,56 @@ public class ActionFactory {
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
                         try {
-                            int bolPos = Utilities.getRowStart(target, target.getSelectionStart());
-                            int eolPos = Utilities.getRowEnd(target, target.getSelectionEnd());
-                            if (eolPos == doc.getLength()) {
-                                // Ending newline can't be removed so instead remove starting newline if it exist
-                                if (bolPos > 0) {
-                                    bolPos--;
+                            if (caret instanceof EditorCaret) {
+                                EditorCaret editorCaret = (EditorCaret) caret;
+                                editorCaret.moveCarets(new CaretMoveHandler() {
+                                    @Override
+                                    public void moveCarets(CaretMoveContext context) {
+                                        BaseDocument doc = (BaseDocument) context.getDocument();
+                                        boolean beeped = false;
+                                        for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
+                                            try {
+                                                int start = Math.min(caretInfo.getDot(), caretInfo.getMark());
+                                                int end = Math.max(caretInfo.getDot(), caretInfo.getMark());
+                                                int bolPos = Utilities.getRowStart(doc, start);
+                                                int eolPos = Utilities.getRowEnd(doc, end);
+                                                if (eolPos == doc.getLength()) {
+                                                    // Ending newline can't be removed so instead remove starting newline if it exist
+                                                    if (bolPos > 0) {
+                                                        bolPos--;
+                                                    }
+                                                } else { // Not the last line
+                                                    eolPos++;
+                                                }
+                                                doc.remove(bolPos, eolPos - bolPos);
+                                                // Caret will be at bolPos due to removal
+                                            } catch (BadLocationException e) {
+                                                if (!beeped) {
+                                                    target.getToolkit().beep();
+                                                    beeped = true;
+                                                }
+                                            }
+                                        }
+                                    }
+                                });
+                            } else {
+                                try {
+                                    int bolPos = Utilities.getRowStart(target, target.getSelectionStart());
+                                    int eolPos = Utilities.getRowEnd(target, target.getSelectionEnd());
+                                    if (eolPos == doc.getLength()) {
+                                        // Ending newline can't be removed so instead remove starting newline if it exist
+                                        if (bolPos > 0) {
+                                            bolPos--;
+                                        }
+                                    } else { // Not the last line
+                                        eolPos++;
+                                    }
+                                    doc.remove(bolPos, eolPos - bolPos);
+                                    // Caret will be at bolPos due to removal
+                                } catch (BadLocationException e) {
+                                    target.getToolkit().beep();
                                 }
-                            } else { // Not the last line
-                                eolPos++;
                             }
-                            doc.remove(bolPos, eolPos - bolPos);
-                            // Caret will be at bolPos due to removal
-                        } catch (BadLocationException e) {
-                            target.getToolkit().beep();
                         } finally {
                             DocumentUtilities.setTypingModification(doc, false);
                         }
