@@ -54,6 +54,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -119,7 +120,7 @@ public abstract class AbstractBootPathImpl implements ClassPathImplementation, P
         if (activePlatformId == null) {
             return pm.getDefaultPlatform();
         } else {
-            JavaPlatform[] installedPlatforms = pm.getPlatforms(null, new Specification("j2se", null)); //NOI18N
+            JavaPlatform[] installedPlatforms = pm.getPlatforms(null, new Specification(CommonProjectUtils.J2SE_PLATFORM_TYPE, null)); //NOI18N
             for (int i = 0; i < installedPlatforms.length; i++) {
                 String antName = installedPlatforms[i].getProperties().get("platform.ant.name"); //NOI18N
                 if (antName != null && antName.equals(activePlatformId)) {
