@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.model.impl;
 
@@ -669,10 +669,10 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             }
         }
         Expression dispatcher = node.getDispatcher();
-        if (dispatcher instanceof Variable) {
-            scan(dispatcher);
-        } else if (dispatcher instanceof NamespaceName) {
+        if (dispatcher instanceof NamespaceName) {
             occurencesBuilder.prepare((NamespaceName) dispatcher, scope);
+        } else {
+            scan(dispatcher);
         }
         scan(node.getMethod().getParameters());
     }
@@ -706,11 +706,11 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         Scope scope = modelBuilder.getCurrentScope();
         occurencesBuilder.prepare(node, scope);
         Expression dispatcher = node.getDispatcher();
-        if (dispatcher instanceof Variable) {
-            scan(dispatcher);
-        } else if (dispatcher instanceof NamespaceName) {
+        if (dispatcher instanceof NamespaceName) {
             Kind[] kinds = {Kind.CLASS, Kind.IFACE};
             occurencesBuilder.prepare(kinds, (NamespaceName) dispatcher, scope);
+        } else {
+            scan(dispatcher);
         }
         Expression constant = node.getConstant();
         if (constant instanceof ExpressionArrayAccess) {
@@ -1150,10 +1150,10 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         Scope scope = modelBuilder.getCurrentScope();
         occurencesBuilder.prepare(node, scope);
         Expression dispatcher = node.getDispatcher();
-        if (dispatcher instanceof Variable) {
-            scan(dispatcher);
-        } else if (dispatcher instanceof NamespaceName) {
+        if (dispatcher instanceof NamespaceName) {
             occurencesBuilder.prepare((NamespaceName) dispatcher, scope);
+        } else {
+            scan(dispatcher);
         }
         Variable field = node.getField();
         if (field instanceof ArrayAccess) {
