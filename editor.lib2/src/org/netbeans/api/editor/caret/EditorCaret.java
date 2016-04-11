@@ -122,9 +122,9 @@ import org.netbeans.lib.editor.util.GapList;
 import org.netbeans.lib.editor.util.ListenerList;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.lib2.EditorCaretTransferHandler;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib2.RectangularSelectionCaretAccessor;
-import org.netbeans.modules.editor.lib2.RectangularSelectionTransferHandler;
 import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
 import org.netbeans.modules.editor.lib2.actions.EditorActionUtilities;
 import org.netbeans.modules.editor.lib2.highlighting.CaretOverwriteModeHighlighting;
@@ -847,6 +847,8 @@ public final class EditorCaret implements Caret {
         component.addMouseMotionListener(listenerImpl);
         component.addKeyListener(listenerImpl);
         ViewHierarchy.get(component).addViewHierarchyListener(listenerImpl);
+        
+        EditorCaretTransferHandler.install(component);
 
         if (component.hasFocus()) {
             if (LOG.isLoggable(Level.FINE)) {
@@ -2115,10 +2117,10 @@ public final class EditorCaret implements Caret {
                 if (rectangularSelection != origRectangularSelection) {
                     if (rectangularSelection) {
                         setRectangularSelectionToDotAndMark();
-                        RectangularSelectionTransferHandler.install(component);
+//                        RectangularSelectionTransferHandler.install(component);
 
                     } else { // No rectangular selection
-                        RectangularSelectionTransferHandler.uninstall(component);
+//                        RectangularSelectionTransferHandler.uninstall(component);
                     }
                     fireStateChanged();
                 }
