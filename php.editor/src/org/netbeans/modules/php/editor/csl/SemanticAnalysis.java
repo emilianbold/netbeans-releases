@@ -576,6 +576,8 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                     addColoringForUnusedPrivateFields();
                 }
                 removeFromPath();
+            } else {
+                super.visit(node);
             }
         }
 

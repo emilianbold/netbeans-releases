@@ -108,4 +108,16 @@ public class NavigatorTest extends PhpNavigatorTestBase{
         performTest("structure/issue170712");
     }
 
+    public void testAnonymousClassInNamespaceScope() throws Exception {
+        performTest("structure/anonymousClassInNamespaceScope");
+    }
+
+    public void testAnonymousClassInClassScope() throws Exception {
+        performTest("structure/anonymousClassInClassScope");
+    }
+
+    public void testAnonymousClassInTraitScope() throws Exception {
+        performTest("structure/anonymousClassInTraitScope");
+    }
+
 }

@@ -192,6 +192,24 @@ public final class CodeUtils {
         return PhpLanguageProperties.forFileObject(file).getPhpVersion().compareTo(version) > 0;
     }
 
+    /**
+     * @return {@code true} if the {@link StaticDispatch#getDispatcher() dispatcher}
+     * is not just identifier or a namespace name.
+     */
+    public static boolean isUniformVariableSyntax(StaticDispatch dispatch) {
+        assert dispatch != null;
+        return isUniformVariableSyntax(dispatch.getDispatcher());
+    }
+
+    /**
+     * @return {@code true} if the given expression
+     * is not just identifier or a namespace name.
+     */
+    public static boolean isUniformVariableSyntax(Expression expression) {
+        assert expression != null;
+        return extractUnqualifiedName(expression) == null;
+    }
+
     @CheckForNull
     public static Identifier extractUnqualifiedIdentifier(Expression typeName) {
         Parameters.notNull("typeName", typeName);

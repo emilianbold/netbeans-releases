@@ -200,4 +200,8 @@ public class SemanticAnalyzerTest extends SemanticAnalysisTestBase {
         // fixed in #257985
         checkSemantic("testfiles/semantic/issue247411.php");
     }
+
+    public void testIssue258676() throws Exception {
+        checkSemantic("testfiles/semantic/issue258676.php");
+    }
 }

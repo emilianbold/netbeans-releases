@@ -2,6 +2,8 @@
 
 class UVS1 {
     const MAX = 99;
+    /** @var UVS1 */
+    static $INSTANCE = UVS1::class;
 
     /**
      * @return self
@@ -24,3 +26,4 @@ class UVS3 {
 }
 
 UVS3::myStatic3()::myStatic2()::myStatic1()::MAX;
+UVS3::myStatic3()::myStatic2()::$INSTANCE::myStatic1();
