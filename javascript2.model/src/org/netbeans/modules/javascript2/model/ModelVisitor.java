@@ -1826,7 +1826,7 @@ public class ModelVisitor extends PathNodeVisitor {
         final List<FunctionNode> declared = new ArrayList<FunctionNode>();
         
         Block block = inNode.getBody();
-        block.accept(new PathNodeVisitor(lc)  {
+        PathNodeVisitor visitor = new PathNodeVisitor(lc)  {
             
             private boolean outerBlock = true;
             
@@ -1850,7 +1850,13 @@ public class ModelVisitor extends PathNodeVisitor {
                 return false;
             }
 
-        });
+        };
+        if (inNode.isModule() && inNode.getModule().getExports() != null) {
+            for(ExportNode export :inNode.getModule().getExports()) {
+                export.accept(visitor);
+            }
+        }
+        block.accept(visitor);
         return declared;
     }
     
