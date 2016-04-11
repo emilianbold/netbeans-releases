@@ -1695,7 +1695,9 @@ public class BaseKit extends DefaultEditorKit {
                                                                 int newSelectionStartOffset = start;
                                                                 int lineStartOffset = Utilities.getRowStart(doc, start);
                                                                 if (lineStartOffset != newSelectionStartOffset) {
-                                                                    target.select(lineStartOffset, end);
+                                                                    context.setDotAndMark(caretInfo,
+                                                                                            doc.createPosition(lineStartOffset),
+                                                                                            doc.createPosition(end));
                                                                 }
                                                             }
                                                         }

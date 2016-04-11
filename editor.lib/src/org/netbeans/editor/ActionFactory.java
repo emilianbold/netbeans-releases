@@ -158,57 +158,124 @@ public class ActionFactory {
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
                         try {
-                            if (Utilities.isSelectionShowing(caret)) { // block selected
-                                try {
-                                    BaseKit.changeBlockIndent(
-                                        doc,
-                                        target.getSelectionStart(),
-                                        target.getSelectionEnd(),
-                                        -1);
-                                } catch (GuardedException e) {
-                                    target.getToolkit().beep();
-                                } catch (BadLocationException e) {
-                                    e.printStackTrace();
-                                }
-                            } else { // no selected text
-                                try {
-                                    int dot = caret.getDot();
-                                    int lineStartOffset = Utilities.getRowStart(doc, dot);
-                                    int firstNW = Utilities.getRowFirstNonWhite(doc, dot);
-                                    if (firstNW != -1 && dot <= firstNW) {
-                                        // Non-white row and caret inside initial whitespace => decrease text indent
-                                        int lineEndOffset = Utilities.getRowEnd(doc, dot);
-                                        BaseKit.changeBlockIndent(doc, lineStartOffset, lineEndOffset, -1);
-                                    } else {
-                                        int endNW = (firstNW == -1)
-                                                ? lineStartOffset
-                                                : (Utilities.getRowLastNonWhite(doc, dot) + 1);
-                                        if (dot > endNW) {
-                                            int shiftWidth = doc.getShiftWidth();
-                                            if (shiftWidth > 0) {
-                                                int dotColumn = Utilities.getVisualColumn(doc, dot);
-                                                int targetColumn = Math.max(0,
-                                                        (dotColumn - 1) / shiftWidth * shiftWidth);
-                                                // There may be '\t' chars so remove char-by-char
-                                                // and possibly fill-in spaces to get to targetColumn
-                                                while (dotColumn > targetColumn && --dot >= endNW) {
-                                                    doc.remove(dot, 1);
-                                                    dotColumn = Utilities.getVisualColumn(doc, dot);
+                            if(caret instanceof EditorCaret) {
+                                EditorCaret editorCaret = (EditorCaret) caret;
+                                editorCaret.moveCarets(new CaretMoveHandler() {
+                                    @Override
+                                    public void moveCarets(CaretMoveContext context) {
+                                        BaseDocument doc = (BaseDocument) context.getDocument();
+                                        for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
+                                            if (caretInfo.isSelection()) { // block selected
+                                                try {
+                                                    int start = Math.min(caretInfo.getDot(), caretInfo.getMark());
+                                                    int end = Math.max(caretInfo.getDot(), caretInfo.getMark());
+                                                    BaseKit.changeBlockIndent(
+                                                        doc,
+                                                        start,
+                                                        end,
+                                                        -1);
+                                                } catch (GuardedException e) {
+                                                    target.getToolkit().beep();
+                                                } catch (BadLocationException e) {
+                                                    e.printStackTrace();
                                                 }
-                                                int insertLen;
-                                                if (dot >= endNW && (insertLen = targetColumn - dotColumn) > 0) {
-                                                    char[] spaceChars = new char[insertLen];
-                                                    Arrays.fill(spaceChars, ' ');
-                                                    String spaces = new String(spaceChars);
-                                                    doc.insertString(dot, spaces, null);
+                                            } else { // no selected text
+                                                try {
+                                                    int dot = caretInfo.getDot();
+                                                    int lineStartOffset = Utilities.getRowStart(doc, dot);
+                                                    int firstNW = Utilities.getRowFirstNonWhite(doc, dot);
+                                                    if (firstNW != -1 && dot <= firstNW) {
+                                                        // Non-white row and caret inside initial whitespace => decrease text indent
+                                                        int lineEndOffset = Utilities.getRowEnd(doc, dot);
+                                                        BaseKit.changeBlockIndent(doc, lineStartOffset, lineEndOffset, -1);
+                                                    } else {
+                                                        int endNW = (firstNW == -1)
+                                                                ? lineStartOffset
+                                                                : (Utilities.getRowLastNonWhite(doc, dot) + 1);
+                                                        if (dot > endNW) {
+                                                            int shiftWidth = doc.getShiftWidth();
+                                                            if (shiftWidth > 0) {
+                                                                int dotColumn = Utilities.getVisualColumn(doc, dot);
+                                                                int targetColumn = Math.max(0,
+                                                                        (dotColumn - 1) / shiftWidth * shiftWidth);
+                                                                // There may be '\t' chars so remove char-by-char
+                                                                // and possibly fill-in spaces to get to targetColumn
+                                                                while (dotColumn > targetColumn && --dot >= endNW) {
+                                                                    doc.remove(dot, 1);
+                                                                    dotColumn = Utilities.getVisualColumn(doc, dot);
+                                                                }
+                                                                int insertLen;
+                                                                if (dot >= endNW && (insertLen = targetColumn - dotColumn) > 0) {
+                                                                    char[] spaceChars = new char[insertLen];
+                                                                    Arrays.fill(spaceChars, ' ');
+                                                                    String spaces = new String(spaceChars);
+                                                                    doc.insertString(dot, spaces, null);
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                } catch (GuardedException e) {
+                                                    target.getToolkit().beep();
+                                                } catch (BadLocationException e) {
+                                                    e.printStackTrace();
                                                 }
                                             }
                                         }
                                     }
-                                } catch (GuardedException e) {
-                                    target.getToolkit().beep();
-                                } catch (BadLocationException e) {
-                                    e.printStackTrace();
+                                });
+                            } else {
+                                if (Utilities.isSelectionShowing(caret)) { // block selected
+                                    try {
+                                        BaseKit.changeBlockIndent(
+                                            doc,
+                                            target.getSelectionStart(),
+                                            target.getSelectionEnd(),
+                                            -1);
+                                    } catch (GuardedException e) {
+                                        target.getToolkit().beep();
+                                    } catch (BadLocationException e) {
+                                        e.printStackTrace();
+                                    }
+                                } else { // no selected text
+                                    try {
+                                        int dot = caret.getDot();
+                                        int lineStartOffset = Utilities.getRowStart(doc, dot);
+                                        int firstNW = Utilities.getRowFirstNonWhite(doc, dot);
+                                        if (firstNW != -1 && dot <= firstNW) {
+                                            // Non-white row and caret inside initial whitespace => decrease text indent
+                                            int lineEndOffset = Utilities.getRowEnd(doc, dot);
+                                            BaseKit.changeBlockIndent(doc, lineStartOffset, lineEndOffset, -1);
+                                        } else {
+                                            int endNW = (firstNW == -1)
+                                                    ? lineStartOffset
+                                                    : (Utilities.getRowLastNonWhite(doc, dot) + 1);
+                                            if (dot > endNW) {
+                                                int shiftWidth = doc.getShiftWidth();
+                                                if (shiftWidth > 0) {
+                                                    int dotColumn = Utilities.getVisualColumn(doc, dot);
+                                                    int targetColumn = Math.max(0,
+                                                            (dotColumn - 1) / shiftWidth * shiftWidth);
+                                                    // There may be '\t' chars so remove char-by-char
+                                                    // and possibly fill-in spaces to get to targetColumn
+                                                    while (dotColumn > targetColumn && --dot >= endNW) {
+                                                        doc.remove(dot, 1);
+                                                        dotColumn = Utilities.getVisualColumn(doc, dot);
+                                                    }
+                                                    int insertLen;
+                                                    if (dot >= endNW && (insertLen = targetColumn - dotColumn) > 0) {
+                                                        char[] spaceChars = new char[insertLen];
+                                                        Arrays.fill(spaceChars, ' ');
+                                                        String spaces = new String(spaceChars);
+                                                        doc.insertString(dot, spaces, null);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    } catch (GuardedException e) {
+                                        target.getToolkit().beep();
+                                    } catch (BadLocationException e) {
+                                        e.printStackTrace();
+                                    }
                                 }
                             }
                         } finally {
