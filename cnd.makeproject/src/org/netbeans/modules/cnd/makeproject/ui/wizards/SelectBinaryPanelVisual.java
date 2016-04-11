@@ -102,6 +102,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
+import org.netbeans.modules.cnd.makeproject.ui.utils.ExpandableEditableComboBox;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
@@ -157,10 +158,10 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     }
 
     private void addListeners(){
-        ((EditableComboBox)binaryField).addChangeListener(new ActionListener() {
+        ((ExpandableEditableComboBox)binaryField).addChangeListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String path = ((EditableComboBox)binaryField).getText().trim();
+                String path = ((ExpandableEditableComboBox)binaryField).getText().trim();
                 controller.getWizardStorage().setBinaryPath(fileSystem, path);
                 updateRoot();
             }
@@ -253,7 +254,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                 });
             }
         } else {
-            String path = ((EditableComboBox)binaryField).getText().trim();
+            String path = ((ExpandableEditableComboBox)binaryField).getText().trim();
             if (!path.isEmpty() && controller.getWizardDescriptor() != null) {
                 if (CndPathUtilities.isPathAbsolute(path)) {
                     FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(path));
@@ -657,7 +658,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         table = new javax.swing.JTable();
         viewLabel = new javax.swing.JLabel();
         viewComboBox = new javax.swing.JComboBox();
-        binaryField = new EditableComboBox();
+        binaryField = new ExpandableEditableComboBox();
         cancelSearch = new javax.swing.JButton();
 
         setPreferredSize(new java.awt.Dimension(450, 350));
@@ -792,7 +793,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void binaryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_binaryButtonActionPerformed
-        final String oldPath = ((EditableComboBox)binaryField).getText();
+        final String oldPath = ((ExpandableEditableComboBox)binaryField).getText();
         //if (oldPath.isEmpty()) {
         //    String path = selectBinaryFile(oldPath, true);
         //    if (path == null) {
@@ -820,7 +821,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                     }
                     buf.append(s);
                 }
-                ((EditableComboBox)binaryField).setText(buf.toString());
+                ((ExpandableEditableComboBox)binaryField).setText(buf.toString());
             }
         //}
     }//GEN-LAST:event_binaryButtonActionPerformed
@@ -855,17 +856,18 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         }
         fileSystem = FileSystemProvider.getFileSystem(env);
 
-        ((EditableComboBox)binaryField).setStorage(BINARY_FILE_KEY, NbPreferences.forModule(SelectBinaryPanelVisual.class));
+        ((ExpandableEditableComboBox)binaryField).setStorage(BINARY_FILE_KEY, NbPreferences.forModule(SelectBinaryPanelVisual.class));
+        ((ExpandableEditableComboBox)binaryField).setEnv(env);
         String binary = WizardConstants.PROPERTY_BUILD_RESULT.get(wizardDescriptor);
         if (binary == null) {
             binary = ""; // NOI18N
         }
-        ((EditableComboBox)binaryField).read(binary);
+        ((ExpandableEditableComboBox)binaryField).read(binary);
     }
 
     void store(WizardDescriptor wizardDescriptor) {
         cancelSearch();
-        String binary = ((EditableComboBox)binaryField).getText().trim();
+        String binary = ((ExpandableEditableComboBox)binaryField).getText().trim();
         WizardConstants.PROPERTY_BUILD_RESULT.put(wizardDescriptor, binary);
         String[] split = binary.split(";"); // NOI18N
         String aBinary = binary;
@@ -877,8 +879,8 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         WizardConstants.PROPERTY_DEPENDENCY_KIND.put(wizardDescriptor, ((ProjectKindItem)dependeciesComboBox.getSelectedItem()).kind);
         WizardConstants.PROPERTY_DEPENDENCIES.put(wizardDescriptor,  getDlls());
         WizardConstants.PROPERTY_TRUE_SOURCE_ROOT.put(wizardDescriptor,  ((ProjectView)viewComboBox.getSelectedItem()).isSourceRoot);
-        ((EditableComboBox)binaryField).setStorage(BINARY_FILE_KEY, NbPreferences.forModule(SelectBinaryPanelVisual.class));
-        ((EditableComboBox)binaryField).store();
+        ((ExpandableEditableComboBox)binaryField).setStorage(BINARY_FILE_KEY, NbPreferences.forModule(SelectBinaryPanelVisual.class));
+        ((ExpandableEditableComboBox)binaryField).store();
         if (WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV.get(wizardDescriptor) != null) {
             // forbid tool collection selection
             // project creator detect real tool collection
