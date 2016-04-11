@@ -1699,6 +1699,10 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
         checkOccurrences(getTestPath(), "UVS3::myStatic3()->myStatic2()::myStatic1()->te^st;", true);
     }
 
+    public void testUniformVariableSyntax01_13() throws Exception {
+        checkOccurrences(getTestPath(), "UVS3::myStatic3()::myStatic2()::myStatic1()::$INSTANCE::mySt^atic1();", true);
+    }
+
     public void testUniformVariableSyntax02_01() throws Exception {
         checkOccurrences(getTestPath(), "UV^S3::myStatic3()->my2()::myStatic1()->my1();", true);
     }

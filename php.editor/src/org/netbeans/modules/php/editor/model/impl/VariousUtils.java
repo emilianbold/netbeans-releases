@@ -507,17 +507,26 @@ public final class VariousUtils {
                         operation = null;
                     } else if (operation.startsWith(STATIC_FIELD_TYPE_PREFIX)) {
                         Set<TypeScope> newRecentTypes = new HashSet<>();
+                        final Collection<? extends TypeScope> types;
+                        final String fieldName;
                         String[] frgs = frag.split("\\."); //NOI18N
-                        assert frgs.length == 2 : semiTypeName;
-                        String clsName = frgs[0];
-                        if (clsName != null) {
+                        if (frgs.length == 1) {
+                            // uniform variable syntax
+                            assert !oldRecentTypes.isEmpty();
+                            fieldName = frag;
+                            types = oldRecentTypes;
+                        } else {
+                            assert frgs.length == 2 : semiTypeName;
+                            fieldName = frgs[1];
+                            String clsName = frgs[0];
+                            assert clsName != null : frag;
                             QualifiedName fullyQualifiedName = getFullyQualifiedName(createQuery(clsName, varScope), offset, varScope);
-                            Collection<? extends TypeScope> types = IndexScopeImpl.getTypes(fullyQualifiedName, varScope);
-                            for (TypeScope type : types) {
-                                Collection<? extends FieldElement> fields = IndexScopeImpl.getFields(type, frgs[1], varScope, PhpModifiers.ALL_FLAGS);
-                                for (FieldElement field : fields) {
-                                    newRecentTypes.addAll(field.getTypes(offset));
-                                }
+                            types = IndexScopeImpl.getTypes(fullyQualifiedName, varScope);
+                        }
+                        for (TypeScope type : types) {
+                            Collection<? extends FieldElement> fields = IndexScopeImpl.getFields(type, fieldName, varScope, PhpModifiers.ALL_FLAGS);
+                            for (FieldElement field : fields) {
+                                newRecentTypes.addAll(field.getTypes(offset));
                             }
                         }
                         recentTypes = newRecentTypes;
@@ -940,8 +949,11 @@ public final class VariousUtils {
             StaticFieldAccess fieldAccess = (StaticFieldAccess) varBase;
             String clsName = CodeUtils.extractUnqualifiedName(fieldAccess.getDispatcher());
             String fldName = CodeUtils.extractVariableName(fieldAccess.getField());
-            if (clsName != null && fldName != null) {
-                return PRE_OPERATION_TYPE_DELIMITER + STATIC_FIELD_TYPE_PREFIX + clsName + '.' + fldName;
+            if (fldName != null) {
+                if (clsName != null) {
+                    return PRE_OPERATION_TYPE_DELIMITER + STATIC_FIELD_TYPE_PREFIX + clsName + '.' + fldName;
+                }
+                return PRE_OPERATION_TYPE_DELIMITER + STATIC_FIELD_TYPE_PREFIX + fldName;
             }
         }
 

@@ -5,6 +5,10 @@ class UVS1 {
     const AVG = 50;
     static $MIN = "MIN";
     static $TOTAL = "TOTAL";
+    /**
+     * @var UVS1
+     */
+    static $INSTANCE;
 
     public $test = null;
 
@@ -36,6 +40,7 @@ UVS3::myStatic3()::myStatic2()::myStatic1()::MAX;
 UVS3::myStatic3()::myStatic2()::myStatic1()::AVG;
 UVS3::myStatic3()::myStatic2()::myStatic1()::$MIN;
 UVS3::myStatic3()::myStatic2()::myStatic1()::$TOTAL;
+UVS3::myStatic3()::myStatic2()::myStatic1()::$INSTANCE::myStatic1();
 UVS3::myStatic3()::myStatic2()::myStatic1()::myStatic2();
 UVS3::myStatic3()->myStatic2()::myStatic1()->myStatic2();
 UVS3::myStatic3()->myStatic2()::myStatic1()->test;
