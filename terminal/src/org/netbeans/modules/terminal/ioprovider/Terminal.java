@@ -504,7 +504,7 @@ public final class Terminal extends JComponent {
                     // Shortest file path
                     if (colonIdx > 2) {
                         try {
-                            lineNumber = Integer.valueOf(text.substring(colonIdx + 1));
+                            lineNumber = Integer.parseInt(text.substring(colonIdx + 1));
                             filePath = text.substring(0, colonIdx);
                         } catch (NumberFormatException x) {
                         }
