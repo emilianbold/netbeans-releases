@@ -71,6 +71,14 @@ public class ConfigurationPanel extends javax.swing.JPanel implements Configurat
     }
 
     @Override
+    public void setInputEnabled(boolean enabled) {
+        nameTextField.setEnabled(enabled);
+        urlTextField.setEnabled(enabled);
+        certTextField.setEnabled(enabled);
+        browseButton.setEnabled(enabled);
+    }
+
+    @Override
     public void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
