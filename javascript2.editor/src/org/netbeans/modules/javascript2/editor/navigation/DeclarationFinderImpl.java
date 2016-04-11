@@ -44,11 +44,13 @@ package org.netbeans.modules.javascript2.editor.navigation;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.ElementHandle;
@@ -57,6 +59,7 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.EditorExtender;
+import org.netbeans.modules.javascript2.editor.FileUtils;
 import org.netbeans.modules.javascript2.model.api.IndexedElement;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
@@ -85,6 +88,8 @@ import org.openide.util.Exceptions;
  */
 public class DeclarationFinderImpl implements DeclarationFinder {
 
+    private static final List<JsTokenId> LOOK_FOR_IMPORT_TOKENS = Arrays.asList(JsTokenId.KEYWORD_IMPORT, JsTokenId.OPERATOR_SEMICOLON);
+    
     private final Language<JsTokenId> language;
 
     public DeclarationFinderImpl(Language<JsTokenId> language) {
@@ -97,9 +102,30 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             return DeclarationLocation.NONE;
         }
         JsParserResult jsResult = (JsParserResult)info;
+        Snapshot snapshot = jsResult.getSnapshot();
+        TokenSequence ts = LexUtilities.getTokenSequence(snapshot, caretOffset, language);
+        int offset = info.getSnapshot().getEmbeddedOffset(caretOffset);
+        
+        ts.move(offset);
+        if (ts.moveNext()) {
+            if (ts.token().id() == JsTokenId.STRING) {
+                //are we in the import expression to navigate the imported file?
+                String path = ts.token().text().toString();
+                Token<? extends JsTokenId> token = LexUtilities.findPreviousToken(ts, LOOK_FOR_IMPORT_TOKENS);
+                if (token.id() == JsTokenId.KEYWORD_IMPORT) {
+                    FileObject currentFO = snapshot.getSource().getFileObject();
+                    FileObject destinationFO = FileUtils.findFileObject(currentFO, path, false);
+                    if (destinationFO != null) {
+                        return new DeclarationLocation(destinationFO, 0);
+                    } else {
+                        return DeclarationLocation.NONE;
+                    }
+                }
+            }
+        }
         Model model = Model.getModel(jsResult, false);
         model.resolve();
-        int offset = info.getSnapshot().getEmbeddedOffset(caretOffset);
+        
         OccurrencesSupport os = model.getOccurrencesSupport();
         Occurrence occurrence = os.getOccurrence(offset);
         if (occurrence != null) {
@@ -109,7 +135,6 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             if (assignments != null && assignments.isEmpty()) {
                 assignments = parent.getAssignments();
             }
-            Snapshot snapshot = jsResult.getSnapshot();
             Index jsIndex = Index.get(snapshot.getSource().getFileObject());
             List<IndexResult> indexResults = new ArrayList<IndexResult>();
             if (assignments == null || assignments.isEmpty()) {
@@ -120,7 +145,6 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                         if (fo.equals(snapshot.getSource().getFileObject()) && object.getDeclarationName() != null) {
                             int docOffset = LexUtilities.getLexerOffset(jsResult, getDeclarationOffset(object));
                             if (docOffset > -1) {
-                                TokenSequence ts = LexUtilities.getTokenSequence(snapshot, caretOffset, language);
                                 if (ts != null) {
                                     ts.move(offset);
                                     if (ts.moveNext()) {
@@ -220,7 +244,6 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                         
                     }
                 }
-                TokenSequence ts = LexUtilities.getTokenSequence(snapshot, caretOffset, language);
                 if (ts != null) {
                     ts.move(offset);
                     if (ts.moveNext() && ts.token().id() == JsTokenId.IDENTIFIER) {
@@ -366,8 +389,15 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                                     value[0] = new OffsetRange(tsDoc.offset(), tsDoc.offset() + tsDoc.token().length());
                                 }
                             }
+                        } 
+                    } else if (ts.token() != null && ts.token().id() == JsTokenId.STRING) {
+                        // we need to check, where we are in the import expression (ES6)
+                        int start = ts.offset();
+                        int end = ts.offset() + ts.token().length();
+                        Token<? extends JsTokenId> token = LexUtilities.findPreviousToken(ts, LOOK_FOR_IMPORT_TOKENS);
+                        if (token.id() == JsTokenId.KEYWORD_IMPORT) {
+                            value[0] = new OffsetRange (start, end);
                         }
-                        
                     }
                 }
             }
