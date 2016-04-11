@@ -280,15 +280,27 @@ public final class ModulePathsProblemsProvider implements ProjectProblemsProvide
             @NonNull final boolean modularTests) {
         final EditableProperties ep = project.getUpdateHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         if (modularSources) {
+            if (modularTests) {
                 return hasRef(ep, ProjectProperties.JAVAC_TEST_CLASSPATH, ProjectProperties.BUILD_CLASSES_DIR) ||
-                    !hasRef(ep, ProjectProperties.JAVAC_TEST_MODULEPATH, ProjectProperties.BUILD_CLASSES_DIR) ||
-                    hasRef(ep, ProjectProperties.RUN_TEST_CLASSPATH, ProjectProperties.BUILD_TEST_CLASSES_DIR)||
-                    hasRef(ep, ProjectProperties.RUN_TEST_MODULEPATH, ProjectProperties.BUILD_TEST_CLASSES_DIR)?
-                        Collections.singleton(ProjectProblemsProvider.ProjectProblem.createError(
-                            NbBundle.getMessage(ModulePathsProblemsProvider.class, "TXT_InvalidModulePaths"),
-                            NbBundle.getMessage(ModulePathsProblemsProvider.class, "DESC_InvalidModulePaths"),
-                            new FixBrokenModulePaths(project, modularSources, modularTests))) :
-                        Collections.emptySet();
+                        !hasRef(ep, ProjectProperties.JAVAC_TEST_MODULEPATH, ProjectProperties.BUILD_CLASSES_DIR) ||
+                        hasRef(ep, ProjectProperties.RUN_TEST_CLASSPATH, ProjectProperties.BUILD_TEST_CLASSES_DIR)||
+                        !hasRef(ep, ProjectProperties.RUN_TEST_MODULEPATH, ProjectProperties.BUILD_TEST_CLASSES_DIR)?
+                            Collections.singleton(ProjectProblemsProvider.ProjectProblem.createError(
+                                NbBundle.getMessage(ModulePathsProblemsProvider.class, "TXT_InvalidModulePaths"),
+                                NbBundle.getMessage(ModulePathsProblemsProvider.class, "DESC_InvalidModulePathsBlackBox"),
+                                new FixBrokenModulePaths(project, modularSources, modularTests))) :
+                            Collections.emptySet();
+            } else {
+                return hasRef(ep, ProjectProperties.JAVAC_TEST_CLASSPATH, ProjectProperties.BUILD_CLASSES_DIR) ||
+                        !hasRef(ep, ProjectProperties.JAVAC_TEST_MODULEPATH, ProjectProperties.BUILD_CLASSES_DIR) ||
+                        hasRef(ep, ProjectProperties.RUN_TEST_CLASSPATH, ProjectProperties.BUILD_TEST_CLASSES_DIR)||
+                        hasRef(ep, ProjectProperties.RUN_TEST_MODULEPATH, ProjectProperties.BUILD_TEST_CLASSES_DIR)?
+                            Collections.singleton(ProjectProblemsProvider.ProjectProblem.createError(
+                                NbBundle.getMessage(ModulePathsProblemsProvider.class, "TXT_InvalidModulePaths"),
+                                NbBundle.getMessage(ModulePathsProblemsProvider.class, "DESC_InvalidModulePathsWhiteBox"),
+                                new FixBrokenModulePaths(project, modularSources, modularTests))) :
+                            Collections.emptySet();
+            }
         } else {
             return !hasRef(ep, ProjectProperties.JAVAC_TEST_CLASSPATH, ProjectProperties.BUILD_CLASSES_DIR) ||
                     hasRef(ep, ProjectProperties.JAVAC_TEST_MODULEPATH, ProjectProperties.BUILD_CLASSES_DIR) ||
@@ -354,10 +366,17 @@ public final class ModulePathsProblemsProvider implements ProjectProblemsProvide
                         final EditableProperties ep = project.getUpdateHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                         boolean changed = false;
                         if (modularSources) {
-                            changed |= removeRef(ep, ProjectProperties.JAVAC_TEST_CLASSPATH, ProjectProperties.BUILD_CLASSES_DIR);
-                            changed |= addRefIfAbsent(ep, ProjectProperties.JAVAC_TEST_MODULEPATH, ProjectProperties.BUILD_CLASSES_DIR, ProjectProperties.JAVAC_MODULEPATH);
-                            changed |= removeRef(ep, ProjectProperties.RUN_TEST_CLASSPATH, ProjectProperties.BUILD_TEST_CLASSES_DIR);
-                            changed |= removeRef(ep, ProjectProperties.RUN_TEST_MODULEPATH, ProjectProperties.BUILD_TEST_CLASSES_DIR);
+                            if (modularTests) {
+                                changed |= removeRef(ep, ProjectProperties.JAVAC_TEST_CLASSPATH, ProjectProperties.BUILD_CLASSES_DIR);
+                                changed |= addRefIfAbsent(ep, ProjectProperties.JAVAC_TEST_MODULEPATH, ProjectProperties.BUILD_CLASSES_DIR, ProjectProperties.JAVAC_MODULEPATH);
+                                changed |= removeRef(ep, ProjectProperties.RUN_TEST_CLASSPATH, ProjectProperties.BUILD_TEST_CLASSES_DIR);
+                                changed |= addRefIfAbsent(ep, ProjectProperties.RUN_TEST_MODULEPATH, ProjectProperties.BUILD_TEST_CLASSES_DIR, ProjectProperties.JAVAC_TEST_MODULEPATH);
+                            } else {
+                                changed |= removeRef(ep, ProjectProperties.JAVAC_TEST_CLASSPATH, ProjectProperties.BUILD_CLASSES_DIR);
+                                changed |= addRefIfAbsent(ep, ProjectProperties.JAVAC_TEST_MODULEPATH, ProjectProperties.BUILD_CLASSES_DIR, ProjectProperties.JAVAC_MODULEPATH);
+                                changed |= removeRef(ep, ProjectProperties.RUN_TEST_CLASSPATH, ProjectProperties.BUILD_TEST_CLASSES_DIR);
+                                changed |= removeRef(ep, ProjectProperties.RUN_TEST_MODULEPATH, ProjectProperties.BUILD_TEST_CLASSES_DIR);
+                            }
                         } else {
                             changed |= addRefIfAbsent(ep, ProjectProperties.JAVAC_TEST_CLASSPATH, ProjectProperties.BUILD_CLASSES_DIR, ProjectProperties.JAVAC_CLASSPATH);
                             changed |= removeRef(ep, ProjectProperties.JAVAC_TEST_MODULEPATH, ProjectProperties.BUILD_CLASSES_DIR);
