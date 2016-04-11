@@ -333,6 +333,13 @@ public final class EditorCaret implements Caret {
     private boolean caretUpdatePending;
     
     /**
+     * If the component is invalid upon call to update() method
+     * then request a non-scrolling update by setting the variable to 1
+     * or request a scrolling update by setting it to 2.
+     */
+    private int updateLaterDuringPaint;
+    
+    /**
      * Minimum selection start for word and line selections.
      * This helps to ensure that when extending word (or line) selections
      * the selection will always include at least the initially selected word (or line).
@@ -891,6 +898,11 @@ public final class EditorCaret implements Caret {
         JTextComponent c = component;
         if (c == null || !isShowing()) {
             return;
+        }
+        if (updateLaterDuringPaint != 0) {
+            boolean scroll = updateLaterDuringPaint == 2;
+            updateLaterDuringPaint = 0;
+            update(scroll, true);
         }
         Color origColor = g.getColor();
         try {
@@ -1515,7 +1527,7 @@ public final class EditorCaret implements Caret {
                     if (doc != null) {
                         doc.readLock();
                         try {
-                            update(scrollViewToCaret);
+                            update(scrollViewToCaret, false);
                         } finally {
                             doc.readUnlock();
                         }
@@ -1532,13 +1544,18 @@ public final class EditorCaret implements Caret {
      *
      * @param scrollViewToCaret whether the view of the text component should be
      *  scrolled to the position of the caret.
+     * @param calledFromPaint whether update was called from {@link #paint(java.awt.Graphics) } method
+     *  which means that it does not check component validity because the component might still
+     *  not be valid but its bounds are already set properly.
      */
-    private void update(boolean scrollViewToCaret) {
+    private void update(boolean scrollViewToCaret, boolean calledFromPaint) {
         caretUpdatePending = false;
         JTextComponent c = component;
         if (c != null) {
-            if (!c.isValid()) {
-                c.validate();
+            if (!calledFromPaint && !c.isValid()) {
+                updateLaterDuringPaint = Math.max(updateLaterDuringPaint,
+                        scrollViewToCaret ? 2 : 1);
+                return;
             }
             boolean log = LOG.isLoggable(Level.FINE);
             Component parent = c.getParent();
@@ -2604,7 +2621,15 @@ public final class EditorCaret implements Caret {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        update(false);
+                        AbstractDocument doc = activeDoc;
+                        if (doc != null) {
+                            doc.readLock();
+                            try {
+                                update(false, false);
+                            } finally {
+                                doc.readUnlock();
+                            }
+                        }
                     }
                 });
             }
