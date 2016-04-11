@@ -57,7 +57,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.ojet.OJETUtils;
 import org.netbeans.modules.html.ojet.data.DataItem;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;

@@ -43,7 +43,7 @@ package org.netbeans.modules.javascript2.editor;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 
 /**
  *
@@ -94,5 +94,7 @@ public class JsKeyWords {
         KEYWORDS.put(JsTokenId.KEYWORD_VOID.fixedText(), CompletionType.ENDS_WITH_SPACE);
         KEYWORDS.put(JsTokenId.KEYWORD_WHILE.fixedText(), CompletionType.CURSOR_INSIDE_BRACKETS);
         KEYWORDS.put(JsTokenId.KEYWORD_WITH.fixedText(), CompletionType.ENDS_WITH_SPACE);
+        KEYWORDS.put(JsTokenId.KEYWORD_EXPORT.fixedText(), CompletionType.ENDS_WITH_SPACE);
+        KEYWORDS.put(JsTokenId.KEYWORD_IMPORT.fixedText(), CompletionType.ENDS_WITH_SPACE);
     }
 }

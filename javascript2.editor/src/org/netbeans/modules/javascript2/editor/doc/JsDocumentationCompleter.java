@@ -41,13 +41,13 @@
  */
 package org.netbeans.modules.javascript2.editor.doc;
 
-import jdk.nashorn.internal.ir.AccessNode;
-import jdk.nashorn.internal.ir.BinaryNode;
-import jdk.nashorn.internal.ir.FunctionNode;
-import jdk.nashorn.internal.ir.IdentNode;
-import jdk.nashorn.internal.ir.Node;
-import jdk.nashorn.internal.ir.PropertyNode;
-import jdk.nashorn.internal.ir.VarNode;
+import com.oracle.js.parser.ir.AccessNode;
+import com.oracle.js.parser.ir.BinaryNode;
+import com.oracle.js.parser.ir.FunctionNode;
+import com.oracle.js.parser.ir.IdentNode;
+import com.oracle.js.parser.ir.Node;
+import com.oracle.js.parser.ir.PropertyNode;
+import com.oracle.js.parser.ir.VarNode;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -60,23 +60,22 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.javascript2.editor.Utils;
-import org.netbeans.modules.javascript2.editor.doc.api.JsDocumentationSupport;
-import org.netbeans.modules.javascript2.editor.doc.spi.SyntaxProvider;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.JsElement;
-import org.netbeans.modules.javascript2.editor.model.JsElement.Kind;
-import org.netbeans.modules.javascript2.editor.model.JsFunction;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.Type;
-import org.netbeans.modules.javascript2.editor.model.TypeUsage;
-import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
-import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
-import org.netbeans.modules.javascript2.editor.model.impl.PathNodeVisitor;
-import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
+import org.netbeans.modules.javascript2.doc.api.JsDocumentationSupport;
+import org.netbeans.modules.javascript2.doc.spi.SyntaxProvider;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.types.api.DeclarationScope;
+import org.netbeans.modules.javascript2.types.api.Identifier;
+import org.netbeans.modules.javascript2.model.api.JsElement;
+import org.netbeans.modules.javascript2.model.api.JsElement.Kind;
+import org.netbeans.modules.javascript2.model.api.JsFunction;
+import org.netbeans.modules.javascript2.model.api.JsObject;
+import org.netbeans.modules.javascript2.types.api.Type;
+import org.netbeans.modules.javascript2.types.api.TypeUsage;
+import org.netbeans.modules.javascript2.model.api.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.javascript2.model.api.Index;
+import org.netbeans.modules.javascript2.model.api.Model;
+import org.netbeans.modules.javascript2.model.spi.PathNodeVisitor;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -91,7 +90,7 @@ import org.openide.util.RequestProcessor;
  */
 public class JsDocumentationCompleter {
 
-    protected static final RequestProcessor RP = new RequestProcessor("JavaScript Documentation Completer", 1); //NOI18N
+    public static final RequestProcessor RP = new RequestProcessor("JavaScript Documentation Completer", 1); //NOI18N
 
     public static void generateCompleteComment(BaseDocument doc, int caretOffset, int indent) {
         Runnable documentationGenerator = new DocumentationGenerator(doc, caretOffset, indent);
@@ -134,14 +133,14 @@ public class JsDocumentationCompleter {
                             if (originalExaminedOffset == -1) {
                                 originalExaminedOffset = parserResult.getSnapshot().getOriginalOffset(nearestNode.getStart());
                             }
-                            JsObject jsObject = findJsObjectFunctionVariable(jsParserResult.getModel().getGlobalObject(), originalExaminedOffset);
+                            JsObject jsObject = findJsObjectFunctionVariable(Model.getModel(jsParserResult, false).getGlobalObject(), originalExaminedOffset);
                             assert jsObject != null;
                             if (jsObject.getJSKind() == Kind.FILE || isWrapperObject(jsParserResult, jsObject, nearestNode)) {
                                 String fqn = getFqnName(jsParserResult, nearestNode);
-                                jsObject = ModelUtils.findJsObjectByName(jsParserResult.getModel(), fqn);
+                                jsObject = ModelUtils.findJsObjectByName(Model.getModel(jsParserResult, false), fqn);
                                 // looks to be within anonymous object, use the global object instead
                                 if (jsObject == null) {
-                                    jsObject = jsParserResult.getModel().getGlobalObject();
+                                    jsObject = Model.getModel(jsParserResult, false).getGlobalObject();
                                 }
                             }
                             JsObject wrapperScope = getWrapperScope(jsParserResult, jsObject, nearestNode, originalExaminedOffset);
@@ -182,12 +181,12 @@ public class JsDocumentationCompleter {
 
     private static JsObject getWrapperScope(JsParserResult jsParserResult, JsObject jsObject, Node nearestNode, int offset) {
         JsObject result = null;
-        if (jsObject instanceof JsFunctionImpl) {
+        if (jsObject instanceof JsFunction) {
             result = jsObject;
-            for (DeclarationScope declarationScope : ((JsFunctionImpl) jsObject).getChildrenScopes()) {
-                if (declarationScope instanceof JsFunctionImpl) {
-                    if (((JsFunctionImpl) declarationScope).getOffsetRange(jsParserResult).containsInclusive(offset)) {
-                        result = getWrapperScope(jsParserResult, (JsFunctionImpl) declarationScope, nearestNode, offset);
+            for (DeclarationScope declarationScope : ((JsFunction) jsObject).getChildrenScopes()) {
+                if (declarationScope instanceof JsFunction) {
+                    if (((JsFunction) declarationScope).getOffsetRange(jsParserResult).containsInclusive(offset)) {
+                        result = getWrapperScope(jsParserResult, (JsFunction) declarationScope, nearestNode, offset);
                     }
                 }
             }
@@ -196,7 +195,7 @@ public class JsDocumentationCompleter {
     }
     
     private static boolean isWrapperObject(JsParserResult jsParserResult, JsObject jsObject, Node nearestNode) {
-        List<Identifier> nodeName = jsParserResult.getModel().getNodeName(nearestNode);
+        List<Identifier> nodeName = Model.getModel(jsParserResult, false).getNodeName(nearestNode);
         if (nodeName == null || nodeName.isEmpty()) {
             return false;
         }
@@ -216,7 +215,7 @@ public class JsDocumentationCompleter {
         root.accept(ptnv);
         StringBuilder fqn = new StringBuilder();
         for (Node currentNode : ptnv.getFinalPath()) {
-            List<Identifier> name = parserResult.getModel().getNodeName(currentNode);
+            List<Identifier> name = Model.getModel(parserResult, false).getNodeName(currentNode);
             if (name != null) {
                 for (Identifier identifier : name) {
                     fqn.append(".").append(identifier.getName()); //NOI18N
@@ -235,12 +234,13 @@ public class JsDocumentationCompleter {
         SyntaxProvider syntaxProvider = JsDocumentationSupport.getSyntaxProvider(jsParserResult);
 
         Collection<? extends TypeUsage> assignments = jsObject.getAssignments();
-        Collection<TypeUsage> resolveTypes = ModelUtils.resolveTypes(assignments, jsParserResult, true, true);
+        Collection<TypeUsage> resolveTypes = ModelUtils.resolveTypes(assignments,
+                Model.getModel(jsParserResult, false), Index.get(jsParserResult.getSnapshot().getSource().getFileObject()), true);
         StringBuilder types = new StringBuilder();
         for (TypeUsage typeUsage : resolveTypes) {
             // name and type are equivalent in the case of assigning parrametrs like "this.name = name"
             if (!typeUsage.getType().equals(jsObject.getName())) {
-                types.append("|").append(Utils.getDisplayName(typeUsage));
+                types.append("|").append(ModelUtils.getDisplayName(typeUsage));
             }
         }
         String type = types.length() == 0 ? null : types.toString().substring(1);
@@ -256,10 +256,11 @@ public class JsDocumentationCompleter {
         JsFunction function = ((JsFunction) jsObject);
         addParameters(doc, toAdd, syntaxProvider, indent, function.getParameters()); //NOI18N
         Collection<? extends TypeUsage> returnTypes = function.getReturnTypes();
-        Collection<TypeUsage> types = ModelUtils.resolveTypes(returnTypes, jsParserResult, true, true);
+        Collection<TypeUsage> types = ModelUtils.resolveTypes(returnTypes,
+                Model.getModel(jsParserResult, false), Index.get(jsParserResult.getSnapshot().getSource().getFileObject()), true);
         if (types.isEmpty()) {
             if (hasReturnClause(jsParserResult, jsObject)) {
-                addReturns(doc, toAdd, syntaxProvider, indent, Collections.singleton(new TypeUsageImpl(Type.UNRESOLVED)));
+                addReturns(doc, toAdd, syntaxProvider, indent, Collections.singleton(new TypeUsage(Type.UNRESOLVED)));
             }
         } else {
             addReturns(doc, toAdd, syntaxProvider, indent, types);
@@ -357,7 +358,7 @@ public class JsDocumentationCompleter {
     }
 
     private static JsObject findJsObjectFunctionVariable(JsObject object, int offset) {
-        JsObjectImpl jsObject = (JsObjectImpl) object;
+        JsObject jsObject = (JsObject) object;
         JsObject result = null;
         JsObject tmpObject = null;
         if (jsObject.getOffsetRange().containsInclusive(offset)) {
@@ -403,35 +404,35 @@ public class JsDocumentationCompleter {
         }
 
         @Override
-        public Node enter(AccessNode accessNode) {
+        public boolean enterAccessNode(AccessNode accessNode) {
             processNode(accessNode);
-            return super.enter(accessNode);
+            return super.enterAccessNode(accessNode);
         }
 
         @Override
-        public Node enter(FunctionNode functionNode) {
+        public boolean enterFunctionNode(FunctionNode functionNode) {
             if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
                 processNode(functionNode);
             }
-            return super.enter(functionNode);
+            return super.enterFunctionNode(functionNode);
         }
 
         @Override
-        public Node enter(PropertyNode propertyNode) {
+        public boolean enterPropertyNode(PropertyNode propertyNode) {
             processNode(propertyNode);
-            return super.enter(propertyNode);
+            return super.enterPropertyNode(propertyNode);
         }
 
         @Override
-        public Node enter(VarNode varNode) {
+        public boolean enterVarNode(VarNode varNode) {
             processNode(varNode);
-            return super.enter(varNode);
+            return super.enterVarNode(varNode);
         }
 
         @Override
-        public Node enter(BinaryNode binaryNode) {
+        public boolean enterBinaryNode(BinaryNode binaryNode) {
             processNode(binaryNode);
-            return super.enter(binaryNode);
+            return super.enterBinaryNode(binaryNode);
         }
     }
 
@@ -441,16 +442,16 @@ public class JsDocumentationCompleter {
         private final StringBuilder farestPath = new StringBuilder();
 
         @Override
-        public Node enter(IdentNode identNode) {
+        public boolean enterIdentNode(IdentNode identNode) {
             farestNode = identNode;
             farestPath.append(".").append(identNode.getName()); //NOI18N
-            return super.enter(identNode);
+            return super.enterIdentNode(identNode);
         }
 
         @Override
-        public Node leave(IdentNode identNode) {
+        public Node leaveIdentNode(IdentNode identNode) {
             farestNode = identNode;
-            return super.leave(identNode);
+            return super.leaveIdentNode(identNode);
         }
 
         public Node getFarestNode() {
