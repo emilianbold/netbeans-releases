@@ -131,6 +131,42 @@ Portions Copyrighted 2016 Sun Microsystems, Inc.
   concurrently.
   </p>
   
+  <h3><a name="movement-origins">Reason of Caret Movement</a></h3>
+  <p>
+      It may be desirable (especially for navigation filters, but possibly for <a href="EditorCaretListener.html">EditorCaretListeners</a> too) to determine
+  what was the reason leading to caret movement. The caller of Caret API may provide an optional
+  <a href="MoveCaretsOrigin.html">MoveCaretsOrigin</a> instance to caret moving API methods to indicate
+  type of action leading to the movement. Only one action type is currently defined by the 
+  API - <a href="MoveCaretsOrigin.html#DIRECT_NAVIGATION">DIRECT_NAVIGATION</a>. This type can disstinguish
+  actions, whose only task is to operate the caret (i.e. left/right, page-up, document-begin) from actions,
+  which position caret as a part of larger task (i.e. search, goto type, ...). See <a href="CaretMoveContext.html#">
+  moveDot</a> for more details.
+  </p>
+  
+  <h3><a name="navigation-filters">Navigation Filters</a></h3>
+  <p>
+  The Caret API implements the concept of swing 
+  <a href="@JDK@/javax/swing/text/NavigationFilter.html">NavigationFilters</a>. The Filter
+  gets notified on each <code>CaretInfo</code> movement; so if more Carets are present, 
+  the <code>NavigationFilter</code> will see all their moves. Navigation Filters are
+  called with a special instance of <a href="@JDK@/javax/swing/text/NavigationFilter.FilterBypass.html">
+  FilterBypass</a> extending <a href="../../../spi/editor/caret/NavigationFilterBypass.html">
+  NavigationFilterBypass</a>. The Filter can downcast the FilterBypass to access extended information
+  about the current caret's movement.
+  </p>
+  <p>
+  Navigation filters can be also selectively registered for only certain type of actions described by
+  <a href="MoveCaretsOrigin.html">MoveCaretsOrigin</a> instance. See <a href="EditorCaret.html#setNavigationFilter-org.netbeans.api.editor.caret.MoveCaretsOrigin-javax.swing.text.NavigationFilter-">
+  setNavigationFilter</a> for more details.
+  </p>
+  <p>
+  Abstract boilerplate for <code>NavigationFilters</code> is created, 
+  <a href="../../../spi/editor/caret/CascadingNavigationFilter.html">CascadingNavigationFilter</a>
+  which allows to chain individual filters. Implementors are encouraged to use it, or otherwise
+  pass the control to previously registered <code>NavigationFilter</code> in case the movement
+  event is not handled by the custom implementation.
+  <p/>
+  
   <h3><a name="compatibilty">Backwards compatibility</a></h3>
   <p>
   As a technical limitation, <code>EditorCaret</code> has to implement <code>Caret</code>

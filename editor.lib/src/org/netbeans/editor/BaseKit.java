@@ -122,6 +122,7 @@ import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.api.editor.NavigationHistory;
 import org.netbeans.api.editor.caret.CaretMoveContext;
+import org.netbeans.api.editor.caret.MoveCaretsOrigin;
 import org.netbeans.spi.editor.caret.CaretMoveHandler;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
 import org.netbeans.modules.editor.lib.SettingsConversions;
@@ -2551,7 +2552,9 @@ public class BaseKit extends DefaultEditorKit {
                                 }
                             }
                         }
-                    });
+                    }, new MoveCaretsOrigin(
+                            MoveCaretsOrigin.DIRECT_NAVIGATION, SwingConstants.NORTH)
+                    );
                 } else {
                 try {
                     int dot = caret.getDot();
@@ -2600,6 +2603,7 @@ public class BaseKit extends DefaultEditorKit {
                 } catch (BadLocationException ex) {
                     target.getToolkit().beep();
                 }
+                target.putClientProperty("navigational.action", null);
             }
             }
         }
@@ -2659,7 +2663,9 @@ public class BaseKit extends DefaultEditorKit {
                                 }
                             }
                         }
-                    });
+                    }, new MoveCaretsOrigin(
+                            MoveCaretsOrigin.DIRECT_NAVIGATION, SwingConstants.SOUTH)
+                    );
                 } else {
                 try {
                     int dot = caret.getDot();
@@ -2709,6 +2715,7 @@ public class BaseKit extends DefaultEditorKit {
                 } catch (BadLocationException ex) {
                     target.getToolkit().beep();
                 }
+                target.putClientProperty("navigational.action", null);
                 }
             }
         }
@@ -2818,6 +2825,7 @@ public class BaseKit extends DefaultEditorKit {
                                         }
 
                                         // Update magic caret position
+                                        newCaretBounds = target.modelToView(caretInfo.getDot());
                                         magicCaretPosition.y = newCaretBounds.y;
                                         context.setMagicCaretPosition(caretInfo, magicCaretPosition);
                                     }
@@ -2825,7 +2833,9 @@ public class BaseKit extends DefaultEditorKit {
                                     target.getToolkit().beep();
                                 }
                             }
-                        });
+                        }, new MoveCaretsOrigin(
+                            MoveCaretsOrigin.DIRECT_NAVIGATION, SwingConstants.NORTH)
+                        );
                     } else {
                     int caretOffset = caret.getDot();
                     Rectangle caretBounds = ((BaseTextUI)target.getUI()).modelToView(target, caretOffset);
@@ -2912,6 +2922,7 @@ public class BaseKit extends DefaultEditorKit {
                 } catch (BadLocationException ex) {
                     target.getToolkit().beep();
                 }
+                target.putClientProperty("navigational.action", null);
             }
         }
     }
@@ -2963,7 +2974,9 @@ public class BaseKit extends DefaultEditorKit {
                                     }
                                 }
                             }
-                        });
+                        }, new MoveCaretsOrigin(
+                            MoveCaretsOrigin.DIRECT_NAVIGATION, SwingConstants.EAST)
+                        );
                     }
                 } else {
                 try {
@@ -2996,6 +3009,7 @@ public class BaseKit extends DefaultEditorKit {
                 } catch (BadLocationException ex) {
                     target.getToolkit().beep();
                 }
+                target.putClientProperty("navigational.action", null);
             }
             }
         }
@@ -3108,7 +3122,9 @@ public class BaseKit extends DefaultEditorKit {
                                     target.getToolkit().beep();
                                 }
                             }
-                        });
+                        }, new MoveCaretsOrigin(
+                            MoveCaretsOrigin.DIRECT_NAVIGATION, SwingConstants.SOUTH)
+                        );
                     } else {
                     int caretOffset = caret.getDot();
                     Rectangle caretBounds = ((BaseTextUI)target.getUI()).modelToView(target, caretOffset);
@@ -3190,6 +3206,7 @@ public class BaseKit extends DefaultEditorKit {
                 } catch (BadLocationException ex) {
                     target.getToolkit().beep();
                 }
+                target.putClientProperty("navigational.action", null);
             }
         }
     }
@@ -3241,7 +3258,9 @@ public class BaseKit extends DefaultEditorKit {
                                     }
                                 }
                             }
-                        });
+                        }, new MoveCaretsOrigin(
+                            MoveCaretsOrigin.DIRECT_NAVIGATION, SwingConstants.WEST)
+                        );
                     }
                 } else {
                     try {
@@ -3273,6 +3292,7 @@ public class BaseKit extends DefaultEditorKit {
                     } catch (BadLocationException ex) {
                         target.getToolkit().beep();
                     }
+                    target.putClientProperty("navigational.action", null);
                 }
             }
         }
@@ -3380,7 +3400,9 @@ public class BaseKit extends DefaultEditorKit {
                                 }
                             }
                         }
-                    });
+                    }, new MoveCaretsOrigin(
+                            MoveCaretsOrigin.DIRECT_NAVIGATION, SwingConstants.WEST)
+                    );
                 } else {
                 try {
                     int dot = caret.getDot();
@@ -3440,6 +3462,7 @@ public class BaseKit extends DefaultEditorKit {
                 } catch (BadLocationException e) {
                     target.getToolkit().beep();
                 }
+                target.putClientProperty("navigational.action", null);
             }
             }
         }
@@ -3507,8 +3530,9 @@ public class BaseKit extends DefaultEditorKit {
                                 }
                             }
                         }
-                    });
-                    
+                    }, new MoveCaretsOrigin(
+                            MoveCaretsOrigin.DIRECT_NAVIGATION, SwingConstants.EAST)
+                    );
                 } else {
                 try {
                     // #232675: if bounds are defined, use them rather than line start/end
@@ -3549,6 +3573,7 @@ public class BaseKit extends DefaultEditorKit {
                     e.printStackTrace();
                     target.getToolkit().beep();
                 }
+                target.putClientProperty("navigational.action", null);
             }
             }
         }
@@ -3572,12 +3597,13 @@ public class BaseKit extends DefaultEditorKit {
                 Caret caret = target.getCaret();
                 int dot = 0; // begin of document
                 boolean select = selectionBeginAction.equals(getValue(Action.NAME));
-                target.putClientProperty("navigational.action", SwingConstants.NORTH);
+                target.putClientProperty("navigational.action", SwingConstants.NORTH_WEST);
                 if (select) {
                     caret.moveDot(dot);
                 } else {
                     caret.setDot(dot);
                 }
+                target.putClientProperty("navigational.action", null);
             }
         }
     }
@@ -3608,12 +3634,13 @@ public class BaseKit extends DefaultEditorKit {
                 Caret caret = target.getCaret();
                 int dot = target.getDocument().getLength(); // end of document
                 boolean select = selectionEndAction.equals(getValue(Action.NAME));
-                target.putClientProperty("navigational.action", SwingConstants.NORTH);
+                target.putClientProperty("navigational.action", SwingConstants.SOUTH_EAST);
                 if (select) {
                     caret.moveDot(dot);
                 } else {
                     caret.setDot(dot);
                 }
+                target.putClientProperty("navigational.action", null);
             }
         }
     }
@@ -3644,7 +3671,7 @@ public class BaseKit extends DefaultEditorKit {
                 try {
                     int newDotOffset = getNextWordOffset(target);
                     boolean select = selectionNextWordAction.equals(getValue(Action.NAME));
-                    target.putClientProperty("navigational.action", SwingConstants.NORTH);
+                    target.putClientProperty("navigational.action", SwingConstants.WEST);
                     if (select) {
                         if (caret instanceof EditorCaret && RectangularSelectionUtils.isRectangularSelection(target)) {
                             RectangularSelectionCaretAccessor.get().extendRectangularSelection((EditorCaret)caret, true, true);
@@ -3657,6 +3684,7 @@ public class BaseKit extends DefaultEditorKit {
                 } catch (BadLocationException ex) {
                     target.getToolkit().beep();
                 }
+                target.putClientProperty("navigational.action", null);
             }
         }
     }
@@ -3687,6 +3715,7 @@ public class BaseKit extends DefaultEditorKit {
                 try {
                     int newDotOffset = getPreviousWordOffset(target);
                     boolean select = selectionPreviousWordAction.equals(getValue(Action.NAME));
+                    target.putClientProperty("navigational.action", SwingConstants.EAST);
                     if (select) {
                         if (caret instanceof EditorCaret && RectangularSelectionUtils.isRectangularSelection(target)) {
                             RectangularSelectionCaretAccessor.get().extendRectangularSelection((EditorCaret)caret, false, true);
@@ -3699,6 +3728,7 @@ public class BaseKit extends DefaultEditorKit {
                 } catch (BadLocationException ex) {
                     target.getToolkit().beep();
                 }
+                target.putClientProperty("navigational.action", null);
             }
         }
     }
@@ -3731,6 +3761,7 @@ public class BaseKit extends DefaultEditorKit {
                 } catch (BadLocationException ex) {
                     target.getToolkit().beep();
                 }
+                target.putClientProperty("navigational.action", null);
             }
         }
     }
@@ -3754,7 +3785,7 @@ public class BaseKit extends DefaultEditorKit {
                 try {
                     int dot = Utilities.getWordEnd(target, caret.getDot());
                     boolean select = selectionEndWordAction.equals(getValue(Action.NAME));
-                    target.putClientProperty("navigational.action", SwingConstants.NORTH);
+                    target.putClientProperty("navigational.action", SwingConstants.EAST);
                     if (select) {
                         caret.moveDot(dot);
                     } else {
@@ -3763,6 +3794,7 @@ public class BaseKit extends DefaultEditorKit {
                 } catch (BadLocationException ex) {
                     target.getToolkit().beep();
                 }
+                target.putClientProperty("navigational.action", null);
             }
         }
     }
@@ -3811,6 +3843,7 @@ public class BaseKit extends DefaultEditorKit {
                         } catch (BadLocationException e) {
                             target.getToolkit().beep();
                         } finally {
+                            target.putClientProperty("navigational.action", null);
                             DocumentUtilities.setTypingModification(doc, false);
                         }
                     }

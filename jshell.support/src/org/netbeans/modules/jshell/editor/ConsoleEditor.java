@@ -60,6 +60,8 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.NavigationFilter;
 import javax.swing.text.Position;
+import org.netbeans.api.editor.caret.EditorCaret;
+import org.netbeans.api.editor.caret.MoveCaretsOrigin;
 import org.netbeans.api.editor.document.LineDocument;
 import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.modules.java.preprocessorbridge.spi.WrapperFactory;
@@ -74,6 +76,8 @@ import org.netbeans.modules.jshell.model.ConsoleModel;
 import org.netbeans.modules.jshell.model.ConsoleSection;
 import org.netbeans.modules.jshell.model.Rng;
 import org.netbeans.modules.jshell.support.ShellSession;
+import org.netbeans.spi.editor.caret.CascadingNavigationFilter;
+import org.netbeans.spi.editor.caret.NavigationFilterBypass;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.text.CloneableEditor;
@@ -275,7 +279,7 @@ public class ConsoleEditor extends CloneableEditor {
      * <li>if the caret goes to the start of prompt (begin-line), nothing happens.
      * </ul>
      */
-    private class NavFilter extends NavigationFilter {
+    private class NavFilter extends CascadingNavigationFilter {
 
         @Override
         public void moveDot(FilterBypass fb, int dot, Position.Bias bias) {
@@ -295,8 +299,17 @@ public class ConsoleEditor extends CloneableEditor {
         private boolean handle(FilterBypass fb, int dot, Position.Bias bias, boolean setOrMove) {
             // sadly actions must set up a flag in order to be 'compatible':
             JEditorPane p = pane;
-            if (p == null || p.getClientProperty("navigational.action") == null) {
+            if (p == null) {
                 return true;
+            }
+            if (p.getClientProperty("navigational.action") == null) {
+                if (!(fb instanceof NavigationFilterBypass)) {
+                    return true;
+                }
+                MoveCaretsOrigin orig = ((NavigationFilterBypass)fb).getOrigin();
+                if (!MoveCaretsOrigin.DIRECT_NAVIGATION.equals(orig.getActionType())) {
+                    return true;
+                }
             }
             int current = fb.getCaret().getDot();
             ConsoleSection input = session.getModel().getInputSection();
