@@ -2102,7 +2102,7 @@ is divided into following sections:
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
                 <j2seproject3:force-recompile/>
                 <xsl:element name="j2seproject3:javac">
-                    <xsl:attribute name="includes">${javac.includes}</xsl:attribute>
+                    <xsl:attribute name="includes">${javac.includes}, module-info.java</xsl:attribute>
                     <xsl:attribute name="excludes"/>
                     <xsl:attribute name="sourcepath"> <!-- #115918 -->
                         <xsl:call-template name="createPath">
@@ -2721,7 +2721,7 @@ is divided into following sections:
                     <xsl:attribute name="debug">true</xsl:attribute>
                     <xsl:attribute name="classpath">${javac.test.classpath}</xsl:attribute>
                     <xsl:attribute name="modulepath">${javac.test.modulepath}</xsl:attribute>
-                    <xsl:attribute name="includes">${javac.includes}</xsl:attribute>
+                    <xsl:attribute name="includes">${javac.includes}, module-info.java</xsl:attribute>
                     <xsl:attribute name="excludes"/>
                     <xsl:attribute name="processorpath">${javac.test.processorpath}</xsl:attribute>
                     <xsl:attribute name="apgeneratedsrcdir">${build.test.classes.dir}</xsl:attribute>
