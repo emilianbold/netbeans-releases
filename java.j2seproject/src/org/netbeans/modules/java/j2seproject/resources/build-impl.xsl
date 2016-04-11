@@ -232,7 +232,7 @@ is divided into following sections:
                     <and>
                         <isset property="javac.profile"/>
                         <length length="0" string="${{javac.profile}}" when="greater"/>
-                        <matches pattern="1\.[89](\..*)?" string="${{javac.source}}"/>
+                        <matches pattern="((1\.[89])|9)(\..*)?" string="${{javac.source}}"/>
                     </and>
                 </condition>
                 <condition property="do.archive">
