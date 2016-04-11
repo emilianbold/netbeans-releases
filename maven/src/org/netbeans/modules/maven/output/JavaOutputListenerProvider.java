@@ -93,7 +93,6 @@ public class JavaOutputListenerProvider implements OutputProcessor {
     private final Pattern failPattern;
     private String windowsDrive; // #197381
     /** @see org.codehaus.plexus.compiler.javac.JavacCompiler#compile */
-    private static final Pattern windowsDriveInfoPattern = Pattern.compile("Compiling \\d+ source files? to ([A-Za-z]:)\\\\.+");
     private final RunConfig config;
     private Boolean jdk9compilerVersionOK;
     private static final String GROUP_CLAZZ_NAME = "clazz";
