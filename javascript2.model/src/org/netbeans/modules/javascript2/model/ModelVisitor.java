@@ -674,6 +674,14 @@ public class ModelVisitor extends PathNodeVisitor {
         }
         scope.addProperty(name.getName(), property);
     }
+
+    @Override
+    public boolean enterExportNode(ExportNode exportNode) {
+        if (exportNode.getExpression() != null) {
+            exportNode.getExpression().accept(this);
+        }
+        return false;
+    }
     
     @Override
     public boolean enterForNode(ForNode forNode) {
@@ -1261,7 +1269,8 @@ public class ModelVisitor extends PathNodeVisitor {
             LOGGER.log(Level.FINEST, "       " + debugInfo(varNode));
             Expression init = varNode.getInit();
             boolean createVariable = true;
-            if (!varNode.isFunctionDeclaration()) { // we skip syntetic variables created from case: function f1(){}
+            if (!varNode.isFunctionDeclaration() // we skip syntetic variables created from case: function f1(){}
+                    && !varNode.isSynthetic()) { // we skip syntetic variables created from export expression
                 if (init instanceof FunctionNode && !((FunctionNode)init).isNamedFunctionExpression()) {
                     // case: var f1 = function () {}
                     // the function here is already, need to be just fixed the name offsets
@@ -2458,7 +2467,8 @@ public class ModelVisitor extends PathNodeVisitor {
         }
          if (!(init instanceof ObjectNode || rNode != null
                  || init instanceof LiteralNode.ArrayLiteralNode
-                 || init instanceof ClassNode)) {
+                 || init instanceof ClassNode
+                 || varNode.isSynthetic())) {
             JsObject parent = modelBuilder.getCurrentObject();
             //parent = canBeSingletonPattern(1) ? resolveThis(parent) : parent;
             if (parent instanceof CatchBlockImpl) {
