@@ -74,7 +74,13 @@ import com.oracle.js.parser.ir.VarNode;
 import com.oracle.js.parser.ir.WithNode;
 import com.oracle.js.parser.ir.visitor.NodeVisitor;
 import com.oracle.js.parser.TokenType;
+import com.oracle.js.parser.ir.ExportNode;
 import com.oracle.js.parser.ir.Expression;
+import com.oracle.js.parser.ir.ImportClauseNode;
+import com.oracle.js.parser.ir.ImportNode;
+import com.oracle.js.parser.ir.ImportSpecifierNode;
+import com.oracle.js.parser.ir.NameSpaceImportNode;
+import com.oracle.js.parser.ir.NamedImportsNode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -627,6 +633,49 @@ public class ModelVisitor extends PathNodeVisitor {
     }
 
     @Override
+    public boolean enterImportNode(ImportNode iNode) {
+        ImportClauseNode iClause = iNode.getImportClause();
+        if (iClause != null) {
+            IdentNode defaultBinding = iClause.getDefaultBinding();
+            NameSpaceImportNode nameSpaceImport = iClause.getNameSpaceImport();
+            NamedImportsNode namedImports = iClause.getNamedImports();
+            if (defaultBinding != null) {
+                Identifier importedAs = create(parserResult, defaultBinding);
+                // create a variable, which have assignment the same variable name  from FromNode
+                createVariableFromImport(importedAs);
+            }
+            if (nameSpaceImport != null) {
+                Identifier importedAs = create(parserResult, nameSpaceImport.getBindingIdentifier());
+                // create a variable, which has all properties from FromNode module
+                createVariableFromImport(importedAs);
+            }
+            if (namedImports != null && namedImports.getImportSpecifiers() != null) {
+                List<ImportSpecifierNode> importSpecifiers = namedImports.getImportSpecifiers();
+                for (ImportSpecifierNode importSpecifier : importSpecifiers) {
+                    // TODO according to the spec the getBindingIdentifier should be written always and it's how it can be in local
+                    // it looks like getBindingIdentifier and getIdentifier is swapped. 
+                    Identifier importedAs = create(parserResult, importSpecifier.getIdentifier());
+                    if (importSpecifier.getBindingIdentifier() != null) {
+                        Identifier exportedProperty = create(parserResult, importSpecifier.getBindingIdentifier());
+                    }
+                    createVariableFromImport(importedAs);
+                }
+            }
+        }
+        return false;
+    }
+
+    private void createVariableFromImport(Identifier name) {
+        JsFunctionImpl scope = modelBuilder.getCurrentDeclarationFunction();
+        JsObject existingProp = scope.getProperty(name.getName());
+        JsObjectImpl property = new JsObjectImpl(scope, name, name.getOffsetRange(), true, scope.getMimeType(), scope.getSourceLabel());
+        if (existingProp != null) {
+            ModelUtils.copyOccurrences(existingProp, property);
+        }
+        scope.addProperty(name.getName(), property);
+    }
+    
+    @Override
     public boolean enterForNode(ForNode forNode) {
         if (forNode.getInit() instanceof IdentNode) {
             JsObject parent = modelBuilder.getCurrentObject();
@@ -690,6 +739,17 @@ public class ModelVisitor extends PathNodeVisitor {
         
         processJsDoc(fncScope, functionNode, JsDocumentationSupport.getDocumentationHolder(parserResult));
 
+        if (functionNode.isModule()) {
+            // visit all imports and exports
+            List<ImportNode> imports = functionNode.getModule().getImports();
+            for (ImportNode moduleImport : imports) {
+                moduleImport.accept(this);
+            }
+            List<ExportNode> exports = functionNode.getModule().getExports();
+            for (ExportNode moduleExport : exports) {
+                moduleExport.accept(this);
+            }
+        }
         
         // visit all statements of the function
         for (Node node : functionNode.getBody().getStatements()) {

@@ -130,11 +130,11 @@ public class GoToDeclarationTest extends JsTestBase {
     }
     
     public void testImportedFile_02() throws Exception {
-        checkDeclaration("testfiles/ecmascript6/importExport/importFindDeclaration01.js", "import text as text2 from \"./lib/exp^ort02\";", "export02.js", 0);
+        checkDeclaration("testfiles/ecmascript6/importExport/importFindDeclaration01.js", "import { text as text2 } from \"./lib/exp^ort02\";", "export02.js", 0);
     }
     
     public void testImportedFile_03() throws Exception {
-        checkDeclaration("testfiles/ecmascript6/importExport/importFindDeclaration01.js", "import text as text3 from \"l^ib/export02\";", "export02.js", 0);
+        checkDeclaration("testfiles/ecmascript6/importExport/importFindDeclaration01.js", "import { text as text3 } from \"l^ib/export02\";", "export02.js", 0);
     }
     
 }

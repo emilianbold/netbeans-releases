@@ -54,16 +54,25 @@ import com.oracle.js.parser.ir.ContinueNode;
 import com.oracle.js.parser.ir.DebuggerNode;
 import com.oracle.js.parser.ir.EmptyNode;
 import com.oracle.js.parser.ir.ErrorNode;
+import com.oracle.js.parser.ir.ExportClauseNode;
+import com.oracle.js.parser.ir.ExportNode;
+import com.oracle.js.parser.ir.ExportSpecifierNode;
 import com.oracle.js.parser.ir.ExpressionStatement;
 import com.oracle.js.parser.ir.ForNode;
+import com.oracle.js.parser.ir.FromNode;
 import com.oracle.js.parser.ir.FunctionNode;
 import com.oracle.js.parser.ir.IdentNode;
 import com.oracle.js.parser.ir.IfNode;
+import com.oracle.js.parser.ir.ImportClauseNode;
+import com.oracle.js.parser.ir.ImportNode;
+import com.oracle.js.parser.ir.ImportSpecifierNode;
 import com.oracle.js.parser.ir.IndexNode;
 import com.oracle.js.parser.ir.JoinPredecessorExpression;
 import com.oracle.js.parser.ir.LabelNode;
 import com.oracle.js.parser.ir.LexicalContext;
 import com.oracle.js.parser.ir.LiteralNode;
+import com.oracle.js.parser.ir.NameSpaceImportNode;
+import com.oracle.js.parser.ir.NamedImportsNode;
 import com.oracle.js.parser.ir.Node;
 import com.oracle.js.parser.ir.ObjectNode;
 import com.oracle.js.parser.ir.PropertyNode;
@@ -526,4 +535,112 @@ public class PathNodeVisitor extends NodeVisitor {
         return super.enterAccessNode(accessNode);
     }
 
+    @Override
+    public boolean enterExportClauseNode(ExportClauseNode exportClauseNode) {
+        addToPath(exportClauseNode);
+        return super.enterExportClauseNode(exportClauseNode);
+    }
+
+    @Override
+    public Node leaveExportClauseNode(ExportClauseNode exportClauseNode) {
+        removeFromPathTheLast();
+        return super.leaveExportClauseNode(exportClauseNode);
+    }
+
+    @Override
+    public boolean enterExportNode(ExportNode exportNode) {
+        addToPath(exportNode);
+        return super.enterExportNode(exportNode); 
+    }
+
+    @Override
+    public Node leaveExportNode(ExportNode exportNode) {
+        removeFromPathTheLast();
+        return super.leaveExportNode(exportNode);
+    }
+
+    @Override
+    public boolean enterExportSpecifierNode(ExportSpecifierNode exportSpecifierNode) {
+        addToPath(exportSpecifierNode);
+        return super.enterExportSpecifierNode(exportSpecifierNode);
+    }
+
+    @Override
+    public Node leaveExportSpecifierNode(ExportSpecifierNode exportSpecifierNode) {
+        removeFromPathTheLast();
+        return super.leaveExportSpecifierNode(exportSpecifierNode);
+    }
+
+    @Override
+    public boolean enterFromNode(FromNode fromNode) {
+        addToPath(fromNode);
+        return super.enterFromNode(fromNode);
+    }
+
+    @Override
+    public Node leaveFromNode(FromNode fromNode) {
+        removeFromPathTheLast();
+        return super.leaveFromNode(fromNode);
+    }
+
+    @Override
+    public boolean enterImportClauseNode(ImportClauseNode importClauseNode) {
+        addToPath(importClauseNode);
+        return super.enterImportClauseNode(importClauseNode);
+    }
+
+    @Override
+    public Node leaveImportClauseNode(ImportClauseNode importClauseNode) {
+        removeFromPathTheLast();
+        return super.leaveImportClauseNode(importClauseNode);
+    }
+
+    @Override
+    public boolean enterImportNode(ImportNode importNode) {
+        addToPath(importNode);
+        return super.enterImportNode(importNode);
+    }
+
+    @Override
+    public Node leaveImportNode(ImportNode importNode) {
+        removeFromPathTheLast();
+        return super.leaveImportNode(importNode);
+    }
+
+    @Override
+    public boolean enterImportSpecifierNode(ImportSpecifierNode importSpecifierNode) {
+        addToPath(importSpecifierNode);
+        return super.enterImportSpecifierNode(importSpecifierNode); 
+    }
+
+    @Override
+    public Node leaveImportSpecifierNode(ImportSpecifierNode importSpecifierNode) {
+        removeFromPathTheLast();
+        return super.leaveImportSpecifierNode(importSpecifierNode); 
+    }
+
+    @Override
+    public boolean enterNameSpaceImportNode(NameSpaceImportNode nameSpaceImportNode) {
+        addToPath(nameSpaceImportNode);
+        return super.enterNameSpaceImportNode(nameSpaceImportNode); 
+    }
+
+    @Override
+    public Node leaveNameSpaceImportNode(NameSpaceImportNode nameSpaceImportNode) {
+        removeFromPathTheLast();
+        return super.leaveNameSpaceImportNode(nameSpaceImportNode); 
+    }
+
+    @Override
+    public boolean enterNamedImportsNode(NamedImportsNode namedImportsNode) {
+        addToPath(namedImportsNode);
+        return super.enterNamedImportsNode(namedImportsNode); 
+    }
+
+    @Override
+    public Node leaveNamedImportsNode(NamedImportsNode namedImportsNode) {
+        removeFromPathTheLast();
+        return super.leaveNamedImportsNode(namedImportsNode); 
+    }
+    
 }
