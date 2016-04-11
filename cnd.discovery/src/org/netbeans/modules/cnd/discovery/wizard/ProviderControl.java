@@ -68,7 +68,6 @@ import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.cnd.utils.ui.EditableComboBox;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDescriptor;
@@ -93,7 +92,7 @@ public class ProviderControl<T> {
     private final ChangeListener listener;
     private FileSystem projectFileSystem;
     private JLabel label;
-    private EditableComboBox field;
+    private ExpandableEditableComboBox field;
     private JButton button;
     private int chooserMode = 0;
     private static final String LIST_LIST_DELIMITER = ";"; // NOI18N
@@ -114,7 +113,7 @@ public class ProviderControl<T> {
         Mnemonics.setLocalizedText(label, property.getName());
         switch(property.getPropertyType().kind()) {
             case MakeLogFile:
-                field = new EditableComboBox();
+                field = new ExpandableEditableComboBox();
                 field.setEditable(true);
                 chooserMode = JFileChooser.FILES_ONLY;
                 initBuildOrRoot(wizardDescriptor);
@@ -131,7 +130,7 @@ public class ProviderControl<T> {
                 addListeners();
                 break;
             case BinaryFile:
-                field = new EditableComboBox();
+                field = new ExpandableEditableComboBox();
                 field.setEditable(true);
                 chooserMode = JFileChooser.FILES_ONLY;
                 initBuildOrRoot(wizardDescriptor);
@@ -148,7 +147,7 @@ public class ProviderControl<T> {
                 addListeners();
                 break;
             case Folder:
-                field = new EditableComboBox();
+                field = new ExpandableEditableComboBox();
                 field.setEditable(true);
                 chooserMode = JFileChooser.DIRECTORIES_ONLY;
                 initRoot(wizardDescriptor);
@@ -164,7 +163,7 @@ public class ProviderControl<T> {
                 addListeners();
                 break;
             case BinaryFiles:
-                field = new EditableComboBox();
+                field = new ExpandableEditableComboBox();
                 field.setEditable(true);
                 chooserMode = JFileChooser.FILES_ONLY;
                 initArray();
@@ -240,6 +239,7 @@ public class ProviderControl<T> {
             preferences = NbPreferences.forModule(ProviderControl.class);
         }
         field.setStorage(propertyKey, preferences);
+        field.setEnv(FileSystemProvider.getExecutionEnvironment(projectFileSystem));
         field.read(root);
     }
     

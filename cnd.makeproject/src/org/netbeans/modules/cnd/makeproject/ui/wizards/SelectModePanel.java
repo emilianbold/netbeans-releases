@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
+import org.netbeans.modules.cnd.makeproject.ui.utils.ExpandableEditableComboBox;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -75,7 +76,6 @@ import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisua
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.cnd.utils.ui.EditableComboBox;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -124,7 +124,7 @@ public class SelectModePanel extends javax.swing.JPanel {
     }
     
     private void refreshSourceFolder(boolean refresh) {
-        String path = ((EditableComboBox)sourceFolder).getText();
+        String path = ((ExpandableEditableComboBox)sourceFolder).getText();
         if (refresh) {
             FileObject fileObject;
             if (path.isEmpty()) {
@@ -142,7 +142,7 @@ public class SelectModePanel extends javax.swing.JPanel {
     }
     
     private void addListeners(){
-        ((EditableComboBox)sourceFolder).addChangeListener(new ActionListener() {
+        ((ExpandableEditableComboBox)sourceFolder).addChangeListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 refreshInstruction(true);
@@ -194,7 +194,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         hostLabel = new javax.swing.JLabel();
         sourceFolderLabel = new javax.swing.JLabel();
         sourceBrowseButton = new javax.swing.JButton();
-        sourceFolder = new EditableComboBox();
+        sourceFolder = new ExpandableEditableComboBox();
 
         setPreferredSize(new java.awt.Dimension(450, 350));
         setLayout(new java.awt.GridBagLayout());
@@ -204,8 +204,8 @@ public class SelectModePanel extends javax.swing.JPanel {
         jScrollPane1.setBorder(null);
         jScrollPane1.setPreferredSize(new java.awt.Dimension(200, 200));
 
-        instructions.setBorder(null);
         instructions.setEditable(false);
+        instructions.setBorder(null);
         instructions.setFocusable(false);
         instructions.setOpaque(false);
         jScrollPane1.setViewportView(instructions);
@@ -361,7 +361,7 @@ public class SelectModePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_hostComboBoxItemStateChanged
 
     private void sourceBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sourceBrowseButtonActionPerformed
-        String path = ((EditableComboBox)sourceFolder).getText();
+        String path = ((ExpandableEditableComboBox)sourceFolder).getText();
         if (path.isEmpty()) { 
             path = SelectModePanel.getDefaultDirectory(env);
         }
@@ -382,7 +382,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         File selectedFile = fileChooser.getSelectedFile();
         if (selectedFile != null) { // seems paranoidal, but once I've seen NPE otherwise 8-()
             path = selectedFile.getPath();
-            ((EditableComboBox)sourceFolder).setText(path);
+            ((ExpandableEditableComboBox)sourceFolder).setText(path);
         }
     }//GEN-LAST:event_sourceBrowseButtonActionPerformed
 
@@ -411,9 +411,10 @@ public class SelectModePanel extends javax.swing.JPanel {
             env = ExecutionEnvironmentFactory.getLocal();
         }
         fileSystem = FileSystemProvider.getFileSystem(env);
-        ((EditableComboBox)sourceFolder).setStorage(SOURCES_FILE_KEY, NbPreferences.forModule(SelectModePanel.class));
+        ((ExpandableEditableComboBox)sourceFolder).setStorage(SOURCES_FILE_KEY, NbPreferences.forModule(SelectModePanel.class));
+        ((ExpandableEditableComboBox)sourceFolder).setEnv(env);
         if (firstTime) {
-            ((EditableComboBox)sourceFolder).read("");
+            ((ExpandableEditableComboBox)sourceFolder).read("");
         }
         refreshInstruction(false);
         firstTime = false;
@@ -454,10 +455,10 @@ public class SelectModePanel extends javax.swing.JPanel {
     void store(WizardDescriptor wizardDescriptor) {
         WizardConstants.PROPERTY_SIMPLE_MODE.put(wizardDescriptor, simpleMode.isSelected());
         controller.getWizardStorage().setFullRemoteEnv(WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV.get(wizardDescriptor));
-        WizardConstants.PROPERTY_SIMPLE_MODE_FOLDER.put(wizardDescriptor, ((EditableComboBox)sourceFolder).getText().trim());
-        ((EditableComboBox)sourceFolder).setStorage(SOURCES_FILE_KEY, NbPreferences.forModule(SelectModePanel.class));
-        ((EditableComboBox)sourceFolder).store();
-        String folderPath = ((EditableComboBox)sourceFolder).getText().trim();
+        WizardConstants.PROPERTY_SIMPLE_MODE_FOLDER.put(wizardDescriptor, ((ExpandableEditableComboBox)sourceFolder).getText().trim());
+        ((ExpandableEditableComboBox)sourceFolder).setStorage(SOURCES_FILE_KEY, NbPreferences.forModule(SelectModePanel.class));
+        ((ExpandableEditableComboBox)sourceFolder).store();
+        String folderPath = ((ExpandableEditableComboBox)sourceFolder).getText().trim();
         if (WizardDescriptor.CLOSED_OPTION.equals(wizardDescriptor.getValue()) || WizardDescriptor.CANCEL_OPTION.equals(wizardDescriptor.getValue()) ) {
             return;
         }
@@ -499,7 +500,7 @@ public class SelectModePanel extends javax.swing.JPanel {
 
     boolean valid() {
         messageKind = noMessage;
-        String path = ((EditableComboBox)sourceFolder).getText().trim();
+        String path = ((ExpandableEditableComboBox)sourceFolder).getText().trim();
         try {
             if (path.length() == 0) {
                 return false;
@@ -687,7 +688,7 @@ public class SelectModePanel extends javax.swing.JPanel {
                             BuildFile scriptFile = BuildSupport.scriptToBuildFile(makefile);
                             if (scriptFile != null) {
                                 SelectModePanel.this.controller.getWizardStorage().getProjectPath();
-                                tool = CndPathUtilities.getRelativePath(((EditableComboBox)sourceFolder).getText().trim(), makefile);
+                                tool = CndPathUtilities.getRelativePath(((ExpandableEditableComboBox)sourceFolder).getText().trim(), makefile);
                                 BuildFileProvider buildFileProvider = BuildSupport.getBuildFileProvider(scriptFile);
                                 toolsInfo = buildFileProvider.getHint();
                             }

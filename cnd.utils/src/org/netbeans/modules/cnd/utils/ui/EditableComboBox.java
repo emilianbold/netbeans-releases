@@ -82,7 +82,7 @@ public class EditableComboBox extends JComboBox {
      * @param path is initial combo box value
      */
     public void read(String path) {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         list.add(path);
         String old = null;
         if (prefs != null) {
@@ -116,8 +116,8 @@ public class EditableComboBox extends JComboBox {
      * Store combo box state in the storage
      */
     public void store() {
-        List<String> list = new ArrayList<String>();
-        String text = getText();
+        List<String> list = new ArrayList<>();
+        String text = getTextImpl();
         if (!text.isEmpty()) {
             list.add(text);
         }
@@ -140,9 +140,21 @@ public class EditableComboBox extends JComboBox {
     }
 
     /**
-     * Get current text
+     * Get field text.
+     * Override this method to add additional expansion possibilities.
+     * 
+     * @return field text
      */
     public String getText() {
+        return getTextImpl();
+    }
+
+    /**
+     * Get original field text.
+     * 
+     * @return field text
+     */
+    protected final String getTextImpl() {
         if (editor != null) {
             Component component = editor.getEditorComponent();
             if (component instanceof JTextField) {
@@ -155,21 +167,9 @@ public class EditableComboBox extends JComboBox {
         return null;
     }
 
-    public String getLastText() {
-        String candidate = getText();
-        if (candidate == null || candidate.isEmpty()) {
-            for (int i = 0; i < getModel().getSize(); i++) {
-                String s = getModel().getElementAt(i).toString();
-                if (!s.isEmpty()) {
-                    return s;
-                }
-            }
-        }
-        return candidate;
-    }
-
     /**
      * Set current text
+     * @param path update field
      */
     public void setText(String path) {
         setSelectedItem(path);
