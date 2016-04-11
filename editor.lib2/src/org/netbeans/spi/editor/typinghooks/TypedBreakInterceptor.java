@@ -97,7 +97,7 @@ import org.openide.util.Parameters;
  *   additional rules (eg. correctly replacing selected text, handling insert vs override
  *   modes of the caret, etc). The first interceptor that modifies the insertion text
  *   will win and no other interceptor's <code>insert</code> method will be called.
- *   <br/>
+ *   <br>
  *   The interceptors are allowed to insert more than just a line break, but the text
  *   they insert has to contain at least one line break. They can also request the
  *   inserted text to be reindented. Please see {@link MutableContext#setText(java.lang.String, int, int, int...)}

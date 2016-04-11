@@ -215,6 +215,7 @@ public final class Library {
          * @return local files of this version (or {@code null} when
          * this library version is not installed).
          */
+        @org.netbeans.api.annotations.common.SuppressWarnings(value = "EI_EXPOSE_REP", justification = "Internal usage only")
         public String[] getLocalFiles() {
             return localFiles;
         }

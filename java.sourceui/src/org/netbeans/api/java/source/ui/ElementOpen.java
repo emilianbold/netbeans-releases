@@ -88,35 +88,44 @@ public final class ElementOpen {
     public static boolean open(final ClasspathInfo cpInfo, final ElementHandle<? extends Element> el) {
         final AtomicBoolean cancel = new AtomicBoolean();
         if (SwingUtilities.isEventDispatchThread() && !JavaSourceAccessor.holdsParserLock()) {
-            final boolean[] result = new boolean[1];
+            final Object[] openInfo = new Object[3];
             ProgressUtils.runOffEventDispatchThread(new Runnable() {
                     public void run() {
-                        result[0] = open(cpInfo, el, cancel);
+                        Object[] info = getOpenInfo(cpInfo, el, cancel);
+                        if (info != null) {
+                            openInfo[0] = info[0];
+                            openInfo[1] = info[1];
+                            openInfo[2] = info[2];
+                        }
                     }
                 },
                 NbBundle.getMessage(ElementOpen.class, "TXT_CalculatingDeclPos"),
                 cancel,
                 false);
-            return result[0];
+            if (cancel.get()) {
+                return false;
+            }
+            if (openInfo[0] instanceof FileObject) {
+                return doOpen((FileObject)openInfo[0], (int)openInfo[1], (int)openInfo[2]);                
+            }
+            return binaryOpen(cpInfo, el, cancel);
         } else {
             return open(cpInfo, el, cancel);
         }
     }
     
     private static boolean open(final ClasspathInfo cpInfo, final ElementHandle<? extends Element> el, AtomicBoolean cancel) {
-        FileObject fo = SourceUtils.getFile(el, cpInfo);
-        if (fo != null && fo.isFolder()) {
-            fo = fo.getFileObject("package-info.java"); // NOI18N
-        }
-        Object[] openInfo = fo != null ? getOpenInfo(fo, el, cancel) : null;
+        Object[] openInfo = getOpenInfo(cpInfo, el, cancel);
         if (cancel.get()) return false;
         if (openInfo != null) {
             assert openInfo[0] instanceof FileObject;
             return doOpen((FileObject) openInfo[0], (int)openInfo[1], (int)openInfo[2]);
         }
-
+        return binaryOpen(cpInfo, el, cancel);
+    }
+    
+    private static boolean binaryOpen(final ClasspathInfo cpInfo, final ElementHandle<? extends Element> el, AtomicBoolean cancel) {
         BinaryElementOpen beo = Lookup.getDefault().lookup(BinaryElementOpen.class);
-
         if (beo != null) {
             return beo.open(cpInfo, el, cancel);
         } else {
@@ -149,16 +158,27 @@ public final class ElementOpen {
             @NonNull final ElementHandle<? extends Element> toOpen) {
         final AtomicBoolean cancel = new AtomicBoolean();
         if (SwingUtilities.isEventDispatchThread() && !JavaSourceAccessor.holdsParserLock()) {
-            final boolean[] result = new boolean[1];
+            final Object[] openInfo = new Object[3];
             ProgressUtils.runOffEventDispatchThread(new Runnable() {
                     public void run() {
-                        result[0] = open(toSearch, toOpen, cancel);
+                        Object[] info = !isClassFile(toSearch) ? getOpenInfo (toSearch, toOpen, cancel) : null;
+                        if (info != null) {
+                            openInfo[0] = info[0];
+                            openInfo[1] = info[1];
+                            openInfo[2] = info[2];
+                        }
                     }
                 },
                 NbBundle.getMessage(ElementOpen.class, "TXT_CalculatingDeclPos"),
                 cancel,
                 false);
-            return result[0];
+            if (cancel.get()) {
+                return false;
+            }
+            if (openInfo[0] instanceof FileObject) {
+                return doOpen((FileObject)openInfo[0],(int)openInfo[1], (int)openInfo[2]);
+            }
+            return binaryOpen(toSearch, toOpen, cancel);
         } else {
             return open(toSearch, toOpen, cancel);
         }
@@ -179,7 +199,13 @@ public final class ElementOpen {
             assert openInfo[0] instanceof FileObject;
             return doOpen((FileObject)openInfo[0],(int)openInfo[1], (int)openInfo[2]);
         }
-
+        return binaryOpen(toSearch, toOpen, cancel);
+    }
+    
+    private static boolean binaryOpen(
+            @NonNull final FileObject toSearch,
+            @NonNull final ElementHandle<? extends Element> toOpen,
+            @NonNull final AtomicBoolean cancel) {
         boolean res = false;
         final BinaryElementOpen beo = Lookup.getDefault().lookup(BinaryElementOpen.class);
         if (beo != null) {
@@ -265,6 +291,14 @@ public final class ElementOpen {
 
     private static boolean isClassFile(@NonNull final FileObject file) {
         return FileObjects.CLASS.equals(file.getExt()) || ClassParser.MIME_TYPE.equals(file.getMIMEType(ClassParser.MIME_TYPE));
+    }
+
+    private static Object[] getOpenInfo(final ClasspathInfo cpInfo, final ElementHandle<? extends Element> el, AtomicBoolean cancel) {
+        FileObject fo = SourceUtils.getFile(el, cpInfo);
+        if (fo != null && fo.isFolder()) {
+            fo = fo.getFileObject("package-info.java"); // NOI18N
+        }
+        return fo != null ? getOpenInfo(fo, el, cancel) : null;
     }
 
     private static Object[] getOpenInfo(final FileObject fo, final ElementHandle<? extends Element> handle, AtomicBoolean cancel) {

@@ -320,8 +320,13 @@ public class PhpParserErrorTest extends PHPTestBase {
         checkErrors("testfiles/parser/finally_03.php");
     }
 
-    public void testListInForeach() throws Exception {
-        checkErrors("testfiles/parser/listInForeach.php");
+    public void testListInForeach_01() throws Exception {
+        checkErrors("testfiles/parser/listInForeach_01.php");
+    }
+
+    public void testListInForeach_02() throws Exception {
+        // #257945
+        checkErrors("testfiles/parser/listInForeach_02.php");
     }
 
     public void testExpressionArrayAccess_01() throws Exception {
@@ -370,6 +375,19 @@ public class PhpParserErrorTest extends PHPTestBase {
 
     public void testClassConstant() throws Exception {
         checkErrors("testfiles/parser/classConstant.php");
+    }
+
+    // #250579
+    public void testConstantArrayAccess_01() throws Exception {
+        checkErrors("testfiles/parser/constantArrayAccess_01.php");
+    }
+
+    public void testConstantArrayAccess_02() throws Exception {
+        checkErrors("testfiles/parser/constantArrayAccess_02.php");
+    }
+
+    public void testConstantArrayAccess_03() throws Exception {
+        checkErrors("testfiles/parser/constantArrayAccess_03.php");
     }
 
     public void testIssue237220() throws Exception {
@@ -475,6 +493,112 @@ public class PhpParserErrorTest extends PHPTestBase {
 
     public void testAnonymousClass01() throws Exception {
         checkErrors("testfiles/parser/anonymousClass_01.php");
+    }
+
+    public void testUniformVariableSyntax_01() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_01.php");
+    }
+
+    public void testUniformVariableSyntax_02() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_02.php");
+    }
+
+    public void testUniformVariableSyntax_03() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_03.php");
+    }
+
+    public void testUniformVariableSyntax_04() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_04.php");
+    }
+
+    public void testUniformVariableSyntax_05() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_05.php");
+    }
+
+    public void testUniformVariableSyntax_06() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_06.php");
+    }
+
+    public void testUniformVariableSyntax_07() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_07.php");
+    }
+
+    public void testUniformVariableSyntax_08() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_08.php");
+    }
+
+    public void testUniformVariableSyntax_09() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_09.php");
+    }
+
+    public void testUniformVariableSyntax_10() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_10.php");
+    }
+
+    public void testUniformVariableSyntax_11() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_11.php");
+    }
+
+    public void testUniformVariableSyntax_12() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_12.php");
+    }
+
+    public void testUniformVariableSyntax_13() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_13.php");
+    }
+
+    public void testUniformVariableSyntax_14() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_14.php");
+    }
+
+    public void testUniformVariableSyntax_15() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_15.php");
+    }
+
+    public void testUniformVariableSyntax_16() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_16.php");
+    }
+
+    public void testUniformVariableSyntax_17() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_17.php");
+    }
+
+    public void testUniformVariableSyntax_18() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_18.php");
+    }
+
+    public void testUniformVariableSyntax_19() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_19.php");
+    }
+
+    public void testUniformVariableSyntax_20() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_20.php");
+    }
+
+    // XXX
+//    public void testUniformVariableSyntax_21() throws Exception {
+//        checkErrors("testfiles/parser/uniformVariableSyntax_21.php");
+//    }
+
+    // XXX
+//    public void testUniformVariableSyntax_22() throws Exception {
+//        checkErrors("testfiles/parser/uniformVariableSyntax_22.php");
+//    }
+
+    public void testUniformVariableSyntax_23() throws Exception {
+        checkErrors("testfiles/parser/uniformVariableSyntax_23.php");
+    }
+
+    public void testGroupUse_01() throws Exception {
+        checkErrors("testfiles/parser/groupUse_01.php");
+    }
+
+    public void testGroupUse_02() throws Exception {
+        checkErrors("testfiles/parser/groupUse_02.php");
+    }
+
+    public void testGroupUse_03() throws Exception {
+        checkErrors("testfiles/parser/groupUse_03.php");
     }
 
 }

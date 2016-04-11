@@ -64,6 +64,7 @@ public class DataProviderImpl extends DataProvider {
     private static final String ZIP_EXTENSION = ".zip";
     protected static final String DEFAULT_VERSION = "2.0.0";
     private static final HashMap<String, DataItemImpl.DataItemComponent> data = new HashMap();
+    private static DataItemImpl.DataItemModule moduleData = null;
     private static FileObject docRoot = null;
     private static String currentVersion;
 
@@ -85,6 +86,8 @@ public class DataProviderImpl extends DataProvider {
                             if (name.startsWith("oj.oj")) {
                                 name = name.substring(3);
                                 data.put(name, new DataItemImpl.DataItemComponent(name, child.toURL().toString()));
+                            } else if (OJETUtils.OJ_MODULE.equals(name)) {
+                                moduleData = new DataItemImpl.DataItemModule(child.toURL().toString());
                             }
                         }
                     }
@@ -97,7 +100,8 @@ public class DataProviderImpl extends DataProvider {
     @Override
     public Collection<DataItem> getBindingOptions() {
         List<DataItem> result = new ArrayList(1);
-        result.add(new DataItemImpl(OJETUtils.OJ_COMPONENT, null));
+        result.add((new DataItemImpl(OJETUtils.OJ_COMPONENT, null, OJETUtils.OJ_COMPONENT + ": {component: }"))); // NOI18N
+        result.add(new DataItemImpl(OJETUtils.OJ_MODULE, null, OJETUtils.OJ_MODULE + ": "));
         return result;
     }
 
@@ -115,6 +119,24 @@ public class DataProviderImpl extends DataProvider {
         DataItemImpl.DataItemComponent component = data.get(compName);
         if (component != null) {
             return component.getOptions();
+        }
+        return Collections.emptyList();
+    }
+
+    @Override
+    public Collection<DataItem> getModuleProperties() {
+        if (moduleData != null) {
+            return moduleData.getProperies();
+        }
+        return Collections.emptyList(); 
+    }
+
+    
+    @Override
+    public Collection<DataItem> getComponentEvents(String compName) {
+        DataItemImpl.DataItemComponent component = data.get(compName);
+        if (component != null) {
+            return component.getEvents();
         }
         return Collections.emptyList();
     }
@@ -160,8 +182,10 @@ public class DataProviderImpl extends DataProvider {
         if (!getAvailableVersions().contains(version)) {
             throw new IllegalArgumentException(version + " is unknown version");
         } 
-        currentVersion = version;
-        // reset the cache
-        data.clear();
+        if (!currentVersion.equals(version)) {
+            currentVersion = version;
+            // reset the cache
+            data.clear();
+        }
     }
 }

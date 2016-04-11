@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,11 +37,12 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript.bower.options;
 
 import java.util.List;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.javascript.bower.exec.BowerExecutable;
@@ -50,7 +51,8 @@ import org.openide.util.NbPreferences;
 
 public final class BowerOptions {
 
-    private static final String BOWER_PATH = "bower.path"; // NOI18N
+    public static final String BOWER_PATH = "bower.path"; // NOI18N
+    public static final String IGNORE_BOWER_COMPONENTS = "ignore.bower_components"; // NOI18N
 
     // Do not change arbitrary - consult with layer's folder OptionsExport
     // Path to Preferences node for storing these preferences
@@ -70,6 +72,14 @@ public final class BowerOptions {
         return INSTANCE;
     }
 
+    public void addPreferenceChangeListener(PreferenceChangeListener listener) {
+        preferences.addPreferenceChangeListener(listener);
+    }
+
+    public void removePreferenceChangeListener(PreferenceChangeListener listener) {
+        preferences.removePreferenceChangeListener(listener);
+    }
+
     @CheckForNull
     public String getBower() {
         String path = preferences.get(BOWER_PATH, null);
@@ -87,6 +97,14 @@ public final class BowerOptions {
 
     public void setBower(String bower) {
         preferences.put(BOWER_PATH, bower);
+    }
+
+    public boolean isIgnoreBowerComponents() {
+        return preferences.getBoolean(IGNORE_BOWER_COMPONENTS, true);
+    }
+
+    public void setIgnoreBowerComponents(boolean ignoreBowerComponents) {
+        preferences.putBoolean(IGNORE_BOWER_COMPONENTS, ignoreBowerComponents);
     }
 
 }

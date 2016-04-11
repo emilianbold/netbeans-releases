@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.DriverFactory;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
+import org.netbeans.modules.cnd.discovery.api.ItemProperties.LanguageKind;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
@@ -87,6 +88,7 @@ public final class ExecLogReader {
     private final FileObject logFileObject;
     private List<SourceFileProperties> result;
     private List<String> buildArtifacts;
+    private Map<LanguageKind,Map<String,Integer>> buildTools;
     private final ProjectProxy project;
     private final PathMap pathMapper;
     private final RelocatablePathMapper localMapper;
@@ -96,7 +98,7 @@ public final class ExecLogReader {
     private final Set<String> C_NAMES;
     private final Set<String> CPP_NAMES;
     private final Set<String> FORTRAN_NAMES;
-    private final Set<String> LIBREARIES_NAMES;
+    private final Set<String> LIBRARIES_NAMES;
     private int logType = 0; // 0 - not inited, 1 - exec log, 2 - json file
 
     public ExecLogReader(FileObject logFileObject, String root, ProjectProxy project, RelocatablePathMapper relocatablePathMapper, FileSystem fileSystem) {
@@ -110,9 +112,9 @@ public final class ExecLogReader {
         C_NAMES = DiscoveryUtils.getCompilerNames(project, PredefinedToolKind.CCompiler);
         CPP_NAMES = DiscoveryUtils.getCompilerNames(project, PredefinedToolKind.CCCompiler);
         FORTRAN_NAMES = DiscoveryUtils.getCompilerNames(project, PredefinedToolKind.FortranCompiler);
-        LIBREARIES_NAMES = new HashSet<String>();
-        LIBREARIES_NAMES.add("ld"); //NOI18N
-        LIBREARIES_NAMES.add("ar"); //NOI18N
+        LIBRARIES_NAMES = new HashSet<String>();
+        LIBRARIES_NAMES.add("ld"); //NOI18N
+        LIBRARIES_NAMES.add("ar"); //NOI18N
         if (project != null && root.isEmpty()) {
             String sourceRoot = project.getSourceRoot();
             if (sourceRoot != null && sourceRoot.length() > 1) {
@@ -130,8 +132,7 @@ public final class ExecLogReader {
         } else {
             this.root = root;
         }
-    } //NOI18N
-    //NOI18N
+    }
 
     private PathMap getPathMapper(ProjectProxy project) {
         if (project != null) {
@@ -214,6 +215,11 @@ public final class ExecLogReader {
     private void run(Progress progress, Interrupter isStoped, CompileLineStorage storage) {
         result = new ArrayList<SourceFileProperties>();
         buildArtifacts = new ArrayList<String>();
+        buildTools = new HashMap<LanguageKind,Map<String,Integer>>();
+        buildTools.put(LanguageKind.C, new HashMap<String,Integer>());
+        buildTools.put(LanguageKind.CPP, new HashMap<String,Integer>());
+        buildTools.put(LanguageKind.Fortran, new HashMap<String,Integer>());
+        buildTools.put(LanguageKind.Unknown, new HashMap<String,Integer>());
         if (logFileObject != null && logFileObject.isValid() && logFileObject.canRead()) {
             try {
                 BufferedReader in = new BufferedReader(new InputStreamReader(logFileObject.getInputStream()));            
@@ -341,6 +347,13 @@ public final class ExecLogReader {
         return buildArtifacts;
     }
 
+    public Map<LanguageKind,Map<String,Integer>> getTools(Progress progress, Interrupter isStoped, CompileLineStorage storage) {
+        if (buildTools == null) {
+            run(progress, isStoped, storage);
+        }
+        return buildTools;
+    }
+
     private String removeQuotes(String s) {
         if (s.endsWith(",")) { // NOI18N
             s = s.substring(0, s.length() - 1);
@@ -379,15 +392,24 @@ public final class ExecLogReader {
             language = ItemProperties.LanguageKind.Unknown;
         }
         cu = removeQuotes(cu);
-        addSource(compiler, language, iterator, directory, storage, cu);
+        boolean added = addSource(compiler, language, iterator, directory, storage, cu);
+        if (added) {
+            // register compiler
+            Map<String, Integer> compilerCount = buildTools.get(language);
+            Integer count = compilerCount.get(tool);
+            if (count == null) {
+                compilerCount.put(tool, 1);
+            } else {
+                compilerCount.put(tool, count+1);
+            }
+        }
     }
 
     private void addSources(String tool, List<String> args, CompileLineStorage storage) {
         String compiler;
         ItemProperties.LanguageKind language;
         String compilePath = null;
-        if (tool.lastIndexOf('/') > 0) {
-            //NOI18N
+        if (tool.lastIndexOf('/') > 0) { //NOI18N
             compiler = tool.substring(tool.lastIndexOf('/') + 1); //NOI18N
         } else {
             compiler = tool;
@@ -398,7 +420,7 @@ public final class ExecLogReader {
             language = ItemProperties.LanguageKind.CPP;
         } else if (FORTRAN_NAMES.contains(compiler)) {
             language = ItemProperties.LanguageKind.Fortran;
-        } else if (LIBREARIES_NAMES.contains(compiler)) {
+        } else if (LIBRARIES_NAMES.contains(compiler)) {
             processLibrary(compiler, args, storage);
             return;
         } else {
@@ -416,7 +438,17 @@ public final class ExecLogReader {
             // skip tool
             iterator.next();
         }
-        addSource(compiler, language, iterator, compilePath, storage, null);
+        boolean added = addSource(compiler, language, iterator, compilePath, storage, null);
+        if (added) {
+            // register compiler
+            Map<String, Integer> compilerCount = buildTools.get(language);
+            Integer count = compilerCount.get(tool);
+            if (count == null) {
+                compilerCount.put(tool, 1);
+            } else {
+                compilerCount.put(tool, count+1);
+            }
+        }
     }
 
     private String convertCygwinPath(String path) {
@@ -429,7 +461,8 @@ public final class ExecLogReader {
         return path;
     }
 
-    private void addSource(String compiler, ItemProperties.LanguageKind language, Iterator<String> iterator, String compilePath, CompileLineStorage storage, String cu) {
+    private boolean addSource(String compiler, ItemProperties.LanguageKind language, Iterator<String> iterator, String compilePath, CompileLineStorage storage, String cu) {
+        boolean retValue = false;
         if (CndPathUtilities.isPathAbsolute(compilePath) && pathMapper != null) {
             String mapped = pathMapper.getLocalPath(compilePath);
             if (mapped != null) {
@@ -587,8 +620,7 @@ public final class ExecLogReader {
                     }
                     String s2 = CndPathUtilities.quoteIfNecessary(s);
                     if (s.equals(s2)) {
-                        if (s.indexOf('"') > 0) {
-                            // NOI18N
+                        if (s.indexOf('"') > 0) { // NOI18N
                             int j = s.indexOf("\\\""); // NOI18N
                             if (j < 0) {
                                 s = s.replace("\"", "\\\""); // NOI18N
@@ -602,10 +634,12 @@ public final class ExecLogReader {
                 res.handler = storage.putCompileLine(buf.toString());
             }
             result.add(res);
+            retValue = true;
             //} else {
             //    continue;
             //}
         }
+        return retValue;
     }
 
     private FileObject convertPath(String path) {
@@ -693,8 +727,11 @@ public final class ExecLogReader {
                     // probably it is just created binary. Try to refresh folder.
                     FileObject folder = fileSystem.findResource(compilePath);
                     if (folder != null && folder.isValid() && folder.isFolder()) {
-                        folder.refresh();
-                        f = fileSystem.findResource(fullName);
+                        if (!refresedFolders.contains(folder)) {
+                            folder.refresh();
+                            refresedFolders.add(folder);
+                            f = fileSystem.findResource(fullName);
+                        }
                     }
                 }
                 if (f != null && f.isValid() && f.isData()) {
@@ -708,6 +745,8 @@ public final class ExecLogReader {
             }
         }
     }
+    
+    private Set<FileObject> refresedFolders = new HashSet<FileObject>();
     
     private static final class ExecSource extends RelocatableImpl implements SourceFileProperties {
 

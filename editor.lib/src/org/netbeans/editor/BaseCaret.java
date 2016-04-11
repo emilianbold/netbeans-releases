@@ -137,14 +137,14 @@ AtomicLockListener, FoldHierarchyListener {
     /** Caret type representing block covering current character */
     public static final String BLOCK_CARET = EditorPreferencesDefaults.BLOCK_CARET; // NOI18N
 
-    /** Default caret type */
-    public static final String LINE_CARET = EditorPreferencesDefaults.LINE_CARET; // NOI18N
-
     /** One dot thin line compatible with Swing default caret */
-    public static final String THIN_LINE_CARET = "thin-line-caret"; // NOI18N
+    public static final String THIN_LINE_CARET = EditorPreferencesDefaults.THIN_LINE_CARET; // NOI18N
 
     /** @since 1.23 */
-    public static final String THICK_LINE_CARET = "thick-line-caret"; // NOI18N
+    public static final String THICK_LINE_CARET = EditorPreferencesDefaults.THICK_LINE_CARET; // NOI18N
+
+    /** Default caret type */
+    public static final String LINE_CARET = "line-caret"; // NOI18N
 
     /** Boolean property defining whether selection is being rectangular in a particular text component. */
     private static final String RECTANGULAR_SELECTION_PROPERTY = "rectangular-selection"; // NOI18N

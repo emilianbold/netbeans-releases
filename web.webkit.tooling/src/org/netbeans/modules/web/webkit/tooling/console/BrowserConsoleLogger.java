@@ -245,37 +245,40 @@ public class BrowserConsoleLogger implements Console.Listener {
 
         String logInfo = createLogInfo(time, level, msg.getSource(), msg.getType());
         OutputWriter ow = isErr ? io.getErr() : io.getOut();
-        String lines[] = msg.getText().replace("\r", "").split("\n");
-        for (int i = 0; i < lines.length; i++) {
-            String singleMessageLine = lines[i];
-            if (colorStdBrighter == null && i == lines.length-1) {
-                singleMessageLine += logInfo;
-            }
-            Object res[] = tryToConvertLineToHyperlink(project, singleMessageLine);
-            MyListener l = null;
-            String newMessage1 = null;
-            String newMessage2 = null;
-            if (res != null) {
-                l = (MyListener)res[0];
-                newMessage1 = (String)res[1];
-                newMessage2 = (String)res[2];
-            }
-            if (l != null && l.isValidHyperlink()) {
-                if (colorStdBrighter != null && i == lines.length-1) {
-                    newMessage2 += logInfo;
+        String text = msg.getText();
+        if (text != null) { // Text is not marked as optional, but apparently, it is.
+            String lines[] = text.replace("\r", "").split("\n");
+            for (int i = 0; i < lines.length; i++) {
+                String singleMessageLine = lines[i];
+                if (colorStdBrighter == null && i == lines.length-1) {
+                    singleMessageLine += logInfo;
                 }
-                ow.print(newMessage1);
-                ow.println(newMessage2, l);
-            } else {
-                ow.print(singleMessageLine);
-                if (colorStdBrighter != null && i == lines.length-1) {
-                    //if (isErr) {
-                    //    IOColorPrint.print(io, logInfo, colorErrBrighter);
-                    //} else {
-                        IOColorPrint.print(io, logInfo, colorStdBrighter);
-                    //}
+                Object res[] = tryToConvertLineToHyperlink(project, singleMessageLine);
+                MyListener l = null;
+                String newMessage1 = null;
+                String newMessage2 = null;
+                if (res != null) {
+                    l = (MyListener)res[0];
+                    newMessage1 = (String)res[1];
+                    newMessage2 = (String)res[2];
+                }
+                if (l != null && l.isValidHyperlink()) {
+                    if (colorStdBrighter != null && i == lines.length-1) {
+                        newMessage2 += logInfo;
+                    }
+                    ow.print(newMessage1);
+                    ow.println(newMessage2, l);
                 } else {
-                    ow.println("");
+                    ow.print(singleMessageLine);
+                    if (colorStdBrighter != null && i == lines.length-1) {
+                        //if (isErr) {
+                        //    IOColorPrint.print(io, logInfo, colorErrBrighter);
+                        //} else {
+                            IOColorPrint.print(io, logInfo, colorStdBrighter);
+                        //}
+                    } else {
+                        ow.println("");
+                    }
                 }
             }
         }

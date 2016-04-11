@@ -146,10 +146,13 @@ public class PluginGenerator extends AbstractGenerator<POMModel> {
                             plug.addExecution(ex);
                             //shall we add execution configuration if
                         }
-
-                        container.addPlugin(plug);
+                        
+                        if(!addAtPosition(model.getPOMQNames().PLUGINS.getName(), container::getPlugins, plug)) {
+                            container.addPlugin(plug);                                                  
+                        }
+                        
                         return model.getAccess().findPosition(plug.getPeer());                        
-                    }
+                    }                                        
                 });
             }
         }

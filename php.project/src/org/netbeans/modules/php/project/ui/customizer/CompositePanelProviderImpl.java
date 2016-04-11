@@ -379,7 +379,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         for (PhpFrameworkProvider frameworkProvider : PhpFrameworks.getFrameworks()) {
             PhpModuleCustomizerExtender extender = frameworkProvider.createPhpModuleCustomizerExtender(phpModule);
             if (extender != null) {
-                String categoryName = extender.getDisplayName();
+                String categoryName = extender.getDisplayName(phpModule);
                 if (categoryName == null) {
                     categoryName = frameworkProvider.getName();
                 }

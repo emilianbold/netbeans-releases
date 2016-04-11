@@ -72,7 +72,7 @@ import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 
 /**
  * View representing the whole document.
- * <br/>
+ * <br>
  * It consists of individual paragraph views that typically map to line elements
  * but e.g. code folding may cause multiple line elements correspond to one line view.
  * 
@@ -165,7 +165,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     
     /**
      * Start offset of the document view after last processed modification.
-     * <br/>
+     * <br>
      * This is used during updating of the document view by document modification.
      * For undo of removal the position of first paragraph may restore inside the inserted area
      * and holding integer offset allows to know the original start offset.
@@ -174,7 +174,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
 
     /**
      * Start offset of the document view.
-     * <br/>
+     * <br>
      * This is used during updating of the document view by document modification.
      * For undo of removal the position of last paragraph may restore inside the inserted area
      * and holding integer offset allows to know the original end offset of the document view.
@@ -472,7 +472,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     /**
      * Get current allocation of the document view by using size from last call
      * to {@link #setSize(float, float)}.
-     * <br/>
+     * <br>
      * Returned instance may not be mutated (use getAllocationMutable()).
      *
      * @return current allocation of document view.

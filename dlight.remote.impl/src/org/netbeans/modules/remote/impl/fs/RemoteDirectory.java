@@ -93,7 +93,7 @@ import org.openide.util.Parameters;
  *
  * @author Vladimir Kvashin
  */
-public class RemoteDirectory extends RemoteFileObjectBase {
+public class RemoteDirectory extends RemoteFileObjectWithCache {
 
     private static final boolean trace = Boolean.getBoolean("cnd.remote.directory.trace"); //NOI18N
 
@@ -187,7 +187,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         // leave old implementation for a while (under a flag, by default use new impl.)
         String childNameExt = (child == null) ? null : child.getNameExt();
         if (RemoteFileSystemUtils.getBoolean("remote.fast.delete", true)) {
-            Lock writeLock = RemoteFileSystem.getLock(getCache()).writeLock();
+            Lock writeLock = getLockSupport().getCacheLock(this).writeLock();
             writeLock.lock();
             boolean sendEvents = true;
             try {
@@ -458,7 +458,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (storage == null) {
             File storageFile = getStorageFile();
             if (storageFile.exists()) {
-                Lock readLock = RemoteFileSystem.getLock(getCache()).readLock();
+                Lock readLock = getLockSupport().getCacheLock(this).readLock();
                 readLock.lock();
                 try {
                     storage = DirectoryStorage.load(storageFile, getExecutionEnvironment());
@@ -576,16 +576,16 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
     }
 
-    @Override
-    public RemoteDirectory getParent() {
-        return (RemoteDirectory) super.getParent(); // see constructor
+    /** just a conveniency shortcut that allows not to cast each time */
+    private RemoteDirectory getParentImpl() {
+        return (RemoteDirectory) getParent(); // see constructor
     }
 
     private boolean isFlaggedForWarmup() {
         if(getFlag(MASK_WARMUP)) {
             return true;
         } else {
-            RemoteDirectory p = getParent();
+            RemoteDirectory p = getParentImpl();
             if (p != null) {
                 return p.isFlaggedForWarmup();
             }
@@ -596,7 +596,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     private RemoteFileSystemTransport.Warmup getWarmup() {
         RemoteFileSystemTransport.Warmup w = warmup;
         if (w == null) {
-            RemoteDirectory p = getParent();
+            RemoteDirectory p = getParentImpl();
             if (p != null) {
                 return p.getWarmup();
             }
@@ -615,6 +615,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     private static final AtomicInteger warmupHints = new AtomicInteger();
     private static final AtomicInteger warmupReqs = new AtomicInteger();
     private static final AtomicInteger readEntryReqs = new AtomicInteger();
+
+    /** for test purposes */
+    /*package*/ int getReadEntriesCount() {
+        return readEntryReqs.get();
+    }
 
     private Map<String, DirEntry> readEntries(DirectoryStorage oldStorage, boolean forceRefresh, String childName) throws IOException, InterruptedException, ExecutionException, CancellationException {
         if (isProhibited()) {
@@ -734,7 +739,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
         checkConnection(this, true);
 
-        Lock writeLock = RemoteFileSystem.getLock(getCache()).writeLock();
+        Lock writeLock = getLockSupport().getCacheLock(this).writeLock();
         if (trace) {trace("waiting for lock");} // NOI18N
         writeLock.lock();
         try {
@@ -972,7 +977,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     /*package */ DirEntry getDirEntry(String childName) {
-        Lock writeLock = RemoteFileSystem.getLock(getCache()).writeLock();
+        Lock writeLock = getLockSupport().getCacheLock(this).writeLock();
         if (trace) {trace("waiting for lock");} // NOI18N
         writeLock.lock();
         try {
@@ -991,7 +996,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         RemoteLogger.assertTrue(fo.getParent() == this);
         RemoteLogger.assertFalse(entry.isDirectory());
         RemoteLogger.assertFalse(entry.isLink());
-        Lock writeLock = RemoteFileSystem.getLock(getCache()).writeLock();
+        Lock writeLock = getLockSupport().getCacheLock(this).writeLock();
         if (trace) {trace("waiting for lock");} // NOI18N
         writeLock.lock();
         try {
@@ -1042,7 +1047,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             fromMemOrDiskCache = false;
             storage = DirectoryStorage.EMPTY;
             if (storageFile.exists()) {
-                Lock readLock = RemoteFileSystem.getLock(getCache()).readLock();
+                Lock readLock = getLockSupport().getCacheLock(this).readLock();
                 try {
                     readLock.lock();
                     try {
@@ -1095,7 +1100,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
         checkConnection(this, true);
 
-        Lock writeLock = RemoteFileSystem.getLock(getCache()).writeLock();
+        Lock writeLock = getLockSupport().getCacheLock(this).writeLock();
         if (trace) { trace("waiting for lock"); } // NOI18N
         writeLock.lock();
         try {
@@ -1522,7 +1527,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 return ok;
             }
         } else {
-            RemoteDirectory parent = getParent();
+            RemoteDirectory parent = getParentImpl();
             if (parent != null) {
                 return parent.ensureChildSyncFromZip(child);
             }
@@ -1542,7 +1547,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     private boolean cacheExists(RemotePlainFile child) {
-        Lock lock = RemoteFileSystem.getLock(child.getCache()).readLock();
+        Lock lock = getLockSupport().getCacheLock(child).readLock();
         lock.lock();
         try {
             return child.getCache().exists();
@@ -1564,7 +1569,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }        
         checkConnection(child, true);
         DirectoryStorage storage = getDirectoryStorage(child.getNameExt()); // do we need this?
-        Lock lock = RemoteFileSystem.getLock(child.getCache()).writeLock();
+        Lock lock = getLockSupport().getCacheLock(child).writeLock();
         lock.lock();
         try {
             if (child.getCache().exists()) {
@@ -1695,7 +1700,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 }
             }
         } catch (FileNotFoundException ex) {
-            final RemoteDirectory parent = getParent();
+            final RemoteDirectory parent = getParentImpl();
             if (parent != null) {
                 parent.refreshImpl(false, antiLoop, expected, refreshMode);
             } else {

@@ -300,7 +300,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         }
 
         boolean oldHostValid = ToolsUtils.isDevHostValid(execEnv);
-        final CompilerSet cs = AddCompilerSetPanel.invokeMe(csm);
+        final CompilerSet cs = AddCompilerSetPanel.invokeMe(csm, null);
         if (cs == null) {
             boolean newHostValid = ToolsUtils.isDevHostValid(execEnv);
             if (oldHostValid != newHostValid) {

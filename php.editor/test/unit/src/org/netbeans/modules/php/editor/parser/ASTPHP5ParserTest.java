@@ -464,8 +464,13 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("parser/finally_03");
     }
 
-    public void testListInForeach() throws Exception {
-        performTest("parser/listInForeach");
+    public void testListInForeach_01() throws Exception {
+        performTest("parser/listInForeach_01");
+    }
+
+    public void testListInForeach_02() throws Exception {
+        // #257945
+        performTest("parser/listInForeach_02");
     }
 
     public void testExpressionArrayAccess_01() throws Exception {
@@ -502,6 +507,11 @@ public class ASTPHP5ParserTest extends ParserTestBase {
 
     public void testExponentiation_01() throws Exception {
         performTest("parser/exponentiation_01");
+    }
+
+    // #250579
+    public void testConstantArrayAccess_01() throws Exception {
+        performTest("parser/constantArrayAccess_01");
     }
 
     public void testConstantScalarExpressions_01() throws Exception {
@@ -583,6 +593,114 @@ public class ASTPHP5ParserTest extends ParserTestBase {
 
     public void testAnonymousClass01() throws Exception {
         performTest("parser/anonymousClass_01");
+    }
+
+    public void testUniformVariableSyntax_01() throws Exception {
+        performTest("parser/uniformVariableSyntax_01");
+    }
+
+    public void testUniformVariableSyntax_02() throws Exception {
+        performTest("parser/uniformVariableSyntax_02");
+    }
+
+    public void testUniformVariableSyntax_03() throws Exception {
+        performTest("parser/uniformVariableSyntax_03");
+    }
+
+    public void testUniformVariableSyntax_04() throws Exception {
+        performTest("parser/uniformVariableSyntax_04");
+    }
+
+    public void testUniformVariableSyntax_05() throws Exception {
+        performTest("parser/uniformVariableSyntax_05");
+    }
+
+    public void testUniformVariableSyntax_06() throws Exception {
+        performTest("parser/uniformVariableSyntax_06");
+    }
+
+    public void testUniformVariableSyntax_07() throws Exception {
+        performTest("parser/uniformVariableSyntax_07");
+    }
+
+    public void testUniformVariableSyntax_08() throws Exception {
+        performTest("parser/uniformVariableSyntax_08");
+    }
+
+    public void testUniformVariableSyntax_09() throws Exception {
+        performTest("parser/uniformVariableSyntax_09");
+    }
+
+    public void testUniformVariableSyntax_10() throws Exception {
+        performTest("parser/uniformVariableSyntax_10");
+    }
+
+    public void testUniformVariableSyntax_11() throws Exception {
+        performTest("parser/uniformVariableSyntax_11");
+    }
+
+    public void testUniformVariableSyntax_12() throws Exception {
+        performTest("parser/uniformVariableSyntax_12");
+    }
+
+    public void testUniformVariableSyntax_13() throws Exception {
+        performTest("parser/uniformVariableSyntax_13");
+    }
+
+    public void testUniformVariableSyntax_14() throws Exception {
+        performTest("parser/uniformVariableSyntax_14");
+    }
+
+    // incorrect AST (pre php7)
+    public void testUniformVariableSyntax_15() throws Exception {
+        performTest("parser/uniformVariableSyntax_15");
+    }
+
+    // incorrect AST (pre php7)
+    public void testUniformVariableSyntax_16() throws Exception {
+        performTest("parser/uniformVariableSyntax_16");
+    }
+
+    public void testUniformVariableSyntax_17() throws Exception {
+        performTest("parser/uniformVariableSyntax_17");
+    }
+
+    public void testUniformVariableSyntax_18() throws Exception {
+        performTest("parser/uniformVariableSyntax_18");
+    }
+
+    public void testUniformVariableSyntax_19() throws Exception {
+        performTest("parser/uniformVariableSyntax_19");
+    }
+
+    public void testUniformVariableSyntax_20() throws Exception {
+        performTest("parser/uniformVariableSyntax_20");
+    }
+
+    // XXX
+//    public void testUniformVariableSyntax_21() throws Exception {
+//        performTest("parser/uniformVariableSyntax_21");
+//    }
+
+    // XXX
+//    public void testUniformVariableSyntax_22() throws Exception {
+//        performTest("parser/uniformVariableSyntax_22");
+//    }
+
+    public void testUniformVariableSyntax_23() throws Exception {
+        performTest("parser/uniformVariableSyntax_23");
+    }
+
+    public void testGroupUse_01() throws Exception {
+        performTest("parser/groupUse_01");
+    }
+
+    public void testGroupUse_02() throws Exception {
+        performTest("parser/groupUse_02");
+    }
+
+    public void testGroupUse_03() throws Exception {
+        performTest("parser/groupUse_03");
     }
 
     @Override

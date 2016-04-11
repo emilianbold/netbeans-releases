@@ -62,7 +62,7 @@ public class RunAsLineParserTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        this.parser = Symfony2SecurityAnnotationLineParser.getDefault();
+        this.parser = SymfonySecurityAnnotationLineParser.getDefault();
     }
 
     public void testIsAnnotationParser() throws Exception {

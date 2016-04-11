@@ -59,12 +59,13 @@ class JPDATruffleDebugManager {
     
     private final Debugger debugger;
     private final PolyglotEngine tvm;
-    private final ExecutionEvent execEvent;
+    //private volatile ExecutionEvent execEvent;
+    private volatile boolean prepareStepInto;
 
     public JPDATruffleDebugManager(Debugger debugger, PolyglotEngine tvm, ExecutionEvent event) {
         this.debugger = debugger; // DebugEngine.create(dbgClient, language);
         this.tvm = tvm;
-        this.execEvent = event;
+        //this.execEvent = event;
     }
     
     static JPDATruffleDebugManager setUp(Debugger debugger, PolyglotEngine tvm, ExecutionEvent event) {
@@ -112,16 +113,46 @@ class JPDATruffleDebugManager {
         endExecution();
         */
     }
+    
+    void setExecutionEvent(ExecutionEvent execEvent) {
+        //this.execEvent = execEvent;
+        if (prepareStepInto) {
+            execEvent.prepareStepInto();
+            prepareStepInto = false;
+        }
+    }
 
     void prepareExecStepInto() {
         //System.err.println("prepareExecStepInto()...");
-        execEvent.prepareStepInto();
+        prepareStepInto = true;
+        // Do not call methods on ExecutionEvent asynchronously.
+        /* Rely on another ExecutionEvent comes when needed
+        try {
+            execEvent.prepareStepInto();
+        } catch (RuntimeException rex) {
+            // Unable to use the event any more. A new should come when needed.
+            // Report until there is some known contract:
+            System.err.println("Ignoring prepareStepInto():");
+            rex.printStackTrace();
+        }
+        */
         //System.err.println("prepareExecStepInto() DONE.");
     }
 
     void prepareExecContinue() {
         //System.err.println("prepareExecContinue()...");
-        execEvent.prepareContinue();
+        prepareStepInto = false;
+        // Do not call methods on ExecutionEvent asynchronously.
+        /* Rely on another ExecutionEvent comes when needed
+        try {
+            execEvent.prepareContinue();
+        } catch (RuntimeException rex) {
+            // Unable to use the event any more. A new should come when needed.
+            // Report until there is some known contract:
+            System.err.println("Ignoring prepareExecContinue():");
+            rex.printStackTrace();
+        }
+        */
         //System.err.println("prepareExecContinue() DONE.");
     }
     

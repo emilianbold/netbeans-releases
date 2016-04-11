@@ -60,6 +60,8 @@ import org.netbeans.modules.debugger.jpda.truffle.access.TruffleAccess;
 import org.netbeans.modules.debugger.jpda.truffle.access.TruffleStrataProvider;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackFrame;
 import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
+import org.netbeans.modules.javascript2.debug.EditorLineHandler;
+import org.netbeans.modules.javascript2.debug.EditorLineHandlerFactory;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSLineBreakpoint;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -169,8 +171,7 @@ public class DebugSLTest extends NbTestCase {
             // An ugly way to transform the Java breakpoint into JavaScript breakpoint, used in SL.
             // TODO: No breakpoints suitable for use in Truffle guest languages exist yet (only JavaScript).
             FileObject fo = URLMapper.findFileObject(new URL(lb.getURL()));
-            Line line = DataObject.find(fo).getCookie(EditorCookie.class).getLineSet().getCurrent(lb.getLineNumber());
-            dm.addBreakpoint(new JSLineBreakpoint(line));
+            dm.addBreakpoint(new JSLineBreakpoint(EditorLineHandlerFactory.getHandler(fo, lb.getLineNumber())));
             support = JPDASupport.attach("org.netbeans.modules.debugger.jpda.truffle.testapps.SLAppFromFile",
                 new String[] {
                     sourceRoot + "org/netbeans/modules/debugger/jpda/truffle/testapps/TestApp.sl"

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.api;
 
@@ -53,6 +53,7 @@ import org.openide.util.NbBundle;
     "PhpVersion.PHP_54=PHP 5.4",
     "PhpVersion.PHP_55=PHP 5.5",
     "PhpVersion.PHP_56=PHP 5.6",
+    "PhpVersion.PHP_70=PHP 7.0",
 })
 public enum PhpVersion {
 
@@ -76,7 +77,12 @@ public enum PhpVersion {
     /**
      * PHP 5.6.
      */
-    PHP_56(Bundle.PhpVersion_PHP_56());
+    PHP_56(Bundle.PhpVersion_PHP_56()),
+    /**
+     * PHP 5.7.
+     * @since 2.58
+     */
+    PHP_70(Bundle.PhpVersion_PHP_70());
 
     private final String displayName;
     private final boolean namespaces;
@@ -108,7 +114,7 @@ public enum PhpVersion {
      * @since 2.41
      */
     public static PhpVersion getLegacy() {
-        return PHP_54;
+        return PHP_55;
     }
 
     /**

@@ -646,7 +646,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         for (IssueTopComponent tc : openIssues) {
             IssueImpl i = tc.getIssue();
             if(i == null) continue;
-            if (issueId.equals(i.getID()) && i.getRepositoryImpl().equals(repo)) {
+            if (issueId.equals(i.getID()) && (repo == null || i.getRepositoryImpl().equals(repo))) {
                 return tc;
             }
         }

@@ -92,8 +92,10 @@ public class JClankTraceCompilationDBAction extends JClankTraceProjectAbstractAc
             ClankProgressHandler handle = new JClankProgressHandler(progress);
             try {
                 for (NativeProject project : projects) {
+                    // TODO: what about mixed?
+                    boolean useURL = false;
                     CsmJClankSerivicesImpl.traceCompilationDB(Collections.singleton(project),
-                            llvm_out, llvm_err, handle, cancelled);
+                            llvm_out, llvm_err, useURL, handle, cancelled);
                 }
             } finally {
                 llvm_out.flush();

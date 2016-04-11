@@ -44,7 +44,7 @@ package org.netbeans.modules.editor.lib2.highlighting;
 /**
  * Visual mark encapsulates y-coordinate offset together with an object
  * that provides an offset (assumed that it's tracked as a SWing position).
- * <br/>
+ * <br>
  * The y-coordinate is tracked as a raw value that must first be preprocessed
  * by {@link VisualMarkVector}.
  *
@@ -62,7 +62,7 @@ public abstract class VisualMark {
     
     /**
      * Get offset of this visual mark.
-     * <br/>
+     * <br>
      * It's assumed that the offset is tracked as a Swing position.
      *
      * @return &gt;=0 offset of this mark.

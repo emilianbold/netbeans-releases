@@ -99,9 +99,9 @@ public final class ProjectConvertors {
     @CheckForNull
     @SuppressWarnings("NestedAssignment")
     public static Project getNonConvertorOwner(@NonNull final FileObject file) {
-        for (FileObject parent = file.getParent(); parent != null; parent = parent.getParent()) {
+        for (FileObject parent = file; parent != null; parent = parent.getParent()) {
             final Project prj = FileOwnerQuery.getOwner(parent);
-            if (prj != null && !isConvertorProject(prj)) {
+            if (prj == null || !isConvertorProject(prj)) {
                 return prj;
             }
         }

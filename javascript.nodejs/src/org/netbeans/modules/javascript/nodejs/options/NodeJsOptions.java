@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript.nodejs.options;
 
@@ -55,8 +55,9 @@ public final class NodeJsOptions {
 
     public static final String NODE_PATH = "node.path"; // NOI18N
     public static final String NODE_SOURCES_PATH = "node.sources.path"; // NOI18N
-    private static final String NPM_PATH = "npm.path"; // NOI18N
-    private static final String EXPRESS_PATH = "express.path"; // NOI18N
+    public static final String NPM_PATH = "npm.path"; // NOI18N
+    public static final String NPM_IGNORE_NODE_MODULES = "npm.ignore.node_modules"; // NOI18N
+    public static final String EXPRESS_PATH = "express.path"; // NOI18N
 
     // Do not change arbitrary - consult with layer's folder OptionsExport
     // Path to Preferences node for storing these preferences
@@ -134,6 +135,14 @@ public final class NodeJsOptions {
 
     public void setNpm(String npm) {
         preferences.put(NPM_PATH, npm);
+    }
+
+    public boolean isNpmIgnoreNodeModules() {
+        return preferences.getBoolean(NPM_IGNORE_NODE_MODULES, true);
+    }
+
+    public void setNpmIgnoreNodeModules(boolean npmIgnoreNodeModules) {
+        preferences.putBoolean(NPM_IGNORE_NODE_MODULES, npmIgnoreNodeModules);
     }
 
     @CheckForNull

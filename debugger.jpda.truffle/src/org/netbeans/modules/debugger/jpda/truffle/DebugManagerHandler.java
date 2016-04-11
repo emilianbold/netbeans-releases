@@ -154,10 +154,11 @@ class DebugManagerHandler implements JPDABreakpointListener {
                     // No accessor
                     return ;
                 }
+                /* Even when initialized already, we need the new ExecutionEvent in the backend.
                 if (debugManager != null) {
                     // Initialized already
                     return ;
-                }
+                }*/
                 //event.getThread();
                 JPDAThreadImpl thread = (JPDAThreadImpl) event.getThread();
                 InvocationExceptionTranslated iextr = null;

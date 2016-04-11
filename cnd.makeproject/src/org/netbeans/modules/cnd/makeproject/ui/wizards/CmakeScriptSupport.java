@@ -152,7 +152,7 @@ public class CmakeScriptSupport implements PreBuildArtifactProvider {
         @Override
         public String getCommandLine(String arguments, String workingDir) {
             StringBuilder buf = new StringBuilder();
-            buf.append("cmake "); //NOI18N
+            buf.append(PreBuildSupport.CMAKE_MACRO+" "); //NOI18N
             buf.append(arguments);
             FileObject parent = script.getParent();
             if (parent != null) {
@@ -183,8 +183,9 @@ public class CmakeScriptSupport implements PreBuildArtifactProvider {
                     if (tool != null && !tool.getPath().isEmpty()) {
                         return null;
                     }
+                    return NbBundle.getMessage(QmakeScriptSupport.class, "NotFoundCMakeTool", compilerSet.getName()); //NOI18N
                 }
-                return NbBundle.getMessage(QmakeScriptSupport.class, "NotFoundCMakeTool"); //NOI18N
+                return NbBundle.getMessage(QmakeScriptSupport.class, "NotFoundCMakeTool", ""); //NOI18N
             }
             return NbBundle.getMessage(CmakeScriptSupport.class, "CONFIGUREFILEISNOTEXECUTABLE"); //NOI18N
         }

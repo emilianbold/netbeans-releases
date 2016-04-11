@@ -60,16 +60,16 @@ import javax.swing.text.View;
 
 /**
  * Base class for views in editor view hierarchy.
- * <br/>
+ * <br>
  * In general there are three types of views:<ul>
  * <li>Document view</li>
  * <li>Paragraph views</li>
  * <li>Children of paragraph views which include highlights view, newline view and others.</li>
  * </ul>
- * <br/>
+ * <br>
  * Paragraph views have their start offset based over a swing text position. Their end offset
  * is based on last child's end offset.
- * <br/>
+ * <br>
  * Children of paragraph views have their start offset based over a relative distance
  * to their parent's paragraph view's start offset. Therefore their start offset does not mutate
  * upon modification unless the whole paragraph's start offset mutates.
@@ -97,7 +97,7 @@ public abstract class EditorView extends View {
     /**
      * Get raw end offset of the view which may transform to real end offset
      * when post-processed by parent view.
-     * <br/>
+     * <br>
      * <b>Note:</b> Typical clients should NOT call this method (they should call
      * {@link #getEndOffset()} method instead).
      *

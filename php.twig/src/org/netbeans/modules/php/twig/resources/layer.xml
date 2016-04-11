@@ -156,6 +156,10 @@ made subject to such option by the copyright holder.
                     <folder name="goto">
                         <attr intvalue="500" name="position"/>
                         <attr name="displayName" bundlevalue="org.netbeans.modules.csl.core.Bundle#generate-goto-popup"/>
+                        <file name="org-netbeans-modules-php-twig-editor-actions-GoToActionOrViewAction.shadow">
+                            <attr name="originalFile" stringvalue="Editors/text/x-php5/Actions/org-netbeans-modules-php-project-ui-actions-GoToActionOrViewAction.instance"/>
+                            <attr name="position" intvalue="100"/>
+                        </file>
                         <file name="goto">
                             <attr intvalue="600" name="position"/>
                         </file>

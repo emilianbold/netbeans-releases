@@ -256,7 +256,7 @@ public class ScannerTestCase extends NbTestCase {
     }
 
     public void testSUNpatterns() throws Exception {
-        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
+        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("OracleDeveloperStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
 	ScannerDescriptor scanner = toolchain.getScanner();
       	String s = "\"life.cpp\", line 550: Warning: prior hides Life::prior.";
         boolean find = false;
@@ -275,7 +275,7 @@ public class ScannerTestCase extends NbTestCase {
     }
 
     public void testSUNpatterns_01() throws Exception {
-        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
+        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("OracleDeveloperStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
 	ScannerDescriptor scanner = toolchain.getScanner();
       	String s = "\"../src/CLucene/util/bufferedstream.h\", line 96:     Where: Instantiated from jstreams::BufferedInputStream<char>::read(const char*&, int, int).";
         boolean find = false;
@@ -294,7 +294,7 @@ public class ScannerTestCase extends NbTestCase {
     }
 
     public void testSUNpatterns_02() throws Exception {
-        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
+        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("OracleDeveloperStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
 	ScannerDescriptor scanner = toolchain.getScanner();
       	String s = "\"./CLucene/util/inputstreambuffer.h\", line 45: Error: Non-virtual function jstreams::InputStreamBuffer<char>::read(const char*&, int) declared pure.";
         boolean find = false;
@@ -313,7 +313,7 @@ public class ScannerTestCase extends NbTestCase {
     }
 
     public void testSUNpatterns_03() throws Exception {
-        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
+        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("OracleDeveloperStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
 	ScannerDescriptor scanner = toolchain.getScanner();
       	String s = "\"main.cpp\", 行 13: 警告: #warning 日本.";
         boolean find = false;
@@ -332,7 +332,7 @@ public class ScannerTestCase extends NbTestCase {
     }
 
     public void testSUNpatterns_04() throws Exception {
-        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
+        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("OracleDeveloperStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
 	ScannerDescriptor scanner = toolchain.getScanner();
       	String s = "\"main.cpp\", 行 14: エラー: #error 日本.";
         boolean find = false;

@@ -357,7 +357,7 @@ class OccurenceBuilder {
                     traitIDs.put(nodeInfo, scope);
                     break;
                 case CONSTANT:
-                    if (node instanceof NamespaceName) {
+                    if (node instanceof NamespaceName || node instanceof Identifier) {
                         nsConstInvocations.put(nodeInfo, scope);
                     }
                     break;
@@ -1105,9 +1105,15 @@ class OccurenceBuilder {
             for (Entry<ASTNodeInfo<Expression>, Scope> entry : nsConstInvocations.entrySet()) {
                 ASTNodeInfo<Expression> nodeInfo = entry.getKey();
                 Expression originalNode = nodeInfo.getOriginalNode();
+                QualifiedName qualifiedName = null;
                 if (originalNode instanceof NamespaceName) {
                     NamespaceName namespaceName = (NamespaceName) originalNode;
-                    final QualifiedName qualifiedName = QualifiedName.create(namespaceName);
+                    qualifiedName = QualifiedName.create(namespaceName);
+                } else if (originalNode instanceof Identifier) {
+                    Identifier identifier = (Identifier) originalNode;
+                    qualifiedName = QualifiedName.create(identifier);
+                }
+                if (qualifiedName != null) {
                     if (NameKind.exact(qualifiedName).matchesName(phpElement)) {
                         if (qualifiedName.getKind().isUnqualified()) {
                             occurences.add(new OccurenceImpl(ElementFilter.forFiles(fileScope.getFileObject()).prefer(elements), nodeInfo.getRange()));
@@ -1117,10 +1123,7 @@ class OccurenceBuilder {
                     }
                 }
             }
-
         }
-
-
     }
 
     private void buildConstantDeclarations(ElementInfo nodeCtxInfo, FileScopeImpl fileScope, final List<Occurence> occurences) {
@@ -1287,7 +1290,7 @@ class OccurenceBuilder {
                 Exact fieldName = NameKind.exact(phpElement.getName());
                 for (Entry<ASTNodeInfo<StaticFieldAccess>, Scope> entry : staticFieldInvocations.entrySet()) {
                     ASTNodeInfo<StaticFieldAccess> nodeInfo = entry.getKey();
-                    QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getClassName());
+                    QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getDispatcher());
                     final Scope scope = entry.getValue().getInScope();
                     if (clzName != null && clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
                         if (clzName.getName().equalsIgnoreCase("self") || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
@@ -1353,7 +1356,7 @@ class OccurenceBuilder {
                 Exact methodName = NameKind.exact(phpElement.getName());
                 for (Entry<ASTNodeInfo<StaticMethodInvocation>, Scope> entry : staticMethodInvocations.entrySet()) {
                     ASTNodeInfo<StaticMethodInvocation> nodeInfo = entry.getKey();
-                    QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getClassName());
+                    QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getDispatcher());
                     final Scope scope = entry.getValue().getInScope();
                     if (clzName != null) {
                         if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
@@ -1418,7 +1421,7 @@ class OccurenceBuilder {
                 Exact constantName = NameKind.exact(phpElement.getName());
                 for (Entry<ASTNodeInfo<StaticConstantAccess>, Scope> entry : staticConstantInvocations.entrySet()) {
                     ASTNodeInfo<StaticConstantAccess> nodeInfo = entry.getKey();
-                    QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getClassName());
+                    QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getDispatcher());
                     final Scope scope = ModelUtils.getTypeScope(entry.getValue());
                     if (clzName != null && clzName.getKind().isUnqualified() && scope != null) {
                         if (clzName.getName().equalsIgnoreCase("self") //NOI18N

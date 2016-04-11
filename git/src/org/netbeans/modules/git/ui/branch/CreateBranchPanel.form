@@ -28,7 +28,7 @@
                       <Component id="cbCheckoutBranch" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
-                  <Component id="lblError" alignment="0" pref="479" max="32767" attributes="0"/>
+                  <Component id="lblError" alignment="0" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -97,6 +97,7 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="cbCheckoutBranch">
       <Properties>
+        <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/git/ui/branch/Bundle.properties" key="CreateBranchPanel.cbCheckoutBranch.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>

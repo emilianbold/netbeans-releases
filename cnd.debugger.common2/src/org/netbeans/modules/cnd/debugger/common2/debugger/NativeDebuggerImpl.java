@@ -58,17 +58,20 @@ import java.util.List;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 
 import org.openide.text.Line;
 
 import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.project.Project;
 
 import org.netbeans.spi.debugger.ContextProvider;
 
@@ -81,6 +84,7 @@ import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.ui.BuildToolsAction;
 import org.netbeans.modules.cnd.api.toolchain.ui.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
+import org.netbeans.modules.cnd.debugger.common2.DbgGuiModule;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -118,10 +122,13 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.Inst
 import org.netbeans.modules.cnd.debugger.common2.debugger.spi.DebuggerToolRecognizer;
 import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.Lookup;
+import org.openide.util.Pair;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -302,6 +309,48 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	return cachedPathMap;
     }
     
+    // It maps source roots to their canonical representations
+    private volatile LinkedList<Pair<String, String>> pathMap;
+    private final Object lock = new Object();
+    
+    private String expandCanonicalPath(String potentiallyCanonicalPath) {
+        String ret = potentiallyCanonicalPath;
+        
+        Project project = getNDI().getProject();
+        if (project == null) {
+            return ret;
+        }
+        MakeConfigurationDescriptor makeConfigurationDescriptor = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
+        if (makeConfigurationDescriptor == null) {
+            return ret;
+        }
+        List<String> absoluteSourceRoots = makeConfigurationDescriptor.getAbsoluteSourceRoots();
+        
+        synchronized (lock) {
+            if (pathMap == null) {
+                pathMap = new LinkedList<Pair<String, String>>();
+                for (String absoluteSourceRoot : absoluteSourceRoots) {
+                    try {
+                        String canonicalSourceRoot = FileSystemProvider.getCanonicalPath(getExecutionEnvironment(), absoluteSourceRoot);
+                        if (!absoluteSourceRoot.equals(canonicalSourceRoot)) {
+                            pathMap.add(Pair.of(absoluteSourceRoot, canonicalSourceRoot));
+                        }
+                    } catch (IOException ex) {
+                        DbgGuiModule.logger.log(Level.INFO, ex.getMessage(), ex);
+                    }
+                }
+            }
+        }
+
+        if (pathMap.size() > 0) {
+            for (Pair<String, String> paths : pathMap) {
+                ret = ret.replace(paths.second(), paths.first());
+            }
+        }
+        
+        return ret;
+    }
+    
     public static PathMap getPathMapFromConfig(Configuration conf) {
         MakeConfiguration mc = (MakeConfiguration) conf;
         ExecutionEnvironment ee = mc.getDevelopmentHost().getExecutionEnvironment();                
@@ -360,6 +409,9 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	    System.out.printf("    from: %s\n", path); // NOI18N
 	    System.out.printf("      to: %s\n", mapped); // NOI18N
 	}
+        
+        mapped = expandCanonicalPath(mapped);
+        
 	return mapped;
     }
 

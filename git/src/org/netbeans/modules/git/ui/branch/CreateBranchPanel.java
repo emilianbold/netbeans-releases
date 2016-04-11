@@ -84,6 +84,7 @@ public class CreateBranchPanel extends JPanel {
         lblError.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/info.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(lblError, org.openide.util.NbBundle.getMessage(CreateBranchPanel.class, "MSG_CreateBranch.errorBranchExists")); // NOI18N
 
+        cbCheckoutBranch.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(cbCheckoutBranch, org.openide.util.NbBundle.getMessage(CreateBranchPanel.class, "CreateBranchPanel.cbCheckoutBranch.text")); // NOI18N
         cbCheckoutBranch.setToolTipText(org.openide.util.NbBundle.getMessage(CreateBranchPanel.class, "CreateBranchPanel.cbCheckoutBranch.TTtext")); // NOI18N
 
@@ -101,7 +102,7 @@ public class CreateBranchPanel extends JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(cbCheckoutBranch)
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(lblError, javax.swing.GroupLayout.DEFAULT_SIZE, 479, Short.MAX_VALUE))
+                    .addComponent(lblError, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
             .addComponent(revisionPickerDialog1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );

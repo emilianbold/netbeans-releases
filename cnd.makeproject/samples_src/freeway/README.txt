@@ -41,14 +41,14 @@ Description:
 Supported Platforms:
     Solaris:
         The primary platform during the GTK port was Solaris 10. 
-        GtkFreeway builds with either Solaris Studio or GNU tool chains.
+        GtkFreeway builds with either Developer Studio or GNU tool chains.
 
     OpenSolaris:
 	 Additional required packages:
           SUNWgnome-common-devel
           SUNWxinc
           SUNWxorg-headers
-        GtkFreeway builds with either Solaris Studio or GNU tool chains.
+        GtkFreeway builds with either Developer Studio or GNU tool chains.
 
     Linux:
         Linux development was done on Ubuntu 7.10.
@@ -74,7 +74,7 @@ Unsupported Platforms:
 Disclaimer:
         Freeway was written in 1991 as an XView application, converted to a Motif
         application and has subsequently been included in all Visual WorkShop and
-        Solaris Studio releases. In 2008 it was ported from Motif to GTK+ 2 in an
+        Developer Studio releases. In 2008 it was ported from Motif to GTK+ 2 in an
         effort to modernize it. However, while it was converted to GTK, no effort
         was made to complete partially implemented features. There appear to be
         hooks for things not currently working. Since the demo program is so old,

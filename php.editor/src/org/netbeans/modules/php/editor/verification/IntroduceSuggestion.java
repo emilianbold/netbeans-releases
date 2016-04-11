@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -78,10 +79,12 @@ import org.netbeans.modules.php.editor.elements.MethodElementImpl;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.ClassScope;
+import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -261,8 +264,10 @@ public class IntroduceSuggestion extends SuggestionRule {
                             assert type != null;
                             FileObject fileObject = type.getFileObject();
                             BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, false) : null;
-                            if (document != null && fileObject.canWrite() && type instanceof ClassScope) {
-                                fix = new IntroduceFieldFix(document, fieldAccess, (ClassScope) type);
+                            if (document != null && fileObject.canWrite()) {
+                                if (type instanceof ClassScope || type instanceof TraitScope) {
+                                    fix = new IntroduceFieldFix(document, fieldAccess, type);
+                                }
                             }
                         }
 
@@ -299,8 +304,10 @@ public class IntroduceSuggestion extends SuggestionRule {
                             assert type != null;
                             FileObject fileObject = type.getFileObject();
                             BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, true) : null;
-                            if (document != null && fileObject.canWrite() && type instanceof ClassScope) {
-                                fix = new IntroduceStaticFieldFix(document, fieldAccess, (ClassScope) type);
+                            if (document != null && fileObject.canWrite()) {
+                                if (type instanceof ClassScope || type instanceof TraitScope) {
+                                    fix = new IntroduceStaticFieldFix(document, fieldAccess, type);
+                                }
                             }
                         }
 
@@ -313,21 +320,24 @@ public class IntroduceSuggestion extends SuggestionRule {
         @Override
         public void visit(StaticConstantAccess staticConstantAccess) {
             if (lineBounds.containsInclusive(staticConstantAccess.getStartOffset())) {
-                String constName = staticConstantAccess.getConstant().getName();
+                String constName = staticConstantAccess.getConstantName().getName();
                 String clzName = CodeUtils.extractUnqualifiedClassName(staticConstantAccess);
 
                 if (clzName != null && StringUtils.hasText(constName)) {
                     Collection<? extends TypeScope> allTypes = ModelUtils.resolveType(model, staticConstantAccess);
                     if (allTypes.size() == 1) {
                         TypeScope type = ModelUtils.getFirst(allTypes);
-                        ElementQuery.Index index = model.getIndexScope().getIndex();
-                        Set<TypeConstantElement> allConstants = ElementFilter.forName(NameKind.exact(constName)).filter(index.getAllTypeConstants(type));
-                        if (allConstants.isEmpty()) {
-                            assert type != null;
-                            FileObject fileObject = type.getFileObject();
-                            BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, false) : null;
-                            if (document != null && fileObject.canWrite()) {
-                                fix = new IntroduceClassConstantFix(document, staticConstantAccess, (TypeScope) type);
+                        // trait can't have constants
+                        if (!(type instanceof TraitScope)) {
+                            ElementQuery.Index index = model.getIndexScope().getIndex();
+                            Set<TypeConstantElement> allConstants = ElementFilter.forName(NameKind.exact(constName)).filter(index.getAllTypeConstants(type));
+                            if (allConstants.isEmpty()) {
+                                assert type != null;
+                                FileObject fileObject = type.getFileObject();
+                                BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, false) : null;
+                                if (document != null && fileObject.canWrite()) {
+                                    fix = new IntroduceClassConstantFix(document, staticConstantAccess, (TypeScope) type);
+                                }
                             }
                         }
                     }
@@ -483,16 +493,17 @@ public class IntroduceSuggestion extends SuggestionRule {
         @Override
         @Messages({
             "# {0} - Method name",
-            "# {1} - Class name",
-            "# {2} - File name",
-            "IntroduceHintMethodDesc=Create Method \"{0}\" in Class \"{1}\" ({2})"
+            "# {1} - Type kind",
+            "# {2} - Type name",
+            "# {3} - File name",
+            "IntroduceHintMethodDesc=Create Method \"{0}\" in {1} \"{2}\" ({3})"
         })
         public String getDescription() {
-            String clsName = type.getName();
+            String typeName = type.getName();
             FileObject fileObject = type.getFileObject();
             String fileName = fileObject == null ? UNKNOWN_FILE_NAME : fileObject.getNameExt();
-            return Bundle.IntroduceHintMethodDesc(item.getMethod().asString(PrintAs.NameAndParamsDeclaration), clsName, fileName);
-
+            String typeKindName = getTypeKindName(type);
+            return Bundle.IntroduceHintMethodDesc(item.getMethod().asString(PrintAs.NameAndParamsDeclaration), typeKindName, typeName, fileName);
         }
 
         int getOffset() throws BadLocationException {
@@ -523,15 +534,17 @@ public class IntroduceSuggestion extends SuggestionRule {
         @Override
         @Messages({
             "# {0} - Method name",
-            "# {1} - Class name",
-            "# {2} - File name",
-            "IntroduceHintStaticMethodDesc=Create Method \"{0}\" in Class \"{1}\" ({2})"
+            "# {1} - Type kind",
+            "# {2} - Type name",
+            "# {3} - File name",
+            "IntroduceHintStaticMethodDesc=Create Method \"{0}\" in {1} \"{2}\" ({3})"
         })
         public String getDescription() {
-            String clsName = type.getName();
+            String typeName = type.getName();
             FileObject fileObject = type.getFileObject();
             String fileName = fileObject == null ? UNKNOWN_FILE_NAME : fileObject.getNameExt();
-            return Bundle.IntroduceHintStaticMethodDesc(item.getMethod().asString(PrintAs.NameAndParamsDeclaration), clsName, fileName);
+            String typeKindName = getTypeKindName(type);
+            return Bundle.IntroduceHintStaticMethodDesc(item.getMethod().asString(PrintAs.NameAndParamsDeclaration), typeKindName, typeName, fileName);
         }
 
         int getOffset() throws BadLocationException {
@@ -540,14 +553,14 @@ public class IntroduceSuggestion extends SuggestionRule {
     }
 
     private static class IntroduceFieldFix extends IntroduceFix {
-        private final ClassScope clz;
+        private final TypeScope type;
         private final String templ;
         private final VariableBase dispatcher;
         private String fieldName;
 
-        public IntroduceFieldFix(BaseDocument doc, FieldAccess node, ClassScope clz) {
+        public IntroduceFieldFix(BaseDocument doc, FieldAccess node, TypeScope type) {
             super(doc, node);
-            this.clz = clz;
+            this.type = type;
             this.dispatcher = node.getDispatcher();
             this.templ = createTemplate();
         }
@@ -559,25 +572,27 @@ public class IntroduceSuggestion extends SuggestionRule {
             edits.replace(templateOffset, 0, "\n" + templ, true, 0); //NOI18N
             edits.apply();
             templateOffset = LineDocumentUtils.getLineEnd(doc, templateOffset + 1) - 2;
-            UiUtils.open(clz.getFileObject(), templateOffset);
+            UiUtils.open(type.getFileObject(), templateOffset);
         }
 
         @Override
         @Messages({
             "# {0} - Field name",
-            "# {1} - Class name",
-            "# {2} - File name",
-            "IntroduceHintFieldDesc=Create Field \"{0}\" in Class \"{1}\" ({2})"
+            "# {1} - Type kind",
+            "# {2} - Type name",
+            "# {3} - File name",
+            "IntroduceHintFieldDesc=Create Field \"{0}\" in {1} \"{2}\" ({3})"
         })
         public String getDescription() {
-            String clsName = clz.getName();
-            FileObject fileObject = clz.getFileObject();
+            String typeName = type.getName();
+            FileObject fileObject = type.getFileObject();
             String fileName = fileObject == null ? UNKNOWN_FILE_NAME : fileObject.getNameExt();
-            return Bundle.IntroduceHintFieldDesc(templ, clsName, fileName);
+            String typeKindName = getTypeKindName(type);
+            return Bundle.IntroduceHintFieldDesc(templ, typeKindName, typeName, fileName);
         }
 
         int getOffset() throws BadLocationException {
-            return IntroduceSuggestion.getOffset(doc, clz, PhpElementKind.FIELD);
+            return IntroduceSuggestion.getOffset(doc, type, PhpElementKind.FIELD);
         }
 
         private String createTemplate() {
@@ -601,13 +616,13 @@ public class IntroduceSuggestion extends SuggestionRule {
     }
 
     private static class IntroduceStaticFieldFix extends IntroduceFix {
-        private final ClassScope clz;
+        private final TypeScope type;
         private final String templ;
         private String fieldName;
 
-        public IntroduceStaticFieldFix(BaseDocument doc, StaticFieldAccess node, ClassScope clz) {
+        public IntroduceStaticFieldFix(BaseDocument doc, StaticFieldAccess node, TypeScope type) {
             super(doc, node);
-            this.clz = clz;
+            this.type = type;
             this.templ = createTemplate();
         }
 
@@ -618,26 +633,27 @@ public class IntroduceSuggestion extends SuggestionRule {
             edits.replace(templateOffset, 0, "\n" + templ, true, 0); //NOI18N
             edits.apply();
             templateOffset = LineDocumentUtils.getLineEnd(doc, templateOffset + 1) - 2;
-            UiUtils.open(clz.getFileObject(), templateOffset);
+            UiUtils.open(type.getFileObject(), templateOffset);
         }
 
         @Override
         @Messages({
             "# {0} - Field name",
-            "# {1} - Class name",
-            "# {2} - File name",
-            "IntroduceHintStaticFieldDesc=Create Field \"{0}\" in Class \"{1}\" ({2})"
+            "# {1} - Type kind",
+            "# {2} - Type name",
+            "# {3} - File name",
+            "IntroduceHintStaticFieldDesc=Create Field \"{0}\" in {1} \"{2}\" ({3})"
         })
         public String getDescription() {
-            String clsName = clz.getName();
-            FileObject fileObject = clz.getFileObject();
+            String typeName = type.getName();
+            FileObject fileObject = type.getFileObject();
             String fileName = fileObject == null ? UNKNOWN_FILE_NAME : fileObject.getNameExt();
-            return Bundle.IntroduceHintStaticFieldDesc(fieldName, clsName, fileName);
-
+            String typeKindName = getTypeKindName(type);
+            return Bundle.IntroduceHintStaticFieldDesc(fieldName, typeKindName, typeName, fileName);
         }
 
         int getOffset() throws BadLocationException {
-            return IntroduceSuggestion.getOffset(doc, clz, PhpElementKind.FIELD);
+            return IntroduceSuggestion.getOffset(doc, type, PhpElementKind.FIELD);
         }
 
         private String createTemplate() {
@@ -658,7 +674,7 @@ public class IntroduceSuggestion extends SuggestionRule {
         public IntroduceClassConstantFix(BaseDocument doc, StaticConstantAccess node, TypeScope type) {
             super(doc, node);
             this.type = type;
-            this.constantName = ((StaticConstantAccess) node).getConstant().getName();
+            this.constantName = ((StaticConstantAccess) node).getConstantName().getName();
             this.templ = String.format("const %s = \"\";", constantName);
         }
 
@@ -675,15 +691,17 @@ public class IntroduceSuggestion extends SuggestionRule {
         @Override
         @Messages({
             "# {0} - Constant name",
-            "# {1} - Class name",
-            "# {2} - File name",
-            "IntroduceHintClassConstDesc=Create Constant \"{0}\" in Class \"{1}\" ({2})"
+            "# {1} - Type kind",
+            "# {2} - Type name",
+            "# {3} - File name",
+            "IntroduceHintClassConstDesc=Create Constant \"{0}\" in {1} \"{2}\" ({3})"
         })
         public String getDescription() {
-            String clsName = type.getName();
+            String typeName = type.getName();
             FileObject fileObject = type.getFileObject();
             String fileName = fileObject == null ? UNKNOWN_FILE_NAME : fileObject.getNameExt();
-            return Bundle.IntroduceHintClassConstDesc(constantName, clsName, fileName);
+            String typeKindName = getTypeKindName(type);
+            return Bundle.IntroduceHintClassConstDesc(constantName, typeKindName, typeName, fileName);
         }
 
         int getOffset() throws BadLocationException {
@@ -745,12 +763,19 @@ public class IntroduceSuggestion extends SuggestionRule {
                     ClassScope clz = (ClassScope) typeScope;
                     elements.addAll(clz.getDeclaredFields());
                     elements.addAll(clz.getDeclaredMethods());
+                } else if (typeScope instanceof TraitScope) {
+                    TraitScope trait = (TraitScope) typeScope;
+                    elements.addAll(trait.getDeclaredFields());
+                    elements.addAll(trait.getDeclaredMethods());
                 }
                 break;
             case FIELD:
-                if ((typeScope instanceof ClassScope)) {
+                if (typeScope instanceof ClassScope) {
                     ClassScope clz = (ClassScope) typeScope;
                     elements.addAll(clz.getDeclaredFields());
+                } else if (typeScope instanceof TraitScope) {
+                    TraitScope trait = (TraitScope) typeScope;
+                    elements.addAll(trait.getDeclaredFields());
                 }
                 break;
             case TYPE_CONSTANT:
@@ -771,8 +796,14 @@ public class IntroduceSuggestion extends SuggestionRule {
                 offset = newOffset;
             }
         }
+
         if (offset == -1) {
-            offset = getOffsetAfterClassOpenCurly(doc, typeScope.getOffset());
+            if (typeScope.isTraited()) {
+                // has use trait statements
+                offset = getOffsetAfterUseTrait(doc, typeScope);
+            } else {
+                offset = getOffsetAfterClassOpenCurly(doc, typeScope.getOffset());
+            }
         }
         return offset;
     }
@@ -837,6 +868,58 @@ public class IntroduceSuggestion extends SuggestionRule {
         return retval;
     }
 
+    /**
+     * Get an offset after a use trait statement.
+     * <b>NOTE:</b>This method should be used when a type doesn't have
+     * constants. If the use trait statement is after fields or methods, the
+     * offset after the open curry for type is returned.
+     *
+     * @param document the document
+     * @param typeScope the type scope
+     * @return The offset after the last use trait statement if traits are used,
+     * otherwise the offset after the open curly for the type
+     */
+    private static int getOffsetAfterUseTrait(BaseDocument document, TypeScope typeScope) {
+        OffsetRange blockRange = typeScope.getBlockRange();
+        int offset = blockRange.getEnd() - 1; // before close curly "}"
+        Collection<ModelElement> elements = new HashSet<>();
+        elements.addAll(typeScope.getDeclaredMethods());
+        if (typeScope instanceof ClassScope) {
+            elements.addAll(((ClassScope) typeScope).getDeclaredFields());
+        } else if (typeScope instanceof TraitScope) {
+            elements.addAll(((TraitScope) typeScope).getDeclaredFields());
+        }
+        for (ModelElement element : elements) {
+            int newOffset = element.getOffset();
+            if (newOffset < offset) {
+                offset = newOffset;
+            }
+        }
+
+        document.readLock();
+        try {
+            TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(document, offset);
+            if (ts != null) {
+                ts.move(offset);
+                if (ts.movePrevious()) {
+                    // find the following cases : "use TraitA;", "use TraitA{}" and "TypeName {"
+                    List<PHPTokenId> lookfor = Arrays.asList(
+                            PHPTokenId.PHP_SEMICOLON,
+                            PHPTokenId.PHP_CURLY_CLOSE,
+                            PHPTokenId.PHP_CURLY_OPEN
+                    );
+                    Token<? extends PHPTokenId> previousToken = LexUtilities.findPreviousToken(ts, lookfor);
+                    if (previousToken != null) {
+                        return ts.offset() + previousToken.length();
+                    }
+                }
+            }
+        } finally {
+            document.readUnlock();
+        }
+        return offset;
+    }
+
     private static PHPCompletionItem.MethodDeclarationItem createMethodDeclarationItem(final TypeScope typeScope, final MethodInvocation node) {
         final String methodName = CodeUtils.extractFunctionName(node.getMethod());
         final MethodElement method = MethodElementImpl.createMagicMethod(typeScope,
@@ -852,4 +935,22 @@ public class IntroduceSuggestion extends SuggestionRule {
                 Modifier.STATIC, getParameters(node.getMethod().getParameters()));
         return PHPCompletionItem.MethodDeclarationItem.forIntroduceHint(method, null);
     }
+
+    @Messages({
+        "IntroduceHintClassName=Class",
+        "IntroduceHintInterfaceName=Interface",
+        "IntroduceHintTraitName=Trait"
+    })
+    private static String getTypeKindName(TypeScope typeScope) {
+        if (typeScope instanceof ClassScope) {
+            return Bundle.IntroduceHintClassName();
+        } else if (typeScope instanceof InterfaceScope) {
+            return Bundle.IntroduceHintInterfaceName();
+        } else if (typeScope instanceof TraitScope) {
+            return Bundle.IntroduceHintTraitName();
+        }
+        assert false;
+        return "?"; // NOI18N
+    }
+
 }

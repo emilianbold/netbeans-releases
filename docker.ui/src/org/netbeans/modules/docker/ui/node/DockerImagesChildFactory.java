@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.docker.ui.node;
 
+import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -52,7 +53,6 @@ import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.api.DockerTag;
 import org.netbeans.modules.docker.api.DockerEvent;
 import org.netbeans.modules.docker.api.DockerAction;
-import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 
@@ -60,7 +60,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Petr Hejl
  */
-public class DockerImagesChildFactory extends ChildFactory<DockerTag> implements Refreshable {
+public class DockerImagesChildFactory extends NodeClosingFactory<DockerTag> implements Refreshable, Closeable {
 
     private static final Logger LOGGER = Logger.getLogger(DockerImagesChildFactory.class.getName());
 
@@ -78,7 +78,7 @@ public class DockerImagesChildFactory extends ChildFactory<DockerTag> implements
 
     private final RequestProcessor.Task refreshTask;
 
-    private DockerEvent lastEvent;
+    private final DockerEvent.Listener listener;
 
     public DockerImagesChildFactory(DockerInstance instance) {
         this.instance = instance;
@@ -89,14 +89,15 @@ public class DockerImagesChildFactory extends ChildFactory<DockerTag> implements
                 refresh();
             }
         });
-        instance.addImageListener(new DockerEvent.Listener() {
+        this.listener = new DockerEvent.Listener() {
             @Override
             public void onEvent(DockerEvent event) {
                 if (DockerEvent.Status.PUSH != event.getStatus()) {
                     refreshTask.schedule(200);
                 }
             }
-        });
+        };
+        instance.addImageListener(listener);
     }
 
     @Override
@@ -116,8 +117,14 @@ public class DockerImagesChildFactory extends ChildFactory<DockerTag> implements
         return true;
     }
 
+    @Override
     public final void refresh() {
         refresh(false);
+    }
+
+    @Override
+    public void close() {
+        instance.removeImageListener(listener);
     }
 
 }

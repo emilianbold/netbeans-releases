@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,18 +37,16 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.symfony2.ui.actions;
 
-import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.symfony2.commands.Symfony2Script;
+import org.netbeans.modules.php.symfony2.commands.SymfonyScript;
 import org.openide.util.NbBundle;
 
-public final class CacheWarmupAction extends Symfony2Action {
+public final class CacheWarmupAction extends SymfonyAction {
 
-    private static final long serialVersionUID = 546873213433L;
     private static final CacheWarmupAction INSTANCE = new CacheWarmupAction();
 
 
@@ -60,14 +58,17 @@ public final class CacheWarmupAction extends Symfony2Action {
     }
 
     @Override
-    protected void runCommand(PhpModule phpModule) throws InvalidPhpExecutableException {
-        Symfony2Script.forPhpModule(phpModule, true).cacheWarmUp(phpModule);
+    protected void runCommand(PhpModule phpModule) {
+        SymfonyScript console = SymfonyScript.forPhpModule(phpModule, true);
+        if (console != null) {
+            console.cacheWarmUp(phpModule);
+        }
     }
 
-    @NbBundle.Messages("LBL_WarmupCache=Warmup Cache")
+    @NbBundle.Messages("CacheWarmupAction.name=Warmup Cache")
     @Override
     protected String getPureName() {
-        return Bundle.LBL_WarmupCache();
+        return Bundle.CacheWarmupAction_name();
     }
 
 }

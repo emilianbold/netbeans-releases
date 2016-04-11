@@ -203,7 +203,7 @@ public class RepositoryRegistry {
      */
     public Collection<RepositoryImpl> getRepositories(String connectorID, boolean allKnown) {
         LinkedList<RepositoryImpl> ret = new LinkedList<RepositoryImpl>();
-        lockRepositories();
+        lockRepositories();        
         try {
             final Map<String, RepositoryImpl> m = repositories.get(connectorID);
             if(m != null) {
@@ -311,38 +311,40 @@ public class RepositoryRegistry {
     
     void loadRepositories() {
         RepositoriesMap map = new RepositoriesMap();            
-            
-        migrateBugzilla();
-        migrateJira();
+        try {    
+            migrateBugzilla();
+            migrateJira();
 
-        String[] ids = getRepositoryIds();
-        DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
-        if (ids != null) {
-            for (String id : ids) {
-                String[] idArray = id.split(DELIMITER);
-                String connectorId = idArray[0].substring(BUGTRACKING_REPO.length());
-                for (DelegatingConnector c : connectors) {
-                    if(c.getID().equals(connectorId)) {
-                        RepositoryInfo info = SPIAccessor.IMPL.read(getPreferences(), id);
-                        if(info != null) {
-                            Repository repo = c.createRepository(info);
-                            if (repo != null) {
-                                map.put(APIAccessor.IMPL.getImpl(repo));
+            String[] ids = getRepositoryIds();
+            DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
+            if (ids != null) {
+                for (String id : ids) {
+                    String[] idArray = id.split(DELIMITER);
+                    String connectorId = idArray[0].substring(BUGTRACKING_REPO.length());
+                    for (DelegatingConnector c : connectors) {
+                        if(c.getID().equals(connectorId)) {
+                            RepositoryInfo info = SPIAccessor.IMPL.read(getPreferences(), id);
+                            if(info != null) {
+                                Repository repo = c.createRepository(info);
+                                if (repo != null) {
+                                    map.put(APIAccessor.IMPL.getImpl(repo));
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-        for (DelegatingConnector c : connectors) {
-            if (BugtrackingManager.isLocalConnectorID(c.getID())) {
-                Repository repo = c.createRepository();
-                if (repo != null) {
-                map.put(APIAccessor.IMPL.getImpl(repo));
+            for (DelegatingConnector c : connectors) {
+                if (BugtrackingManager.isLocalConnectorID(c.getID())) {
+                    Repository repo = c.createRepository();
+                    if (repo != null) {
+                        map.put(APIAccessor.IMPL.getImpl(repo));
+                    }
                 }
             }
+        } finally {
+            repositories = map;
         }
-        repositories = map;
     }
   
     private String[] getRepositoryIds() {

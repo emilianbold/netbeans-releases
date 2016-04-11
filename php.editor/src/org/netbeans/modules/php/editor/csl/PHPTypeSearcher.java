@@ -75,6 +75,7 @@ import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.project.api.PhpProjectUtils;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -250,7 +251,7 @@ public class PHPTypeSearcher implements IndexSearcher {
         private void initProjectInfo() {
             FileObject fo = element.getFileObject();
             if (fo != null) {
-                Project p = FileOwnerQuery.getOwner(fo);
+                Project p = ProjectConvertors.getNonConvertorOwner(fo);
                 if (p != null) {
                     if (PhpProjectUtils.isPhpProject(p)) {
                         projectDirectory = p.getProjectDirectory();

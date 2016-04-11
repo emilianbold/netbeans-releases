@@ -135,8 +135,8 @@ else
     mv nbbuild/build/testdist.zip $DIST/zip/testdist-${BUILDNUMBER}.zip
 fi
 
-mv $NB_ALL/nbbuild/netbeans $NB_ALL/nbbuild/netbeans.after_commit-validation_and_test-dist
-mv $NB_ALL/nbbuild/netbeans-vanilla $NB_ALL/nbbuild/netbeans
+rm -rf $NB_ALL/nbbuild/netbeans
+cp -rp $NB_ALL/nbbuild/netbeans-vanilla $NB_ALL/nbbuild/netbeans
 cd $NB_ALL
 
 #Build all NBMs for stable UC - IDE + UC-only
@@ -148,6 +148,27 @@ if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Cannot build all stable UC NBMs"
     exit $ERROR_CODE;
 fi
+
+cd $NB_ALL
+
+#Rebuild ODCS NBMs for stable UC with all available locales
+ant ${CLUSTER_CONFIG:--Dcluster.config=odcs} -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -Dlocales=$LOCALES,de,es,fr,it,ko,zh_TW -f nbbuild/build.xml build-nonsigned-nbms -Dbase.nbm.target.dir=${DIST}/odcs -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS -Dbuild.compiler.debuglevel=${DEBUGLEVEL}
+ERROR_CODE=$?
+
+create_test_result "build.NBMs" "Build ODCS NBMs" $ERROR_CODE
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Cannot build ODCS NBMs"
+    exit $ERROR_CODE;
+fi
+
+mv ${DIST}/odcs/extra/org-netbeans-modules-odcs* ${DIST}/uc2/extra/
+mv ${DIST}/odcs/extra/org-netbeans-modules-team-server* ${DIST}/uc2/extra/
+rm -rf ${DIST}/odcs
+
+rm -rf $NB_ALL/nbbuild/netbeans
+mv $NB_ALL/nbbuild/netbeans-vanilla $NB_ALL/nbbuild/netbeans
+
+cd $NB_ALL
 
 # Separate IDE nbms from stableuc nbms.
 ant $CLUSTER_CONFIG -f nbbuild/build.xml move-ide-nbms -Dnbms.source.location=${DIST}/uc2 -Dnbms.target.location=${DIST}/uc

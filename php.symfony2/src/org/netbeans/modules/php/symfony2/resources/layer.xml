@@ -56,8 +56,8 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="Actions">
         <folder name="PHP">
-            <file name="org-netbeans-modules-php-symfony2-ui-actions-Symfony2RunCommandAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.symfony2.ui.actions.Symfony2RunCommandAction.getInstance"/>
+            <file name="org-netbeans-modules-php-symfony2-ui-actions-SymfonyRunCommandAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.symfony2.ui.actions.SymfonyRunCommandAction.getInstance"/>
             </file>
             <file name="org-netbeans-modules-php-symfony2-ui-actions-CacheClearAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.symfony2.ui.actions.CacheClearAction.getInstance"/>

@@ -133,7 +133,7 @@ public class FormatVisitor extends DefaultVisitor {
     private boolean isMethodInvocationShifted; // is continual indentation already included ?
     private boolean isFirstUseStatementPart;
     private boolean isFirstUseTraitStatementPart;
-    private boolean inArray;
+    private int inArrayBalance;
 
     public FormatVisitor(BaseDocument document, DocumentOptions documentOptions, final int caretOffset, final int startOffset, final int endOffset) {
         this.document = document;
@@ -148,6 +148,7 @@ public class FormatVisitor extends DefaultVisitor {
         formatTokens.add(new FormatToken.InitToken());
         isMethodInvocationShifted = false;
         groupAlignmentTokenHolders = new Stack<>();
+        inArrayBalance = 0;
     }
 
     public List<FormatToken> getFormatTokens() {
@@ -256,7 +257,7 @@ public class FormatVisitor extends DefaultVisitor {
 
     @Override
     public void visit(ArrayCreation node) {
-        inArray = true;
+        inArrayBalance++;
         int delta = options.indentArrayItems - options.continualIndentSize;
         if (ts.token().id() != PHPTokenId.PHP_ARRAY && lastIndex <= ts.index() // it's possible that the expression starts with array
                 && !ts.token().text().toString().equals("[")) {  //NOI18N
@@ -305,7 +306,7 @@ public class FormatVisitor extends DefaultVisitor {
         formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), -1 * delta));
         addAllUntilOffset(node.getEndOffset());
         resetGroupAlignment();
-        inArray = false;
+        inArrayBalance--;
     }
 
     private int modifyDeltaForEnclosingFunctionInvocations(int delta) {
@@ -860,9 +861,13 @@ public class FormatVisitor extends DefaultVisitor {
             }
         } else {
             addAllUntilOffset(node.getStartOffset());
-            formatTokens.add(new FormatToken.IndentToken(node.getStartOffset(), options.continualIndentSize));
-            super.visit(node);
-            formatTokens.add(new FormatToken.IndentToken(node.getEndOffset(), options.continualIndentSize * -1));
+            if (moveNext() && lastIndex < ts.index()) {
+                // #257241 add indent tokens after const keyword
+                addFormatToken(formatTokens);
+                formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), options.continualIndentSize));
+                super.visit(node);
+                formatTokens.add(new FormatToken.IndentToken(node.getEndOffset(), options.continualIndentSize * -1));
+            }
         }
     }
 
@@ -1073,11 +1078,11 @@ public class FormatVisitor extends DefaultVisitor {
         Block body = node.getBody();
         if (body != null) {
             addAllUntilOffset(body.getStartOffset());
-            if (!inArray) {
+            if (inArrayBalance == 0) {
                 formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), -1 * options.continualIndentSize));
             }
             scan(body);
-            if (!inArray) {
+            if (inArrayBalance == 0) {
                 formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), options.continualIndentSize));
             }
         }

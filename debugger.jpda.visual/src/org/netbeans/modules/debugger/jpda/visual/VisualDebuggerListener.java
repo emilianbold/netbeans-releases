@@ -319,7 +319,9 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
                         if (res instanceof StringReference) {
                             String reason = ((StringReference) res).value();
                             InputOutput io = t.getDebugger().getConsoleIO().getIO();
-                            io.getErr().println(NbBundle.getMessage(VisualDebuggerListener.class, "MSG_NoTrackingOfComponentChanges", reason));
+                            if (io != null) {
+                                io.getErr().println(NbBundle.getMessage(VisualDebuggerListener.class, "MSG_NoTrackingOfComponentChanges", reason));
+                            }
                             //System.err.println("isHierarchyListenerAdded = false, reason = "+reason);
                         } else {
                             //System.err.println("isHierarchyListenerAdded = "+true);

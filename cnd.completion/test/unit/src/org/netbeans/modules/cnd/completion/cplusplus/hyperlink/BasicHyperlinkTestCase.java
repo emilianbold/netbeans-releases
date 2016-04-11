@@ -1211,6 +1211,31 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug257647.cpp", 13, 12, "bug257647.cpp", 3, 5);
     }
     
+    public void testBug258143() throws Exception {
+        // Bug 258143 - Printf and double + int
+        performTest("bug258143.cpp", 67, 10, "bug258143.cpp", 32, 3);
+        performTest("bug258143.cpp", 72, 6, "bug258143.cpp", 4, 3);
+        performTest("bug258143.cpp", 73, 6, "bug258143.cpp", 4, 3);
+        performTest("bug258143.cpp", 74, 6, "bug258143.cpp", 4, 3);
+        performTest("bug258143.cpp", 75, 6, "bug258143.cpp", 41, 3);
+        performTest("bug258143.cpp", 76, 6, "bug258143.cpp", 37, 3);
+        performTest("bug258143.cpp", 77, 6, "bug258143.cpp", 32, 3);
+        performTest("bug258143.cpp", 78, 6, "bug258143.cpp", 32, 3);
+        performTest("bug258143.cpp", 79, 6, "bug258143.cpp", 28, 3);
+        performTest("bug258143.cpp", 80, 6, "bug258143.cpp", 24, 3);
+        performTest("bug258143.cpp", 81, 6, "bug258143.cpp", 24, 3);
+        performTest("bug258143.cpp", 82, 6, "bug258143.cpp", 20, 3);
+        performTest("bug258143.cpp", 83, 6, "bug258143.cpp", 16, 3);
+        performTest("bug258143.cpp", 84, 6, "bug258143.cpp", 16, 3);
+        performTest("bug258143.cpp", 85, 6, "bug258143.cpp", 16, 3);
+        performTest("bug258143.cpp", 90, 14, "bug258143.cpp", 32, 3);
+    }
+    
+    public void testBug258511() throws Exception {
+        // Bug 258511 - Erroneous mismatching argument types "int" conversion specifier "s" hint 
+        performTest("bug258511.cpp", 7, 10, "bug258511.cpp", 2, 3);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

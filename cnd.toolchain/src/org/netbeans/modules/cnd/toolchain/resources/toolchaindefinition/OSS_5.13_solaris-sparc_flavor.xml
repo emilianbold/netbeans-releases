@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
 -->
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <toolchain name="OSS_5.13" display="{Oracle Solaris Studio}" family="SunStudio" aliases="SunStudio,OracleSolarisStudio" substitute="OSS"/>
+    <toolchain name="OSS_5.13" display="{Oracle Solaris Studio}" family="SunStudio" aliases="OracleDeveloperStudio" substitute="OSS"/>
     <platforms stringvalue="sun_sparc"/>
     <default_locations>
         <platform os="sun_sparc" directory="/opt/solarisstudio12.4/bin"/>

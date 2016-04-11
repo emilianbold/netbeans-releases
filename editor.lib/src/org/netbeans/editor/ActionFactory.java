@@ -46,6 +46,7 @@ package org.netbeans.editor;
 
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -56,6 +57,7 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
@@ -87,9 +89,12 @@ import javax.swing.undo.UndoableEdit;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.View;
 import javax.swing.undo.UndoManager;
+import org.netbeans.api.editor.caret.CaretInfo;
 import org.netbeans.api.editor.EditorActionNames;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
+import org.netbeans.api.editor.EditorUtilities;
+import org.netbeans.api.editor.caret.EditorCaret;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.progress.ProgressUtils;
@@ -98,6 +103,8 @@ import org.netbeans.lib.editor.util.swing.PositionRegion;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.api.editor.NavigationHistory;
+import org.netbeans.api.editor.caret.CaretMoveContext;
+import org.netbeans.spi.editor.caret.CaretMoveHandler;
 import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
 import org.netbeans.modules.editor.lib2.view.DocumentView;
 import org.netbeans.spi.editor.typinghooks.CamelCaseInterceptor;
@@ -105,6 +112,7 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.actions.Presenter;
 
 /**
@@ -150,57 +158,124 @@ public class ActionFactory {
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
                         try {
-                            if (Utilities.isSelectionShowing(caret)) { // block selected
-                                try {
-                                    BaseKit.changeBlockIndent(
-                                        doc,
-                                        target.getSelectionStart(),
-                                        target.getSelectionEnd(),
-                                        -1);
-                                } catch (GuardedException e) {
-                                    target.getToolkit().beep();
-                                } catch (BadLocationException e) {
-                                    e.printStackTrace();
-                                }
-                            } else { // no selected text
-                                try {
-                                    int dot = caret.getDot();
-                                    int lineStartOffset = Utilities.getRowStart(doc, dot);
-                                    int firstNW = Utilities.getRowFirstNonWhite(doc, dot);
-                                    if (firstNW != -1 && dot <= firstNW) {
-                                        // Non-white row and caret inside initial whitespace => decrease text indent
-                                        int lineEndOffset = Utilities.getRowEnd(doc, dot);
-                                        BaseKit.changeBlockIndent(doc, lineStartOffset, lineEndOffset, -1);
-                                    } else {
-                                        int endNW = (firstNW == -1)
-                                                ? lineStartOffset
-                                                : (Utilities.getRowLastNonWhite(doc, dot) + 1);
-                                        if (dot > endNW) {
-                                            int shiftWidth = doc.getShiftWidth();
-                                            if (shiftWidth > 0) {
-                                                int dotColumn = Utilities.getVisualColumn(doc, dot);
-                                                int targetColumn = Math.max(0,
-                                                        (dotColumn - 1) / shiftWidth * shiftWidth);
-                                                // There may be '\t' chars so remove char-by-char
-                                                // and possibly fill-in spaces to get to targetColumn
-                                                while (dotColumn > targetColumn && --dot >= endNW) {
-                                                    doc.remove(dot, 1);
-                                                    dotColumn = Utilities.getVisualColumn(doc, dot);
+                            if(caret instanceof EditorCaret) {
+                                EditorCaret editorCaret = (EditorCaret) caret;
+                                editorCaret.moveCarets(new CaretMoveHandler() {
+                                    @Override
+                                    public void moveCarets(CaretMoveContext context) {
+                                        BaseDocument doc = (BaseDocument) context.getDocument();
+                                        for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
+                                            if (caretInfo.isSelection()) { // block selected
+                                                try {
+                                                    int start = Math.min(caretInfo.getDot(), caretInfo.getMark());
+                                                    int end = Math.max(caretInfo.getDot(), caretInfo.getMark());
+                                                    BaseKit.changeBlockIndent(
+                                                        doc,
+                                                        start,
+                                                        end,
+                                                        -1);
+                                                } catch (GuardedException e) {
+                                                    target.getToolkit().beep();
+                                                } catch (BadLocationException e) {
+                                                    e.printStackTrace();
                                                 }
-                                                int insertLen;
-                                                if (dot >= endNW && (insertLen = targetColumn - dotColumn) > 0) {
-                                                    char[] spaceChars = new char[insertLen];
-                                                    Arrays.fill(spaceChars, ' ');
-                                                    String spaces = new String(spaceChars);
-                                                    doc.insertString(dot, spaces, null);
+                                            } else { // no selected text
+                                                try {
+                                                    int dot = caretInfo.getDot();
+                                                    int lineStartOffset = Utilities.getRowStart(doc, dot);
+                                                    int firstNW = Utilities.getRowFirstNonWhite(doc, dot);
+                                                    if (firstNW != -1 && dot <= firstNW) {
+                                                        // Non-white row and caret inside initial whitespace => decrease text indent
+                                                        int lineEndOffset = Utilities.getRowEnd(doc, dot);
+                                                        BaseKit.changeBlockIndent(doc, lineStartOffset, lineEndOffset, -1);
+                                                    } else {
+                                                        int endNW = (firstNW == -1)
+                                                                ? lineStartOffset
+                                                                : (Utilities.getRowLastNonWhite(doc, dot) + 1);
+                                                        if (dot > endNW) {
+                                                            int shiftWidth = doc.getShiftWidth();
+                                                            if (shiftWidth > 0) {
+                                                                int dotColumn = Utilities.getVisualColumn(doc, dot);
+                                                                int targetColumn = Math.max(0,
+                                                                        (dotColumn - 1) / shiftWidth * shiftWidth);
+                                                                // There may be '\t' chars so remove char-by-char
+                                                                // and possibly fill-in spaces to get to targetColumn
+                                                                while (dotColumn > targetColumn && --dot >= endNW) {
+                                                                    doc.remove(dot, 1);
+                                                                    dotColumn = Utilities.getVisualColumn(doc, dot);
+                                                                }
+                                                                int insertLen;
+                                                                if (dot >= endNW && (insertLen = targetColumn - dotColumn) > 0) {
+                                                                    char[] spaceChars = new char[insertLen];
+                                                                    Arrays.fill(spaceChars, ' ');
+                                                                    String spaces = new String(spaceChars);
+                                                                    doc.insertString(dot, spaces, null);
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                } catch (GuardedException e) {
+                                                    target.getToolkit().beep();
+                                                } catch (BadLocationException e) {
+                                                    e.printStackTrace();
                                                 }
                                             }
                                         }
                                     }
-                                } catch (GuardedException e) {
-                                    target.getToolkit().beep();
-                                } catch (BadLocationException e) {
-                                    e.printStackTrace();
+                                });
+                            } else {
+                                if (Utilities.isSelectionShowing(caret)) { // block selected
+                                    try {
+                                        BaseKit.changeBlockIndent(
+                                            doc,
+                                            target.getSelectionStart(),
+                                            target.getSelectionEnd(),
+                                            -1);
+                                    } catch (GuardedException e) {
+                                        target.getToolkit().beep();
+                                    } catch (BadLocationException e) {
+                                        e.printStackTrace();
+                                    }
+                                } else { // no selected text
+                                    try {
+                                        int dot = caret.getDot();
+                                        int lineStartOffset = Utilities.getRowStart(doc, dot);
+                                        int firstNW = Utilities.getRowFirstNonWhite(doc, dot);
+                                        if (firstNW != -1 && dot <= firstNW) {
+                                            // Non-white row and caret inside initial whitespace => decrease text indent
+                                            int lineEndOffset = Utilities.getRowEnd(doc, dot);
+                                            BaseKit.changeBlockIndent(doc, lineStartOffset, lineEndOffset, -1);
+                                        } else {
+                                            int endNW = (firstNW == -1)
+                                                    ? lineStartOffset
+                                                    : (Utilities.getRowLastNonWhite(doc, dot) + 1);
+                                            if (dot > endNW) {
+                                                int shiftWidth = doc.getShiftWidth();
+                                                if (shiftWidth > 0) {
+                                                    int dotColumn = Utilities.getVisualColumn(doc, dot);
+                                                    int targetColumn = Math.max(0,
+                                                            (dotColumn - 1) / shiftWidth * shiftWidth);
+                                                    // There may be '\t' chars so remove char-by-char
+                                                    // and possibly fill-in spaces to get to targetColumn
+                                                    while (dotColumn > targetColumn && --dot >= endNW) {
+                                                        doc.remove(dot, 1);
+                                                        dotColumn = Utilities.getVisualColumn(doc, dot);
+                                                    }
+                                                    int insertLen;
+                                                    if (dot >= endNW && (insertLen = targetColumn - dotColumn) > 0) {
+                                                        char[] spaceChars = new char[insertLen];
+                                                        Arrays.fill(spaceChars, ' ');
+                                                        String spaces = new String(spaceChars);
+                                                        doc.insertString(dot, spaces, null);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    } catch (GuardedException e) {
+                                        target.getToolkit().beep();
+                                    } catch (BadLocationException e) {
+                                        e.printStackTrace();
+                                    }
                                 }
                             }
                         } finally {
@@ -365,20 +440,56 @@ public class ActionFactory {
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
                         try {
-                            int bolPos = Utilities.getRowStart(target, target.getSelectionStart());
-                            int eolPos = Utilities.getRowEnd(target, target.getSelectionEnd());
-                            if (eolPos == doc.getLength()) {
-                                // Ending newline can't be removed so instead remove starting newline if it exist
-                                if (bolPos > 0) {
-                                    bolPos--;
+                            if (caret instanceof EditorCaret) {
+                                EditorCaret editorCaret = (EditorCaret) caret;
+                                editorCaret.moveCarets(new CaretMoveHandler() {
+                                    @Override
+                                    public void moveCarets(CaretMoveContext context) {
+                                        BaseDocument doc = (BaseDocument) context.getDocument();
+                                        boolean beeped = false;
+                                        for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
+                                            try {
+                                                int start = Math.min(caretInfo.getDot(), caretInfo.getMark());
+                                                int end = Math.max(caretInfo.getDot(), caretInfo.getMark());
+                                                int bolPos = Utilities.getRowStart(doc, start);
+                                                int eolPos = Utilities.getRowEnd(doc, end);
+                                                if (eolPos == doc.getLength()) {
+                                                    // Ending newline can't be removed so instead remove starting newline if it exist
+                                                    if (bolPos > 0) {
+                                                        bolPos--;
+                                                    }
+                                                } else { // Not the last line
+                                                    eolPos++;
+                                                }
+                                                doc.remove(bolPos, eolPos - bolPos);
+                                                // Caret will be at bolPos due to removal
+                                            } catch (BadLocationException e) {
+                                                if (!beeped) {
+                                                    target.getToolkit().beep();
+                                                    beeped = true;
+                                                }
+                                            }
+                                        }
+                                    }
+                                });
+                            } else {
+                                try {
+                                    int bolPos = Utilities.getRowStart(target, target.getSelectionStart());
+                                    int eolPos = Utilities.getRowEnd(target, target.getSelectionEnd());
+                                    if (eolPos == doc.getLength()) {
+                                        // Ending newline can't be removed so instead remove starting newline if it exist
+                                        if (bolPos > 0) {
+                                            bolPos--;
+                                        }
+                                    } else { // Not the last line
+                                        eolPos++;
+                                    }
+                                    doc.remove(bolPos, eolPos - bolPos);
+                                    // Caret will be at bolPos due to removal
+                                } catch (BadLocationException e) {
+                                    target.getToolkit().beep();
                                 }
-                            } else { // Not the last line
-                                eolPos++;
                             }
-                            doc.remove(bolPos, eolPos - bolPos);
-                            // Caret will be at bolPos due to removal
-                        } catch (BadLocationException e) {
-                            target.getToolkit().beep();
                         } finally {
                             DocumentUtilities.setTypingModification(doc, false);
                         }
@@ -854,8 +965,9 @@ public class ActionFactory {
         }
     }
 
-    /** Switch to overwrite mode or back to insert mode */
-    @EditorActionRegistration(name = BaseKit.toggleTypingModeAction)
+    /** Switch to overwrite mode or back to insert mode
+     * @deprecated Replaced by ToggleTypingModeAction in editor.actions module
+     */
     public static class ToggleTypingModeAction extends LocalBaseAction {
 
         static final long serialVersionUID =-2431132686507799723L;
@@ -866,12 +978,11 @@ public class ActionFactory {
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
-                EditorUI editorUI = Utilities.getEditorUI(target);
-                Boolean overwriteMode = (Boolean)editorUI.getProperty(EditorUI.OVERWRITE_MODE_PROPERTY);
+                Boolean overwriteMode = (Boolean) target.getClientProperty(EditorUtilities.CARET_OVERWRITE_MODE_PROPERTY);
                 // Now toggle
                 overwriteMode = (overwriteMode == null || !overwriteMode.booleanValue())
                                 ? Boolean.TRUE : Boolean.FALSE;
-                editorUI.putProperty(EditorUI.OVERWRITE_MODE_PROPERTY, overwriteMode);
+                target.putClientProperty(EditorUtilities.CARET_OVERWRITE_MODE_PROPERTY, overwriteMode);
             }
         }
     }
@@ -1378,6 +1489,14 @@ public class ActionFactory {
                 Caret caret = target.getCaret();
                 final BaseDocument doc = Utilities.getDocument(target);
 
+                if(caret instanceof EditorCaret) {
+                    EditorCaret editorCaret = (EditorCaret) caret;
+                    if(editorCaret.getCarets().size() > 1) {
+                        target.getToolkit().beep();
+                        return;
+                    }
+                }
+                
                 // Possibly remove selection
                 if (Utilities.isSelectionShowing(caret)) {
                     target.replaceSelection(null);
@@ -2333,18 +2452,44 @@ public class ActionFactory {
                 public void run() {
                     try {
                         Caret caret = target.getCaret();
+                        if (caret instanceof EditorCaret) {
+                            EditorCaret editorCaret = (EditorCaret) caret;
+                            editorCaret.moveCarets(new CaretMoveHandler() {
+                                @Override
+                                public void moveCarets(CaretMoveContext context) {
+                                    for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
+                                        try {
+                                            BaseDocument doc = (BaseDocument) context.getDocument();
+                                            // insert new line, caret moves to the new line
+                                            int eolDot = Utilities.getRowEnd(doc, caretInfo.getDot());
+                                            doc.insertString(eolDot, "\n", null); //NOI18N
 
-                        // insert new line, caret moves to the new line
-                        int eolDot = Utilities.getRowEnd(target, caret.getDot());
-                        doc.insertString(eolDot, "\n", null); //NOI18N
+                                            // reindent the new line
+                                            Position newDotPos = doc.createPosition(eolDot + 1);
+                                            indenter.reindent(eolDot + 1);
 
-                        // reindent the new line
-                        Position newDotPos = doc.createPosition(eolDot + 1);
-                        indenter.reindent(eolDot + 1);
+                                            context.setDot(caretInfo, newDotPos);
+                                        } catch (BadLocationException ex) {
+                                            ex.printStackTrace();
+                                        }
+                                    }
+                                }
+                            });
+                        } else {
+                            try {
+                                // insert new line, caret moves to the new line
+                                int eolDot = Utilities.getRowEnd(target, caret.getDot());
+                                doc.insertString(eolDot, "\n", null); //NOI18N
 
-                        caret.setDot(newDotPos.getOffset());
-                    } catch (BadLocationException ex) {
-                        ex.printStackTrace();
+                                // reindent the new line
+                                Position newDotPos = doc.createPosition(eolDot + 1);
+                                indenter.reindent(eolDot + 1);
+
+                                caret.setDot(newDotPos.getOffset());
+                            } catch (BadLocationException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
                     } finally {
                         indenter.unlock();
                     }

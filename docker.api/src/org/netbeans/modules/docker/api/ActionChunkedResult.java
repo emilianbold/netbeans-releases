@@ -43,10 +43,10 @@ package org.netbeans.modules.docker.api;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.docker.Endpoint;
 import org.netbeans.modules.docker.StreamItem;
 
 /**
@@ -55,13 +55,13 @@ import org.netbeans.modules.docker.StreamItem;
  */
 public final class ActionChunkedResult implements Closeable {
 
-    private final Socket s;
+    private final Endpoint s;
 
     private final StreamItem.Fetcher fetcher;
 
     private final Charset charset;
 
-    ActionChunkedResult(Socket s, StreamItem.Fetcher fetcher, Charset charset) {
+    ActionChunkedResult(Endpoint s, StreamItem.Fetcher fetcher, Charset charset) {
         this.s = s;
         this.fetcher = fetcher;
         this.charset = charset;

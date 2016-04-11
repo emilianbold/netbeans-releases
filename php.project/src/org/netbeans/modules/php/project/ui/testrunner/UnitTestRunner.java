@@ -162,6 +162,11 @@ public final class UnitTestRunner {
             // no code coverage at all
             return;
         }
+        // #258296
+        if (!info.isCoverageEnabled()) {
+            // rerun test w/o coverage with meanwhile coverage enabled
+            return;
+        }
         // first coverage with data wins
         PhpModule phpModule = project.getPhpModule();
         for (TestSessionImpl session : sessions.getTestSessions()) {

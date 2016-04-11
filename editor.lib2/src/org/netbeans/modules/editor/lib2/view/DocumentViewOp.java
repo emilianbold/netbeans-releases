@@ -197,7 +197,7 @@ public final class DocumentViewOp
     
     /**
      * Whether the "children" is currently reflecting the document state.
-     * <br/>
+     * <br>
      * The children may hold a semi-valid view hierarchy which may still be partly used
      * to resolve queries in some cases.
      */
@@ -322,7 +322,7 @@ public final class DocumentViewOp
      * Constant retrieved from preferences settings that allows the user to increase/decrease
      * paragraph view's height (which may help for problematic fonts that do not report its height
      * correctly for them to fit the line).
-     * <br/>
+     * <br>
      * By default it's 1.0. All the ascents, descent and leadings of all fonts
      * are multiplied by the constant.
      */
@@ -1221,7 +1221,7 @@ public final class DocumentViewOp
     /**
      * Get displayed portion of the component (either viewport.getViewRect())
      * or (if viewport is missing) size of the component.
-     * <br/>
+     * <br>
      * Note: The value may be obsolete during paint - clipping bounds may already
      *  incorporate a just performed scroll while visibleRect does not yet.
      *

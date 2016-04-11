@@ -657,7 +657,7 @@ sass_map_pairs
 
 sass_map_pair
     :
-        (STRING|((function)=>function)|property) ws? COLON ws? cp_expression (ws? prio)?
+        (NUMBER|STRING|((function)=>function)|property) ws? COLON ws? cp_expression (ws? prio)?
     ;
 
 rule
@@ -1316,7 +1316,7 @@ sass_for
 
 sass_each
     :
-    SASS_EACH ws sass_each_variables ws {tokenNameEquals("in")}? IDENT /*in*/ ws cp_expression_list ws? sass_control_block
+    SASS_EACH ws sass_each_variables ws {tokenNameEquals("in")}? IDENT /*in*/ ws (cp_expression_list (ws? COMMA)? ws?)+  sass_control_block
     ;
 
 sass_each_variables
@@ -1732,7 +1732,7 @@ STRING          : '\'' ( ~('\r'|'\f'|'\'') )*
                         | { $type = INVALID; }
                     )
 
-                | '"' ( (( '\\' '\"')=> '\\' '\"') | ~('\r'|'\f'|'"') )*
+                | '"'  ( ('\\\"') => '\\\"' | ('\\\\') => '\\\\' | ~ ('\r'|'\f'|'"') )*
                     (
                           '"'
                         | { $type = INVALID; }

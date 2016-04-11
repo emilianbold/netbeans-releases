@@ -63,7 +63,7 @@ public class RelocateTestHidden extends AbstractCommandTestCase {
         File file = createFile("file");
         add(file);
         commit(file);
-        SVNUrl repo2Url = copyRepo();
+        SVNUrl repo2Url = copyRepo("testRelocateFile");
 
         assertInfo(file, getFileUrl(file));
 

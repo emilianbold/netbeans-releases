@@ -105,6 +105,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.ExpressionArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
@@ -117,6 +118,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
 import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.GroupUseStatementPart;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.netbeans.modules.php.editor.parser.astnodes.InstanceOfExpression;
@@ -666,11 +668,11 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 scan(method);
             }
         }
-        Expression className = node.getClassName();
-        if (className instanceof Variable) {
-            scan(className);
-        } else if (className instanceof NamespaceName) {
-            occurencesBuilder.prepare((NamespaceName) className, scope);
+        Expression dispatcher = node.getDispatcher();
+        if (dispatcher instanceof Variable) {
+            scan(dispatcher);
+        } else if (dispatcher instanceof NamespaceName) {
+            occurencesBuilder.prepare((NamespaceName) dispatcher, scope);
         }
         scan(node.getMethod().getParameters());
     }
@@ -703,12 +705,23 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     public void visit(StaticConstantAccess node) {
         Scope scope = modelBuilder.getCurrentScope();
         occurencesBuilder.prepare(node, scope);
-        Expression className = node.getClassName();
-        if (className instanceof Variable) {
-            scan(className);
-        } else if (className instanceof NamespaceName) {
+        Expression dispatcher = node.getDispatcher();
+        if (dispatcher instanceof Variable) {
+            scan(dispatcher);
+        } else if (dispatcher instanceof NamespaceName) {
             Kind[] kinds = {Kind.CLASS, Kind.IFACE};
-            occurencesBuilder.prepare(kinds, (NamespaceName) className, scope);
+            occurencesBuilder.prepare(kinds, (NamespaceName) dispatcher, scope);
+        }
+        Expression constant = node.getConstant();
+        if (constant instanceof ExpressionArrayAccess) {
+            ExpressionArrayAccess access = (ExpressionArrayAccess) constant;
+            scan(access.getDimension());
+            Expression name = access.getExpression();
+            while (name instanceof ExpressionArrayAccess) {
+                ExpressionArrayAccess access1 = (ExpressionArrayAccess) name;
+                scan(access1.getDimension());
+                name = access1.getExpression();
+            }
         }
     }
 
@@ -730,6 +743,27 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     @Override
     public void visit(SingleFieldDeclaration node) {
         scan(node.getValue());
+    }
+
+    @Override
+    public void visit(ExpressionArrayAccess node) {
+        // CONSTANT[0], "String"[0], [1][0]
+        scan(node.getDimension());
+        Expression expression = node.getExpression();
+        while (expression instanceof ExpressionArrayAccess) {
+            ExpressionArrayAccess access = (ExpressionArrayAccess) expression;
+            scan(access.getDimension());
+            expression = access.getExpression();
+        }
+
+        if (expression instanceof Identifier) {
+            // global const
+            Identifier identifier = (Identifier) expression;
+            String name = identifier.getName();
+            if(!NavUtils.isQuoted(name)) {
+                occurencesBuilder.prepare(Kind.CONSTANT, expression, modelBuilder.getCurrentScope());
+            }
+        }
     }
 
     @Override
@@ -894,8 +928,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             }
         } else if (leftHandSide instanceof StaticFieldAccess) {
             StaticFieldAccess staticFieldAccess = (StaticFieldAccess) leftHandSide;
-            Expression className = staticFieldAccess.getClassName();
-            String unqualifiedClassName = CodeUtils.extractUnqualifiedName(className);
+            Expression dispatcher = staticFieldAccess.getDispatcher();
+            String unqualifiedClassName = CodeUtils.extractUnqualifiedName(dispatcher);
             if (VariousUtils.isStaticClassName(unqualifiedClassName)) {
                 VariableNameImpl varN = findVariable(modelBuilder.getCurrentScope(), "$this"); //NOI18N
                 if (varN != null) {
@@ -1115,11 +1149,11 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     public void visit(StaticFieldAccess node) {
         Scope scope = modelBuilder.getCurrentScope();
         occurencesBuilder.prepare(node, scope);
-        Expression className = node.getClassName();
-        if (className instanceof Variable) {
-            scan(className);
-        } else if (className instanceof NamespaceName) {
-            occurencesBuilder.prepare((NamespaceName) className, scope);
+        Expression dispatcher = node.getDispatcher();
+        if (dispatcher instanceof Variable) {
+            scan(dispatcher);
+        } else if (dispatcher instanceof NamespaceName) {
+            occurencesBuilder.prepare((NamespaceName) dispatcher, scope);
         }
         Variable field = node.getField();
         if (field instanceof ArrayAccess) {

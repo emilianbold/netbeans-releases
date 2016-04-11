@@ -51,7 +51,7 @@ import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 
 /**
  * Tab expander of the editor.
- * <br/>
+ * <br>
  * It aligns visually (not by number of characters) since it's a desired behavior
  * for asian languages characters that visually occupy two regular characters and they should
  * be treated in that way in terms of tab aligning.

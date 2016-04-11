@@ -74,6 +74,15 @@ public class WikiUtils {
         try {
             originalContextCL = setupContextClassLoader();
             markupLanguage = ServiceLocator.getInstance().getMarkupLanguage(language);
+        } catch (IllegalArgumentException ex) {
+            // issue #258571
+            String msg = ex.getMessage();
+            if(msg.startsWith("Cannot load markup language")) { // NOI18N
+                LOG.log(Level.INFO, null, ex);       
+                markupLanguage = null;
+            } else {
+                throw ex;
+            }
         } finally {
             restoreContextClassLoader(originalContextCL);
         }

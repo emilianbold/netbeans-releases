@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript.bower.ui.options;
 
@@ -45,6 +45,8 @@ import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -54,6 +56,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -95,6 +98,7 @@ public class BowerOptionsPanel extends JPanel {
         errorLabel.setText(" "); // NOI18N
         bowerHintLabel.setText(Bundle.BowerOptionsPanel_bower_hint(BowerExecutable.BOWER_NAME));
         bowerTextField.getDocument().addDocumentListener(new DefaultDocumentListener());
+        ignoreBowerComponentsCheckBox.addItemListener(new DefaultItemListener());
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -125,6 +129,14 @@ public class BowerOptionsPanel extends JPanel {
         bowerTextField.setText(bower);
     }
 
+    public boolean isIgnoreBowerComponents() {
+        return ignoreBowerComponentsCheckBox.isSelected();
+    }
+
+    public void setIgnoreBowerComponents(boolean npmIgnoreNodeModules) {
+        ignoreBowerComponentsCheckBox.setSelected(npmIgnoreNodeModules);
+    }
+
     void fireChange() {
         changeSupport.fireChange();
     }
@@ -143,6 +155,7 @@ public class BowerOptionsPanel extends JPanel {
         bowerSearchButton = new JButton();
         bowerHintLabel = new JLabel();
         installLabel = new JLabel();
+        ignoreBowerComponentsCheckBox = new JCheckBox();
         errorLabel = new JLabel();
 
         bowerjLabel.setLabelFor(bowerTextField);
@@ -174,6 +187,8 @@ public class BowerOptionsPanel extends JPanel {
             }
         });
 
+        Mnemonics.setLocalizedText(ignoreBowerComponentsCheckBox, NbBundle.getMessage(BowerOptionsPanel.class, "BowerOptionsPanel.ignoreBowerComponentsCheckBox.text")); // NOI18N
+
         Mnemonics.setLocalizedText(errorLabel, "ERROR"); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
@@ -193,9 +208,8 @@ public class BowerOptionsPanel extends JPanel {
                         .addComponent(bowerBrowseButton)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(bowerSearchButton))))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(errorLabel)
-                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(errorLabel)
+            .addComponent(ignoreBowerComponentsCheckBox)
         );
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -208,6 +222,8 @@ public class BowerOptionsPanel extends JPanel {
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(bowerHintLabel)
                     .addComponent(installLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(ignoreBowerComponentsCheckBox)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(errorLabel))
         );
@@ -255,6 +271,7 @@ public class BowerOptionsPanel extends JPanel {
     private JTextField bowerTextField;
     private JLabel bowerjLabel;
     private JLabel errorLabel;
+    private JCheckBox ignoreBowerComponentsCheckBox;
     private JLabel installLabel;
     // End of variables declaration//GEN-END:variables
 
@@ -278,6 +295,15 @@ public class BowerOptionsPanel extends JPanel {
         }
 
         private void processUpdate() {
+            fireChange();
+        }
+
+    }
+
+    private final class DefaultItemListener implements ItemListener {
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
             fireChange();
         }
 

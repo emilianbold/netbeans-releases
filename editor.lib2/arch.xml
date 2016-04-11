@@ -87,7 +87,10 @@ made subject to such option by the copyright holder.
 </li>    
 <li>
     <api name="editor-typing-hooks" group="java" type="export" category="official" url="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/typinghooks/package-summary.html">Typing Hooks SPI</api>
-</li>    
+</li>
+<li>
+    <api name="editor-caret" group="java" type="export" category="official" url="@org-netbeans-modules-editor-lib2@/org/netbeans/api/editor/caret/package-summary.html">Editor Caret API</api>
+</li>
 </ul>
 </answer>
 
@@ -126,8 +129,8 @@ folding, braces matching, etc.
         </question>
 -->
 <answer id="arch-usecases">
-    At the moment the Editor Library 2 module contains three distinct SPIs. Each SPI lives
-    in its own package and the usecases can be found in the packages overview.
+    At the moment the Editor Library 2 module contains distinct APIs/SPIs. They live
+    in their own package and the usecases can be found in the packages overview.
     <ul>
     <li>Code Generator SPI -
         <a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/codegen/package-summary.html#usecases">org.netbeans.spi.editor.codegen</a>
@@ -137,6 +140,12 @@ folding, braces matching, etc.
     </li>
     <li>Typing Hooks SPI -
         <a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/typinghooks/package-summary.html#usecases">org.netbeans.spi.editor.typinghooks</a>
+    </li>
+    <li>Caret API -
+        <a href="@org-netbeans-modules-editor-lib2@/org/netbeans/api/editor/caret/package-summary.html#usecases">org.netbeans.api.editor.caret</a>
+    </li>
+    <li>Caret SPI -
+        <a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/caret/package-summary.html#usecases">org.netbeans.spi.editor.caret</a>
     </li>
     </ul>
 </answer>

@@ -775,7 +775,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             if (isCancelled()) {
                 return;
             }
-            Identifier constant = node.getConstant();
+            Identifier constant = node.getConstantName();
             if (constant != null) {
                 addColoringForNode(constant, ColoringAttributes.STATIC_FIELD_SET);
             }

@@ -105,6 +105,7 @@ public class MakeLogReader {
     private final FileObject logFileObject;
     private List<SourceFileProperties> result;
     private List<String> buildArtifacts;
+    private Map<LanguageKind,Map<String,Integer>> buildTools;
     private final PathMap pathMapper;
     private final ProjectProxy project;
     private final CompilerSettings compilerSettings;
@@ -237,6 +238,11 @@ public class MakeLogReader {
         Pattern pattern = Pattern.compile(";|\\|\\||&&"); // ;, ||, && //NOI18N
         result = new ArrayList<SourceFileProperties>();
         buildArtifacts = new ArrayList<String>();
+        buildTools = new HashMap<LanguageKind,Map<String,Integer>>();
+        buildTools.put(LanguageKind.C, new HashMap<String,Integer>());
+        buildTools.put(LanguageKind.CPP, new HashMap<String,Integer>());
+        buildTools.put(LanguageKind.Fortran, new HashMap<String,Integer>());
+        buildTools.put(LanguageKind.Unknown, new HashMap<String,Integer>());
         if (logFileObject != null && logFileObject.isValid() && logFileObject.canRead()) {
             try {
                 MakeConfiguration conf = getConfiguration(this.project);
@@ -320,6 +326,13 @@ public class MakeLogReader {
             run(isStoped, progress, storage);
         }
         return buildArtifacts;
+    }
+    
+    public Map<LanguageKind,Map<String,Integer>> getTools(Progress progress, Interrupter isStoped, CompileLineStorage storage) {
+        if (buildTools == null) {
+            run(isStoped, progress, storage);
+        }
+        return buildTools;
     }
 
     private Interrupter isStoped;
@@ -1085,11 +1098,57 @@ public class MakeLogReader {
             this.undefinedMacros = artifacts.getUserUndefinedMacros();
             this.storage = storage;
             if (storage != null) {
-                handler = storage.putCompileLine(li.compileLine);
+                handler = storage.putCompileLine(normalizeCompileLine(li.compileLine));
             }
             this.importantFlags = DriverFactory.importantFlagsToString(artifacts);;
         }
 
+        private String normalizeCompileLine(String line) {
+            List<String> args = MakeLogReader.this.compilerSettings.getDriver().splitCommandLine(line, CompileLineOrigin.BuildLog);
+            StringBuilder buf = new StringBuilder();
+            for (String s : args) {
+                if (buf.length() > 0) {
+                    buf.append(' ');
+                }
+                boolean isQuote = false;
+                if (s.startsWith("'") && s.endsWith("'") || // NOI18N
+                        s.startsWith("\"") && s.endsWith("\"")) { // NOI18N
+                    if (s.length() >= 2) {
+                        s = s.substring(1, s.length() - 1);
+                        isQuote = true;
+                    }
+                }
+                if (s.startsWith("-D")) { // NOI18N
+                    String macro = s.substring(2);
+                    macro = DriverFactory.removeQuotes(macro);
+                    int i = macro.indexOf('=');
+                    if (i > 0) {
+                        String value = macro.substring(i + 1).trim();
+                        value = DriverFactory.normalizeDefineOption(value, CompileLineOrigin.BuildLog, isQuote);
+                        String key = DriverFactory.removeEscape(macro.substring(0, i));
+                        s = "-D"+key+"="+value; // NOI18N
+                    } else {
+                        String key = DriverFactory.removeEscape(macro);
+                        s = "-D"+key; // NOI18N
+                    }
+                }
+                String s2 = CndPathUtilities.quoteIfNecessary(s);
+                if (s.equals(s2)) {
+                    if (s.indexOf('"') > 0) { // NOI18N
+                        int j = s.indexOf("\\\""); // NOI18N
+                        if (j < 0) {
+                            s = s.replace("\"", "\\\""); // NOI18N
+                        }
+                    }
+                } else {
+                    s = s2;
+                }
+                buf.append(s);
+            }
+            
+            return buf.toString();
+        }
+        
         @Override
         public String getCompilePath() {
             return compilePath;

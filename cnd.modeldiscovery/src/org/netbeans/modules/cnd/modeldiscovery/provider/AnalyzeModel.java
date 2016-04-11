@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
+import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
@@ -316,6 +317,11 @@ public class AnalyzeModel implements DiscoveryProvider {
 
         @Override
         public List<String> getBuildArtifacts() {
+            return null;
+        }
+
+        @Override
+        public Map<ItemProperties.LanguageKind, Map<String, Integer>> getBuildTools() {
             return null;
         }
         

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.html.ojet.ui.wizard;
 
@@ -70,6 +70,7 @@ import org.netbeans.modules.web.clientproject.createprojectapi.CreateProjectUtil
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
@@ -104,15 +105,31 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
 
     @TemplateRegistration(
             folder = "Project/ClientSide",
-            displayName = "#NewProjectWizardIterator.newProject.displayName",
-            description = "../resources/NewOracleJETProjectDescription.html",
+            displayName = "#NewProjectWizardIterator.newOracleJETBaseDistribution.displayName",
+            description = "../resources/NewOracleJETBaseDistributionDescription.html",
             iconBase = OJETUtils.OJET_ICON_PATH,
             position = 250)
-    @NbBundle.Messages("NewProjectWizardIterator.newProject.displayName=Oracle JET QuickStart Basic")
-    public static NewProjectWizardIterator newOracleJETProject() {
+    @NbBundle.Messages("NewProjectWizardIterator.newOracleJETBaseDistribution.displayName=Oracle JET Base Distribution")
+    public static NewProjectWizardIterator newOracleJETBaseDistribution() {
         return new NewProjectWizardIterator(
-                Bundle.NewProjectWizardIterator_newProject_displayName(),
+                Bundle.NewProjectWizardIterator_newOracleJETBaseDistribution_displayName(),
                 "OracleJETApplication", // NOI18N
+                "http://www.oracle.com/webfolder/technetwork/jet/code/oraclejet.zip", // NOI18N
+                new File(System.getProperty("java.io.tmpdir"), "oraclejet.zip") // NOI18N
+        );
+    }
+
+    @TemplateRegistration(
+            folder = "Project/Samples/HTML5",
+            displayName = "#NewProjectWizardIterator.newOracleJETQuickStartBasic.displayName",
+            description = "../resources/NewOracleJETQuickStartBasicDescription.html",
+            iconBase = OJETUtils.OJET_ICON_PATH,
+            position = 2990)
+    @NbBundle.Messages("NewProjectWizardIterator.newOracleJETQuickStartBasic.displayName=Oracle JET QuickStart Basic")
+    public static NewProjectWizardIterator newOracleJETQuickStartBasic() {
+        return new NewProjectWizardIterator(
+                Bundle.NewProjectWizardIterator_newOracleJETQuickStartBasic_displayName(),
+                "OracleJETQuickStartBasic", // NOI18N
                 "http://www.oracle.com/webfolder/technetwork/jet/public_samples/OracleJET_QuickStartBasic.zip", // NOI18N
                 new File(System.getProperty("java.io.tmpdir"), "OracleJET_QuickStartBasic.zip") // NOI18N
         );
@@ -156,6 +173,7 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
         ClientSideProjectGenerator.createProject(createProperties);
 
         setupProject(handle, files, projectDirectory);
+        hackIgnoreSCSSErrorsInOJET(projectDirectory);
 
         handle.finish();
         return files;
@@ -272,7 +290,7 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
         try {
             // download
             handle.progress(Bundle.NewProjectWizardIterator_progress_downloading());
-            NetworkSupport.download(zipUrl, tmpFile);
+            NetworkSupport.downloadWithProgress(zipUrl, tmpFile, Bundle.NewProjectWizardIterator_progress_downloading());
 
             // check
             if (isHtmlFile(tmpFile)) {
@@ -285,8 +303,17 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
                 handle.progress(Bundle.NewProjectWizardIterator_progress_unpacking());
                 unzip(tmpFile.getAbsolutePath(), FileUtil.toFile(projectDirectory));
 
-                // index file
-                files.add(projectDirectory.getFileObject("index.html")); // NOI18N
+                // index file?
+                FileObject indexFile = projectDirectory.getFileObject("index.html"); // NOI18N
+                if (indexFile != null) {
+                    files.add(indexFile);
+                } else {
+                    // readme file
+                    FileObject readmeFile = projectDirectory.getFileObject("README.md"); // NOI18N
+                    if (readmeFile != null) {
+                        files.add(readmeFile);
+                    }
+                }
             }
         } catch (NetworkException ex) {
             LOGGER.log(Level.INFO, "Failed to download OJET archive", ex);
@@ -342,6 +369,19 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
         }
     }
 
-    
+    private void hackIgnoreSCSSErrorsInOJET(FileObject projectDirectory) {
+        Enumeration<? extends FileObject> children = projectDirectory.getChildren(true);
+        while (children.hasMoreElements()) {
+            FileObject file = children.nextElement();
+            if ("scss".equals(file.getName())) { //NOI18N
+                try {
+                    file.setAttribute("disable_error_checking_CSS", Boolean.TRUE.toString()); //NOI18N
+                    break;
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+    }
 
 }

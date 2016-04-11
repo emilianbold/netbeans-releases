@@ -65,6 +65,7 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.api.editor.caret.EditorCaret;
 import org.netbeans.api.search.ReplacePattern;
 import org.netbeans.api.search.SearchHistory;
 import org.netbeans.api.search.SearchPattern;
@@ -79,6 +80,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.WeakListeners;
 
 /**
@@ -109,6 +111,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
     private boolean hadFocusOnIncSearchTextField = false;
     private final JButton findNextButton;
     private final JButton findPreviousButton;
+    private final JButton selectAllButton;
     private final JToggleButton matchCase;
     private final JToggleButton wholeWords;
     private final JToggleButton regexp;
@@ -164,6 +167,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         incSearchTextField.getDocument().addDocumentListener(incSearchTextFieldListener);
         addEnterKeystrokeFindNextTo(incSearchTextField);
         addShiftEnterKeystrokeFindPreviousTo(incSearchTextField);
+        addAltEnterKeystrokeSelect(incSearchTextField);
         if (getCurrentKeyMapProfile().startsWith("Emacs")) { // NOI18N
             emacsProfileFix(incSearchTextField);
         }
@@ -204,6 +208,17 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
             }
         });
         add(findNextButton);
+        
+        selectAllButton = SearchButton.createButton("org/netbeans/modules/editor/search/resources/select_all.png", "CTL_SelectAll"); // NOI18N
+        selectAllButton.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_SelectAllText")); //NOI18N
+        selectAllButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                selectAll();
+            }
+        });
+        add(selectAllButton);
         
         final JToolBar.Separator rightSeparator = new JToolBar.Separator();
         rightSeparator.setOrientation(SwingConstants.VERTICAL);
@@ -434,7 +449,9 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-                    looseFocus();
+                    if(looseFocus()) {
+                        e.consume();
+                    };
                     ReplaceBar replaceBarInstance = ReplaceBar.getInstance(SearchBar.this);
                     if (replaceBarInstance.isVisible()) {
                         replaceBarInstance.looseFocus();
@@ -540,6 +557,20 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         return pcl;
     }
 
+     private void addAltEnterKeystrokeSelect(JTextComponent incSearchTextField) {
+        incSearchTextField.getInputMap().put(KeyStroke.getKeyStroke(
+                KeyEvent.VK_ENTER, InputEvent.ALT_MASK, true),
+                "select-all"); // NOI18N
+        incSearchTextField.getActionMap().put("select-all", // NOI18N
+                new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                selectAll();
+            }
+        });
+    }
+     
     private void addShiftEnterKeystrokeFindPreviousTo(JTextComponent incSearchTextField) {
         incSearchTextField.getInputMap().put(KeyStroke.getKeyStroke(
                 KeyEvent.VK_ENTER, InputEvent.SHIFT_MASK, true),
@@ -811,10 +842,10 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         incSearchTextField.getDocument().addDocumentListener(incSearchTextFieldListener);
     }
 
-    public void looseFocus() {
+    public boolean looseFocus() {
         hadFocusOnIncSearchTextField = false;
         if (!isVisible()) {
-            return;
+            return false;
         }
         EditorFindSupport.getInstance().setBlockSearchHighlight(0, 0);
         EditorFindSupport.getInstance().incSearchReset();
@@ -839,6 +870,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                 searchProps.saveToPrefs();
             }
         });
+        return true;
     }
 
     private void incrementalSearch() {
@@ -890,6 +922,39 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
 
     void findPrevious() {
         find(false);
+    }
+    
+    void selectAll() {
+        EditorFindSupport findSupport = EditorFindSupport.getInstance();
+        JTextComponent textComponent = getActualTextComponent();
+        Document doc = textComponent.getDocument();
+        Caret caret = textComponent.getCaret();
+        if(caret instanceof EditorCaret) {
+            EditorCaret editorCaret = (EditorCaret) caret;
+            try {
+                int[] blocks = findSupport.getBlocks(new int[]{-1, -1}, doc, 0, doc.getLength());
+                if(blocks[0] >= 0 && blocks.length % 2 == 0) {
+                    List<Position> newCarets = new ArrayList<>(editorCaret.getCarets().size() << 1);
+                    for (int i = 0; i < blocks.length; i += 2) {
+                        int start = blocks[i];
+                        int end = blocks[i+1];
+                        if(start == -1 || end == -1) {
+                            break;
+                        }
+                        Position startPos = doc.createPosition(start);
+                        Position endPos = doc.createPosition(end);
+                        newCarets.add(endPos);
+                        newCarets.add(startPos);
+                    }
+                    
+                    editorCaret.replaceCarets(newCarets);
+                    
+                    textComponent.requestFocusInWindow();
+                }
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
     public int getNumOfMatches() {

@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
+import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
@@ -272,6 +273,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     @Override
     public void setBuildArtifacts(List<String> buildArtifacts) {
         putProperty(BUILD_ARTIFACTS.key(), buildArtifacts);
+    }
+
+    @Override
+    public Map<ItemProperties.LanguageKind, Map<String, Integer>> getBuildTools() {
+        return (Map<ItemProperties.LanguageKind, Map<String, Integer>>) getProperty(BUILD_TOOLS.key());
+    }
+
+    @Override
+    public void setBuildTools(Map<ItemProperties.LanguageKind, Map<String, Integer>> buildTools) {
+        putProperty(BUILD_TOOLS.key(), buildTools);
     }
 
     @Override
@@ -513,6 +524,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         @Override
         public void setBuildArtifacts(List<String> buildArtifacts) {
             BUILD_ARTIFACTS.put(wizard, buildArtifacts);
+        }
+        
+        @Override
+        public Map<ItemProperties.LanguageKind, Map<String, Integer>> getBuildTools() {
+            return BUILD_TOOLS.get(wizard);
+        }
+
+        @Override
+        public void setBuildTools(Map<ItemProperties.LanguageKind, Map<String, Integer>> buildTools) {
+            BUILD_TOOLS.put(wizard, buildTools);
         }
 
         @Override
@@ -756,6 +777,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         @Override
         public void setBuildArtifacts(List<String> buildArtifacts) {
             BUILD_ARTIFACTS.toMap(map, buildArtifacts);
+        }
+
+        @Override
+        public Map<ItemProperties.LanguageKind, Map<String, Integer>> getBuildTools() {
+            return BUILD_TOOLS.fromMap(map);
+        }
+
+        @Override
+        public void setBuildTools(Map<ItemProperties.LanguageKind, Map<String, Integer>> buildTools) {
+            BUILD_TOOLS.toMap(map, buildTools);
         }
 
         @Override

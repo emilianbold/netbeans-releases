@@ -78,6 +78,8 @@ import org.openide.util.WeakListeners;
 @ProjectServiceProvider(service = ProjectProblemsProvider.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
 public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
 
+    private static final RequestProcessor RP = new RequestProcessor(NodeJsProblemsProvider.class.getName(), 2);
+
     private final ProjectProblemsProviderSupport problemsProviderSupport = new ProjectProblemsProviderSupport(this);
     private final Project project;
     private final PreferenceChangeListener optionsListener = new OptionsListener();
@@ -215,7 +217,7 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
         if (EventQueue.isDispatchThread()
                 && !node.versionDetected()) {
             // avoid ui flickering
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 @Override
                 public void run() {
                     node.getVersion();

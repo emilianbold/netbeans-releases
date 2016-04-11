@@ -115,6 +115,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.cnd.makeproject.api.wizards.PreBuildSupport;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.platform.Platform;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
@@ -837,6 +838,9 @@ public final class MakeActionProvider implements ActionProvider {
         if (index > 0) {
             args = buildCommand.substring(index + 1);
             buildCommand = removeQuotes(buildCommand.substring(0, index));
+        }
+        if (buildCommand.equals(PreBuildSupport.CMAKE_MACRO)) {
+            buildCommand = removeQuotes(getCMakeCommand(pd, conf));
         }
         try {
             FileSystem fs = FileSystemProvider.getFileSystem(conf.getFileSystemHost());
@@ -1599,6 +1603,17 @@ public final class MakeActionProvider implements ActionProvider {
         return cmd;
     }
 
+    private static String getCMakeCommand(MakeConfigurationDescriptor pd, MakeConfiguration conf) {
+        String cmd;
+        CompilerSet cs = conf.getCompilerSet().getCompilerSet();
+        if (cs != null) {
+            cmd = PreBuildSupport.getCmakePath(cs);
+        } else {
+            CndUtils.assertFalse(true, "Null compiler collection"); //NOI18N
+            cmd = "cmake"; // NOI18N
+        }
+        return cmd;
+    }
     private List<String> validateStep(String id, List<String> tailSteps) {
         StepController validator = StepControllerProvider.getController(id);
         if (validator == null) {

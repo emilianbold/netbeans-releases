@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
@@ -297,18 +298,8 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
     } 
 
     @Override
-    protected String getUserIncludeFlag(CompilerSet cs){
-        return cs.getCompilerFlavor().getToolchainDescriptor().getC().getUserIncludeFlag();
-    }
-
-    @Override
-    protected String getUserFileFlag(CompilerSet cs){
-        return cs.getCompilerFlavor().getToolchainDescriptor().getC().getUserFileFlag();
-    }
-
-    @Override
-    protected String getUserMacroFlag(CompilerSet cs){
-        return cs.getCompilerFlavor().getToolchainDescriptor().getC().getUserMacroFlag();
+    protected ToolchainManager.CompilerDescriptor getCompilerDescriptor(CompilerSet cs) {
+        return cs.getCompilerFlavor().getToolchainDescriptor().getC();
     }
 
     // Sheet

@@ -63,6 +63,6 @@ import org.openide.util.NbBundle;
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        ToolsPanelSupport.invokeNewCompilerSetWizard(execEnv);
+        ToolsPanelSupport.invokeNewCompilerSetWizard(execEnv, null);
     }
 }

@@ -58,13 +58,13 @@ import javax.swing.text.View;
 
 /**
  * View of (possibly multiple) '\t' characters.
- * <br/>
+ * <br>
  * It needs to be measured specially - it needs to get visually aligned to multiples
  * of TAB_SIZE char width.
- * <br/>
+ * <br>
  * Note that the view does not hold a last tab expander itself by itself so if tab expander
  * changes the view does not call a preference change.
- * <br/>
+ * <br>
  * Due to line wrap the view cannot base its tab-stop calculations upon alloc.getX().
  *
  *

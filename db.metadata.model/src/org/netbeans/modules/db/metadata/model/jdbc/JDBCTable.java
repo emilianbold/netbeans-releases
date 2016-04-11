@@ -183,14 +183,14 @@ public class JDBCTable extends TableImplementation {
                     jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd(),
                     jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(),
                     name, "%"); // NOI18N
-            try {
-                while (rs.next()) {
-                    Column column = createJDBCColumn(rs).getColumn();
-                    newColumns.put(column.getName(), column);
-                    LOGGER.log(Level.FINE, "Created column {0}", column);
-                }
-            } finally {
-                if (rs != null) {
+            if (rs != null) {
+                try {
+                    while (rs.next()) {
+                        Column column = createJDBCColumn(rs).getColumn();
+                        newColumns.put(column.getName(), column);
+                        LOGGER.log(Level.FINE, "Created column {0}", column); //NOI18N
+                    }
+                } finally {
                     rs.close();
                 }
             }
@@ -207,40 +207,42 @@ public class JDBCTable extends TableImplementation {
                     jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd(),
                     jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(),
                     name, false, true);
-            try {
-                JDBCIndex index = null;
-                String currentIndexName = null;
-                while (rs.next()) {
-                    // Ignore Indices marked statistic
-                    // explicit: TYPE == DatabaseMetaData or
-                    // implicit: ORDINAL_POSITION == 0
-                    // @see java.sql.DatabaseMetaData#getIndexInfo
-                    if (rs.getShort("TYPE") //NOI18N
-                            == DatabaseMetaData.tableIndexStatistic
-                            || rs.getInt("ORDINAL_POSITION") == 0) { //NOI18N
-                        continue;
-                    }
+            if (rs != null) {
+                try {
+                    JDBCIndex index = null;
+                    String currentIndexName = null;
+                    while (rs.next()) {
+                        // Ignore Indices marked statistic
+                        // explicit: TYPE == DatabaseMetaData or
+                        // implicit: ORDINAL_POSITION == 0
+                        // @see java.sql.DatabaseMetaData#getIndexInfo
+                        if (rs.getShort("TYPE") //NOI18N
+                                == DatabaseMetaData.tableIndexStatistic
+                                || rs.getInt("ORDINAL_POSITION") == 0) { //NOI18N
+                            continue;
+                        }
 
-                    String indexName = MetadataUtilities.trimmed(rs.getString("INDEX_NAME"));
-                    if (index == null || !(currentIndexName.equals(indexName))) {
-                        index = createJDBCIndex(indexName, rs);
-                        LOGGER.log(Level.FINE, "Created index " + index);
+                        String indexName = MetadataUtilities.trimmed(rs.getString("INDEX_NAME")); //NOI18N
+                        if (index == null || !(currentIndexName.equals(indexName))) {
+                            index = createJDBCIndex(indexName, rs);
+                            LOGGER.log(Level.FINE, "Created index {0}", index); //NOI18N
 
-                        newIndexes.put(index.getName(), index.getIndex());
-                        currentIndexName = indexName;
-                    }
+                            newIndexes.put(index.getName(), index.getIndex());
+                            currentIndexName = indexName;
+                        }
 
-                    JDBCIndexColumn idx = createJDBCIndexColumn(index, rs);
-                    if (idx == null) {
-                        LOGGER.log(Level.INFO, "Cannot create index column for " + indexName + " from " + rs);
-                    } else {
-                        IndexColumn col = idx.getIndexColumn();
-                        index.addColumn(col);
-                        LOGGER.log(Level.FINE, "Added column " + col.getName() + " to index " + indexName);
+                        JDBCIndexColumn idx = createJDBCIndexColumn(index, rs);
+                        if (idx == null) {
+                            LOGGER.log(Level.INFO, "Cannot create index column for {0} from {1}",  //NOI18N
+                                    new Object[]{indexName, rs});
+                        } else {
+                            IndexColumn col = idx.getIndexColumn();
+                            index.addColumn(col);
+                            LOGGER.log(Level.FINE, "Added column {0} to index {1}",   //NOI18N
+                                    new Object[]{col.getName(), indexName});
+                        }
                     }
-                }
-            } finally {
-                if (rs != null) {
+                } finally {
                     rs.close();
                 }
             }
@@ -277,7 +279,8 @@ public class JDBCTable extends TableImplementation {
             filterSQLException(e);
         }
         if (column == null) {
-            LOGGER.log(Level.INFO, "Cannot get column for index " + parent + " from " + rs);
+            LOGGER.log(Level.INFO, "Cannot get column for index {0} from {1}",  //NOI18N
+                    new Object[] {parent, rs});
             return null;
         }
         return new JDBCIndexColumn(parent.getIndex(), column.getName(), column, position, ordering);
@@ -290,27 +293,28 @@ public class JDBCTable extends TableImplementation {
                     jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd(),
                     jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(),
                     name);
-            try {
-                JDBCForeignKey fkey = null;
-                String currentKeyName = null;
-                while (rs.next()) {
-                    String keyName = MetadataUtilities.trimmed(rs.getString("FK_NAME"));
-                    // We have to assume that if the foreign key name is null, then this is a *new*
-                    // foreign key, even if the last foreign key name was also null.
+            if (rs != null) {
+                try {
+                    JDBCForeignKey fkey = null;
+                    String currentKeyName = null;
+                    while (rs.next()) {
+                        String keyName = MetadataUtilities.trimmed(rs.getString("FK_NAME"));
+                        // We have to assume that if the foreign key name is null, then this is a *new*
+                        // foreign key, even if the last foreign key name was also null.
                     if (fkey == null || keyName == null || !(currentKeyName.equals(keyName))) {
-                        fkey = createJDBCForeignKey(keyName, rs);
-                        LOGGER.log(Level.FINE, "Created foreign key " + keyName);
+                            fkey = createJDBCForeignKey(keyName, rs);
+                            LOGGER.log(Level.FINE, "Created foreign key {0}", keyName);  //NOI18N
 
-                        newKeys.put(fkey.getInternalName(), fkey.getForeignKey());
-                        currentKeyName = keyName;
+                            newKeys.put(fkey.getInternalName(), fkey.getForeignKey());
+                            currentKeyName = keyName;
+                        }
+
+                        ForeignKeyColumn col = createJDBCForeignKeyColumn(fkey, rs).getForeignKeyColumn();
+                        fkey.addColumn(col);
+                        LOGGER.log(Level.FINE, "Added foreign key column {0} to foreign key {1}",  //NOI18N
+                                new Object[]{col.getName(), keyName});
                     }
-
-                    ForeignKeyColumn col = createJDBCForeignKeyColumn(fkey, rs).getForeignKeyColumn();
-                    fkey.addColumn(col);
-                    LOGGER.log(Level.FINE, "Added foreign key column " + col.getName() + " to foreign key " + keyName);
-                }
-            } finally {
-                if (rs != null) {
+                } finally {
                     rs.close();
                 }
             }
@@ -417,16 +421,16 @@ public class JDBCTable extends TableImplementation {
                     jdbcSchema.getJDBCCatalog().getJDBCMetadata().getDmd(),
                     jdbcSchema.getJDBCCatalog().getName(), jdbcSchema.getName(),
                     name);
-            try {
-                while (rs.next()) {
-                    if (pkname == null) {
-                        pkname = MetadataUtilities.trimmed(rs.getString("PK_NAME"));
+            if (rs != null) {
+                try {
+                    while (rs.next()) {
+                        if (pkname == null) {
+                            pkname = MetadataUtilities.trimmed(rs.getString("PK_NAME"));
+                        }
+                        String colName = MetadataUtilities.trimmed(rs.getString("COLUMN_NAME"));
+                        pkcols.add(getColumn(colName));
                     }
-                    String colName = MetadataUtilities.trimmed(rs.getString("COLUMN_NAME"));
-                    pkcols.add(getColumn(colName));
-                }
-            } finally {
-                if (rs != null) {
+                } finally {
                     rs.close();
                 }
             }

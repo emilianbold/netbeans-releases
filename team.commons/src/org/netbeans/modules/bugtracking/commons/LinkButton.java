@@ -84,7 +84,7 @@ import javax.swing.border.EmptyBorder;
 public class LinkButton extends JButton implements MouseListener, FocusListener {
 
     private static final Font  BUTTON_FONT = getButtonFont();
-    private static Color linkInFocusColor   = null;
+    static Color linkInFocusColor   = null;
     private static Color linkColor          = null;
     private static Color mouseOverLinkColor = null;
     private static Color visitedLinkColor   = null;
@@ -110,6 +110,7 @@ public class LinkButton extends JButton implements MouseListener, FocusListener 
         if( null == visitedLinkColor )
             visitedLinkColor = new Color(0x5591D2);
     }
+    private Color alternativeLinkColor;
 
     public LinkButton(String text, Icon icon) {
         super(text, icon);
@@ -144,7 +145,7 @@ public class LinkButton extends JButton implements MouseListener, FocusListener 
     }
 
     private void init() {
-        setForeground( linkColor );
+        setForeground( getLinkColor() );
         setFont( BUTTON_FONT );
         setBorder( new EmptyBorder(1, 1, 1, 1) );
         setCursor( Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) );
@@ -184,11 +185,20 @@ public class LinkButton extends JButton implements MouseListener, FocusListener 
     @Override
     public void mouseExited(MouseEvent e) {
             underline = false;
-            setForeground( isVisited() ? visitedLinkColor : linkColor );
+            setForeground( isVisited() ? visitedLinkColor : getLinkColor() );
             repaint();
             onMouseExited( e );
     }
+    
+    void setAlternativeLinkColor(Color c) {
+        alternativeLinkColor = c;
+    }
 
+    Color getLinkColor() {
+        Color c = alternativeLinkColor;
+        return c != null ? c : linkColor;
+    }
+    
     @Override
     protected void paintComponent(Graphics g) {
         Graphics2D g2 = prepareGraphics( g );

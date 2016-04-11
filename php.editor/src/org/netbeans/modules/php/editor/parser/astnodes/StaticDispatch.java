@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
 
@@ -46,22 +46,29 @@ package org.netbeans.modules.php.editor.parser.astnodes;
  */
 public abstract class StaticDispatch extends VariableBase {
 
-    private Expression className;
+    private final Expression dispatcher;
 
-    public StaticDispatch(int start, int end, Expression className) {
+
+    public StaticDispatch(int start, int end, Expression dispatcher) {
         super(start, end);
-        this.className = className;
+        assert dispatcher != null;
+        this.dispatcher = dispatcher;
     }
 
-    public Expression getClassName() {
-        return className;
+    /**
+     * The dispatcher component of this dispatch expression.
+     *
+     * @return dispatcher component of this dispatch expression
+     */
+    public Expression getDispatcher() {
+        return dispatcher;
     }
 
     public abstract ASTNode getMember();
 
     @Override
     public String toString() {
-        return getClassName() + "::" + getMember(); //NOI18N
+        return getDispatcher() + "::" + getMember(); //NOI18N
     }
 
 }

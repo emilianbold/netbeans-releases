@@ -44,6 +44,8 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 public class LibrariesConfiguration extends VectorConfiguration<LibraryItem> implements Cloneable {
 
@@ -56,5 +58,20 @@ public class LibrariesConfiguration extends VectorConfiguration<LibraryItem> imp
         LibrariesConfiguration clone = new LibrariesConfiguration();
         clone.setValue(new ArrayList<>(getValue()));
         return clone;
+    }
+
+    /**
+     * @return dependent shared libraries.
+     */
+    public Set<String> getSharedLibraries() {
+        HashSet<String> paths = new HashSet<>();
+        for (LibraryItem item : getValue()) {
+            String path = item.getPath();
+            if (path != null && (path.endsWith(".dll") || path.endsWith(".dylib") // NOI18N
+                    || path.endsWith(".so") || 0 <= path.indexOf(".so."))) { // NOI18N
+                paths.add(path);
+            }
+        }
+        return paths;
     }
 }

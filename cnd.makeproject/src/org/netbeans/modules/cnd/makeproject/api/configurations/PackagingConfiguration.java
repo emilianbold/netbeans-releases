@@ -48,6 +48,7 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -98,6 +99,17 @@ public class PackagingConfiguration implements Cloneable {
     }
 
     public final void setDefaultValues() {
+        // Clear default values
+        VectorConfiguration<PackagerFileElement> customFiles = new VectorConfiguration<>(null);
+        for (PackagerFileElement packagerFileElement : files.getValue()) {
+            if (!packagerFileElement.isDefaultValue()) {
+                customFiles.add(packagerFileElement);
+            }
+        }
+        if (files.getValue().size() != customFiles.getValue().size()) {
+            files.assign(customFiles);
+        }
+
         // Init default values
         String perm = MakeOptions.getInstance().getDefExePerm();
         String packageDir = "${PACKAGE_TOP_DIR}bin"; // NOI18N
@@ -119,6 +131,28 @@ public class PackagingConfiguration implements Cloneable {
         else {
             assert false;
         }
+        if (makeConfiguration.isLinkerConfiguration()) {
+            LinkerConfiguration linkerConfiguration = makeConfiguration.getLinkerConfiguration();
+            if (linkerConfiguration.getCopyLibrariesConfiguration().getValue()) {
+                LibrariesConfiguration librariesConfiguration = linkerConfiguration.getLibrariesConfiguration();
+
+                Set<String> sharedLibraries = librariesConfiguration.getSharedLibraries();
+                for (String sharedLibrary : sharedLibraries) {
+                    String outputDir = CndPathUtilities.getDirName(linkerConfiguration.getOutputValue());
+                    String libName = CndPathUtilities.getBaseName(sharedLibrary);
+                    PackagerFileElement elem = new PackagerFileElement(
+                            FileType.FILE,
+                            outputDir + "/" + libName, // NOI18N
+                            packageDir + "/" + libName, // NOI18N
+                            perm,
+                            MakeOptions.getInstance().getDefOwner(),
+                            MakeOptions.getInstance().getDefGroup());
+                    elem.setDefaultValue(true);
+                    files.add(elem);
+                }
+            }
+        }
+
         PackagerFileElement elem = new PackagerFileElement(
                 FileType.FILE,
                 "${OUTPUT_PATH}" + suffix, // NOI18N
@@ -131,10 +165,12 @@ public class PackagingConfiguration implements Cloneable {
 
         // Add default info lists
         List<PackagerInfoElement> infoList = getInfo().getValue();
-        List<PackagerDescriptor> packagerList = PackagerManager.getDefault().getPackagerList();
-        for (PackagerDescriptor packagerDescriptor : packagerList) {
-            if (packagerDescriptor.hasInfoList()) {
-                infoList.addAll(packagerDescriptor.getDefaultInfoList(makeConfiguration, this));
+        if (infoList.isEmpty()) {
+            List<PackagerDescriptor> packagerList = PackagerManager.getDefault().getPackagerList();
+            for (PackagerDescriptor packagerDescriptor : packagerList) {
+                if (packagerDescriptor.hasInfoList()) {
+                    infoList.addAll(packagerDescriptor.getDefaultInfoList(makeConfiguration, this));
+                }
             }
         }
     }
@@ -221,6 +257,8 @@ public class PackagingConfiguration implements Cloneable {
     }
 
     public VectorConfiguration<PackagerFileElement> getFiles() {
+        setDefaultValues();
+
         return files;
     }
 

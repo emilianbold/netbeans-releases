@@ -51,6 +51,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.jumpto.file.FileDescription;
 import org.netbeans.modules.jumpto.file.FileProviderAccessor;
 import org.netbeans.spi.jumpto.type.SearchType;
+import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
@@ -113,7 +114,7 @@ public interface FileProvider {
          */
         public Project getProject() {
             if (project == null) {
-                project = FileOwnerQuery.getOwner(this.sourceGroupRoot);
+                project = ProjectConvertors.getNonConvertorOwner(this.sourceGroupRoot);
             }
             return project;
         }

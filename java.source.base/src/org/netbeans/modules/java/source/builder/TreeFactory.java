@@ -423,6 +423,14 @@ public class TreeFactory {
     }
     
     public IfTree If(ExpressionTree condition, StatementTree thenStatement, StatementTree elseStatement) {
+        if (thenStatement != null &&
+            thenStatement.getKind() == Tree.Kind.IF &&
+            elseStatement != null && 
+            ((IfTree)thenStatement).getElseStatement() == null) {
+            // Issue #257910: special case - if `thenStatement' is just inserted into the source.
+            // If the nested if contains `else' clause, it gets paired correctly.
+            thenStatement = Block(Collections.singletonList(thenStatement), false);
+        }
         return make.at(NOPOS).If((JCExpression)condition, (JCStatement)thenStatement, (JCStatement)elseStatement);
     }
     

@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.discovery.api;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -67,6 +68,11 @@ public interface Configuration {
      * Returns build artifacts: binaries and libraries
      */
     List<String> getBuildArtifacts();
+
+    /**
+     * Returns build tools detected in build artifacts.
+     */
+    Map<ItemProperties.LanguageKind,Map<String,Integer>> getBuildTools();
 
     /**
      * Returns list of source files properties. 

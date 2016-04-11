@@ -54,6 +54,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.annotations.common.StaticResource;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.DebugFileCommand;
@@ -296,22 +299,30 @@ public class SrcNode extends FilterNode {
 
         @Override
         public Image getIcon(int type) {
-            FileObject folder = getOriginal().getLookup().lookup(FileObject.class);
-            if (folder.equals(ProjectPropertiesSupport.getWebRootDirectory(project))
-                    && !folder.equals(ProjectPropertiesSupport.getSourcesDirectory(project))) {
-                return ImageUtilities.mergeImages(super.getIcon(type), ImageUtilities.loadImage(WEB_ROOT_BADGE_IMAGE, false), 7, 7);
-            }
-            return super.getIcon(type);
+            return getIcon(type, false);
         }
 
         @Override
         public Image getOpenedIcon(int type) {
+            return getIcon(type, true);
+        }
+
+        private Image getIcon(int type, boolean opened) {
             FileObject folder = getOriginal().getLookup().lookup(FileObject.class);
+            Project owner = FileOwnerQuery.getOwner(folder);
+            Image originalIcon;
+            if (owner != null
+                    && !owner.equals(project)
+                    && owner.getProjectDirectory().equals(folder)) {
+                originalIcon = ImageUtilities.icon2Image(ProjectUtils.getInformation(owner).getIcon());
+            } else {
+                originalIcon = opened ? super.getOpenedIcon(type) : super.getIcon(type);
+            }
             if (folder.equals(ProjectPropertiesSupport.getWebRootDirectory(project))
                     && !folder.equals(ProjectPropertiesSupport.getSourcesDirectory(project))) {
-                return ImageUtilities.mergeImages(super.getOpenedIcon(type), ImageUtilities.loadImage(WEB_ROOT_BADGE_IMAGE, false), 7, 7);
+                return ImageUtilities.mergeImages(originalIcon, ImageUtilities.loadImage(WEB_ROOT_BADGE_IMAGE, false), 7, 7);
             }
-            return super.getOpenedIcon(type);
+            return originalIcon;
         }
 
         private Action[] getCommonActions() {

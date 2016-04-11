@@ -86,6 +86,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.wizards.BuildSupport;
 import org.netbeans.modules.cnd.makeproject.platform.StdLibraries;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -621,7 +622,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (descriptorVersion < 76) {
                 // starting from v76 we call commands directly
                 // IZ#197975 - Projects from 6.9 do not build because of invalid $(MAKE) reference
-                val = val.replace("$(MAKE)", "${MAKE}"); // NOI18N
+                val = val.replace("$(MAKE)", BuildSupport.MAKE_MACRO); // NOI18N
             }
             ((MakeConfiguration) currentConf).getMakefileConfiguration().getBuildCommand().setValue(val);
         } else if (element.equals(CLEAN_COMMAND_ELEMENT)) {
@@ -629,7 +630,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (descriptorVersion < 76) {
                 // starting from v76 we call commands directly
                 // IZ#197975 - Projects from 6.9 do not build because of invalid $(MAKE) reference
-                val = val.replace("$(MAKE)", "${MAKE}"); // NOI18N
+                val = val.replace("$(MAKE)", BuildSupport.MAKE_MACRO); // NOI18N
             }
             ((MakeConfiguration) currentConf).getMakefileConfiguration().getCleanCommand().setValue(val);
         } else if (element.equals(PRE_BUILD_WORKING_DIR_ELEMENT)) {
@@ -990,6 +991,11 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             int kind = Integer.parseInt(currentText);
             if (currentLinkerConfiguration != null) {
                 currentLinkerConfiguration.getLibrariesRunTimeSearchPathKind().setValue(kind);
+            }
+        } else if (element.equals(LINKER_COPY_SHARED_LIBS_ELEMENT)) {
+            boolean ds = currentText.equals(TRUE_VALUE);
+            if (currentLinkerConfiguration != null) {
+                currentLinkerConfiguration.getCopyLibrariesConfiguration().setValue(ds);
             }
         } else if (element.equals(LINKER_ASSIGN_ELEMENT)) {
             boolean ds = currentText.equals(TRUE_VALUE);

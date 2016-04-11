@@ -121,10 +121,12 @@ public class JavaHlClientAdapterFactory extends SvnClientAdapterFactory {
             try {
                 JhlClientAdapterFactory.setup();
             } catch (Throwable t) {
-                String jhlErorrs = JhlClientAdapterFactory.getLibraryLoadErrors();
-                LOG.log(Level.INFO, t.getMessage());
-                LOG.log(Level.WARNING, "{0}\n", jhlErorrs);                                             // NOI18N
-                return false;
+                if (!"factory for type javahl already registered".equals(t.getMessage())) {
+                    String jhlErorrs = JhlClientAdapterFactory.getLibraryLoadErrors();
+                    LOG.log(Level.INFO, t.getMessage());
+                    LOG.log(Level.WARNING, "{0}\n", jhlErorrs);                                             // NOI18N
+                    return false;   
+                }
             }
             String version = getVersion();
             if(!isSupportedJavahlVersion(version)) {
@@ -145,8 +147,8 @@ public class JavaHlClientAdapterFactory extends SvnClientAdapterFactory {
         boolean retval = false;
         if (version != null) {
             version = version.toLowerCase();
-            if (version.startsWith("1.8") ||                                                        // NOI18N
-                version.contains("version 1.8"))                                                    // NOI18N
+            if (version.startsWith("1.9") ||                                                        // NOI18N
+                version.contains("version 1.9"))                                                    // NOI18N
             {
                 retval = true;
             }

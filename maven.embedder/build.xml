@@ -50,5 +50,14 @@ made subject to such option by the copyright holder.
         <unzip src="external/${bundled.maven}-bin.zip" dest="${cluster}/maven">
             <mapper type="glob" from="${bundled.maven}/*" to="*"/>
         </unzip>        
+        <!-- issue #254873; replaced by newer wagon-2.10 -->
+        <delete file="${cluster}/maven/lib/wagon-file-2.4.jar"/>
+        <delete file="${cluster}/maven/lib/wagon-http-2.4-shaded.jar"/>
+        <delete file="${cluster}/maven/lib/wagon-provider-api-2.4.jar"/>                
+        <copy file="external/wagon-file-2.10.jar" tofile="${cluster}/maven/lib/wagon-file-2.10.jar"/>
+        <copy file="external/wagon-http-2.10-shaded.jar" tofile="${cluster}/maven/lib/wagon-http-2.10-shaded.jar"/>
+        <copy file="external/wagon-http-shared-2.10.jar" tofile="${cluster}/maven/lib/wagon-http-shared-2.10.jar"/>
+        <copy file="external/wagon-provider-api-2.10.jar" tofile="${cluster}/maven/lib/wagon-provider-api-2.10.jar"/>
     </target>
+        
 </project>

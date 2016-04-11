@@ -47,7 +47,7 @@ import org.netbeans.lib.editor.util.CharSubSequence;
 
 /**
  * Set of character sequences allowing to compare a part of character sequence.
- * <br/>
+ * <br>
  * Note: Character sequences stored must be comparable by their equals() method.
  *
  * @author Miloslav Metelka

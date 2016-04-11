@@ -588,7 +588,8 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                 builder.append('/');        //NOI18N
                 builder.append(path[i]);
             }
-            return builder.substring(1);
+            assert builder.length() > 1 : "NodeOp.createPath() returned empty path for node " + selectedNodes[0] + " with root node " + rootNode; // NOI18N
+            return builder.length() > 1 ? builder.substring(1) : null;
         }
         
         @Override public ExplorerManager getExplorerManager() {

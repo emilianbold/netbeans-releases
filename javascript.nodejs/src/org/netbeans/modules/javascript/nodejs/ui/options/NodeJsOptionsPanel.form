@@ -79,6 +79,7 @@
                       </Group>
                   </Group>
                   <Component id="stopAtFirstLineCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="npmIgnoreNodeModulesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
           </Group>
@@ -115,6 +116,8 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="npmHintLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="npmIgnoreNodeModulesCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
                   <Component id="expressHeaderLabel" min="-2" max="-2" attributes="0"/>
@@ -221,6 +224,13 @@
     <Component class="javax.swing.JLabel" name="npmHintLabel">
       <Properties>
         <Property name="text" type="java.lang.String" value="HINT" noResource="true"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="npmIgnoreNodeModulesCheckBox">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/javascript/nodejs/ui/options/Bundle.properties" key="NodeJsOptionsPanel.npmIgnoreNodeModulesCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="expressHeaderLabel">

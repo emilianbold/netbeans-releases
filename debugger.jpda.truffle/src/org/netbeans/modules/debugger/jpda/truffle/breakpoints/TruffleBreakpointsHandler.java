@@ -137,6 +137,9 @@ public class TruffleBreakpointsHandler {
         this.accessorClass = accessorClass;
         List<JSLineBreakpoint> breakpoints;
         synchronized (breakpointsToSubmitLock) {
+            if (breakpointsToSubmit == null) {
+                return ;
+            }
             breakpoints = new ArrayList<>(breakpointsToSubmit);
             breakpointsToSubmit.clear();
             breakpointsToSubmit = null;

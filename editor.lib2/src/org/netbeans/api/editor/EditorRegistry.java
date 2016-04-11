@@ -72,12 +72,12 @@ import org.netbeans.modules.editor.lib2.EditorApiPackageAccessor;
 
 /**
  * Registry maintaining {@link JTextComponent}s in most-recently-used order.
- * <br/>
+ * <br>
  * The particular text component needs to register itself first (to avoid dealing
  * with all the JTextFields etc.). Then the registry will attach
  * a focus listener to the text component and once the component gains
  * the focus it will move to the head of the components list.
- * <br/>
+ * <br>
  * The registry will also fire a change in case a document property
  * of the focused component changes (by calling component.setDocument()).
  *
@@ -98,9 +98,9 @@ public final class EditorRegistry {
 
     /**
      * Fired when focus was delivered to a registered text component.
-     * <br/>
+     * <br>
      * The focused component will become the first in the components list.
-     * <br/>
+     * <br>
      * The {@link java.beans.PropertyChangeEvent#getOldValue()} will be a component
      * losing the focus {@link FocusEvent#getOppositeComponent()}.
      * The {@link java.beans.PropertyChangeEvent#getNewValue()} will be the text component gaining the focus.
@@ -109,9 +109,9 @@ public final class EditorRegistry {
     
     /**
      * Fired when a registered focused component has lost the focus.
-     * <br/>
+     * <br>
      * The focused component will remain the first in the components list.
-     * <br/>
+     * <br>
      * The {@link java.beans.PropertyChangeEvent#getOldValue()} will be the text component
      * losing the focus and the {@link java.beans.PropertyChangeEvent#getNewValue()}
      * will be the component gaining the focus {@link FocusEvent#getOppositeComponent()}.
@@ -121,7 +121,7 @@ public final class EditorRegistry {
     /**
      * Fired when document property of the focused component changes
      * i.e. someone has called {@link JTextComponent#setDocument(Document)}.
-     * <br/>
+     * <br>
      * The {@link java.beans.PropertyChangeEvent#getOldValue()} will be the original document
      * of the focused text component and the {@link java.beans.PropertyChangeEvent#getNewValue()}
      * will be the new document set to the focused text component.
@@ -132,13 +132,13 @@ public final class EditorRegistry {
      * Fired when a component (returned previously from {@link #componentList()})
      * is removed from component hierarchy (so it's likely that the component will be released completely
      * and garbage-collected).
-     * <br/>
+     * <br>
      * Such component will no longer be returned from {@link #componentList()}
      * or {@link #lastFocusedComponent()}.
-     * <br/>
+     * <br>
      * The {@link java.beans.PropertyChangeEvent#getOldValue()} will be the removed
      * component.
-     * <br/>
+     * <br>
      * The {@link java.beans.PropertyChangeEvent#getNewValue()} returns <code>null</code>
      */
     public static final String COMPONENT_REMOVED_PROPERTY = "componentRemoved"; //NOI18N
@@ -147,14 +147,14 @@ public final class EditorRegistry {
      * Fired when the last focused component (returned previously from {@link #lastFocusedComponent()})
      * was removed from component hierarchy (so it's likely that the component will be released completely
      * and garbage-collected).
-     * <br/>
+     * <br>
      * Such component will no longer be returned from {@link #componentList()}
      * or {@link #lastFocusedComponent()}.
-     * <br/>
+     * <br>
      * The {@link java.beans.PropertyChangeEvent#getOldValue()} will be the removed
      * last focused component and the {@link java.beans.PropertyChangeEvent#getNewValue()}
      * will be the component that would currently be returned from {@link #lastFocusedComponent()}.
-     * <br/>
+     * <br>
      * If {@link java.beans.PropertyChangeEvent#getNewValue()} returns <code>null</code>
      * then there are no longer any registered components
      * ({@link #componentList()} would return empty list). If the client
@@ -180,7 +180,7 @@ public final class EditorRegistry {
 
     /**
      * Return last focused text component (from the ones included in the registry).
-     * <br/>
+     * <br>
      * It may or may not currently have a focus.
      * 
      * @return last focused text component or null if no text components
@@ -193,7 +193,7 @@ public final class EditorRegistry {
     /**
      * Return the last focused component if it currently has a focus
      * or return null if none of the registered components currently have the focus.
-     * <br/>
+     * <br>
      * @return focused component or null if none of the registered components
      *  is currently focused.
      */
@@ -205,7 +205,7 @@ public final class EditorRegistry {
     /**
      * Get list of all components present in the registry starting with the most active
      * and ending with least active component.
-     * <br/>
+     * <br>
      * The list is a snapshot of the current state and it may be modified
      * by the caller if desired.
      * 
@@ -234,13 +234,38 @@ public final class EditorRegistry {
     }
     
     /**
+     * Find a component that uses the given document.
+     * <br/>
+     * Scan the component registry starting from the most recently focused text component
+     * and test if {@link JTextComponent#getDocument()} returns the document passed
+     * as parameter to this method and if so return the component.
+     *
+     * @since 2.8.0
+     */
+    public static synchronized JTextComponent findComponent(Document doc) {
+        Item item = items;
+        while (item != null) {
+            JTextComponent c = item.get();
+            if (c == null) {
+                item = removeFromItemList(item);
+                continue;
+            }
+            if (c.getDocument() == doc) {
+                return c;
+            }
+            item = item.next;
+        }
+        return null;
+    }
+    
+    /**
      * Add a property change listener for either of the following properties:
      * <ul>
      *   <li>{@link #FOCUS_GAINED_PROPERTY}</li>
      *   <li>{@link #FOCUS_LOST_PROPERTY}</li>
      *   <li>{@link #FOCUSED_DOCUMENT_PROPERTY}</li>
      * </ul>.
-     * <br/>
+     * <br>
      * All the firing should occur in AWT thread only
      * (assuming the JTextComponent.setDocument() is done properly in AWT).
      * 

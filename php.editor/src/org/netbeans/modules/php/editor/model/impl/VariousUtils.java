@@ -511,9 +511,9 @@ public final class VariousUtils {
                         String clsName = frgs[0];
                         if (clsName != null) {
                             QualifiedName fullyQualifiedName = getFullyQualifiedName(createQuery(clsName, varScope), offset, varScope);
-                            Collection<? extends ClassScope> classes = IndexScopeImpl.getClasses(fullyQualifiedName, varScope);
-                            for (ClassScope cls : classes) {
-                                Collection<? extends FieldElement> fields = IndexScopeImpl.getFields(cls, frgs[1], varScope, PhpModifiers.ALL_FLAGS);
+                            Collection<? extends TypeScope> types = IndexScopeImpl.getTypes(fullyQualifiedName, varScope);
+                            for (TypeScope type : types) {
+                                Collection<? extends FieldElement> fields = IndexScopeImpl.getFields(type, frgs[1], varScope, PhpModifiers.ALL_FLAGS);
                                 for (FieldElement field : fields) {
                                     newRecentTypes.addAll(field.getTypes(offset));
                                 }
@@ -525,14 +525,14 @@ public final class VariousUtils {
                         Set<TypeScope> newRecentTypes = new HashSet<>();
                         String[] frgs = frag.split("\\."); //NOI18N
                         assert frgs.length == 2;
-                        String clsName = frgs[0];
-                        if (clsName != null) {
-                            QualifiedName fullyQualifiedName = getFullyQualifiedName(createQuery(clsName, varScope), offset, varScope);
-                            Collection<? extends ClassScope> classes = IndexScopeImpl.getClasses(fullyQualifiedName, varScope);
-                            for (ClassScope cls : classes) {
-                                Collection<? extends MethodScope> inheritedMethods = IndexScopeImpl.getMethods(cls, frgs[1], varScope, PhpModifiers.ALL_FLAGS);
+                        String typeName = frgs[0];
+                        if (typeName != null) {
+                            QualifiedName fullyQualifiedName = getFullyQualifiedName(createQuery(typeName, varScope), offset, varScope);
+                            Collection<? extends TypeScope> types = IndexScopeImpl.getTypes(fullyQualifiedName, varScope);
+                            for (TypeScope type : types) {
+                                Collection<? extends MethodScope> inheritedMethods = IndexScopeImpl.getMethods(type, frgs[1], varScope, PhpModifiers.ALL_FLAGS);
                                 for (MethodScope meth : inheritedMethods) {
-                                    newRecentTypes.addAll(meth.getReturnTypes(true, classes));
+                                    newRecentTypes.addAll(meth.getReturnTypes(true, types));
                                 }
                             }
                         }
@@ -898,9 +898,9 @@ public final class VariousUtils {
         } else if (varBase instanceof StaticMethodInvocation) {
             StaticMethodInvocation staticMethodInvocation = (StaticMethodInvocation) varBase;
             String className = null;
-            Expression classNameExpression = staticMethodInvocation.getClassName();
-            if (classNameExpression instanceof Identifier || classNameExpression instanceof NamespaceName) {
-                className = CodeUtils.extractQualifiedName(classNameExpression);
+            Expression dispatcher = staticMethodInvocation.getDispatcher();
+            if (dispatcher instanceof Identifier || dispatcher instanceof NamespaceName) {
+                className = CodeUtils.extractQualifiedName(dispatcher);
             }
             String methodName = CodeUtils.extractFunctionName(staticMethodInvocation.getMethod());
 
@@ -921,7 +921,7 @@ public final class VariousUtils {
             }
         } else if (varBase instanceof StaticFieldAccess) {
             StaticFieldAccess fieldAccess = (StaticFieldAccess) varBase;
-            String clsName = CodeUtils.extractUnqualifiedName(fieldAccess.getClassName());
+            String clsName = CodeUtils.extractUnqualifiedName(fieldAccess.getDispatcher());
             String fldName = CodeUtils.extractVariableName(fieldAccess.getField());
             if (clsName != null && fldName != null) {
                 return PRE_OPERATION_TYPE_DELIMITER + STATIC_FIELD_TYPE_PREFIX + clsName + '.' + fldName;
@@ -1061,6 +1061,9 @@ public final class VariousUtils {
                             metaAll.insert(0, PRE_OPERATION_TYPE_DELIMITER + VariousUtils.FIELD_TYPE_PREFIX);
                             metaAll.insert(0, translateSpecialClassName(varScope, token.text().toString()));
                             state = State.CLASSNAME;
+                        } else if (isRightBracket(token)) {
+                            rightBraces++;
+                            state = State.PARAMS;
                         } else if (isRightArryBracket(token)) {
                             arrayBrackets++;
                             state = State.IDX;

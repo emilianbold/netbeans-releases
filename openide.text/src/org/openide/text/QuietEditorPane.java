@@ -373,9 +373,15 @@ final class QuietEditorPane extends JEditorPane {
 
         @Override
         public boolean importData(JComponent comp, Transferable t) {
+            return delegator.importData(comp, t);
+        }
+
+        @Override
+        public boolean importData(TransferSupport t) {
             try {
                 if (t.isDataFlavorSupported(ActiveEditorDrop.FLAVOR)){
-                    Object obj = t.getTransferData(ActiveEditorDrop.FLAVOR);
+                    Object obj = t.getTransferable().getTransferData(ActiveEditorDrop.FLAVOR);
+                    final JComponent comp = (JComponent) t.getComponent();
                     if (obj instanceof ActiveEditorDrop && comp instanceof JTextComponent){
                         boolean success = false;
                         try {
@@ -390,7 +396,7 @@ final class QuietEditorPane extends JEditorPane {
             } catch (Exception exc){
                 exc.printStackTrace();
             }
-            return delegator.importData(comp, t);
+            return delegator.importData(t);
         }
 
         private void requestFocus(JComponent comp) {
@@ -412,15 +418,21 @@ final class QuietEditorPane extends JEditorPane {
                 comp.requestFocus();
             }
         }
-        
+
         @Override
         public boolean canImport(JComponent comp, DataFlavor[] transferFlavors) {
+            return delegator.canImport(comp, transferFlavors);
+        }
+        
+        @Override
+        public boolean canImport(TransferSupport support) {
+            DataFlavor[] transferFlavors = support.getDataFlavors();
             for (int i=0; i<transferFlavors.length; i++){
                 if (transferFlavors[i] == ActiveEditorDrop.FLAVOR){
                     return true;
                 }
             }
-            return delegator.canImport(comp, transferFlavors);
+            return delegator.canImport(support);
         }
 
         @Override
