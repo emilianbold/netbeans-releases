@@ -25,8 +25,8 @@ METHOD     propertyIsEnumerable(V: String  [PUBLIC]   JS Platform
 METHOD     seal(O: Object): Object         [PUBLIC,   JS Platform
 METHOD     toLocaleString(): String        [PUBLIC]   JS Platform
 METHOD     toString(): String              [PUBLIC]   JS Platform
+METHOD     used(): Generator               [PROTECTE  generator03.js
 METHOD     valueOf(): Object               [PUBLIC]   JS Platform
 FIELD      constructor: Function           [PUBLIC]   JS Platform
 FIELD      length: Number                  [PUBLIC]   JS Platform
 FIELD      name                            [PUBLIC]   generator03.js
-OTHER      used(): Generator               [PROTECTE  generator03.js

@@ -2,4 +2,4 @@ Code completion result for source line:
 var g = gen|01();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-OTHER      gen01(start): Generator         [PUBLIC]   generator01.js
+METHOD     gen01(start): Generator         [PUBLIC]   generator01.js

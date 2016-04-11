@@ -2,6 +2,7 @@ Code completion result for source line:
 console.log(t.|next());
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
+CLASS      NextObject                      [PUBLIC]   JS Platform
 CLASS      prototype                       [PUBLIC]   JS Platform
 METHOD     create(O: Object): Object       [PUBLIC,   JS Platform
 METHOD     defineProperties(O: Object, Pr  [PUBLIC,   JS Platform
@@ -16,7 +17,7 @@ METHOD     isFrozen(O: Object): Boolean    [PUBLIC,   JS Platform
 METHOD     isPrototypeOf(V: Object): Bool  [PUBLIC]   JS Platform
 METHOD     isSealed(O: Object): Boolean    [PUBLIC,   JS Platform
 METHOD     keys(O: Object): Array          [PUBLIC,   JS Platform
-METHOD     next(value: object): NextRetur  [PUBLIC]   JS Platform
+METHOD     next(value: object): Generator  [PUBLIC]   JS Platform
 METHOD     preventExtensions(O: Object):   [PUBLIC,   JS Platform
 METHOD     propertyIsEnumerable(V: String  [PUBLIC]   JS Platform
 METHOD     return(value: object): object   [PUBLIC]   JS Platform
