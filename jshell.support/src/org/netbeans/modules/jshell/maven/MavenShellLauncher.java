@@ -97,9 +97,11 @@ public class MavenShellLauncher implements PrerequisitesChecker, LateBoundPrereq
         }
         
         Project project = config.getProject();
-        boolean isDebug = config.getActionName().contains("debug");
+        boolean isDebug = config.getActionName().equals("debug");
+        boolean ok = isDebug ||
+                config.getActionName().equals("run");
         
-        if (!isDebug) {
+        if (!ok) {
             return true;
         }
         ShellAgent agent;

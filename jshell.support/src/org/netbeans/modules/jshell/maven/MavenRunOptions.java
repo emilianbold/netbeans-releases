@@ -119,6 +119,12 @@ public class MavenRunOptions extends javax.swing.JPanel implements HelpCtx.Provi
                 debug = m;
             }
         }
+        if (run == null) {
+            run = ModelHandle2.getDefaultMapping(ActionProvider.COMMAND_RUN, project);
+        }
+        if (debug == null) {
+            debug = ModelHandle2.getDefaultMapping(ActionProvider.COMMAND_RUN, project);
+        }
         nestedOptions.readOptions(debug.getProperties());
     }
     
@@ -138,14 +144,22 @@ public class MavenRunOptions extends javax.swing.JPanel implements HelpCtx.Provi
         }
         Map<String, String> opts = nestedOptions.getChangedOptions();
         ActionToGoalMapping a2gm = handle.getActionMappings((ModelHandle2.Configuration) cbConfiguration.getSelectedItem());
-        
+        changeConfiguration(run, a2gm);
+        changeConfiguration(debug, a2gm);
+        handle.markAsModified(a2gm);
+    }
+    
+    private void changeConfiguration(NetbeansActionMapping am, ActionToGoalMapping a2gm) {
+        if (am == null) {
+            return;
+        }
+        Map<String, String> opts = nestedOptions.getChangedOptions();
         for (String k : opts.keySet()) {
             String v = opts.get(k);
             // PENDING: replicate to all relevant configurations, only debug (run) now:
-            debug.addProperty(k, v);
+            am.addProperty(k, v);
         }
-        ModelHandle2.setUserActionMapping(debug, a2gm);
-        handle.markAsModified(a2gm);
+        ModelHandle2.setUserActionMapping(am, a2gm);
     }
 
     @Override
