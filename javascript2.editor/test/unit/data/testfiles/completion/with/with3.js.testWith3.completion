@@ -75,6 +75,7 @@ CLASS      Event                           [PUBLIC]   JS Platform
 CLASS      EventException                  [PUBLIC]   JS Platform
 CLASS      EventListener                   [PUBLIC]   JS Platform
 CLASS      EventTarget                     [PUBLIC]   JS Platform
+CLASS      Generator                       [PUBLIC]   JS Platform
 CLASS      HTMLAnchorElement               [PUBLIC]   JS Platform
 CLASS      HTMLAppletElement               [PUBLIC]   JS Platform
 CLASS      HTMLAreaElement                 [PUBLIC]   JS Platform

@@ -414,6 +414,26 @@ public class JsCodeCompletionGeneralTest extends JsCodeCompletionBase {
     public void testIssue237421_03() throws Exception {
         checkCompletion("testfiles/completion/general/issue237421.js", "var foo3 = this.getTest().property1.a^;", false);
     }
+
+    public void testNumberLiterals01() throws Exception {
+        // has to offer methods from Number type
+        checkCompletion("testfiles/completion/general/numberLiterals01.js", "console.log(0xabc.t^oFixed(3));", false);
+    }
+    
+    public void testNumberLiterals02() throws Exception {
+        // has to offer methods from Number type
+        checkCompletion("testfiles/completion/general/numberLiterals01.js", "console.log(0b101010.t^oFixed(2));", false);
+    }
+    
+    public void testNumberLiterals03() throws Exception {
+        // has to offer methods from Number type
+        checkCompletion("testfiles/completion/general/numberLiterals01.js", "console.log(0o676.t^oFixed(3));", false);
+    }
+    
+    public void testNumberLiterals04() throws Exception {
+        // has to offer methods from Number type
+        checkCompletion("testfiles/completion/general/numberLiterals01.js", "console.log(parseInt(\"111\", 2).t^oFixed(2));", false);
+    }
     
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
