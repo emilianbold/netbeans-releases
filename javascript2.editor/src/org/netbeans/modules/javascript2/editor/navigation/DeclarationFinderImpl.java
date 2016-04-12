@@ -60,6 +60,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.EditorExtender;
 import org.netbeans.modules.javascript2.editor.FileUtils;
+import org.netbeans.modules.javascript2.editor.Utils;
 import org.netbeans.modules.javascript2.model.api.IndexedElement;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
@@ -87,8 +88,6 @@ import org.openide.util.Exceptions;
  * @author Petr Pisl
  */
 public class DeclarationFinderImpl implements DeclarationFinder {
-
-    private static final List<JsTokenId> LOOK_FOR_IMPORT_TOKENS = Arrays.asList(JsTokenId.KEYWORD_IMPORT, JsTokenId.OPERATOR_SEMICOLON);
     
     private final Language<JsTokenId> language;
 
@@ -111,8 +110,8 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             if (ts.token().id() == JsTokenId.STRING) {
                 //are we in the import expression to navigate the imported file?
                 String path = ts.token().text().toString();
-                Token<? extends JsTokenId> token = LexUtilities.findPreviousToken(ts, LOOK_FOR_IMPORT_TOKENS);
-                if (token.id() == JsTokenId.KEYWORD_IMPORT) {
+                Token<? extends JsTokenId> token = LexUtilities.findPreviousToken(ts, Utils.LOOK_FOR_IMPORT_EXPORT_TOKENS);
+                if (token.id() == JsTokenId.KEYWORD_IMPORT || token.id() == JsTokenId.KEYWORD_EXPORT) {
                     FileObject currentFO = snapshot.getSource().getFileObject();
                     FileObject destinationFO = FileUtils.findFileObject(currentFO, path, false);
                     if (destinationFO != null) {
@@ -394,8 +393,8 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                         // we need to check, where we are in the import expression (ES6)
                         int start = ts.offset();
                         int end = ts.offset() + ts.token().length();
-                        Token<? extends JsTokenId> token = LexUtilities.findPreviousToken(ts, LOOK_FOR_IMPORT_TOKENS);
-                        if (token.id() == JsTokenId.KEYWORD_IMPORT) {
+                        Token<? extends JsTokenId> token = LexUtilities.findPreviousToken(ts, Utils.LOOK_FOR_IMPORT_EXPORT_TOKENS);
+                        if (token.id() == JsTokenId.KEYWORD_IMPORT || token.id() == JsTokenId.KEYWORD_EXPORT) {
                             value[0] = new OffsetRange (start, end);
                         }
                     }

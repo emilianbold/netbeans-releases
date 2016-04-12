@@ -52,7 +52,6 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
-import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
  *
@@ -126,6 +125,10 @@ public class CompletionContextFinder {
                         return CompletionContext.STRING_ELEMENTS_BY_CLASS_NAME;
                     }
                 }
+            }
+            token = LexUtilities.findPreviousToken(ts, Utils.LOOK_FOR_IMPORT_EXPORT_TOKENS);
+            if (token.id() == JsTokenId.KEYWORD_EXPORT || token.id() == JsTokenId.KEYWORD_IMPORT) {
+                return CompletionContext.IMPORT_EXPORT_MODULE;
             }
             return CompletionContext.STRING;
         }

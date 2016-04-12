@@ -42,18 +42,21 @@
 package org.netbeans.modules.javascript2.editor;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.javascript2.types.api.Type;
 import org.netbeans.modules.javascript2.model.api.ModelUtils;
-import org.netbeans.modules.javascript2.model.spi.TypeNameConvertor;
 
 /**
  *
  * @author Petr Pisl
  */
 public class Utils {
+    
+    public static final List<JsTokenId> LOOK_FOR_IMPORT_EXPORT_TOKENS = Arrays.asList(JsTokenId.KEYWORD_IMPORT, JsTokenId.KEYWORD_EXPORT, JsTokenId.OPERATOR_SEMICOLON);
     
     /**
      * Converts the types names to the display names. It can return empty collection

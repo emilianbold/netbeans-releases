@@ -74,8 +74,11 @@ import com.oracle.js.parser.ir.VarNode;
 import com.oracle.js.parser.ir.WithNode;
 import com.oracle.js.parser.ir.visitor.NodeVisitor;
 import com.oracle.js.parser.TokenType;
+import com.oracle.js.parser.ir.ExportClauseNode;
 import com.oracle.js.parser.ir.ExportNode;
+import com.oracle.js.parser.ir.ExportSpecifierNode;
 import com.oracle.js.parser.ir.Expression;
+import com.oracle.js.parser.ir.FromNode;
 import com.oracle.js.parser.ir.ImportClauseNode;
 import com.oracle.js.parser.ir.ImportNode;
 import com.oracle.js.parser.ir.ImportSpecifierNode;
@@ -675,8 +678,22 @@ public class ModelVisitor extends PathNodeVisitor {
 
     @Override
     public boolean enterExportNode(ExportNode exportNode) {
-        if (exportNode.getExpression() != null) {
-            exportNode.getExpression().accept(this);
+        final ExportClauseNode exportClause = exportNode.getExportClause();
+        final FromNode from = exportNode.getFrom();
+        final Expression expression = exportNode.getExpression();
+        
+        if (exportClause != null) {
+            for (ExportSpecifierNode esNode :exportClause.getExportSpecifiers()) {
+                IdentNode exported = esNode.getExportIdentifier();
+                IdentNode local = esNode.getIdentifier();
+                addOccurence(local, false);
+                if (exported != null) {
+                    addOccurence (exported, true);
+                }
+            }
+        }
+        if (expression != null) {
+            expression.accept(this);
         }
         return false;
     }

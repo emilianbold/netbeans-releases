@@ -89,6 +89,7 @@ import org.netbeans.modules.javascript2.types.api.Identifier;
 import org.netbeans.modules.javascript2.types.api.TypeUsage;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -203,6 +204,9 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                     break;
                 case STRING_ELEMENTS_BY_CLASS_NAME:
                     completeCSSClassNames(request, resultList);
+                    break;
+                case IMPORT_EXPORT_MODULE:
+                    completeJsModuleNames(request, resultList);
                     break;
                 case GLOBAL:
                     HashMap<String, List<JsElement>> addedProperties = new HashMap<String, List<JsElement>>();
@@ -1152,6 +1156,47 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             if (startsWith(keyword, request.prefix)) {
                 resultList.add(new JsCompletionItem.KeywordItem(keyword, request));
             }
+        }
+    }
+    
+    private void completeJsModuleNames(CompletionRequest request,  List<CompletionProposal> resultList) {
+        final Snapshot snapshot = request.info.getSnapshot();
+        TokenHierarchy<?> th = snapshot.getTokenHierarchy();
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, request.anchor);
+        if (ts == null) {
+            return;
+        }
+
+        int offset = snapshot.getEmbeddedOffset(request.anchor);
+        ts.move(offset);
+        final String prefix = request.prefix;
+        String writtenPath = request.prefix;
+        
+        if (ts.moveNext() && (ts.token().id() == JsTokenId.STRING_END || ts.token().id() == JsTokenId.STRING)) {
+            if (ts.token().id() == JsTokenId.STRING_END) {
+                ts.movePrevious();
+            }
+            if (ts.token().id() == JsTokenId.STRING) {
+                String text = ts.token().text().toString();
+                // this is needed, because from JS the prefix is split with '.' and '/'
+                writtenPath = text.substring(0, offset - ts.offset());
+//                writtenPath = text;
+//                offset = ts.offset();
+            }
+        }
+        
+        FileObject fo = snapshot.getSource().getFileObject();
+        try {
+            List<CompletionProposal> relativeFiles = FileUtils.computeRelativeItems(Collections.singletonList(fo), writtenPath, offset, false, false, new FileUtils.FileObjectFilter() {
+                
+                @Override
+                public boolean accept(FileObject file) {
+                    return file.isFolder() || ("js".equals(file.getExt().toLowerCase()) && file.getName().startsWith(prefix)); //NOI18N
+                }
+            });
+            resultList.addAll(relativeFiles);
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, ex, null);
         }
     }
     
