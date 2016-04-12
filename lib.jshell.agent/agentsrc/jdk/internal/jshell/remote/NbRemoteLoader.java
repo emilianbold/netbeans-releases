@@ -126,7 +126,7 @@ class NbRemoteLoader extends RemoteClassLoader {
     @Override
     public Enumeration<URL> findResources(String name) throws IOException {
         Enumeration<URL> origResources = getParent().getResources(name);
-        Enumeration<URL> deleResources = oldDelegate != null ? oldDelegate.findResources(name) : Collections.emptyEnumeration();
+        Enumeration<URL> deleResources = oldDelegate != null ? oldDelegate.findResources(name) : Collections.<URL>emptyEnumeration();
         
         return new CompoundEnumeration<>(new Enumeration[] {
                 origResources,

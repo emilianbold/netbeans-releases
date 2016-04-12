@@ -58,7 +58,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -343,9 +345,11 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
         LOG.log(Level.FINER, "Entering client code");
         this.contextLoader = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(loader);
+        super.clientCodeEnter();
     }
     
-    private boolean killed;
+    private AtomicBoolean killed = new AtomicBoolean();
+//    private boolean killed;
     
     /**
      * Removes our thread from the user-executing map.
@@ -357,16 +361,20 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
      * the executing agent will not complete the synchronized block normally
      */
     void clientCodeLeave() {
+        super.clientCodeLeave();
         LOG.log(Level.FINER, "Exiting client code");
         Thread.currentThread().setContextClassLoader(contextLoader);
         synchronized (userCodeExecutingThreads) {
-            killed = !userCodeExecutingThreads.remove(socketPort, Thread.currentThread());
+            Thread t = userCodeExecutingThreads.get(socketPort);
+            if (t == Thread.currentThread()) {
+                killed.set(userCodeExecutingThreads.remove(socketPort) != null);
+            }
             LOG.log(Level.FINER, "User code killed: {0}", killed);
         }
     }
     
-    private void performExecute(int cmd, ObjectInputStream in, ObjectOutputStream out) throws IOException {
-        killed = false;
+    private void performExecute(int cmd, ObjectInputStream in, ObjectOutputStream out, CountDownLatch latch) throws IOException {
+        killed.set(false);
         try {
             synchronized (userCodeExecutingThreads) {
                 userCodeExecutingThreads.put(socketPort, Thread.currentThread());
@@ -375,9 +383,13 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
             return;
         } catch (ThreadDeath td) {
             LOG.log(Level.FINE, "Received ThreadDeath, killed: {0}", killed);
-            if (!killed) {
+            if (!killed.get()) {
                 throw td;
             }
+        } catch (Throwable t) {
+            killed.set(true);
+        } finally {
+            latch.countDown();
         }
         out.writeInt(RESULT_KILLED);
         out.flush();
@@ -389,16 +401,18 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
             switch (cmd) {
                 case RemoteCodes.CMD_INVOKE: {
                     final IOException [] err = new IOException[1];
+                    final CountDownLatch execLatch = new CountDownLatch(1);
                     // for Graalists :)
                     userExecutor.execute(new Runnable() {
                         public void run() {
                             try {
-                                performExecute(cmd, in, out);
+                                performExecute(cmd, in, out, execLatch);
                             } catch (IOException ex) {
                                 err[0] = ex;
                             }
                         }
                     });
+                    execLatch.await();
                     if (err[0] != null) {
                         throw err[0];
                     }
