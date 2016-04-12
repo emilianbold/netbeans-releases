@@ -45,10 +45,10 @@ import com.google.inject.Binder;
 import com.google.inject.Module;
 import org.apache.maven.model.building.ModelBuilder;
 import org.apache.maven.plugin.internal.PluginDependenciesResolver;
-import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManagerFactory;
-import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
-import org.sonatype.aether.spi.localrepo.LocalRepositoryManagerFactory;
-import org.sonatype.guice.plexus.config.Roles;
+import org.eclipse.aether.internal.impl.SimpleLocalRepositoryManagerFactory;
+import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
+import org.eclipse.aether.spi.localrepo.LocalRepositoryManagerFactory;
+import org.eclipse.sisu.plexus.Roles;
 
 /**
  * this module is meant to be used by the project embedder only

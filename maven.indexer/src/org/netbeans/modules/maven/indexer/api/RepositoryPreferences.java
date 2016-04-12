@@ -66,14 +66,13 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
-import static org.netbeans.modules.maven.indexer.api.Bundle.*;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
-import org.sonatype.aether.repository.MirrorSelector;
-import org.sonatype.aether.repository.RemoteRepository;
-import org.sonatype.aether.util.repository.DefaultMirrorSelector;
+import org.eclipse.aether.repository.MirrorSelector;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.util.repository.DefaultMirrorSelector;
 
 /**
  * List of Maven repositories of interest.
@@ -149,7 +148,7 @@ public final class RepositoryPreferences {
         if (local == null) {
             try {
                 //TODO do we care about changing the instance when localrepo location changes?
-                local = new RepositoryInfo(RepositorySystem.DEFAULT_LOCAL_REPO_ID, local(), EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile().getAbsolutePath(), null);
+                local = new RepositoryInfo(RepositorySystem.DEFAULT_LOCAL_REPO_ID, Bundle.local(), EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile().getAbsolutePath(), null);
                 local.setMirrorStrategy(RepositoryInfo.MirrorStrategy.NONE);
             } catch (URISyntaxException x) {
                 throw new AssertionError(x);
@@ -283,7 +282,7 @@ public final class RepositoryPreferences {
      */
     
     private RepositoryInfo getMirrorInfo(RepositoryInfo info, MirrorSelector selector, Settings settings) {
-        RemoteRepository original = new RemoteRepository(info.getId(), /* XXX do we even support any other layout?*/"default", info.getRepositoryUrl());
+        RemoteRepository original = new RemoteRepository.Builder(info.getId(), /* XXX do we even support any other layout?*/"default", info.getRepositoryUrl()).build();
         RemoteRepository mirror = selector.getMirror(original);
         if (mirror != null) {
             try {

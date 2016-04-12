@@ -58,9 +58,9 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipError;
-import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.SimpleFSDirectory;
@@ -74,6 +74,7 @@ import org.apache.maven.index.context.IndexCreator;
 import org.apache.maven.index.context.IndexUtils;
 import org.apache.maven.index.context.IndexingContext;
 import org.apache.maven.index.creator.OsgiArtifactIndexCreator;
+import org.apache.maven.index.expr.SearchTyped;
 import org.apache.maven.index.expr.StringSearchExpression;
 import org.apache.maven.index.updater.IndexUpdateRequest;
 import org.apache.maven.index.updater.IndexUpdater;
@@ -92,6 +93,7 @@ import org.apache.maven.wagon.proxy.ProxyInfo;
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
+import org.codehaus.plexus.PlexusConstants;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
@@ -253,6 +255,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 	            plexusRealm.importFrom(indexerRealm.getId(), "META-INF/plexus"); //NOI18N
 	            plexusRealm.importFrom(indexerRealm.getId(), "META-INF/maven"); //NOI18N
 	            config.setClassWorld(world);
+                config.setClassPathScanning( PlexusConstants.SCANNING_INDEX );
 	            //#154755 - end
                 embedder = new DefaultPlexusContainer(config);
 
@@ -393,7 +396,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             if (!loc.exists() || !new File(loc, "timestamp").exists()) {
                 index = true;
                 LOGGER.log(Level.FINER, "Index Not Available: {0} at: {1}", new Object[]{info.getId(), loc.getAbsolutePath()});
-            } else if (!IndexReader.indexExists(new SimpleFSDirectory(loc))) {
+            } else if (!DirectoryReader.indexExists(new SimpleFSDirectory(loc.toPath()))) {
                 index = true;
                 LOGGER.log(Level.FINER, "Index Not Available: {0} at: {1}", new Object[]{info.getId(), loc.getAbsolutePath()});
             }
@@ -403,8 +406,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         }
         
         return index;
-    }
-
+    }    
+    
     private @CheckForNull IteratorSearchResponse repeatedPagedSearch(Query q, final List<IndexingContext> contexts, int count) throws IOException {
         IteratorSearchRequest isr = new IteratorSearchRequest(q, contexts, new NoJavadocSourceFilter());
         if (count > 0) {
@@ -715,7 +718,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         IndexingContext tmpContext = null;
         try
         {
-            final FSDirectory directory = FSDirectory.open( tmpDir );
+            final FSDirectory directory = FSDirectory.open( tmpDir.toPath() );
             if ( update )
             {
                 IndexUtils.copyDirectory( context.getIndexDirectory(), directory );
@@ -1049,7 +1052,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 if (response != null) {
                    try {
                         for (ArtifactInfo ai : response.iterator()) {
-                            String gav = ai.groupId + ":" + ai.artifactId + ":" + ai.version;
+                            String gav = ai.getGroupId() + ":" + ai.getArtifactId() + ":" + ai.getVersion();
                             if (!infos.contains(gav)) {
                                 infos.add(gav);
                             }
@@ -1129,9 +1132,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 IteratorSearchResponse response = repeatedPagedSearch(bq, Collections.singletonList(context), NO_CAP_RESULT_COUNT);
                 if (response != null) {
                     try {
-                    for (ArtifactInfo artifactInfo : response.getResults()) {
-                        artifacts.add(artifactInfo.artifactId);
-                    }
+                        for (ArtifactInfo artifactInfo : response.getResults()) {
+                            artifacts.add(artifactInfo.getArtifactId());
+                        }
                     } finally {
                         response.close();
                     }
@@ -1204,8 +1207,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         return;
                     }
                 
-                Query q = setBooleanRewrite(
-                        indexer.constructQuery(MAVEN.CLASSNAMES, new StringSearchExpression(clsname.toLowerCase(Locale.ENGLISH))));       
+                Query q = setBooleanRewrite(constructQuery(MAVEN.CLASSNAMES, clsname.toLowerCase(Locale.ENGLISH)));
+
                 IteratorSearchResponse response = repeatedPagedSearch(q, Collections.singletonList(context), MAX_RESULT_COUNT);
                 if (response != null) {
                     try {
@@ -1224,6 +1227,10 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         return result;
     }
 
+    private Query constructQuery(Field f, String qs) {
+        return indexer.constructQuery(f, new StringSearchExpression(qs));       
+    }
+    
     @Override 
     public RepositoryQueries.Result<RepositoryQueries.ClassUsage> findClassUsages(final String className, @NullAllowed List<RepositoryInfo> repos) {
         RepositoryQueries.Result<RepositoryQueries.ClassUsage> result = Accessor.ACCESSOR.createClassResult(new Redo<RepositoryQueries.ClassUsage>() {
@@ -1373,7 +1380,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         iterate(repos, new RepoAction() {
             @Override public void run(RepositoryInfo repo, IndexingContext context) throws IOException {
                 BooleanQuery bq = new BooleanQuery();
-                bq.add(new BooleanClause((setBooleanRewrite(indexer.constructQuery(MAVEN.SHA1, new StringSearchExpression(sha1)))), BooleanClause.Occur.SHOULD));
+                bq.add(new BooleanClause((setBooleanRewrite(constructQuery(MAVEN.SHA1, sha1))), BooleanClause.Occur.SHOULD));
                 IteratorSearchResponse response = repeatedPagedSearch(bq, Collections.singletonList(context), MAX_RESULT_COUNT);
                 if (response != null) {
                     try {
@@ -1460,7 +1467,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 if (response != null) {
                     try {
                         for (ArtifactInfo artifactInfo : response.getResults()) {
-                            artifacts.add(artifactInfo.artifactId);
+                            artifacts.add(artifactInfo.getArtifactId());
                         }
                     } finally {
                         response.close();
@@ -1498,7 +1505,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 if (response != null) {
                     try {
                         for (ArtifactInfo artifactInfo : response.getResults()) {
-                            artifacts.add(artifactInfo.groupId);
+                            artifacts.add(artifactInfo.getGroupId());
                         }
                     } finally {
                         response.close();
@@ -1533,7 +1540,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 if (response != null) {
                     try {
                         for (ArtifactInfo artifactInfo : response.getResults()) {
-                            artifacts.add(artifactInfo.artifactId);
+                            artifacts.add(artifactInfo.getArtifactId());
                         }
                     } finally {
                         response.close();
@@ -1578,36 +1585,38 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         if (ArtifactInfo.NAMES.equals(fieldName)) {
                             try {
                                 String clsname = one.replace(".", "/"); //NOI18N
-                                q = indexer.constructQuery(MAVEN.CLASSNAMES, new StringSearchExpression(clsname.toLowerCase(Locale.ENGLISH)));
+                                q = constructQuery(MAVEN.CLASSNAMES, clsname.toLowerCase(Locale.ENGLISH));
                             } catch (IllegalArgumentException iae) {
                                 //#204651 only escape when problems occur
                                 String clsname = QueryParser.escape(one.replace(".", "/")); //NOI18N
                                 try {
-                                    q = indexer.constructQuery(MAVEN.CLASSNAMES, new StringSearchExpression(clsname.toLowerCase(Locale.ENGLISH)));
+                                    q = constructQuery(MAVEN.CLASSNAMES, clsname.toLowerCase(Locale.ENGLISH));
                                 } catch (IllegalArgumentException iae2) {
                                     //#224088
                                     continue;
                                 }
                             }
                         } else if (ArtifactInfo.ARTIFACT_ID.equals(fieldName)) {
+                            String aid = one.replaceAll("-", "?").replaceAll("\\.", "?");
                             try {
-                                q = indexer.constructQuery(MAVEN.ARTIFACT_ID, new StringSearchExpression(one));
+                                q = constructQuery(MAVEN.ARTIFACT_ID, aid);
                             } catch (IllegalArgumentException iae) {
                                 //#204651 only escape when problems occur
                                 try {
-                                    q = indexer.constructQuery(MAVEN.ARTIFACT_ID, new StringSearchExpression(QueryParser.escape(one)));
+                                    q = constructQuery(MAVEN.ARTIFACT_ID, QueryParser.escape(aid));
                                 } catch (IllegalArgumentException iae2) {
                                     //#224088
                                     continue;
                                 }
                             }
                         } else if (ArtifactInfo.GROUP_ID.equals(fieldName)) {
+                            String gid = one.replaceAll("-", "?").replaceAll("\\.", "?");
                             try {
-                                q = indexer.constructQuery(MAVEN.GROUP_ID, new StringSearchExpression(one));
+                                q = constructQuery(MAVEN.GROUP_ID, gid);
                             } catch (IllegalArgumentException iae) {
                                 //#204651 only escape when problems occur
                                 try {
-                                    q = indexer.constructQuery(MAVEN.GROUP_ID, new StringSearchExpression(QueryParser.escape(one)));
+                                    q = constructQuery(MAVEN.GROUP_ID, QueryParser.escape(gid));
                                 } catch (IllegalArgumentException iae2) {
                                     //#224088
                                     continue;
@@ -1676,7 +1685,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         for (final RepositoryInfo repo : repos) {
             File loc = new File(getDefaultIndexLocation(), repo.getId()); // index folder
             try {
-                if (loc.exists() && new File(loc, "timestamp").exists() && IndexReader.indexExists(new SimpleFSDirectory(loc))) {
+                if (loc.exists() && new File(loc, "timestamp").exists() && DirectoryReader.indexExists(new SimpleFSDirectory(loc.toPath()))) {
                     toRet.add(repo);
                 }
             } catch (IOException ex) {
@@ -1725,7 +1734,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         Iterator<ArtifactInfo> it = artifactInfos.iterator();        
         while (it.hasNext()) {
             ArtifactInfo ai = it.next();
-            Matcher m = patt.matcher(ai.classNames);
+            Matcher m = patt.matcher(ai.getClassNames());
             if (m.matches()) {
                 altArtifactInfos.add(ai);
             }
@@ -1747,23 +1756,23 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         return bVersionInfos;
     }
     static NBVersionInfo convertToNBVersionInfo(ArtifactInfo ai) {
-            if ("javadoc".equals(ai.classifier) || "sources".equals(ai.classifier)) { //NOI18N
-                // we don't want javadoc and sources shown anywhere, we use the getJavadocExists(), getSourceExists() methods.
+        if ("javadoc".equals(ai.getClassifier()) || "sources".equals(ai.getClassifier())) { //NOI18N
+            // we don't want javadoc and sources shown anywhere, we use the getJavadocExists(), getSourceExists() methods.
             return null;
-            }
-            // fextension != packaging - e.g a pom could be packaging "bundle" but from type/extension "jar"
-            NBVersionInfo nbvi = new NBVersionInfo(ai.repository, ai.groupId, ai.artifactId,
-                    ai.version, ai.fextension, ai.packaging, ai.name, ai.description, ai.classifier);
-            /*Javadoc & Sources*/
-            nbvi.setJavadocExists(ai.javadocExists == ArtifactAvailablility.PRESENT);
-            nbvi.setSourcesExists(ai.sourcesExists == ArtifactAvailablility.PRESENT);
-            nbvi.setSignatureExists(ai.signatureExists == ArtifactAvailablility.PRESENT);
+        }
+        // fextension != packaging - e.g a pom could be packaging "bundle" but from type/extension "jar"
+        NBVersionInfo nbvi = new NBVersionInfo(ai.getRepository(), ai.getGroupId(), ai.getArtifactId(),
+                ai.getVersion(), ai.getFileExtension(), ai.getPackaging(), ai.getName(), ai.getDescription(), ai.getClassifier());
+        /*Javadoc & Sources*/
+        nbvi.setJavadocExists(ai.getJavadocExists() == ArtifactAvailability.PRESENT);
+        nbvi.setSourcesExists(ai.getSourcesExists() == ArtifactAvailability.PRESENT);
+        nbvi.setSignatureExists(ai.getSignatureExists() == ArtifactAvailability.PRESENT);
 //            nbvi.setSha(ai.sha1);
-            nbvi.setLastModified(ai.lastModified);
-            nbvi.setSize(ai.size);
+        nbvi.setLastModified(ai.getLastModified());
+        nbvi.setSize(ai.getSize());
         nbvi.setLuceneScore(ai.getLuceneScore());
         return nbvi;
-        }
+    }
     
     private static Query setBooleanRewrite (final Query q) {
         if (q instanceof MultiTermQuery) {
@@ -1796,7 +1805,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
         @Override
         public boolean accepts(IndexingContext ctx, ArtifactInfo ai) {
-            if ("javadoc".equals(ai.classifier) || "sources".equals(ai.classifier)) {
+            if ("javadoc".equals(ai.getClassifier()) || "sources".equals(ai.getClassifier())) {
                 return false;
             }
             return true;

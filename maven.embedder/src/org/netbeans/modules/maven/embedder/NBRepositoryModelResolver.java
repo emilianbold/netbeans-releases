@@ -48,6 +48,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
+import org.apache.maven.model.Parent;
 import org.apache.maven.model.Repository;
 import org.apache.maven.model.building.FileModelSource;
 import org.apache.maven.model.building.ModelSource;
@@ -83,16 +84,8 @@ class NBRepositoryModelResolver
     }
 
     @Override
-    public void addRepository(Repository repository)
-            throws InvalidRepositoryException {
-        RepositorySystem repositorySystem = embedder.lookupComponent(RepositorySystem.class);
-        try {
-            ArtifactRepository repo = repositorySystem.buildArtifactRepository(repository);
-            remoteRepositories.add(repo);
-            remoteRepositories = repositorySystem.getEffectiveRepositories( remoteRepositories );
-        } catch (org.apache.maven.artifact.InvalidRepositoryException ex) {
-            throw new InvalidRepositoryException(ex.toString(), repository, ex);
-        }
+    public void addRepository(Repository repository) throws InvalidRepositoryException {
+        addRepository(repository, false);
     }
 
     @Override
@@ -110,5 +103,25 @@ class NBRepositoryModelResolver
         }
 
         return new FileModelSource(artifactParent.getFile());
+    }
+
+    @Override
+    public ModelSource resolveModel(Parent parent) throws UnresolvableModelException {
+        return resolveModel(parent.getGroupId(), parent.getArtifactId(), parent.getVersion());
+    }
+
+    @Override
+    public void addRepository(Repository repository, boolean replace) throws InvalidRepositoryException {
+        RepositorySystem repositorySystem = embedder.lookupComponent(RepositorySystem.class);
+        try {
+            ArtifactRepository repo = repositorySystem.buildArtifactRepository(repository);
+            if(replace) { 
+                remoteRepositories.remove(repo);
+            }
+            remoteRepositories.add(repo);
+            remoteRepositories = repositorySystem.getEffectiveRepositories( remoteRepositories );
+        } catch (org.apache.maven.artifact.InvalidRepositoryException ex) {
+            throw new InvalidRepositoryException(ex.toString(), repository, ex);
+        }
     }
 }

@@ -56,7 +56,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.openide.util.Cancellable;
-import static org.netbeans.modules.maven.indexer.Bundle.*;
 import org.openide.util.NbBundle.Messages;
 
 public class RemoteIndexTransferListener implements TransferListener, Cancellable {
@@ -80,7 +79,7 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
     public RemoteIndexTransferListener(RepositoryInfo info) {
         this.info = info;
         Cancellation.register(this);
-        handle = ProgressHandle.createHandle(LBL_Transfer(info.getName()), this);
+        handle = ProgressHandle.createHandle(Bundle.LBL_Transfer(info.getName()), this);
         handle.start();
     }
 
@@ -183,7 +182,7 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
     void unpackingProgress(String label) {
         checkCancel();
         if (unpacking.compareAndSet(false, true)) {
-            handle.setDisplayName(LBL_unpacking(info.getName()));
+            handle.setDisplayName(Bundle.LBL_unpacking(info.getName()));
         }
         handle.progress(label);
     }

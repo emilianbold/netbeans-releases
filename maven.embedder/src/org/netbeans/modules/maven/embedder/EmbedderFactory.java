@@ -51,9 +51,11 @@ import java.util.prefs.Preferences;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.building.*;
+import org.apache.maven.properties.internal.EnvironmentUtils;
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
+import org.codehaus.plexus.PlexusConstants;
 import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
@@ -343,6 +345,7 @@ public final class EmbedderFactory {
         final String mavenCoreRealmId = "plexus.core";
         ContainerConfiguration dpcreq = new DefaultContainerConfiguration()
             .setClassWorld( new ClassWorld(mavenCoreRealmId, EmbedderFactory.class.getClassLoader()) )
+            .setClassPathScanning( PlexusConstants.SCANNING_INDEX )
             .setName("maven");
         
         DefaultPlexusContainer pc = new DefaultPlexusContainer(dpcreq, new ExtensionModule());
@@ -445,6 +448,7 @@ public final class EmbedderFactory {
         final String mavenCoreRealmId = "plexus.core";
         ContainerConfiguration dpcreq = new DefaultContainerConfiguration()
             .setClassWorld( new ClassWorld(mavenCoreRealmId, EmbedderFactory.class.getClassLoader()) )
+            .setClassPathScanning( PlexusConstants.SCANNING_INDEX )
             .setName("maven");
 
         DefaultPlexusContainer pc = new DefaultPlexusContainer(dpcreq);

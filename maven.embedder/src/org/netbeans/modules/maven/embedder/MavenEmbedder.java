@@ -114,12 +114,15 @@ import org.netbeans.modules.maven.embedder.impl.NbWorkspaceReader;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.BaseUtilities;
-import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
-import org.sonatype.aether.repository.Authentication;
-import org.sonatype.aether.util.DefaultRepositorySystemSession;
-import org.sonatype.aether.util.repository.DefaultAuthenticationSelector;
-import org.sonatype.aether.util.repository.DefaultMirrorSelector;
-import org.sonatype.aether.util.repository.DefaultProxySelector;
+import org.eclipse.aether.repository.Authentication;
+import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.internal.impl.SimpleLocalRepositoryManagerFactory;
+import org.eclipse.aether.repository.LocalRepository;
+import org.eclipse.aether.repository.NoLocalRepositoryManagerException;
+import org.eclipse.aether.util.repository.AuthenticationBuilder;
+import org.eclipse.aether.util.repository.DefaultAuthenticationSelector;
+import org.eclipse.aether.util.repository.DefaultMirrorSelector;
+import org.eclipse.aether.util.repository.DefaultProxySelector;
 
 /**
  * Handle for the embedded Maven system, used to parse POMs and more.
@@ -533,14 +536,19 @@ public final class MavenEmbedder {
     }
 
     /**
-     * Needed to avoid an NPE in {@link org.sonatype.aether.impl.internal.DefaultArtifactResolver#resolveArtifacts} under some conditions.
-     * (Also {@link org.sonatype.aether.impl.internal.DefaultMetadataResolver#resolve}; wherever a {@link org.sonatype.aether.RepositorySystemSession} is used.)
+     * Needed to avoid an NPE in {@link org.eclipse.org.eclipse.aether.DefaultArtifactResolver#resolveArtifacts} under some conditions.
+     * (Also {@link org.eclipse.org.eclipse.aether.DefaultMetadataResolver#resolve}; wherever a {@link org.eclipse.aether.RepositorySystemSession} is used.)
      * Should be called in the same thread as whatever thread was throwing the NPE.
      */
     public void setUpLegacySupport() {
         DefaultRepositorySystemSession session = new DefaultRepositorySystemSession();
         session.setOffline(isOffline());
-        session.setLocalRepositoryManager(new SimpleLocalRepositoryManager(getLocalRepository().getBasedir()));
+        SimpleLocalRepositoryManagerFactory f = new SimpleLocalRepositoryManagerFactory();        
+        try {
+            session.setLocalRepositoryManager(f.newInstance(session, new LocalRepository(getLocalRepository().getBasedir())));
+        } catch (NoLocalRepositoryManagerException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         // Adapted from DefaultMaven.newRepositorySession, but does not look like that can be called directly:
         DefaultMirrorSelector mirrorSelector = new DefaultMirrorSelector();
         Settings _settings = getSettings();
@@ -549,17 +557,27 @@ public final class MavenEmbedder {
         }
         session.setMirrorSelector(mirrorSelector);
         SettingsDecryptionResult decryptionResult = settingsDecrypter.decrypt(new DefaultSettingsDecryptionRequest(_settings));
+        
         DefaultProxySelector proxySelector = new DefaultProxySelector();
         for (Proxy p : decryptionResult.getProxies()) {
             if (p.isActive()) {
+                AuthenticationBuilder ab = new AuthenticationBuilder();
+                ab.addUsername(p.getUsername());
+                ab.addPassword(p.getPassword());
+                Authentication a = ab.build();
                //#null -> getProtocol() #209499
-               proxySelector.add(new org.sonatype.aether.repository.Proxy(p.getProtocol(), p.getHost(), p.getPort(), new Authentication(p.getUsername(), p.getPassword())), p.getNonProxyHosts());
+               proxySelector.add(new org.eclipse.aether.repository.Proxy(p.getProtocol(), p.getHost(), p.getPort(), a), p.getNonProxyHosts());
             }
         }
         session.setProxySelector(proxySelector);
         DefaultAuthenticationSelector authenticationSelector = new DefaultAuthenticationSelector();
         for (Server s : decryptionResult.getServers()) {
-            authenticationSelector.add(s.getId(), new Authentication(s.getUsername(), s.getPassword(), s.getPrivateKey(), s.getPassphrase()));
+            AuthenticationBuilder ab = new AuthenticationBuilder();
+            ab.addUsername(s.getUsername());
+            ab.addPassword(s.getPassword());
+            ab.addPrivateKey(s.getPrivateKey(), s.getPassphrase());
+            Authentication a = ab.build();            
+            authenticationSelector.add(s.getId(), a);
         }
         session.setAuthenticationSelector(authenticationSelector);
         DefaultMavenExecutionRequest mavenExecutionRequest = new DefaultMavenExecutionRequest();

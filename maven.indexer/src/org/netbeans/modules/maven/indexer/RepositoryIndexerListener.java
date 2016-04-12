@@ -51,7 +51,6 @@ import org.apache.maven.index.ArtifactScanningListener;
 import org.apache.maven.index.ScanningResult;
 import org.apache.maven.index.context.IndexingContext;
 import org.netbeans.api.progress.ProgressHandle;
-import static org.netbeans.modules.maven.indexer.Bundle.*;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.openide.util.Cancellable;
@@ -84,9 +83,9 @@ public class RepositoryIndexerListener implements ArtifactScanningListener, Canc
         }
         expectedDirs.clear();
         encounteredDirs.clear();
-        handle = ProgressHandle.createHandle(LBL_indexing_repo(ri != null ? ri.getName() : indexingContext.getId()), this);
+        handle = ProgressHandle.createHandle(Bundle.LBL_indexing_repo(ri != null ? ri.getName() : indexingContext.getId()), this);
         handle.start();
-        handle.progress(LBL_findIndexableDirs());
+        handle.progress(Bundle.LBL_findIndexableDirs());
         findIndexableDirs(ctx.getRepository());
         handle.switchToDeterminate(expectedDirs.size());
     }
@@ -126,7 +125,7 @@ public class RepositoryIndexerListener implements ArtifactScanningListener, Canc
         }
         count++;
         if (handle != null) {
-            String label = ac.getArtifactInfo().groupId + ":" + ac.getArtifactInfo().artifactId + ":" + ac.getArtifactInfo().version;
+            String label = ac.getArtifactInfo().getGroupId() + ":" + ac.getArtifactInfo().getArtifactId() + ":" + ac.getArtifactInfo().getVersion();
             File art = ac.getArtifact();
             if (art == null) {
                 art = ac.getPom();
