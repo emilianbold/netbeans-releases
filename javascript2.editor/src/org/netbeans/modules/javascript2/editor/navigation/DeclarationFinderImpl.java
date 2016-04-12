@@ -112,7 +112,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                 //are we in the import expression to navigate the imported file?
                 String path = ts.token().text().toString();
                 Token<? extends JsTokenId> token = LexUtilities.findPreviousToken(ts, LOOK_FOR_IMPORT_TOKENS);
-                if (token.id() == JsTokenId.KEYWORD_IMPORT) {
+                if (token.id() == JsTokenId.KEYWORD_IMPORT || token.id() == JsTokenId.KEYWORD_EXPORT) {
                     FileObject currentFO = snapshot.getSource().getFileObject();
                     FileObject destinationFO = FileUtils.findFileObject(currentFO, path, false);
                     if (destinationFO != null) {
@@ -395,7 +395,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                         int start = ts.offset();
                         int end = ts.offset() + ts.token().length();
                         Token<? extends JsTokenId> token = LexUtilities.findPreviousToken(ts, LOOK_FOR_IMPORT_TOKENS);
-                        if (token.id() == JsTokenId.KEYWORD_IMPORT) {
+                        if (token.id() == JsTokenId.KEYWORD_IMPORT || token.id() == JsTokenId.KEYWORD_EXPORT) {
                             value[0] = new OffsetRange (start, end);
                         }
                     }
