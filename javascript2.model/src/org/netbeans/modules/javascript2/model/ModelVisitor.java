@@ -638,6 +638,7 @@ public class ModelVisitor extends PathNodeVisitor {
     @Override
     public boolean enterImportNode(ImportNode iNode) {
         ImportClauseNode iClause = iNode.getImportClause();
+        FromNode from = iNode.getFrom();
         if (iClause != null) {
             IdentNode defaultBinding = iClause.getDefaultBinding();
             NameSpaceImportNode nameSpaceImport = iClause.getNameSpaceImport();
@@ -645,7 +646,8 @@ public class ModelVisitor extends PathNodeVisitor {
             if (defaultBinding != null) {
                 Identifier importedAs = create(parserResult, defaultBinding);
                 // create a variable, which have assignment the same variable name  from FromNode
-                createVariableFromImport(importedAs);
+                JsObjectImpl property = createVariableFromImport(importedAs);
+                property.addAssignment(new TypeUsage(importedAs.getName()), importedAs.getOffsetRange().getEnd());
             }
             if (nameSpaceImport != null) {
                 Identifier importedAs = create(parserResult, nameSpaceImport.getBindingIdentifier());
@@ -656,17 +658,24 @@ public class ModelVisitor extends PathNodeVisitor {
                 List<ImportSpecifierNode> importSpecifiers = namedImports.getImportSpecifiers();
                 for (ImportSpecifierNode importSpecifier : importSpecifiers) {
                     Identifier importedAs = create(parserResult, importSpecifier.getBindingIdentifier());
+                    JsObjectImpl property;
                     if (importSpecifier.getIdentifier() != null) {
-                        Identifier exportedProperty = create(parserResult, importSpecifier.getIdentifier());
+                        Identifier local = create(parserResult, importSpecifier.getIdentifier());
+                        property = createVariableFromImport(local);
+                        property.addOccurrence(local.getOffsetRange());
+                        addOccurence(importSpecifier.getBindingIdentifier(), false);
+                    } else {
+                        property = createVariableFromImport(importedAs);
+                        property.addOccurrence(importedAs.getOffsetRange());
                     }
-                    createVariableFromImport(importedAs);
+                    property.addAssignment(new TypeUsage(importedAs.getName()), importedAs.getOffsetRange().getEnd());
                 }
             }
         }
         return false;
     }
 
-    private void createVariableFromImport(Identifier name) {
+    private JsObjectImpl createVariableFromImport(Identifier name) {
         JsFunctionImpl scope = modelBuilder.getCurrentDeclarationFunction();
         JsObject existingProp = scope.getProperty(name.getName());
         JsObjectImpl property = new JsObjectImpl(scope, name, name.getOffsetRange(), true, scope.getMimeType(), scope.getSourceLabel());
@@ -674,6 +683,7 @@ public class ModelVisitor extends PathNodeVisitor {
             ModelUtils.copyOccurrences(existingProp, property);
         }
         scope.addProperty(name.getName(), property);
+        return property;
     }
 
     @Override
@@ -686,9 +696,19 @@ public class ModelVisitor extends PathNodeVisitor {
             for (ExportSpecifierNode esNode :exportClause.getExportSpecifiers()) {
                 IdentNode exported = esNode.getExportIdentifier();
                 IdentNode local = esNode.getIdentifier();
-                addOccurence(local, false);
-                if (exported != null) {
-                    addOccurence (exported, true);
+                JsObjectImpl property = (JsObjectImpl)modelBuilder.getCurrentDeclarationFunction().getProperty(local.getName());
+                if (exported == null) {
+                    if (property == null) {
+                        property = createVariableFromImport(create(parserResult, local));
+                    }
+                    property.addOccurrence(getOffsetRange(local));
+                } else {
+                    addOccurence (local, false);
+                    property = createVariableFromImport(create(parserResult, exported));
+                }
+                if (from != null && property != null) {
+                    TypeUsage type = new TypeUsage(local.getName(), local.getFinish());
+                    property.addAssignment(type, local.getFinish());
                 }
             }
         }
