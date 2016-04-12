@@ -43,6 +43,9 @@
 package org.netbeans.modules.java.preprocessorbridge.spi;
 
 import java.io.IOException;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.preprocessorbridge.JavaSourceUtilImplAccessor;
 import org.openide.filesystems.FileObject;
 
@@ -69,6 +72,9 @@ public abstract class JavaSourceUtilImpl {
 
     protected abstract long createTaggedCompilationController (FileObject file, long currenTag, Object[] out) throws IOException;
 
+    @CheckForNull
+    protected abstract TypeElement readClassFile(@NonNull FileObject classFile) throws IOException;
+
 
     private static class MyAccessor extends JavaSourceUtilImplAccessor {
 
@@ -76,6 +82,15 @@ public abstract class JavaSourceUtilImpl {
         public long createTaggedCompilationController(JavaSourceUtilImpl spi, FileObject fo, long currentTag, Object[] out) throws IOException {
             assert spi != null;
             return spi.createTaggedCompilationController(fo, currentTag, out);
+        }
+
+        @Override
+        @CheckForNull
+        public TypeElement readClassFile(
+                @NonNull final JavaSourceUtilImpl spi,
+                @NonNull final FileObject classFile) throws IOException {
+            assert spi != null;
+            return spi.readClassFile(classFile);
         }
     }
 }
