@@ -502,8 +502,9 @@ public class ElementJavadoc {
             final Pair<Trees,ElementUtilities> ctx) throws JavadocHelper.RemoteJavadocException {
 
         try {
-            final StringBuilder sb = new StringBuilder(header);
+            final StringBuilder sb = new StringBuilder();
             if (doc != null) {
+                sb.append(header);
                 if (doc instanceof ProgramElementDoc) {
                     sb.append(getContainingClassOrPackageHeader((ProgramElementDoc)doc, ctx));
                 }

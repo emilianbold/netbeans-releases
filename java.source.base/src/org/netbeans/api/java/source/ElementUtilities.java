@@ -62,7 +62,6 @@ import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ClassType;
-import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Enter;
 import com.sun.tools.javac.comp.Env;
@@ -88,6 +87,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.ModuleElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
@@ -100,7 +100,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
-import javax.lang.model.util.SimpleElementVisitor8;
+import javax.lang.model.util.SimpleElementVisitor9;
 import javax.lang.model.util.Types;
 
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -480,7 +480,7 @@ public final class ElementUtilities {
         return new ElementNameVisitor().visit(el, fqn);
     }
 
-    private static class ElementNameVisitor extends SimpleElementVisitor8<StringBuilder,Boolean> {
+    private static class ElementNameVisitor extends SimpleElementVisitor9<StringBuilder,Boolean> {
         
         private ElementNameVisitor() {
             super(new StringBuilder());
@@ -518,6 +518,11 @@ public final class ElementUtilities {
         public StringBuilder visitType(TypeElement e, Boolean p) {
             return DEFAULT_VALUE.append((p ? e.getQualifiedName() : e.getSimpleName()).toString());
         }        
+
+        @Override
+        public StringBuilder visitModule(ModuleElement e, Boolean p) {
+            return DEFAULT_VALUE.append((p ? e.getQualifiedName() : e.getSimpleName()).toString());
+        }
     }
 
     /**
