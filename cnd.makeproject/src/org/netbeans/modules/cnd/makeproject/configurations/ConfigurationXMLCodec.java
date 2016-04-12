@@ -584,6 +584,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(REBUILD_PROP_CHANGED)) {
             boolean ds = currentText.equals(TRUE_VALUE);
             ((MakeConfiguration) currentConf).getRebuildPropChanged().setValue(ds);
+        } else if (element.equals(PREPEND_TOOL_COLLECTION_PATH)) {
+            boolean ds = currentText.equals(TRUE_VALUE);
+            ((MakeConfiguration) currentConf).getPrependToolCollectionPath().setValue(ds);
         } else if (element.equals(DEFAULT_CONF_ELEMENT)) {
             defaultConf = Integer.parseInt(currentText);
         } else if (element.equals(PROJECT_MAKEFILE_ELEMENT)) {
@@ -1163,6 +1166,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         //if (makeConfiguration.getRebuildPropChanged().getModified()) {
             xes.element(REBUILD_PROP_CHANGED, "" + makeConfiguration.getRebuildPropChanged().getValue()); // NOI18N
         //}
+        if (makeConfiguration.getPrependToolCollectionPath().getModified()) {
+            xes.element(PREPEND_TOOL_COLLECTION_PATH, "" + makeConfiguration.getPrependToolCollectionPath().getValue()); // NOI18N
+        }
         xes.elementClose(TOOLS_SET_ELEMENT);
     }
 

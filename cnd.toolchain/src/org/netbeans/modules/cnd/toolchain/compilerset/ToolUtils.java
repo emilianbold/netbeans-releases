@@ -153,6 +153,28 @@ public final class ToolUtils {
         return findMsysInPath();
     }
 
+    /**
+     * Find command folder by toolchain definitions, which users the Windows registry or the user's path
+     */
+    public static String getCommandFolder(CompilerSetManager csm) {
+        for(CompilerSet cs : csm.getCompilerSets()) {
+            String res = cs.getCommandFolder();
+            if (res != null) {
+                return res;
+            }
+        }
+        ToolchainManagerImpl tcm = ToolchainManagerImpl.getImpl();
+        for(ToolchainDescriptor td : tcm.getToolchains(PlatformTypes.PLATFORM_WINDOWS)){
+            if (td != null) {
+                String res = detectCommandFolder(td);
+                if (res != null) {
+                    return res;
+                }
+            }
+        }
+        return findMsysInPath();
+    }
+
     public static String getPlatformName(int platform) {
         switch (platform) {
             case PlatformTypes.PLATFORM_LINUX:

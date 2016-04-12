@@ -46,8 +46,10 @@ package org.netbeans.modules.cnd.makeproject.api;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -67,6 +69,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.makeproject.BrokenReferencesSupport;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
@@ -81,13 +84,17 @@ import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -179,6 +186,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
         final MakeConfiguration conf = pae.getConfiguration();
         final PlatformInfo pi = conf.getPlatformInfo();
         final ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
+        final CompilerSet cs = conf.getCompilerSet().getCompilerSet();
         
         Map<String, String> env = pae.getProfile().getEnvironment().getenvAsMap();
         boolean showInput = actionType == ProjectActionEvent.PredefinedType.RUN;
@@ -187,7 +195,6 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
         boolean runInExternalTerminal;
         boolean statusEx = false;
         String commandLine = null;
-        CompilerSet cs;
         
         int consoleType = pae.getProfile().getConsoleType().getValue();
         ArrayList<String> args = null;
@@ -228,44 +235,18 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
             }
 
             // Append compilerset base to run path. (IZ 120836)
-            cs = conf.getCompilerSet().getCompilerSet();
-            if (cs != null) {
-                String csdirs = cs.getDirectory();
-                String commands = CompilerSetUtils.getCommandFolder(cs);
-                if (commands != null && commands.length() > 0) {
-                    // Also add msys to path. Thet's where sh, mkdir, ... are.
-                    csdirs = csdirs + pi.pathSeparator() + commands;
+            if (conf.getPrependToolCollectionPath().getValue()) {
+                if (cs != null) {
+                    modifyPath(execEnv, env, pi, cs, "run"); //NOI18N
                 }
-                String path = env.get(pi.getPathName());
-                if (path == null) {
-                    path = pi.getPathAsString() + pi.pathSeparator() + csdirs;
-                } else {
-                    path += pi.pathSeparator() + csdirs;
-                }
-                env.put(pi.getPathName(), path);
             }
 
             commandLine = pae.getRunCommandAsString();
         } else { // Build or Clean or compile
             // Build or Clean
-            cs = conf.getCompilerSet().getCompilerSet();
-            String csdirs = cs.getDirectory();
-            String commands = CompilerSetUtils.getCommandFolder(cs);
-            if (commands != null && commands.length() > 0) {
-                // Also add msys to path. Thet's where sh, mkdir, ... are.
-                csdirs = csdirs + pi.pathSeparator() + commands;
+            if (conf.getPrependToolCollectionPath().getValue()) {
+                modifyPath(execEnv, env, pi, cs, "build"); //NOI18N
             }
-            String path = env.get(pi.getPathName());
-            if (path == null) {
-                path = csdirs + pi.pathSeparator() + pi.getPathAsString();
-            } else {
-                path = csdirs + pi.pathSeparator() + path;
-            }
-            String baseMinGW = CompilerSetUtils.getMinGWBaseFolder(cs);
-            if (baseMinGW != null) {
-                path = path + pi.pathSeparator() + baseMinGW;
-            }
-            env.put(pi.getPathName(), path);
             // Pass QMAKE from compiler set to the Makefile (IZ 174731)
             if (conf.isQmakeConfiguration()) {
                 String qmakePath = cs.getTool(PredefinedToolKind.QMakeTool).getPath();
@@ -423,7 +404,43 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
 
         executorTask = es.run();
     }
-    
+
+    private static void modifyPath(final ExecutionEnvironment execEnv, final Map<String, String> env, final PlatformInfo pi, final CompilerSet cs, final String type) {
+        String macro;
+        if ("run".equals(type)) { //NOI18N
+            macro = cs.getModifyRunPath();
+        } else {
+            macro = cs.getModifyBuildPath();
+        }
+        if (!";".equals(pi.pathSeparator())) { //NOI18N
+            macro = macro.replace(";", pi.pathSeparator()); //NOI18N
+        }
+        String pathName = pi.getPathName();
+        if (!"PATH".equals(pathName)) { //NOI18N
+            macro = macro.replace("${PATH}", "${"+pathName+"}"); //NOI18N
+        }
+        MacroConverter converter = new MacroConverter(execEnv, env);
+        if (pi.isWindows()) {
+            String commands = CompilerSetUtils.getCommandFolder(cs);
+            String baseMinGW = CompilerSetUtils.getMinGWBaseFolder(cs);
+            String path = "";
+            if (commands != null && !commands.isEmpty()) {
+                path = commands;
+            }
+            if (baseMinGW != null && !baseMinGW.isEmpty()) {
+                if (path.isEmpty()) {
+                    path = baseMinGW;
+                } else {
+                    path = path+";"+baseMinGW; //NOI18N
+                }
+            }
+            converter.updateUtilitiesPath(path);
+        }
+        converter.updateToolPath(cs.getDirectory());
+        String expandedPath = converter.expand(macro);
+        env.put(pathName, expandedPath);
+    }
+
     private String getExecutable(CompilerSet cs) {
         String executable = pae.getExecutable();
         if (executable.contains("cmake")) { // NOI18N
@@ -595,6 +612,52 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
         @Override
         public void write(char[] cbuf, int off, int len) throws IOException {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+    }
+
+    private static final class MacroConverter {
+
+        private final MacroExpanderFactory.MacroExpander expander;
+        private final Map<String, String> envVariables;
+        private String homeDir;
+
+        public MacroConverter(ExecutionEnvironment env, Map<String, String> envVariables) {
+            this.envVariables = new HashMap<>(envVariables);
+            if (HostInfoUtils.isHostInfoAvailable(env)) {
+                try {
+                    HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+                    this.envVariables.putAll(hostInfo.getEnvironment());
+                    homeDir = hostInfo.getUserDir();
+                } catch (IOException | ConnectionManager.CancellationException ex) {
+                    // should never == null occur if isHostInfoAvailable(env) => report
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            this.expander = MacroExpanderFactory.getExpander(env, false);
+        }
+
+        private void updateUtilitiesPath(String utilitiesPath) {
+            envVariables.put(CompilerSet.UTILITIES_PATH, utilitiesPath);
+        }
+
+        private void updateToolPath(String toolPath) {
+            envVariables.put(CompilerSet.TOOLS_PATH, toolPath);
+        }
+
+        public String expand(String in) {
+            try {
+                if (homeDir != null) {
+                    if (in.startsWith("~")) { //NOI18N
+                        in = homeDir+in.substring(1);
+                    }
+                    in = in.replace(":~", ":"+homeDir); //NOI18N
+                    in = in.replace(";~", ";"+homeDir); //NOI18N
+                }
+                return expander != null ? expander.expandMacros(in, envVariables) : in;
+            } catch (ParseException ex) {
+                //nothing to do
+            }
+            return in;
         }
     }
 }
