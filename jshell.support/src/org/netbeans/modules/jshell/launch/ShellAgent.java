@@ -331,7 +331,7 @@ public final class ShellAgent {
             }
             return new DebugExecutionEnvironment(this, targetSpec);
         } else {
-            return new RunExecutionEnvironment(this);
+            return new RunExecutionEnvironment(this, targetSpec);
         }
     }
 }

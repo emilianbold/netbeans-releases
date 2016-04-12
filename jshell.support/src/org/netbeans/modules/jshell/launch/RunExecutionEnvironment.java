@@ -66,9 +66,11 @@ public class RunExecutionEnvironment implements RemoteJShellAccessor, Executor, 
     private JShellConnection shellConnection;
     private ObjectInputStream dis;
     private ObjectOutputStream dos;
+    private String targetSpec;
 
-    public RunExecutionEnvironment(ShellAgent agent) {
+    public RunExecutionEnvironment(ShellAgent agent, String targetSpec) {
         this.agent = agent;
+        this.targetSpec = targetSpec;
     }
     
     public JShellConnection getOpenedConnection() {
@@ -264,6 +266,6 @@ public class RunExecutionEnvironment implements RemoteJShellAccessor, Executor, 
 
     @Override
     public String getTargetSpec() {
-        return null;
+        return targetSpec;
     }
 }

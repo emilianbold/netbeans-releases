@@ -42,6 +42,7 @@
                 <friend>org.netbeans.modules.nashorn.execution</friend>
                 <friend>org.netbeans.modules.profiler.options</friend>
                 <friend>org.netbeans.modules.vmd.componentssupport</friend>
+                <friend>org.netbeans.modules.jshell.support</friend>
                 <package>org.netbeans.modules.options.java.api</package>
             </friend-packages>
         </data>

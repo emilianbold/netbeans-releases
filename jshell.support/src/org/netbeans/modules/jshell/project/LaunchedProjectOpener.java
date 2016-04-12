@@ -53,6 +53,7 @@ import org.netbeans.modules.jshell.launch.ShellLaunchEvent;
 import org.netbeans.modules.jshell.launch.ShellLaunchListener;
 import org.netbeans.modules.jshell.launch.ShellLaunchManager;
 import org.netbeans.modules.jshell.launch.ShellAgent;
+import org.netbeans.modules.jshell.launch.ShellOptions;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
@@ -70,6 +71,8 @@ public class LaunchedProjectOpener implements ShellLaunchListener {
         ShellLaunchManager.getInstance().addLaunchListener(new LaunchedProjectOpener());
     }
     
+    private ShellOptions opts = ShellOptions.get();
+    
     public static void init() {}
 
     @Override
@@ -83,11 +86,13 @@ public class LaunchedProjectOpener implements ShellLaunchListener {
     })
     @Override
     public void handshakeCompleted(ShellLaunchEvent ev) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                openAgentShell(ev.getAgent());
-            }
-        });
+        if (opts.isOpenConsole()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    openAgentShell(ev.getAgent());
+                }
+            });
+        }
     }
     
     public void openAgentShell(ShellAgent agent) {
@@ -97,15 +102,17 @@ public class LaunchedProjectOpener implements ShellLaunchListener {
                 Bundle.Title_JShellOnDebugger(dispName));
         
         // find some old project shell, which is already dead:
-        Collection<JShellEnvironment> existing = ShellRegistry.get().openedShells();
-        for (JShellEnvironment ex : existing) {
-            if (ex.getProject() != p) {
-                continue;
-            }
-            if (ex.getStatus() == ShellStatus.SHUTDOWN) {
-                // get the cloneableeditor for the document, and if it exists, close it:
-                if (closeCloneableEditor(ex)) {
-                    break;
+        if (opts.isReuseDeadConsoles()) {
+            Collection<JShellEnvironment> existing = ShellRegistry.get().openedShells();
+            for (JShellEnvironment ex : existing) {
+                if (ex.getProject() != p) {
+                    continue;
+                }
+                if (ex.getStatus() == ShellStatus.SHUTDOWN) {
+                    // get the cloneableeditor for the document, and if it exists, close it:
+                    if (closeCloneableEditor(ex)) {
+                        break;
+                    }
                 }
             }
         }

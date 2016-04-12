@@ -39,60 +39,96 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package jdk.jshell;
+package org.netbeans.modules.jshell.launch;
 
-import com.sun.tools.javac.jvm.Target;
-import java.util.ArrayList;
-import java.util.List;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import javax.swing.JComponent;
+import org.netbeans.modules.options.java.api.JavaOptions;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
- * Subclasses JShell and connets certain package-private pro protected
- * services to NetBeans interfaces.
- * 
+ *
  * @author sdedic
  */
-public class EnhancedJShell extends JShell {
-    /**
-     * The remote interface
-     */
-    private final RemoteJShellService execEnv;
-    
-    public EnhancedJShell(Builder b, RemoteJShellService env) {
-        super(b);
-        this.execEnv = env;
-    }
-    
-    @Override
-    protected ExecutionControl createExecutionControl() {
-        if (execEnv != null) {
-            if (execEnv instanceof JDIRemoteAgent) {
-                ((JDIRemoteAgent)execEnv).init(this);
-            }
-            return new NbExecutionControl(null, execEnv, maps, this);
-        } else {
-            // the backward compatible implementation
-            JDIEnv env = new JDIEnv(this);
-            return new ExecutionControl(env, maps, this);
-        }
-    }
+@OptionsPanelController.SubRegistration(
+    location=JavaOptions.JAVA,
+    displayName="#LBL_JavaShellOptions",
+    keywords="#KW_JavaShell",
+    keywordsCategory = JavaOptions.JAVA + "/JavaShell"
+)
+@NbBundle.Messages({
+    "LBL_JavaShellOptions=Java Shell",
+    "KW_JavaShell=JavaShell,Shell,JShell"
+})
+public class JShellOptionsController extends OptionsPanelController {
+    private JShellOptionsPanel ui;
+    private PropertyChangeSupport supp = new PropertyChangeSupport(this);
+    private boolean changed;
     
     @Override
-    protected List<String> getCompilerOptions() {
-        if (execEnv != null) {
-            String s = execEnv.getTargetSpec();
-            if (s == null) {
-                return super.getCompilerOptions();
-            }
-            List<String> opts = new ArrayList<>();
-            opts.add("-source");
-            opts.add(s);
-            opts.add("-target");
-            opts.add(s);
-            return opts;
-        } else {
-            return super.getCompilerOptions();
-        }
+    public void update() {
+        ui.load();
+        changed = false;
+    }
+
+    @Override
+    public void applyChanges() {
+        ui.store();
+        changed = false;
+    }
+
+    @Override
+    public void cancel() {
+        // no op.
+    }
+
+    @Override
+    public boolean isValid() {
+        return ui.valid();
+    }
+
+    @Override
+    public boolean isChanged() {
+        return ui.isChanged();
     }
     
+    private JShellOptionsPanel panel() {
+        if (ui == null) {
+            ui = new JShellOptionsPanel(this);
+        }
+        return ui;
+    }
+
+    @Override
+    public JComponent getComponent(Lookup masterLookup) {
+        return panel();
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("JShell.Options");
+    }
+    
+    void changed() {
+        if (!changed) {
+            changed = true;
+            supp.firePropertyChange(PROP_CHANGED, false, true);
+        }
+        supp.firePropertyChange(PROP_VALID, null, null);
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        supp.addPropertyChangeListener(l);
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        supp.removePropertyChangeListener(l);
+    }
     
 }
