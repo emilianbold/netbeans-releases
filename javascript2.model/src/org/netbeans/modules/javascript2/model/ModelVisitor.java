@@ -652,11 +652,9 @@ public class ModelVisitor extends PathNodeVisitor {
             if (namedImports != null && namedImports.getImportSpecifiers() != null) {
                 List<ImportSpecifierNode> importSpecifiers = namedImports.getImportSpecifiers();
                 for (ImportSpecifierNode importSpecifier : importSpecifiers) {
-                    // TODO according to the spec the getBindingIdentifier should be written always and it's how it can be in local
-                    // it looks like getBindingIdentifier and getIdentifier is swapped. 
-                    Identifier importedAs = create(parserResult, importSpecifier.getIdentifier());
-                    if (importSpecifier.getBindingIdentifier() != null) {
-                        Identifier exportedProperty = create(parserResult, importSpecifier.getBindingIdentifier());
+                    Identifier importedAs = create(parserResult, importSpecifier.getBindingIdentifier());
+                    if (importSpecifier.getIdentifier() != null) {
+                        Identifier exportedProperty = create(parserResult, importSpecifier.getIdentifier());
                     }
                     createVariableFromImport(importedAs);
                 }
