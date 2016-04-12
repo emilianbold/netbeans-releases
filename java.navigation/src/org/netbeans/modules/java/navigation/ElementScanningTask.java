@@ -90,6 +90,7 @@ import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.java.navigation.ElementNode.Description;
 import org.netbeans.modules.java.navigation.actions.OpenAction;
+import org.netbeans.modules.java.preprocessorbridge.api.JavaSourceUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
@@ -159,10 +160,10 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                     Collections.<Element>emptyList();
             } else {
                 //Class file
-                final String moduleName =  SourceUtils.getModuleName(info.getFileObject().getParent().toURL());
-                final ModuleElement module = moduleName == null ?
+                final TypeElement e = JavaSourceUtil.readClassFile(info.getFileObject());
+                final ModuleElement module = e == null ?
                     null :
-                    info.getElements().getModuleElement(moduleName);
+                    (ModuleElement) e.getEnclosingElement();
                 elements = module != null ?
                     Collections.singletonList(module):
                     Collections.<Element>emptyList();

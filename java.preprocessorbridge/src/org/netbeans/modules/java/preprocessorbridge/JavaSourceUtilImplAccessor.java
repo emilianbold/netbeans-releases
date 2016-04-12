@@ -43,6 +43,9 @@
 package org.netbeans.modules.java.preprocessorbridge;
 
 import java.io.IOException;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceUtilImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -73,4 +76,7 @@ public abstract class JavaSourceUtilImplAccessor {
     }
 
     public abstract long createTaggedCompilationController (JavaSourceUtilImpl spi, FileObject fo, long currentTag, Object[] out) throws IOException;
+
+    @CheckForNull
+    public abstract TypeElement readClassFile(@NonNull JavaSourceUtilImpl spi, @NonNull FileObject classFile) throws IOException;
 }

@@ -42,8 +42,21 @@
 
 package org.netbeans.modules.java.source;
 
+import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.code.ClassFinder;
+import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symtab;
+import com.sun.tools.javac.util.Name;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.lang.model.element.TypeElement;
+import javax.tools.StandardLocation;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -51,13 +64,49 @@ import org.openide.filesystems.FileObject;
  * @author Tomas Zezula
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceUtilImpl.class)
-public class JavaSourceUtilImpl extends org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceUtilImpl {
+public final class JavaSourceUtilImpl extends org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceUtilImpl {
 
     @Override
     protected long createTaggedCompilationController(FileObject file, long currenTag, Object[] out) throws IOException {
         assert file != null;
         final JavaSource js = JavaSource.forFileObject(file);
         return JavaSourceAccessor.getINSTANCE().createTaggedCompilationController(js, currenTag, out);
+    }
+
+    @CheckForNull
+    @Override
+    protected TypeElement readClassFile(@NonNull final FileObject classFile) throws IOException {
+        final JavaSource js = JavaSource.forFileObject(classFile);
+        final List<TypeElement> out = new ArrayList<>(1);
+        js.runUserActionTask(
+                (cc) -> {
+                    final JavacTaskImpl jt = JavaSourceAccessor.getINSTANCE()
+                            .getCompilationInfoImpl(cc).getJavacTask();
+                    final Symtab syms = Symtab.instance(jt.getContext());
+                    final Symbol.ClassSymbol sym;
+                    if (FileObjects.MODULE_INFO.equals(classFile.getName())) {
+                        final String moduleName = SourceUtils.getModuleName(classFile.getParent().toURL());
+                        if (moduleName != null) {
+                            final Symbol.ModuleSymbol msym = syms.enterModule((Name)cc.getElements().getName(moduleName));
+                            sym = msym.module_info;
+                            if (sym.classfile == null) {
+                                sym.classfile = FileObjects.fileObjectFileObject(classFile, classFile.getParent(), null, null);
+                                sym.owner = msym;
+                                msym.owner = syms.noSymbol;
+                                sym.completer = ClassFinder.instance(jt.getContext()).getCompleter();
+                                msym.classLocation = StandardLocation.CLASS_PATH;
+                            }
+                            msym.complete();
+                        } else {
+                            sym = null;
+                        }
+                    } else {
+                        throw new UnsupportedOperationException("Not supported yet.");  //NOI18N
+                    }
+                    out.add(sym);
+                },
+                true);
+        return out.get(0);
     }
 
 }

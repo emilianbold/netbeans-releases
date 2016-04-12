@@ -44,6 +44,9 @@ package org.netbeans.modules.java.preprocessorbridge.api;
 
 import java.io.IOException;
 import java.util.Collection;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.preprocessorbridge.JavaSourceUtilImplAccessor;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceUtilImpl;
 import org.openide.filesystems.FileObject;
@@ -100,6 +103,21 @@ public class JavaSourceUtil {
         else {
             return new Handle(param[0], newId);
         }
+    }
+
+    /**
+     * Reads a class file.
+     * @param classFile to read
+     * @return the {@link TypeElement} of given class file
+     * @throws IOException in case of IO problem
+     * @since 1.40
+     */
+    @CheckForNull
+    public static TypeElement readClassFile(
+            @NonNull final FileObject classFile) throws IOException {
+        final JavaSourceUtilImpl impl = getSPI();
+        assert impl != null;
+        return JavaSourceUtilImplAccessor.getInstance().readClassFile(impl, classFile);
     }
 
     private static JavaSourceUtilImpl getSPI () {
