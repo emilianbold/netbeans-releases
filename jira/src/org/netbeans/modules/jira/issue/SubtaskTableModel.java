@@ -96,7 +96,7 @@ public class SubtaskTableModel extends DefaultTableModel {
                     key,
                     subTask.getSummary(),
                     subTask.getType(),
-                    subTask.getStatus(),
+                    subTask.getJiraStatus(),
                     subTask.getPriority()
                 };
                 count++;
