@@ -241,7 +241,6 @@ final class ModuleClassPaths {
     }
 
     private static final class PropertyModulePath extends BaseClassPathImplementation implements PropertyChangeListener, FileChangeListener {
-        private static final String MODULE_INFO_CLASS = "module-info.class";   //NOI18N
 
         private final File projectDir;
         private final PropertyEvaluator eval;
@@ -392,7 +391,17 @@ final class ModuleClassPaths {
         }
 
         private static boolean hasModuleInfo(@NonNull final File file) {
-            return new File(file, MODULE_INFO_CLASS).isFile();
+            //Cannot check just presence of module-info.class, the file can be build/classes of
+            //an uncompiled project.
+            try {
+                return SourceUtils.getModuleName(BaseUtilities.toURI(file).toURL(), true) != null;
+            } catch (MalformedURLException e) {
+                LOG.log(
+                        Level.WARNING,
+                        "Cannot convert to URI: {0}",
+                        file.getAbsolutePath());
+                return false;
+            }
         }
 
         @NonNull
