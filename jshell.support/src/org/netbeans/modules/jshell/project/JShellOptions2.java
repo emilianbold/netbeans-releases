@@ -255,6 +255,7 @@ public class JShellOptions2 extends javax.swing.JPanel implements ItemListener {
         lblMember = new javax.swing.JLabel();
         btnBrowseClass = new javax.swing.JButton();
         cbMember = new javax.swing.JComboBox();
+        cSwingExecutor = new javax.swing.JCheckBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(checkEnable, org.openide.util.NbBundle.getMessage(JShellOptions2.class, "JShellOptions2.checkEnable.text")); // NOI18N
         checkEnable.setBorder(null);
@@ -291,25 +292,35 @@ public class JShellOptions2 extends javax.swing.JPanel implements ItemListener {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(cSwingExecutor, org.openide.util.NbBundle.getMessage(JShellOptions2.class, "JShellOptions2.cSwingExecutor.text")); // NOI18N
+        cSwingExecutor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cSwingExecutorActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout optsPanelLayout = new javax.swing.GroupLayout(optsPanel);
         optsPanel.setLayout(optsPanelLayout);
         optsPanelLayout.setHorizontalGroup(
             optsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, optsPanelLayout.createSequentialGroup()
-                .addComponent(lblLoaderSelect)
-                .addGap(4, 4, 4)
-                .addComponent(loaderSelect, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addGroup(optsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(lblSource, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(lblMember, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addGroup(optsPanelLayout.createSequentialGroup()
                 .addGroup(optsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(cbMember, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, optsPanelLayout.createSequentialGroup()
-                        .addComponent(source, javax.swing.GroupLayout.PREFERRED_SIZE, 218, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(optsPanelLayout.createSequentialGroup()
+                        .addComponent(lblLoaderSelect)
+                        .addGap(4, 4, 4)
+                        .addComponent(loaderSelect, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addGroup(optsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(lblSource, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(lblMember, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnBrowseClass)))
+                        .addGroup(optsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(cbMember, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, optsPanelLayout.createSequentialGroup()
+                                .addComponent(source, javax.swing.GroupLayout.PREFERRED_SIZE, 218, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnBrowseClass))))
+                    .addComponent(cSwingExecutor))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         optsPanelLayout.setVerticalGroup(
@@ -325,7 +336,9 @@ public class JShellOptions2 extends javax.swing.JPanel implements ItemListener {
                 .addGroup(optsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblMember)
                     .addComponent(cbMember, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(58, 58, 58))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(cSwingExecutor)
+                .addGap(27, 27, 27))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -419,6 +432,18 @@ public class JShellOptions2 extends javax.swing.JPanel implements ItemListener {
             storeChanges();
         }
     }//GEN-LAST:event_cbMemberActionPerformed
+
+    private void cSwingExecutorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cSwingExecutorActionPerformed
+        if (disableUpdates) {
+            return;
+        }
+        if (cSwingExecutor.isSelected()) {
+            changedOptions.put(PropertyNames.JSHELL_EXECUTOR, PropertyNames.EXECUTOR_CLASS_SWING);
+        } else {
+            changedOptions.put(PropertyNames.JSHELL_EXECUTOR, null);
+        }
+        storeChanges();
+    }//GEN-LAST:event_cSwingExecutorActionPerformed
 
     @NbBundle.Messages({
         "ERR_ClassNameInvalid=Invalid reference class name",
@@ -575,6 +600,8 @@ public class JShellOptions2 extends javax.swing.JPanel implements ItemListener {
         setClassName(cn);
         setMethodOrFieldName(cn, f, m);
         
+        cSwingExecutor.setSelected(PropertyNames.EXECUTOR_CLASS_SWING.equals(opts.get(PropertyNames.JSHELL_EXECUTOR)));
+        
         disableUpdates = false;
         enableDisable();
     }
@@ -670,6 +697,7 @@ public class JShellOptions2 extends javax.swing.JPanel implements ItemListener {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnBrowseClass;
     private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JCheckBox cSwingExecutor;
     private javax.swing.JComboBox cbMember;
     private javax.swing.JCheckBox checkEnable;
     private javax.swing.JLabel lblLoaderSelect;

@@ -166,7 +166,7 @@ public class JDIRemoteAgent implements RemoteJShellService, Executor {
                 // could also tag the thread (e.g. using name), to find it easier
                 AGENT: for (StackFrame frame : thread.frames()) {
                     String remoteAgentName = "jdk.internal.jshell.remote.RemoteAgent";
-                    if (remoteAgentName.equals(frame.location().declaringType().name()) && "commandLoop".equals(frame.location().method().name())) {
+                    if (remoteAgentName.equals(frame.location().declaringType().name()) && "performCommand".equals(frame.location().method().name())) {
                         ObjectReference thiz = frame.thisObject();
                         if (myRef != null && myRef != thiz) {
                             break AGENT;
@@ -202,5 +202,9 @@ public class JDIRemoteAgent implements RemoteJShellService, Executor {
         }
         return true;
     }
-    
+
+    @Override
+    public String getTargetSpec() {
+        return null;
+    }
 }

@@ -54,6 +54,10 @@ class ProjectShellEnv extends JShellEnvironment {
         }
     }
     
+    ShellAgent getAgent() {
+        return agent;
+    }
+    
     private class CloseNotifier implements ShellLaunchListener {
         private final RemoteJShellAccessor accessor;
         private final ShellSession         session;

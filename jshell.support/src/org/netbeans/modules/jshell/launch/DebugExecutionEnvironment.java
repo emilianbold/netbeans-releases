@@ -24,10 +24,12 @@ public class DebugExecutionEnvironment extends JDIRemoteAgent implements RemoteJ
     private volatile JShellConnection shellConnection;
     private boolean closed;
     final ShellAgent agent;
+    private String targetSpec;
 
-    public DebugExecutionEnvironment(ShellAgent agent) {
+    public DebugExecutionEnvironment(ShellAgent agent, String targetSpec) {
         super(UnaryOperator.identity());
         this.agent = agent;
+        this.targetSpec = targetSpec;
     }
     
     public JShellConnection getOpenedConnection() {
@@ -38,6 +40,11 @@ public class DebugExecutionEnvironment extends JDIRemoteAgent implements RemoteJ
     
     public ShellAgent getAgent() {
         return agent;
+    }
+
+    @Override
+    public String getTargetSpec() {
+        return targetSpec;
     }
 
     @NbBundle.Messages({

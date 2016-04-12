@@ -70,7 +70,6 @@ import org.openide.util.Utilities;
 @EditorActionRegistration(
     mimeType = "text/x-repl",
     name = GenerateClassAction.NAME,
-    menuPosition = 20002,
     popupPath = "",
     popupPosition = 20002,
     iconResource = "org/netbeans/modules/jshell/resources/saveToClass.gif" // NOI18N

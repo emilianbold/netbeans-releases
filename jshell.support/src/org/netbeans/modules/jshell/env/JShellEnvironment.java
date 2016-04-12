@@ -169,16 +169,7 @@ public class JShellEnvironment {
         EditorCookie.Observable eob = consoleFile.getLookup().lookup(EditorCookie.Observable.class);
         eob.addPropertyChangeListener(WeakListeners.propertyChange(inst = new L(), eob));
 
-        if (project != null) {
-            for (SourceGroup sg : ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-                if (org.netbeans.modules.jshell.project.ProjectUtils.isNormalRoot(sg)) {
-                    platform = org.netbeans.modules.jshell.project.ProjectUtils.findPlatform(ClassPath.getClassPath(sg.getRootFolder(), ClassPath.BOOT));
-                }
-            }
-        }
-        if (platform == null) {
-            platform = JavaPlatform.getDefault();
-        }
+        platform = org.netbeans.modules.jshell.project.ShellProjectUtils.findPlatform(project);
     }
     
     protected InputOutput createInputOutput() {
@@ -243,9 +234,9 @@ public class JShellEnvironment {
         
         if (project != null) {
             for (SourceGroup sg : ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-                if (org.netbeans.modules.jshell.project.ProjectUtils.isNormalRoot(sg)) {
+                if (org.netbeans.modules.jshell.project.ShellProjectUtils.isNormalRoot(sg)) {
                     if (platformTemp == null) {
-                        platformTemp = org.netbeans.modules.jshell.project.ProjectUtils.findPlatform(ClassPath.getClassPath(sg.getRootFolder(), ClassPath.BOOT));
+                        platformTemp = org.netbeans.modules.jshell.project.ShellProjectUtils.findPlatform(ClassPath.getClassPath(sg.getRootFolder(), ClassPath.BOOT));
                     }
                     fRoots.add(sg.getRootFolder());
                     URL u = URLMapper.findURL(sg.getRootFolder(), URLMapper.INTERNAL);

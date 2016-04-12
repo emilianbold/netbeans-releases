@@ -54,7 +54,7 @@ import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.jshell.launch.ShellAgent;
 import org.netbeans.modules.jshell.launch.ShellLaunchManager;
 import org.netbeans.modules.jshell.project.LaunchedProjectOpener;
-import org.netbeans.modules.jshell.project.ProjectUtils;
+import org.netbeans.modules.jshell.project.ShellProjectUtils;
 import org.netbeans.spi.extexecution.startup.StartupExtenderImplementation;
 import org.openide.util.Lookup;
 
@@ -84,7 +84,7 @@ public class JShellStartupExtender implements StartupExtenderImplementation {
         InetSocketAddress isa;
         ShellAgent agent;
         // first check that the project has JShell enabled:
-        if (!ProjectUtils.isJShellRunEnabled(p)) {
+        if (!ShellProjectUtils.isJShellRunEnabled(p)) {
             LOG.log(Level.FINE, "Request for agent: Project {0} does not enable Java Shell.", p);
             return Collections.emptyList();
         }

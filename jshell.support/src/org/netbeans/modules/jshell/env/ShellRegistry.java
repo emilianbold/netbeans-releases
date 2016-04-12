@@ -47,6 +47,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -382,5 +383,20 @@ public class ShellRegistry {
             LOG.log(Level.FINE, "Work root {0} expired, trying to delete.", workRoot);
             deleteCacheRoot(this, workRoot);
         }
+    }
+    
+    public Collection<JShellEnvironment> openedShells() {
+        Collection<JShellEnvironment> ret;
+        synchronized (this) {
+            ret = new ArrayList<>(fileIndex.size());
+            for (Iterator<Reference<JShellEnvironment>> it = fileIndex.values().iterator(); it.hasNext(); ) {
+                Reference<JShellEnvironment> ref = it.next();
+                JShellEnvironment e = ref.get();
+                if (e != null) {
+                    ret.add(e);
+                }
+            }
+        }
+        return ret;
     }
 }

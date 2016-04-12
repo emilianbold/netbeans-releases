@@ -97,4 +97,6 @@ public interface RemoteJShellService {
      * to get streams will result in an IOException.
      */
     public void closeStreams();
+    
+    public String getTargetSpec();
 }

@@ -41,28 +41,23 @@
  */
 package org.netbeans.modules.jshell.project;
 
-import com.sun.jdi.ObjectReference;
-import com.sun.jdi.VirtualMachine;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.function.UnaryOperator;
-import jdk.jshell.JDIRemoteAgent;
-import jdk.jshell.RemoteJShellService;
+import java.util.Collection;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.jshell.env.JShellEnvironment;
 import org.netbeans.modules.jshell.env.ShellRegistry;
-import org.netbeans.modules.jshell.launch.JShellConnection;
+import org.netbeans.modules.jshell.env.ShellStatus;
 import org.netbeans.modules.jshell.launch.ShellLaunchEvent;
 import org.netbeans.modules.jshell.launch.ShellLaunchListener;
 import org.netbeans.modules.jshell.launch.ShellLaunchManager;
 import org.netbeans.modules.jshell.launch.ShellAgent;
-import org.netbeans.modules.jshell.support.ShellSession;
-import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.text.CloneableEditor;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.windows.InputOutput;
 
 /**
  * 
@@ -84,26 +79,36 @@ public class LaunchedProjectOpener implements ShellLaunchListener {
 
     @NbBundle.Messages({
         "# {0} - project name",
-        "Title_JShellOnDebugger=Java Shell - debugging {0}"
+        "Title_JShellOnDebugger=Java Shell - {0}"
     })
     @Override
     public void handshakeCompleted(ShellLaunchEvent ev) {
-        ShellAgent agent = ev.getAgent();
-//        JShellConnection con;
-//        try {
-//            con = agent.createConnection();
-//        } catch (IOException ex) {
-//            StatusDisplayer.getDefault().setStatusText("Error connecting to Java Shell agent: " +
-//                    ex.getLocalizedMessage(), 100);
-//            return;
-//        }
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                openAgentShell(ev.getAgent());
+            }
+        });
+    }
+    
+    public void openAgentShell(ShellAgent agent) {
         Project p = agent.getProject();
-        if (p == null) {
-            return;
-        }
-        
+        String dispName = agent.getDisplayName();
         final JShellEnvironment attachEnv = new ProjectShellEnv(agent, p, 
-                Bundle.Title_JShellOnDebugger(ProjectUtils.getInformation(p).getDisplayName()));
+                Bundle.Title_JShellOnDebugger(dispName));
+        
+        // find some old project shell, which is already dead:
+        Collection<JShellEnvironment> existing = ShellRegistry.get().openedShells();
+        for (JShellEnvironment ex : existing) {
+            if (ex.getProject() != p) {
+                continue;
+            }
+            if (ex.getStatus() == ShellStatus.SHUTDOWN) {
+                // get the cloneableeditor for the document, and if it exists, close it:
+                if (closeCloneableEditor(ex)) {
+                    break;
+                }
+            }
+        }
 
         boolean ok = false;
         try {
@@ -119,11 +124,25 @@ public class LaunchedProjectOpener implements ShellLaunchListener {
         }
     }
     
+    private boolean closeCloneableEditor(JShellEnvironment env) {
+        FileObject consoleDoc = env.getConsoleFile();
+        CloneableEditorSupport editor = consoleDoc.getLookup().lookup(CloneableEditorSupport.class);
+        if (editor == null || editor.getOpenedPanes() == null) {
+            return false;
+        }
+        return editor.close();
+    }
 
     @Override
     public void agentDestroyed(ShellLaunchEvent ev) { }
 
     @Override
     public void connectionClosed(ShellLaunchEvent ev) { }
-    
+
+    public ShellAgent getProjectAgent(JShellEnvironment env) {
+        if (!(env instanceof ProjectShellEnv)) {
+            return null;
+        }
+        return ((ProjectShellEnv)env).getAgent();
+    }
 }

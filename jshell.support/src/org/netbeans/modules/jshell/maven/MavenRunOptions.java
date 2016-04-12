@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.jshell.maven;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -54,7 +53,6 @@ import javax.swing.JList;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.jshell.project.JShellOptions2;
-import org.netbeans.modules.jshell.launch.PropertyNames;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
@@ -123,9 +121,9 @@ public class MavenRunOptions extends javax.swing.JPanel implements HelpCtx.Provi
             run = ModelHandle2.getDefaultMapping(ActionProvider.COMMAND_RUN, project);
         }
         if (debug == null) {
-            debug = ModelHandle2.getDefaultMapping(ActionProvider.COMMAND_RUN, project);
+            debug = ModelHandle2.getDefaultMapping(ActionProvider.COMMAND_DEBUG, project);
         }
-        nestedOptions.readOptions(debug.getProperties());
+        nestedOptions.readOptions(run.getProperties());
     }
     
     private boolean updateMessage() {
@@ -142,7 +140,6 @@ public class MavenRunOptions extends javax.swing.JPanel implements HelpCtx.Provi
         if (updateMessage()) {
             return;
         }
-        Map<String, String> opts = nestedOptions.getChangedOptions();
         ActionToGoalMapping a2gm = handle.getActionMappings((ModelHandle2.Configuration) cbConfiguration.getSelectedItem());
         changeConfiguration(run, a2gm);
         changeConfiguration(debug, a2gm);
@@ -156,8 +153,11 @@ public class MavenRunOptions extends javax.swing.JPanel implements HelpCtx.Provi
         Map<String, String> opts = nestedOptions.getChangedOptions();
         for (String k : opts.keySet()) {
             String v = opts.get(k);
-            // PENDING: replicate to all relevant configurations, only debug (run) now:
-            am.addProperty(k, v);
+            if (v != null) {
+                am.addProperty(k, v);
+            } else {
+                am.getProperties().remove(k);
+            }
         }
         ModelHandle2.setUserActionMapping(am, a2gm);
     }

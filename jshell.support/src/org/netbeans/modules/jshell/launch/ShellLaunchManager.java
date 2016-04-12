@@ -86,7 +86,7 @@ import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.modules.jshell.project.ProjectUtils;
+import org.netbeans.modules.jshell.project.ShellProjectUtils;
 import org.netbeans.modules.jshell.project.RunOptionsModel;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
@@ -224,7 +224,7 @@ public final class ShellLaunchManager {
             @Override
             public void sessionAdded(Session session) {
                 LOG.log(Level.FINE, "Debugger: session added: {0}", session);
-                Project p = ProjectUtils.getSessionProject(session);
+                Project p = ShellProjectUtils.getSessionProject(session);
                 JPDADebugger debugger = session.lookupFirst(null, JPDADebugger.class);
                 RP.post(new WaitForDebuggerStart(session, p));
             }
@@ -337,7 +337,7 @@ public final class ShellLaunchManager {
         this.listeners = ll;
     }
     
-    public void attachInputOutput(String remoteKey, InputOutput out) {
+    public void attachInputOutput(String remoteKey, InputOutput out, String displayName) {
         ShellAgent ag;
         synchronized (registeredAgents) {
             ag = registeredAgents.get(remoteKey);
@@ -345,7 +345,7 @@ public final class ShellLaunchManager {
         if (ag == null) {
             LOG.log(Level.FINE, "Unregistered agent for key: {0}", remoteKey);
         } else {
-            ag.setIO(out);
+            ag.setIO(out, displayName);
         }
     }
     
@@ -590,6 +590,7 @@ public final class ShellLaunchManager {
         if (method == null) {
             method = ""; // NOI18N
         }
+        String executor = propertyEvaluator.apply(PropertyNames.JSHELL_EXECUTOR);
         
         String arg = String.format(
                 "-javaagent:%1$s=address=%2$s,port=%3$d,key=%4$s," +
@@ -602,6 +603,9 @@ public final class ShellLaunchManager {
                 clazz, field, method
         );
         List<String> args = new ArrayList<>();
+        if (executor != null) {
+            args.add("-Dorg.netbeans.lib.jshell.agent.AgentWorker.executor=" + executor);
+        }
         if (LOG.isLoggable(Level.FINE)) {
             args.add("-Dorg.netbeans.lib.jshell.agent.level=400");
         }

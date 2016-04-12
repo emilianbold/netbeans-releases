@@ -153,12 +153,15 @@ public class JShellLauncher extends InternalJShell {
     
     @NbBundle.Messages({
         "MSG_SystemInformation=System Information:",
-        "# {0} - java machine name",
-        "# {1} - java version",
-        "MSG_JavaVersion=    Java version: {0}, version {1}",
+        "# {0} - java vm version",
+        "MSG_JavaVersion=    Java version:    {0}",
+        "# {0} - virtual machine",
+        "# {1} - virtual machine version",
+        "MSG_VirtualMachine=    Virtual Machine: {0}  {1}",
         "MSG_Classpath=    Classpath:",
-        "MSG_VersionUnknown=<unknown>",
+        "MSG_VMVersionUnknown=<unknown>",
         "MSG_MachineUnknown=<unknown>",
+        "MSG_VersionUnknown=<unknown>",
     })
     private void printSystemInfo() {
         NbExecutionControl ctrl = JShellAccessor.getNbExecControl(state);
@@ -171,8 +174,10 @@ public class JShellLauncher extends InternalJShell {
         fluff(""); // newline
         fluff(Bundle.MSG_SystemInformation());
         String javaName = versionInfo.getOrDefault("java.vm.name", Bundle.MSG_MachineUnknown()); // NOI18N
-        String javaVersion = versionInfo.getOrDefault("java.vm.version", Bundle.MSG_VersionUnknown()); // NOI18N
-        fluff(Bundle.MSG_JavaVersion(javaName, javaVersion));
+        String vmVersion = versionInfo.getOrDefault("java.vm.version", Bundle.MSG_VMVersionUnknown()); // NOI18N
+        String javaSpec = versionInfo.getOrDefault("java.runtime.version", Bundle.MSG_VersionUnknown() );
+        fluff(Bundle.MSG_JavaVersion(javaSpec));
+        fluff(Bundle.MSG_VirtualMachine(javaName, vmVersion));
         
         String cpString = versionInfo.get("nb.class.path"); // NOI18N
         String[] cpItems = cpString.split(":"); // NOI18N

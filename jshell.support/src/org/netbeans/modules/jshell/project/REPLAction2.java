@@ -77,8 +77,8 @@ public class REPLAction2 implements ProjectActionPerformer {
     @Override
     public boolean enable(Project project) {
         for (SourceGroup sg : ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-            if (org.netbeans.modules.jshell.project.ProjectUtils.isNormalRoot(sg)) {
-                if (org.netbeans.modules.jshell.project.ProjectUtils.findPlatform(ClassPath.getClassPath(sg.getRootFolder(), ClassPath.BOOT)) != null)
+            if (org.netbeans.modules.jshell.project.ShellProjectUtils.isNormalRoot(sg)) {
+                if (org.netbeans.modules.jshell.project.ShellProjectUtils.findPlatform(ClassPath.getClassPath(sg.getRootFolder(), ClassPath.BOOT)) != null)
                     return true;
             }
         }

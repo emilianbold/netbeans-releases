@@ -113,8 +113,9 @@ public class LaunchAntListener extends AntLogger {
         if (authKey == null && authKey2 == null) {
             return;
         }
-        getManager().attachInputOutput(authKey, io);
-        getManager().attachInputOutput(authKey2, io);
+        String dispName = event.getSession().getDisplayName();
+        getManager().attachInputOutput(authKey, io, dispName);
+        getManager().attachInputOutput(authKey2, io, dispName);
     }
     
     @Override

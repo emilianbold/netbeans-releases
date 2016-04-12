@@ -112,7 +112,7 @@ public class MavenShellLauncher implements PrerequisitesChecker, LateBoundPrereq
             Exceptions.printStackTrace(ex);
             return false;
         }
-        agent.setIO(con.getInputOutput());
+        agent.setIO(con.getInputOutput(), config.getTaskDisplayName());
         
         List<String> args = ShellLaunchManager.buildLocalJVMAgentArgs(
                 agent, 

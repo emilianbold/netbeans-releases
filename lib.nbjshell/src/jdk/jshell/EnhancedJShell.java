@@ -41,6 +41,10 @@
  */
 package jdk.jshell;
 
+import com.sun.tools.javac.jvm.Target;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Subclasses JShell and connets certain package-private pro protected
  * services to NetBeans interfaces.
@@ -71,5 +75,21 @@ public class EnhancedJShell extends JShell {
             return new ExecutionControl(env, maps, this);
         }
     }
+    
+    @Override
+    protected List<String> getCompilerOptions() {
+        if (execEnv != null) {
+            String s = execEnv.getTargetSpec();
+            List<String> opts = new ArrayList<>();
+            opts.add("-source");
+            opts.add(s);
+            opts.add("-target");
+            opts.add(s);
+            return opts;
+        } else {
+            return super.getCompilerOptions();
+        }
+    }
+    
     
 }

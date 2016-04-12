@@ -548,12 +548,6 @@ public class ShellSession {
 
     private volatile JShellLauncher launcher;
     
-    private ExecutorTask    shellTask;
-    
-    public ExecutorTask getShellTask() {
-        return shellTask;
-    }
-    
     public Pair<ShellSession, Task> start() {
         ShellSession previous  = null;
         

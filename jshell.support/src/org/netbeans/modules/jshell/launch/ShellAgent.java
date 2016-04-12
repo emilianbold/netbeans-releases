@@ -17,8 +17,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.jshell.project.ShellProjectUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
@@ -75,6 +78,8 @@ public final class ShellAgent {
      */
     private volatile boolean closed;
     
+    private String displayName;
+    
     /**
      * The active instance, possibly null. Potentially may
      * contain multiple JShellConnections, if multiple parallel
@@ -100,11 +105,29 @@ public final class ShellAgent {
         return io;
     }
 
-    public void setIO(InputOutput io) {
+    public synchronized void setIO(InputOutput io, String displayName) {
         if (!connections.isEmpty() || connectAddress != null) {
             throw new IllegalStateException("Cannot set I/O on already active agent");
         }
         this.io = io;
+        this.displayName = displayName;
+    }
+    
+    @NbBundle.Messages({
+        "# {0} project directory",
+        "LBL_ProjectShellName=Java Shell for {0}"
+    })
+    public synchronized String getDisplayName() {
+        if (displayName != null) {
+            return displayName;
+        } else {
+            String dn = ProjectUtils.getInformation(project).getDisplayName();
+            if (dn != null) {
+                return dn;
+            } else {
+                return Bundle.LBL_ProjectShellName(project.getProjectDirectory().getPath());
+            }
+        }
     }
 
     public Project getProject() {
@@ -299,11 +322,14 @@ public final class ShellAgent {
         if (closed) {
             throw new IOException("Closed");
         }
+        JavaPlatform plat = ShellProjectUtils.findPlatform(project);
+        String targetSpec = (plat == null || plat == JavaPlatform.getDefault()) ? 
+                null : plat.getSpecification().getVersion().toString();
         if (expectDebugger) {
             if (debuggerSession == null) {
                 throw new IOException("Debugger unavailable");
             }
-            return new DebugExecutionEnvironment(this);
+            return new DebugExecutionEnvironment(this, targetSpec);
         } else {
             return new RunExecutionEnvironment(this);
         }

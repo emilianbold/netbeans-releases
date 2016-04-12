@@ -51,6 +51,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -64,7 +65,7 @@ import org.openide.util.Exceptions;
  *
  * @author sdedic
  */
-public final class ProjectUtils {
+public final class ShellProjectUtils {
     /**
      * Determines if the project wants to launch a JShell. 
      * @param p the project
@@ -126,5 +127,17 @@ public final class ProjectUtils {
             roots.add(e.getURL());
         }
         return roots;
+    }
+    
+    public static JavaPlatform findPlatform(Project project) {
+        JavaPlatform platform = null;
+        if (project != null) {
+            for (SourceGroup sg : org.netbeans.api.project.ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+                if (org.netbeans.modules.jshell.project.ShellProjectUtils.isNormalRoot(sg)) {
+                    platform = org.netbeans.modules.jshell.project.ShellProjectUtils.findPlatform(ClassPath.getClassPath(sg.getRootFolder(), ClassPath.BOOT));
+                }
+            }
+        }
+        return platform != null ? platform : JavaPlatform.getDefault();
     }
 }

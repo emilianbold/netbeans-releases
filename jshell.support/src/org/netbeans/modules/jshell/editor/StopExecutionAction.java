@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
 @EditorActionRegistration(
     mimeType = "text/x-repl", // NOI18N
     name = StopExecutionAction.NAME,
-    menuPosition = 20003,
+    popupPosition = 20003,
     iconResource= "org/netbeans/modules/jshell/resources/stop.png" // NOI18N
 )
 @NbBundle.Messages(

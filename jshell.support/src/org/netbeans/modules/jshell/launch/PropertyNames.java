@@ -70,4 +70,11 @@ public class PropertyNames {
      * Classloader field name
      */
     public static final String JSHELL_FROM_FIELD = "jshell.classloader.from.field"; // NOI18N
+    
+    /**
+     * Classname of the remote executor service
+     */
+    public static final String JSHELL_EXECUTOR = "jshell.executor"; // NOI18N
+    
+    public static final String EXECUTOR_CLASS_SWING = "org.netbeans.lib.jshell.agent.SwingExecutor"; // NOI18N
 }

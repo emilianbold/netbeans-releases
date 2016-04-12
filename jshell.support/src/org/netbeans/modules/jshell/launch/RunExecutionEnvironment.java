@@ -261,4 +261,9 @@ public class RunExecutionEnvironment implements RemoteJShellAccessor, Executor, 
     public void execute(Runnable command) {
         command.run();
     }
+
+    @Override
+    public String getTargetSpec() {
+        return null;
+    }
 }
