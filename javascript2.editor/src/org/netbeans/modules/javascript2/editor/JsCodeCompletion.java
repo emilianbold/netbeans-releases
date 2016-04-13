@@ -250,6 +250,9 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                 case NUMBER:
                     completeNumberProperties(request, added);
                     break;
+                case STRING:
+                    completeStringProperties(request, added);
+                    break;    
                 default:
                     break;
             }
@@ -864,6 +867,13 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         FileObject fo = request.info.getSnapshot().getSource().getFileObject();
         Index jsIndex = Index.get(fo);
         addObjectPropertiesFromIndex("Number", jsIndex, request, addedItems, false); // NOI18N
+        addObjectPropertiesFromIndex("Object", jsIndex, request, addedItems, false); // NOI18N
+    }
+    
+    private void completeStringProperties(CompletionRequest request, Map<String, List<JsElement>> addedItems) {
+        FileObject fo = request.info.getSnapshot().getSource().getFileObject();
+        Index jsIndex = Index.get(fo);
+        addObjectPropertiesFromIndex("String", jsIndex, request, addedItems, false); // NOI18N
         addObjectPropertiesFromIndex("Object", jsIndex, request, addedItems, false); // NOI18N
     }
     
