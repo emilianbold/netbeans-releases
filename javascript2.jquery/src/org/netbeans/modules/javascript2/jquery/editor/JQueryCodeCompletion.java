@@ -99,7 +99,7 @@ public class JQueryCodeCompletion implements CompletionProvider {
         int offset = ccContext.getCaretOffset();
         lastTsOffset = ccContext.getParserResult().getSnapshot().getEmbeddedOffset(offset);
         switch (jsCompletionContext) {
-            case STRING:
+            case IN_STRING:
                 TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(parserResult.getSnapshot().getTokenHierarchy(), offset);
                 if (ts != null) {
                     ts.move(lastTsOffset);

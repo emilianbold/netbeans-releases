@@ -186,7 +186,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             }
         } else {
             switch (context) {
-                case STRING:
+                case IN_STRING:
                     //XXX should be treated in the getPrefix method, but now
                     // there is hardcoded behavior for jQuery
                     if (request.prefix.startsWith(".")) {

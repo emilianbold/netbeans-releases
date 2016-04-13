@@ -112,7 +112,7 @@ public class CompletionContextFinder {
         if (tokenId == JsTokenId.STRING || tokenId == JsTokenId.STRING_END) {
             token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.STRING, JsTokenId.STRING_BEGIN, JsTokenId.STRING_END));
             if (token == null) {
-                return CompletionContext.STRING;
+                return CompletionContext.IN_STRING;
             }
             token = LexUtilities.findPreviousNonWsNonComment(ts);
             if (token.id() == JsTokenId.BRACKET_LEFT_PAREN && ts.movePrevious()) {
@@ -130,7 +130,7 @@ public class CompletionContextFinder {
             if (token.id() == JsTokenId.KEYWORD_EXPORT || token.id() == JsTokenId.KEYWORD_IMPORT) {
                 return CompletionContext.IMPORT_EXPORT_MODULE;
             }
-            return CompletionContext.STRING;
+            return CompletionContext.IN_STRING;
         }
 
         if (acceptTokenChains(ts, OBJECT_THIS_TOKENCHAINS, true)) {
