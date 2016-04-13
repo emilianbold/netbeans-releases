@@ -393,15 +393,7 @@ final class ModuleClassPaths {
         private static boolean hasModuleInfo(@NonNull final File file) {
             //Cannot check just presence of module-info.class, the file can be build/classes of
             //an uncompiled project.
-            try {
-                return SourceUtils.getModuleName(BaseUtilities.toURI(file).toURL(), true) != null;
-            } catch (MalformedURLException e) {
-                LOG.log(
-                        Level.WARNING,
-                        "Cannot convert to URI: {0}",
-                        file.getAbsolutePath());
-                return false;
-            }
+            return SourceUtils.getModuleName(FileUtil.urlForArchiveOrDir(file), true) != null;
         }
 
         @NonNull
