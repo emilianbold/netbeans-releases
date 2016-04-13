@@ -3,7 +3,7 @@
 <#assign licenseLast = " */">
 <#include "${project.licensePath}">
 
-<#if project.name?? && project.name != "">
-module ${project.name} {
+<#if moduleName?? && moduleName != "">
+module ${moduleName} {
 }
 </#if>

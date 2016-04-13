@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.java.project.ui;
 
+import com.sun.source.tree.ModuleTree;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
@@ -68,7 +69,14 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -284,7 +292,45 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
         if (this.type == Type.PACKAGE) {
             targetName = targetName.replace( '.', '/' ); // NOI18N
             createdFile = FileUtil.createFolder( dir, targetName );
-        }
+        }        
+        else if (this.type == Type.MODULE_INFO) {
+            Project project = Templates.getProject( wiz );
+            String name = ProjectUtils.getInformation(project).getName();
+            URL[] srcs = UnitTestForSourceQuery.findSources(dir);
+            final Set<String> mNames = new LinkedHashSet<>();
+            if (srcs.length > 0) {
+                name += "Test";
+                for (int i = 0; i < srcs.length; i++) {
+                    for (URL root : BinaryForSourceQuery.findBinaryRoots(srcs[i]).getRoots()) {
+                        String mName = SourceUtils.getModuleName(root, true);
+                        if (mName != null) {
+                            mNames.add(mName);
+                        }
+                    }
+                }
+            }
+            DataObject dTemplate = DataObject.find( template );                
+            DataObject dobj = dTemplate.createFromTemplate( df, targetName, Collections.singletonMap("moduleName", name) );
+            createdFile = dobj.getPrimaryFile();
+            if (!mNames.isEmpty()) {
+                JavaSource src = JavaSource.forFileObject(createdFile);
+                if (src != null) {
+                    src.runModificationTask(new Task<WorkingCopy>() {
+                        @Override
+                        public void run(WorkingCopy copy) throws Exception {
+                            copy.toPhase(JavaSource.Phase.RESOLVED);
+                            TreeMaker tm = copy.getTreeMaker();                            
+                            ModuleTree modle = (ModuleTree) copy.getCompilationUnit().getTypeDecls().get(0);
+                            ModuleTree newModle = modle;
+                            for (String mName : mNames) {
+                                newModle = tm.addModuleDirective(newModle, tm.Requires(false, tm.QualIdent(mName)));                                
+                            }
+                            copy.rewrite(modle, newModle);
+                        }
+                    }).commit();
+                }
+            }
+        }        
         else {
             DataObject dTemplate = DataObject.find( template );                
             DataObject dobj = dTemplate.createFromTemplate( df, targetName );
