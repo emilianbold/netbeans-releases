@@ -49,7 +49,7 @@ import java.util.TreeMap;
 class RemoteAgent {
 
     protected RemoteClassLoader loader = new RemoteClassLoader();
-    private final Map<String, Class<?>> klasses = new TreeMap<>();
+    private final Map<String, Class<?>> klasses = new TreeMap<String, Class<?>>();
 
     public static void main(String[] args) throws Exception {
         String loopBack = null;
@@ -82,7 +82,7 @@ class RemoteAgent {
                 prepareClassLoader();
                 try {
                     int count = in.readInt();
-                    List<String> names = new ArrayList<>(count);
+                    List<String> names = new ArrayList<String>(count);
                     for (int i = 0; i < count; ++i) {
                         String name = in.readUTF();
                         byte[] kb = (byte[]) in.readObject();
@@ -97,11 +97,12 @@ class RemoteAgent {
                     }
                     out.writeInt(RESULT_SUCCESS);
                     out.flush();
-                } catch (IOException | ClassNotFoundException | ClassCastException ex) {
-                    debug("*** Load failure: %s\n", ex);
-                    out.writeInt(RESULT_FAIL);
-                    out.writeUTF(ex.toString());
-                    out.flush();
+                } catch (IOException  ex) {
+                    handleLoadFailure(ex, out);
+                } catch (ClassNotFoundException ex) {
+                    handleLoadFailure(ex, out);
+                } catch (ClassCastException ex) {
+                    handleLoadFailure(ex, out);
                 }
                 break;
             case CMD_INVOKE: {
@@ -158,11 +159,10 @@ class RemoteAgent {
                         out.writeInt(ste.getLineNumber());
                     }
                     out.flush();
-                } catch (NoSuchMethodException | IllegalAccessException ex) {
-                    debug("*** Invoke failure: %s -- %s\n", ex, ex.getCause());
-                    out.writeInt(RESULT_FAIL);
-                    out.writeUTF(ex.toString());
-                    out.flush();
+                } catch (NoSuchMethodException ex) {
+                    handleInvocationFailure(ex, out);
+                } catch (IllegalAccessException ex) {
+                    handleInvocationFailure(ex, out);
                 } catch (StopExecutionException ex) {
                     try {
                         out.writeInt(RESULT_KILLED);
@@ -215,6 +215,20 @@ class RemoteAgent {
                 handleUnknownCommand(cmd, in, out);
                 break;
         }
+    }
+    
+    private void handleLoadFailure(Throwable ex, ObjectOutputStream out) throws IOException {
+        debug("*** Load failure: %s\n", ex);
+        out.writeInt(RESULT_FAIL);
+        out.writeUTF(ex.toString());
+        out.flush();
+    }
+    
+    private void handleInvocationFailure(Throwable ex, ObjectOutputStream out) throws IOException {
+        debug("*** Invoke failure: %s -- %s\n", ex, ex.getCause());
+        out.writeInt(RESULT_FAIL);
+        out.writeUTF(ex.toString());
+        out.flush();
     }
     
     protected void handleUnknownCommand(int cmd, ObjectInputStream i, ObjectOutputStream o) throws IOException {

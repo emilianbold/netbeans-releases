@@ -50,6 +50,7 @@ import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.ServerSocket;
@@ -184,7 +185,7 @@ public class NbJShellAgent implements Runnable, ClassFileTransformer {
             
         }
         LOG.log(Level.FINE, "Creating custom classloader"); // NOI18N
-        List<URL> urls = new ArrayList<>(libraries.size());
+        List<URL> urls = new ArrayList<URL>(libraries.size());
         for (String s : libraries) {
             try {
                 URL url = new File(s).toURI().toURL(); 
@@ -220,37 +221,27 @@ public class NbJShellAgent implements Runnable, ClassFileTransformer {
             if (nameVal == null || nameVal.length != 2) {
                 continue;
             }
-            switch (nameVal[0]) {
-                case "address":  // NOI18N
+            String opt = nameVal[0];
+            if ("address".equals(opt)) {
                     try {
                         agent.setAddress(InetAddress.getByName(nameVal[1]));
                     } catch (UnknownHostException ex) {
                         LOG.log(Level.SEVERE, "Invalid host address: {0}", ex);
                     }
-                    break;
-                    
-                case "port": // NOI18N
+            } else if ("port".equals(opt)) {
                     agent.setPort(Integer.valueOf(nameVal[1]));
-                    break;
-                    
-                case "libraries": // NOI18N
+            } else if ("libraries".equals(opt)) {
                     agent.setLibraries(Arrays.asList(nameVal[1].split(";")));
-                    break;
-                    
-                case "key": // NOI18N
+            } else if ("key".equals(opt)) {
                     debuggerKey = nameVal[1];
                     LOG.log(Level.FINE, "Association key: " + debuggerKey); // NOI18N
                     agent.setKey(nameVal[1]);
-                    break;
-                case "class": // NOI18N
+            } else if ("class".equals(opt)) {
                     agent.setClassName(nameVal[1].replace('.', '/')); // NOI18N
-                    break;
-                case "field": // NOI18N
+            } else if ("field".equals(opt)) {
                     agent.setField(nameVal[1]);
-                    break;
-                case "method": // NOI18N
+            } else if ("method".equals(opt)) {
                     agent.setMethod(nameVal[1]);
-                    break;
             }
         }
         
@@ -281,10 +272,13 @@ public class NbJShellAgent implements Runnable, ClassFileTransformer {
         try {
             workerClass = Class.forName("jdk.internal.jshell.remote.AgentWorker", true, createClassLoader()); //createClassLoader().loadClass("jdk.internal.jshell.remote.AgentWorker"); // NOI18N
             workerCtor = workerClass.getConstructor(NbJShellAgent.class, Socket.class);
-        } catch (ReflectiveOperationException ex) {
+        } catch (ClassNotFoundException ex) {        
             LOG.log(Level.WARNING, "Could not load worker class: ", ex); // NOI18N
-            return;
-        }        
+        } catch (NoSuchMethodException ex) {
+            LOG.log(Level.WARNING, "Could not load worker class: ", ex); // NOI18N
+        } catch (SecurityException ex) {
+            LOG.log(Level.WARNING, "Could not load worker class: ", ex); // NOI18N
+        }
         ServerSocket socket;
         try {
              socket = new ServerSocket();
@@ -330,7 +324,13 @@ public class NbJShellAgent implements Runnable, ClassFileTransformer {
                     t.start();
                 } catch (IOException ex) {
                     LOG.log(Level.WARNING, "Error during accept: ", ex); // NOI18N
-                } catch (ReflectiveOperationException | IllegalArgumentException ex) {
+                } catch (IllegalArgumentException ex) {
+                    LOG.log(Level.WARNING, "Could not initialize the worker", ex); // NOI18N
+                } catch (InstantiationException ex) {
+                    LOG.log(Level.WARNING, "Could not initialize the worker", ex); // NOI18N
+                } catch (IllegalAccessException ex) {
+                    LOG.log(Level.WARNING, "Could not initialize the worker", ex); // NOI18N
+                } catch (InvocationTargetException ex) {
                     LOG.log(Level.WARNING, "Could not initialize the worker", ex); // NOI18N
                 }
             }
@@ -417,7 +417,9 @@ public class NbJShellAgent implements Runnable, ClassFileTransformer {
             return null;
         }
         
-        try (InputStream istm = new ByteArrayInputStream(classfileBuffer)) {
+        InputStream istm = null;
+        try {
+            istm = new ByteArrayInputStream(classfileBuffer);
             ClassReader reader = new ClassReader(istm);
             ClassWriter wr = new ClassWriter(reader, 0);
             ClassNode clazz = new ClassNode();
@@ -446,6 +448,14 @@ public class NbJShellAgent implements Runnable, ClassFileTransformer {
             IllegalClassFormatException x = new IllegalClassFormatException("I/O error");
             x.initCause(ex);
             throw x;
+        } finally {
+            if (istm != null) {
+                try {
+                    istm.close();
+                } catch (IOException ex) {
+                    // ignore
+                }
+            }
         }
     }
 }

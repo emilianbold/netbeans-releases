@@ -37,7 +37,7 @@ import java.util.TreeMap;
  */
 class RemoteClassLoader extends URLClassLoader {
 
-    final Map<String, byte[]> classObjects = new TreeMap<>();
+    final Map<String, byte[]> classObjects = new TreeMap<String, byte[]>();
 
     RemoteClassLoader() {
         super(new URL[0]);

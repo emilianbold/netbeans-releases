@@ -66,8 +66,8 @@ class NbRemoteLoader extends RemoteClassLoader {
         }
         this.oldDelegate = (NbRemoteLoader)oldDelegate;
         if (oldDelegate == null) {
-            classIds = new HashMap<>();
-            definedClasses = new HashMap<>();
+            classIds = new HashMap<String, Long>();
+            definedClasses = new HashMap<Long, Class>();
         } else {
             classIds = this.oldDelegate.classIds;
             definedClasses = this.oldDelegate.definedClasses;
@@ -128,7 +128,7 @@ class NbRemoteLoader extends RemoteClassLoader {
         Enumeration<URL> origResources = getParent().getResources(name);
         Enumeration<URL> deleResources = oldDelegate != null ? oldDelegate.findResources(name) : Collections.<URL>emptyEnumeration();
         
-        return new CompoundEnumeration<>(new Enumeration[] {
+        return new CompoundEnumeration<URL>(new Enumeration[] {
                 origResources,
                 deleResources
         });
@@ -147,7 +147,7 @@ class NbRemoteLoader extends RemoteClassLoader {
     
     private static class CompoundEnumeration<T> implements Enumeration<T> {
         private final Enumeration<T>[] enums;
-        private final HashSet<T>  enumerated = new HashSet<>();
+        private final HashSet<T>  enumerated = new HashSet<T>();
         
         private int index;
         private T   nextItem;

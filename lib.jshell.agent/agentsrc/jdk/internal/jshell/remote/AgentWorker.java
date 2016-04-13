@@ -114,7 +114,7 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
      * Threads which execute user code, keyed by agent's socket local port.
      */
     // @GuardedBy(self)
-    private final static Map<Integer, Thread>     userCodeExecutingThreads = new HashMap<>();
+    private final static Map<Integer, Thread>     userCodeExecutingThreads = new HashMap<Integer, Thread>();
     
     private AgentWorker() {
         agent = null;
@@ -131,7 +131,11 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
             try {
                 Class executorClazz = Class.forName((String)o);
                 return (Executor)executorClazz.newInstance();
-            } catch (ReflectiveOperationException ex) {
+            } catch (ClassNotFoundException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            } catch (InstantiationException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            } catch (IllegalAccessException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
         }
@@ -253,16 +257,35 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
     @Override
     public void run() {
         // reset the classloader
-        try (
+        ObjectOutputStream osm = null;
+        ObjectInputStream ism = null;
+        try {
             // will block, but this is necessary so the IDE eventually sets the debuggerKey
-            ObjectOutputStream osm = new ObjectOutputStream(socket.getOutputStream());
+            osm = new ObjectOutputStream(socket.getOutputStream());
             // will read immediately
-            ObjectInputStream ism = new ObjectInputStream(socket.getInputStream())) {
+            ism = new ObjectInputStream(socket.getInputStream());
             commandLoop(ism, osm);
         } catch (EOFException ex) {
             // expected.
+        } catch (IOException ex) {
+            
         } catch (Exception ex) {
             ex.printStackTrace();
+        } finally {
+            if (osm != null) {
+                try {
+                    osm.close();
+                } catch (IOException ex) {
+                    // ignore
+                }
+            }
+            if (ism != null) {
+                try {
+                    ism.close();
+                } catch (IOException ex) {
+                    // ignore
+                }
+            }
         }
     }
     
@@ -289,7 +312,7 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
         
 
     private void returnVMInfo(ObjectOutputStream o) throws IOException {
-        Map<String, String>  result = new HashMap<>();
+        Map<String, String>  result = new HashMap<String, String>();
         Properties props = System.getProperties();
         for (String s : props.stringPropertyNames()) {
             if (!s.startsWith("java")) { // NOI18N
@@ -484,13 +507,23 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
             LOG.log(Level.FINE, "Class redefinition failed");
             out.writeInt(RemoteCodes.RESULT_FAIL);
             out.writeInt(RemoteCodes.RESULT_SUCCESS);
-        } catch (LinkageError | NullPointerException | ClassNotFoundException | UnmodifiableClassException ex) {
-            LOG.log(Level.WARNING, "Could not redefine class: ", ex);
-            out.writeInt(RemoteCodes.RESULT_FAIL);
-            out.writeInt(RemoteCodes.RESULT_FAIL);
-            out.writeUTF(ex.toString());
+        } catch (LinkageError ex) {
+            handleRedefineException(ex, out);
+        } catch (NullPointerException ex) {
+            handleRedefineException(ex, out);
+        } catch (ClassNotFoundException ex) {
+            handleRedefineException(ex, out);
+        } catch (UnmodifiableClassException ex) {
+            handleRedefineException(ex, out);
         }
         out.flush();
+    }
+    
+    private void handleRedefineException(Throwable ex, ObjectOutputStream out) throws IOException {
+        LOG.log(Level.WARNING, "Could not redefine class: ", ex);
+        out.writeInt(RemoteCodes.RESULT_FAIL);
+        out.writeInt(RemoteCodes.RESULT_FAIL);
+        out.writeUTF(ex.toString());
     }
     
     private void performClassId(ObjectInputStream in, ObjectOutputStream out) throws IOException {
