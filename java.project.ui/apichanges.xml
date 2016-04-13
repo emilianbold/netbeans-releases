@@ -107,6 +107,18 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="JavaFileWizardIteratorFactory">
+            <api name="JavaProjectUI"/>
+            <summary>Allows to extend the New Java File Wizard by project specific panels</summary>
+            <version major="1" minor="69"/>
+            <date day="14" month="4" year="2016"/>
+            <author login="tzezula"/>
+            <compatibility modification="yes" addition="yes"/>
+            <description>
+                Allows to extend the New Java File Wizard by project specific panels.
+            </description>
+            <class name="JavaFileWizardIteratorFactory" package="org.netbeans.spi.java.project.support.ui.templates"/>
+        </change>
     <change id="server.is.free">
             <api name="JavaProjectUI"/>
             <summary>Desktop dependent Java Project Support UI extracted</summary>
