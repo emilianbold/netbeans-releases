@@ -1728,6 +1728,21 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/arrow3.js");
     }
 
+    public void testArrow4() throws Exception {
+        reformatFileContents("testfiles/formatter/arrow4.js",new IndentPrefs(4, 4));
+    }
+    
+    public void testArrow4ObjectAlways() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapObjects, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        options.put(FmtOptions.wrapProperties, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/arrow4.js", options, ".wrapObjectAlways.formatted");
+    }
+
+    public void testArrow4Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/arrow4.js");
+    }
+
     public void testParentheses1Default() throws Exception {
         reformatFileContents("testfiles/formatter/parentheses1.js",
                 Collections.<String, Object>emptyMap(), ".default.formatted");
