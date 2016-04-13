@@ -334,4 +334,12 @@ public final class ShellAgent {
             return new RunExecutionEnvironment(this, targetSpec);
         }
     }
+    
+    public synchronized boolean isReady() {
+        if (closed) {
+            return false;
+        }
+        return connectAddress != null &&
+               (!expectDebugger  || debuggerSession != null);
+    }
 }

@@ -61,9 +61,15 @@ import jdk.jshell.JDIRemoteAgent;
 import jdk.jshell.RemoteJShellService;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.jshell.launch.ShellOptions;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.Confirmation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -194,24 +200,22 @@ public class ShellRegistry {
         "ShellSession_CleanProject=Java Shell - project {0}"
     })
     public JShellEnvironment openProjectSession(Project p) throws IOException {
+        JShellEnvironment s;
         synchronized (this) {
-            createAndCleanTrashArea();
-            JShellEnvironment s = projectSessions.get(p);
+            s = projectSessions.get(p);
             if (s != null) {
                 return s;
             }
+            String dispName = Bundle.ShellSession_CleanProject(
+                    ProjectUtils.getInformation(p).getDisplayName());
+            s = new LaunchJShellEnv(p, dispName); // may throw IOE
+            register(s);
         }
-        String dispName = Bundle.ShellSession_CleanProject(
-                ProjectUtils.getInformation(p).getDisplayName());
-        JShellEnvironment s;
         synchronized (this) {
             JShellEnvironment env = projectSessions.get(p);
             if (env != null) {
                 return env;
             }
-
-            s = new LaunchJShellEnv(p, dispName); // may throw IOE
-            register(s);
         }
         s.start();
         return s;
@@ -240,13 +244,6 @@ public class ShellRegistry {
     
     void closed(JShellEnvironment env) {
         Project p = env.getProject();
-        if (p == null) {
-            // PENDING
-            return;
-        }
-        FileObject wRoot = env.getWorkRoot();
-        JShellEnvironment current;
-        
         synchronized (this) {
             Reference<JShellEnvironment> ref = fileIndex.get(env.getConsoleFile());
             if (ref != null && ref.get() == env) {
@@ -261,8 +258,44 @@ public class ShellRegistry {
         });
     }
     
-    public JShellEnvironment openDefaultSession() {
-        return null;
+    private ShellOptions options = ShellOptions.get();
+    
+    @NbBundle.Messages({
+        "# {0} JDK platform name",
+        "TITLE_PlatformShell=Java Shell - {0}",
+        "ERR_NoShellPlatform=No suitable Java Platform configured. Do you want to configure Java Shell now ?"
+    })
+    public JShellEnvironment openDefaultSession(JavaPlatform platform) throws IOException {
+        JShellEnvironment current;
+        boolean forceClose = false;
+        synchronized (this) {
+            current = defaultSession;
+            if (current != null) {
+                if (current.getPlatform() != platform) {
+                    forceClose = true;
+                    defaultSession = null;
+                } else if (current.getStatus() == ShellStatus.SHUTDOWN ||
+                           current.getStatus() == ShellStatus.DISCONNECTED) {
+                    forceClose = true;
+                    defaultSession = null;
+                }
+            }
+        }
+        if (forceClose) {
+            current.closeEditor();
+        } else if (current != null) {
+            return current;
+        }
+        String dispName = Bundle.TITLE_PlatformShell(platform.getDisplayName());
+        JShellEnvironment s = new LaunchJShellEnv(platform, dispName); // may throw IOE
+        synchronized (this) {
+            if (defaultSession != null) {
+                return defaultSession;
+            }
+            register(s);
+            defaultSession = s;
+        }
+        return s;
     }
     
     /**
@@ -301,9 +334,24 @@ public class ShellRegistry {
     }
     
     private static class LaunchJShellEnv extends JShellEnvironment {
-
+        private JavaPlatform platform;
+        
         public LaunchJShellEnv(Project project, String displayName) {
             super(project, displayName);
+        }
+        
+        public LaunchJShellEnv(JavaPlatform platform, String displayName) {
+            super(null, displayName);
+            this.platform = platform;
+        }
+
+        @Override
+        public JavaPlatform getPlatform() {
+            if (platform != null) {
+                return platform;
+            } else {
+                return super.getPlatform();
+            }
         }
         
         @Override
@@ -385,7 +433,7 @@ public class ShellRegistry {
         }
     }
     
-    public Collection<JShellEnvironment> openedShells() {
+    public Collection<JShellEnvironment> openedShells(Project filter) {
         Collection<JShellEnvironment> ret;
         synchronized (this) {
             ret = new ArrayList<>(fileIndex.size());
@@ -393,7 +441,9 @@ public class ShellRegistry {
                 Reference<JShellEnvironment> ref = it.next();
                 JShellEnvironment e = ref.get();
                 if (e != null) {
-                    ret.add(e);
+                    if (filter == null || filter == e.getProject()) {
+                        ret.add(e);
+                    }
                 }
             }
         }

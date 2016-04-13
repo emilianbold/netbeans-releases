@@ -613,4 +613,19 @@ public final class ShellLaunchManager {
         
         return args;
    }
+    
+    public Collection<ShellAgent>   getLiveAgents(Project filter) {
+        Collection<ShellAgent> ret;
+        synchronized (this) {
+            ret = new ArrayList<>(registeredAgents.values());
+        }
+        for (Iterator<ShellAgent> it = ret.iterator(); it.hasNext(); ) {
+            ShellAgent a = it.next();
+            if (!a.isReady() ||
+                 (filter != null && filter != a.getProject())) {
+                it.remove();
+            }
+        }
+        return ret;
+    }
 }

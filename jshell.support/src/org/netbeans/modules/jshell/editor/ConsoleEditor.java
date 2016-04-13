@@ -167,7 +167,7 @@ public class ConsoleEditor extends CloneableEditor {
         if (cloneableEditorSupport().getOpenedPanes() == null && session != null) {
             try {
                 // terminate the JShell
-                session.closeSession();
+                session.getEnv().shutdown();
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -574,17 +574,16 @@ public class ConsoleEditor extends CloneableEditor {
     
     private JComponent progressIndicator;
     
+    private JLayeredPane lastLayeredPane;
+    
     private void removeProgressIndicator() {
-        if (pane == null || progressIndicator == null) {
+        if (lastLayeredPane == null || progressIndicator == null) {
             return;
         }
-        JLayeredPane lp = JLayeredPane.getLayeredPaneAbove(pane);
-        if (lp == null) {
-            return;
-        }
+        progressIndicator.setVisible(false);
+        JLayeredPane lp = lastLayeredPane;
         lp.remove(progressIndicator);
         lp.repaint();
-        progressIndicator.setVisible(false);
         progressIndicator = null;
         
     }
@@ -610,7 +609,7 @@ public class ConsoleEditor extends CloneableEditor {
                     pane, r, lp);
             indicator.setBounds(converted);
             indicator.setVisible(true);
-            
+            this.lastLayeredPane = lp;
             this.progressIndicator = indicator;
         } catch (BadLocationException ex) {
             

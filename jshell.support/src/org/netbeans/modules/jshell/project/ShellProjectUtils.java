@@ -44,7 +44,10 @@ package org.netbeans.modules.jshell.project;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.debugger.Session;
@@ -52,6 +55,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -59,6 +63,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
 /**
@@ -129,15 +134,37 @@ public final class ShellProjectUtils {
         return roots;
     }
     
-    public static JavaPlatform findPlatform(Project project) {
-        JavaPlatform platform = null;
-        if (project != null) {
-            for (SourceGroup sg : org.netbeans.api.project.ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-                if (org.netbeans.modules.jshell.project.ShellProjectUtils.isNormalRoot(sg)) {
-                    platform = org.netbeans.modules.jshell.project.ShellProjectUtils.findPlatform(ClassPath.getClassPath(sg.getRootFolder(), ClassPath.BOOT));
+    public static FileObject findProjectRoots(Project project, List<URL> urls) {
+        if (project == null) {
+            return null;
+        }
+        FileObject ret = null;
+        Set<URL> knownURLs = new HashSet<>();
+        for (SourceGroup sg : org.netbeans.api.project.ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+            if (org.netbeans.modules.jshell.project.ShellProjectUtils.isNormalRoot(sg)) {
+                if (urls != null) {
+                    URL u = URLMapper.findURL(sg.getRootFolder(), URLMapper.INTERNAL);
+                    BinaryForSourceQuery.Result r = BinaryForSourceQuery.findBinaryRoots(u);
+                    for (URL ru : r.getRoots()) {
+                        if (knownURLs.add(ru)) {
+                            urls.add(ru);
+                        }
+                    }
+                }
+                if (ret == null) {
+                    ret = sg.getRootFolder();
                 }
             }
         }
+        return ret;
+    }
+    
+    public static JavaPlatform findPlatform(Project project) {
+        FileObject ref = findProjectRoots(project, null);
+        if (ref == null) {
+            return null;
+        }
+        JavaPlatform platform = findPlatform(ClassPath.getClassPath(ref, ClassPath.BOOT));
         return platform != null ? platform : JavaPlatform.getDefault();
     }
 }

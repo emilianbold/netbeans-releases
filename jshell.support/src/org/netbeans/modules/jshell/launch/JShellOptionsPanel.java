@@ -145,7 +145,7 @@ public class JShellOptionsPanel extends javax.swing.JPanel implements ActionList
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnManageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnManageActionPerformed
-        JavaPlatform old = (JavaPlatform)cbPlatform.getSelectedItem();
+        JavaPlatform old = getSelectedPlatformObject();
         PlatformsCustomizer.showCustomizer(null);
         if (old == null && cbPlatform.getSelectedItem() == null &&
                 cbPlatform.getItemCount() > 0) {

@@ -68,6 +68,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.jshell.model.ConsoleEvent;
 import org.netbeans.modules.jshell.model.ConsoleListener;
+import org.netbeans.modules.jshell.project.ShellProjectUtils;
 import org.netbeans.modules.jshell.support.ShellSession;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
@@ -167,7 +168,8 @@ public class JShellEnvironment {
         consoleFile = workRoot.createData("console.jsh");
         
         EditorCookie.Observable eob = consoleFile.getLookup().lookup(EditorCookie.Observable.class);
-        eob.addPropertyChangeListener(WeakListeners.propertyChange(inst = new L(), eob));
+        inst = new L();
+        eob.addPropertyChangeListener(WeakListeners.propertyChange(inst, eob));
 
         platform = org.netbeans.modules.jshell.project.ShellProjectUtils.findPlatform(project);
     }
@@ -228,38 +230,15 @@ public class JShellEnvironment {
             inputOutput = IOProvider.getDefault().getIO(displayName, false);
             controlsIO = true;
         }
-        JavaPlatform platformTemp = null;
-        final Set<URL> roots = new HashSet<>();
-        final List<FileObject> fRoots = new ArrayList<>();
-        
-        if (project != null) {
-            for (SourceGroup sg : ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-                if (org.netbeans.modules.jshell.project.ShellProjectUtils.isNormalRoot(sg)) {
-                    if (platformTemp == null) {
-                        platformTemp = org.netbeans.modules.jshell.project.ShellProjectUtils.findPlatform(ClassPath.getClassPath(sg.getRootFolder(), ClassPath.BOOT));
-                    }
-                    fRoots.add(sg.getRootFolder());
-                    URL u = URLMapper.findURL(sg.getRootFolder(), URLMapper.INTERNAL);
-                    Result r = BinaryForSourceQuery.findBinaryRoots(u);
-                    roots.addAll(Arrays.asList(r.getRoots()));
-                    
-                }
-            }
-        }
-        if (platformTemp == null) {
-            platformTemp = JavaPlatformManager.getDefault().getDefaultPlatform();
-        }
-
-        /*
-        repl = Lookup.getDefault().lookup(REPL.Factory.class).createREPL(
-                platform, new PrintWriter(out), uRoots);
-        */
+        JavaPlatform platformTemp = getPlatform();
+        final List<URL> roots = new ArrayList<>();
+        FileObject root = ShellProjectUtils.findProjectRoots(getProject(), roots);
         ClasspathInfo cpi;
         
         snippetClassPath = ClassPathSupport.createClassPath(workRoot);
 
-        if (project != null && !fRoots.isEmpty()) {
-            ClasspathInfo projectInfo = ClasspathInfo.create(fRoots.get(0));
+        if (root != null) {
+            ClasspathInfo projectInfo = ClasspathInfo.create(root);
             cpi = ClasspathInfo.create(
                     projectInfo.getClassPath(ClasspathInfo.PathKind.BOOT),
                     ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()])),
@@ -271,7 +250,7 @@ public class JShellEnvironment {
                     snippetClassPath);
         }
         this.classpathInfo = cpi;
-        Document d = forceOpenDocument();
+        forceOpenDocument();
         doStartAndFire(ShellSession.createSession(this));
     }
 
@@ -409,22 +388,31 @@ public class JShellEnvironment {
     public Task shutdown() throws IOException {
         Task t = shellSession.closeSession();
         t.addTaskListener((e) -> {
-            try {
-                // try to close the dataobject
-                DataObject d = DataObject.find(getConsoleFile());
-                EditorCookie cake = d.getLookup().lookup(EditorCookie.class);
-                cake.close();
-                // discard the dataobject
-                consoleFile.delete();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            if (controlsIO) {
-                inputOutput.closeInputOutput();
-            }
-            ShellRegistry.get().closed(this);
+            postCloseCleanup();
         });
         return t;
+    }
+    
+    private void postCloseCleanup() {
+        try {
+            // try to close the dataobject
+            DataObject d = DataObject.find(getConsoleFile());
+            EditorCookie cake = d.getLookup().lookup(EditorCookie.class);
+            cake.close();
+            // discard the dataobject
+            synchronized (this) {
+                if (document == null) {
+                    return;
+                }
+                document = null;
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (controlsIO) {
+            inputOutput.closeInputOutput();
+        }
+        ShellRegistry.get().closed(this);
     }
     
     private Document document;
@@ -434,11 +422,13 @@ public class JShellEnvironment {
         DataObject d = DataObject.find(getConsoleFile());
         EditorCookie cake = d.getLookup().lookup(EditorCookie.class);
         // force open
-        cake.open();
-        document = cake.openDocument();
         if (shellSession == null) {
             start();
+            cake.open();
+            document = cake.openDocument();
         } else {
+            cake.open();
+            document = cake.openDocument();
             return;
         }
         if (inputOutput != null) {
@@ -516,5 +506,21 @@ public class JShellEnvironment {
     
     public RemoteJShellService createExecutionEnv() {
         return null;
+    }
+    
+    public boolean closeDeadEditor() {
+        if (getStatus() == ShellStatus.SHUTDOWN) {
+            return closeEditor();
+        } else {
+            return false;
+        }
+    }
+    
+    public boolean closeEditor() {
+        EditorCookie cake = getConsoleFile().getLookup().lookup(EditorCookie.class);
+        if (cake == null) {
+            return true;
+        }
+        return cake.close();
     }
 }

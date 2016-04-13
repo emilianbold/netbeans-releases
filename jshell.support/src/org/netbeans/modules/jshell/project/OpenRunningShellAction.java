@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,67 +37,70 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.jshell.project;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.Action;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.jshell.env.JShellEnvironment;
 import org.netbeans.modules.jshell.env.ShellRegistry;
+import org.netbeans.modules.jshell.launch.ShellAgent;
+import org.netbeans.modules.jshell.launch.ShellLaunchManager;
+import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
-import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author lahvac
+ * @author sdedic
  */
-public class REPLAction2 implements ProjectActionPerformer {
-
-    @ActionID(category="Project", id="org.netbeans.modules.java.repl.REPLAction2")
-//    @ActionReference(path = "Menu/BuildProject", position = 93)
-    @ActionRegistration(
-            displayName="#DN_ProjectJavaRun",
-            iconBase = "org/netbeans/modules/jshell/resources/jshell-terminal.png"
-    )
-    @Messages({
-        "DN_ProjectJavaRun=Execute Java Shell"
-    })
-    public static Action create() {
-        return ProjectSensitiveActions.projectSensitiveAction(new REPLAction2(), Bundle.DN_ProjectJavaRun(), null);
-    }
+public class OpenRunningShellAction implements ProjectActionPerformer {
 
     @Override
     public boolean enable(Project project) {
-        return ShellProjectUtils.findPlatform(project) != null;
+        Collection<ShellAgent> agents = ShellLaunchManager.getInstance().getLiveAgents(project);
+        return !agents.isEmpty();
     }
 
     @Override
     public void perform(Project project) {
-        JShellEnvironment env;
-        try {
-            env = ShellRegistry.get().openProjectSession(project);
-            env.open();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        Collection<ShellAgent> agents = ShellLaunchManager.getInstance().getLiveAgents(project);
+        Set<ShellAgent> waiting = new HashSet<>(agents);
+        Collection<JShellEnvironment> envs = ShellRegistry.get().openedShells(project);
+        for (JShellEnvironment e : envs) {
+            ShellAgent a = LaunchedProjectOpener.get().getProjectAgent(e);
+            if (a != null) {
+                waiting.remove(a);
+            }
         }
+        if (!waiting.isEmpty()) {
+            ShellAgent selected = waiting.iterator().next();
+            LaunchedProjectOpener.get().openAgentShell(selected);
+        } else if (!envs.isEmpty()) {
+            try {
+                envs.iterator().next().open();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
     }
     
-    public static Action contextAction() {
-        Action a = ProjectSensitiveActions.projectSensitiveAction(new REPLAction2(), 
-                Bundle.DN_ProjectJavaRun(), null);
+    @NbBundle.Messages({
+            "# {0} - type of message",
+            "# {1} - 1st projct name",
+            "LBL_OpenShellForMainProject=&Open Java Shell for {0,choice,-1#Main Project|0#Project|1#Project ({1})|1<{0} Projects}"
+    })
+    public static Action action() {
+        Action a = MainProjectSensitiveActions.mainProjectSensitiveAction(new OpenRunningShellAction(), 
+                NbBundle.getMessage(OpenRunningShellAction.class, "LBL_OpenShellForMainProject"), null);
         a.putValue("iconBase", "org/netbeans/modules/jshell/resources/jshell-terminal.png");
-        return a;
+        return a; 
     }
 }

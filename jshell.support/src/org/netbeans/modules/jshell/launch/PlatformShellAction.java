@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,67 +37,74 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.jshell.project;
+package org.netbeans.modules.jshell.launch;
 
+import java.awt.event.ActionEvent;
 import java.io.IOException;
-import javax.swing.Action;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
+import javax.swing.AbstractAction;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.jshell.env.JShellEnvironment;
 import org.netbeans.modules.jshell.env.ShellRegistry;
-import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
-import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.Message;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author lahvac
+ * @author sdedic
  */
-public class REPLAction2 implements ProjectActionPerformer {
+@ActionID(
+        category = "Window",
+        id = "org.netbeans.modules.jshell.launch.PlatformShellAction"
+)
+@ActionRegistration(
+        displayName = "#DN_PlatformShell",
+        iconBase = "org/netbeans/modules/jshell/resources/jshell-terminal.png"
+)
+@ActionReference(
+        path = "UI/ToolActions/Java", position = 3000
+)
+@NbBundle.Messages({
+    "DN_PlatformShell=Open Java Platform Shell",
+    "ERR_NoShellPlatform=No suitable Java Platform configured. Do you want to configure Java Shell now ?"
+})
+public class PlatformShellAction extends AbstractAction {
 
-    @ActionID(category="Project", id="org.netbeans.modules.java.repl.REPLAction2")
-//    @ActionReference(path = "Menu/BuildProject", position = 93)
-    @ActionRegistration(
-            displayName="#DN_ProjectJavaRun",
-            iconBase = "org/netbeans/modules/jshell/resources/jshell-terminal.png"
-    )
-    @Messages({
-        "DN_ProjectJavaRun=Execute Java Shell"
+    private ShellOptions options = ShellOptions.get();
+
+    @NbBundle.Messages({
+        "# {0} - error message",
+        "ERR_RunPlatformShell=Error starting Java Shell: {0}"
     })
-    public static Action create() {
-        return ProjectSensitiveActions.projectSensitiveAction(new REPLAction2(), Bundle.DN_ProjectJavaRun(), null);
-    }
-
     @Override
-    public boolean enable(Project project) {
-        return ShellProjectUtils.findPlatform(project) != null;
-    }
-
-    @Override
-    public void perform(Project project) {
-        JShellEnvironment env;
+    public void actionPerformed(ActionEvent e) {
+        JavaPlatform platform = options.getSelectedPlatform();
+        if (platform == null) {
+            NotifyDescriptor.Confirmation conf = new NotifyDescriptor.Confirmation(
+                    Bundle.ERR_NoShellPlatform(), NotifyDescriptor.Confirmation.OK_CANCEL_OPTION
+            );
+            Object result = DialogDisplayer.getDefault().notify(conf);
+            if (result == NotifyDescriptor.Confirmation.OK_OPTION) {
+                OptionsDisplayer.getDefault().open("Java/JShell", true);
+            }
+            platform = options.getSelectedPlatform();
+            if (platform == null) {
+                return;
+            }
+        }
         try {
-            env = ShellRegistry.get().openProjectSession(project);
+            JShellEnvironment env = ShellRegistry.get().openDefaultSession(platform);
             env.open();
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            Message msg = new Message(Bundle.ERR_RunPlatformShell(ex.getLocalizedMessage()), Message.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notifyLater(msg);
         }
-    }
-    
-    public static Action contextAction() {
-        Action a = ProjectSensitiveActions.projectSensitiveAction(new REPLAction2(), 
-                Bundle.DN_ProjectJavaRun(), null);
-        a.putValue("iconBase", "org/netbeans/modules/jshell/resources/jshell-terminal.png");
-        return a;
     }
 }

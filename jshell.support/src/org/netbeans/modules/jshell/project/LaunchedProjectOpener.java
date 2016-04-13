@@ -68,7 +68,7 @@ public class LaunchedProjectOpener implements ShellLaunchListener {
     private static LaunchedProjectOpener INSTANCE = null;
     
     static {
-        ShellLaunchManager.getInstance().addLaunchListener(new LaunchedProjectOpener());
+        ShellLaunchManager.getInstance().addLaunchListener(INSTANCE = new LaunchedProjectOpener());
     }
     
     private ShellOptions opts = ShellOptions.get();
@@ -103,7 +103,7 @@ public class LaunchedProjectOpener implements ShellLaunchListener {
         
         // find some old project shell, which is already dead:
         if (opts.isReuseDeadConsoles()) {
-            Collection<JShellEnvironment> existing = ShellRegistry.get().openedShells();
+            Collection<JShellEnvironment> existing = ShellRegistry.get().openedShells(p);
             for (JShellEnvironment ex : existing) {
                 if (ex.getProject() != p) {
                     continue;
@@ -145,7 +145,11 @@ public class LaunchedProjectOpener implements ShellLaunchListener {
 
     @Override
     public void connectionClosed(ShellLaunchEvent ev) { }
-
+    
+    public static LaunchedProjectOpener get() {
+        return INSTANCE;
+    }
+    
     public ShellAgent getProjectAgent(JShellEnvironment env) {
         if (!(env instanceof ProjectShellEnv)) {
             return null;

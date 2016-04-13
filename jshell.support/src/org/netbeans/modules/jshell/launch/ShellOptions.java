@@ -53,7 +53,7 @@ import org.openide.util.NbPreferences;
  * @author sdedic
  */
 public final class ShellOptions {
-    public static final SpecificationVersion MIN_SPEC_VERSION = new SpecificationVersion("1.7"); // NOI18N
+    public static final SpecificationVersion MIN_SPEC_VERSION = new SpecificationVersion("1.6"); // NOI18N
     
     private static final String PREF_PLATFORM = "launchPlatformId"; // NOI18N
     private static final String PREF_OPEN_CONSOLE = "openConsoleOnLaunch"; // NOI18N
@@ -89,14 +89,14 @@ public final class ShellOptions {
     }
     
     public void setSelectedPlatform(JavaPlatform p) {
-        prefs.put(PREF_PLATFORM, p.getDisplayName());
+        prefs().put(PREF_PLATFORM, p.getDisplayName());
     }
 
     public boolean setSelectedPlatform(String name) {
         JavaPlatform[] candidates;
         candidates = JavaPlatformManager.getDefault().getPlatforms(name, null);
         if (candidates != null && candidates.length == 1) {
-            prefs.put(PREF_PLATFORM, name);
+            prefs().put(PREF_PLATFORM, name);
             return true;
         } else {
             return false;
@@ -104,7 +104,7 @@ public final class ShellOptions {
     }
     
     public JavaPlatform getSelectedPlatform() {
-        String platformId = prefs.get(PREF_PLATFORM, null);
+        String platformId = prefs().get(PREF_PLATFORM, null);
         if (platformId == null) {
             return getDefaultPlatform();
         }

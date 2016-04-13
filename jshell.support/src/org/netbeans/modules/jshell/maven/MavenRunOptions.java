@@ -109,6 +109,8 @@ public class MavenRunOptions extends javax.swing.JPanel implements HelpCtx.Provi
     private void loadOptions(ActionEvent e) {
         ActionToGoalMapping mapp = handle.getActionMappings((ModelHandle2.Configuration) cbConfiguration.getSelectedItem());
         List<NetbeansActionMapping> lst = mapp.getActions();
+        run = null;
+        debug = null;
         for (NetbeansActionMapping m : lst) {
             if (ActionProvider.COMMAND_RUN.equals(m.getActionName())) {
                 run = m;

@@ -55,6 +55,7 @@ import org.openide.util.NbBundle;
  * @author sdedic
  */
 @OptionsPanelController.SubRegistration(
+    id = "JShell",
     location=JavaOptions.JAVA,
     displayName="#LBL_JavaShellOptions",
     keywords="#KW_JavaShell",
