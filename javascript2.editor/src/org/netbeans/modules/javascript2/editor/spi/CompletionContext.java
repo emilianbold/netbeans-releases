@@ -69,5 +69,6 @@ public enum CompletionContext {
     CALL_ARGUMENT, // the position when the cc is called at position of an argument of a function call
     NUMBER, // cc should offer methods of Number objects
     STRING, // cc should offer methods of String objects
+    REGEXP,  // cc should offer methods of RegEx objects
     IMPORT_EXPORT_MODULE // the position where js modules names should be offered
 }
