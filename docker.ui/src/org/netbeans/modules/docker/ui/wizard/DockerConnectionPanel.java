@@ -126,16 +126,8 @@ public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchron
         wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, null);
 
         // process the connection test validation
-        Boolean result = (Boolean) wizard.getProperty(CONNECTION_TEST);
-        if (result != null) {
-            wizard.putProperty(CONNECTION_TEST, null);
-            if (result) {
-                wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, Bundle.MSG_ConnectionPassed());
-            } else {
-                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_CannotConnect());
-            }
-            return result;
-        }
+        Boolean connectioTest = (Boolean) wizard.getProperty(CONNECTION_TEST);
+        wizard.putProperty(CONNECTION_TEST, null);
 
         Configuration panel = component.getConfiguration();
         String displayName = panel.getDisplayName();
@@ -214,6 +206,15 @@ public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchron
             if (realUrl != null && "https".equals(realUrl.getProtocol()) && certPath == null) { // NOI18N
                 wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, Bundle.MSG_NoCertificatesForSecure());
             }
+        }
+
+        if (connectioTest != null) {
+            if (connectioTest) {
+                wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, Bundle.MSG_ConnectionPassed());
+            } else {
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_CannotConnect());
+            }
+            return connectioTest;
         }
 
         return true;
