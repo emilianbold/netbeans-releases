@@ -72,6 +72,7 @@ import com.oracle.js.parser.TokenType;
 import com.oracle.js.parser.ir.ClassNode;
 import com.oracle.js.parser.ir.ExportNode;
 import com.oracle.js.parser.ir.ImportNode;
+import com.oracle.js.parser.ir.ReturnNode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -356,7 +357,19 @@ public class FormatVisitor extends NodeVisitor {
                 }
             }
         }
-        enterBlock(body);
+        if (isVirtual(body) && functionNode.getKind() == FunctionNode.Kind.ARROW) {
+            // the case where for example x => x + 5;
+            // the following condition should be always met but we are defensive
+            List<Statement> statements = body.getStatements();
+            if (!statements.isEmpty()) {
+                Statement statement = statements.get(0);
+                if (statement instanceof ReturnNode) {
+                    ((ReturnNode) statement).getExpression().accept(this);
+                }
+            }
+        } else {
+            enterBlock(body);
+        }
 
         if (functionNode.isProgram()) {
             return false;
