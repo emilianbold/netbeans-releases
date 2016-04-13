@@ -71,6 +71,8 @@ import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.api.editor.NavigationHistory;
 import org.netbeans.api.editor.EditorActionNames;
+import org.netbeans.api.editor.caret.CaretInfo;
+import org.netbeans.api.editor.caret.EditorCaret;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -571,15 +573,33 @@ public class ExtKit extends BaseKit {
                     return;
                 }
 
-                try {
-                    Caret caret = target.getCaret();
-                    BaseDocument doc = (BaseDocument)target.getDocument();
-                    int[] idBlk = Utilities.getIdentifierBlock(doc, caret.getDot());
-                    if (idBlk != null) {
-                        Utilities.changeCase(doc, idBlk[0], 1, Utilities.CASE_SWITCH);
+                Caret caret = target.getCaret();
+                BaseDocument doc = (BaseDocument) target.getDocument();
+                if(caret instanceof EditorCaret) {
+                    EditorCaret editorCaret = (EditorCaret) caret;
+                    boolean beeped = false;
+                    for (CaretInfo caretInfo : editorCaret.getSortedCarets()) {
+                        try {
+                            int[] idBlk = Utilities.getIdentifierBlock(doc, caretInfo.getDot());
+                            if (idBlk != null) {
+                                Utilities.changeCase(doc, idBlk[0], 1, Utilities.CASE_SWITCH);
+                            }
+                        } catch (BadLocationException e) {
+                            if(!beeped) {
+                                target.getToolkit().beep();
+                                beeped = true;
+                            }
+                        }
                     }
-                } catch (BadLocationException e) {
-                    target.getToolkit().beep();
+                } else {
+                    try {
+                        int[] idBlk = Utilities.getIdentifierBlock(doc, caret.getDot());
+                        if (idBlk != null) {
+                            Utilities.changeCase(doc, idBlk[0], 1, Utilities.CASE_SWITCH);
+                        }
+                    } catch (BadLocationException e) {
+                        target.getToolkit().beep();
+                    }
                 }
             }
         }
