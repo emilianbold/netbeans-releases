@@ -695,4 +695,8 @@ public class JsStructureScannerTest extends JsTestBase {
     public void testConstants01() throws Exception {
         checkStructure("testfiles/ecmascript6/constant/constant01.js");
     }
+    
+    public void testArrayDestructuringAssing01() throws Exception {
+        checkStructure("testfiles/markoccurences/destructuringAssignments/arrayDestructuring01.js");
+    }
 }

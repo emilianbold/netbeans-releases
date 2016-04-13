@@ -552,4 +552,8 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
     public void testNumberLiterals() throws Exception {
         checkSemantic("testfiles/completion/general/numberLiterals01.js");
     }
+    
+    public void testArrayDestructuringAssing01() throws Exception {
+        checkSemantic("testfiles/markoccurences/destructuringAssignments/arrayDestructuring01.js");
+    }
 }
