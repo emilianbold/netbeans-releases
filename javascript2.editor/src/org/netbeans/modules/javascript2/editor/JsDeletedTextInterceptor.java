@@ -165,6 +165,10 @@ public class JsDeletedTextInterceptor implements DeletedTextInterceptor {
             if (!singleQuote) {
                 break;
             }
+        case '`':
+            if (!singleQuote) {
+                break;
+            }
         case '\"': {
             if (isSmartQuotingEnabled()) {
                 char[] match = doc.getChars(dotPos, 1);

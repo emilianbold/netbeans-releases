@@ -131,6 +131,22 @@ public class JsTypedTextInterceptorTest extends JsTestBase {
         insertChar("x = '\\^'", '\'', "x = '\\'^'");
     }
 
+    public void testTemplateQuotes1() throws Exception {
+        insertChar("x = ^", '`', "x = `^`");
+    }
+
+    public void testTemplateQuotes2() throws Exception {
+        insertChar("x = `^`", '`', "x = ``^");
+    }
+
+    public void testTemplateQuotes3() throws Exception {
+        insertChar("x = `^`", 'a', "x = `a^`");
+    }
+
+    public void testTemplateQuotes4() throws Exception {
+        insertChar("x = '\\^`", '`', "x = '\\`^`");
+    }
+
     public void testInsertBrokenQuote() throws Exception {
         insertChar("System.out.prinlnt(\"pavel^)", '"',
                 "System.out.prinlnt(\"pavel\"^)");
@@ -149,6 +165,26 @@ public class JsTypedTextInterceptorTest extends JsTestBase {
     public void testInsertBrokenQuote4() throws Exception {
         insertChar("System.out.prinlnt(\"pavel^", '"',
                 "System.out.prinlnt(\"pavel\"^");
+    }
+
+    public void testInsertBrokenTemplate1() throws Exception {
+        insertChar("System.out.prinlnt(`pavel^)", '`',
+                "System.out.prinlnt(`pavel`^)");
+    }
+
+    public void testInsertBrokenTemplate2() throws Exception {
+        insertChar("System.out.prinlnt(`pavel^\n", '`',
+                "System.out.prinlnt(`pavel`^\n");
+    }
+
+    public void testInsertBrokenTemplate3() throws Exception {
+        insertChar("System.out.prinlnt(`^\n", '`',
+                "System.out.prinlnt(``^\n");
+    }
+
+    public void testInsertBrokenTemplate4() throws Exception {
+        insertChar("System.out.prinlnt(`pavel^", '`',
+                "System.out.prinlnt(`pavel`^");
     }
 
     public void testDoubleQuotes1() throws Exception {
@@ -293,12 +329,24 @@ public class JsTypedTextInterceptorTest extends JsTestBase {
         insertChar("'position^:absolute;'", '{', "'pos{^:absolute;'", "ition");
     }
 
+    public void testReplaceSelection7() throws Exception {
+        insertChar("x = foo^", '`', "x = `foo`^", "foo");
+    }
+
     public void testReplaceSelectionChangeType1() throws Exception {
         insertChar("x = \"foo\"^", '\'', "x = 'foo'^", "\"foo\"");
     }
 
     public void testReplaceSelectionChangeType2() throws Exception {
         insertChar("x = \"foo\"^", '{', "x = {foo}^", "\"foo\"");
+    }
+
+    public void testReplaceSelectionChangeType3() throws Exception {
+        insertChar("x = \"foo\"^", '`', "x = `foo`^", "\"foo\"");
+    }
+
+    public void testReplaceSelectionChangeType4() throws Exception {
+        insertChar("x = 'foo'^", '`', "x = `foo`^", "'foo'");
     }
 
     public void testReplaceSelectionNotInTemplateMode1() throws Exception {
@@ -340,11 +388,11 @@ public class JsTypedTextInterceptorTest extends JsTestBase {
     public void testIssue233292_1() throws Exception {
         insertChar("var a = \"test\"^", ';', "var a = \"test\";^");
     }
-    
+
     public void testIssue233292_2() throws Exception {
         insertChar("a.replace(\"aaa\"^)", ',', "a.replace(\"aaa\",^)");
     }
-    
+
     public void testIssue233292_3() throws Exception {
         insertChar("test(\"asasa\", {pes:\"1\"^)", '}', "test(\"asasa\", {pes:\"1\"}^)");
     }
@@ -368,7 +416,7 @@ public class JsTypedTextInterceptorTest extends JsTestBase {
             + "\n"
             +"}\n");
     }
-    
+
     public void testIssue195515() throws Exception {
         insertChar("function name() { {^}", '}', "function name() { {}^");
     }
