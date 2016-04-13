@@ -1975,6 +1975,7 @@ public class JsFormatter implements Formatter {
                             // assume it's a continuation from a previous line
                             continued = true;
                         } else if (id == JsTokenId.STRING || id == JsTokenId.STRING_END ||
+                                id == JsTokenId.TEMPLATE || id == JsTokenId.TEMPLATE_END ||
                                 id == JsTokenId.REGEXP || id == JsTokenId.REGEXP_END) {
                             // You can get multiline literals in JavaScript by inserting a \ at the end
                             // of the line

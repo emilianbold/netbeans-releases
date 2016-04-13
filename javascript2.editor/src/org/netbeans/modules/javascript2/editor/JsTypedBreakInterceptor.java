@@ -237,6 +237,13 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                 context.setText(str, -1, str.length());
                 return;
             }
+            if (id == JsTokenId.TEMPLATE ||
+                    (id == JsTokenId.TEMPLATE_END) && offset < ts.offset()+ts.token().length()) {
+                // Instead of indenting it to the previous line as below just insert a newline and finish!
+                String str = "\n"; //NOI18N
+                context.setText(str, -1, str.length());
+                return;
+            }
 
 
 

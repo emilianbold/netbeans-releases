@@ -73,6 +73,9 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
     /** Tokens which indicate that we're within a literal string */
     private final static TokenId[] STRING_TOKENS = { JsTokenId.STRING, JsTokenId.STRING_END };
 
+    /** Tokens which indicate that we're within a template string */
+    private final static TokenId[] TEMPLATE_TOKENS = { JsTokenId.TEMPLATE, JsTokenId.TEMPLATE_END };
+    
     private final Language<JsTokenId> language;
 
     private final boolean singleQuote;
@@ -211,7 +214,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         boolean isTemplate = GsfUtilities.isCodeTemplateEditing(doc);
 
         if (selection != null && selection.length() > 0) {    
-            if (!isTemplate && (((ch == '"' || ch == '\'') && isSmartQuotingEnabled())
+            if (!isTemplate && (((ch == '"' || ch == '\'' || ch == '`') && isSmartQuotingEnabled())
                     || ((ch == '(' || ch == '{' || ch == '[')) && isInsertMatchingEnabled())) {
                     // Bracket the selection
                     char firstChar = selection.charAt(0);
@@ -226,7 +229,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                             int lastChar = selection.charAt(selection.length()-1);
                             // Replace the surround-with chars?
                             if (selection.length() > 1 &&
-                                    ((firstChar == '"' || firstChar == '\'' || firstChar == '(' ||
+                                    ((firstChar == '"' || firstChar == '\'' || firstChar == '`' || firstChar == '(' ||
                                     firstChar == '{' || firstChar == '[' || firstChar == '/') &&
                                     lastChar == matching(firstChar))) {
                                 String innerText = selection.substring(1, selection.length() - 1);
@@ -266,6 +269,9 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         if (ch == '\"' || (ch == '\'' && singleQuote)) {
             stringTokens = STRING_TOKENS;
             beginTokenId = JsTokenId.STRING_BEGIN;
+        } else if (ch == '`' && singleQuote) {
+            stringTokens = TEMPLATE_TOKENS;
+            beginTokenId = JsTokenId.TEMPLATE_BEGIN;
         } else if (id.isError()) {
             ts.movePrevious();
 
@@ -273,6 +279,9 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
 
             if (isCompletableStringBoundary(ts.token(), singleQuote, false)) {
                 stringTokens = STRING_TOKENS;
+                beginTokenId = prevId;
+            } else if (isCompletableTemplateBoundary(ts.token(), singleQuote, false)) {
+                stringTokens = TEMPLATE_TOKENS;
                 beginTokenId = prevId;
             } else if (prevId == JsTokenId.REGEXP_BEGIN) {
                 stringTokens = REGEXP_TOKENS;
@@ -284,10 +293,20 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                 stringTokens = STRING_TOKENS;
                 beginTokenId = id;
             }
+        } else if (isCompletableTemplateBoundary(token, singleQuote, false) &&
+                (caretOffset == (ts.offset() + 1))) {
+            if (!Character.isLetter(ch)) { // %q, %x, etc. Only %[], %!!, %<space> etc. is allowed
+                stringTokens = TEMPLATE_TOKENS;
+                beginTokenId = id;
+            }
         } else if ((isCompletableStringBoundary(token, singleQuote, false) && (caretOffset == (ts.offset() + 2))) ||
                 isCompletableStringBoundary(token, singleQuote, true)) {
             stringTokens = STRING_TOKENS;
             beginTokenId = JsTokenId.STRING_BEGIN;
+        } else if ((isCompletableTemplateBoundary(token, singleQuote, false) && (caretOffset == (ts.offset() + 2))) ||
+                isCompletableTemplateBoundary(token, singleQuote, true)) {
+            stringTokens = TEMPLATE_TOKENS;
+            beginTokenId = JsTokenId.TEMPLATE_BEGIN;
         } else if (((id == JsTokenId.REGEXP_BEGIN) && (caretOffset == (ts.offset() + 2))) ||
                 (id == JsTokenId.REGEXP_END)) {
             stringTokens = REGEXP_TOKENS;
@@ -379,7 +398,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
     private void completeQuote(MutableContext context, char bracket,
             TokenId[] stringTokens, TokenId beginToken, boolean isTemplate) throws BadLocationException {
         if (isTemplate) {
-            if (bracket == '"' || bracket == '\'' || bracket == '(' || bracket == '{' || bracket == '[') {
+            if (bracket == '"' || bracket == '\'' || bracket == '`' || bracket == '(' || bracket == '{' || bracket == '[') {
                 String text = context.getText() + matching(bracket);
                 context.setText(text, text.length() - 1);
             }
@@ -471,7 +490,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                 if ((dotPos - 1) > 0) {
                     token = LexUtilities.getToken(doc, dotPos - 1, language);
                     // XXX TODO use language embedding to handle this
-                    insideString = (token.id() == JsTokenId.STRING);
+                    insideString = (token.id() == JsTokenId.STRING || token.id() == JsTokenId.TEMPLATE);
                 }
             }
         }
@@ -514,7 +533,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             // test that we are in front of ) , " or '
             char chr = doc.getChars(dotPos, 1)[0];
 
-            return ((chr == ')') || (chr == ',') || (chr == '\"') || (chr == '\'') || (chr == ' ') ||
+            return ((chr == ')') || (chr == ',') || (chr == '\"') || (chr == '\'') || (chr == '`') || (chr == ' ') ||
             (chr == ']') || (chr == '}') || (chr == '\n') || (chr == '\t') || (chr == ';'));
         }
     }
@@ -783,6 +802,9 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
 
         case '\'':
             return '\'';
+            
+        case '`':
+            return '`';
 
         case '{':
             return '}';
@@ -802,6 +824,15 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             if (singleQuote || "\"".equals(token.text().toString())) {
                 return true;
             }
+        }
+        return false;
+    }
+    
+    private static boolean isCompletableTemplateBoundary(Token<? extends JsTokenId> token,
+            boolean singleQuote, boolean end) {
+        if ((!end && token.id() == JsTokenId.TEMPLATE_BEGIN)
+                || (end && token.id() == JsTokenId.TEMPLATE_END)) {
+            return singleQuote;
         }
         return false;
     }

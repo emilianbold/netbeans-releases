@@ -134,6 +134,10 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
         insertBreak("  x = \"te^st\"", "  x = \"te\\n\\\n^st\"");
     }
 
+    public void testNoSplitTemplates1() throws Exception {
+        insertBreak("  x = `te^st`", "  x = `te\n^st`");
+    }
+
     public void testInsertNewLine1() throws Exception {
         insertBreak("x^", "x\n^");
     }

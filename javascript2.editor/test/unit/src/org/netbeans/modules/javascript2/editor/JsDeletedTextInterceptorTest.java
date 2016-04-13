@@ -54,7 +54,6 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.javascript2.editor.options.OptionsUtils;
-import org.openide.util.Exceptions;
 
 /**
  * @todo Try typing in whole source files and other than tracking missing end and } closure
@@ -136,6 +135,10 @@ public class JsDeletedTextInterceptorTest extends JsTestBase {
     public void testBackspace9() throws Exception {
         deleteChar("x=/^/", "x=^");
     }
+    
+    public void testBackspace10() throws Exception {
+        deleteChar("x=`^`", "x=^");
+    }
 
     public void testDeleteContComment() throws Exception {
         deleteChar("// ^", "//^");
@@ -216,10 +219,16 @@ public class JsDeletedTextInterceptorTest extends JsTestBase {
         }
     }
 
-    public void testDisabledSmartQuotes() throws Exception {
+    public void testDisabledSmartQuotes1() throws Exception {
         MimeLookup.getLookup(JsTokenId.JAVASCRIPT_MIME_TYPE).lookup(Preferences.class)
                 .putBoolean(OptionsUtils.AUTO_COMPLETION_SMART_QUOTES, false);
         deleteChar("x = \"^\"", "x = ^\"");
+    }
+
+    public void testDisabledSmartQuotes2() throws Exception {
+        MimeLookup.getLookup(JsTokenId.JAVASCRIPT_MIME_TYPE).lookup(Preferences.class)
+                .putBoolean(OptionsUtils.AUTO_COMPLETION_SMART_QUOTES, false);
+        deleteChar("x = `^`", "x = ^`");
     }
 
     public void testDisabledBrackets1() throws Exception {
