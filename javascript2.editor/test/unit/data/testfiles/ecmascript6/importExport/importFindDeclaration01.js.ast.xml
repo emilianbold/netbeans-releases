@@ -14,11 +14,11 @@
     <ImportClauseNode start='36' end='53'>
       <NamedImportsNode start='36' end='53'>
         <ImportSpecifierNode start='38' end='51'>
-          <IdentNode start='46' end='51'>
-            <name>text2</name>
-          </IdentNode>
           <IdentNode start='38' end='42'>
             <name>text</name>
+          </IdentNode>
+          <IdentNode start='46' end='51'>
+            <name>text2</name>
           </IdentNode>
         </ImportSpecifierNode>
       </NamedImportsNode>
@@ -31,11 +31,11 @@
     <ImportClauseNode start='84' end='101'>
       <NamedImportsNode start='84' end='101'>
         <ImportSpecifierNode start='86' end='99'>
-          <IdentNode start='94' end='99'>
-            <name>text3</name>
-          </IdentNode>
           <IdentNode start='86' end='90'>
             <name>text</name>
+          </IdentNode>
+          <IdentNode start='94' end='99'>
+            <name>text3</name>
           </IdentNode>
         </ImportSpecifierNode>
       </NamedImportsNode>
