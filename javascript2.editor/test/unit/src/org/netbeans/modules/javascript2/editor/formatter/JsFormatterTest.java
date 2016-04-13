@@ -1966,6 +1966,27 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/var1.js");
     }
 
+    public void testSpread1Always() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapArrayInit, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        options.put(FmtOptions.wrapArrayInitItems, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/spread1.js", options, ".wrapAlways.formatted");
+    }
+
+    public void testSpread1Never() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapArrayInit, CodeStyle.WrapStyle.WRAP_NEVER);
+        options.put(FmtOptions.wrapArrayInitItems, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatter/spread1.js", options, ".wrapNever.formatted");
+    }
+
+    public void testSpread1IfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapArrayInit, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        options.put(FmtOptions.wrapArrayInitItems, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatter/spread1.js", options, ".wrapIfLong.formatted");
+    }
+    
     public void testStatements1Always() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
         options.put(FmtOptions.wrapStatement, CodeStyle.WrapStyle.WRAP_ALWAYS);
