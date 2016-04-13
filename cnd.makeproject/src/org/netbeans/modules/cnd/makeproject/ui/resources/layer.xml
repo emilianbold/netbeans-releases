@@ -339,7 +339,10 @@ made subject to such option by the copyright holder.
             </file>
             <file name="org-netbeans-modules-cnd-makeproject-ui-actions-TestAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.ui.actions.MakeProjectActionsSupport.testAction"/>            
-            </file>           
+            </file>
+            <file name="org-netbeans-modules-cnd-makeproject-ui-actions-MakeProjectManageLaunchersAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makeproject.ui.actions.MakeProjectManageLaunchersAction"/>
+            </file>
              <file name="org-netbeans-modules-cnd-makeproject-launchers-actions-BuildAsAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.launchers.actions.LauncherAction.buildAsAction"/>            
             </file>           
@@ -817,6 +820,10 @@ made subject to such option by the copyright holder.
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-ui-actions-TestAction.instance"/>
                     <attr name="position" intvalue="1600"/>
                 </file>                                                                                                        
+                <file name="org-netbeans-modules-cnd-makeproject-ui-actions-MakeProjectManageLaunchersAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-ui-actions-MakeProjectManageLaunchersAction.instance"/>
+                    <attr name="position" intvalue="1650"/>
+                </file>
                 <file name="sep-3.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     <attr name="position" intvalue="1700"/>
