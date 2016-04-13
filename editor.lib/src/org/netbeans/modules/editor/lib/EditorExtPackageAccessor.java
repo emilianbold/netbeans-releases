@@ -45,6 +45,7 @@
 package org.netbeans.modules.editor.lib;
 
 import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.ext.StickyWindowSupport;
 import org.netbeans.editor.ext.ToolTipSupport;
 
 
@@ -80,4 +81,5 @@ public abstract class EditorExtPackageAccessor {
     }
 
     public abstract ToolTipSupport createToolTipSupport(EditorUI eui);
+    public abstract StickyWindowSupport createStickyWindowSupport(EditorUI eui);
 }

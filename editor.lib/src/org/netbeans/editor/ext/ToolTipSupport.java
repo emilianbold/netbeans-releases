@@ -1259,6 +1259,11 @@ public class ToolTipSupport {
             return new ToolTipSupport(eui);
         }
 
+        @Override
+        public StickyWindowSupport createStickyWindowSupport(EditorUI eui) {
+            return new StickyWindowSupport(eui);
+        }
+
     } // End of Accessor class
 
     // -----------------------------------------------------------------------

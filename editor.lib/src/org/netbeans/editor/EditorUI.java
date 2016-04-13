@@ -1776,7 +1776,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     
     public StickyWindowSupport getStickyWindowSupport() {
         if(stickyWindowSupport == null) {
-            stickyWindowSupport = new StickyWindowSupport(this);
+            stickyWindowSupport = EditorExtPackageAccessor.get().createStickyWindowSupport(this);
         }
         return stickyWindowSupport;
     }
