@@ -52,6 +52,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -60,10 +61,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -90,6 +94,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
+import org.netbeans.spi.java.project.support.ui.templates.JavaFileWizardIteratorFactory;
 
 /**
  * Wizard to create a new Java file.
@@ -161,7 +166,9 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
         return new NewJavaFileWizardIterator(Type.MODULE_INFO);
     }
             
-    private WizardDescriptor.Panel[] createPanels (WizardDescriptor wizardDescriptor) {
+    private WizardDescriptor.Panel[] createPanels (
+            @NonNull final WizardDescriptor wizardDescriptor,
+            @NonNull final Collection<WizardDescriptor.Iterator<WizardDescriptor>> itOut) {
         
         // Ask for Java folders
         Project project = Templates.getProject( wizardDescriptor );
@@ -178,18 +185,13 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
             };
         }
         else {
-            
+            final List<WizardDescriptor.Panel<?>> panels = new ArrayList<>();
             if (this.type == Type.FILE) {
-                return new WizardDescriptor.Panel[] {
-                    JavaTemplates.createPackageChooser( project, groups ),
-                };
+                panels.add(JavaTemplates.createPackageChooser( project, groups ));
             } else if (type == Type.PKG_INFO) {
-                return new WizardDescriptor.Panel[] {
-                    new JavaTargetChooserPanel(project, groups, null, Type.PKG_INFO, true),
-                };
+                panels.add(new JavaTargetChooserPanel(project, groups, null, Type.PKG_INFO, true));
             } else if (type == Type.MODULE_INFO) {
-                List<WizardDescriptor.Panel> pnls = new ArrayList<>();
-                pnls.add(new JavaTargetChooserPanel(project, groups, null, Type.MODULE_INFO, false));
+                panels.add(new JavaTargetChooserPanel(project, groups, null, Type.MODULE_INFO, false));
                 Map<FileObject, Set<ClassPathItem>> group2items = new HashMap<>();
                 for (SourceGroup group : groups) {
                     try {
@@ -211,9 +213,8 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
                     } catch (Exception ex) {}
                 }
                 if (!group2items.isEmpty()) {
-                    pnls.add(new MoveToModulePathPanel(group2items));
+                    panels.add(new MoveToModulePathPanel(group2items));
                 }
-                return pnls.toArray(new WizardDescriptor.Panel[pnls.size()]);
             } else {
                 assert type == Type.PACKAGE;
                 SourceGroup[] groovySourceGroups = sources.getSourceGroups(SOURCE_TYPE_GROOVY);
@@ -232,12 +233,22 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
                     all.addAll(Arrays.asList(resources));
                     groups = all.toArray(new SourceGroup[all.size()]);
                 }
-                return new WizardDescriptor.Panel[] {
-                    new JavaTargetChooserPanel(project, groups, null, Type.PACKAGE, false),
-                };
+                panels.add(new JavaTargetChooserPanel(project, groups, null, Type.PACKAGE, false));
             }
+            final JavaFileWizardIteratorFactory templateProvider = project.getLookup().lookup(JavaFileWizardIteratorFactory.class);
+            if (templateProvider != null) {
+                final WizardDescriptor.Iterator it = templateProvider.createIterator(Templates.getTemplate(wizardDescriptor ));
+                if (it != null) {
+                    itOut.add(it);
+                    panels.add(it.current());
+                    while(it.hasNext()) {
+                        it.nextPanel();
+                        panels.add(it.current());
+                    }
+                }
+            }
+            return panels.toArray(new WizardDescriptor.Panel<?>[panels.size()]);
         }
-               
     }
 
     private static SourceGroup[] checkNotNull (SourceGroup[] groups, Sources sources) {
@@ -284,14 +295,24 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
         if (this.type == Type.PACKAGE) {
             targetName = targetName.replace( '.', '/' ); // NOI18N
             createdFile = FileUtil.createFolder( dir, targetName );
-        }
-        else {
+        } else {
             DataObject dTemplate = DataObject.find( template );                
             DataObject dobj = dTemplate.createFromTemplate( df, targetName );
             createdFile = dobj.getPrimaryFile();
         }
-        
-        return Collections.singleton( createdFile );
+        final Set<FileObject> res = new HashSet<>();
+        res.add(createdFile);
+        asInstantiatingIterator(projectSpecificIterator)
+                .map((it)->{
+                    try {
+                        return it.instantiate();
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
+                        return null;
+                    }
+                })
+                .ifPresent(res::addAll);
+        return Collections.unmodifiableSet(res);
     }
     
     private void moveCPItems(Iterable<ClassPathItem> cpItemsToMove, FileObject folder) {
@@ -343,16 +364,32 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
             } catch (Exception ex) {}
         }        
     }
+
+    @NonNull
+    private static Optional<WizardDescriptor.InstantiatingIterator<WizardDescriptor>> asInstantiatingIterator(
+            @NullAllowed final WizardDescriptor.Iterator<WizardDescriptor> it) {
+        return Optional.ofNullable(it)
+                .map((p)->{
+                    return p instanceof WizardDescriptor.InstantiatingIterator ?
+                            (WizardDescriptor.InstantiatingIterator<WizardDescriptor>) p:
+                            null;
+                });
+    }
         
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     private transient WizardDescriptor wiz;
+    private transient WizardDescriptor.Iterator<WizardDescriptor> projectSpecificIterator;
     
     @Override
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         index = 0;
-        panels = createPanels( wiz );
+        final List<WizardDescriptor.Iterator<WizardDescriptor>> itOut = new ArrayList<>(1);
+        panels = createPanels(wiz, itOut);
+        projectSpecificIterator = itOut.get(0);
+        asInstantiatingIterator(projectSpecificIterator)
+                .ifPresent((it)->it.initialize(wiz));
         // Make sure list of steps is accurate.
         String[] beforeSteps = null;
         Object prop = wiz.getProperty(WizardDescriptor.PROP_CONTENT_DATA);
@@ -380,8 +417,11 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
 
     @Override
     public void uninitialize (WizardDescriptor wiz) {
+        asInstantiatingIterator(projectSpecificIterator)
+                .ifPresent((it)->it.uninitialize(wiz));
         this.wiz = null;
         panels = null;
+        projectSpecificIterator = null;
     }
     
     @Override
