@@ -435,6 +435,10 @@ public class JsCodeCompletionGeneralTest extends JsCodeCompletionBase {
         checkCompletion("testfiles/completion/general/numberLiterals01.js", "console.log(parseInt(\"111\", 2).t^oFixed(2));", false);
     }
     
+    public void testStringLiterals01() throws Exception {
+        checkCompletion("testfiles/completion/general/stringLiterals01.js", "console.log(\"cat\".^startsWith(\"ca\", 0));", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
