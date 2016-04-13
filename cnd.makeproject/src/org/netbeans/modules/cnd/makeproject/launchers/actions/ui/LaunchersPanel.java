@@ -55,6 +55,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
@@ -86,6 +87,7 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
     private final LaunchersConfig instance;
     private final ListTableModel envVarModel;
     private final JTable envVarTable;
+    final ListView h_list;
     private boolean modified = false;
 
     /**
@@ -115,7 +117,7 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
             launchers.add(e.getValue());
         }
         nodes = new LaunchersNodes(launchers);
-        final ListView h_list = new ListView();
+        h_list = new ListView();
         h_list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         LauncersListPanel.add(h_list, BorderLayout.CENTER);
         update();
@@ -726,6 +728,7 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
     public static class LauncherNode extends AbstractNode {
 
         private BufferedImage icon;
+        private static JTextField test = new JTextField();
 
         public LauncherNode(LauncherConfig cfg) {
             super(Children.LEAF, Lookups.fixed(cfg));
@@ -737,7 +740,6 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
 
             Graphics2D g = (Graphics2D) icon.getGraphics();
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            Color old = g.getColor();
             if (cfg.getPublic()) {
                 g.setColor(Color.RED);
             } else {
@@ -747,7 +749,7 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
                 g.fillOval(7, 4, 5, 5);
             } else {
                 g.fillOval(4, 1, 11, 11);
-                g.setColor(old);
+                g.setColor(test.getBackground());
                 g.fillOval(7, 4, 5, 5);
             }
         }
