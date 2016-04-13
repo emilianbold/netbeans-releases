@@ -70,7 +70,7 @@ import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.javascript2.editor.formatter.FmtOptions;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.javascript2.editor.formatter.FmtOptions.*;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.javascript2.editor.formatter.Defaults;
 
 /**
@@ -279,12 +279,13 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
                 new Item(spaceAroundTernaryOps),
 //		new Item(spaceAroundStringConcatOps),
 //		new Item(spaceAroundKeyValueOps),
-                new Item(spaceAroundAssignOps)),
+                new Item(spaceAroundAssignOps),
+                new Item(spaceAroundArrowOps)),
 //		new Item(spaceAroundObjectOps)),
 
             new Item("BeforeLeftBraces",                        // NOI18N
-//                new Item(spaceBeforeClassDeclLeftBrace),
                 new Item(spaceBeforeMethodDeclLeftBrace),
+                new Item(spaceBeforeClassDeclLeftBrace),
                 new Item(spaceBeforeIfLeftBrace),
                 new Item(spaceBeforeElseLeftBrace),
                 new Item(spaceBeforeWhileLeftBrace),

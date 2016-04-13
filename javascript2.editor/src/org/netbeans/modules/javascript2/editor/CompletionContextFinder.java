@@ -50,9 +50,8 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
-import org.netbeans.modules.web.common.api.LexerUtils;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
 
 /**
  *
@@ -72,6 +71,11 @@ public class CompletionContextFinder {
     private static final List<Object[]> OBJECT_THIS_TOKENCHAINS = Arrays.asList(
         new Object[]{JsTokenId.KEYWORD_THIS, JsTokenId.OPERATOR_DOT},
         new Object[]{JsTokenId.KEYWORD_THIS, JsTokenId.OPERATOR_DOT, JsTokenId.IDENTIFIER}
+    );
+    
+    private static final List<Object[]> NUMBER_TOKENCHAINS = Arrays.asList(
+        new Object[]{JsTokenId.NUMBER, JsTokenId.OPERATOR_DOT},
+        new Object[]{JsTokenId.NUMBER, JsTokenId.OPERATOR_DOT, JsTokenId.IDENTIFIER}
     );
        
     @NonNull
@@ -122,11 +126,19 @@ public class CompletionContextFinder {
                     }
                 }
             }
+            token = LexUtilities.findPreviousToken(ts, Utils.LOOK_FOR_IMPORT_EXPORT_TOKENS);
+            if (token.id() == JsTokenId.KEYWORD_EXPORT || token.id() == JsTokenId.KEYWORD_IMPORT) {
+                return CompletionContext.IMPORT_EXPORT_MODULE;
+            }
             return CompletionContext.STRING;
         }
-        
+
         if (acceptTokenChains(ts, OBJECT_THIS_TOKENCHAINS, true)) {
             return CompletionContext.OBJECT_MEMBERS;
+        }
+
+        if (acceptTokenChains(ts, NUMBER_TOKENCHAINS, tokenId != JsTokenId.OPERATOR_DOT)) {
+            return CompletionContext.NUMBER;
         }
         
         if (acceptTokenChains(ts, OBJECT_PROPERTY_TOKENCHAINS, tokenId != JsTokenId.OPERATOR_DOT)) {

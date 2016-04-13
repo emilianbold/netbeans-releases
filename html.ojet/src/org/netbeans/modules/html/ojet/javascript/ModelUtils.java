@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.html.ojet.javascript;
 
-import org.netbeans.modules.javascript2.editor.model.JsArray;
-import org.netbeans.modules.javascript2.editor.model.JsElement;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.model.api.JsArray;
+import org.netbeans.modules.javascript2.model.api.JsElement;
+import org.netbeans.modules.javascript2.model.api.JsObject;
 
 /**
  *

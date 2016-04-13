@@ -66,5 +66,7 @@ public enum CompletionContext {
     STRING,      // inside a string
     STRING_ELEMENTS_BY_ID, // should offers css elements by id from project
     STRING_ELEMENTS_BY_CLASS_NAME, // should offers css elements by class name from project
-    CALL_ARGUMENT // the position when the cc is called at position of an argument of a function call
+    CALL_ARGUMENT, // the position when the cc is called at position of an argument of a function call
+    NUMBER, // cc should offer methods of Number objects
+    IMPORT_EXPORT_MODULE // the position where js modules names should be offered
 }

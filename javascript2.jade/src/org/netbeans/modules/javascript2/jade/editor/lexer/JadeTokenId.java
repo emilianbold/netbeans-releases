@@ -52,7 +52,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.modules.css.lib.api.CssTokenId;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
