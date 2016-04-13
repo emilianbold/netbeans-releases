@@ -253,6 +253,9 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                 case STRING:
                     completeStringProperties(request, added);
                     break;    
+                case REGEXP:
+                    completeRegExpProperties(request, added);
+                    break;    
                 default:
                     break;
             }
@@ -874,6 +877,13 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         FileObject fo = request.info.getSnapshot().getSource().getFileObject();
         Index jsIndex = Index.get(fo);
         addObjectPropertiesFromIndex("String", jsIndex, request, addedItems, false); // NOI18N
+        addObjectPropertiesFromIndex("Object", jsIndex, request, addedItems, false); // NOI18N
+    }
+    
+    private void completeRegExpProperties(CompletionRequest request, Map<String, List<JsElement>> addedItems) {
+        FileObject fo = request.info.getSnapshot().getSource().getFileObject();
+        Index jsIndex = Index.get(fo);
+        addObjectPropertiesFromIndex("RegExp", jsIndex, request, addedItems, false); // NOI18N
         addObjectPropertiesFromIndex("Object", jsIndex, request, addedItems, false); // NOI18N
     }
     
