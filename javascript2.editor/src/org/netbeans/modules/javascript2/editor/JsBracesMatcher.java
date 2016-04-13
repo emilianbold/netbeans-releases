@@ -47,13 +47,17 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
+import org.netbeans.spi.editor.bracesmatching.BraceContext;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;
 import org.netbeans.spi.editor.bracesmatching.support.BracesMatcherSupport;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -79,6 +83,7 @@ public class JsBracesMatcher implements BracesMatcher {
     private char matchingChar;
     private boolean backward;
     private List<TokenSequence<?>> sequences;
+    private boolean templateExp;
 
     public JsBracesMatcher(MatcherContext context, Language<JsTokenId> language) {
         this.context = context;
@@ -89,19 +94,42 @@ public class JsBracesMatcher implements BracesMatcher {
     public int [] findOrigin() throws InterruptedException, BadLocationException {
         ((AbstractDocument) context.getDocument()).readLock();
         try {
-            int [] origin = BracesMatcherSupport.findChar(
-                context.getDocument(),
-                context.getSearchOffset(),
-                context.getLimitOffset(),
-                PAIRS
-            );
+            templateExp = false;
+            int endOffset = -1;
 
-            if (origin != null) {
-                originOffset = origin[0];
-                originChar = PAIRS[origin[1]];
-                matchingChar = PAIRS[origin[1] + origin[2]];
-                backward = origin[2] < 0;
+            TokenSequence<? extends JsTokenId> testSeq = LexUtilities.getJsPositionedSequence(
+                    context.getDocument(), context.getSearchOffset());
+            if (testSeq != null) {
+                if (testSeq.token().id() != JsTokenId.TEMPLATE_EXP_BEGIN && context.isSearchingBackward()) {
+                    if (!testSeq.movePrevious() && context.getSearchOffset() - 1 >= context.getLimitOffset()) {
+                        testSeq = LexUtilities.getJsPositionedSequence(
+                                context.getDocument(), context.getSearchOffset() - 1);
+                    }
+                }
+            }
+            if (testSeq != null && testSeq.token().id() == JsTokenId.TEMPLATE_EXP_BEGIN) {
+                originOffset = testSeq.offset();
+                endOffset = originOffset + testSeq.token().length();
+                originChar = '{'; // NOI18N
+                matchingChar = '}'; // NOI18N
+                backward = false;
+            } else {
+                int[] origin = BracesMatcherSupport.findChar(
+                        context.getDocument(),
+                        context.getSearchOffset(),
+                        context.getLimitOffset(),
+                        PAIRS
+                );
+                if (origin != null) {
+                    originOffset = origin[0];
+                    endOffset = originOffset + 1;
+                    originChar = PAIRS[origin[1]];
+                    matchingChar = PAIRS[origin[1] + origin[2]];
+                    backward = origin[2] < 0;
+                }
+            }
 
+            if (endOffset > 0) {
                 TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
                 // to get it work, there should not be checked previous ts. it can be different. see issue #250521
                 sequences = getEmbeddedTokenSequences(th, originOffset, false, language);
@@ -119,10 +147,14 @@ public class JsBracesMatcher implements BracesMatcher {
                                 || seq.token().id() == JsTokenId.STRING) {
                             return null;
                         }
+                        if (seq.token().id() == JsTokenId.TEMPLATE_EXP_BEGIN
+                                || seq.token().id() == JsTokenId.TEMPLATE_EXP_END) {
+                            templateExp = true;
+                        }
                     }
                 }
 
-                return new int [] { originOffset, originOffset + 1 };
+                return new int [] { originOffset, endOffset };
             } else {
                 return null;
             }
@@ -135,7 +167,7 @@ public class JsBracesMatcher implements BracesMatcher {
     public int [] findMatches() throws InterruptedException, BadLocationException {
         ((AbstractDocument) context.getDocument()).readLock();
         try {
-            if (!sequences.isEmpty()) {
+            if (sequences != null && !sequences.isEmpty()) {
                 TokenSequence<?> seq = sequences.get(sequences.size() - 1);
 
                 TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
@@ -143,11 +175,24 @@ public class JsBracesMatcher implements BracesMatcher {
                 if (backward) {
                     list = th.tokenSequenceList(seq.languagePath(), 0, originOffset);
                 } else {
-                    list = th.tokenSequenceList(seq.languagePath(), originOffset + 1, context.getDocument().getLength());
+                    int offset = originOffset + 1;
+                    if (templateExp) {
+                        offset++;
+                    }
+                    list = th.tokenSequenceList(seq.languagePath(), offset, context.getDocument().getLength());
                 }
 
                 JsTokenId originId = getTokenId(originChar);
                 JsTokenId lookingForId = getTokenId(matchingChar);
+                if (templateExp) {
+                    if (originChar == '}') { // NOI18N
+                        originId = JsTokenId.TEMPLATE_EXP_END;
+                        lookingForId = JsTokenId.TEMPLATE_EXP_BEGIN;
+                    } else {
+                        originId = JsTokenId.TEMPLATE_EXP_BEGIN;
+                        lookingForId = JsTokenId.TEMPLATE_EXP_END;
+                    }
+                }
                 int counter = 0;
 
                 for(TokenSequenceIterator tsi = new TokenSequenceIterator(list, backward); tsi.hasMore(); ) {
