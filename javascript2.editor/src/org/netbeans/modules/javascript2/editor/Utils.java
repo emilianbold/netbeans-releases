@@ -56,7 +56,7 @@ import org.netbeans.modules.javascript2.model.api.ModelUtils;
  */
 public class Utils {
     
-    public static final List<JsTokenId> LOOK_FOR_IMPORT_EXPORT_TOKENS = Arrays.asList(JsTokenId.KEYWORD_IMPORT, JsTokenId.KEYWORD_EXPORT, JsTokenId.OPERATOR_SEMICOLON);
+    public static final List<JsTokenId> LOOK_FOR_IMPORT_EXPORT_TOKENS = Collections.unmodifiableList(Arrays.asList(JsTokenId.KEYWORD_IMPORT, JsTokenId.KEYWORD_EXPORT, JsTokenId.OPERATOR_SEMICOLON));
     
     /**
      * Converts the types names to the display names. It can return empty collection

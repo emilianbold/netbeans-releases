@@ -719,7 +719,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                 // global space
                 Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(functionName.getName());
                 for (IndexedElement globalVar : globalVars) {
-                    if (globalVar.getName().equals(functionName) && globalVar.getJSKind().isFunction()) {
+                    if (globalVar.getName().equals(functionName.getName()) && globalVar.getJSKind().isFunction()) {
                         result.add((IndexedElement.FunctionIndexedElement)globalVar);
                     }
                 }
