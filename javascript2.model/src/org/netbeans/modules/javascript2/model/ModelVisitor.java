@@ -202,14 +202,36 @@ public class ModelVisitor extends PathNodeVisitor {
     public boolean enterBinaryNode(BinaryNode binaryNode) {
         Node lhs = binaryNode.lhs();
         Node rhs = binaryNode.rhs();
-        if (binaryNode.tokenType() == TokenType.ASSIGN
+        if (lhs instanceof LiteralNode.ArrayLiteralNode && rhs instanceof LiteralNode.ArrayLiteralNode && binaryNode.tokenType() == TokenType.ASSIGN) {
+            // case of destructuring assgnment like [a,b] = [1, 2]
+            LiteralNode.ArrayLiteralNode lan = (LiteralNode.ArrayLiteralNode)lhs;
+            LiteralNode.ArrayLiteralNode ran = (LiteralNode.ArrayLiteralNode)rhs;
+            List<Expression> lExpressions = lan.getElementExpressions();
+            List<Expression> rExpressions = ran.getElementExpressions();
+            for (int i = 0; i < lExpressions.size(); i++) {
+                Expression lExpression = lExpressions.get(i);
+                if (i < rExpressions.size()) {
+                    Expression rExpression = rExpressions.get(i);
+                    processBinaryNode(lExpression, rExpression, TokenType.ASSIGN);
+                } else {
+                    break;
+                }
+            }
+        } else {
+            processBinaryNode(lhs, rhs, binaryNode.tokenType());
+        }
+        return super.enterBinaryNode(binaryNode);
+    }
+
+    private void processBinaryNode(Node lhs, Node rhs, TokenType tokenType) {
+        if (tokenType == TokenType.ASSIGN
                 && !(/*rhs instanceof ReferenceNode ||*/ rhs instanceof ObjectNode)
                 && (lhs instanceof AccessNode || lhs instanceof IdentNode || lhs instanceof IndexNode)) {
             // TODO probably not only assign
             JsObjectImpl parent = modelBuilder.getCurrentDeclarationFunction();
             if (parent == null) {
                 // should not happened
-                return super.enterBinaryNode(binaryNode);
+                return;
             }
             String fieldName = null;
             if (lhs instanceof AccessNode) {
@@ -219,24 +241,11 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (fqName != null && ModelUtils.THIS.equals(fqName.get(0).getName())) { //NOI18N
                     // a usage of field
                     fieldName = aNode.getProperty();
-                    if (binaryNode.rhs() instanceof IdentNode) {
+                    if (rhs instanceof IdentNode) {
                         // resolve occurrence of the indent node sooner, then is created the field. 
-                        addOccurrence((IdentNode)binaryNode.rhs(), fieldName);
+                        addOccurrence((IdentNode)rhs, fieldName);
                     }
                     property = (JsObjectImpl)createJsObject(aNode, parserResult, modelBuilder);
-//                    parent = (JsObjectImpl)property.getParent();
-//                    if(property == null) {
-//                        Identifier identifier = ModelElementFactory.create(parserResult, (IdentNode)aNode.getProperty());
-//                        if (identifier != null) {
-//                            property = new JsObjectImpl(parent, identifier, identifier.getOffsetRange(), true, parserResult.getSnapshot().getMimeType(), null);
-//                            parent.addProperty(fieldName, property);
-//                            JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
-//                            if (docHolder != null) {
-//                                property.setDocumentation(docHolder.getDocumentation(aNode));
-//                                property.setDeprecated(docHolder.isDeprecated(aNode));
-//                            }
-//                        }
-//                    }
                 } else {
                     // probably a property of an object
                     if (fqName != null) {
@@ -249,7 +258,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (property != null) {
                     String parameter = null;
                     JsFunction function = (JsFunction)modelBuilder.getCurrentDeclarationFunction();
-                    if(binaryNode.rhs() instanceof IdentNode) {
+                    if(rhs instanceof IdentNode) {
                         IdentNode iNode = (IdentNode)rhs;
                         if(/*function.getProperty(rhs.getName()) == null &&*/ function.getParameter(iNode.getName()) != null) {
                             parameter = "@param;" + function.getFullyQualifiedName() + ":" + iNode.getName(); //NOI18N
@@ -257,7 +266,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                     Collection<TypeUsage> types; 
                     if (parameter == null) {
-                        types =  ModelUtils.resolveSemiTypeOfExpression(modelBuilder, binaryNode.rhs());
+                        types =  ModelUtils.resolveSemiTypeOfExpression(modelBuilder, rhs);
                         Collection<TypeUsage> correctedTypes = new ArrayList<TypeUsage>(types.size());
                         for (TypeUsage type : types) {
                             String typeName = type.getType();
@@ -276,12 +285,12 @@ public class ModelVisitor extends PathNodeVisitor {
                         types = correctedTypes;
                     } else {
                         types = new ArrayList<TypeUsage>();
-                        types.add(new TypeUsage(parameter, binaryNode.rhs().getStart(), false));
+                        types.add(new TypeUsage(parameter, rhs.getStart(), false));
                     }
 
                     for (TypeUsage type : types) {
                         // plus 5 due to the this.
-                        property.addAssignment(type, binaryNode.getStart() + 5);
+                        property.addAssignment(type, rhs.getStart() + 5);
                     }
                 }
 
@@ -314,8 +323,8 @@ public class ModelVisitor extends PathNodeVisitor {
                     lObject = processLhs(ModelElementFactory.create(parserResult, (IdentNode)lhs), parent, true);
                 }
                 
-                if (lObject != null && !(binaryNode.rhs() instanceof FunctionNode)) {
-                    Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(modelBuilder, binaryNode.rhs());
+                if (lObject != null && !(rhs instanceof FunctionNode)) {
+                    Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(modelBuilder, rhs);
                     if (lhs instanceof IndexNode && lObject instanceof JsArrayImpl) {
                         ((JsArrayImpl)lObject).addTypesInArray(types);
                     } else {
@@ -328,23 +337,20 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                 }
             }
-            if (fieldName == null && binaryNode.rhs() instanceof IdentNode) {
-                addOccurence((IdentNode)binaryNode.rhs(), false);
+            if (fieldName == null && rhs instanceof IdentNode) {
+                addOccurence((IdentNode)rhs, false);
             }
-        } else if(binaryNode.tokenType() != TokenType.ASSIGN
-                || (binaryNode.tokenType() == TokenType.ASSIGN && binaryNode.lhs() instanceof IndexNode)) {
-            if (binaryNode.lhs() instanceof IdentNode) {
-                addOccurence((IdentNode)binaryNode.lhs(), binaryNode.tokenType() == TokenType.ASSIGN);
+        } else if(tokenType != TokenType.ASSIGN
+                || (tokenType == TokenType.ASSIGN && lhs instanceof IndexNode)) {
+            if (lhs instanceof IdentNode) {
+                addOccurence((IdentNode)lhs, tokenType == TokenType.ASSIGN);
             }
-            if (binaryNode.rhs() instanceof IdentNode) {
-                addOccurence((IdentNode)binaryNode.rhs(), false);
+            if (rhs instanceof IdentNode) {
+                addOccurence((IdentNode)rhs, false);
             }
-        } /*else if(binaryNode.tokenType() == TokenType.ASSIGN && rhs instanceof ReferenceNode) {
-            
-        }*/
-        return super.enterBinaryNode(binaryNode);
+        }
     }
-
+    
     @Override
     public Node leaveBinaryNode(BinaryNode binaryNode) {
         Node lhs = binaryNode.lhs();

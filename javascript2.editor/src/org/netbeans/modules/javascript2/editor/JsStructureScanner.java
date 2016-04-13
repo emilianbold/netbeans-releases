@@ -739,7 +739,7 @@ public class JsStructureScanner implements StructureScanner {
             super(elementHandle, null, sortPrefix, parserResult);
             this.object = elementHandle;
 
-            Collection<? extends TypeUsage> assignmentForOffset = object.getAssignmentForOffset(object.getDeclarationName().getOffsetRange().getEnd());
+            Collection<? extends TypeUsage> assignmentForOffset = object.getAssignments();//tForOffset(object.getDeclarationName().getOffsetRange().getEnd());
             resolvedTypes = new ArrayList<TypeUsage>(ModelUtils.resolveTypes(assignmentForOffset,
                     Model.getModel(parserResult, false), Index.get(parserResult.getSnapshot().getSource().getFileObject()), false));
         }
