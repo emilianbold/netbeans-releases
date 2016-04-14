@@ -226,11 +226,13 @@ public class ModelVisitor extends PathNodeVisitor {
             }
         } else if (lhs instanceof ObjectNode && binaryNode.tokenType() == TokenType.ASSIGN) {
             // cases {a, b} = ...
+            ObjectNode lObjectNode = (ObjectNode)lhs;
+            JsObjectImpl rObject = null;
             if (rhs instanceof ObjectNode) {
                 // case {a, b} = {a:1, b:2}
                 // the rhs object we have to put to the model as anonymous object. At least will be colored in the right way
                 ObjectNode rObjectNode = (ObjectNode)rhs;
-                JsObjectImpl rObject = ModelElementFactory.createAnonymousObject(parserResult, rObjectNode,  modelBuilder);
+                rObject = ModelElementFactory.createAnonymousObject(parserResult, rObjectNode,  modelBuilder);
                 modelBuilder.setCurrentObject(rObject);
                 rObject.setJsKind(JsElement.Kind.OBJECT_LITERAL);
                 if (!functionArgumentStack.isEmpty()) {
@@ -240,27 +242,45 @@ public class ModelVisitor extends PathNodeVisitor {
                     rPropertyNode.accept(this);
                 }
                 modelBuilder.reset();
+            } else {
+                rhs.accept(this);
+                if (rhs instanceof IdentNode) {
+                    // we will try to find the right object literal        
+                }
+            }
+            if (rObject != null) {
                 // find all variables that are mentioned on the left site and assign the types from
-                // property with the same name from right site
+                // property with the same name from the right site
                 DeclarationScopeImpl scope = modelBuilder.getCurrentDeclarationScope();
                 Collection<? extends JsObject> variables = ModelUtils.getVariables(scope);
                 Hashtable<String, JsObject> nameToVariable= new Hashtable<String, JsObject>();
                 for (JsObject variable : variables) {
                     nameToVariable.put(variable.getName(), variable);
                 }
-                ObjectNode lObject = (ObjectNode)lhs;
-                for (PropertyNode lProperty : lObject.getElements()) {
-                    JsObject variable = nameToVariable.get(lProperty.getKeyName());
-                    JsObject rProperty = rObject.getProperty(lProperty.getKeyName());
-                    if (variable != null && rProperty != null) {
-                        for (TypeUsage assignment : rProperty.getAssignments()){
-                            variable.addAssignment(assignment, rProperty.getOffset());
+                for (PropertyNode lPropertyNode : lObjectNode.getElements()) {
+                    String variableName = null;
+                    if (lPropertyNode.getValue().equals(lPropertyNode.getKey())) {
+                        // case {p:var1, q:var2} = {p:1, q:2} or {p:var1, q:var2} = objectLiteral
+                        variableName = lPropertyNode.getKeyName();
+                    } else if (lPropertyNode.getValue() instanceof IdentNode) {
+                        variableName = ((IdentNode)lPropertyNode.getValue()).getName();
+                    }
+                    if (variableName != null) {
+                        JsObject variable = nameToVariable.get(variableName);
+                        JsObject rProperty = rObject.getProperty(lPropertyNode.getKeyName());
+                        if (variable != null && rProperty != null) {
+                            // copy types from the properties
+                            for (TypeUsage assignment : rProperty.getAssignments()){
+                                variable.addAssignment(assignment, rProperty.getOffset());
+                            }
+                            if (!lPropertyNode.getValue().equals(lPropertyNode.getKey())) {
+                                // mark occurrences in case {p:var1, q:var2} = {p:1, q:2} or {p:var1, q:var2} = objectLiteral
+                                rProperty.addOccurrence(new OffsetRange(lPropertyNode.getStart(), lPropertyNode.getStart() + lPropertyNode.getKeyName().length()));
+                            }
                         }
                     }
                 }
-                
-            } else {
-                rhs.accept(this);
+//                return false;
             }
         }else {
             processBinaryNode(lhs, rhs, binaryNode.tokenType());
@@ -2197,7 +2217,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     // case of destructuring assignment { a, b} = ....
                     // we should not create object in the model. 
                     return super.enterObjectNode(objectNode);
-                } else if (bNode.rhs().equals(objectNode)) {
+                } else if (bNode.lhs() instanceof ObjectNode && bNode.rhs().equals(objectNode)) {
                     // case of destructuring assignment {a, b} = {a:1, b:2}
                     // do nothing/ already processed in binary node. 
                     return false;
