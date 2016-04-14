@@ -983,7 +983,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
      * available, bring up the disassembler.
      */
     
-    private static final RequestProcessor RP = new RequestProcessor("Debugger location updater", 1);
+    private static final RequestProcessor RP = new RequestProcessor("Debugger location updater", 1); // NOI18N
     
     private void updateLocation(final boolean andShow, final ShowMode showModeOverride, final boolean focus) {
         
