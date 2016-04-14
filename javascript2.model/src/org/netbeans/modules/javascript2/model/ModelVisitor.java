@@ -223,7 +223,10 @@ public class ModelVisitor extends PathNodeVisitor {
                 // other cases
                 rhs.accept(this);
             }
-        } else {
+        } else if (lhs instanceof ObjectNode && binaryNode.tokenType() == TokenType.ASSIGN) {
+            // cases {a, b} = ...
+            rhs.accept(this);
+        }else {
             processBinaryNode(lhs, rhs, binaryNode.tokenType());
         }
         return super.enterBinaryNode(binaryNode);
@@ -2152,6 +2155,11 @@ public class ModelVisitor extends PathNodeVisitor {
             if (lastVisited instanceof TernaryNode && pathSize > 1) {
                 lastVisited = getPath().get(pathSize - pathIndex - 1);
             } 
+            if (lastVisited instanceof BinaryNode && ((BinaryNode)lastVisited).lhs().equals(objectNode)) {                
+                // case of destructuring assignment { a, b} = ....
+                // we should not create object in the model. 
+                return super.enterObjectNode(objectNode);
+            }
             
             while(lastVisited instanceof BinaryNode 
                     && (pathSize > pathIndex)
