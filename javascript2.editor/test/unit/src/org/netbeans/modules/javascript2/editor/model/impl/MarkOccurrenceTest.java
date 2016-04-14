@@ -2014,6 +2014,10 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/destructuringAssignments/objectDestructuring02.js", "({c, a, b} = {b:1, a^:2});", true);
     }
     
+    public void testObjectDestructuring03_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/objectDestructuring03.js", "console.log(c^); // undefined ", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
