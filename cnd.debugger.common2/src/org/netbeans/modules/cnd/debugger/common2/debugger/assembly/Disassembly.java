@@ -85,8 +85,8 @@ public abstract class Disassembly implements StateModel.Listener {
     private static Logger LOG = Logger.getLogger(Disassembly.class.getName());
 
     private final NativeDebuggerImpl debugger;
-    protected static boolean opened = false;
-    private static boolean opening = false;
+    protected volatile static boolean opened = false;
+    private volatile static boolean opening = false;
     private static final List<DebuggerAnnotation> bptAnnotations = new ArrayList<DebuggerAnnotation>();
     private final BreakpointModel breakpointModel;
     private int disLength = 0;
@@ -219,12 +219,19 @@ public abstract class Disassembly implements StateModel.Listener {
             if (dis != null) {
                 dis.debugger.registerDisassembly(dis);
                 dis.reload();
+            } else {
+                opening = false;
+                opened = false;
             }
         } catch (Exception e) {
             Exceptions.printStackTrace(e);
         }
     }
-    
+
+    protected final void reloadFailed() {
+        opening = false;
+    }
+
     protected abstract void reload();
     
     public static void close() {

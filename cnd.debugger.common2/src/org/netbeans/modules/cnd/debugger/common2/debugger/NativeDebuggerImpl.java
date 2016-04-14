@@ -129,6 +129,7 @@ import org.netbeans.spi.viewmodel.ModelListener;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.Lookup;
 import org.openide.util.Pair;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -981,9 +982,12 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
      * Else, if user has requested disassembly or no source information is
      * available, bring up the disassembler.
      */
+    
+    private static final RequestProcessor RP = new RequestProcessor("Debugger location updater", 1);
+    
     private void updateLocation(final boolean andShow, final ShowMode showModeOverride, final boolean focus) {
         
-        NativeDebuggerManager.getRequestProcessor().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 final Location loc = getVisitedLocation();
