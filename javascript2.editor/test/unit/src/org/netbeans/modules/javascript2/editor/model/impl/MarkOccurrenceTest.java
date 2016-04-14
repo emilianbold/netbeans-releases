@@ -85,6 +85,14 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/model/arrowFunction.js", "var y = ^x => x + 5;", true);
     }
     
+    public void testDefaultParameters01() throws Exception {
+        checkOccurrences("testfiles/model/defaultParameters.js", "function singularAutoPlural(^singular, plural = singular+\"s\",", true);
+    }
+    
+    public void testDefaultParameters02() throws Exception {
+        checkOccurrences("testfiles/model/defaultParameters.js", "function singularAutoPlural(singular, ^plural = singular+\"s\",", true);
+    }
+    
     public void testSimpleObject01() throws Exception {
         checkOccurrences("testfiles/model/simpleObject.js", "var Car^rot = {", true);
     }
