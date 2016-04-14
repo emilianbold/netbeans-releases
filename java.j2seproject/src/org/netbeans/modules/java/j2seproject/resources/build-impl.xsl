@@ -295,7 +295,9 @@ is divided into following sections:
                     <and>
                         <isset property="javac.profile"/>
                         <length length="0" string="${{javac.profile}}" when="greater"/>
-                        <matches pattern="((1\.[89])|9)(\..*)?" string="${{javac.source}}"/>
+                        <not>
+                            <matches string="${{javac.source}}" pattern="1\.[0-7](\..*)?"/>
+                        </not>
                     </and>
                 </condition>
                 <condition property="do.archive">
