@@ -80,6 +80,10 @@ public class JsConventionHintTest extends HintTestBase {
         checkHints(this, createSemicolonHint(), "testfiles/hints/classDeclaration.js", null);
     }
     
+    public void testDefaultParameters01() throws Exception {
+        checkHints(this, createSemicolonHint(), "testfiles/hints/defaultParameters.js", null);
+    }
+    
     public void testSemicolonAssignment() throws Exception {
         checkHints(this, createSemicolonHint(), "testfiles/coloring/assignments01.js", null);
     }

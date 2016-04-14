@@ -459,7 +459,10 @@ public class JsConventionRule extends JsAstRule {
 
         @Override
         public boolean enterExpressionStatement(ExpressionStatement expressionStatement) {
-            checkSemicolon(expressionStatement.getFinish());
+            Block block = getLexicalContext().getCurrentBlock();
+            if (block == null || !block.isParameterBlock()) {
+                checkSemicolon(expressionStatement.getFinish());
+            }
             return super.enterExpressionStatement(expressionStatement);
         }
         
