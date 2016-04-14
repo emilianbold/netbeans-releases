@@ -47,6 +47,8 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -54,16 +56,20 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableCellEditor;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.launchers.actions.ui.LaunchersConfig.LauncherConfig;
 import org.netbeans.modules.cnd.makeproject.runprofiles.ui.ListTableModel;
+import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeContext;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.ListView;
 import org.openide.nodes.AbstractNode;
@@ -77,7 +83,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Alexander Simon
  */
-public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Provider {
+public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, MakeContext.Savable {
 
     private final ExplorerManager manager = new ExplorerManager();
     private final SelectionChangeListener listener = new SelectionChangeListener();
@@ -89,12 +95,13 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
     private final JTable envVarTable;
     final ListView h_list;
     private boolean modified = false;
+    private volatile boolean resetFields = true;
 
     /**
      * Creates new form LaunchersPanel
      */
     public LaunchersPanel(Project project) {
-        setPreferredSize(new Dimension(600, 400));
+        setPreferredSize(new Dimension(640, 450));
         setMinimumSize(new Dimension(400, 200));
         initComponents();
         
@@ -121,9 +128,43 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
         h_list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         LauncersListPanel.add(h_list, BorderLayout.CENTER);
         update();
+        publicCheckBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!resetFields) {
+                    updateListViewItem();
+                }
+            }
+        });
+        final DocumentListener documentListener = new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                if (!resetFields) {
+                    updateListViewItem();
+                }
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                if (!resetFields) {
+                    updateListViewItem();
+                }
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                if (!resetFields) {
+                    updateListViewItem();
+                }
+            }
+        };
+        launcherNameTextField.getDocument().addDocumentListener(documentListener);
+        runTextField.getDocument().addDocumentListener(documentListener);
     }
 
-    public void saveConfigs() {
+
+    @Override
+    public void save() {
         updateSelectedConfiguration();
         if (modified) {
             instance.save(launchers);
@@ -181,10 +222,14 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
         }
     }
 
+    private String getString(String s) {
+        return s.trim().replace('\n', ' ').replace('\t', ' ');
+    }
+
     private void updateSelectedConfiguration() {
         if (selectedConfiguration != null) {
             selectedConfiguration.setName(launcherNameTextField.getText().trim());
-            selectedConfiguration.setCommand(runTextField.getText().trim());
+            selectedConfiguration.setCommand(getString(runTextField.getText()));
             selectedConfiguration.setBuildCommand(buildTextField.getText().trim());
             selectedConfiguration.setRunDir(runDirTextField.getText().trim());
             selectedConfiguration.setSymbolFiles(symbolsTextField.getText().trim());
@@ -217,14 +262,21 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
             selectedConfiguration.getEnv().clear();
             selectedConfiguration.getEnv().putAll(newContent);
             modified |= selectedConfiguration.isModified();
-            Node[] selectedNodes = manager.getSelectedNodes();
-            if (selectedNodes.length == 1 && selectedNodes[0] instanceof LauncherNode) {
-               LauncherNode node = ((LauncherNode) selectedNodes[0]);
-               node.updateNode();
-            }
+            updateListViewItem();
         }
     }
 
+    private void updateListViewItem() {
+        if (selectedConfiguration != null) {
+            Node[] selectedNodes = manager.getSelectedNodes();
+            if (selectedNodes.length == 1 && selectedNodes[0] instanceof LauncherNode) {
+                LauncherNode node = ((LauncherNode) selectedNodes[0]);
+                if (selectedConfiguration == node.getConfiguration()) {
+                    node.updateNode(launcherNameTextField.getText().trim(), getString(runTextField.getText()), publicCheckBox.isSelected());
+                }
+            }
+        }
+    }
     private void enableControls() {
         boolean b = selectedConfiguration != null;
         boolean c = true;
@@ -272,7 +324,6 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
         launcherNameLabel = new javax.swing.JLabel();
         launcherNameTextField = new javax.swing.JTextField();
         runLabel = new javax.swing.JLabel();
-        runTextField = new javax.swing.JTextField();
         buildLabel = new javax.swing.JLabel();
         buildTextField = new javax.swing.JTextField();
         runDirLabel = new javax.swing.JLabel();
@@ -284,7 +335,10 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
         addEnvButton = new javax.swing.JButton();
         removeEnvButton = new javax.swing.JButton();
         publicCheckBox = new javax.swing.JCheckBox();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        runTextField = new javax.swing.JTextArea();
 
+        launchersListLabel.setLabelFor(LauncersListPanel);
         org.openide.awt.Mnemonics.setLocalizedText(launchersListLabel, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.launchersListLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.addButton.text")); // NOI18N
@@ -370,26 +424,34 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
 
         launcherNameLabel.setLabelFor(launcherNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(launcherNameLabel, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.launcherNameLabel.text")); // NOI18N
+        launcherNameLabel.setToolTipText(org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LauncherDisplayNameToolTip")); // NOI18N
 
         launcherNameTextField.setMaximumSize(new java.awt.Dimension(300, 2147483647));
 
+        runLabel.setLabelFor(runTextField);
         org.openide.awt.Mnemonics.setLocalizedText(runLabel, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.runLabel.text")); // NOI18N
 
-        runTextField.setMaximumSize(new java.awt.Dimension(300, 2147483647));
-
+        buildLabel.setLabelFor(buildTextField);
         org.openide.awt.Mnemonics.setLocalizedText(buildLabel, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.buildLabel.text")); // NOI18N
+        buildLabel.setToolTipText(org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "BuildCommandToolTip")); // NOI18N
 
         buildTextField.setMaximumSize(new java.awt.Dimension(300, 2147483647));
 
+        runDirLabel.setLabelFor(runDirTextField);
         org.openide.awt.Mnemonics.setLocalizedText(runDirLabel, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.runDirLabel.text")); // NOI18N
+        runDirLabel.setToolTipText(org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "RunDirectoryToolTip")); // NOI18N
 
         runDirTextField.setMaximumSize(new java.awt.Dimension(300, 2147483647));
 
+        symbolLabel.setLabelFor(symbolsTextField);
         org.openide.awt.Mnemonics.setLocalizedText(symbolLabel, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.symbolLabel.text")); // NOI18N
+        symbolLabel.setToolTipText(org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "SymbolFilesToolTip")); // NOI18N
 
         symbolsTextField.setMaximumSize(new java.awt.Dimension(300, 2147483647));
 
+        envLabel.setLabelFor(envVarScrollPane);
         org.openide.awt.Mnemonics.setLocalizedText(envLabel, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.envLabel.text")); // NOI18N
+        envLabel.setToolTipText(org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "EnvToolTip")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(addEnvButton, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.addEnvButton.text")); // NOI18N
         addEnvButton.addActionListener(new java.awt.event.ActionListener() {
@@ -406,35 +468,43 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(publicCheckBox, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.publicCheckBox.text")); // NOI18N
+        publicCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "PublicToolTip")); // NOI18N
+
+        runTextField.setColumns(20);
+        runTextField.setLineWrap(true);
+        runTextField.setRows(5);
+        runTextField.setWrapStyleWord(true);
+        runTextField.setMinimumSize(new java.awt.Dimension(360, 17));
+        jScrollPane1.setViewportView(runTextField);
 
         javax.swing.GroupLayout rightPanelLayout = new javax.swing.GroupLayout(rightPanel);
         rightPanel.setLayout(rightPanelLayout);
         rightPanelLayout.setHorizontalGroup(
             rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(rightPanelLayout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, rightPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(envVarScrollPane, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(rightPanelLayout.createSequentialGroup()
+                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 603, Short.MAX_VALUE)
+                    .addComponent(envVarScrollPane)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, rightPanelLayout.createSequentialGroup()
                         .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(runLabel)
                             .addComponent(buildLabel)
                             .addComponent(runDirLabel)
                             .addComponent(symbolLabel)
                             .addComponent(launcherNameLabel))
-                        .addGap(21, 21, 21)
-                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(runDirTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(buildTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(runTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(launcherNameTextField, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(symbolsTextField, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(launcherNameTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addGroup(rightPanelLayout.createSequentialGroup()
+                            .addComponent(runDirTextField, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(buildTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, rightPanelLayout.createSequentialGroup()
                         .addComponent(envLabel)
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(rightPanelLayout.createSequentialGroup()
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, rightPanelLayout.createSequentialGroup()
                         .addComponent(publicCheckBox)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 240, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(addEnvButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(removeEnvButton)))
@@ -448,9 +518,9 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
                     .addComponent(launcherNameLabel)
                     .addComponent(launcherNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(runTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(runLabel))
+                .addComponent(runLabel)
+                .addGap(3, 3, 3)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(buildLabel)
@@ -459,14 +529,14 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
                 .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(runDirLabel)
                     .addComponent(runDirTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(10, 10, 10)
                 .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(symbolLabel)
                     .addComponent(symbolsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(envLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(envVarScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 245, Short.MAX_VALUE)
+                .addComponent(envVarScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(addEnvButton)
@@ -654,6 +724,7 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
     private javax.swing.JButton downButton;
     private javax.swing.JLabel envLabel;
     private javax.swing.JScrollPane envVarScrollPane;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel launcherNameLabel;
     private javax.swing.JTextField launcherNameTextField;
     private javax.swing.JLabel launchersListLabel;
@@ -665,7 +736,7 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
     private javax.swing.JLabel runDirLabel;
     private javax.swing.JTextField runDirTextField;
     private javax.swing.JLabel runLabel;
-    private javax.swing.JTextField runTextField;
+    private javax.swing.JTextArea runTextField;
     private javax.swing.JLabel symbolLabel;
     private javax.swing.JTextField symbolsTextField;
     private javax.swing.JButton upButton;
@@ -678,7 +749,9 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
             if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
                 updateSelectedConfiguration();
                 selectedConfiguration = getSelectedConfiguration();
+                resetFields = true;
                 setContent(selectedConfiguration);
+                resetFields = false;
                 enableControls();
             }
         }
@@ -686,6 +759,7 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
         private void setContent(LauncherConfig cfg) {
             launcherNameTextField.setText(cfg == null ? null : cfg.getName());
             runTextField.setText(cfg == null ? null : cfg.getCommand());
+            runTextField.setCaretPosition(0);
             runDirTextField.setText(cfg == null ? null : cfg.getRunDir());
             buildTextField.setText(cfg == null ? null : cfg.getBuildCommand());
             symbolsTextField.setText(cfg == null ? null : cfg.getSymbolFiles());
@@ -729,23 +803,32 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
 
         private BufferedImage icon;
         private static JTextField test = new JTextField();
+        private String name;
+        private String command;
+        private boolean pub;
+        private int id;
+
 
         public LauncherNode(LauncherConfig cfg) {
             super(Children.LEAF, Lookups.fixed(cfg));
-            updateIcon(cfg);
+            name = cfg.getDisplayedName();
+            command = cfg.getCommand();
+            pub = cfg.getPublic();
+            id = cfg.getID();
+            updateIcon();
         }
 
-        private void updateIcon(LauncherConfig cfg) {
+        private void updateIcon() {
             icon = new BufferedImage(15, 15, BufferedImage.TYPE_INT_ARGB);
 
             Graphics2D g = (Graphics2D) icon.getGraphics();
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            if (cfg.getPublic()) {
+            if (pub) {
                 g.setColor(Color.RED);
             } else {
                 g.setColor(Color.BLUE);
             }
-            if (cfg.getID() > 0) {
+            if (id > 0) {
                 g.fillOval(7, 4, 5, 5);
             } else {
                 g.fillOval(4, 1, 11, 11);
@@ -764,9 +847,12 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
         }
 
         // TODO: How to make this correctly?
-        public void updateNode() {
+        public void updateNode(String name, String command, boolean pub) {
+            this.name = name;
+            this.command = command;
+            this.pub = pub;
             fireDisplayNameChange(null, getDisplayName());
-            updateIcon(getConfiguration());
+            updateIcon();
             fireIconChange();
         }
 
@@ -777,14 +863,14 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
 
         @Override
         public String getDisplayName() {
-            if (getConfiguration().getID() <= 0) {
+            if (id <= 0) {
                 return NbBundle.getMessage(LaunchersPanel.class, "COMMON_PROPERTIES");
             } else {
-                String name = getConfiguration().getName();
-                if (name == null || name.isEmpty()) {
-                    name = getConfiguration().getCommand();
+                String res = name;
+                if (res == null || res.isEmpty()) {
+                    res = command;
                 }
-                return name;
+                return res;
             }
         }
 

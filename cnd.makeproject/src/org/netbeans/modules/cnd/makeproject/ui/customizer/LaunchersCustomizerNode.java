@@ -39,26 +39,43 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.launchers.actions.ui;
+package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
-import org.netbeans.api.project.Project;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
+import javax.swing.JPanel;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
+import org.netbeans.modules.cnd.makeproject.launchers.actions.ui.LaunchersPanel;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Alexander Simon
  */
-public class ManageLaunchers {
+public class LaunchersCustomizerNode extends CustomizerNode {
 
-    public static void invoke(Project p) {
-        LaunchersPanel panel = new LaunchersPanel(p);
-        String title = NbBundle.getMessage(ManageLaunchers.class, "Launchers_Title"); // NOI18N
-        DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, title);
-        DialogDisplayer.getDefault().notify(dialogDescriptor);
-        if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
-            panel.save();
+    private LaunchersPanel launchersPropPanel;
+
+    public LaunchersCustomizerNode(String name, String displayName, CustomizerNode[] children, Lookup lookup) {
+        super(name, displayName, children, lookup);
+    }
+
+    @Override
+    public JPanel getPanel(Configuration configuration) {
+        if (launchersPropPanel == null) {
+            launchersPropPanel = new LaunchersPanel(getContext().getProject());
+            getContext().registerSavable(launchersPropPanel);
         }
+        return launchersPropPanel;
+    }
+
+    @Override
+    public CustomizerNode.CustomizerStyle customizerStyle() {
+        return CustomizerNode.CustomizerStyle.PANEL;
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("ProjectPropsLaunchers"); // NOI18N
     }
 }
