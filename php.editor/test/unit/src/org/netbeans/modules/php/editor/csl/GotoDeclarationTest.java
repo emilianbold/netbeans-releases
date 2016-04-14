@@ -1045,6 +1045,14 @@ public class GotoDeclarationTest extends PHPNavTestBase {
         checkDeclaration(getTestPath(), "echo self::testCon^stant;", "const ^testConstant = \"test\";");
     }
 
+    public void testReturnType_01() throws Exception {
+        checkDeclaration(getTestPath(), "    public function getLogger(): Lo^gger {", "interface ^Logger {");
+    }
+
+    public void testReturnType_02() throws Exception {
+        checkDeclaration(getTestPath(), "function foo(): Log^ger {", "interface ^Logger {");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //    public void testGotoTypeClsIface6() throws Exception {
 //        String gotoTest = prepareTestFile(
