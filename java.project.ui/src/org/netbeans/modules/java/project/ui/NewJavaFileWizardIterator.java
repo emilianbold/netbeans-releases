@@ -432,7 +432,7 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
         index = 0;
         final List<WizardDescriptor.Iterator<WizardDescriptor>> itOut = new ArrayList<>(1);
         panels = createPanels(wiz, itOut);
-        projectSpecificIterator = itOut.get(0);
+        projectSpecificIterator = itOut.isEmpty() ? null : itOut.get(0);
         asInstantiatingIterator(projectSpecificIterator)
                 .ifPresent((it)->it.initialize(wiz));
         // Make sure list of steps is accurate.
