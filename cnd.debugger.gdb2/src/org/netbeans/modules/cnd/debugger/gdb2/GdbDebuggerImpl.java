@@ -149,7 +149,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     static final Logger LOG = Logger.getLogger(GdbDebuggerImpl.class.toString());
 
     private final GdbHandlerExpert handlerExpert;
-    private MILocation homeLoc;
+    private volatile MILocation homeLoc;
     private boolean dynamicType;
 
     private DisModel disModel = new DisModel();
@@ -2554,7 +2554,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
 
         stackUpdater.treeChanged();     // causes a pull
-        disassembly.stateUpdated();
     }
 
     /*
@@ -3749,7 +3748,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             MIValue frameValue = (results != null) ? results.valueOf(MI_FRAME) : null;
             MITList frameTuple;
             MITList stack;
-            boolean visited = false;
 	    // Mac 10.4 gdb provides no "frame" attribute
 
             // For the scenario that stack view is closed and local view
@@ -3761,19 +3759,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             }
 
 	    if (srcResults != null) {
+                boolean visited = false;
                 stack = srcResults.valueOf("stack").asList(); // NOI18N
-		if (false) {
-		    // We have information about what src location we're
-		    // stopped in.
-		    if (frameValue != null)
-			frameTuple = frameValue.asTuple();
-		    homeLoc = MILocation.make(this, frameTuple, srcResults, false, stack.size(), breakpoint);
-
-		} else {
-                    frameValue = ((MIResult)stack.asList().get(0)).value();
-		    frameTuple = frameValue.asTuple();
-		    homeLoc = MILocation.make(this, frameTuple, null, false, stack.size(), breakpoint);
-                }
+                frameValue = ((MIResult) stack.asList().get(0)).value();
+                frameTuple = frameValue.asTuple();
 
                 // find the first frame with source info if dis was not requested
                 for (MITListItem stf : stack.asList()) {
@@ -3783,16 +3772,17 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                     }
                     visited = true;
                 }
-
+                homeLoc = MILocation.make(this, frameTuple, srcResults, visited, stack.size(), breakpoint);
                 state().isUpAllowed = !homeLoc.bottomframe();
                 state().isDownAllowed = !homeLoc.topframe();
                 setStack(srcRecord);
 	    } else {
                 frameTuple = ( frameValue == null ? null : frameValue.asTuple() );
                 stack = null;
+                homeLoc = MILocation.make(this, frameTuple, null, false, 0, breakpoint);
             }
-
-            setVisitedLocation(MILocation.make(this, frameTuple, null, visited, (stack == null ? 0 :stack.size()), breakpoint));
+            
+            setVisitedLocation(homeLoc);
 
 //            if (get_frames || get_locals) {
 //                showStackFrames();
