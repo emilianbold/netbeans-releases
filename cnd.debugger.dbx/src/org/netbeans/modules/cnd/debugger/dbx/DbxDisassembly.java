@@ -98,20 +98,24 @@ public class DbxDisassembly extends Disassembly {
     
     private void reloadDis(boolean force) {
         if (!opened) {
+            reloadFailed();
             return;
         }
         Location visitedLocation = getDebugger().getVisitedLocation();
         if (visitedLocation == null) {
+            reloadFailed();
             return;
         }
         long curAddress = visitedLocation.pc();
         if (curAddress == 0) {
+            reloadFailed();
             return;
         }
         
         if (curAddress != address) {
             requestMode = RequestMode.FILE_SRC;
         } else if (!force || requestMode == RequestMode.NONE) {
+            reloadFailed();
             return;
         }
 
