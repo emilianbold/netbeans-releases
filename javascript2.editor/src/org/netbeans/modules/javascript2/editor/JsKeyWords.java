@@ -74,11 +74,13 @@ public class JsKeyWords {
         KEYWORDS.put(JsTokenId.KEYWORD_DELETE.fixedText(), CompletionType.CURSOR_INSIDE_BRACKETS);
         KEYWORDS.put(JsTokenId.KEYWORD_DO.fixedText(), CompletionType.CURSOR_INSIDE_BRACKETS);
         KEYWORDS.put(JsTokenId.KEYWORD_ELSE.fixedText(), CompletionType.CURSOR_INSIDE_BRACKETS);
+        KEYWORDS.put(JsTokenId.KEYWORD_EXPORT.fixedText(), CompletionType.ENDS_WITH_SPACE);
         KEYWORDS.put(JsTokenId.KEYWORD_FALSE.fixedText(), CompletionType.SIMPLE);
         KEYWORDS.put(JsTokenId.KEYWORD_FINALLY.fixedText(), CompletionType.ENDS_WITH_CURLY_BRACKETS);
         KEYWORDS.put(JsTokenId.KEYWORD_FOR.fixedText(), CompletionType.CURSOR_INSIDE_BRACKETS);
         KEYWORDS.put(JsTokenId.KEYWORD_FUNCTION.fixedText(), CompletionType.ENDS_WITH_SPACE);
         KEYWORDS.put(JsTokenId.KEYWORD_IF.fixedText(), CompletionType.CURSOR_INSIDE_BRACKETS);
+        KEYWORDS.put(JsTokenId.KEYWORD_IMPORT.fixedText(), CompletionType.ENDS_WITH_SPACE);
         KEYWORDS.put(JsTokenId.KEYWORD_IN.fixedText(), CompletionType.ENDS_WITH_SPACE);
         KEYWORDS.put(JsTokenId.KEYWORD_INSTANCEOF.fixedText(), CompletionType.ENDS_WITH_SPACE);
         KEYWORDS.put(JsTokenId.KEYWORD_NEW.fixedText(), CompletionType.ENDS_WITH_SPACE);
@@ -94,7 +96,5 @@ public class JsKeyWords {
         KEYWORDS.put(JsTokenId.KEYWORD_VOID.fixedText(), CompletionType.ENDS_WITH_SPACE);
         KEYWORDS.put(JsTokenId.KEYWORD_WHILE.fixedText(), CompletionType.CURSOR_INSIDE_BRACKETS);
         KEYWORDS.put(JsTokenId.KEYWORD_WITH.fixedText(), CompletionType.ENDS_WITH_SPACE);
-        KEYWORDS.put(JsTokenId.KEYWORD_EXPORT.fixedText(), CompletionType.ENDS_WITH_SPACE);
-        KEYWORDS.put(JsTokenId.KEYWORD_IMPORT.fixedText(), CompletionType.ENDS_WITH_SPACE);
     }
 }
