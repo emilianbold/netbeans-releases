@@ -1103,7 +1103,9 @@ public class FormatVisitor extends NodeVisitor {
                             break;
                         } else {
                             Token token = getPreviousNonEmptyToken(getStart(next));
-                            if (token != null && JsTokenId.KEYWORD_VAR == token.id()) {
+                            if (token != null && (JsTokenId.KEYWORD_VAR == token.id()
+                                    || JsTokenId.KEYWORD_CONST == token.id()
+                                    || JsTokenId.RESERVED_LET == token.id())) {
                                 i--;
                                 break;
                             }
