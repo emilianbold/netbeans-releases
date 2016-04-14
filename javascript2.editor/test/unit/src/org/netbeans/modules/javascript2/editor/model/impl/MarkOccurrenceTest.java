@@ -61,6 +61,29 @@ public class MarkOccurrenceTest extends JsTestBase {
     }
     
     
+    public void testArrowFunction01() throws Exception {
+        checkOccurrences("testfiles/model/arrowFunction.js", "var ^a = 1;", true);
+    }
+    
+    public void testArrowFunction02() throws Exception {
+        checkOccurrences("testfiles/model/arrowFunction.js", "(^a, b) => {", true);
+    }
+    
+    public void testArrowFunction03() throws Exception {
+        checkOccurrences("testfiles/model/arrowFunction.js", "var ^b = 2;", true);
+    }
+
+    public void testArrowFunction04() throws Exception {
+        checkOccurrences("testfiles/model/arrowFunction.js", "(a, ^b) => {", true);
+    }
+    
+    public void testArrowFunction05() throws Exception {
+        checkOccurrences("testfiles/model/arrowFunction.js", "var ^x = 10;", true);
+    }
+    
+    public void testArrowFunction06() throws Exception {
+        checkOccurrences("testfiles/model/arrowFunction.js", "var y = ^x => x + 5;", true);
+    }
     
     public void testSimpleObject01() throws Exception {
         checkOccurrences("testfiles/model/simpleObject.js", "var Car^rot = {", true);

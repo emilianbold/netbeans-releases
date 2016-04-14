@@ -128,6 +128,10 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
         checkSemantic("testfiles/coloring/unusedVariable03.js"); 
     }
     
+    public void testUnusedArrowParameter01() throws Exception {
+        checkSemantic("testfiles/hints/arrowFunction.js"); 
+    }
+    
     public void testIssue217443() throws Exception {
         checkSemantic("testfiles/coloring/issue217443.js"); 
     }
