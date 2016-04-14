@@ -542,6 +542,14 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/let1.js");
     }
     
+    public void testLet2() throws Exception {
+        reformatFileContents("testfiles/formatter/let2.js",new IndentPrefs(4, 4));
+    }
+
+    public void testLet2Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/let2.js");
+    }
+    
     public void testObjects1() throws Exception {
         reformatFileContents("testfiles/formatter/objects1.js",new IndentPrefs(4, 4));
     }
