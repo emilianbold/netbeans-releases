@@ -2018,6 +2018,36 @@ public class ActionFactory {
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 Caret caret = target.getCaret();
+                if(caret instanceof EditorCaret) {
+                    EditorCaret editorCaret = (EditorCaret) caret;
+                    editorCaret.moveCarets(new CaretMoveHandler() {
+                        @Override
+                        public void moveCarets(CaretMoveContext context) {
+                            boolean beeped = false;
+                            for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
+                                try {
+                                    if (caretInfo.isSelectionShowing()) {
+                                        context.setDot(caretInfo, caretInfo.getDotPosition()); // unselect if anything selected
+                                    } else {
+                                        BaseDocument doc = (BaseDocument) context.getDocument(); // selection not visible
+                                        int block[] = Utilities.getIdentifierBlock(doc,
+                                                caretInfo.getDot());
+                                        if (block != null) {
+                                            context.setDotAndMark(caretInfo,
+                                                    doc.createPosition(block[0]),
+                                                    doc.createPosition(block[1]));
+                                        }
+                                    }
+                                } catch (BadLocationException e) {
+                                    if(!beeped) {
+                                        context.getComponent().getToolkit().beep();
+                                        beeped = true;
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } else {
                 try {
                     if (Utilities.isSelectionShowing(caret)) {
                         caret.setDot(caret.getDot()); // unselect if anything selected
@@ -2031,6 +2061,7 @@ public class ActionFactory {
                     }
                 } catch (BadLocationException e) {
                     target.getToolkit().beep();
+                }
                 }
             }
         }
