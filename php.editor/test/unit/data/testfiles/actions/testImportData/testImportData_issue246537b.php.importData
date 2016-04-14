@@ -1,13 +1,13 @@
-Caret position: 34
+Caret position: 119
 Should show uses panel: true
 Defaults:
- Don't use type.
+ \Two\MyTrait
 
 Names:
- MyClass
+ MyTrait
 
 Variants:
- \Three\MyClass
- \Two\MyClass
+ \One\MyTrait
+ \Two\MyTrait
  Don't use type.
 
