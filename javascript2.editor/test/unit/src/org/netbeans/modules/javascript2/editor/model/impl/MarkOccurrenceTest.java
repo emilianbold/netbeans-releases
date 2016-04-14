@@ -1994,6 +1994,26 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/destructuringAssignments/objectDestructuring01.js", "var {p, q} = o^;", true);
     }
     
+    public void testObjectDestructuring02_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/objectDestructuring02.js", "({c^, a, b} = {b:1, a:2});", true);
+    }
+    
+    public void testObjectDestructuring02_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/objectDestructuring02.js", "({c, a^, b} = {b:1, a:2});", true);
+    }
+    
+    public void testObjectDestructuring02_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/objectDestructuring02.js", "({c, a, b^} = {b:1, a:2});", true);
+    }
+    
+    public void testObjectDestructuring02_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/objectDestructuring02.js", "({c, a, b} = {b^:1, a:2});", true);
+    }
+    
+    public void testObjectDestructuring02_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/objectDestructuring02.js", "({c, a, b} = {b:1, a^:2});", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
