@@ -306,20 +306,24 @@ public class GdbDisassembly extends Disassembly {
     private void reloadDis(boolean withSource, boolean force) {
         this.withSource = withSource;
         if (!opened) {
+            reloadFailed();
             return;
         }
         Frame frame = getDebugger().getCurrentFrame();
         if (frame == null) {
+            reloadFailed();
             return;
         }
         String curAddress = frame.getCurrentPC();
         if (curAddress == null || curAddress.length() == 0) {
+            reloadFailed();
             return;
         }
 
         if (!curAddress.equals(address)) {
             requestMode = withSource ? RequestMode.FILE_SRC : RequestMode.FILE_NO_SRC;
         } else if (requestMode == RequestMode.NONE) {
+            reloadFailed();
             return;
         }
 
