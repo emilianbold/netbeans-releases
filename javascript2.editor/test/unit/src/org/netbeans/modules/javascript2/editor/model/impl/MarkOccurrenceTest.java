@@ -1942,6 +1942,82 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/destructuringAssignments/arrayDestructuring02.js", "var [one, two, three] = fo^o;", true);
     }
     
+    public void testArrayDestructuring03_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/arrayDestructuring03.js", "[a^, b] = f();", true);
+    }
+    
+    public void testArrayDestructuring03_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/arrayDestructuring03.js", "[a, b^] = f();", true);
+    }
+    
+    public void testArrayDestructuring03_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/arrayDestructuring03.js", "[a, b] = f^();", true);
+    }
+    
+    public void testArrayDestructuring01_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/arrayDestructuring04.js", "var [a^, , b] = f();", true);
+    }
+    
+    public void testArrayDestructuring01_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/arrayDestructuring04.js", "var [a, , b^] = f();", true);
+    }
+    
+    public void testArrayDestructuring01_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/arrayDestructuring04.js", "var [a, , b] = f^();", true);
+    }
+    
+    public void testRegExpDestructuring01_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/regExpDestructuring01.js", "var [, pr^otocol, fullhost, fullpath] = parsedURL;", true);
+    }
+    
+    public void testRegExpDestructuring01_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/regExpDestructuring01.js", "var [, protocol, ful^lhost, fullpath] = parsedURL;", true);
+    }
+    
+    public void testRegExpDestructuring01_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/regExpDestructuring01.js", "var [, protocol, fullhost, fullp^ath] = parsedURL;", true);
+    }
+    
+    public void testRegExpDestructuring01_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/regExpDestructuring01.js", "var [, protocol, fullhost, fullpath] = par^sedURL;", true);
+    }
+    
+    public void testObjectDestructuring01_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/objectDestructuring01.js", "var {p^, q} = o;", true);
+    }
+    
+    public void testObjectDestructuring01_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/objectDestructuring01.js", "var {p, q^} = o;", true);
+    }
+    
+    public void testObjectDestructuring01_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/objectDestructuring01.js", "var {p, q} = o^;", true);
+    }
+    
+    public void testObjectDestructuring02_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/objectDestructuring02.js", "({c^, a, b} = {b:1, a:2});", true);
+    }
+    
+    public void testObjectDestructuring02_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/objectDestructuring02.js", "({c, a^, b} = {b:1, a:2});", true);
+    }
+    
+    public void testObjectDestructuring02_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/objectDestructuring02.js", "({c, a, b^} = {b:1, a:2});", true);
+    }
+    
+    public void testObjectDestructuring02_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/objectDestructuring02.js", "({c, a, b} = {b^:1, a:2});", true);
+    }
+    
+    public void testObjectDestructuring02_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/objectDestructuring02.js", "({c, a, b} = {b:1, a^:2});", true);
+    }
+    
+    public void testObjectDestructuring03_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/objectDestructuring03.js", "console.log(c^); // undefined ", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
