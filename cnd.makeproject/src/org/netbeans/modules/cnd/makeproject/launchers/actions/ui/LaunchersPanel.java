@@ -330,6 +330,7 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
         removeEnvButton = new javax.swing.JButton();
         publicCheckBox = new javax.swing.JCheckBox();
 
+        launchersListLabel.setLabelFor(LauncersListPanel);
         org.openide.awt.Mnemonics.setLocalizedText(launchersListLabel, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.launchersListLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.addButton.text")); // NOI18N
@@ -415,26 +416,36 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
 
         launcherNameLabel.setLabelFor(launcherNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(launcherNameLabel, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.launcherNameLabel.text")); // NOI18N
+        launcherNameLabel.setToolTipText(org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LauncherDisplayNameToolTip")); // NOI18N
 
         launcherNameTextField.setMaximumSize(new java.awt.Dimension(300, 2147483647));
 
+        runLabel.setLabelFor(runTextField);
         org.openide.awt.Mnemonics.setLocalizedText(runLabel, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.runLabel.text")); // NOI18N
 
         runTextField.setMaximumSize(new java.awt.Dimension(300, 2147483647));
 
+        buildLabel.setLabelFor(buildTextField);
         org.openide.awt.Mnemonics.setLocalizedText(buildLabel, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.buildLabel.text")); // NOI18N
+        buildLabel.setToolTipText(org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "BuildCommandToolTip")); // NOI18N
 
         buildTextField.setMaximumSize(new java.awt.Dimension(300, 2147483647));
 
+        runDirLabel.setLabelFor(runDirTextField);
         org.openide.awt.Mnemonics.setLocalizedText(runDirLabel, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.runDirLabel.text")); // NOI18N
+        runDirLabel.setToolTipText(org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "RunDirectoryToolTip")); // NOI18N
 
         runDirTextField.setMaximumSize(new java.awt.Dimension(300, 2147483647));
 
+        symbolLabel.setLabelFor(symbolsTextField);
         org.openide.awt.Mnemonics.setLocalizedText(symbolLabel, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.symbolLabel.text")); // NOI18N
+        symbolLabel.setToolTipText(org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "SymbolFilesToolTip")); // NOI18N
 
         symbolsTextField.setMaximumSize(new java.awt.Dimension(300, 2147483647));
 
+        envLabel.setLabelFor(envVarScrollPane);
         org.openide.awt.Mnemonics.setLocalizedText(envLabel, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.envLabel.text")); // NOI18N
+        envLabel.setToolTipText(org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "EnvToolTip")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(addEnvButton, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.addEnvButton.text")); // NOI18N
         addEnvButton.addActionListener(new java.awt.event.ActionListener() {
@@ -451,6 +462,7 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(publicCheckBox, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.publicCheckBox.text")); // NOI18N
+        publicCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "PublicToolTip")); // NOI18N
 
         javax.swing.GroupLayout rightPanelLayout = new javax.swing.GroupLayout(rightPanel);
         rightPanel.setLayout(rightPanelLayout);
