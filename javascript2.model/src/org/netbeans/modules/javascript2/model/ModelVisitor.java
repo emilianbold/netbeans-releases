@@ -772,6 +772,10 @@ public class ModelVisitor extends PathNodeVisitor {
             if (property != null && property instanceof JsFunction) {
                 fncScope = (JsFunctionImpl)property;
             }
+            if (property == null) {
+                LOGGER.log(Level.FINE, "FunctionNode: " + functionNode.toString() + " is not procedssed, because parent function " + fncParent.toString() + " doesn't contain such property."); //NOI18N
+                return false;
+            }
         }
         
         // add to the model functions and variables declared in this scope
