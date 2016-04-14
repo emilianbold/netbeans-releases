@@ -55,7 +55,9 @@ import com.oracle.js.parser.ir.VarNode;
 import com.oracle.js.parser.ir.WhileNode;
 import static com.oracle.js.parser.TokenType.EQ;
 import static com.oracle.js.parser.TokenType.NE;
+import com.oracle.js.parser.ir.ClassNode;
 import com.oracle.js.parser.ir.ExpressionStatement;
+import com.oracle.js.parser.ir.IdentNode;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -548,11 +550,21 @@ public class JsConventionRule extends JsAstRule {
             } else if (previous instanceof ForNode) {
                 check = false;
             }
-            
-            if (varNode.isFunctionDeclaration()) {
+
+            if (varNode.isFunctionDeclaration() || varNode.isSynthetic()) {
                 check = false;
             }
-            
+            if (varNode.getInit() instanceof ClassNode) {
+                IdentNode cIdent = ((ClassNode) varNode.getInit()).getIdent();
+                IdentNode vIdent = varNode.getName();
+                // this is artificial var node for simple class declaration
+                if (cIdent != null
+                        && cIdent.getStart() == vIdent.getStart()
+                        && cIdent.getFinish() == vIdent.getFinish()) {
+                    check = false;
+                }
+            }
+
             if (check) {
                 checkSemicolon(varNode.getFinish());
             }
