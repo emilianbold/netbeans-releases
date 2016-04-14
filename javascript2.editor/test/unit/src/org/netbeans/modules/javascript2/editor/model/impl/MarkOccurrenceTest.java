@@ -1942,6 +1942,30 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/destructuringAssignments/arrayDestructuring02.js", "var [one, two, three] = fo^o;", true);
     }
     
+    public void testArrayDestructuring03_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/arrayDestructuring03.js", "[a^, b] = f();", true);
+    }
+    
+    public void testArrayDestructuring03_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/arrayDestructuring03.js", "[a, b^] = f();", true);
+    }
+    
+    public void testArrayDestructuring03_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/arrayDestructuring03.js", "[a, b] = f^();", true);
+    }
+    
+    public void testArrayDestructuring01_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/arrayDestructuring04.js", "var [a^, , b] = f();", true);
+    }
+    
+    public void testArrayDestructuring01_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/arrayDestructuring04.js", "var [a, , b^] = f();", true);
+    }
+    
+    public void testArrayDestructuring01_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/arrayDestructuring04.js", "var [a, , b] = f^();", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
