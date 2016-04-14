@@ -1966,6 +1966,22 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/destructuringAssignments/arrayDestructuring04.js", "var [a, , b] = f^();", true);
     }
     
+    public void testRegExpDestructuring01_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/regExpDestructuring01.js", "var [, pr^otocol, fullhost, fullpath] = parsedURL;", true);
+    }
+    
+    public void testRegExpDestructuring01_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/regExpDestructuring01.js", "var [, protocol, ful^lhost, fullpath] = parsedURL;", true);
+    }
+    
+    public void testRegExpDestructuring01_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/regExpDestructuring01.js", "var [, protocol, fullhost, fullp^ath] = parsedURL;", true);
+    }
+    
+    public void testRegExpDestructuring01_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/regExpDestructuring01.js", "var [, protocol, fullhost, fullpath] = par^sedURL;", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
