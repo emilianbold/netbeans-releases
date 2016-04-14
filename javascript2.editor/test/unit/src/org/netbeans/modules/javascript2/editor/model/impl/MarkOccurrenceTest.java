@@ -1926,6 +1926,22 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/destructuringAssignments/arrayDestructuring01.js", "[a,b, c, d^] = [1, 2, \"testik\", d+d];", true);
     }
     
+    public void testArrayDestructuring02_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/arrayDestructuring02.js", "var [o^ne, two, three] = foo;", true);
+    }
+    
+    public void testArrayDestructuring02_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/arrayDestructuring02.js", "var [one, tw^o, three] = foo;", true);
+    }
+    
+    public void testArrayDestructuring02_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/arrayDestructuring02.js", "var [one, two, thr^ee] = foo;", true);
+    }
+    
+    public void testArrayDestructuring02_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/arrayDestructuring02.js", "var [one, two, three] = fo^o;", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

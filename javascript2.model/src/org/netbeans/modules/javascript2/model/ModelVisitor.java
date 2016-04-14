@@ -202,20 +202,26 @@ public class ModelVisitor extends PathNodeVisitor {
     public boolean enterBinaryNode(BinaryNode binaryNode) {
         Node lhs = binaryNode.lhs();
         Node rhs = binaryNode.rhs();
-        if (lhs instanceof LiteralNode.ArrayLiteralNode && rhs instanceof LiteralNode.ArrayLiteralNode && binaryNode.tokenType() == TokenType.ASSIGN) {
-            // case of destructuring assgnment like [a,b] = [1, 2]
+        if (lhs instanceof LiteralNode.ArrayLiteralNode && binaryNode.tokenType() == TokenType.ASSIGN) {
+            // case of destructuring assgnment like [a,b] = ....
             LiteralNode.ArrayLiteralNode lan = (LiteralNode.ArrayLiteralNode)lhs;
-            LiteralNode.ArrayLiteralNode ran = (LiteralNode.ArrayLiteralNode)rhs;
-            List<Expression> lExpressions = lan.getElementExpressions();
-            List<Expression> rExpressions = ran.getElementExpressions();
-            for (int i = 0; i < lExpressions.size(); i++) {
-                Expression lExpression = lExpressions.get(i);
-                if (i < rExpressions.size()) {
-                    Expression rExpression = rExpressions.get(i);
-                    processBinaryNode(lExpression, rExpression, TokenType.ASSIGN);
-                } else {
-                    break;
+            if (rhs instanceof LiteralNode.ArrayLiteralNode) {
+                // case [a, b] = [1, 2]
+                LiteralNode.ArrayLiteralNode ran = (LiteralNode.ArrayLiteralNode)rhs;
+                List<Expression> lExpressions = lan.getElementExpressions();
+                List<Expression> rExpressions = ran.getElementExpressions();
+                for (int i = 0; i < lExpressions.size(); i++) {
+                    Expression lExpression = lExpressions.get(i);
+                    if (i < rExpressions.size()) {
+                        Expression rExpression = rExpressions.get(i);
+                        processBinaryNode(lExpression, rExpression, TokenType.ASSIGN);
+                    } else {
+                        break;
+                    }
                 }
+            } else {
+                // other cases
+                rhs.accept(this);
             }
         } else {
             processBinaryNode(lhs, rhs, binaryNode.tokenType());
