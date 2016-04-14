@@ -228,7 +228,7 @@ is divided into following sections:
                 <property name="module.name" value=""/>
             </target>
             <target name="-do-init">
-                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-init-macrodef-property</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-init-macrodef-property,-init-modules-supported</xsl:attribute>
 
                 <xsl:choose>
                     <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
