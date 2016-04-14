@@ -84,9 +84,9 @@ made subject to such option by the copyright holder.
                 <mkdir dir="${empty.dir}"/>
                 <java classname="@{modulename}/@{classname}" dir="${work.dir}" failonerror="${java.failonerror}" fork="true" jvm="${platform.java}">
                     <jvmarg value="-modulepath"/>
-                    <jvmarg line="@{modulepath}:${empty.dir}"/>
+                    <jvmarg path="@{modulepath}:${empty.dir}"/>
                     <jvmarg value="-classpath"/>
-                    <jvmarg line="@{classpath}:${empty.dir}"/>
+                    <jvmarg path="@{classpath}:${empty.dir}"/>
                     <jvmarg value="-Dfile.encoding=${encoding}"/>
                     <redirector errorencoding="${encoding}" inputencoding="${encoding}" outputencoding="${encoding}"/>
                     <jvmarg line="${run.jvmargs}"/>
@@ -112,7 +112,7 @@ made subject to such option by the copyright holder.
                 <mkdir dir="${empty.dir}"/>
                 <java classname="@{classname}" dir="${work.dir}" failonerror="${java.failonerror}" fork="true" jvm="${platform.java}">
                     <jvmarg value="-modulepath"/>
-                    <jvmarg line="@{modulepath}:${empty.dir}"/>
+                    <jvmarg path="@{modulepath}:${empty.dir}"/>
                     <jvmarg value="-Dfile.encoding=${encoding}"/>
                     <redirector errorencoding="${encoding}" inputencoding="${encoding}" outputencoding="${encoding}"/>
                     <jvmarg line="${run.jvmargs}"/>

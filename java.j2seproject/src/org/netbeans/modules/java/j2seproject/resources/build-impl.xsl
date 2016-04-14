@@ -588,9 +588,9 @@ is divided into following sections:
                                 <path path="@{{classpath}}"/>
                             </classpath>
                             <compilerarg value="-modulepath"/>
-                            <compilerarg line="@{{modulepath}}:${{empty.dir}}"/>
+                            <compilerarg path="@{{modulepath}}:${{empty.dir}}"/>
                             <compilerarg value="-upgrademodulepath"/>
-                            <compilerarg line="@{{upgrademodulepath}}:${{empty.dir}}"/>
+                            <compilerarg path="@{{upgrademodulepath}}:${{empty.dir}}"/>
                             <compilerarg line="${{javac.systemmodulepath.cmd.line.arg}}"/>
                             <compilerarg line="${{javac.profile.cmd.line.arg}}"/>
                             <compilerarg line="${{javac.compilerargs}}"/>
@@ -964,7 +964,8 @@ is divided into following sections:
                             <formatter type="xml"/>
                             <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg value="-ea"/>
-                            <jvmarg line="-modulepath ${{run.test.modulepath}}:${{empty.dir}}"/>
+                            <jvmarg value="-modulepath"/>
+                            <jvmarg path="${{run.test.modulepath}}:${{empty.dir}}"/>
                             <jvmarg line="${{run.test.jvmargs}}"/>
                             <customizePrototype/>
                         </junit>
@@ -1712,11 +1713,11 @@ is divided into following sections:
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
                             <jvmarg value="-modulepath"/>
-                            <jvmarg line="@{{modulepath}}:${{empty.dir}}"/>
+                            <jvmarg path="@{{modulepath}}:${{empty.dir}}"/>
                             <jvmarg value="-upgrademodulepath"/>
-                            <jvmarg line="@{{upgrademodulepath}}:${{empty.dir}}"/>
+                            <jvmarg path="@{{upgrademodulepath}}:${{empty.dir}}"/>
                             <jvmarg value="-classpath"/>
-                            <jvmarg line="@{{classpath}}:${{empty.dir}}"/>
+                            <jvmarg path="@{{classpath}}:${{empty.dir}}"/>
                             <jvmarg value="-Dfile.encoding=${{runtime.encoding}}"/>
                             <redirector inputencoding="${{runtime.encoding}}" outputencoding="${{runtime.encoding}}" errorencoding="${{runtime.encoding}}"/>
                             <jvmarg line="${{run.jvmargs}}"/>
@@ -1773,9 +1774,9 @@ is divided into following sections:
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
                             <jvmarg value="-modulepath"/>
-                            <jvmarg line="@{{modulepath}}:${{empty.dir}}"/>
+                            <jvmarg path="@{{modulepath}}:${{empty.dir}}"/>
                             <jvmarg value="-upgrademodulepath"/>
-                            <jvmarg line="@{{upgrademodulepath}}:${{empty.dir}}"/>
+                            <jvmarg path="@{{upgrademodulepath}}:${{empty.dir}}"/>
                             <jvmarg value="-Dfile.encoding=${{runtime.encoding}}"/>
                             <redirector inputencoding="${{runtime.encoding}}" outputencoding="${{runtime.encoding}}" errorencoding="${{runtime.encoding}}"/>
                             <jvmarg line="${{run.jvmargs}}"/>
