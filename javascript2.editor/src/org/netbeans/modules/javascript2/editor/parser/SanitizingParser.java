@@ -105,7 +105,7 @@ public abstract class SanitizingParser extends Parser {
 
     protected abstract String getMimeType();
     
-    private JsParserResult parseSource(Snapshot snapshot, SourceModificationEvent event,
+    final JsParserResult parseSource(Snapshot snapshot, SourceModificationEvent event,
             Sanitize sanitizing, JsErrorManager errorManager) throws Exception {
 
         FileObject fo = snapshot.getSource().getFileObject();
@@ -120,10 +120,16 @@ public abstract class SanitizingParser extends Parser {
             return new JsParserResult(snapshot, null);
         }
         int caretOffset = GsfUtilities.getLastKnownCaretOffset(snapshot, event);
-        
-        JsParserResult result = parseContext(new Context(scriptName, snapshot, caretOffset, language),
-                sanitizing, errorManager);
 
+        Context context = new Context(scriptName, snapshot, caretOffset, language);
+        JsParserResult result = parseContext(context, sanitizing, errorManager);
+
+        if (result.getRoot() == null && context.isModule()) {
+            // module may be broken completely by broken/unfinished export
+            // try to at least parse it as normal source
+            context.isModule = false;
+            result = parseContext(context, sanitizing, errorManager);
+        }
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "Parsing took: {0} ms; source: {1}",
                     new Object[]{(System.nanoTime() - startTime) / 1000000, scriptName});
@@ -170,7 +176,7 @@ public abstract class SanitizingParser extends Parser {
                     }
                     if (countedLines > 0 && (countChars / countedLines) > 200) {
                         if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.log(Level.FINE, "The file {0} was not parsed because the is minimize and size is big.", scriptName);
+                            LOGGER.log(Level.FINE, "The file {0} was not parsed because it is minimized and the size is too big.", scriptName);
                         }
                         return false;
                     }

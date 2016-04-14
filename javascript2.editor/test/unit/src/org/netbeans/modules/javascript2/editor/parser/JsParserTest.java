@@ -41,12 +41,14 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
+import com.oracle.js.parser.ir.FunctionNode;
 import javax.swing.text.Document;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.javascript2.editor.parser.SanitizingParser.Context;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
+import org.openide.util.Pair;
 
 /**
  *
@@ -275,6 +277,16 @@ public class JsParserTest extends JsTestBase {
             SanitizingParser.Sanitize.PREVIOUS_LINES);
     }
 
+    public void testBrokenModule() throws Exception {
+        Pair<FunctionNode, Integer> result = parse("function x() {\n"
+                + "\n"
+                + "}\n"
+                + "\n"
+                + "export {\n");
+        assertNotNull(result.first());
+        assertEquals(1, result.second().intValue());
+    }
+
     public void testRegexp() throws Exception {
         parse("$?c.onreadystatechange=function(){/loaded|complete/.test(c.readyState)&&d()}:c.onload=c.onerror=d;\n",
                 null, 0, null);
@@ -293,5 +305,14 @@ public class JsParserTest extends JsTestBase {
         assertEquals(expected, context.getSanitizedSource());
         assertEquals(errorCount, manager.getErrors().size());
         assertEquals(sanitization, context.getSanitization());
+    }
+    
+    private Pair<FunctionNode, Integer> parse(String text) throws Exception {
+        JsParser parser = new JsParser();
+        Document doc = getDocument(text);
+        Snapshot snapshot = Source.create(doc).createSnapshot();
+        JsErrorManager manager = new JsErrorManager(snapshot, JsTokenId.javascriptLanguage());
+        JsParserResult result = parser.parseSource(snapshot, null, SanitizingParser.Sanitize.NONE, manager);
+        return Pair.of(result.getRoot(), manager.getErrors().size());
     }
 }
