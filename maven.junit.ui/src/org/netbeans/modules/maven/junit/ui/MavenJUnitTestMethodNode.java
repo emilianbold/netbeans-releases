@@ -45,6 +45,8 @@ package org.netbeans.modules.maven.junit.ui;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -87,7 +89,7 @@ public class MavenJUnitTestMethodNode extends JUnitTestMethodNode {
         if (preferred != null) {
             actions.add(preferred);
         }
-        FileObject testFO = getProject().getLookup().lookup(LineConvertors.FileLocator.class).find(testcase.getLocation());
+        FileObject testFO = getTestcaseFileObject();                            
         if (testFO != null){
             Project suiteProject = FileOwnerQuery.getOwner(testFO);
             if (suiteProject != null) {
@@ -136,7 +138,13 @@ public class MavenJUnitTestMethodNode extends JUnitTestMethodNode {
 
     public FileObject getTestcaseFileObject() {
         LineConvertors.FileLocator fileLocator = getProject().getLookup().lookup(LineConvertors.FileLocator.class);
-        String location = testcase.getLocation();
-        return fileLocator.find(location);
+        if(fileLocator == null) {
+            Logger.getLogger(MavenJUnitTestMethodNode.class.getName()).log(Level.WARNING, "no LineConvertors.FileLocator available for project {0}", getProject().getProjectDirectory());
+        }
+        if(testcase == null) {
+            Logger.getLogger(MavenJUnitTestMethodNode.class.getName()).log(Level.WARNING, "null tescase in MavenJUnitTestMethodNode for project {0}", getProject().getProjectDirectory());            
+        }
+        String location = testcase != null ? testcase.getLocation() : null;
+        return fileLocator != null && location != null ? fileLocator.find(location) : null;
     }
 }

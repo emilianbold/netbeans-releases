@@ -99,6 +99,8 @@ import org.openide.util.Exceptions;
  * Common subclass to ConfigurationXMLCodec and AuxConfigurationXMLCodec.
  * 
  * Change History:
+ * V100 - NB 8.2
+ * Added check box to prepend tool collection path to PATH env variable (PREPEND_TOOL_COLLECTION_PATH)
  * V99 - NB 8.2
  *    Added copying of dependent shared libraries to a binary's output directory (LINKER_COPY_SHARED_LIBS_ELEMENT)
  * V98 - NB 8.2
@@ -301,7 +303,7 @@ public abstract class CommonConfigurationXMLCodec
         implements XMLEncoder {
     
     public final static int VERSION_WITH_INVERTED_SERIALIZATION = 88;
-    public final static int CURRENT_VERSION = 99;
+    public final static int CURRENT_VERSION = 100;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
@@ -336,6 +338,7 @@ public abstract class CommonConfigurationXMLCodec
     public final static String PLATFORM_ELEMENT = "platform"; // NOI18N
     protected final static String DEPENDENCY_CHECKING = "dependencyChecking"; // NOI18N
     protected final static String REBUILD_PROP_CHANGED = "rebuildPropChanged"; // NOI18N
+    protected final static String PREPEND_TOOL_COLLECTION_PATH = "prependToolCollectionPath"; // NOI18N
     // Compile Type
     protected final static String NEO_CONF_ELEMENT = "neoConf"; // Old style. FIXUP : should be removed.... // NOI18N
     protected final static String COMPILE_TYPE_ELEMENT = "compileType"; // NOI18N

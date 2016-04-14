@@ -48,20 +48,18 @@
 
 package org.netbeans.modules.cnd.toolchain.ui.options;
 
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Rectangle;
-import java.io.IOException;
-import java.net.ConnectException;
-import javax.swing.plaf.ButtonUI;
-import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.io.IOException;
+import java.net.ConnectException;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
@@ -78,25 +76,25 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
-import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
-import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
-import org.netbeans.modules.cnd.toolchain.compilerset.APIAccessor;
-import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
-import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
-import org.netbeans.modules.cnd.toolchain.compilerset.CompilerFlavorImpl;
+import org.netbeans.modules.cnd.toolchain.compilerset.APIAccessor;
+import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetImpl;
+import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
-import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
@@ -901,6 +899,7 @@ import org.openide.util.Utilities;
         lbEncoding = new javax.swing.JLabel();
         encodingComboBox = new javax.swing.JComboBox();
         requiredSeparator = new javax.swing.JSeparator();
+        btPathEdit = new javax.swing.JButton();
 
         setMinimumSize(new java.awt.Dimension(200, 200));
         setPreferredSize(new java.awt.Dimension(200, 200));
@@ -1343,6 +1342,20 @@ import org.openide.util.Utilities;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
         add(requiredSeparator, gridBagConstraints);
+
+        btPathEdit.setText(org.openide.util.NbBundle.getMessage(ToolCollectionPanel.class, "ToolCollectionPanel.btPathEdit.text")); // NOI18N
+        btPathEdit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btPathEditActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
+        add(btPathEdit, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void btMakeBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btMakeBrowseActionPerformed
@@ -1395,6 +1408,23 @@ import org.openide.util.Utilities;
         }
     }//GEN-LAST:event_encodingComboBoxActionPerformed
 
+    private void btPathEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btPathEditActionPerformed
+        //Edit path env variables for build and run commands
+        ExecutionEnvironment env = manager.getExecutionEnvironment();
+        CompilerSetManager csm = manager.getCompilerSetManager();
+        CompilerSet cs = manager.getCurrentCompilerSet();
+        if(env != null && cs != null) {
+            PathEnvVariables panel = new PathEnvVariables(cs, env);
+            String title = NbBundle.getMessage(PathEnvVariables.class, "MODIFY_PATH_VARIABLE"); // NOI18N
+            DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, title);
+            DialogDisplayer.getDefault().notify(dialogDescriptor);
+            if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
+                ((CompilerSetImpl)cs).setModifyBuildPath(panel.getModifyBuildPath());
+                ((CompilerSetImpl)cs).setModifyRunPath(panel.getModifyRunPath());
+                manager.setChanged(true);
+            }
+        }
+    }//GEN-LAST:event_btPathEditActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btAsBrowse;
@@ -1405,6 +1435,7 @@ import org.openide.util.Utilities;
     private javax.swing.JButton btFortranBrowse;
     private javax.swing.JButton btInstall;
     private javax.swing.JButton btMakeBrowse;
+    private javax.swing.JButton btPathEdit;
     private javax.swing.JButton btQMakeBrowse;
     private javax.swing.JCheckBox cbAsRequired;
     private javax.swing.JCheckBox cbCRequired;

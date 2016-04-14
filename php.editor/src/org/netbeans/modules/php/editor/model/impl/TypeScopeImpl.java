@@ -61,6 +61,7 @@ import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
 import org.netbeans.modules.php.editor.api.elements.TraitElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
+import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.IndexScope;
 import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
@@ -68,6 +69,7 @@ import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.ClassInstanceCreationInfo;
@@ -173,27 +175,39 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
                 List<? extends InterfaceScope> iface = ifaces.get(ifaceName);
                 if (iface == null) {
                     if (indexedElement == null) {
-                        NamespaceScope top = (NamespaceScope) getInScope();
-                        NamespaceScopeImpl ps = (NamespaceScopeImpl) top;
-                        iface = ModelUtils.filter(ps.getDeclaredInterfaces(), ifaceName);
-                        retval.addAll(iface);
-                        ifaces.put(ifaceName, iface);
-                        /*for (InterfaceScopeImpl interfaceScope : iface) {
-                            retval.addAll(interfaceScope.getInterfaces());
-                        }*/
-                        if (retval.isEmpty() && top instanceof NamespaceScopeImpl) {
-                            IndexScope indexScope = ModelUtils.getIndexScope(ps);
-                            if (indexScope != null) {
-                                Collection<? extends InterfaceScope> cIfaces = IndexScopeImpl.getInterfaces(QualifiedName.create(ifaceName), this);
-                                ifaces.put(ifaceName, (List<? extends InterfaceScopeImpl>) cIfaces);
-                                for (InterfaceScope interfaceScope : cIfaces) {
-                                    retval.add((InterfaceScopeImpl) interfaceScope);
+                        Scope inScope = getInScope();
+                        if (inScope instanceof ClassScope || inScope instanceof TraitScope) {
+                            // in case of anonymous class
+                            while(!(inScope instanceof NamespaceScope)) {
+                                inScope = inScope.getInScope();
+                                if (inScope == null) {
+                                    break;
                                 }
-                            } else {
-                                //TODO: create it from idx
-                                throw new UnsupportedOperationException();
-                                /*assert iface != null;
-                                ifaces.put(key, iface);*/
+                            }
+                        }
+                        if (inScope instanceof NamespaceScope) {
+                            NamespaceScope top = (NamespaceScope) inScope;
+                            NamespaceScopeImpl ps = (NamespaceScopeImpl) top;
+                            iface = ModelUtils.filter(ps.getDeclaredInterfaces(), ifaceName);
+                            retval.addAll(iface);
+                            ifaces.put(ifaceName, iface);
+                            /*for (InterfaceScopeImpl interfaceScope : iface) {
+                                retval.addAll(interfaceScope.getInterfaces());
+                            }*/
+                            if (retval.isEmpty() && top instanceof NamespaceScopeImpl) {
+                                IndexScope indexScope = ModelUtils.getIndexScope(ps);
+                                if (indexScope != null) {
+                                    Collection<? extends InterfaceScope> cIfaces = IndexScopeImpl.getInterfaces(QualifiedName.create(ifaceName), this);
+                                    ifaces.put(ifaceName, (List<? extends InterfaceScopeImpl>) cIfaces);
+                                    for (InterfaceScope interfaceScope : cIfaces) {
+                                        retval.add((InterfaceScopeImpl) interfaceScope);
+                                    }
+                                } else {
+                                    //TODO: create it from idx
+                                    throw new UnsupportedOperationException();
+                                    /*assert iface != null;
+                                    ifaces.put(key, iface);*/
+                                }
                             }
                         }
                     } else {

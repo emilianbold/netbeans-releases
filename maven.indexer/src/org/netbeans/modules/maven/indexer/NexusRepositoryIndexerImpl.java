@@ -592,6 +592,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 IndexingNotificationProvider np = Lookup.getDefault().lookup(IndexingNotificationProvider.class);
                 if(np != null) {
                     np.notifyError(noSpaceLeftMsg);
+                    unloadIndexingContext(repo.getId());
                 } else {
                     throw e;
                 }

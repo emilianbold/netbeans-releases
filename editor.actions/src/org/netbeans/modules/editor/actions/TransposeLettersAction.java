@@ -38,13 +38,15 @@
 package org.netbeans.modules.editor.actions;
 
 import java.awt.event.ActionEvent;
+import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorActionNames;
 import org.netbeans.api.editor.EditorActionRegistration;
+import org.netbeans.api.editor.caret.CaretInfo;
+import org.netbeans.api.editor.caret.EditorCaret;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.editor.lib2.DocUtils;
-import org.netbeans.spi.editor.AbstractEditorAction;
 
 /**
  * Transpose letter at caret offset with the next one (useful when making typo).
@@ -63,9 +65,20 @@ public class TransposeLettersAction extends BaseAction {
             DocUtils.runAtomicAsUser(doc, new Runnable() {
                 @Override
                 public void run() {
-                    if (!DocUtils.transposeLetters(doc, target.getCaretPosition())) {
-                        // Cannot transpose (at end of doc) => beep
-                        target.getToolkit().beep();
+                    Caret caret = target.getCaret();
+                    if(caret instanceof EditorCaret) {
+                        EditorCaret editorCaret = (EditorCaret) caret;
+                        for (CaretInfo caretInfo : editorCaret.getSortedCarets()) {
+                            if (!DocUtils.transposeLetters(doc, caretInfo.getDot())) {
+                                // Cannot transpose (at end of doc) => beep
+                                target.getToolkit().beep();
+                            }
+                        }
+                    } else {
+                        if (!DocUtils.transposeLetters(doc, target.getCaretPosition())) {
+                            // Cannot transpose (at end of doc) => beep
+                            target.getToolkit().beep();
+                        }
                     }
                 }
             });

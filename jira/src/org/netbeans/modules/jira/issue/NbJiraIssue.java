@@ -632,7 +632,8 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         if (attrs == null) {
             return;
         }
-        for (TaskAttribute attribute : attrs.values()) {
+        TaskAttribute[] attrValues = attrs.values().toArray(new TaskAttribute[attrs.size()]);
+        for (TaskAttribute attribute : attrValues) {
             if (attribute.getId().startsWith(jiraConstants.getATTRIBUTE_CUSTOM_PREFIX())
                     && customField.getId().equals(attribute.getId())) {
                 setTaskAttributeValues(m, attribute, customField.getValues());
@@ -647,8 +648,8 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
             return new LinkedIssue[0];
         }
         List<LinkedIssue> linkedIssues = new ArrayList<LinkedIssue>();
-
-        for (TaskAttribute attribute : attrs.values()) {
+        TaskAttribute[] attrValues = attrs.values().toArray(new TaskAttribute[attrs.size()]);
+        for (TaskAttribute attribute : attrValues) {
             if (attribute.getId().startsWith(jiraConstants.getATTRIBUTE_LINK_PREFIX())) {
                 LinkedIssue linkedIssue = new LinkedIssue(attribute);
                 linkedIssues.add(linkedIssue);

@@ -67,10 +67,10 @@ import org.openide.util.NbPreferences;
  */
 /* package */ class CamelCaseOperations {
 
-    static int nextCamelCasePosition(JTextComponent textComponent) throws BadLocationException {
+    static int nextCamelCasePosition(CamelCaseInterceptor.MutableContext context) throws BadLocationException {
         // get current caret position
-        final int offset = textComponent.getCaretPosition();
-        final Document doc = textComponent.getDocument();
+        final int offset = context.getOffset();
+        final Document doc = context.getDocument();
         final int[] retOffset = new int[1];
         final BadLocationException[] retExc = new BadLocationException[1];
         doc.render(new Runnable() {
@@ -133,10 +133,10 @@ import org.openide.util.NbPreferences;
         return Utilities.getNextWord((BaseDocument)doc, offset);
     }
 
-    static int previousCamelCasePosition(JTextComponent textComponent) throws BadLocationException {
+    static int previousCamelCasePosition(CamelCaseInterceptor.MutableContext context) throws BadLocationException {
         // get current caret position
-        final int offset = textComponent.getCaretPosition();
-        final Document doc = textComponent.getDocument();
+        final int offset = context.getOffset();
+        final Document doc = context.getDocument();
         final int[] retOffset = new int[1];
         final BadLocationException[] retExc = new BadLocationException[1];
         doc.render(new Runnable() {
@@ -236,9 +236,9 @@ import org.openide.util.NbPreferences;
         public void change(MutableContext context) throws BadLocationException {
             if (isUsingCamelCase()) {
                 if (context.isBackward()) {
-                    context.setNextWordOffset(CamelCaseOperations.previousCamelCasePosition(context.getComponent()));
+                    context.setNextWordOffset(CamelCaseOperations.previousCamelCasePosition(context));
                 } else {
-                    context.setNextWordOffset(CamelCaseOperations.nextCamelCasePosition(context.getComponent()));
+                    context.setNextWordOffset(CamelCaseOperations.nextCamelCasePosition(context));
                 }
             }
         }

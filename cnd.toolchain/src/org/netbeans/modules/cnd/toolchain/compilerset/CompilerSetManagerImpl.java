@@ -274,7 +274,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         List<CompilerSet> setsCopy = new ArrayList<CompilerSet>();
         CompilerSet copyOfDefaultCompilerSet = null;
         for (CompilerSet set : getCompilerSets()) {
-            final CompilerSetImpl copy = ((CompilerSetImpl) set).createCopy();
+            final CompilerSetImpl copy = ((CompilerSetImpl) set).createCopy(executionEnvironment);
             setsCopy.add(copy);
             if (isDefaultCompilerSet(set)) {
                 copyOfDefaultCompilerSet = copy;
@@ -959,7 +959,8 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
             CompilerFlavor flavor = CompilerFlavorImpl.toFlavor(alias, platform);
             if (flavor != null) {
                 CompilerSetImpl bestCandidateCopy = bestCandidate
-                        .createCopy(flavor, bestCandidate.getDirectory(), alias, flavor.getToolchainDescriptor().getDisplayName(), true, true);
+                        .createCopy(executionEnvironment, flavor, bestCandidate.getDirectory(), alias, flavor.getToolchainDescriptor().getDisplayName(),
+                                true, true, bestCandidate.getModifyBuildPath(), bestCandidate.getModifyRunPath());
                 addUnsafe(bestCandidateCopy);
             }
         }

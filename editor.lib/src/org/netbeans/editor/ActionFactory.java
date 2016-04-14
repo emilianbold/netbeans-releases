@@ -1249,9 +1249,54 @@ public class ActionFactory {
                     target.getToolkit().beep();
                     return;
                 }
-
+                Caret caret = target.getCaret();
+                if (caret instanceof EditorCaret) {
+                    EditorCaret editorCaret = (EditorCaret) caret;
+                    if (RectangularSelectionUtils.isRectangularSelection(target)) { // no selection - change current char
+                        try {
+                        List<Position> positions = RectangularSelectionUtils.regionsCopy(target);
+                        for (int i = 0; i < positions.size(); i += 2) {
+                            int a = positions.get(i).getOffset();
+                            int b = positions.get(i + 1).getOffset();
+                            if (a == b) {
+                                continue;
+                            }
+                            Utilities.changeCase((BaseDocument) target.getDocument(), a, b - a, changeCaseMode);
+                        }
+                        } catch (BadLocationException e) {
+                            target.getToolkit().beep();
+                        }
+                    } else {
+                    editorCaret.moveCarets(new CaretMoveHandler() {
+                        @Override
+                        public void moveCarets(CaretMoveContext context) {
+                            boolean beeped = false;
+                            for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
+                                try {
+                                    BaseDocument doc = (BaseDocument) context.getDocument();
+                                    int dotPos = caretInfo.getDot();
+                                    if (caretInfo.isSelection()) { // valid selection
+                                        int startPos = Math.min(caretInfo.getDot(), caretInfo.getMark());
+                                        int endPos = Math.max(caretInfo.getDot(), caretInfo.getMark());
+                                        Utilities.changeCase(doc, startPos, endPos - startPos, changeCaseMode);
+                                        context.setDot(caretInfo, doc.createPosition(dotPos == startPos ? endPos : startPos));
+                                        context.moveDot(caretInfo, doc.createPosition(dotPos == startPos ? startPos : endPos));
+                                    } else { // no selection - change current char
+                                        Utilities.changeCase(doc, dotPos, 1, changeCaseMode);
+                                        context.setDot(caretInfo, doc.createPosition(dotPos + 1));
+                                    }
+                                } catch (BadLocationException e) {
+                                    if (!beeped) {
+                                        context.getComponent().getToolkit().beep();
+                                        beeped = true;
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    }
+                } else {
                 try {
-                    Caret caret = target.getCaret();
                     BaseDocument doc = (BaseDocument)target.getDocument();
                     int dotPos = caret.getDot();
                     if (RectangularSelectionUtils.isRectangularSelection(target)){ // no selection - change current char
@@ -1276,6 +1321,7 @@ public class ActionFactory {
                     }
                 } catch (BadLocationException e) {
                     target.getToolkit().beep();
+                }
                 }
             }
         }
@@ -1972,6 +2018,36 @@ public class ActionFactory {
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 Caret caret = target.getCaret();
+                if(caret instanceof EditorCaret) {
+                    EditorCaret editorCaret = (EditorCaret) caret;
+                    editorCaret.moveCarets(new CaretMoveHandler() {
+                        @Override
+                        public void moveCarets(CaretMoveContext context) {
+                            boolean beeped = false;
+                            for (CaretInfo caretInfo : context.getOriginalSortedCarets()) {
+                                try {
+                                    if (caretInfo.isSelectionShowing()) {
+                                        context.setDot(caretInfo, caretInfo.getDotPosition()); // unselect if anything selected
+                                    } else {
+                                        BaseDocument doc = (BaseDocument) context.getDocument(); // selection not visible
+                                        int block[] = Utilities.getIdentifierBlock(doc,
+                                                caretInfo.getDot());
+                                        if (block != null) {
+                                            context.setDotAndMark(caretInfo,
+                                                    doc.createPosition(block[0]),
+                                                    doc.createPosition(block[1]));
+                                        }
+                                    }
+                                } catch (BadLocationException e) {
+                                    if(!beeped) {
+                                        context.getComponent().getToolkit().beep();
+                                        beeped = true;
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } else {
                 try {
                     if (Utilities.isSelectionShowing(caret)) {
                         caret.setDot(caret.getDot()); // unselect if anything selected
@@ -1985,6 +2061,7 @@ public class ActionFactory {
                     }
                 } catch (BadLocationException e) {
                     target.getToolkit().beep();
+                }
                 }
             }
         }

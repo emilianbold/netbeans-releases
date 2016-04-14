@@ -345,7 +345,8 @@ public final class ToolsPanel extends JPanel implements ActionListener,
             @Override
             public void run() {
                 final CompilerSetImpl cs = ((CompilerSetImpl) selectedCompilerSet)
-                        .createCopy(selectedCompilerSet.getCompilerFlavor(), selectedCompilerSet.getDirectory(), compilerSetName, null, false, true);
+                        .createCopy(csm.getExecutionEnvironment(), selectedCompilerSet.getCompilerFlavor(), selectedCompilerSet.getDirectory(), compilerSetName, null,
+                                false, true, selectedCompilerSet.getModifyBuildPath(), selectedCompilerSet.getModifyRunPath());
                 csm.add(cs);
                 changed = areToolsOptionsChanged();
                 SwingUtilities.invokeLater(new Runnable(){
