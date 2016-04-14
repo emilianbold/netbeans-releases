@@ -41,14 +41,19 @@
  */
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyEditor;
+import java.io.InvalidObjectException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -67,7 +72,12 @@ import org.netbeans.spi.debugger.ui.PinWatchUISupport;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.explorer.propertysheet.PropertyPanel;
+import org.openide.nodes.Node.Property;
+import org.openide.nodes.PropertySupport;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
 
@@ -80,12 +90,16 @@ public final class PinWatchValueProvider implements PinWatchUISupport.ValueProvi
                                                     PropertyChangeListener {
     
     private final Map<Watch, ValueListeners> valueListeners = new HashMap<>();
+    private final ContextProvider lookupProvider;
     private final JPDADebuggerImpl debugger;
+    private final Action headAction;
     private final WatchRefreshModelImpl refrModel = new WatchRefreshModelImpl();
     
     public PinWatchValueProvider(ContextProvider lookupProvider) {
+        this.lookupProvider = lookupProvider;
         debugger = (JPDADebuggerImpl) lookupProvider.lookupFirst(null, JPDADebugger.class);
         debugger.addPropertyChangeListener(JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME, this);
+        headAction = lookupProvider.lookupFirst("PinWatchHeadActions", Action.class);
     }
 
     @Override
@@ -178,6 +192,66 @@ public final class PinWatchValueProvider implements PinWatchUISupport.ValueProvi
     }
 
     @Override
+    public Action[] getHeadActions(Watch watch) {
+        if (headAction == null) {
+            return null;
+        }
+        Pair<ObjectVariable, ValueListeners> varVl = getObjectVariable(watch);
+        if (varVl == null) {
+            return null;
+        }
+        ObjectVariable expandableVar = getObjectVariable(watch).first();
+        return new Action[] { new ExpandAction(headAction, watch.getExpression(), expandableVar) };
+    }
+
+    @Override
+    public Action[] getTailActions(Watch watch) {
+        Pair<ObjectVariable, ValueListeners> varVl = getObjectVariable(watch);
+        if (varVl == null) {
+            return null;
+        }
+        ObjectVariable var = varVl.first();
+        if (!ValuePropertyEditor.hasPropertyEditorFor(var)) {
+            return null;
+        }
+        final Object mirror = var.createMirrorObject();
+        if (mirror == null) {
+            return null;
+        }
+        ValuePropertyEditor ped = new ValuePropertyEditor(lookupProvider);
+        ped.setValueWithMirror(var, mirror);
+        return new Action[] { null, getPropertyEditorAction(ped, var, varVl.second(), watch.getExpression()) };
+    }
+
+    private Pair<ObjectVariable, ValueListeners> getObjectVariable(Watch watch) {
+        final ValueListeners vl;
+        synchronized (valueListeners) {
+            vl = valueListeners.get(watch);
+        }
+        if (vl == null) {
+            return null;
+        }
+        JPDAWatch ew = vl.watchEv.getEvaluatedWatch();
+        if (ew == null) {
+            return null;
+        }
+        ObjectVariable ov = null;
+        if (ew instanceof ObjectVariable) {
+            try {
+                Object jdiValue = ew.getClass().getMethod("getJDIValue").invoke(ew);
+                if (jdiValue != null) {
+                    ov = (ObjectVariable) ew;
+                }
+            } catch (Exception ex) {}
+        }
+        if (ov == null) {
+            return null;
+        } else {
+            return Pair.of(ov, vl);
+        }
+    }
+
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (debugger.getCurrentCallStackFrame() != null) {
             List<ValueListeners> vls;
@@ -200,52 +274,10 @@ public final class PinWatchValueProvider implements PinWatchUISupport.ValueProvi
                 }
             }
         }
-        /*
-        String propertyName = evt.getPropertyName();
-        if (DebuggerManager.PROP_CURRENT_ENGINE.equals(propertyName)) {
-            // Current engine change
-            DebuggerEngine engine = (DebuggerEngine) evt.getNewValue();
-            JPDADebuggerImpl debugger;
-            if (engine == null || (debugger = (JPDADebuggerImpl) engine.lookupFirst(null, JPDADebugger.class)) == null) {
-                // No current debugger, null all values:
-                Map<Watch, ValueListeners> vls;
-                synchronized (valueListeners) {
-                    vls = new HashMap(valueListeners);
-                }
-                for (Map.Entry<Watch, ValueListeners> wvl : vls.entrySet()) {
-                    wvl.getValue().value = null;
-                    wvl.getValue().listener.valueChanged(wvl.getKey());
-                }
-            } else {
-                currentDebugger = debugger;
-                if (!debuggers.contains(debugger)) {
-                    debuggers.add(debugger);
-                    debugger.addPropertyChangeListener(JPDADebugger.PROP_STATE, this);
-                    debugger.addPropertyChangeListener(JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME, this);
-                    synchronized (valueListeners) {
-                        for (Map.Entry<Watch, ValueListeners> wvl : valueListeners.entrySet()) {
-                            Watch w = wvl.getKey();
-                            JPDAWatchEvaluating watchEv = new JPDAWatchEvaluating(refrModel, w, debugger);
-                            wvl.getValue().watchEv = watchEv;
-                        }
-                    }
-                }
-            }
-        } else if (propertyName.equals(JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME)) {
-            
-        } else if (propertyName.equals(JPDADebugger.PROP_STATE)) {
-            if (((Integer) evt.getNewValue()) == JPDADebugger.STATE_DISCONNECTED) {
-                JPDADebugger debugger = (JPDADebugger) evt.getSource();
-                debugger.removePropertyChangeListener(JPDADebugger.PROP_STATE, this);
-                debugger.removePropertyChangeListener(JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME, this);
-                debuggers.remove(debugger);
-            }
-        }
-         */
     }
-    
+
     private static final RequestProcessor RP = new RequestProcessor(PinWatchValueProvider.class);
-    
+
     private void updateValueFrom(final JPDAWatchEvaluating watchEv) {
         final ValueListeners vl;
         final Watch watch = watchEv.getWatch();
@@ -283,7 +315,7 @@ public final class PinWatchValueProvider implements PinWatchUISupport.ValueProvi
             });
         }
     }
-    
+
     private final class WatchRefreshModelImpl implements JPDAWatchRefreshModel {
 
         @Override
@@ -303,20 +335,112 @@ public final class PinWatchValueProvider implements PinWatchUISupport.ValueProvi
         @Override
         public void fireChildrenChanged(Object node) {
         }
-        
+
     }
-    
+
     private static final class ValueListeners {
-        
+
         volatile String value = null;//PinWatchUISupport.ValueProvider.VALUE_EVALUATING;
         volatile String valueOnly = null;
-        
+
         ValueChangeListener listener;
         JPDAWatchEvaluating watchEv;
-        
+
         ValueListeners(ValueChangeListener listener) {
             this.listener = listener;
         }
     }
-    
+
+    private final class ExpandAction implements Action {
+
+        private final Action delegate;
+        private final String expression;
+        private final ObjectVariable var;
+
+        ExpandAction(Action delegate, String expression, ObjectVariable var) {
+            this.delegate = delegate;
+            this.expression = expression;
+            this.var = var;
+        }
+
+        @Override
+        public Object getValue(String key) {
+            return delegate.getValue(key);
+        }
+
+        @Override
+        public void putValue(String key, Object value) {
+            delegate.putValue(key, value);
+        }
+
+        @Override
+        public void setEnabled(boolean b) {
+            delegate.setEnabled(b);
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return delegate.isEnabled();
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            delegate.addPropertyChangeListener(listener);
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            delegate.removePropertyChangeListener(listener);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            delegate.putValue("debugger", debugger);                            // NOI18N
+            delegate.putValue("expression", expression);                        // NOI18N
+            delegate.putValue("variable", var);                                 // NOI18N
+            delegate.actionPerformed(e);
+        }
+
+    }
+
+    @NbBundle.Messages({"# {0} - the watched expression", "PropEditDisplayName=Value of {0}"})
+    private Action getPropertyEditorAction(final PropertyEditor pe,
+                                           final ObjectVariable var,
+                                           final ValueListeners vl,
+                                           final String expression) {
+        Property property = new PropertySupport.ReadWrite(expression, null,
+                                                          Bundle.PropEditDisplayName(expression),
+                                                          Bundle.PropEditDisplayName(expression)) {
+            @Override
+            public Object getValue() throws IllegalAccessException, InvocationTargetException {
+                return var;
+            }
+            @Override
+            public void setValue(final Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            vl.watchEv.setFromMirrorObject(val);
+                            vl.watchEv.setEvaluated(null);
+                            updateValueFrom(vl.watchEv);
+                        } catch (InvalidObjectException ex) {
+                            NotifyDescriptor msg = new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                            DialogDisplayer.getDefault().notifyLater(msg);
+                        }
+                    }
+                });
+                vl.value = getEvaluatingText();
+                vl.valueOnly = null;
+
+            }
+            @Override
+            public PropertyEditor getPropertyEditor() {
+                return pe;
+            }
+        };
+        PropertyPanel pp = new PropertyPanel(property);
+        return pp.getActionMap().get("invokeCustomEditor");                     // NOI18N
+    }
+
 }

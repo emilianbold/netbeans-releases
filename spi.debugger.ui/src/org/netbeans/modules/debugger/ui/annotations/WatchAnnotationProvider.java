@@ -59,6 +59,7 @@ import java.beans.PropertyChangeListener;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -68,8 +69,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
+import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.debugger.Breakpoint;
@@ -299,6 +302,8 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
         private final JLabel label;
         private final JLabel valueLabel;
         private final JTextField valueField;
+        private final JToolBar headActions;
+        private final JToolBar tailActions;
         private JTextField commentField;
         private final ValueProvider valueProvider;
         private final String evaluatingValue;
@@ -316,6 +321,8 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             
             setLayout(new GridBagLayout());
             GridBagConstraints gridConstraints = new GridBagConstraints();
+            gridConstraints.gridx = 0;
+            gridConstraints.gridy = 0;
             
             /*Icon expIcon = ImageUtilities.loadImageIcon(ICON_COMMENT, false);
             JButton expButton = new JButton(expIcon);
@@ -332,6 +339,10 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             
 //            label = createMultiLineToolTip(value, true);
             valueProvider = PIN_SUPPORT_ACCESS.getValueProvider(pin);
+            headActions = createActionsToolbar();
+            add(headActions, gridConstraints);
+            Action[] actions = valueProvider.getHeadActions(watch);
+            addActions(headActions, actions);
             evaluatingValue = valueProvider.getEvaluatingText();
             label = new JLabel(watch.getExpression() + " = ");
             valueLabel = new JLabel();
@@ -344,7 +355,11 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
                     javax.swing.SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
+                            Action[] actions = valueProvider.getHeadActions(watch);
+                            addActions(headActions, actions);
                             valueLabel.setText(text);
+                            actions = valueProvider.getTailActions(watch);
+                            addActions(tailActions, actions);
                             Dimension size = getPreferredSize();
                             Point loc = getLocation();
                             setBounds(loc.x, loc.y, size.width, size.height);
@@ -431,6 +446,13 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
                 }
             });
 
+            tailActions = createActionsToolbar();
+            gridConstraints.gridx++;
+            gridConstraints.weighty = 1;
+            gridConstraints.fill = GridBagConstraints.VERTICAL;
+            add(tailActions, gridConstraints);
+            actions = valueProvider.getTailActions(watch);
+            addActions(tailActions, actions);
             JSeparator iconsSeparator = new JSeparator(JSeparator.VERTICAL);
             gridConstraints.gridx++;
             gridConstraints.weighty = 1;
@@ -499,6 +521,36 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
             };
             addMouseListener(mouseAdapter);
             addMouseMotionListener(mouseAdapter);
+        }
+
+        private static JToolBar createActionsToolbar() {
+            JToolBar jt = new JToolBar(JToolBar.HORIZONTAL);
+            jt.setBorder(new EmptyBorder(0, 0, 0, 0));
+            jt.setFloatable(false);
+            jt.setRollover(false);
+            return jt;
+        }
+
+        private void addActions(JToolBar tb, Action[] actions) {
+            tb.removeAll();
+            boolean visible = false;
+            if (actions != null) {
+                for (Action a : actions) {
+                    if (a != null) {
+                        JButton btn = tb.add(a);
+                        btn.setBorder(new javax.swing.border.EmptyBorder(0, 2, 0, 2));
+                        btn.setBorderPainted(false);
+                        btn.setContentAreaFilled(false);
+                        btn.setRolloverEnabled(false);
+                        btn.setOpaque(false);
+                        btn.setFocusable(false);
+                        visible = true;
+                    } else {
+                        tb.add(new JSeparator(JSeparator.VERTICAL));
+                    }
+                }
+            }
+            tb.setVisible(visible);
         }
 
         private void addCommentField(String text, int gridwidth) {

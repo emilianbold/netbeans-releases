@@ -49,6 +49,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.Action;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
@@ -244,6 +245,26 @@ public final class PinWatchUISupport {
         }
 
         @Override
+        public Action[] getHeadActions(Watch watch) {
+            ValueProvider vp = delegate;
+            if (vp != null) {
+                return vp.getHeadActions(watch);
+            } else {
+                return ValueProvider.super.getHeadActions(watch);
+            }
+        }
+
+        @Override
+        public Action[] getTailActions(Watch watch) {
+            ValueProvider vp = delegate;
+            if (vp != null) {
+                return vp.getTailActions(watch);
+            } else {
+                return ValueProvider.super.getTailActions(watch);
+            }
+        }
+
+        @Override
         public synchronized void setChangeListener(Watch watch, ValueChangeListener chl) {
             ValueProvider vp = delegate;
             if (vp != null) {
@@ -348,6 +369,32 @@ public final class PinWatchUISupport {
          */
         default boolean setValue(Watch watch, String value) {
             throw new UnsupportedOperationException("Watch not editable.");
+        }
+
+        /**
+         * Get actions to be displayed at the head of pin watch component.
+         * Typically, you put an expansion action there.
+         * The default implementation returns <code>null</code>.
+         * @param watch The watch to get the actions for
+         * @return An array of actions or <code>null</code> elements (for action separators),
+         *         or <code>null</code> when no actions should be displayed.
+         */
+        default Action[] getHeadActions(Watch watch) {
+            return null;
+        }
+
+        /**
+         * Get actions to be displayed at the tail of pin watch component.
+         * Typically, you put a details action there, which displays a detailed
+         * view of the watch value. These actions, if any, are followed by comment
+         * and close actions, which are always present.
+         * The default implementation returns <code>null</code>.
+         * @param watch The watch to get the actions for
+         * @return An array of actions or <code>null</code> elements (for action separators),
+         *         or <code>null</code> when no actions should be displayed.
+         */
+        default Action[] getTailActions(Watch watch) {
+            return null;
         }
 
         /**

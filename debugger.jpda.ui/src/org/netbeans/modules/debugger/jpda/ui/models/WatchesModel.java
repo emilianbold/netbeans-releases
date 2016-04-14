@@ -52,6 +52,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.InvalidObjectException;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
 import java.util.*;
 import javax.security.auth.RefreshFailedException;
 import javax.security.auth.Refreshable;
@@ -481,6 +482,22 @@ public class WatchesModel implements TreeModel, JPDAWatchRefreshModel {
         public synchronized void setValue(String value) throws InvalidExpressionException {
             if (evaluatedWatch != null) {
                 evaluatedWatch.setValue(value);
+            } else {
+                throw new InvalidExpressionException("Can not set value while evaluating.");
+            }
+        }
+
+        @Override
+        protected synchronized void setValue(Value value) throws InvalidExpressionException {
+            if (evaluatedWatch != null) {
+                // need to delegate to evaluatedWatch.setValue(value);
+                try {
+                    Method setValueMethod = evaluatedWatch.getClass().getDeclaredMethod("setValue", Value.class);
+                    setValueMethod.setAccessible(true);
+                    setValueMethod.invoke(evaluatedWatch, value);
+                } catch (Exception ex) {
+                    throw new InvalidExpressionException(ex);
+                }
             } else {
                 throw new InvalidExpressionException("Can not set value while evaluating.");
             }
