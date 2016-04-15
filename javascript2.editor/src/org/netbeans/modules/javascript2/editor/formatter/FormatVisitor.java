@@ -343,6 +343,7 @@ public class FormatVisitor extends NodeVisitor {
     public boolean enterFunctionNode(FunctionNode functionNode) {
         if (functionNode.isModule()) {
             functionNode.visitImports(this);
+            functionNode.visitExports(this);
         }
 
         Block body = functionNode.getBody();
@@ -476,6 +477,11 @@ public class FormatVisitor extends NodeVisitor {
         if (token != null) {
             // we treat the import as statement
             appendTokenAfterLastVirtual(token, FormatToken.forFormat(FormatToken.Kind.AFTER_STATEMENT));
+        }
+        // the complex export nodes are included in top level function body anyway
+        // so we do not want to to visit further
+        if (exportNode.isDefault()) {
+            return super.enterExportNode(exportNode);
         }
         return false;
     }
@@ -871,6 +877,9 @@ public class FormatVisitor extends NodeVisitor {
 
     @Override
     public boolean enterVarNode(VarNode varNode) {
+        if (varNode.isSynthetic()) {
+            return false;
+        }
         int finish = getFinish(varNode) - 1;
         Token nextToken = getNextNonEmptyToken(finish);
         if (nextToken != null && nextToken.id() == JsTokenId.OPERATOR_COMMA) {
