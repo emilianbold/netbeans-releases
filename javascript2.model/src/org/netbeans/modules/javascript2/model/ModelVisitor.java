@@ -89,7 +89,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -229,6 +228,15 @@ public class ModelVisitor extends PathNodeVisitor {
             // cases {a, b} = ...
             ObjectNode lObjectNode = (ObjectNode)lhs;
             JsObjectImpl rObject = null;
+            
+            // prepare variables that are available in the current scope for later usage
+            DeclarationScopeImpl scope = modelBuilder.getCurrentDeclarationScope();
+            Collection<? extends JsObject> variables = ModelUtils.getVariables(scope);
+            Hashtable<String, JsObject> nameToVariable= new Hashtable<String, JsObject>();
+            for (JsObject variable : variables) {
+                nameToVariable.put(variable.getName(), variable);
+            }
+                
             if (rhs instanceof ObjectNode) {
                 // case {a, b} = {a:1, b:2}
                 // the rhs object we have to put to the model as anonymous object. At least will be colored in the right way
@@ -247,17 +255,12 @@ public class ModelVisitor extends PathNodeVisitor {
                 rhs.accept(this);
                 if (rhs instanceof IdentNode) {
                     // we will try to find the right object literal        
+                    rObject = (JsObjectImpl)nameToVariable.get(((IdentNode)rhs).getName());
                 }
             }
             if (rObject != null) {
-                // find all variables that are mentioned on the left site and assign the types from
+                // find variables that are mentioned on the left site and assign the types from
                 // property with the same name from the right site
-                DeclarationScopeImpl scope = modelBuilder.getCurrentDeclarationScope();
-                Collection<? extends JsObject> variables = ModelUtils.getVariables(scope);
-                HashMap<String, JsObject> nameToVariable= new HashMap<>();
-                for (JsObject variable : variables) {
-                    nameToVariable.put(variable.getName(), variable);
-                }
                 for (PropertyNode lPropertyNode : lObjectNode.getElements()) {
                     String variableName = null;
                     if (isKeyAndValueEquals(lPropertyNode)) {
@@ -278,7 +281,7 @@ public class ModelVisitor extends PathNodeVisitor {
                             if (!isKeyAndValueEquals(lPropertyNode)) {
                                 // mark occurrences in case {p:var1, q:var2} = {p:1, q:2} or {p:var1, q:var2} = objectLiteral
                                 rProperty.addOccurrence(new OffsetRange(lPropertyNode.getStart(), lPropertyNode.getStart() + lPropertyNode.getKeyName().length()));
-                            } 
+                            }
                         }
                     }
                 }
