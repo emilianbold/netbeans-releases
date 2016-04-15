@@ -2018,6 +2018,26 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/destructuringAssignments/objectDestructuring03.js", "console.log(c^); // undefined ", true);
     }
     
+    public void testObjectDestructuring04_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/objectDestructuring04.js", "var {p^: foo, q: bar, w: abc} = {p: 5, q:7};", true);
+    }
+    
+    public void testObjectDestructuring04_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/objectDestructuring04.js", "var {p: foo^, q: bar, w: abc} = {p: 5, q:7};", true);
+    }
+    
+    public void testObjectDestructuring04_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/objectDestructuring04.js", "var {p: foo, q: b^ar, w: abc} = {p: 5, q:7};", true);
+    }
+    
+    public void testObjectDestructuring04_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/objectDestructuring04.js", "var {p: foo, q^: bar, w: abc} = {p: 5, q:7};", true);
+    }
+    
+    public void testObjectDestructuring04_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/objectDestructuring04.js", "var {p: foo, q: bar, w: ab^c} = {p: 5, q:7};", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

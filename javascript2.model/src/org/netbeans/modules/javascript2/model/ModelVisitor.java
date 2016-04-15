@@ -89,6 +89,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -253,15 +254,16 @@ public class ModelVisitor extends PathNodeVisitor {
                 // property with the same name from the right site
                 DeclarationScopeImpl scope = modelBuilder.getCurrentDeclarationScope();
                 Collection<? extends JsObject> variables = ModelUtils.getVariables(scope);
-                Hashtable<String, JsObject> nameToVariable= new Hashtable<String, JsObject>();
+                HashMap<String, JsObject> nameToVariable= new HashMap<>();
                 for (JsObject variable : variables) {
                     nameToVariable.put(variable.getName(), variable);
                 }
                 for (PropertyNode lPropertyNode : lObjectNode.getElements()) {
                     String variableName = null;
-                    if (lPropertyNode.getValue().equals(lPropertyNode.getKey())) {
+                    if (isKeyAndValueEquals(lPropertyNode)) {
                         // case {p:var1, q:var2} = {p:1, q:2} or {p:var1, q:var2} = objectLiteral
                         variableName = lPropertyNode.getKeyName();
+                        lPropertyNode.accept(this);
                     } else if (lPropertyNode.getValue() instanceof IdentNode) {
                         variableName = ((IdentNode)lPropertyNode.getValue()).getName();
                     }
@@ -273,14 +275,14 @@ public class ModelVisitor extends PathNodeVisitor {
                             for (TypeUsage assignment : rProperty.getAssignments()){
                                 variable.addAssignment(assignment, rProperty.getOffset());
                             }
-                            if (!lPropertyNode.getValue().equals(lPropertyNode.getKey())) {
+                            if (!isKeyAndValueEquals(lPropertyNode)) {
                                 // mark occurrences in case {p:var1, q:var2} = {p:1, q:2} or {p:var1, q:var2} = objectLiteral
                                 rProperty.addOccurrence(new OffsetRange(lPropertyNode.getStart(), lPropertyNode.getStart() + lPropertyNode.getKeyName().length()));
-                            }
+                            } 
                         }
                     }
                 }
-//                return false;
+                return false;
             }
         }else {
             processBinaryNode(lhs, rhs, binaryNode.tokenType());
@@ -288,6 +290,15 @@ public class ModelVisitor extends PathNodeVisitor {
         return super.enterBinaryNode(binaryNode);
     }
 
+    private boolean isKeyAndValueEquals(PropertyNode pNode) {
+        if (pNode.getKey() instanceof IdentNode && pNode.getValue() instanceof IdentNode) {
+            IdentNode key = (IdentNode)pNode.getKey();
+            IdentNode value = (IdentNode)pNode.getValue();
+            return key.getName().equals(value.getName()) && key.getStart() == value.getStart();
+        }
+        return false;
+    }
+    
     private void processBinaryNode(Node lhs, Node rhs, TokenType tokenType) {
         if (tokenType == TokenType.ASSIGN
                 && !(/*rhs instanceof ReferenceNode ||*/ rhs instanceof ObjectNode)
