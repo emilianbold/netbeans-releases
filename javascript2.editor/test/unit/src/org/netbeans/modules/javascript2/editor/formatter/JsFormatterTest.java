@@ -1052,6 +1052,46 @@ public class JsFormatterTest extends JsTestBase {
     public void testImportExport5Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/importExport5.js");
     }
+    
+    public void testImportExport6() throws Exception {
+        reformatFileContents("testfiles/formatter/importExport6.js",new IndentPrefs(4, 4));
+    }
+
+    public void testImportExport6Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/importExport6.js");
+    }
+    
+    public void testImportExport7() throws Exception {
+        reformatFileContents("testfiles/formatter/importExport7.js",new IndentPrefs(4, 4));
+    }
+
+    public void testImportExport7Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/importExport7.js");
+    }
+    
+    public void testImportExport8() throws Exception {
+        reformatFileContents("testfiles/formatter/importExport8.js",new IndentPrefs(4, 4));
+    }
+
+    public void testImportExport8Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/importExport8.js");
+    }
+    
+    public void testImportExport9() throws Exception {
+        reformatFileContents("testfiles/formatter/importExport9.js",new IndentPrefs(4, 4));
+    }
+
+    public void testImportExport9Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/importExport9.js");
+    }
+    
+    public void testImportExport10() throws Exception {
+        reformatFileContents("testfiles/formatter/importExport10.js",new IndentPrefs(4, 4));
+    }
+
+    public void testImportExport10Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/importExport10.js");
+    }
 
     public void testDoWhile1() throws Exception {
         reformatFileContents("testfiles/formatter/dowhile1.js",new IndentPrefs(4, 4));
