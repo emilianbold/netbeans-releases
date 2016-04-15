@@ -394,7 +394,7 @@ public class LaunchersConfig {
         for (int i = 0; i < s.length(); i++) {
             final char c = s.charAt(i);
             if (c == ' ' && buf.length() > 80) {
-                buf.append("\\");
+                buf.append("\\"); //NOI18N
                 bw.write(buf.toString());
                 bw.newLine();
                 buf.setLength(0);
