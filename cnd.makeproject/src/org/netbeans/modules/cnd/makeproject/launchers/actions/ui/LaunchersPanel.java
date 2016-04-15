@@ -122,7 +122,7 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
         manager.addPropertyChangeListener(listener);
         instance = new LaunchersConfig(project);
         instance.load();
-        for(Map.Entry<Integer, LauncherConfig> e : instance.getLoanchers().entrySet()) {
+        for(Map.Entry<Integer, LauncherConfig> e : instance.getLaunchers().entrySet()) {
             launchers.add(e.getValue());
         }
         nodes = new LaunchersNodes(launchers);
@@ -564,7 +564,14 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         updateSelectedConfiguration();
-        LauncherConfig newConfiguration = new LauncherConfig(1000, true);
+        int max = 1000;
+        for(LauncherConfig cfg : launchers) {
+            if (cfg.getID() >= max) {
+                max = (cfg.getID() + 1000) / 1000;
+                max = max *1000;
+            }
+        }
+        LauncherConfig newConfiguration = new LauncherConfig(max, true);
         launchers.add(newConfiguration);
         nodes.restKeys();
         selectNode(newConfiguration);
@@ -613,7 +620,14 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
 
     private void copyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_copyButtonActionPerformed
         updateSelectedConfiguration();
-        LauncherConfig newConfiguration = getSelectedConfiguration().copy();
+        int max = 1000;
+        for(LauncherConfig cfg : launchers) {
+            if (cfg.getID() >= max) {
+                max = (cfg.getID() + 1000) / 1000;
+                max = max *1000;
+            }
+        }
+        LauncherConfig newConfiguration = getSelectedConfiguration().copy(max);
         launchers.add(newConfiguration);
         nodes.restKeys();
         selectNode(newConfiguration);

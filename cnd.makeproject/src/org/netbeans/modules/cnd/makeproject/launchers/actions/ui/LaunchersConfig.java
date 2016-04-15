@@ -80,7 +80,7 @@ public class LaunchersConfig {
         this.project = project;
     }
 
-    public TreeMap<Integer, LauncherConfig> getLoanchers() {
+    public TreeMap<Integer, LauncherConfig> getLaunchers() {
         return map;
     }
 
@@ -245,7 +245,7 @@ public class LaunchersConfig {
                 if (l.pub) {
                     hasPublicConfig |= !l.name.isEmpty() || !l.command.isEmpty() || l.buildCommand.isEmpty() || !l.env.isEmpty() || !l.runDir.isEmpty() || !l.symbolFiles.isEmpty();
                 } else {
-                    hasPrivateConfig |= !l.env.isEmpty() || !l.runDir.isEmpty() || !l.symbolFiles.isEmpty();
+                    hasPrivateConfig |= !l.name.isEmpty() || !l.command.isEmpty() || l.buildCommand.isEmpty() || !l.env.isEmpty() || !l.runDir.isEmpty() || !l.symbolFiles.isEmpty();
                 }
             } else {
                 if (l.pub) {
@@ -478,8 +478,8 @@ public class LaunchersConfig {
             return (name == null || name.isEmpty() ? command : name);
         }
 
-        public LauncherConfig copy() {
-            LauncherConfig res = new LauncherConfig(id, pub);
+        public LauncherConfig copy(int newID) {
+            LauncherConfig res = new LauncherConfig(newID, pub);
             res.command = this.command;
             res.name = this.name;
             res.buildCommand = this.buildCommand;
