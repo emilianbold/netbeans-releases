@@ -129,6 +129,8 @@ public class ProjectNodeFactory {
 
         descriptions.add(createLicenceDescription(lookup));
 
+        descriptions.add(createLaunchersDescription(lookup));
+
         CustomizerNode rootDescription = new CustomizerNode(
                 "Configuration Properties", getString("CONFIGURATION_PROPERTIES"), descriptions.toArray(new CustomizerNode[descriptions.size()]), lookup);  // NOI18N
 
@@ -156,7 +158,12 @@ public class ProjectNodeFactory {
         return new LicenseCustomizerNode(
                 "License", getString("LBL_License"), null, lookup); // NOI18N
     }
-        
+
+    private static CustomizerNode createLaunchersDescription(Lookup lookup) {
+        return new LaunchersCustomizerNode(
+                "Launchers", getString("LBL_Launchers"), null, lookup); // NOI18N
+    }
+
     private static CustomizerNode createBuildDescription(Lookup lookup) {
         MakeContext context = lookup.lookup(MakeContext.class);
 

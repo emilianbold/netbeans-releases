@@ -56,6 +56,7 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
@@ -68,6 +69,7 @@ import javax.swing.table.TableCellEditor;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.launchers.actions.ui.LaunchersConfig.LauncherConfig;
 import org.netbeans.modules.cnd.makeproject.runprofiles.ui.ListTableModel;
+import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeContext;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.ListView;
 import org.openide.nodes.AbstractNode;
@@ -81,7 +83,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Alexander Simon
  */
-public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Provider {
+public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, MakeContext.Savable {
 
     private final ExplorerManager manager = new ExplorerManager();
     private final SelectionChangeListener listener = new SelectionChangeListener();
@@ -161,7 +163,8 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
     }
 
 
-    public void saveConfigs() {
+    @Override
+    public void save() {
         updateSelectedConfiguration();
         if (modified) {
             instance.save(launchers);
@@ -481,7 +484,7 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, rightPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 609, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 603, Short.MAX_VALUE)
                     .addComponent(envVarScrollPane)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, rightPanelLayout.createSequentialGroup()
                         .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
