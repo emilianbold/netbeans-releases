@@ -57,6 +57,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
@@ -450,10 +451,12 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
         
         private static Color selectColor(Component comp, Color color) {
             JPanel previewPanel = new JPanel(new BorderLayout());
-            String[][] previewData = new String[][] { { "org.mypackage", "100 ms" },
-                                                      { "org.mypackage.MyClass", "10 ms" },
-                                                      { "org.mypackage.MyClass.myMethod(boolean, int, String)", "1 ms" } };
-            TableModel previewModel = new DefaultTableModel(previewData, new String[] { "Very long column name", "xxx" });
+            previewPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 10, 5));
+            
+            String[][] previewData = new String[][] { { "org.mypackage", "100 ms" }, // NOI18N
+                                                      { "org.mypackage.MyClass", "10 ms" }, // NOI18N
+                                                      { "org.mypackage.MyClass.myMethod(boolean, int, String)", "1 ms" } }; // NOI18N
+            TableModel previewModel = new DefaultTableModel(previewData, new String[] { "Very long column name", "xxx" }); // NOI18N
             ProfilerTable previewTable = new ProfilerTable(previewModel, false, false, null);
             
             final Color initial = color == null ? previewTable.getForeground() : null;
@@ -470,6 +473,7 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
             previewTable.setTableHeader(null);
             previewTable.setVisibleRows(3);
             JScrollPane previewScroll = new JScrollPane(previewTable, JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            
             previewPanel.add(previewScroll, BorderLayout.CENTER);
             pane.setPreviewPanel(previewPanel);
             
@@ -477,7 +481,7 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
                 private Color clr;
                 public void actionPerformed(ActionEvent e) { clr = pane.getColor(); }
                 Color getColor() { return clr; }
-            };
+            }
             Ret ret = new Ret();
 
             JDialog dialog = JColorChooser.createDialog(comp, "Choose Filter Color", true, pane, ret, null);
