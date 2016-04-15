@@ -415,8 +415,9 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
         profilingPointsTable = new ProfilerTable(profilingPointsTableModel, true, true, null) {
             public TableCellRenderer getCellRenderer(int row, int column) {
                 if (convertColumnIndexToModel(column) == 3) {
-                    return row <= getRowCount() ? null : // Prevent AIOOBE when accessing non-existing PP
-                    getProfilingPointAt(row).getResultsRenderer();
+                    return (row < 0 || row >= getRowCount()) ?
+                            getDefaultRenderer(String.class) : // Prevent AIOOBE when accessing non-existing PP ??
+                            getProfilingPointAt(row).getResultsRenderer();
                 } else {
                     return super.getCellRenderer(row, column);
                 }
