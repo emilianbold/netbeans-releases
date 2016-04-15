@@ -569,8 +569,7 @@ public class JPDATruffleAccessor extends Object {
         if (value == null) {
             return null;
         }
-        String strValue = visualizer.displayValue(value, TruffleObject.DISPLAY_TRIM);
-        TruffleObject to = new TruffleObject(visualizer, strValue, value);
+        TruffleObject to = new TruffleObject(visualizer, expression, value);
         return to;
     }
     
