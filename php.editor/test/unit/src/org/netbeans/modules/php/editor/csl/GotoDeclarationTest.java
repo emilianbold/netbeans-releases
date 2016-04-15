@@ -1170,6 +1170,82 @@ public class GotoDeclarationTest extends PHPNavTestBase {
         checkDeclaration(getTestPath(), "$x->l^og('');", "    public function ^log($msg) {");
     }
 
+    public void testGroupUse_01() throws Exception {
+        checkDeclaration(getTestPath(), "    B\\C\\Cls^ABC2 AS MyCls", "class ^ClsABC2 {");
+    }
+
+    public void testGroupUse_02() throws Exception {
+        checkDeclaration(getTestPath(), "$a = new Cl^sA();", "class ^ClsA {");
+    }
+
+    public void testGroupUse_03() throws Exception {
+        checkDeclaration(getTestPath(), "$a->te^st();", "    public function ^test() { // ClsA");
+    }
+
+    public void testGroupUse_04() throws Exception {
+        checkDeclaration(getTestPath(), "$ab = new Cl^sAB();", "class ^ClsAB {");
+    }
+
+    public void testGroupUse_05() throws Exception {
+        checkDeclaration(getTestPath(), "$ab->te^st();", "    public function ^test() { // ClsAB");
+    }
+
+    public void testGroupUse_06() throws Exception {
+        checkDeclaration(getTestPath(), "$abc = new Cls^ABC();", "class ^ClsABC {");
+    }
+
+    public void testGroupUse_07() throws Exception {
+        checkDeclaration(getTestPath(), "$abc->tes^t();", "    public function ^test() { // ClsABC");
+    }
+
+    public void testGroupUse_08() throws Exception {
+        checkDeclaration(getTestPath(), "$mycls = new MyC^ls();", "    B\\C\\ClsABC2 AS ^MyCls");
+    }
+
+    public void testGroupUse_09() throws Exception {
+        checkDeclaration(getTestPath(), "$mycls->te^st();", "    public function ^test() { // ClsABC2");
+    }
+
+    public void testGroupUseConst_01() throws Exception {
+        checkDeclaration(getTestPath(), "    B\\C\\CA^BC AS MyCABC", "const ^CABC = 'CABC';");
+    }
+
+    public void testGroupUseConst_02() throws Exception {
+        checkDeclaration(getTestPath(), "echo C^A . PHP_EOL;", "const ^CA = 'CA';");
+    }
+
+    public void testGroupUseConst_03() throws Exception {
+        checkDeclaration(getTestPath(), "echo C^AB . PHP_EOL;", "const ^CAB = 'CAB';");
+    }
+
+    public void testGroupUseConst_04() throws Exception {
+        checkDeclaration(getTestPath(), "echo CA^BC . PHP_EOL;", "const ^CABC = 'CABC';");
+    }
+
+    public void testGroupUseConst_05() throws Exception {
+        checkDeclaration(getTestPath(), "echo MyC^ABC . PHP_EOL;", "    B\\C\\CABC AS ^MyCABC");
+    }
+
+    public void testGroupUseFunc_01() throws Exception {
+        checkDeclaration(getTestPath(), "    B\\C\\f^abc AS MyFabc", "function ^fabc() {");
+    }
+
+    public void testGroupUseFunc_02() throws Exception {
+        checkDeclaration(getTestPath(), "echo f^a();", "function ^fa() {");
+    }
+
+    public void testGroupUseFunc_03() throws Exception {
+        checkDeclaration(getTestPath(), "echo fa^b();", "function ^fab() {");
+    }
+
+    public void testGroupUseFunc_04() throws Exception {
+        checkDeclaration(getTestPath(), "echo fa^bc();", "function ^fabc() {");
+    }
+
+    public void testGroupUseFunc_05() throws Exception {
+        checkDeclaration(getTestPath(), "echo MyFa^bc();", "    B\\C\\fabc AS ^MyFabc");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //    public void testGotoTypeClsIface6() throws Exception {
 //        String gotoTest = prepareTestFile(
