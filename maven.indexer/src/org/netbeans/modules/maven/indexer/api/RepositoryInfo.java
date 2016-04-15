@@ -41,12 +41,12 @@
  */
 package org.netbeans.modules.maven.indexer.api;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -57,6 +57,9 @@ import org.netbeans.api.annotations.common.NullAllowed;
  */
 public final class RepositoryInfo {
 
+    public static final String PROP_INDEX_CHANGE = "index.change"; // NOI18N
+    public static final String PROP_NO_REMOTE_INDEX = "no.remote.index"; // NOI18N
+    
     /** @see org.sonatype.nexus.index.context.DefaultIndexingContext#INDEX_DIRECTORY */
     static final String DEFAULT_INDEX_SUFFIX = ".index/"; // NOI18N
 
@@ -66,6 +69,8 @@ public final class RepositoryInfo {
     private final String repositoryUrl;
     private final String indexUpdateUrl;
     private final List<RepositoryInfo> mirrorOf = new ArrayList<RepositoryInfo>();
+    
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     
     private MirrorStrategy mirrorStrategy = MirrorStrategy.NON_WILDCARD;
 
@@ -118,32 +123,29 @@ public final class RepositoryInfo {
     public boolean isLocal() {
         return repositoryPath != null;
     }
-    
-    public void addChangeListener(ChangeListener cl) {
-        synchronized (changeListeners) {
-            changeListeners.add(cl);
-        }
-    }
-
-    public void removeChangeListener(ChangeListener cl) {
-        synchronized (changeListeners) {
-            changeListeners.remove(cl);
-        }
-    }
-    private final List<ChangeListener> changeListeners = new ArrayList<ChangeListener>();
-
+        
     /**
      * Notifies listeners that the index content has changed.
      * to be called from RepositoryIndexerImplementation only.
      */
-    public void fireChangeIndex() {
-        synchronized (changeListeners) {
-            for (ChangeListener changeListener : changeListeners) {
-                changeListener.stateChanged(new ChangeEvent(this));
-            }
-        }
+    public void fireIndexChange() {
+        support.firePropertyChange(PROP_INDEX_CHANGE, null, null);
     }
     
+    /**
+     * Notifies listeners that there was no remote index available.
+     */
+    public void fireNoIndex() {
+        support.firePropertyChange(PROP_NO_REMOTE_INDEX, null, null);
+    }
+    
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        support.removePropertyChangeListener(listener);
+    }
     
     /**
      * denotes if the current instance if mirroring one or more other urls.
