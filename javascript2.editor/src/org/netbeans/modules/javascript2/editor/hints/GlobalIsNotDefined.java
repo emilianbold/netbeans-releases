@@ -59,17 +59,17 @@ import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.javascript2.editor.hints.JsHintsProvider.JsRuleContext;
-import org.netbeans.modules.javascript2.editor.index.JsIndex;
-import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.JsElement;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.Occurrence;
-import org.netbeans.modules.javascript2.editor.model.Type;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelExtender;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
+import org.netbeans.modules.javascript2.types.api.DeclarationScope;
+import org.netbeans.modules.javascript2.types.api.Identifier;
+import org.netbeans.modules.javascript2.model.api.JsElement;
+import org.netbeans.modules.javascript2.model.api.JsObject;
+import org.netbeans.modules.javascript2.model.api.Occurrence;
+import org.netbeans.modules.javascript2.types.api.Type;
+import org.netbeans.modules.javascript2.model.api.Index;
+import org.netbeans.modules.javascript2.model.api.Model;
+import org.netbeans.modules.javascript2.model.api.ModelUtils;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.web.common.api.LexerUtils;
@@ -95,12 +95,12 @@ public class GlobalIsNotDefined extends JsAstRule {
             // compute this hint just for the js files.
             return;
         }
-        JsObject globalObject = context.getJsParserResult().getModel().getGlobalObject();
+        JsObject globalObject = Model.getModel(context.getJsParserResult(), false).getGlobalObject();
         Collection<? extends JsObject> variables = ModelUtils.getVariables((DeclarationScope)globalObject);
         FileObject fo = context.parserResult.getSnapshot().getSource().getFileObject();
-        JsIndex jsIndex = JsIndex.get(fo);
+        Index jsIndex = Index.get(fo);
         Set<String> namesFromFrameworks = new HashSet<String>();
-        for (JsObject globalFiles:  ModelExtender.getDefault().getExtendingGlobalObjects(context.getJsParserResult().getSnapshot().getSource().getFileObject())) {
+        for (JsObject globalFiles:  ModelUtils.getExtendingGlobalObjects(context.getJsParserResult().getSnapshot().getSource().getFileObject())) {
             for (JsObject global : globalFiles.getProperties().values()) {
                 namesFromFrameworks.add(global.getName());
             }
@@ -120,7 +120,7 @@ public class GlobalIsNotDefined extends JsAstRule {
                 }
 
                 // check whether is defined as window property
-                Collection<? extends IndexResult> findByFqn = jsIndex.findByFqn("window." + varName, JsIndex.FIELD_BASE_NAME);
+                Collection<? extends IndexResult> findByFqn = jsIndex.findByFqn("window." + varName, Index.FIELD_BASE_NAME);
                 if (findByFqn.isEmpty()) {
                     if (variable.getOccurrences().isEmpty()) {
                         addHint(context, hints, offset, varName, variable.getOffsetRange());
@@ -209,7 +209,7 @@ public class GlobalIsNotDefined extends JsAstRule {
     
     private Collection<String> findJsHintGlobalDefinition(Snapshot snapshot) {
         ArrayList<String> names = new ArrayList<String>();
-        Collection<Identifier> definedGlobal = JSHintSupport.getDefinedGlobal(snapshot, 0);
+        Collection<Identifier> definedGlobal = ModelUtils.getDefinedGlobal(snapshot, 0);
         for (Identifier identifier: definedGlobal) {
             names.add(identifier.getName());
         }

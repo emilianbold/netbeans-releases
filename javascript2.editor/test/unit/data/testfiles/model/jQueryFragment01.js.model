@@ -28,7 +28,7 @@ jQuery              : OBJECT jQuery [ANONYMOUS: false, DECLARED: false - jQuery,
                                         # PROPERTIES
                                         arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                               arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-jQueryFragment01_L2 : FUNCTION jQueryFragment01_L2 [ANONYMOUS: true, DECLARED: true - jQueryFragment01_L2, MODIFIERS: PUBLIC, FUNCTION]
+jQueryFragment01L$2 : FUNCTION jQueryFragment01L$2 [ANONYMOUS: true, DECLARED: true - jQueryFragment01L$2, MODIFIERS: PUBLIC, FUNCTION]
                     # RETURN TYPES
                     undefined, RESOLVED: true
                     # PROPERTIES

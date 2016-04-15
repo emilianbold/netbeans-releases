@@ -2,18 +2,18 @@ FUNCTION issue248696_01 [ANONYMOUS: false, DECLARED: true - issue248696_01, MODI
 # RETURN TYPES
 undefined, RESOLVED: true
 # PROPERTIES
-issue248696_01_L1 : FUNCTION issue248696_01_L1 [ANONYMOUS: true, DECLARED: true - issue248696_01_L1, MODIFIERS: PUBLIC, FUNCTION]
+issue248696_01L$1 : FUNCTION issue248696_01L$1 [ANONYMOUS: true, DECLARED: true - issue248696_01L$1, MODIFIERS: PUBLIC, FUNCTION]
                   # RETURN TYPES
                   undefined, RESOLVED: true
                   # PARAMETERS
                   OBJECT Profile [ANONYMOUS: false, DECLARED: true - Profile, MODIFIERS: PUBLIC, PARAMETER]
                   # PROPERTIES
-                  arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                  initAuth  : FUNCTION initAuth [ANONYMOUS: false, DECLARED: true - initAuth, MODIFIERS: PRIVATE, METHOD]
-                            # RETURN TYPES
-                            undefined, RESOLVED: true
-                            # PROPERTIES
-                            arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                  L:1$initAuth : FUNCTION initAuth [ANONYMOUS: false, DECLARED: true - initAuth, MODIFIERS: PRIVATE, METHOD]
+                               # RETURN TYPES
+                               undefined, RESOLVED: true
+                               # PROPERTIES
+                               arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                  arguments    : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
 test              : OBJECT test [ANONYMOUS: false, DECLARED: false - test, MODIFIERS: PUBLIC, OBJECT]
                   # PROPERTIES
                   controller : FUNCTION controller [ANONYMOUS: false, DECLARED: false - controller, MODIFIERS: PUBLIC, METHOD]
