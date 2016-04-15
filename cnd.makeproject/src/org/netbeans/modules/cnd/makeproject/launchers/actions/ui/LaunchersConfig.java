@@ -80,7 +80,7 @@ public class LaunchersConfig {
         this.project = project;
     }
 
-    public TreeMap<Integer, LauncherConfig> getLoanchers() {
+    public TreeMap<Integer, LauncherConfig> getLaunchers() {
         return map;
     }
 
@@ -245,7 +245,7 @@ public class LaunchersConfig {
                 if (l.pub) {
                     hasPublicConfig |= !l.name.isEmpty() || !l.command.isEmpty() || l.buildCommand.isEmpty() || !l.env.isEmpty() || !l.runDir.isEmpty() || !l.symbolFiles.isEmpty();
                 } else {
-                    hasPrivateConfig |= !l.env.isEmpty() || !l.runDir.isEmpty() || !l.symbolFiles.isEmpty();
+                    hasPrivateConfig |= !l.name.isEmpty() || !l.command.isEmpty() || l.buildCommand.isEmpty() || !l.env.isEmpty() || !l.runDir.isEmpty() || !l.symbolFiles.isEmpty();
                 }
             } else {
                 if (l.pub) {

@@ -122,7 +122,7 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
         manager.addPropertyChangeListener(listener);
         instance = new LaunchersConfig(project);
         instance.load();
-        for(Map.Entry<Integer, LauncherConfig> e : instance.getLoanchers().entrySet()) {
+        for(Map.Entry<Integer, LauncherConfig> e : instance.getLaunchers().entrySet()) {
             launchers.add(e.getValue());
         }
         nodes = new LaunchersNodes(launchers);
