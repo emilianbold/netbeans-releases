@@ -60,7 +60,9 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -823,17 +825,30 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
 
             Graphics2D g = (Graphics2D) icon.getGraphics();
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            if (pub) {
-                g.setColor(Color.RED);
+            LookAndFeel laf = UIManager.getLookAndFeel();
+            Color d;
+            Color f;
+            if( laf.getDefaults().getBoolean( "nb.dark.theme" ) ) { //NOI18N
+                d = new Color(0xc5, 0xf3, 0x8f);
+                f = new Color(0x25, 0x97, 0x00);
             } else {
-                g.setColor(Color.BLUE);
+                f = new Color(0xc5, 0xf3, 0x8f);
+                d = new Color(0x25, 0x97, 0x00);
             }
             if (id > 0) {
-                g.fillOval(7, 4, 5, 5);
-            } else {
-                g.fillOval(4, 1, 11, 11);
-                g.setColor(test.getBackground());
-                g.fillOval(7, 4, 5, 5);
+                g.setColor(f);
+                g.fillPolygon(new int[]{4, 4,12, 4},
+                              new int[]{2,14, 8, 2}, 4);
+            }
+            g.setColor(d);
+            g.drawPolygon(new int[]{4, 4,12, 4},
+                          new int[]{2,14, 8, 2}, 4);
+            if (!pub) {
+                g.setColor(new Color(0xc3, 0x87, 0x32));
+                g.drawPolygon(new int[]{11,14,14, 13, 13, 14, 14, 12, 12, 11, 11},
+                              new int[]{ 1, 1, 4,  4,  8,  8, 11, 11,  4,  4,  1}, 11);
+                g.fillPolygon(new int[]{12, 14, 14, 12, 12},
+                              new int[]{ 8,  8, 11, 11,  8}, 5);
             }
         }
 
