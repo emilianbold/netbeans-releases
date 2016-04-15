@@ -41,18 +41,26 @@
  */
 package org.netbeans.modules.profiler.options.ui.v2.impl;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -62,15 +70,19 @@ import javax.swing.JTextField;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 import org.netbeans.lib.profiler.ui.results.PackageColor;
 import org.netbeans.lib.profiler.ui.results.PackageColorer;
 import org.netbeans.lib.profiler.ui.swing.ProfilerTable;
 import org.netbeans.lib.profiler.ui.swing.ProfilerTableContainer;
 import org.netbeans.lib.profiler.ui.swing.SmallButton;
+import org.netbeans.lib.profiler.ui.swing.renderer.JavaNameRenderer;
 import org.netbeans.lib.profiler.ui.swing.renderer.LabelRenderer;
 import org.netbeans.modules.profiler.api.ProfilerIDESettings;
 import org.netbeans.modules.profiler.api.icons.GeneralIcons;
 import org.netbeans.modules.profiler.api.icons.Icons;
+import org.netbeans.modules.profiler.api.icons.ProfilerIcons;
 import org.netbeans.modules.profiler.options.ui.v2.ProfilerOptionsPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -336,16 +348,22 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
             valueA.setColumns(45);
             valueA.setLineWrap(true);
             valueA.setWrapStyleWord(true);
-            JButton colorB = new JButton() {
+            final JButton colorB = new JButton() {
                 {
                     setIcon(customized.getIcon(16, 12));
+                    setToolTipText("");
                 }
                 protected void fireActionPerformed(ActionEvent e) {
-                    Color c = JColorChooser.showDialog(this, "Choose Filter Color", customized.getColor());
+                    Color c = selectColor(this, customized.getColor());
                     if (c != null) {
                         customized.setColor(c);
                         repaint();
                     }
+                }
+                public String getToolTipText(MouseEvent e) {
+                    Color col = customized.getColor();
+                    return col == null ? "Default color" : "Custom color [" + col.getRed() + "," +
+                                                           col.getGreen() + "," + col.getBlue() + "]";
                 }
             };
             
@@ -370,16 +388,33 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
             c.insets = new Insets(vgap * 2, htab, 0, 0);
             p.add(nameF, c);
             
+            JCheckBox colorC = new JCheckBox("Color:", customized.getColor() != null) {
+                private Color bkpC;
+                protected void fireActionPerformed(ActionEvent e) {
+                    super.fireActionPerformed(e);
+                    if (isSelected()) {
+                        customized.setColor(bkpC);
+                        colorB.setEnabled(true);
+                    } else {
+                        bkpC = customized.getColor();
+                        customized.setColor(null);
+                        colorB.setEnabled(false);
+                    }
+                }
+            };
+            colorC.setOpaque(false);
+            colorC.setToolTipText("Select to define custom color, unselect to use the default color");
+            colorB.setEnabled(colorC.isSelected());
             c = new GridBagConstraints();
             c.gridx = 2;
             c.gridy = y;
-            c.insets = new Insets(vgap * 2, hgap, 0, 0);
-            p.add(new JLabel("Color:"), c);
+            c.insets = new Insets(vgap * 2, hgap * 2, 0, 0);
+            p.add(colorC, c);
             
             c = new GridBagConstraints();
             c.gridx = 3;
             c.gridy = y++;
-            c.insets = new Insets(vgap * 2, htab, 0, hgap);
+            c.insets = new Insets(vgap * 2, 2, 0, hgap);
             p.add(colorB, c);
             
             c = new GridBagConstraints();
@@ -411,6 +446,52 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
             customized.setValue(valueA.getText().trim());
         
             return customized;
+        }
+        
+        private static Color selectColor(Component comp, Color color) {
+            JPanel previewPanel = new JPanel(new BorderLayout());
+            String[][] previewData = new String[][] { { "org.mypackage", "100 ms" },
+                                                      { "org.mypackage.MyClass", "10 ms" },
+                                                      { "org.mypackage.MyClass.myMethod(boolean, int, String)", "1 ms" } };
+            TableModel previewModel = new DefaultTableModel(previewData, new String[] { "Very long column name", "xxx" });
+            ProfilerTable previewTable = new ProfilerTable(previewModel, false, false, null);
+            
+            final Color initial = color == null ? previewTable.getForeground() : null;
+            final JColorChooser pane = new JColorChooser(color == null ? initial : color);
+            
+            previewTable.setColumnRenderer(0, new JavaNameRenderer(Icons.getIcon(ProfilerIcons.NODE_LEAF)) {
+                protected void setNormalValue(String value) {
+                    super.setNormalValue(value);
+                    Color color = pane.getColor();
+                    if (initial != color) setCustomForeground(color);
+                }
+            });
+            previewTable.setColumnRenderer(1, new LabelRenderer() { { setHorizontalAlignment(TRAILING); } });
+            previewTable.setTableHeader(null);
+            previewTable.setVisibleRows(3);
+            JScrollPane previewScroll = new JScrollPane(previewTable, JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            previewPanel.add(previewScroll, BorderLayout.CENTER);
+            pane.setPreviewPanel(previewPanel);
+            
+            class Ret implements ActionListener {
+                private Color clr;
+                public void actionPerformed(ActionEvent e) { clr = pane.getColor(); }
+                Color getColor() { return clr; }
+            };
+            Ret ret = new Ret();
+
+            JDialog dialog = JColorChooser.createDialog(comp, "Choose Filter Color", true, pane, ret, null);
+
+            dialog.addComponentListener(new ComponentAdapter() {
+                public void componentHidden(ComponentEvent e) {
+                    Window w = (Window)e.getComponent();
+                    w.dispose();
+                }
+            });
+
+            dialog.setVisible(true);
+            
+            return ret.getColor();
         }
         
     }
