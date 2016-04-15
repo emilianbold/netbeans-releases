@@ -84,6 +84,7 @@ import org.apache.maven.settings.Server;
 import org.apache.maven.settings.crypto.DefaultSettingsDecryptionRequest;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.apache.maven.settings.crypto.SettingsDecryptionResult;
+import org.apache.maven.wagon.ResourceDoesNotExistException;
 import org.apache.maven.wagon.Wagon;
 import org.apache.maven.wagon.authentication.AuthenticationInfo;
 import org.apache.maven.wagon.events.TransferListener;
@@ -563,7 +564,11 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     }
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException e) {            
+            if(e.getCause() instanceof ResourceDoesNotExistException) {
+                fireChange(repo, () -> repo.fireNoIndex());
+            }
+            
             // see also issue #250365
             String noSpaceLeftMsg = null;
             if(e.getMessage().contains("No space left on device")) {
@@ -612,7 +617,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             }
             if(!fetchFailed) {
                 RepositoryPreferences.setLastIndexUpdate(repo.getId(), new Date());
-                fireChangeIndex(repo);
+                fireChange(repo, () -> repo.fireIndexChange());
             }
         }
     }
@@ -837,7 +842,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         } catch (NullPointerException x) {
             LOGGER.log(Level.INFO, "#201057", x);
         }
-        fireChangeIndex(repo);
+        fireChange(repo, () -> repo.fireIndexChange());
     }
     
     @Override
@@ -890,21 +895,18 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         } catch (MutexException ex) {
             Exceptions.printStackTrace(ex);
         }
-        fireChangeIndex(repo);
+        fireChange(repo, () -> repo.fireIndexChange());
     }
 
-    private void fireChangeIndex(final RepositoryInfo repo) {
+    private void fireChange(final RepositoryInfo repo, Runnable r) {
         if (getRepoMutex(repo).isWriteAccess()) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                @Override
-                public void run() {
-                    fireChangeIndex(repo);
-                }
+            RequestProcessor.getDefault().post(() -> {
+                fireChange(repo, r);
             });
             return;
         }
         assert !getRepoMutex(repo).isWriteAccess() && !getRepoMutex(repo).isReadAccess();
-        repo.fireChangeIndex();
+        r.run();
     }
 
     private File getDefaultIndexLocation() {
