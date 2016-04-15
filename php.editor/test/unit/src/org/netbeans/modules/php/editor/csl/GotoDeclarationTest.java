@@ -1246,6 +1246,70 @@ public class GotoDeclarationTest extends PHPNavTestBase {
         checkDeclaration(getTestPath(), "echo MyFa^bc();", "    B\\C\\fabc AS ^MyFabc");
     }
 
+    public void testUniformVariableSyntax_01() throws Exception {
+        checkDeclaration(getTestPath(), "UV^S3::myStatic3()::myStatic2();", "class ^UVS3 {");
+    }
+
+    public void testUniformVariableSyntax_02() throws Exception {
+        checkDeclaration(getTestPath(), "UVS3::mySt^atic3()::myStatic2();", "    public static function ^myStatic3(): UVS2 {");
+    }
+
+    public void testUniformVariableSyntax_03() throws Exception {
+        checkDeclaration(getTestPath(), "UVS3::myStatic3()::mySt^atic2();", "    public static function ^myStatic2(): UVS1 {");
+    }
+
+    public void testUniformVariableSyntax_04() throws Exception {
+        checkDeclaration(getTestPath(), "UVS3::myStatic3()::myStatic2()::mySt^atic1()::MAX;", "    public static function ^myStatic1() {");
+    }
+
+    public void testUniformVariableSyntax_05() throws Exception {
+        checkDeclaration(getTestPath(), "UVS3::myStatic3()::myStatic2()::myStatic1()::M^AX;", "    const ^MAX = 99;");
+    }
+
+    public void testUniformVariableSyntax_06() throws Exception {
+        checkDeclaration(getTestPath(), "UVS3::myStatic3()::myStatic2()::myStatic1()::A^VG;", "    const ^AVG = 50;");
+    }
+
+    public void testUniformVariableSyntax_07() throws Exception {
+        checkDeclaration(getTestPath(), "UVS3::myStatic3()::myStatic2()::myStatic1()::$M^IN;", "    static $^MIN = \"MIN\";");
+    }
+
+    public void testUniformVariableSyntax_08() throws Exception {
+        checkDeclaration(getTestPath(), "UVS3::myStatic3()::myStatic2()::myStatic1()::$TO^TAL;", "    static $^TOTAL = \"TOTAL\";");
+    }
+
+    public void testUniformVariableSyntax_09() throws Exception {
+        checkDeclaration(getTestPath(), "UVS3::myStatic3()::myStatic2()::myStatic1()::$INST^ANCE::myStatic1();", "    static $^INSTANCE;");
+    }
+
+    public void testUniformVariableSyntax_10() throws Exception {
+        checkDeclaration(getTestPath(), "UVS3::myStatic3()::myStatic2()::myStatic1()::$INSTANCE::myStati^c1();", "    public static function ^myStatic1() {");
+    }
+
+    public void testUniformVariableSyntax_11() throws Exception {
+        checkDeclaration(getTestPath(), "UVS3::myStatic3()::myStatic2()::myStatic1()::mySt^atic2();", "    public static function ^myStatic2() { // UVS1");
+    }
+
+    public void testUniformVariableSyntax_12() throws Exception {
+        checkDeclaration(getTestPath(), "UVS3::myStatic3()->myStatic2()::myStatic1()->mySt^atic2();", "    public static function ^myStatic2() { // UVS1");
+    }
+
+    public void testUniformVariableSyntax_13() throws Exception {
+        checkDeclaration(getTestPath(), "UVS3::myStatic3()->myStatic2()::myStatic1()->te^st;", "    public $^test = null;");
+    }
+
+    public void testUniformVariableSyntax_14() throws Exception {
+        checkDeclaration(getTestPath(), "f^oo()::myStatic2();", "function ^foo(): UVS2 {");
+    }
+
+    public void testUniformVariableSyntax_15() throws Exception {
+        checkDeclaration(getTestPath(), "foo()::mySta^tic2();", "    public static function ^myStatic2(): UVS1 {");
+    }
+
+    public void testUniformVariableSyntax_16() throws Exception {
+        checkDeclaration(getTestPath(), "foo()::myStatic2()::myStati^c2();", "    public static function ^myStatic2() { // UVS1");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //    public void testGotoTypeClsIface6() throws Exception {
 //        String gotoTest = prepareTestFile(
