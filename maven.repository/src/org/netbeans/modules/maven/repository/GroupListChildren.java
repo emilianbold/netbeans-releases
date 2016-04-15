@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.maven.repository;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.List;
 
@@ -62,10 +64,11 @@ import static org.netbeans.modules.maven.repository.Bundle.*;
  * @author mkleint
  * @author Anuradha
  */
-public class GroupListChildren extends ChildFactory.Detachable<String> implements ChangeListener {
+public class GroupListChildren extends ChildFactory.Detachable<String> implements PropertyChangeListener {
 
     private RepositoryInfo info;
     static final String KEY_PARTIAL = "____PARTIAL_RESULT";
+    private boolean noIndex;
 
     public GroupListChildren(RepositoryInfo info) {
         this.info = info;
@@ -93,19 +96,29 @@ public class GroupListChildren extends ChildFactory.Detachable<String> implement
     }
 
     protected @Override boolean createKeys(List<String> toPopulate) {
+        if(noIndex) {
+            return true;
+        }
         Result<String> result = RepositoryQueries.getGroupsResult(Collections.singletonList(info));
         toPopulate.addAll(result.getResults());
         if (result.isPartial()) {
             toPopulate.add(KEY_PARTIAL);
-        }
+        }      
         return true;
     }
     
     protected @Override void addNotify() {
-        info.addChangeListener(WeakListeners.change(this, info));
+        info.addPropertyChangeListener(WeakListeners.propertyChange(this, info));
     }
-    
-    public @Override void stateChanged(ChangeEvent e) {
-        refresh(false);
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if(RepositoryInfo.PROP_INDEX_CHANGE.equals(evt.getPropertyName())) {
+            noIndex = false;
+            refresh(false);
+        } else if(RepositoryInfo.PROP_NO_REMOTE_INDEX.equals(evt.getPropertyName())) {
+            noIndex = true;
+            refresh(false);
+        }
     }
 }
