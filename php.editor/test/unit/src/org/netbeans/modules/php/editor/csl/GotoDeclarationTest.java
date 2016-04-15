@@ -1053,6 +1053,123 @@ public class GotoDeclarationTest extends PHPNavTestBase {
         checkDeclaration(getTestPath(), "function foo(): Log^ger {", "interface ^Logger {");
     }
 
+    public void testAnonymousClass01_01() throws Exception {
+        checkDeclaration(getTestPath(), "$anonCls = new class implements Lo^gger {", "interface ^Logger {");
+    }
+
+    public void testAnonymousClass01_02() throws Exception {
+        checkDeclaration(getTestPath(), "        echo $m^sg; // 1", "    public function log(string $^msg) { // 1");
+    }
+
+    public void testAnonymousClass01_03() throws Exception {
+        checkDeclaration(getTestPath(), "var_dump($ano^nCls);", "$^anonCls = new class implements Logger {");
+    }
+
+    public void testAnonymousClass01_04() throws Exception {
+        checkDeclaration(getTestPath(), "$app->setLogger(new class implements Lo^gger {", "interface ^Logger {");
+    }
+
+    public void testAnonymousClass01_05() throws Exception {
+        checkDeclaration(getTestPath(), "        echo $m^sg; // 2", "    public function log(string $^msg) { // 2");
+    }
+
+    public void testAnonymousClass01_06() throws Exception {
+        checkDeclaration(getTestPath(), "(new class implements Logg^er {", "interface ^Logger {");
+    }
+
+    public void testAnonymousClass01_07() throws Exception {
+        checkDeclaration(getTestPath(), "        echo $ms^g; // 3", "    public function log(string $^msg) { // 3");
+    }
+
+    public void testAnonymousClass01_08() throws Exception {
+        checkDeclaration(getTestPath(), "})->l^og('hello world');", "    public function ^log(string $msg) { // 3");
+    }
+
+    public void testAnonymousClass02() throws Exception {
+        checkDeclaration(getTestPath(), "        $this->tes^tB();", "    private function ^testB() {");
+    }
+
+    public void testAnonymousClass03_01() throws Exception {
+        checkDeclaration(getTestPath(), "        return new class($this->pr^op) extends Outer {", "    private $^prop = 1;");
+    }
+
+    public void testAnonymousClass03_02() throws Exception {
+        checkDeclaration(getTestPath(), "        return new class($this->prop) extends Ou^ter {", "class ^Outer {");
+    }
+
+    public void testAnonymousClass03_03() throws Exception {
+        checkDeclaration(getTestPath(), "                $this->pr^op3 = $prop;", "            private $^prop3;");
+    }
+
+    // XXX
+//    public void testAnonymousClass03_04() throws Exception {
+//        checkDeclaration(getTestPath(), "                $this->prop3 = $p^rop;", "            public function __construct($^prop) {");
+//    }
+
+    public void testAnonymousClass03_05() throws Exception {
+        checkDeclaration(getTestPath(), "                return $this->pr^op2 + $this->prop3 + $this->func1();", "    protected $^prop2 = 2;");
+    }
+
+    public void testAnonymousClass03_06() throws Exception {
+        checkDeclaration(getTestPath(), "                return $this->prop2 + $this->prop^3 + $this->func1();", "            private $^prop3;");
+    }
+
+    public void testAnonymousClass03_07() throws Exception {
+        checkDeclaration(getTestPath(), "                return $this->prop2 + $this->prop3 + $this->fun^c1();", "    protected function ^func1() {");
+    }
+
+    public void testAnonymousClass03_08() throws Exception {
+        checkDeclaration(getTestPath(), "echo (new Ou^ter)->func2()->func3() . PHP_EOL;", "class ^Outer {");
+    }
+
+    public void testAnonymousClass03_09() throws Exception {
+        checkDeclaration(getTestPath(), "echo (new Outer)->fun^c2()->func3() . PHP_EOL;", "    public function ^func2() {");
+    }
+
+    public void testAnonymousClass03_10() throws Exception {
+        checkDeclaration(getTestPath(), "echo (new Outer)->func2()->fun^c3() . PHP_EOL;", "            public function ^func3() {");
+    }
+
+    public void testAnonymousClass04_01() throws Exception {
+        checkDeclaration(getTestPath(), "var_dump(new class(10) extends Som^eClass implements SomeInterface {", "class ^SomeClass {");
+    }
+
+    public void testAnonymousClass04_02() throws Exception {
+        checkDeclaration(getTestPath(), "var_dump(new class(10) extends SomeClass implements SomeInt^erface {", "interface ^SomeInterface {");
+    }
+
+    public void testAnonymousClass04_03() throws Exception {
+        checkDeclaration(getTestPath(), "    use Some^Trait;", "trait ^SomeTrait {");
+    }
+
+    public void testAnonymousClass05() throws Exception {
+        checkDeclaration(getTestPath(), "$anon = new class($int, fo^o()) {", "function ^foo() {");
+    }
+
+    public void testAnonymousClass06_01() throws Exception {
+        checkDeclaration(getTestPath(), "        $this->used^Field = 10;", "    private $^usedField;");
+    }
+
+    public void testAnonymousClass06_02() throws Exception {
+        checkDeclaration(getTestPath(), "        self::$usedS^taticField = 20;", "    private static $^usedStaticField;");
+    }
+
+    public void testAnonymousClass06_03() throws Exception {
+        checkDeclaration(getTestPath(), "        $this->usedPrivat^eMethod();", "    private function ^usedPrivateMethod() {");
+    }
+
+    public void testAnonymousClass06_04() throws Exception {
+        checkDeclaration(getTestPath(), "        self::usedStaticP^rivateMethod();", "    private static function ^usedStaticPrivateMethod() {");
+    }
+
+    public void testAnonymousClass07_01() throws Exception {
+        checkDeclaration(getTestPath(), "$x = new class implements MyL^ogger {", "use api\\Logger as ^MyLogger;");
+    }
+
+    public void testAnonymousClass07_02() throws Exception {
+        checkDeclaration(getTestPath(), "$x->l^og('');", "    public function ^log($msg) {");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //    public void testGotoTypeClsIface6() throws Exception {
 //        String gotoTest = prepareTestFile(
