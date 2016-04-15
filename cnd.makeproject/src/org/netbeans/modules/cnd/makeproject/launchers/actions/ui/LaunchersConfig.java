@@ -343,10 +343,11 @@ public class LaunchersConfig {
                             bw.newLine();
                         }
                         if (!l.command.isEmpty()) {
-                            bw.write(LAUNCHER + l.id + "."); //NOI18N
-                            bw.write(RUN_COMMAND);
-                            bw.write("="+l.command); //NOI18N
-                            bw.newLine();
+                            StringBuilder buf = new StringBuilder();
+                            buf.append(LAUNCHER + l.id + "."); //NOI18N
+                            buf.append(RUN_COMMAND);
+                            buf.append("="+l.command); //NOI18N
+                            writeWrapLine(buf.toString(), bw);
                         }
                         if (!l.buildCommand.isEmpty()) {
                             bw.write(LAUNCHER + l.id + "."); //NOI18N
@@ -386,6 +387,22 @@ public class LaunchersConfig {
                 }
             }
         }
+    }
+
+    private void writeWrapLine(String s, BufferedWriter bw) throws IOException {
+        StringBuilder buf = new StringBuilder();
+        for (int i = 0; i < s.length(); i++) {
+            final char c = s.charAt(i);
+            if (c == ' ' && buf.length() > 80) {
+                buf.append("\\");
+                bw.write(buf.toString());
+                bw.newLine();
+                buf.setLength(0);
+            }
+            buf.append(c);
+        }
+        bw.write(buf.toString());
+        bw.newLine();
     }
 
     public static final class LauncherConfig {
