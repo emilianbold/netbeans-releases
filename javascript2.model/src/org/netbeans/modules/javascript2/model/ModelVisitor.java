@@ -269,6 +269,12 @@ public class ModelVisitor extends PathNodeVisitor {
                         lPropertyNode.accept(this);
                     } else if (lPropertyNode.getValue() instanceof IdentNode) {
                         variableName = ((IdentNode)lPropertyNode.getValue()).getName();
+                    } else if (lPropertyNode.getValue() instanceof BinaryNode) {
+                        BinaryNode bNode = (BinaryNode)lPropertyNode.getValue();
+                        if (bNode.tokenType() == TokenType.ASSIGN && bNode.lhs() instanceof IdentNode) {
+                            // the default parameter {a=10, b=20} = ....
+                            variableName = ((IdentNode)bNode.lhs()).getName();
+                        }
                     }
                     if (variableName != null) {
                         JsObject variable = nameToVariable.get(variableName);
@@ -297,6 +303,12 @@ public class ModelVisitor extends PathNodeVisitor {
         if (pNode.getKey() instanceof IdentNode && pNode.getValue() instanceof IdentNode) {
             IdentNode key = (IdentNode)pNode.getKey();
             IdentNode value = (IdentNode)pNode.getValue();
+            return key.getName().equals(value.getName()) && key.getStart() == value.getStart();
+        }
+        if (pNode.getKey() instanceof IdentNode && pNode.getValue() instanceof BinaryNode 
+                && ((BinaryNode)pNode.getValue()).tokenType() == TokenType.ASSIGN && ((BinaryNode)pNode.getValue()).lhs() instanceof IdentNode) {
+            IdentNode key = (IdentNode)pNode.getKey();
+            IdentNode value = (IdentNode)((BinaryNode)pNode.getValue()).lhs();
             return key.getName().equals(value.getName()) && key.getStart() == value.getStart();
         }
         return false;

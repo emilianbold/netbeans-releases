@@ -2058,6 +2058,18 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/destructuringAssignments/objectDestructuring05.js", "var {p: foo, q: bar} = o^;", true);
     }
     
+    public void testObjectDestructuring06_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/objectDestructuring06.js", "var {a^:ab=10, bb=5} = {a: 3}; ", true);
+    }
+    
+    public void testObjectDestructuring06_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/objectDestructuring06.js", "var {a:a^b=10, bb=5} = {a: 3}; ", true);
+    }
+    
+    public void testObjectDestructuring06_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/destructuringAssignments/objectDestructuring06.js", "var {a:ab=10, b^b=5} = {a: 3}; ", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
