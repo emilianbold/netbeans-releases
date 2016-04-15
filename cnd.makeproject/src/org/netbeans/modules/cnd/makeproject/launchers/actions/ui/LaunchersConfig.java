@@ -478,8 +478,8 @@ public class LaunchersConfig {
             return (name == null || name.isEmpty() ? command : name);
         }
 
-        public LauncherConfig copy() {
-            LauncherConfig res = new LauncherConfig(id, pub);
+        public LauncherConfig copy(int newID) {
+            LauncherConfig res = new LauncherConfig(newID, pub);
             res.command = this.command;
             res.name = this.name;
             res.buildCommand = this.buildCommand;
