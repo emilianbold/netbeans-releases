@@ -71,8 +71,11 @@ import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.editor.JumpList;
 import org.netbeans.modules.debugger.jpda.projects.ASTOperationCreationDelegate;
@@ -301,16 +304,26 @@ public class EditorContextImpl extends EditorContext {
             annotationType = annotationType.substring(0, annotationType.length() - "_broken".length());
         }
         if (EditorContext.BREAKPOINT_ANNOTATION_TYPE.equals(annotationType)) {
-            return new Color(0xFC9D9F);
+            return getHighlight(annotationType, 0xFC9D9F);
         } else if (EditorContext.CURRENT_LINE_ANNOTATION_TYPE.equals(annotationType) ||
                    EditorContext.CURRENT_OUT_OPERATION_ANNOTATION_TYPE.equals(annotationType)) {
-            return new Color(0xBDE6AA);
-        } else if (EditorContext.CURRENT_EXPRESSION_CURRENT_LINE_ANNOTATION_TYPE.equals(annotationType)) {
-            return new Color(0xE9FFE6); // 0xE3FFD2// 0xD1FFBC
+            return getHighlight(annotationType, 0xBDE6AA);
+        //} else if (EditorContext.CURRENT_EXPRESSION_CURRENT_LINE_ANNOTATION_TYPE.equals(annotationType)) {
+        //    return getHighlight(annotationType, 0xE9FFE6); // 0xE3FFD2// 0xD1FFBC
         } else if (EditorContext.CURRENT_LAST_OPERATION_ANNOTATION_TYPE.equals(annotationType)) {
-            return new Color(0x99BB8A);
+            return getHighlight(annotationType, 0x99BB8A);
         } else {
             return new Color(0x0000FF);
+        }
+    }
+
+    private static Color getHighlight(String name, int defaultRGB) {
+        FontColorSettings fcs = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
+        AttributeSet as = (fcs != null) ? fcs.getFontColors(name) : null;
+        if (as != null) {
+            return (Color) as.getAttribute(StyleConstants.Background);
+        } else {
+            return new Color(defaultRGB);
         }
     }
 

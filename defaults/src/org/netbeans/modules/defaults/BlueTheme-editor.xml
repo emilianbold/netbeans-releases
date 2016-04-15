@@ -80,4 +80,10 @@ made subject to such option by the copyright holder.
     <fontcolor name="trailing-whitespace"/>
     <fontcolor name="nbeditor-bracesMatching-sidebar"/>
     <fontcolor name="indent-guide-lines" foreColor="253e5a"/>
+
+    <!-- debugger.jpda.projectsui -->
+    <fontcolor name="CurrentPC" bgColor="2D6035"/>
+    <fontcolor name="LastOperation" bgColor="6f9f5a"/>
+    <fontcolor name="StepOutOperation" bgColor="2D6035"/>
+
  </fontscolors>

@@ -46,55 +46,68 @@ made subject to such option by the copyright holder.
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 
 <fontscolors>
+
+    <!-- spi.debugger.ui: -->
     <fontcolor bgColor="611D1D" name="Breakpoint"/>
-    <fontcolor bgColor="2D6035" name="debugger-PC_BP"/>
-
-
-    <fontcolor bgColor="611D1D" name="Breakpoint"/>
-    <fontcolor bgColor="2D6035" name="CurrentPCLinePart"/>
-    <fontcolor bgColor="2D6035" name="debugger-PC_mixedBP"/>
-    <fontcolor bgColor="2D6035" name="OtherThreads_PC_BP"/>
-    <fontcolor bgColor="2D6035" name="CurrentPC2"/>
-    <fontcolor bgColor="2D6035" name="OtherThreads_BP_broken"/>
-    <fontcolor bgColor="2D6035" name="debugger-PC_BP_stroke"/>
-    <fontcolor bgColor="611D1D" name="debugger-mixed_BP"/>
-    <fontcolor bgColor="2D6035" name="debugger-PC_DCBP"/>
-    <fontcolor bgColor="2D6035" name="OtherThread_PC"/>
-    <fontcolor bgColor="2D6035" name="CurrentPC"/>
-    <fontcolor bgColor="2D6035" name="debugger-PC_multi_BPCBP"/>
-    <fontcolor bgColor="2D6035" name="debugger-PC_CBP"/>
-    <fontcolor bgColor="2D6035" name="debugger-PC_DBP_stroke"/>
-    <fontcolor bgColor="2D6035" name="debugger-PC_multi_DBPCBP"/>
-    <fontcolor bgColor="2D6035" name="debugger-PC_multi_BPCBP_broken"/>
-    <fontcolor bgColor="611D1D" name="OtherThreads_BP"/>
-    <fontcolor bgColor="2D6035" name="debugger-PC_BP_broken"/>
-    <fontcolor bgColor="2D6035" name="debugger-PC_mixedBP_broken"/>
-    <fontcolor bgColor="611D1D" name="debugger-multi_BPCBP"/>
-    <fontcolor bgColor="2D6035" name="debugger-PC_BP"/>
-    <fontcolor bgColor="2D6035" name="debugger-PC_DCBP_stroke"/>
-    <fontcolor bgColor="2D6035" name="OtherThread_BP_broken"/>
-    <fontcolor bgColor="2D6035" name="debugger-PC_CBP_stroke"/>
-    <fontcolor bgColor="2D6035" name="CurrentPC2LinePart"/>
-    <fontcolor bgColor="611D1D" name="OtherThread_BP"/>
-    <fontcolor bgColor="2D6035" name="debugger-PC_CBP_broken"/>
-    <fontcolor bgColor="2D6035" name="debugger-PC_DBP"/>
-    <fontcolor bgColor="611D1D" name="CondBreakpoint"/>
-    <fontcolor bgColor="611D1D" name="CurrentPC2_BP"/>
-    <fontcolor bgColor="2D6035" name="OtherThread_PC_BP"/>
-
-
-    <fontcolor bgColor="666666" name="OtherThreads_DBP"/>
-    <fontcolor bgColor="666666" name="DisabledBreakpoint"/>
-    <fontcolor bgColor="666666" name="debugger-multi_DBPCBP"/>
     <fontcolor bgColor="666666" name="Breakpoint_broken"/>
-    <fontcolor bgColor="666666" name="DisabledBreakpoint_stroke"/>
-    <fontcolor bgColor="666666" name="CondBreakpoint_broken"/>
     <fontcolor bgColor="666666" name="Breakpoint_stroke"/>
-    <fontcolor bgColor="666666" name="debugger-mixed_BP_broken"/>
+
+    <fontcolor bgColor="3E4C61" name="CallSite"/>
+
+    <fontcolor bgColor="611D1D" name="CondBreakpoint"/>
+    <fontcolor bgColor="666666" name="CondBreakpoint_broken"/>
     <fontcolor bgColor="666666" name="CondBreakpoint_stroke"/>
+
+    <fontcolor bgColor="275214" name="CurrentExpression"/>
+    <fontcolor bgColor="153810" name="CurrentExpressionLine"/>
+    <fontcolor bgColor="153810" name="CurrentExpressionLine_BP"/>
+    <fontcolor bgColor="153810" name="CurrentExpressionLine_CBP"/>
+    <fontcolor bgColor="153810" name="CurrentExpressionLine_DBP"/>
+    <fontcolor bgColor="153810" name="CurrentExpressionLine_DCBP"/>
+    <fontcolor bgColor="2D6035" name="CurrentPC"/>
+
+    <fontcolor bgColor="666666" name="DisabledBreakpoint"/>
+    <fontcolor bgColor="666666" name="DisabledBreakpoint_stroke"/>
     <fontcolor bgColor="666666" name="DisabledCondBreakpoint"/>
-    <fontcolor bgColor="666666" name="debugger-multi_BPCBP_broken"/>
     <fontcolor bgColor="666666" name="DisabledCondBreakpoint_stroke"/>
+
+    <fontcolor bgColor="611D1D" name="OtherThread_BP"/>
+    <fontcolor bgColor="2D6035" name="OtherThread_BP_broken"/>
     <fontcolor bgColor="666666" name="OtherThread_DBP"/>
+    <fontcolor bgColor="2D6035" name="OtherThread_PC"/>
+    <fontcolor bgColor="2D6035" name="OtherThread_PC_BP"/>
+    <fontcolor bgColor="611D1D" name="OtherThreads_BP"/>
+    <fontcolor bgColor="2D6035" name="OtherThreads_BP_broken"/>
+    <fontcolor bgColor="666666" name="OtherThreads_DBP"/>
+    <fontcolor bgColor="2D6035" name="OtherThreads_PC_BP"/>
+
+    <fontcolor bgColor="2D6035" name="debugger-PC_BP"/>
+    <fontcolor bgColor="2D6035" name="debugger-PC_BP_broken"/>
+    <fontcolor bgColor="2D6035" name="debugger-PC_BP_stroke"/>
+    <fontcolor bgColor="2D6035" name="debugger-PC_CBP"/>
+    <fontcolor bgColor="2D6035" name="debugger-PC_CBP_broken"/>
+    <fontcolor bgColor="2D6035" name="debugger-PC_CBP_stroke"/>
+    <fontcolor bgColor="2D6035" name="debugger-PC_DBP"/>
+    <fontcolor bgColor="2D6035" name="debugger-PC_DBP_stroke"/>
+    <fontcolor bgColor="2D6035" name="debugger-PC_DCBP"/>
+    <fontcolor bgColor="2D6035" name="debugger-PC_DCBP_stroke"/>
+    <fontcolor bgColor="2D6035" name="debugger-PC_mixedBP"/>
+    <fontcolor bgColor="2D6035" name="debugger-PC_mixedBP_broken"/>
+    <fontcolor bgColor="2D6035" name="debugger-PC_multi_BPCBP"/>
+    <fontcolor bgColor="2D6035" name="debugger-PC_multi_BPCBP_broken"/>
+    <fontcolor bgColor="2D6035" name="debugger-PC_multi_DBPCBP"/>
+
+    <fontcolor bgColor="611D1D" name="debugger-mixed_BP"/>
+    <fontcolor bgColor="666666" name="debugger-mixed_BP_broken"/>
+    <fontcolor bgColor="611D1D" name="debugger-multi_BPCBP"/>
+    <fontcolor bgColor="666666" name="debugger-multi_BPCBP_broken"/>
+    <fontcolor bgColor="666666" name="debugger-multi_DBPCBP"/>
+
+    <!-- ant.debugger: -->
+    <fontcolor bgColor="2D6035" name="CurrentPC2"/>
+    <fontcolor bgColor="2D6035" name="CurrentPC2LinePart"/>
+    <fontcolor bgColor="611D1D" name="CurrentPC2_BP"/>
     <fontcolor bgColor="666666" name="CurrentPC2_DBP"/>
+    <fontcolor bgColor="2D6035" name="CurrentPCLinePart"/>
+
 </fontscolors>
