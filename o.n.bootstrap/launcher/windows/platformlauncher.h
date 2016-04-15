@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -70,6 +70,8 @@ class PlatformLauncher {
     static const char *OPT_CLASS_PATH;
     static const char *OPT_SPLASH;
     static const char *OPT_SPLASH_PATH;
+    static const int   OPT_JIGSAW_ARGS_LENGTH;
+    static const char *OPT_JIGSAW_ARGS[];
 
     static const char *UPDATER_MAIN_CLASS;
     static const char *IDE_MAIN_CLASS;

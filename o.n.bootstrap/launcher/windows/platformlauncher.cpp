@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -78,6 +78,14 @@ const char *PlatformLauncher::OPT_KEEP_WORKING_SET_ON_MINIMIZE = "-Dsun.awt.keep
 const char *PlatformLauncher::OPT_CLASS_PATH = "-Djava.class.path=";
 const char *PlatformLauncher::OPT_SPLASH = "-splash:";
 const char *PlatformLauncher::OPT_SPLASH_PATH = "\\var\\cache\\splash.png";
+const int   PlatformLauncher::OPT_JIGSAW_ARGS_LENGTH = 7;
+const char *PlatformLauncher::OPT_JIGSAW_ARGS [OPT_JIGSAW_ARGS_LENGTH] = {"-Djdk.launcher.addexports.0=java.desktop/sun.awt=ALL-UNNAMED",
+                                                                            "-Djdk.launcher.addexports.1=java.base/jdk.internal.jrtfs=ALL-UNNAMED",
+                                                                            "-Djdk.launcher.addexports.2=java.desktop/java.awt.peer=ALL-UNNAMED",
+                                                                            "-Djdk.launcher.addexports.3=java.desktop/com.sun.beans.editors=ALL-UNNAMED",
+                                                                            "-Djdk.launcher.addexports.3=java.desktop/sun.awt.im=ALL-UNNAMED",
+                                                                            "-Djdk.launcher.addexports.4=java.desktop/com.sun.java.swing.plaf.windows=ALL-UNNAMED",
+                                                                            "-Djdk.launcher.addexports.5=java.management/sun.management=ALL-UNNAMED"};
 
 const char *PlatformLauncher::HEAP_DUMP_PATH =  "\\var\\log\\heapdump.hprof";
 const char *PlatformLauncher::RESTART_FILE_PATH =  "\\var\\restart";
@@ -112,12 +120,6 @@ bool PlatformLauncher::start(char* argv[], int argc, DWORD *retCode) {
         }
     }
     jvmLauncher.getJavaPath(jdkhome);
-    
-    if (!launcherOptions.empty() && jvmLauncher.isPermSizeSupported()) {
-        for (list<string>::iterator launcherOption = launcherOptions.begin(); launcherOption != launcherOptions.end(); launcherOption++) {
-            javaOptions.push_back(*launcherOption);
-        }
-    }
 
     deleteNewClustersFile();
     prepareOptions();
@@ -299,9 +301,7 @@ bool PlatformLauncher::parseArgs(int argc, char *argv[]) {
             javaOptions.push_back(argv[i] + 2);
             if (strncmp(argv[i] + 2, OPT_HEAP_DUMP_PATH, strlen(OPT_HEAP_DUMP_PATH)) == 0) {
                 heapDumpPathOptFound = true;
-            }
-        } else if (strncmp("-L", argv[i], 2) == 0) {
-            launcherOptions.push_back(argv[i] + 2);            
+            }          
         } else {
             if (strcmp(argv[i], "-h") == 0
                     || strcmp(argv[i], "-help") == 0
@@ -563,6 +563,11 @@ void PlatformLauncher::prepareOptions() {
         if (fileExists(splashPath.c_str())) {
             javaOptions.push_back(OPT_SPLASH + splashPath);
         }
+    }
+    
+    for (int i = 0; i < OPT_JIGSAW_ARGS_LENGTH; i++) {
+        option = OPT_JIGSAW_ARGS[i];
+        javaOptions.push_back(option);
     }
 
     option = OPT_NB_PLATFORM_HOME;

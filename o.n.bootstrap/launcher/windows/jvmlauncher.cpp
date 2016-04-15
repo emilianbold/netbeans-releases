@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -107,7 +107,6 @@ bool JvmLauncher::checkJava(const char *path, const char *prefix) {
     javawExePath.clear();
     javaClientDllPath.clear();
     javaServerDllPath.clear();
-    javaVersion.clear();
     return false;
 }
 
@@ -125,38 +124,6 @@ bool JvmLauncher::getJavaPath(string &path) {
     logMsg("JvmLauncher::getJavaPath()");
     path = javaPath;
     return !javaPath.empty();
-}
-
-/**
- * Checks Java version - if 1.7 then PermSize and
- * MaxPermSize are supported
- * 
- * Should be removed as soon as 1.7 is not supported
- * 
- * @return 
- */
-bool JvmLauncher::isPermSizeSupported() {
-    // Read "release" file only if the version is unknown
-    // unknown - it's when Java is specified in netbeans.conf
-    // or by --jdkhome
-    if (javaVersion.empty()) {
-        string releaseFilePath = javaPath + "\\release";
-        ifstream releaseFile(releaseFilePath.c_str());
-        if (releaseFile.is_open()) {
-            string line;
-            if (getline(releaseFile, line)) {
-                if (line.size() > 17) {
-                    return line.substr(14, 3) == "1.7";
-                }
-            }
-        }                
-    } else {
-        if (javaVersion.size() >= 3) {
-            return javaVersion.substr(0, 3) == "1.7";
-        }
-    }
-    
-    return false;
 }
 
 bool JvmLauncher::start(const char *mainClassName, const list<string> &args, const list<string> &options, bool &separateProcess, DWORD *retCode) {
@@ -498,11 +465,6 @@ bool JvmLauncher::findJava(const char *javaKey, const char *prefix, const char *
             }
         }
     } 
-    // probably also need to check 32bit registry when launcher becomes 64-bit but is not the case now.
-    
-    if (result) {
-        javaVersion = value;
-    }
-    
+    // probably also need to check 32bit registry when launcher becomes 64-bit but is not the case now.   
     return result;    
 }
