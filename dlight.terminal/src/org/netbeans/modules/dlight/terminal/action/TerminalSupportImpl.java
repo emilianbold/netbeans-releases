@@ -47,7 +47,6 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.text.ParseException;
-import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -93,6 +92,8 @@ import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
+
+import static org.netbeans.lib.terminalemulator.Term.ExternalCommandsConstants.*;
 
 /**
  *
@@ -315,7 +316,16 @@ public final class TerminalSupportImpl {
                          *     $PWD and $OLDPWD variables.
                          */
                         if (pwdFlag) {
-                            final String promptCommand = "printf \"\033]3;${PWD}\007\"";   // NOI18N
+                            /**
+                             * http://wiki.bash-hackers.org/scripting/posparams
+                             *
+                             *  $*      $1 $2 $3 ... ${N}
+                             *  $@      $1 $2 $3 ... ${N}
+                             *  "$*"    "$1c$2c$3c...c${N}" where 'c' is the first character of IFS
+                             *  "$@"    "$1" "$2" "$3" ... "${N}"
+                             */
+                            final String promptCommand = "printf \"\033]3;${PWD}\007\"; " // NOI18N
+                                    + IDE_OPEN + "() { printf \"\033]10;" + COMMAND_PREFIX + IDE_OPEN + " $*;\007\";}";   // NOI18N
                             final String commandName = "PROMPT_COMMAND";                                    // NOI18N
                             String usrPrompt = npb.getEnvironment().get(commandName);
                             npb.getEnvironment().put(commandName,

@@ -81,7 +81,7 @@ public class InterpDumb extends AbstractInterp {
             st_base.setAction('\t', st_base, act_tab);
             st_base.setAction((char) 7, st_base, act_beL);
         }
-
+        
         static final class ACT_NOP implements Actor {
 
             @Override
@@ -238,6 +238,10 @@ public class InterpDumb extends AbstractInterp {
             }
              */
             String err_str = a.actor.action(this, c);
+            /* DEBUG
+//            String newName = (a.new_state) == null ? "null" : a.new_state.name(); //NOI18N
+//            System.out.println(c + " " +(int)c + " " + a.actor.getClass().getSimpleName() + " " + state.name() + " " + newName); //NOI18N
+             */
             if (err_str != null) {
                 ops.logUnrecognizedSequence(ctlSequence.toString());
                 reset_state_bad();

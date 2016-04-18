@@ -78,6 +78,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -284,7 +286,7 @@ public final class Terminal extends JComponent {
     /**
      * Adapter to forward Term size change events as property changes.
      */
-    private class MyTermListener implements TermListener {
+    private class MyTermListener extends TermListener {
 
 	private final static int MAX_TITLE_LENGTH = 35;
 	private final static String PREFIX = "..."; // NOI18N
@@ -323,6 +325,54 @@ public final class Terminal extends JComponent {
 		updateName(newTitle);
 	    }
 	}
+
+        @Override
+        public void externalToolCalled(String command) {
+            if (!command.startsWith(Term.ExternalCommandsConstants.COMMAND_PREFIX)) {
+                return;
+            }
+            command = command.substring(Term.ExternalCommandsConstants.COMMAND_PREFIX.length());
+            if (!command.startsWith(Term.ExternalCommandsConstants.IDE_OPEN)) {
+                return;
+            }
+            
+            // Move out to spi, dont need fixed implementation here
+            // Add multiple file support
+            
+            command = command.substring(Term.ExternalCommandsConstants.IDE_OPEN.length() + 1).trim();
+            
+            List<String> paths = new ArrayList<String>();
+            Matcher m = Pattern.compile("([^\"]\\S*|\".+?\")\\s*").matcher(command); //NOI18N
+            while (m.find()) {
+                paths.add(m.group(1));
+            }
+            
+            // XXX deal with quotes, single
+            // YYY ideopen Catalog.java:22 Task.java -- error! Trash printed
+            
+            for (String path : paths) {
+                int lineNumber = -1;
+                String filePath = path;
+
+                int colonIdx = command.lastIndexOf(':');
+                // Shortest file path
+                if (colonIdx > 2) {
+                    try {
+                        lineNumber = Integer.parseInt(command.substring(colonIdx + 1));
+                        filePath = command.substring(0, colonIdx);
+                    } catch (NumberFormatException x) {
+                    }
+                }
+
+                // dummy
+                if (!filePath.startsWith("/") && !filePath.startsWith("~")) { //NOI18N
+                    filePath = cwd + "/" + filePath; //NOI18N
+                }
+                // dummy
+
+                RP.post(new OpenInEditorAction(filePath, lineNumber));
+            }
+        }
     }
 
     private static class TerminalOutputEvent extends OutputEvent {
@@ -363,23 +413,14 @@ public final class Terminal extends JComponent {
         term .setBackground(Color.white);
         term.setHistorySize(4000);
         term.setRenderingHints(getRenderingHints());
-	
-		term.addListener(new TermListener() {
 
-	    @Override
-	    public void sizeChanged(Dimension cells, Dimension pixels) {
-	    }
+        term.addListener(new TermListener() {
+            @Override
+            public void cwdChanged(String aCwd) {
+                cwd = aCwd;
+            }
+        });
 
-	    @Override
-	    public void titleChanged(String title) {
-	    }
-
-	    @Override
-	    public void cwdChanged(String aCwd) {
-		cwd = aCwd;
-	    }
-	});
-	
 	shortcutsDir.addFileChangeListener(shortcutsListener);
         termOptions.addPropertyChangeListener(termOptionsPCL);
         applyTermOptions(true);
@@ -1226,6 +1267,7 @@ public final class Terminal extends JComponent {
 
         private void doEDT() {
             if (lc != null) {
+                // XXX opens +-1 line
                 Line l = lc.getLineSet().getOriginal(lineNumber);
                 l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
             }
