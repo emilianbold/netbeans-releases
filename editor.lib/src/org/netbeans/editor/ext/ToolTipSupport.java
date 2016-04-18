@@ -44,6 +44,7 @@
 
 package org.netbeans.editor.ext;
 
+import org.netbeans.api.editor.StickyWindowSupport;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -1257,11 +1258,6 @@ public class ToolTipSupport {
         @Override
         public ToolTipSupport createToolTipSupport(EditorUI eui) {
             return new ToolTipSupport(eui);
-        }
-
-        @Override
-        public StickyWindowSupport createStickyWindowSupport(EditorUI eui) {
-            return new StickyWindowSupport(eui);
         }
 
     } // End of Accessor class

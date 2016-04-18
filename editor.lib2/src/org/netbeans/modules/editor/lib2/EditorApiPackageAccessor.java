@@ -47,6 +47,7 @@ package org.netbeans.modules.editor.lib2;
 import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.editor.StickyWindowSupport;
 
 /**
  * Accessor for the package-private functionality of editor API.
@@ -79,4 +80,6 @@ public abstract class EditorApiPackageAccessor {
     public abstract void setIgnoredAncestorClass(Class ignoredAncestorClass);
     
     public abstract void notifyClose(JComponent c);
+    
+    public abstract StickyWindowSupport createStickyWindowSupport(JTextComponent jtc);
 }

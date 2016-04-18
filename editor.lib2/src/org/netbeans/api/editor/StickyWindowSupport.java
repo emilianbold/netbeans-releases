@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.editor.ext;
+package org.netbeans.api.editor;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -50,7 +50,6 @@ import javax.swing.JLayeredPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.editor.EditorUI;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchy;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchyEvent;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchyListener;
@@ -60,18 +59,18 @@ import org.netbeans.modules.editor.lib2.view.ViewHierarchyListener;
  * on top of the editor. Components will update their vertical position on editor
  * changes.
  * @author Ralph Benjamin Ruijs <ralphbenjamin@netbeans.org>
- * @since 4.6
+ * @since 2.7
  */
-public class StickyWindowSupport {
+public final class StickyWindowSupport {
 
-    private final EditorUI eui;
+    private final JTextComponent jtc;
 
-    StickyWindowSupport(final EditorUI eui) {
-        this.eui = eui;
-        ViewHierarchy.get(eui.getComponent()).addViewHierarchyListener(new ViewHierarchyListener() {
+    StickyWindowSupport(final JTextComponent jtc) {
+        this.jtc = jtc;
+        ViewHierarchy.get(jtc).addViewHierarchyListener(new ViewHierarchyListener() {
             @Override
             public void viewHierarchyChanged(ViewHierarchyEvent evt) {
-                JTextComponent editor = eui.getComponent();
+                JTextComponent editor = jtc;
                 Container container = editor.getParent();
                 if(container instanceof JLayeredPane && evt.isChangeY()) {
                     JLayeredPane pane = (JLayeredPane) container;
@@ -98,8 +97,7 @@ public class StickyWindowSupport {
      * @param window the JComponent to add to the editor
      */
     public void addWindow(JComponent window) {
-        JTextComponent component = eui.getComponent();
-        Container container = component.getParent();
+        Container container = jtc.getParent();
         if(container instanceof JLayeredPane) {
             JLayeredPane pane = (JLayeredPane) container;
             pane.add(window, JLayeredPane.PALETTE_LAYER);
@@ -118,8 +116,7 @@ public class StickyWindowSupport {
      */
     public @NonNull Point convertPoint(Point aPoint) {
         Point value = aPoint;
-        JTextComponent component = eui.getComponent();
-        Container container = component.getParent();
+        Container container = jtc.getParent();
         if(container instanceof JLayeredPane) {
             JLayeredPane pane = (JLayeredPane) container;
             value = SwingUtilities.convertPoint(pane.getRootPane(), value, pane);
@@ -132,14 +129,11 @@ public class StickyWindowSupport {
      * @param window the JComponent to remove
      */
     public void removeWindow(JComponent window) {
-        JTextComponent component = eui.getComponent();
-        Container container = component.getParent();
+        Container container = jtc.getParent();
         if(container instanceof JLayeredPane) {
             JLayeredPane pane = (JLayeredPane) container;
             pane.remove(window);
             pane.repaint(window.getBounds());
         }
     }
-    
-    
 }

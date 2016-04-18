@@ -107,21 +107,6 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-        <change id="StickyWindowSupport">
-            <summary>Support for sticky windows in the editor</summary>
-            <version major="4" minor="6"/>
-            <date day="18" month="4" year="2016"/>
-            <author login="ralphbenjamin"/>
-            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no" deletion="no" modification="no" />
-            <description>
-                <p>
-                    Support for Sticky Windows in the editor. JComponents can be
-                    added to a layer on top of the editor. Components will
-                    update their vertical position on editor changes.
-                </p>
-            </description>
-            <issue number="258764"/>
-        </change>
         <change id="editor-document-split">
             <summary>Document handling split</summary>
             <version major="4" minor="0"/>
