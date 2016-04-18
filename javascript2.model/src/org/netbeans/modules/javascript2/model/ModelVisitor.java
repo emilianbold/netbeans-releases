@@ -896,9 +896,10 @@ public class ModelVisitor extends PathNodeVisitor {
         }
         
         // visit all statements of the function
-        for (Node node : functionNode.getBody().getStatements()) {
-            node.accept(this);
-        }
+//        for (Node node : functionNode.getBody().getStatements()) {
+//            node.accept(this);
+//        }
+        functionNode.getBody().accept(this);
         
         if (functionNode.getKind() == FunctionNode.Kind.GENERATOR) {
             // set the return type as Generator object
