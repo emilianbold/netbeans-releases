@@ -391,6 +391,10 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
             binaryNode.lhs().accept(this);
             return false;
         }
+        if (binaryNode.isAssignment()) {
+            binaryNode.rhs().accept(this);
+            return false;
+        }
         return super.enterBinaryNode(binaryNode);
     }
 

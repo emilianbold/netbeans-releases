@@ -1387,7 +1387,7 @@ public class ModelVisitor extends PathNodeVisitor {
             List<Identifier> parameters = new ArrayList(fnNode.getParameters().size());
             for(IdentNode node: fnNode.getParameters()) {
                 Identifier param = create(parserResult, node);
-                if (param != null) {
+                if (param != null && !node.isDestructuredParameter()) {
                     // can be null, if it's a generated embeding. 
                     parameters.add(param);
                 }
@@ -2010,9 +2010,14 @@ public class ModelVisitor extends PathNodeVisitor {
             }
 
             private boolean outerBlock = true;
+            private boolean isParameterBlock = false;
             
             @Override
             public boolean enterBlock(Block block) {
+                isParameterBlock = block.isParameterBlock();
+                if (isParameterBlock) {
+                    return true;
+                }
                 if (outerBlock) {
                     outerBlock = false;
                     return true;
@@ -2021,8 +2026,16 @@ public class ModelVisitor extends PathNodeVisitor {
             }
 
             @Override
+            public boolean enterBlockStatement(BlockStatement blockStatement) {
+                return outerBlock;
+            }
+
+            
+            @Override
             public boolean enterVarNode(VarNode varNode) {
-                declared.add(varNode);
+                if (!isParameterBlock) {
+                    declared.add(varNode);
+                }
                 return false;
             }
            
@@ -2236,7 +2249,25 @@ public class ModelVisitor extends PathNodeVisitor {
                 lastVisited = getPath().get(pathSize - pathIndex);
             }
             if (lastVisited instanceof TernaryNode && pathSize > 1) {
+                TernaryNode tNode = (TernaryNode)lastVisited;
                 lastVisited = getPath().get(pathSize - pathIndex - 1);
+                if (lastVisited instanceof ExpressionStatement || lastVisited instanceof BinaryNode) {
+                    JoinPredecessorExpression trueExpression = tNode.getTrueExpression();
+                    JoinPredecessorExpression falseExpression = tNode.getFalseExpression();
+                    if (trueExpression.getExpression().equals(objectNode) || falseExpression.getExpression().equals(objectNode)) {
+                        // now we have to find out, whether we are in parameter block
+                        int blockIndex = pathIndex + 1;
+                        Block block = null;
+                        while (blockIndex < getPath().size() && block == null) {
+                            if (getPreviousFromPath(++blockIndex) instanceof Block) {
+                                block = (Block)getPreviousFromPath(blockIndex);
+                            }
+                        }
+                        // this is can be case when the object literal is a part of destructure assignman pattern used as parameter
+                        // function drawES6Chart({size = 'big', cords = { x: 0, y: 0 , z: 0}, radius = 25} = {}) {}
+                        treatAsAnonymous = block != null && block.isParameterBlock();
+                    }
+                } 
             } 
             if (lastVisited instanceof BinaryNode) {
                 BinaryNode bNode = (BinaryNode)lastVisited;
@@ -2373,6 +2404,16 @@ public class ModelVisitor extends PathNodeVisitor {
 
     @Override
     public Node leaveObjectNode(ObjectNode objectNode) {
+        Node lastVisited = getPreviousFromPath(2);
+        
+        if (lastVisited instanceof BinaryNode) {
+            BinaryNode bNode = (BinaryNode)lastVisited;
+            if (bNode.lhs().equals(objectNode)) {
+                // case of destructuring assignment { a, b} = ....
+                // we dob't create object in the model, but process the property nodes -> skip reseting modelBuilder
+                return super.leaveObjectNode(objectNode);
+            }
+        }
         modelBuilder.reset();
         return super.leaveObjectNode(objectNode);
     }
@@ -2412,7 +2453,41 @@ public class ModelVisitor extends PathNodeVisitor {
             if (name != null) {
                 JsObjectImpl property = (JsObjectImpl)parent.getProperty(name.getName());
                 if (property == null) {
-                    property = ModelElementFactory.create(parserResult, propertyNode, name, modelBuilder, true);
+                    if (parent.getJSKind() == JsElement.Kind.OBJECT_LITERAL || parent.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
+                        property = ModelElementFactory.create(parserResult, propertyNode, name, modelBuilder, true);
+                    } else {
+                        // the object literal was not created before property node,
+                        // so it can be destructive assignment on the left side
+                        
+                        // find the block node to decide whether's the property node are not
+                        // parameters defined via destructive assignment
+                        // case function drawES6Chart({size = 'big', cords = { x: 0, y: 0 }, radius = 25} = test) {}
+                        int index = 1;
+                        Node node = getPreviousFromPath(index);
+                        BinaryNode bNode = null;
+                        ObjectNode oNode = null;
+                        while (index < getPath().size() && !(node instanceof Block)) {
+                            if (bNode == null && node instanceof BinaryNode) {
+                                bNode = (BinaryNode)node;
+                            } else if (oNode == null && node instanceof ObjectNode) {
+                                oNode = (ObjectNode)node;
+                            }
+                            node = getPreviousFromPath(++index);
+                        }
+                        boolean isDestructiveParam = false;
+                        if (node instanceof Block) {
+                            Block block = (Block)node;
+                            if (block.isParameterBlock() && oNode != null && bNode != null && bNode.lhs().equals(oNode) ) {
+                                // we are in parameters defined via destructive assignment
+                                JsFunction currentFnImpl = modelBuilder.getCurrentDeclarationFunction();
+                                property = (JsObjectImpl)currentFnImpl.getParameter(name.getName());
+                                isDestructiveParam = true;
+                            }
+                        }
+                        if (!isDestructiveParam) {
+                            property = ModelElementFactory.create(parserResult, propertyNode, name, modelBuilder, true);
+                        }
+                    }
                 } else {
                     // The property can be already defined, via a usage before declaration (see testfiles/model/simpleObject.js - called property)
                     JsObjectImpl newProperty = ModelElementFactory.create(parserResult, propertyNode, name, modelBuilder, true);
@@ -2638,14 +2713,22 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (variable == null) {
                     // variable si not defined, so it has to be from global scope
                     // or from a code structure like for cycle
+                    // or it can be from parameter block
 
-                    variable = new JsObjectImpl(parent, name, name.getOffsetRange(),
+                    Node lastVisited = getPreviousFromPath(1);
+                    if (parent instanceof JsFunctionImpl && lastVisited instanceof Block && ((Block)lastVisited).isParameterBlock()) {
+                        // it's a parameter definition
+                        variable = new ParameterObject(parent, name, parent.getMimeType(), parent.getSourceLabel());
+                        ((JsFunctionImpl)parent).addParameter(variable);
+                    } else {
+                        variable = new JsObjectImpl(parent, name, name.getOffsetRange(),
                             true, parserResult.getSnapshot().getMimeType(), null);
+                        parent.addProperty(name.getName(), variable);
+                    }
                     if (parent.getJSKind() != JsElement.Kind.FILE) {
                         variable.getModifiers().remove(Modifier.PUBLIC);
                         variable.getModifiers().add(Modifier.PRIVATE);
                     }
-                    parent.addProperty(name.getName(), variable);
                     variable.addOccurrence(name.getOffsetRange());
                 } else if (!variable.isDeclared()){
                     // the variable was probably created as temporary before, now we
@@ -3284,7 +3367,10 @@ public class ModelVisitor extends PathNodeVisitor {
     }
 
     private void addOccurence(IdentNode iNode, boolean leftSite, boolean isFunction) {
-        addOccurrence(iNode.getName(), getOffsetRange(iNode), leftSite, isFunction);
+        if (!iNode.isDestructuredParameter()) {
+            // skip names of destructured param (it's syntetic)
+            addOccurrence(iNode.getName(), getOffsetRange(iNode), leftSite, isFunction);
+        }
     }
     
     private void addOccurrence(String name, OffsetRange range, boolean leftSite, boolean isFunction) {
