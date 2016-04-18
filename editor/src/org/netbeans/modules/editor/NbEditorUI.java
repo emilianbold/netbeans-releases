@@ -46,7 +46,9 @@ package org.netbeans.modules.editor;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -58,6 +60,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.prefs.Preferences;
+import javax.accessibility.Accessible;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
@@ -77,9 +80,12 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.windows.TopComponent;
 import javax.swing.JComponent;
+import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
+import javax.swing.JViewport;
+import javax.swing.Scrollable;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -242,9 +248,15 @@ public class NbEditorUI extends EditorUI {
     protected JComponent createExtComponent() {
 
         JTextComponent component = getComponent();
+        
+        JLayeredPane layers = new LayeredEditorPane(component);
+        layers.add(component, JLayeredPane.DEFAULT_LAYER, 0);
+//        MyInternalFrame window = new MyInternalFrame();
+//        layers.add(window, JLayeredPane.PALETTE_LAYER);
+//        window.show();
 
         // Add the scroll-pane with the component to the center
-        JScrollPane scroller = new JScrollPane(component);
+        JScrollPane scroller = new JScrollPane(layers);
         scroller.getViewport().setMinimumSize(new Dimension(4,4));
 
         // remove default scroll-pane border, winsys will handle borders itself 
@@ -436,6 +448,81 @@ public class NbEditorUI extends EditorUI {
 //        }
 //
 //    }
+    
+    private class LayeredEditorPane extends JLayeredPane implements Scrollable, Accessible {
+
+        private final JTextComponent component;
+
+        public LayeredEditorPane(JTextComponent component) {
+            this.component = component;
+        }
+
+        @Override
+        public Dimension getMaximumSize() {
+            return component.getMaximumSize();
+        }
+
+        @Override
+        public Dimension getMinimumSize() {
+            return component.getMinimumSize();
+        }
+
+        @Override
+        public void setPreferredSize(Dimension preferredSize) {
+            super.setPreferredSize(preferredSize);
+            component.setPreferredSize(preferredSize);
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            return component.getPreferredSize();
+        }
+
+        @Override
+        public void setSize(int width, int height) {
+            super.setSize(width, height);
+            component.setSize(width, height);
+        }
+        
+        @Override
+        public void setSize(Dimension d) {
+            super.setSize(d);
+            component.setSize(d);
+        }
+
+        @Override
+        public Dimension getPreferredScrollableViewportSize() {
+            return component.getPreferredScrollableViewportSize();
+        }
+
+        @Override
+        public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+            return component.getScrollableUnitIncrement(visibleRect, orientation, direction);
+        }
+
+        @Override
+        public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+            return component.getScrollableBlockIncrement(visibleRect, orientation, direction);
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportWidth() {
+            Container parent = SwingUtilities.getUnwrappedParent(this);
+            if (parent instanceof JViewport) {
+                return parent.getWidth() > getPreferredSize().width;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportHeight() {
+            Container parent = SwingUtilities.getUnwrappedParent(this);
+            if (parent instanceof JViewport) {
+                return parent.getHeight() > getPreferredSize().height;
+            }
+            return false;
+        }
+    }
     
     protected @Override JToolBar createToolBarComponent() {
         return new NbEditorToolBar(getComponent());

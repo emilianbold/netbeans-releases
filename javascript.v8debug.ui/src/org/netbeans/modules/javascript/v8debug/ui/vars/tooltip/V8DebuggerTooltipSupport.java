@@ -58,7 +58,7 @@ public class V8DebuggerTooltipSupport implements DebuggerTooltipSupport {
     private final CallFrame currentFrame;
     private V8Debugger.Listener closeableListener;
 
-    V8DebuggerTooltipSupport(V8Debugger debugger, CallFrame currentFrame) {
+    public V8DebuggerTooltipSupport(V8Debugger debugger, CallFrame currentFrame) {
         this.debugger = debugger;
         this.currentFrame = currentFrame;
     }

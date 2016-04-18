@@ -1228,6 +1228,16 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
                 return getProperty() != null;
             }
         }
+
+        @Override
+        public Object getValue(String key) {
+            if (SMALL_ICON.equals(key)) {
+                // Provide the icon for those who use this action
+                return PropUtils.getCustomButtonIcon();
+            } else {
+                return super.getValue(key);
+            }
+        }
     }
 
     private class AccessiblePropertyPanel extends AccessibleJComponent {

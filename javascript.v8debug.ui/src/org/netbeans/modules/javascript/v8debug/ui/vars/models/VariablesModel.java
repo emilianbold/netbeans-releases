@@ -464,25 +464,30 @@ public class VariablesModel extends ViewModelSupport implements TreeModel,
         }
     }
     
-    public boolean isReadOnlyType(Variable var) {
+    private boolean isReadOnlyType(Variable var) {
         try {
             V8Value value = var.getValue();
             if (value == null) {
                 refreshWhenLoaded.add(var);
                 return true;
-            }
-            switch (value.getType()) {
-                case Context:
-                case Error:
-                case Frame:
-                case Function:
-                case Promise:
-                    return true;
-                default:
-                    return false;
+            } else {
+                return isReadOnly(value);
             }
         } catch (EvaluationError ee) {
             return true;
+        }
+    }
+
+    static boolean isReadOnly(V8Value value) {
+        switch (value.getType()) {
+            case Context:
+            case Error:
+            case Frame:
+            case Function:
+            case Promise:
+                return true;
+            default:
+                return false;
         }
     }
 
