@@ -66,7 +66,7 @@ abstract public class NativeDebuggerActionProvider extends ActionsProviderSuppor
     
     @Override
     public void propertyChange (PropertyChangeEvent evt) {
-        if ("methodInvoke".equals(evt.getPropagationId())) {
+        if ("methodInvoke".equals(evt.getPropagationId())) { // NOI18N
             return ; // Ignore events associated with method invocations
         }
         checkEnabled (debugger.getState ());

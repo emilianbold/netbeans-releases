@@ -126,7 +126,7 @@ abstract public class OtoolNativeVariable implements java.io.Serializable {  //F
 
     @Override
     public String toString() {
-        return "{type:\"" + type + "\",name:\"" + name + "\",value:\"" + value + "\"}";
+        return "{type:\"" + type + "\",name:\"" + name + "\",value:\"" + value + "\"}"; // NOI18N
     }
 
     public String getIdentity() {

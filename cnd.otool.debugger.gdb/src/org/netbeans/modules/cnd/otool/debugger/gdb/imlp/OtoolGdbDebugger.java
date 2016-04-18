@@ -97,10 +97,10 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
             }
         }
         if (otoolNativeEngineProvider == null) {
-            throw new IllegalArgumentException("OtoolNativeEngineProvider have to be used to start OtoolNativeDebugger!");
+            throw new IllegalArgumentException("OtoolNativeEngineProvider have to be used to start OtoolNativeDebugger!"); // NOI18N
         }
 
-        setGdbVersion("7.7");
+        setGdbVersion("7.7"); // NOI18N
     }
 
     final void setGdbVersion(String version) {
@@ -144,14 +144,14 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
         havePio = getIOPack().start();
         if (!havePio) {
             // SHOULD do something
-            System.out.println("NO PTYYYYY");
+            System.out.println("NO PTYYYYY"); // NOI18N
         }
         List<String> args = new ArrayList();
-        args.add("gdb");
-        args.add("--interpreter");
-        args.add("mi");
+        args.add("gdb"); // NOI18N
+        args.add("--interpreter"); // NOI18N
+        args.add("mi"); // NOI18N
         if (havePio) {
-            args.add("-tty");
+            args.add("-tty"); // NOI18N
             args.add(getIOPack().getSlaveName());
         }
         ProcessBuilder builder = new ProcessBuilder(args);
@@ -160,7 +160,7 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
             commandInjectorImpl = new CommandInjectorImpl(process.getOutputStream(), process.getInputStream());
             myMIProxy = new MyMIProxy(commandInjectorImpl);
             commandInjectorImpl.setMiProxy(myMIProxy);
-            System.out.println("Gdb started");
+            System.out.println("Gdb started"); // NOI18N
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -338,8 +338,8 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
             if (update_list.isResultList()) {
                 MIResult result = (MIResult) item;
                 //CndUtils.assertTrue(result.variable().equals("varobj"), "Erroneous response:" + var.toString()); // NOI18N
-                if (!result.variable().equals("varobj")) {
-                    LOG.log(Level.SEVERE, "Erroneous response: {0}", var.toString());
+                if (!result.variable().equals("varobj")) { // NOI18N
+                    LOG.log(Level.SEVERE, "Erroneous response: {0}", var.toString());// NOI18N
                 }
                 updatevar = result.value();
             } else {
@@ -482,7 +482,7 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
 
     private void genericFailure(MIRecord record) {
         String errMsg = getErrMsg(record);
-        System.out.println("Error: " + errMsg);
+        System.out.println("Error: " + errMsg); // NOI18N
     }
 
     private void updateMIVar() {
@@ -701,9 +701,9 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
             protected void onDone(MIRecord record) {
                 List<OtoolNativeThread> res = new ArrayList<OtoolNativeThread>();
                 MITList results = record.results();
-                String currentThreadId = results.getConstValue("current-thread-id");
+                String currentThreadId = results.getConstValue("current-thread-id"); // NOI18N
                 PropertyChangeEvent evt = null;
-                for (MITListItem thr : results.valueOf("threads").asList()) {
+                for (MITListItem thr : results.valueOf("threads").asList()) { // NOI18N
                     MITList thrList = (MITList) thr;
                     String id = thrList.getConstValue("id"); //NOI18N
                     String name = thrList.getConstValue("target-id"); //NOI18N
@@ -736,7 +736,7 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
         if (myMIProxy == null) {
             return;
         }
-        String mi_command = "-stack-list-frames";
+        String mi_command = "-stack-list-frames"; // NOI18N
 
         MICommand cmd = new MiCommandImpl(mi_command) {
 
@@ -751,8 +751,8 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
     }
 
     private void updateStackArgsFromGdb(final MIRecord framerecord) {
-        String mi_command = "-stack-list-arguments ";
-        mi_command += "--all-values";
+        String mi_command = "-stack-list-arguments "; // NOI18N
+        mi_command += "--all-values"; // NOI18N
 
         MICommand cmd = new MiCommandImpl(mi_command) {
 
@@ -777,14 +777,14 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
 
     private List getLocalsFromRecord(MIRecord record) {
         MITList localsresults = record.results();
-        MITList locals_list = localsresults.valueOf("locals").asList();
+        MITList locals_list = localsresults.valueOf("locals").asList(); // NOI18N
         MITList varlist;
 
         List retVal = new ArrayList();
 
         for (MITListItem localvar : locals_list) {
             varlist = ((MIValue) localvar).asList();
-            final GdbVariable gdbVariable = new GdbVariable(varlist.getConstValue("name"), varlist.getConstValue("type"), varlist.getConstValue("value"));
+            final GdbVariable gdbVariable = new GdbVariable(varlist.getConstValue("name"), varlist.getConstValue("type"), varlist.getConstValue("value")); // NOI18N
             gdbVariable.setMIName(varlist.getConstValue("name")); // NOI18N);
             retVal.add(gdbVariable);
         }
@@ -794,11 +794,11 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
 
     private List<GdbFrame> getStackWithArgsFromRecord(MIRecord framerecord, MIRecord argrecord) {
         MITList stackresults = framerecord.results();
-        MITList stack_list = stackresults.valueOf("stack").asList();
+        MITList stack_list = stackresults.valueOf("stack").asList(); // NOI18N
         MIValue frame;
         MIResult frameargs;
         MITList argsresults = argrecord.results();
-        MITList args_list = argsresults.valueOf("stack-args").asList();
+        MITList args_list = argsresults.valueOf("stack-args").asList(); // NOI18N
 
         int stacksize = stack_list.size();
 
@@ -815,10 +815,10 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
 
     private OtoolNativeBreakpoint getBreakpointFromRecord(MIRecord record) {
         MITList breakpointresults = record.results();
-        MITList breakpoint = breakpointresults.valueOf("bkpt").asList();
-        final String numberValue = breakpoint.getConstValue("number");
-        final String line = breakpoint.getConstValue("line");
-        final String fileName = breakpoint.getConstValue("fullname");
+        MITList breakpoint = breakpointresults.valueOf("bkpt").asList(); // NOI18N
+        final String numberValue = breakpoint.getConstValue("number"); // NOI18N
+        final String line = breakpoint.getConstValue("line"); // NOI18N
+        final String fileName = breakpoint.getConstValue("fullname"); // NOI18N
         if (numberValue.isEmpty() || fileName.isEmpty() || line.isEmpty()) {
             return null;
         }
@@ -826,7 +826,7 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
     }
 
     private void insertTemporaryBreakpoint(String funcOrLine) {
-        String mi_command = "-break-insert -t ";
+        String mi_command = "-break-insert -t "; // NOI18N
         mi_command += funcOrLine;
 
         MICommand cmd = new MiCommandImpl(mi_command);
@@ -834,7 +834,7 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
     }
 
     private void setExecutable(String execPath) {
-        String mi_command = "-file-exec-and-symbols ";
+        String mi_command = "-file-exec-and-symbols "; // NOI18N
         mi_command += execPath;
 
         MICommand cmd = new MiCommandImpl(mi_command);
@@ -842,7 +842,7 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
     }
 
     private void run() {
-        String mi_command = "-exec-run";
+        String mi_command = "-exec-run"; // NOI18N
 
         MICommand cmd = new MIResumptiveCommand(mi_command);
         myMIProxy.send(cmd);
@@ -858,7 +858,7 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
 
     @Override
     public void stepInto() {
-        String mi_command = "-exec-step";
+        String mi_command = "-exec-step"; // NOI18N
 
         MICommand cmd = new MIResumptiveCommand(mi_command);
         myMIProxy.send(cmd);
@@ -866,7 +866,7 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
 
     @Override
     public void stop() {
-        String mi_command = "-gdb-exit";
+        String mi_command = "-gdb-exit"; // NOI18N
 
         MICommand cmd = new MiCommandImpl(mi_command) {
 
@@ -894,14 +894,14 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
     }
 
     public void insertBreakpoint(String url, int line) {     //FIXME maybe file,line
-        String mi_command = "-break-insert -f ";
+        String mi_command = "-break-insert -f "; // NOI18N
         String filePath = url;
         try {
             filePath = new URL(url).getPath();
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
-        mi_command += "\"" + filePath + ":" + line + "\"";
+        mi_command += "\"" + filePath + ":" + line + "\""; // NOI18N
 
         MICommand cmd = new MiCommandImpl(mi_command) {
 
@@ -909,7 +909,7 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
             protected void onDone(MIRecord record) {
                 OtoolNativeBreakpoint bpt = getBreakpointFromRecord(record);
                 if (bpt == null) {
-                    System.out.println("Something bad happened, no breakpoint added");
+                    System.out.println("Something bad happened, no breakpoint added"); // NOI18N
                     return;
                 }
                 breakpoints.add(bpt);
@@ -928,7 +928,7 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
     }
 
     public void deleteBreakpoint(final OtoolNativeBreakpoint bpt) {     //FIXME maybe file,line
-        String mi_command = "-break-delete ";
+        String mi_command = "-break-delete "; // NOI18N
         mi_command += bpt.getNumber();
 
         MICommand cmd = new MiCommandImpl(mi_command) {
@@ -959,7 +959,7 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
 
     @Override
     public final void cont() {
-        MICommand cmd = new MIResumptiveCommand("-exec-continue");
+        MICommand cmd = new MIResumptiveCommand("-exec-continue"); // NOI18N
         myMIProxy.send(cmd);
     }
 
@@ -971,18 +971,18 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
     }
 
     void genericStopped(final MIRecord stopRecord) {
-        System.out.println("OtoolGdbDebugger.genericStopped-----");
+        System.out.println("OtoolGdbDebugger.genericStopped-----"); // NOI18N
         setState(OtoolNativeDebugger.STATE_STOPPED);
 
         MITList stopResults = stopRecord.results();
 
-        String reason = stopResults.getConstValue("reason");
+        String reason = stopResults.getConstValue("reason"); // NOI18N
 
-        if (!reason.equals("exited") && !reason.equals("exited-normally")) {
-            MITList frameList = stopResults.valueOf("frame").asTList();
+        if (!reason.equals("exited") && !reason.equals("exited-normally")) { // NOI18N
+            MITList frameList = stopResults.valueOf("frame").asTList(); // NOI18N
 
-            String file = frameList.valueOf("fullname").toString().replaceAll("\"", "");
-            int line = Integer.parseInt(frameList.valueOf("line").toString().replaceAll("\"", ""));
+            String file = frameList.valueOf("fullname").toString().replaceAll("\"", ""); // NOI18N
+            int line = Integer.parseInt(frameList.valueOf("line").toString().replaceAll("\"", "")); // NOI18N
 
             info.set(file, line);
 //            System.out.println("GdbDebugger.genericStopped will send Notification to the listener:" + listener + " about source info " + file);
@@ -1095,7 +1095,7 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
 
         @Override
         protected void onDone(MIRecord record) {
-            System.out.println("MiCommandImpl.onDone");
+            System.out.println("MiCommandImpl.onDone"); // NOI18N
             finish();
         }
 
@@ -1163,7 +1163,7 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
         }*/ 
         @Override
         protected void onStopped(MIRecord record) {
-            System.out.println("MIResumptiveCommand.onStopped");
+            System.out.println("MIResumptiveCommand.onStopped"); // NOI18N
             genericStopped(record);
             finish();
         }
@@ -1172,18 +1172,18 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
     private class MyMIProxy extends MIProxy {
 
         public MyMIProxy(MICommandInjector injector) {
-            super(injector, "(gdb)", Charset.defaultCharset().name());
+            super(injector, "(gdb)", Charset.defaultCharset().name()); // NOI18N
         }
 
         @Override
         protected void execAsyncOutput(MIRecord record) {
-            System.out.println("GdbDebugger.MyMIProxy.execAsyncOutput " + "record.cls()=" + record.cls()
-                    + " record.gettoken()=" + record.token() + " record is " + record);
+            System.out.println("GdbDebugger.MyMIProxy.execAsyncOutput " + "record.cls()=" + record.cls() // NOI18N
+                    + " record.gettoken()=" + record.token() + " record is " + record); // NOI18N
             // dispatch async messages without a token here
             //TODO: check if the fix is correct
             // if (record.token() == 0) {
-            if (record.cls().equals("stopped")) {
-                System.out.println("GdbDebugger.MyMIProxy.execAsyncOutput will invoke genericStoppedNow");
+            if (record.cls().equals("stopped")) { // NOI18N
+                System.out.println("GdbDebugger.MyMIProxy.execAsyncOutput will invoke genericStoppedNow"); // NOI18N
                 genericStopped(record);
                 clearMessages();
                 //     }
@@ -1195,7 +1195,7 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
 
     static class CommandInjectorImpl implements MICommandInjector {
 
-        private RequestProcessor sendQueue = new RequestProcessor("SendQueue", 1);
+        private RequestProcessor sendQueue = new RequestProcessor("SendQueue", 1); // NOI18N
         private Thread gdbOutputReader = new Thread() {
 
             @Override

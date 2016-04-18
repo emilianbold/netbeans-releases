@@ -50,7 +50,7 @@ import java.beans.PropertyChangeSupport;
  */
 public abstract class OtoolNativeThread {
 
-    public static final String PROP_SUSPENDED = "suspended";
+    public static final String PROP_SUSPENDED = "suspended";  // NOI18N
     protected PropertyChangeSupport pch = new PropertyChangeSupport(this);
 
     

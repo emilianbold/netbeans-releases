@@ -68,7 +68,7 @@ public class OtoolNativeThreadImpl extends OtoolNativeThread{
         this.id = id;
         this.name = name;     
         this.current = current;
-        suspended = state.equals("stopped");
+        suspended = state.equals("stopped"); // NOI18N
     }
     
 

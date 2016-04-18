@@ -50,7 +50,7 @@ public abstract class OtoolNativeDebugger <T extends OtoolNativeDebuggerInfo> {
     private final PropertyChangeSupport       pcs;
 
     /** Name of property for state of debugger. */
-    public static final String          PROP_STATE = "state";
+    public static final String          PROP_STATE = "state";  // NOI18N
     
     /** Debugger state constant. */
     public static final int             STATE_STARTING = 1;
@@ -64,9 +64,9 @@ public abstract class OtoolNativeDebugger <T extends OtoolNativeDebuggerInfo> {
     public static final int STATE_LOADING = 0;
     
   /** Name of property for current thread. */
-    public static final String          PROP_CURRENT_THREAD = "currentThread";
+    public static final String          PROP_CURRENT_THREAD = "currentThread";  // NOI18N
     /** Name of property for current stack frame. */
-    public static final String          PROP_CURRENT_CALL_STACK_FRAME = "currentCallStackFrame";
+    public static final String          PROP_CURRENT_CALL_STACK_FRAME = "currentCallStackFrame";  // NOI18N
     /** Property name constant. */
     public static final String          PROP_SUSPEND = "suspend"; // NOI18N
     private IOPack ioPack;
@@ -377,27 +377,27 @@ public abstract class OtoolNativeDebugger <T extends OtoolNativeDebuggerInfo> {
 
         @Override
         public void debug() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N //To change body of generated methods, choose Tools | Templates.
         }
 
         @Override
         public void stepOver() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N //To change body of generated methods, choose Tools | Templates.
         }
 
         @Override
         public void stepInto() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported yet.");  // NOI18N //To change body of generated methods, choose Tools | Templates.
         }
 
         @Override
         public void stop() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N //To change body of generated methods, choose Tools | Templates.
         }
 
         @Override
         public void toggleLineBreakpoint(String sourceFile, int line) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N //To change body of generated methods, choose Tools | Templates.
         }
 
 //        @Override
@@ -407,52 +407,52 @@ public abstract class OtoolNativeDebugger <T extends OtoolNativeDebuggerInfo> {
 
         @Override
         public void cont() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N //To change body of generated methods, choose Tools | Templates.
         }
 
         @Override
         public List<OtoolNativeVariable> getLocalVars() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N //To change body of generated methods, choose Tools | Templates.
         }
 
         @Override
         public SourceInfo getCurrentSourceInfo() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N //To change body of generated methods, choose Tools | Templates.
         }
 
         @Override
         public List<OtoolNativeFrame> getCallStack() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N //To change body of generated methods, choose Tools | Templates.
         }
 
         @Override
         public List<OtoolNativeThread> getThreads() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N //To change body of generated methods, choose Tools | Templates.
         }
 
         @Override
         public List<OtoolNativeBreakpoint> getBreakpoints() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N //To change body of generated methods, choose Tools | Templates.
         }
 
         @Override
         public int getState() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N //To change body of generated methods, choose Tools | Templates.
         }
 
         @Override
         public void stepOut() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N //To change body of generated methods, choose Tools | Templates.
         }
 
         @Override
         public void setState(int state) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N //To change body of generated methods, choose Tools | Templates.
         }
 
     }
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") 
     private static <T extends OtoolNativeDebuggerInfo> Class<T> getInstanceClass(OtoolNativeDebugger<T> debugger) {
         return (Class<T>) (((ParameterizedType) debugger.getClass().getGenericSuperclass()).getActualTypeArguments()[0]);
     }    

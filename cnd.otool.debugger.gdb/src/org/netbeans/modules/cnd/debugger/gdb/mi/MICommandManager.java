@@ -85,7 +85,7 @@ class MICommandManager {
         if (commandToken > MAX_TOKEN) {
             commandToken = MIN_TOKEN;
         }
-        System.out.println("MiCommandManager.send() Add pending command cmd.getToken()=" + cmd.getToken() + " cmd=" + cmd);
+        System.out.println("MiCommandManager.send() Add pending command cmd.getToken()=" + cmd.getToken() + " cmd=" + cmd); // NOI18N
 	pendingCommands.add(cmd);
         String commandStr = String.valueOf(cmd.getToken()) + cmd.command() + '\n';
         gdbLogger.logMessage(commandStr);
@@ -153,19 +153,19 @@ class MICommandManager {
      */
 
     public void dispatch(MIRecord record) {
-        System.out.println("MICommandManager.dispatch() record=" + record);
-        System.out.println("MICommandManager.dispatch() there are " + pendingCommands.size() + " pendingCommands");
+        System.out.println("MICommandManager.dispatch() record=" + record); // NOI18N
+        System.out.println("MICommandManager.dispatch() there are " + pendingCommands.size() + " pendingCommands"); // NOI18N
         int token = record.token();
 	MICommand cmd = pendingCommands.peek();
         if (cmd == null){
-            System.out.println("MICommadManager.dispatch() cmd is null will iterate by pendingCommands");
+            System.out.println("MICommadManager.dispatch() cmd is null will iterate by pendingCommands"); // NOI18N
             final Iterator<MICommand> iterator = pendingCommands.iterator();
             while (iterator.hasNext()){
-                System.out.println("MICommadManager.dispatch() next is " + iterator.next());
+                System.out.println("MICommadManager.dispatch() next is " + iterator.next()); // NOI18N
             }
         }
         if (processAsyncError(record)) {
-            System.out.println("MICommandManager.dispatch will return as processAsyncError(record) is true");            
+            System.out.println("MICommandManager.dispatch will return as processAsyncError(record) is true"); // NOI18N         
             return;
         }
         
@@ -173,14 +173,14 @@ class MICommandManager {
             // an error happened somewhere
             // delete all unanswered commands
             cmd = pendingCommands.poll();
-            System.out.println(String.format("MICommandManager.dispatch() delete all unanswered commands, No answer for: %s\n\r", cmd.toString()));
+            System.out.println(String.format("MICommandManager.dispatch() delete all unanswered commands, No answer for: %s\n\r", cmd.toString())); // NOI18N
             echo(String.format("No answer for: %s\n\r", cmd.toString())); // NOI18N
             cmd = pendingCommands.peek();
             
         }
-        System.out.println("cmd=" + cmd + " cmd.getToken()=" + (cmd == null ? " CMD IS NULL" : cmd.getToken()));
+        System.out.println("cmd=" + cmd + " cmd.getToken()=" + (cmd == null ? " CMD IS NULL" : cmd.getToken())); // NOI18N
 	if (cmd == null || cmd.getToken() != token) {
-            System.out.println("MICommandManager.dispatch will return as cmd == null || cmd.getToken() != token,"  + String.format("No command for record %s\n\r", record));            
+            System.out.println("MICommandManager.dispatch will return as cmd == null || cmd.getToken() != token,"  + String.format("No command for record %s\n\r", record)); // NOI18N
 	    echo(String.format("No command for record %s\n\r", record)); // NOI18N
             streamMessages.clear();
             consoleMessages.clear();
@@ -196,10 +196,10 @@ class MICommandManager {
 	if (record.isError()) {
 	    echo(record.error() + "\n\r"); // NOI18N
 	    finish(cmd);
-            System.out.println("MICommandManager.dispatch will return record is error");            
+            System.out.println("MICommandManager.dispatch will return record is error"); // NOI18N          
 	    return;
 	}
-        System.out.println("MICommandManager.dispatch MIResumptiveCommand record.type=" + record.type + " record.cls=" + record.cls);
+        System.out.println("MICommandManager.dispatch MIResumptiveCommand record.type=" + record.type + " record.cls=" + record.cls); // NOI18N
 	if (record.type == '^') {
 	    if (record.cls.equals("done")) { // NOI18N
 		cmd.onDone(record);
@@ -219,7 +219,7 @@ class MICommandManager {
 		cmd.onOther(record);
 	    } 
 	} else {
-            System.out.println("MICommandManager.dispatch alse will invoke cmd.onOther(recoed)");
+            System.out.println("MICommandManager.dispatch alse will invoke cmd.onOther(recoed)"); // NOI18N
 	    cmd.onOther(record);
 	} 
     }

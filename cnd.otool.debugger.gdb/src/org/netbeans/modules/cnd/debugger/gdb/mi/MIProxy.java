@@ -145,9 +145,9 @@ public abstract class MIProxy {
 	parser.setup(line);
 	MIRecord record = parser.parse();
 	if (record.isError()) {
-	    System.out.println("MIProxy.processLine---------> ERROR: " + record.error());
+	    System.out.println("MIProxy.processLine---------> ERROR: " + record.error()); // NOI18N
 	} else {
-	    System.out.println("MIProxy.processLine---------> " + record.toString());
+	    System.out.println("MIProxy.processLine---------> " + record.toString()); // NOI18N
 	}
 
 	switch (record.type()) {
@@ -158,7 +158,7 @@ public abstract class MIProxy {
 		statusAsyncOutput(record);
 		return true;
 	    case '*':
-                System.out.println("MIProxy.processLine recordType is * will invoke execAsyncOutput");
+                System.out.println("MIProxy.processLine recordType is * will invoke execAsyncOutput"); // NOI18N
 		execAsyncOutput(record);
 		return true;
 	    case '=':

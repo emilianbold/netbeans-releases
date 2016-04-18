@@ -27,6 +27,6 @@ public /*package*/ class SourceInfo {
     
     @Override
     public String toString() {
-        return "{file:"+ srcFile + ",line:" + line + "}";
+        return "{file:"+ srcFile + ",line:" + line + "}"; // NOI18N
     }
 }

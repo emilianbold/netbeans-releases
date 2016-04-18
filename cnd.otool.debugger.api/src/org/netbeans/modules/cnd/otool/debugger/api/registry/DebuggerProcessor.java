@@ -109,21 +109,21 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
     private void handleProviderRegistration(Element e, Class providerClass, String path) throws IllegalArgumentException, LayerGenerationException {
         String className = instantiableClassOrMethod(e);
         if (!isClassOf(e, providerClass)) {
-            throw new IllegalArgumentException("Annotated element "+e+" is not an instance of " + providerClass);
+            throw new IllegalArgumentException("Annotated element "+e+" is not an instance of " + providerClass); // NOI18N
         }
-        System.out.println("Will handle &&&&&&&&&&&&&&&&&&&");
+        System.out.println("Will handle &&&&&&&&&&&&&&&&&&&"); // NOI18N
         if (path != null && path.length() > 0) {
-            path = "Debugger/"+path;
+            path = "Debugger/"+path; // NOI18N
         } else {
-            path = "Debugger";
+            path = "Debugger"; // NOI18N
         }
         LayerBuilder lb = layer(e);
         String basename = className.replace('.', '-');
-        LayerBuilder.File f = lb.file(path + "/" + basename + ".instance");
+        LayerBuilder.File f = lb.file(path + "/" + basename + ".instance"); // NOI18N
         f.stringvalue(SERVICE_NAME, className).
-          stringvalue("serviceClass", providerClass.getName()).
-          stringvalue("instanceOf", providerClass.getName()).
-          methodvalue("instanceCreate", providerClass.getName()+"$ContextAware", "createService").
+          stringvalue("serviceClass", providerClass.getName()). // NOI18N
+          stringvalue("instanceOf", providerClass.getName()). // NOI18N
+          methodvalue("instanceCreate", providerClass.getName()+"$ContextAware", "createService"). // NOI18N
           write();
     }
 
@@ -160,7 +160,7 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
                 }
             }
             default:
-                throw new IllegalArgumentException("Annotated element is not loadable as an instance: " + e);
+                throw new IllegalArgumentException("Annotated element is not loadable as an instance: " + e); // NOI18N
         }
     }
 
@@ -171,7 +171,7 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
             case CLASS: {
                 String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) e).toString();
                 if (e.getModifiers().contains(Modifier.ABSTRACT)) {
-                    throw new LayerGenerationException(clazz + " must not be abstract", e);
+                    throw new LayerGenerationException(clazz + " must not be abstract", e); // NOI18N
                 }
                 {
                     boolean hasDefaultCtor = false;
@@ -194,7 +194,7 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
                         }
                     }
                     if (!(hasDefaultCtor || hasContextCtor)) {
-                        throw new LayerGenerationException(clazz + " must have a no-argument constructor or constuctor taking "+ContextProvider.class.getName()+" as a parameter.", e);
+                        throw new LayerGenerationException(clazz + " must have a no-argument constructor or constuctor taking "+ContextProvider.class.getName()+" as a parameter.", e); // NOI18N
                     }
                 }
                 /*propType = processingEnv.getElementUtils().getTypeElement("java.util.Properties").asType();
@@ -215,15 +215,15 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
                 String methodName = ee.getSimpleName().toString();
                 String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) ee.getEnclosingElement()).toString();
                 if (!e.getModifiers().contains(Modifier.STATIC)) {
-                    throw new LayerGenerationException(ee + " must be static", e);
+                    throw new LayerGenerationException(ee + " must be static", e); // NOI18N
                 }
                 if (ee.getParameters().size() > 0) {
-                    throw new LayerGenerationException(ee + " must not have any parameters", e);
+                    throw new LayerGenerationException(ee + " must not have any parameters", e); // NOI18N
                 }
-                return clazz+"."+methodName+"()";
+                return clazz+"."+methodName+"()"; // NOI18N
             }
             default:
-                throw new IllegalArgumentException("Annotated element is not loadable as an instance: " + e);
+                throw new IllegalArgumentException("Annotated element is not loadable as an instance: " + e); // NOI18N
         }
     }
 }

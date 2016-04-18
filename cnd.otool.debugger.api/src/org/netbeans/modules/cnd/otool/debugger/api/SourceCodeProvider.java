@@ -39,23 +39,23 @@ public class SourceCodeProvider {
     public static String getHTMLForSourcefile(String name) {
         StringBuilder builder = new StringBuilder();
         
-        builder.append("<html>");
-        builder.append("<head>");
-        builder.append("<title>Source Code</title>");            
-        builder.append("</head>");
-        builder.append("<body>");
-        builder.append("<pre style=\"font-size: medium; font-family: Courier, monospace;\">");
+        builder.append("<html>"); // NOI18N
+        builder.append("<head>"); // NOI18N
+        builder.append("<title>Source Code</title>"); // NOI18N          
+        builder.append("</head>"); // NOI18N
+        builder.append("<body>"); // NOI18N
+        builder.append("<pre style=\"font-size: medium; font-family: Courier, monospace;\">"); // NOI18N
                 
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(name)));
             String s;
             int count = 0;
             while ((s = br.readLine()) != null) {
-                builder.append("<input type=\"button\" id=\"" + ++count + "\" value=\"" + count + "\" onClick=\"toggleLineBreakpoint(id)\" class=\"glyph\"/>");
-                builder.append("<span id=\"line" + count + "\">");
+                builder.append("<input type=\"button\" id=\"" + ++count + "\" value=\"" + count + "\" onClick=\"toggleLineBreakpoint(id)\" class=\"glyph\"/>"); // NOI18N
+                builder.append("<span id=\"line" + count + "\">"); // NOI18N
                 builder.append(s);
-                builder.append("</span>");
-                builder.append("<br>");
+                builder.append("</span>"); // NOI18N
+                builder.append("<br>"); // NOI18N
             }
             
             br.close();
@@ -65,9 +65,9 @@ public class SourceCodeProvider {
             ex.printStackTrace();
         }
         
-        builder.append("</pre>");
-        builder.append("</body>");
-        builder.append("</html>");
+        builder.append("</pre>"); // NOI18N
+        builder.append("</body>"); // NOI18N
+        builder.append("</html>"); // NOI18N
         
         return builder.toString();
     }

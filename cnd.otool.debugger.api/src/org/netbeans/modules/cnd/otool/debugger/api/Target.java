@@ -43,6 +43,6 @@ public final  class Target {
     }
 
     public String getID() {
-        return "netbeans-OtoolNativeTarget";
+        return "netbeans-OtoolNativeTarget"; // NOI18N
     }
 }

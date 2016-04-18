@@ -69,7 +69,7 @@ public class MIRecord {
     }
 
     void setCommand(MICommand command) {
-        System.out.println("MICommand.setCommand=" + command);
+        System.out.println("MICommand.setCommand=" + command); // NOI18N
 	this.command = command;
     }
 

@@ -61,17 +61,17 @@ public class OtoolGdbSessionProvider extends OtoolNativeSessionProvider {
     
     @Override
     public String getSessionName() {
-        return "OtoolGdbSession";
+        return "OtoolGdbSession"; // NOI18N
     }
 
     @Override
     public String getLocationName() {
-        return "OtoolGdbSession";
+        return "OtoolGdbSession"; // NOI18N
     }
 
     @Override
     public String getTypeID() {
-        return "netbeans-OtoolGdbSession";
+        return "netbeans-OtoolGdbSession"; // NOI18N
     }
 
     @Override
