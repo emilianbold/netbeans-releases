@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.terminal.ioprovider;
 
+import org.netbeans.modules.terminal.support.OpenInEditorAction;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -130,6 +131,7 @@ import org.netbeans.lib.terminalemulator.TermStream;
 import org.netbeans.modules.terminal.actions.ActionFactory;
 import org.netbeans.modules.terminal.actions.PinTabAction;
 import org.netbeans.modules.terminal.api.IOResizable;
+import org.netbeans.modules.terminal.spi.ExternalCommandActionProvider;
 import org.netbeans.modules.terminal.support.TerminalPinSupport;
 import org.netbeans.modules.terminal.support.TerminalPinSupport.DetailsStateListener;
 import org.openide.DialogDescriptor;
@@ -178,7 +180,6 @@ import org.openide.windows.OutputListener;
  */
 public final class Terminal extends JComponent {
 
-    private final RequestProcessor RP = new RequestProcessor("Open Terminal hyperlink"); //NOI18N
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     private final IOContainer ioContainer;
@@ -288,43 +289,43 @@ public final class Terminal extends JComponent {
      */
     private class MyTermListener extends TermListener {
 
-	private final static int MAX_TITLE_LENGTH = 35;
-	private final static String PREFIX = "..."; // NOI18N
-	private final static String INFIX = " - "; // NOI18N
+        private final static int MAX_TITLE_LENGTH = 35;
+        private final static String PREFIX = "..."; // NOI18N
+        private final static String INFIX = " - "; // NOI18N
 
-	@Override
-	public void sizeChanged(Dimension cells, Dimension pixels) {
-	    IOResizable.Size size = new IOResizable.Size(cells, pixels);
-	    tio.pcs().firePropertyChange(IOResizable.PROP_SIZE, null, size);
-	}
+        @Override
+        public void sizeChanged(Dimension cells, Dimension pixels) {
+            IOResizable.Size size = new IOResizable.Size(cells, pixels);
+            tio.pcs().firePropertyChange(IOResizable.PROP_SIZE, null, size);
+        }
 
-	@Override
-	public void cwdChanged(String cwd) {
-	    if (!customTitle) {
-		int newLength = PREFIX.length() + INFIX.length() + cwd.length();
-		String newTitle = name.concat(INFIX).concat(cwd);
-		updateTooltopText(newTitle);
-		if (newLength > MAX_TITLE_LENGTH) {
-		    newTitle = name
-			    .concat(INFIX)
-			    .concat(PREFIX)
-			    .concat(cwd.substring(newLength - MAX_TITLE_LENGTH));
-		}
-		updateName(newTitle);
-	    }
-	}
+        @Override
+        public void cwdChanged(String cwd) {
+            if (!customTitle) {
+                int newLength = PREFIX.length() + INFIX.length() + cwd.length();
+                String newTitle = name.concat(INFIX).concat(cwd);
+                updateTooltopText(newTitle);
+                if (newLength > MAX_TITLE_LENGTH) {
+                    newTitle = name
+                            .concat(INFIX)
+                            .concat(PREFIX)
+                            .concat(cwd.substring(newLength - MAX_TITLE_LENGTH));
+                }
+                updateName(newTitle);
+            }
+        }
 
-	@Override
-	public void titleChanged(String title) {
-	    if (!customTitle) {
-		String newTitle = title;
-		updateTooltopText(newTitle);
-		if (title.length() > MAX_TITLE_LENGTH) {
-		    newTitle = PREFIX.concat(title.substring(title.length() - MAX_TITLE_LENGTH));
-		}
-		updateName(newTitle);
-	    }
-	}
+        @Override
+        public void titleChanged(String title) {
+            if (!customTitle) {
+                String newTitle = title;
+                updateTooltopText(newTitle);
+                if (title.length() > MAX_TITLE_LENGTH) {
+                    newTitle = PREFIX.concat(title.substring(title.length() - MAX_TITLE_LENGTH));
+                }
+                updateName(newTitle);
+            }
+        }
 
         @Override
         public void externalToolCalled(String command) {
@@ -336,42 +337,7 @@ public final class Terminal extends JComponent {
                 return;
             }
             
-            // Move out to spi, dont need fixed implementation here
-            // Add multiple file support
-            
-            command = command.substring(Term.ExternalCommandsConstants.IDE_OPEN.length() + 1).trim();
-            
-            List<String> paths = new ArrayList<String>();
-            Matcher m = Pattern.compile("([^\"]\\S*|\".+?\")\\s*").matcher(command); //NOI18N
-            while (m.find()) {
-                paths.add(m.group(1));
-            }
-            
-            // XXX deal with quotes, single
-            // YYY ideopen Catalog.java:22 Task.java -- error! Trash printed
-            
-            for (String path : paths) {
-                int lineNumber = -1;
-                String filePath = path;
-
-                int colonIdx = command.lastIndexOf(':');
-                // Shortest file path
-                if (colonIdx > 2) {
-                    try {
-                        lineNumber = Integer.parseInt(command.substring(colonIdx + 1));
-                        filePath = command.substring(0, colonIdx);
-                    } catch (NumberFormatException x) {
-                    }
-                }
-
-                // dummy
-                if (!filePath.startsWith("/") && !filePath.startsWith("~")) { //NOI18N
-                    filePath = cwd + "/" + filePath; //NOI18N
-                }
-                // dummy
-
-                RP.post(new OpenInEditorAction(filePath, lineNumber));
-            }
+            ExternalCommandActionProvider.getProvider(command).handle(command, Lookups.fixed(getCwd(), term));
         }
     }
 
@@ -550,7 +516,7 @@ public final class Terminal extends JComponent {
                         } catch (NumberFormatException x) {
                         }
                     }
-                    RP.post(new OpenInEditorAction(filePath, lineNumber));
+                    OpenInEditorAction.post(FileUtil.toFileObject(new File(filePath)), lineNumber);
                 } 
                 else if (userObject instanceof OutputListener) {
                     OutputListener ol = (OutputListener) r.getUserObject();
@@ -1244,60 +1210,6 @@ public final class Terminal extends JComponent {
 	}
     }
 
-    private static class OpenInEditorAction implements Runnable {
-
-        private final String file;
-        private final int lineNumber;
-
-        private LineCookie lc;
-
-        public OpenInEditorAction(String file, int lineNumber) {
-            this.file = file;
-            this.lineNumber = lineNumber;
-        }
-
-        public @Override
-        void run() {
-            if (SwingUtilities.isEventDispatchThread()) {
-                doEDT();
-            } else {
-                doWork();
-            }
-        }
-
-        private void doEDT() {
-            if (lc != null) {
-                // XXX opens +-1 line
-                Line l = lc.getLineSet().getOriginal(lineNumber);
-                l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
-            }
-        }
-
-        private void doWork() {
-            FileObject fobj = FileUtil.toFileObject(new File(file));
-
-            if (fobj == null) {
-                return;
-            }
-
-            try {
-                DataObject dobj = DataObject.find(fobj);
-                EditorCookie ed = dobj.getLookup().lookup(EditorCookie.class);
-                if (ed != null && fobj == dobj.getPrimaryFile()) {
-                    if (lineNumber == -1) {
-                        ed.open();
-                    } else {
-                        lc = (LineCookie) dobj.getLookup().lookup(LineCookie.class);
-                        SwingUtilities.invokeLater(this);
-                    }
-                } else {
-                    Toolkit.getDefaultToolkit().beep();
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-    }
 
     private static class SupportStream extends TermStream {
 
