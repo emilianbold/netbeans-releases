@@ -857,7 +857,7 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
                               new int[]{y, y+14, y+7, y}, 4);
             }
             g.setColor(d);
-                g.fillPolygon(new int[]{x, x,    x+8, x},
+                g.drawPolygon(new int[]{x, x,    x+8, x},
                               new int[]{y, y+12, y+6, y}, 4);
             if (!pub) {
                 x = 9;
