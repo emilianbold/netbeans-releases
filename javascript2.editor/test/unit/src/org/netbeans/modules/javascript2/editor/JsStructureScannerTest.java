@@ -723,4 +723,9 @@ public class JsStructureScannerTest extends JsTestBase {
     public void testObjectDestructuringAssing06() throws Exception {
         checkStructure("testfiles/markoccurences/destructuringAssignments/objectDestructuring05.js");
     }
+    
+    public void testExample01() throws Exception {
+        // testing when the destructuring assignment is used as parameter definition
+        checkStructure("testfiles/markoccurences/destructuringAssignments/example01.js");
+    }
 }

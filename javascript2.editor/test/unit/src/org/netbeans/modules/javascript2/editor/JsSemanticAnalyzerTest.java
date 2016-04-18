@@ -584,4 +584,9 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
     public void testObjectDestructuringAssing06() throws Exception {
         checkSemantic("testfiles/markoccurences/destructuringAssignments/objectDestructuring06.js");
     }
+    
+    public void testExample01() throws Exception {
+        // testing when the destructuring assignment is used as parameter definition
+        checkSemantic("testfiles/markoccurences/destructuringAssignments/example01.js");
+    }
 }
