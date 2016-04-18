@@ -1,6 +1,8 @@
 package org.netbeans.modules.dlight.terminal.action;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -10,7 +12,10 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.terminal.spi.ExternalCommandActionProvider;
 import org.netbeans.modules.terminal.support.OpenInEditorAction;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -57,14 +62,21 @@ public class OpenInEditorActionProvider extends ExternalCommandActionProvider {
                 filePath = lookup.lookup(String.class) + "/" + filePath; //NOI18N
             }
 
-            ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
             Object key = lookup.lookup(Term.class).getClientProperty(Term.ExternalCommandsConstants.EXECUTION_ENV_PROPERTY_KEY);
+            FileObject fo = null;
             if (key != null) {
-                env = ExecutionEnvironmentFactory.fromUniqueID(key.toString());
+                try {
+                    fo = URLMapper.findFileObject(new URL("rfs://" + key + filePath)); //NOI18N
+                } catch (MalformedURLException ex) {
+                    // ignore
+                }
+            }
+            if (fo == null) {
+                fo = FileUtil.toFileObject(new File(filePath));
             }
 
             // XXX blocker for a remote case is https://netbeans.org/bugzilla/show_bug.cgi?id=258890
-            OpenInEditorAction.post(FileUtil.toFileObject(new File(filePath)), lineNumber);
+            OpenInEditorAction.post(fo, lineNumber);
         }
     }
 
