@@ -835,7 +835,7 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
         }
 
         private void updateIcon() {
-            icon = new BufferedImage(15, 15, BufferedImage.TYPE_INT_ARGB);
+            icon = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
 
             Graphics2D g = (Graphics2D) icon.getGraphics();
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -857,8 +857,8 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
                               new int[]{y, y+14, y+7, y}, 4);
             }
             g.setColor(d);
-                g.drawPolygon(new int[]{x, x,    x+8, x},
-                              new int[]{y, y+12, y+6, y}, 4);
+                g.drawPolygon(new int[]{x, x,    x+9, x},
+                              new int[]{y, y+14, y+7, y}, 4);
             if (!pub) {
                 x = 9;
                 y = 1;
