@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.javascript2.debug.ui.tooltip;
 
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -58,18 +59,23 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.Watch;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.PopupManager;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+import org.netbeans.spi.debugger.ui.EditorPin;
+import org.netbeans.spi.debugger.ui.PinWatchUISupport;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.Annotation;
 import static org.openide.text.Annotation.PROP_SHORT_DESCRIPTION;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 
@@ -96,6 +102,17 @@ public abstract class AbstractJSToolTipAnnotation<Debugger extends DebuggerToolt
     
     public static Object getTooltipVariable() {
         return ToolTipView.getVariable();
+    }
+
+    public static void openTooltipView(DebuggerTooltipSupport dbg, String expression, Object var) {
+        ToolTipView toolTipView = ToolTipView.createToolTipView(dbg, expression, var);
+        JEditorPane currentEditor = EditorContextDispatcher.getDefault().getMostRecentEditor();
+        EditorUI eui = Utilities.getEditorUI(currentEditor);
+        if (eui != null) {
+            toolTipView.setToolTipSupport(eui.getToolTipSupport());
+            eui.getToolTipSupport().setToolTipVisible(true, false);
+            eui.getToolTipSupport().setToolTip(toolTipView);
+        }
     }
 
     @Override
@@ -155,7 +172,7 @@ public abstract class AbstractJSToolTipAnnotation<Debugger extends DebuggerToolt
 
     private void evaluate(Session session, DebuggerEngine engine, final Debugger dbg,
                           Line.Part lp, EditorCookie ec) {
-        Line line = lp.getLine();
+        final Line line = lp.getLine();
         if (line == null) {
             return;
         }
@@ -185,6 +202,7 @@ public abstract class AbstractJSToolTipAnnotation<Debugger extends DebuggerToolt
         if (expression == null) {
             return;
         }
+        final FileObject fo = line.getLookup().lookup(FileObject.class);
         if (isFunctionPtr[0]) {
             //return ; // We do not call functions
         }
@@ -197,11 +215,12 @@ public abstract class AbstractJSToolTipAnnotation<Debugger extends DebuggerToolt
         }
         final String toolTip = truncateLongText(toolTipTextAndVar.first());
         final Object var = toolTipTextAndVar.second();
-        if (var != null) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    final ToolTipView.ExpandableTooltip et = ToolTipView.createExpandableTooltip(toolTip);
+        final boolean expandable = var != null;
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                final ToolTipView.ExpandableTooltip et = ToolTipView.createExpandableTooltip(toolTip, expandable);
+                if (expandable) {
                     et.addExpansionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
@@ -225,17 +244,37 @@ public abstract class AbstractJSToolTipAnnotation<Debugger extends DebuggerToolt
                             });
                         }
                     });
-                    EditorUI eui = Utilities.getEditorUI(ep);
-                    if (eui != null) {
-                        eui.getToolTipSupport().setToolTip(et);
-                    } else {
-                        firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTip);
-                    }
                 }
-            });
-        } else {
-            firePropertyChange(PROP_SHORT_DESCRIPTION, null, toolTip);
-        }
+                et.addPinListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        EditorUI eui = Utilities.getEditorUI(ep);
+                        Point location = et.getLocation();
+                        eui.getToolTipSupport().setToolTipVisible(false);
+                        DebuggerManager dbMgr = DebuggerManager.getDebuggerManager();
+                        Watch.Pin pin = new EditorPin(fo, line.getLineNumber(), location);
+                        final Watch w = dbMgr.createPinnedWatch(expression, pin);
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                String valueProviderId = "org.netbeans.modules.javascript2.debug.PIN_VALUE_PROVIDER"; // NOI18N
+                                try {
+                                    PinWatchUISupport.getDefault().pin(w, valueProviderId);
+                                } catch (IllegalArgumentException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                        });
+                    }
+                });
+                EditorUI eui = Utilities.getEditorUI(ep);
+                if (eui != null) {
+                    eui.getToolTipSupport().setToolTip(et);
+                } else {
+                    firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTip);
+                }
+            }
+        });
         //TODO: review, replace the code depending on lexer.model - part I
     }
     
