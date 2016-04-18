@@ -81,6 +81,9 @@ public final class CaretUndo {
             Position dotPos = caretInfo.getDotPosition();
             Position markPos = caretInfo.getMarkPosition();
             if (dotPos != null) {
+                if (markPos == null) {
+                    markPos = dotPos;
+                }
                 int dotOffset = dotPos.getOffset();
                 int markOffset = markPos.getOffset();
                 int dotSplitOffset = ShiftPositions.getShift(dotPos);
@@ -109,6 +112,9 @@ public final class CaretUndo {
                             caretInfo = carets.get(caretIndex);
                             dotPos = caretInfo.getDotPosition();
                             markPos = caretInfo.getMarkPosition();
+                            if (markPos == null) {
+                                markPos = dotPos;
+                            }
                             dotSplitOffset = ShiftPositions.getShift(dotPos);
                             markSplitOffset = ShiftPositions.getShift(markPos);
                             if (dotSplitOffset != 0 || markSplitOffset != 0) { // Complex pos
