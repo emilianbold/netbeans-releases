@@ -39,28 +39,17 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.project.ui;
+package org.netbeans.modules.java.j2seproject.ui.wizards;
 
-import java.awt.Component;
-import java.beans.BeanInfo;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JTable;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.api.project.libraries.Library;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
-import org.openide.util.ImageUtilities;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
+import org.netbeans.modules.java.api.common.project.ui.customizer.ClassPathListCellRenderer;
+import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.openide.util.NbBundle;
 
 /**
@@ -69,21 +58,12 @@ import org.openide.util.NbBundle;
  */
 public class MoveToModulePathPanelGUI extends javax.swing.JPanel {
 
-    private static String RESOURCE_ICON_JAR = "org/netbeans/modules/java/api/common/project/ui/resources/jar.gif"; //NOI18N
-    private static String RESOURCE_ICON_LIBRARY = "org/netbeans/modules/java/api/common/project/ui/resources/libraries.gif"; //NOI18N
-    private static String RESOURCE_ICON_ARTIFACT = "org/netbeans/modules/java/api/common/project/ui/resources/projectDependencies.gif"; //NOI18N                
-
-    public static ImageIcon ICON_JAR = ImageUtilities.loadImageIcon(RESOURCE_ICON_JAR, false);
-    public static ImageIcon ICON_LIBRARY = ImageUtilities.loadImageIcon(RESOURCE_ICON_LIBRARY, false);
-    public static ImageIcon ICON_ARTIFACT = ImageUtilities.loadImageIcon(RESOURCE_ICON_ARTIFACT, false);
-    public static ImageIcon ICON_FOLDER = null;
-
     private final List<ChangeListener> listeners = new ArrayList<>();
 
     /**
      * Creates new form MoveToModulePathPanelGUI
      */
-    public MoveToModulePathPanelGUI() {
+    public MoveToModulePathPanelGUI(J2SEProject project) {
 
         initComponents();
 
@@ -96,70 +76,7 @@ public class MoveToModulePathPanelGUI extends javax.swing.JPanel {
             public void editingCanceled(ChangeEvent e) {
             }
         });
-        table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column ) {
-                if (value != null) {
-                    assert value instanceof NewJavaFileWizardIterator.ClassPathItem : value.getClass().toString();
-                    NewJavaFileWizardIterator.ClassPathItem item = (NewJavaFileWizardIterator.ClassPathItem)value;
-                    setIcon(getIcon(item));
-                    setToolTipText(item.getURL().toExternalForm());
-                    return super.getTableCellRendererComponent(table, getDisplayName(item), isSelected, false, row, column);
-                } else {
-                    setIcon(null);
-                    return super.getTableCellRendererComponent(table, null, isSelected, false, row, column);
-                }
-            }
-        
-            private String getDisplayName(NewJavaFileWizardIterator.ClassPathItem item) {
-                AntArtifact aa = item.asAntArtifact();
-                if (aa != null) {
-                    String projectName = ProjectUtils.getInformation(aa.getProject()).getDisplayName();
-                    return NbBundle.getMessage(MoveToModulePathPanelGUI.class, "MSG_ProjectArtifactFormat", new Object[] {
-                        projectName,
-                        aa.getArtifactLocation().toString()
-                    });
-                }
-                Project p = item.asProject();
-                if (p != null) {
-                    return ProjectUtils.getInformation(p).getDisplayName();
-                }
-                Library l = item.asLibrary();
-                if (l != null) {
-                    return l.getDisplayName();
-                }
-                File f = item.asFile();
-                if (f != null) {
-                    return f.getPath();
-                }
-                return item.getURL().toExternalForm();
-            }
-
-            private Icon getIcon(NewJavaFileWizardIterator.ClassPathItem item) {
-                AntArtifact aa = item.asAntArtifact();
-                if (aa != null) {
-                    Project p = aa.getProject();
-                    if (p != null) {
-                        return ProjectUtils.getInformation(p).getIcon();
-                    }
-                    return ICON_ARTIFACT;
-                }
-                Project p = item.asProject();
-                if (p != null) {
-                    return ProjectUtils.getInformation(p).getIcon();
-                }
-                Library l = item.asLibrary();
-                if (l != null) {
-                    return ICON_LIBRARY;
-                }
-                File f = item.asFile();
-                if (f != null) {
-                    return f.isDirectory() ? getFolderIcon() : ICON_JAR;
-                }
-                return null;
-            }
-
-        });
+        table.setDefaultRenderer(Object.class, ClassPathListCellRenderer.createClassPathTableRenderer(project.evaluator(), project.getProjectDirectory()));        
         table.setRowHeight(table.getRowHeight() + 3);
         setName(NbBundle.getBundle(MoveToModulePathPanelGUI.class).getString("LBL_MoveToModulePathPanelGUI_Name")); //NOI18N
     }
@@ -234,20 +151,20 @@ public class MoveToModulePathPanelGUI extends javax.swing.JPanel {
         }
     }
 
-    void setCPItems(Iterable<NewJavaFileWizardIterator.ClassPathItem> cpItems) {
+    void setCPItems(Iterable<ClassPathSupport.Item> cpItems) {
         for (int i = table.getRowCount() -1; i >= 0 ; i--) {
             ((DefaultTableModel) table.getModel()).removeRow(i);            
         }
-        for (NewJavaFileWizardIterator.ClassPathItem cpItem : cpItems) {
+        for (ClassPathSupport.Item cpItem : cpItems) {
             ((DefaultTableModel) table.getModel()).addRow(new Object[]{cpItem, true});
         }
     }
 
-    public Iterable<NewJavaFileWizardIterator.ClassPathItem> getCPItemsToMove() {
-        List<NewJavaFileWizardIterator.ClassPathItem> itemsToMove = new ArrayList<>();
+    public Iterable<ClassPathSupport.Item> getCPItemsToMove() {
+        List<ClassPathSupport.Item> itemsToMove = new ArrayList<>();
         for (int i = 0; i < table.getModel().getRowCount(); i++) {
             if ((boolean) table.getModel().getValueAt(i, 1)) {
-                itemsToMove.add((NewJavaFileWizardIterator.ClassPathItem) table.getModel().getValueAt(i, 0));
+                itemsToMove.add((ClassPathSupport.Item) table.getModel().getValueAt(i, 0));
             }
         }
         return itemsToMove;
@@ -258,11 +175,4 @@ public class MoveToModulePathPanelGUI extends javax.swing.JPanel {
     private javax.swing.JTable table;
     // End of variables declaration//GEN-END:variables
 
-    private static ImageIcon getFolderIcon() {
-        if (ICON_FOLDER == null) {
-            DataFolder dataFolder = DataFolder.findFolder(FileUtil.getConfigRoot());
-            ICON_FOLDER = new ImageIcon(dataFolder.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16));
-        }
-        return ICON_FOLDER;
-    }
 }

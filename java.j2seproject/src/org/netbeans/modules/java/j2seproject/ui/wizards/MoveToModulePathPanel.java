@@ -39,19 +39,18 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.project.ui;
+package org.netbeans.modules.java.j2seproject.ui.wizards;
 
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.j2seproject.J2SEProject;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 
 /**
@@ -62,19 +61,20 @@ public final class MoveToModulePathPanel implements WizardDescriptor.Panel<Wizar
 
     public static final String CP_ITEMS_TO_MOVE = "cp_items_to_move"; //NOI18N
 
+    private final J2SEProject project;
+    private final EditableProperties ep;
     private final List<ChangeListener> listeners = new ArrayList<>();
     private MoveToModulePathPanelGUI gui;
 
-    private final Map<FileObject, Set<NewJavaFileWizardIterator.ClassPathItem>> group2items;
-
-    public MoveToModulePathPanel(Map<FileObject, Set<NewJavaFileWizardIterator.ClassPathItem>> group2items) {
-        this.group2items = group2items;
+    public MoveToModulePathPanel(J2SEProject project, EditableProperties ep) {
+        this.project = project;
+        this.ep = ep;
     }
 
     @Override
     public Component getComponent() {
         if (gui == null) {
-            gui = new MoveToModulePathPanelGUI();
+            gui = new MoveToModulePathPanelGUI(project);
             gui.addChangeListener(this);
         }
         return gui;
@@ -88,12 +88,8 @@ public final class MoveToModulePathPanel implements WizardDescriptor.Panel<Wizar
     @Override
     public void readSettings(WizardDescriptor wizard) {
         if (gui != null) {
-            FileObject targetFolder = Templates.getTargetFolder(wizard);
-            for (Map.Entry<FileObject, Set<NewJavaFileWizardIterator.ClassPathItem>> entry : group2items.entrySet()) {
-                if (FileUtil.getRelativePath(entry.getKey(), targetFolder) != null) {
-                    gui.setCPItems(entry.getValue());
-                }
-            }
+            ClassPathSupport cs = new ClassPathSupport(project.evaluator(), project.getReferenceHelper(), project.getAntProjectHelper(), project.getUpdateHelper(), null);
+            gui.setCPItems(cs.itemsList(ep.get(ProjectProperties.JAVAC_CLASSPATH)));
         }
     }
 

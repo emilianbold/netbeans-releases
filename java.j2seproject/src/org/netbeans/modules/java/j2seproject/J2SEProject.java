@@ -101,6 +101,7 @@ import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
+import org.netbeans.modules.java.j2seproject.ui.wizards.J2SEFileWizardIterator;
 import org.netbeans.modules.project.ui.spi.TemplateCategorySorter;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
@@ -387,7 +388,8 @@ public final class J2SEProject implements Project {
             new J2SEProjectPlatformImpl(this),
             QuerySupport.createCompilerOptionsQuery(eval, ProjectProperties.JAVAC_COMPILERARGS),
             QuerySupport.createUnitTestsCompilerOptionsQuery(eval, sourceRoots, testRoots),
-            LookupMergerSupport.createCompilerOptionsQueryMerger()
+            LookupMergerSupport.createCompilerOptionsQueryMerger(),
+            J2SEFileWizardIterator.create()
         );
         lookup = base; // in case LookupProvider's call Project.getLookup
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-java-j2seproject/Lookup"); //NOI18N
