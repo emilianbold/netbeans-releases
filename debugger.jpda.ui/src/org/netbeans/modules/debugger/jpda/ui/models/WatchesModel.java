@@ -52,6 +52,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.InvalidObjectException;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
 import java.util.*;
 import javax.security.auth.RefreshFailedException;
 import javax.security.auth.Refreshable;
@@ -84,7 +85,7 @@ import org.openide.util.WeakListeners;
  * @author   Jan Jancura
  */
 @DebuggerServiceRegistration(path="netbeans-JPDASession/WatchesView", types={TreeModel.class}, position=450)
-public class WatchesModel implements TreeModel {
+public class WatchesModel implements TreeModel, JPDAWatchRefreshModel {
 
     
     private static boolean verbose = 
@@ -222,7 +223,7 @@ public class WatchesModel implements TreeModel {
             ((ModelListener) v.get (i)).modelChanged (event);
     }
     
-    void fireTableValueChangedChanged (Object node, String propertyName) {
+    public void fireTableValueChangedChanged (Object node, String propertyName) {
         ((JPDAWatchEvaluating) node).setEvaluated(null);
         fireTableValueChangedComputed(node, propertyName);
     }
@@ -236,7 +237,7 @@ public class WatchesModel implements TreeModel {
             );
     }
 
-    private void fireChildrenChanged(Object node) {
+    public void fireChildrenChanged(Object node) {
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
         for (i = 0; i < k; i++)
@@ -271,18 +272,18 @@ public class WatchesModel implements TreeModel {
                                                         PropertyChangeListener/*,
                                                         Watch.Provider*/ {
         
-        private WatchesModel model;
+        private JPDAWatchRefreshModel model;
         private Watch w;
         private JPDADebuggerImpl debugger;
         private JPDAWatch evaluatedWatch;
         private EvaluatorExpression expression;
         private final boolean[] evaluating = new boolean[] { false };
         
-        public JPDAWatchEvaluating(WatchesModel model, Watch w, JPDADebuggerImpl debugger) {
+        public JPDAWatchEvaluating(JPDAWatchRefreshModel model, Watch w, JPDADebuggerImpl debugger) {
             this(model, w, debugger, 0);
         }
         
-        private JPDAWatchEvaluating(WatchesModel model, Watch w, JPDADebuggerImpl debugger, int cloneNumber) {
+        private JPDAWatchEvaluating(JPDAWatchRefreshModel model, Watch w, JPDADebuggerImpl debugger, int cloneNumber) {
             super(debugger, null, (cloneNumber > 0) ? w + "_clone" + cloneNumber : "" + w);
             this.model = model;
             this.w = w;
@@ -481,6 +482,22 @@ public class WatchesModel implements TreeModel {
         public synchronized void setValue(String value) throws InvalidExpressionException {
             if (evaluatedWatch != null) {
                 evaluatedWatch.setValue(value);
+            } else {
+                throw new InvalidExpressionException("Can not set value while evaluating.");
+            }
+        }
+
+        @Override
+        protected synchronized void setValue(Value value) throws InvalidExpressionException {
+            if (evaluatedWatch != null) {
+                // need to delegate to evaluatedWatch.setValue(value);
+                try {
+                    Method setValueMethod = evaluatedWatch.getClass().getDeclaredMethod("setValue", Value.class);
+                    setValueMethod.setAccessible(true);
+                    setValueMethod.invoke(evaluatedWatch, value);
+                } catch (Exception ex) {
+                    throw new InvalidExpressionException(ex);
+                }
             } else {
                 throw new InvalidExpressionException("Can not set value while evaluating.");
             }

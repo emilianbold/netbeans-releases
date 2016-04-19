@@ -47,7 +47,6 @@ package org.netbeans.api.debugger;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
-
 /**
  * Abstract definition of watch. Each watch is created for
  * one String which contains the name of variable or some expression.
@@ -68,9 +67,15 @@ public final class Watch {
     private boolean         enabled = true;
     private PropertyChangeSupport pcs;
     
+    private final Pin pin;
     
     Watch (String expr) {
+        this(expr, null);
+    }
+    
+    Watch (String expr, Pin pin) {
         this.expression = expr;
+        this.pin = pin;
         pcs = new PropertyChangeSupport (this);
     }
     
@@ -121,7 +126,16 @@ public final class Watch {
         }
         pcs.firePropertyChange (PROP_EXPRESSION, old, expression);
     }
-    
+
+    /**
+     * Get a pin location, where the watch is pinned at, if any.
+     * @return The watch pin, or <code>null</code>.
+     * @since 1.54
+     */
+    public Pin getPin() {
+        return pin;
+    }
+
     /**
      * Remove the watch from the list of all watches in the system.
      */
@@ -146,6 +160,17 @@ public final class Watch {
      */
     public void removePropertyChangeListener (PropertyChangeListener l) {
         pcs.removePropertyChangeListener (l);
+    }
+    
+    /**
+     * A base interface for a watch pin location. Implemented by specific
+     * platform-dependent and location-dependent implementation.
+     * See <code>org.netbeans.spi.debugger.ui.EditorPin</code> for the NetBeans
+     * editor pin implementation.
+     * @since 1.54
+     */
+    public static interface Pin {
+        
     }
 }
 

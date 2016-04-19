@@ -293,6 +293,68 @@ public class VariablesTableModel implements TableModel, Constants {
         }
     }
     
+    static boolean isReadOnlyVar(Object row, JPDADebugger debugger) {
+        if (row instanceof This)
+            return true;
+        else {
+            if (row instanceof JPDAWatch && row instanceof Refreshable) {
+                if (!((Refreshable) row).isCurrent()) {
+                    return true;
+                }
+                try {
+                    // Retrieve the evaluated watch so that we can test if it's an object variable or not.
+                    java.lang.reflect.Method getEvaluatedWatchMethod = row.getClass().getDeclaredMethod("getEvaluatedWatch");
+                    getEvaluatedWatchMethod.setAccessible(true);
+                    row = (JPDAWatch) getEvaluatedWatchMethod.invoke(row);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            if (row instanceof JPDAWatch) {
+                JPDAWatch w = (JPDAWatch) row;
+                String e = w.getExceptionDescription ();
+                if (e != null) {
+                    return true; // Errors are read only
+                }
+            }
+            if (row instanceof MutableVariable) {
+                synchronized (checkReadOnlyMutables) {
+                    checkReadOnlyMutables.add((MutableVariable) row);
+                }
+                Object mirror = getMirrorFor((Variable) row);
+                if (mirror != null) {
+                    return false;
+                }
+            }
+            if (row instanceof ObjectVariable) {
+                String declaredType;
+                if (row instanceof LocalVariable) {
+                    declaredType = ((LocalVariable) row).getDeclaredType();
+                } else if (row instanceof Field) {
+                    declaredType = ((Field) row).getDeclaredType();
+                } else {
+                    declaredType = ((ObjectVariable) row).getType();
+                }
+                // Allow to edit Strings
+                if (!"java.lang.String".equals(declaredType)) { // NOI18N
+                    return true;
+                }
+            }
+            if ( row instanceof LocalVariable ||
+                 row instanceof Field ||
+                 row instanceof JPDAWatch
+            ) {
+                if (WatchesNodeModelFilter.isEmptyWatch(row)) {
+                    return true;
+                } else {
+                    return !debugger.canBeModified();
+                }
+            } else {
+                return true;
+            }
+        }
+    }
+
     @Override
     public boolean isReadOnly (Object row, String columnID) throws 
     UnknownTypeException {
@@ -305,65 +367,7 @@ public class VariablesTableModel implements TableModel, Constants {
             if ( LOCALS_VALUE_COLUMN_ID.equals (columnID) ||
                  WATCH_VALUE_COLUMN_ID.equals (columnID) 
             ) {
-                if (row instanceof This)
-                    return true;
-                else {
-                    if (row instanceof JPDAWatch && row instanceof Refreshable) {
-                        if (!((Refreshable) row).isCurrent()) {
-                            return true;
-                        }
-                        try {
-                            // Retrieve the evaluated watch so that we can test if it's an object variable or not.
-                            java.lang.reflect.Method getEvaluatedWatchMethod = row.getClass().getDeclaredMethod("getEvaluatedWatch");
-                            getEvaluatedWatchMethod.setAccessible(true);
-                            row = (JPDAWatch) getEvaluatedWatchMethod.invoke(row);
-                        } catch (Exception ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                    if (row instanceof JPDAWatch) {
-                        JPDAWatch w = (JPDAWatch) row;
-                        String e = w.getExceptionDescription ();
-                        if (e != null) {
-                            return true; // Errors are read only
-                        }
-                    }
-                    if (row instanceof MutableVariable) {
-                        synchronized (checkReadOnlyMutables) {
-                            checkReadOnlyMutables.add((MutableVariable) row);
-                        }
-                        Object mirror = getMirrorFor((Variable) row);
-                        if (mirror != null) {
-                            return false;
-                        }
-                    }
-                    if (row instanceof ObjectVariable) {
-                        String declaredType;
-                        if (row instanceof LocalVariable) {
-                            declaredType = ((LocalVariable) row).getDeclaredType();
-                        } else if (row instanceof Field) {
-                            declaredType = ((Field) row).getDeclaredType();
-                        } else {
-                            declaredType = ((ObjectVariable) row).getType();
-                        }
-                        // Allow to edit Strings
-                        if (!"java.lang.String".equals(declaredType)) { // NOI18N
-                            return true;
-                        }
-                    }
-                    if ( row instanceof LocalVariable ||
-                         row instanceof Field ||
-                         row instanceof JPDAWatch
-                    ) {
-                        if (WatchesNodeModelFilter.isEmptyWatch(row)) {
-                            return true;
-                        } else {
-                            return !debugger.canBeModified();
-                        }
-                    } else {
-                        return true;
-                    }
-                }
+                return isReadOnlyVar(row, debugger);
             }
         }
         if (row instanceof JPDAClassType) {
