@@ -801,6 +801,22 @@ public class JsFormatterTest extends JsTestBase {
     public void testObjects13Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/objects13.js");
     }
+    
+    public void testObjects14() throws Exception {
+        reformatFileContents("testfiles/formatter/objects14.js",new IndentPrefs(4, 4));
+    }
+    
+    public void testObjects14Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/objects14.js");
+    }
+    
+    public void testObjects15() throws Exception {
+        reformatFileContents("testfiles/formatter/objects15.js",new IndentPrefs(4, 4));
+    }
+    
+    public void testObjects15Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/objects15.js");
+    }
 
     public void testSwitch1() throws Exception {
         reformatFileContents("testfiles/formatter/switch1.js",new IndentPrefs(4, 4));
@@ -2266,6 +2282,22 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testIssue250557() throws Exception {
         reformatFileContents("testfiles/formatter/issue250557.js", new IndentPrefs(4, 4));
+    }
+    
+    public void testIssue258858() throws Exception {
+        reformatFileContents("testfiles/formatter/issue258858.js", new IndentPrefs(4, 4));
+    }
+    
+    public void testIssue258858Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/issue258858.js");
+    }
+    
+    public void testIssue258858Stable() throws Exception {
+        reformatFileContents("testfiles/formatter/issue258858_stable.js", new IndentPrefs(4, 4));
+    }
+    
+    public void testIssue258858StableTokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/issue258858_stable.js");
     }
 
     // braces formatting tests

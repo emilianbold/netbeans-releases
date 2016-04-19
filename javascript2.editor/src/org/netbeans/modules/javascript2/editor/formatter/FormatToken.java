@@ -648,6 +648,30 @@ public final class FormatToken {
         BEFORE_TERNARY_OPERATOR,
         AFTER_TERNARY_OPERATOR,
 
+        // only marks the arrow function start, no corresponding option
+        BEFORE_ARROW_FUNCTION_DECLARATION {
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        
+        // marks the arrow block
+        BEFORE_ARROW_BLOCK {
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+
+        // marks the arrow block
+        AFTER_ARROW_BLOCK {
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        
         BEFORE_ANONYMOUS_FUNCTION_DECLARATION,
         
         BEFORE_FUNCTION_DECLARATION,

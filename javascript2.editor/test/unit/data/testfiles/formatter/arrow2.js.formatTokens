@@ -15,6 +15,7 @@ FormatToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=17, text=(, id=BRACKET_LEFT_PAREN}
 FormatToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null, id=null}
 FormatToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null, id=null}
+FormatToken{kind=BEFORE_ARROW_FUNCTION_DECLARATION, offset=-1, text=null, id=null}
 FormatToken{kind=BEFORE_FUNCTION_DECLARATION_PARAMETER, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=18, text=v, id=IDENTIFIER}
 FormatToken{kind=WHITESPACE, offset=19, text=  , id=WHITESPACE}
@@ -22,6 +23,8 @@ FormatToken{kind=BEFORE_ARROW_OPERATOR, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=21, text==>, id=OPERATOR_ARROW}
 FormatToken{kind=AFTER_ARROW_OPERATOR, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_ARROW_OPERATOR_WRAP, offset=-1, text=null, id=null}
+FormatToken{kind=BEFORE_ARROW_BLOCK, offset=-1, text=null, id=null}
+FormatToken{kind=INDENTATION_INC, offset=-1, text=null, id=null}
 FormatToken{kind=WHITESPACE, offset=23, text= , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=24, text=v, id=IDENTIFIER}
 FormatToken{kind=WHITESPACE, offset=25, text= , id=WHITESPACE}
@@ -33,6 +36,8 @@ FormatToken{kind=AFTER_BINARY_OPERATOR_WRAP, offset=-1, text=null, id=null}
 FormatToken{kind=WHITESPACE, offset=27, text= , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=28, text=1, id=NUMBER}
 FormatToken{kind=BEFORE_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null, id=null}
+FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
+FormatToken{kind=AFTER_ARROW_BLOCK, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=29, text=), id=BRACKET_RIGHT_PAREN}
 FormatToken{kind=AFTER_STATEMENT, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=30, text=
@@ -53,6 +58,7 @@ FormatToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=48, text=(, id=BRACKET_LEFT_PAREN}
 FormatToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null, id=null}
 FormatToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null, id=null}
+FormatToken{kind=BEFORE_ARROW_FUNCTION_DECLARATION, offset=-1, text=null, id=null}
 FormatToken{kind=BEFORE_FUNCTION_DECLARATION_PARAMETER, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=49, text=v, id=IDENTIFIER}
 FormatToken{kind=WHITESPACE, offset=50, text= , id=WHITESPACE}
@@ -60,6 +66,8 @@ FormatToken{kind=BEFORE_ARROW_OPERATOR, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=51, text==>, id=OPERATOR_ARROW}
 FormatToken{kind=AFTER_ARROW_OPERATOR, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_ARROW_OPERATOR_WRAP, offset=-1, text=null, id=null}
+FormatToken{kind=BEFORE_ARROW_BLOCK, offset=-1, text=null, id=null}
+FormatToken{kind=INDENTATION_INC, offset=-1, text=null, id=null}
 FormatToken{kind=WHITESPACE, offset=53, text= , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=54, text=(, id=BRACKET_LEFT_PAREN}
 FormatToken{kind=AFTER_LEFT_PARENTHESIS, offset=-1, text=null, id=null}
@@ -102,6 +110,8 @@ FormatToken{kind=TEXT, offset=77, text=}, id=BRACKET_RIGHT_CURLY}
 FormatToken{kind=BEFORE_RIGHT_PARENTHESIS, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=78, text=), id=BRACKET_RIGHT_PAREN}
 FormatToken{kind=BEFORE_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null, id=null}
+FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
+FormatToken{kind=AFTER_ARROW_BLOCK, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=79, text=), id=BRACKET_RIGHT_PAREN}
 FormatToken{kind=AFTER_STATEMENT, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=80, text=
@@ -122,6 +132,7 @@ FormatToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=98, text=(, id=BRACKET_LEFT_PAREN}
 FormatToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null, id=null}
 FormatToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null, id=null}
+FormatToken{kind=BEFORE_ARROW_FUNCTION_DECLARATION, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=99, text=(, id=BRACKET_LEFT_PAREN}
 FormatToken{kind=AFTER_FUNCTION_DECLARATION_PARENTHESIS, offset=-1, text=null, id=null}
 FormatToken{kind=WHITESPACE, offset=100, text= , id=WHITESPACE}
@@ -141,6 +152,8 @@ FormatToken{kind=BEFORE_ARROW_OPERATOR, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=162, text==>, id=OPERATOR_ARROW}
 FormatToken{kind=AFTER_ARROW_OPERATOR, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_ARROW_OPERATOR_WRAP, offset=-1, text=null, id=null}
+FormatToken{kind=BEFORE_ARROW_BLOCK, offset=-1, text=null, id=null}
+FormatToken{kind=INDENTATION_INC, offset=-1, text=null, id=null}
 FormatToken{kind=WHITESPACE, offset=164, text=     , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=169, text=v, id=IDENTIFIER}
 FormatToken{kind=WHITESPACE, offset=170, text= , id=WHITESPACE}
@@ -152,6 +165,8 @@ FormatToken{kind=AFTER_BINARY_OPERATOR_WRAP, offset=-1, text=null, id=null}
 FormatToken{kind=WHITESPACE, offset=172, text= , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=173, text=i, id=IDENTIFIER}
 FormatToken{kind=BEFORE_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null, id=null}
+FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
+FormatToken{kind=AFTER_ARROW_BLOCK, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=174, text=), id=BRACKET_RIGHT_PAREN}
 FormatToken{kind=AFTER_STATEMENT, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=175, text=

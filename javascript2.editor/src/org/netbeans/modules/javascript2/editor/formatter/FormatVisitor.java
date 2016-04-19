@@ -116,7 +116,7 @@ public class FormatVisitor extends NodeVisitor {
     public boolean enterBlock(Block block) {
         if (isScript(block) || !isVirtual(block)) {
             if (isScript(block)) {
-                handleBlockContent(block);
+                handleBlockContent(block, true);
             } else {
                 handleStandardBlock(block);
             }
@@ -162,7 +162,7 @@ public class FormatVisitor extends NodeVisitor {
                 appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
             }
 
-            handleBlockContent(nodes);
+            handleBlockContent(nodes, true);
         }
         return false;
     }
@@ -295,7 +295,7 @@ public class FormatVisitor extends NodeVisitor {
                 if (!statements.isEmpty() && (statements.get(0) instanceof IfNode)) {
                     // we mark else if statement here
                     handleVirtualBlock(body, FormatToken.Kind.ELSE_IF_INDENTATION_INC,
-                            FormatToken.Kind.ELSE_IF_INDENTATION_DEC, FormatToken.Kind.ELSE_IF_AFTER_BLOCK_START);
+                            FormatToken.Kind.ELSE_IF_INDENTATION_DEC, FormatToken.Kind.ELSE_IF_AFTER_BLOCK_START, true);
                 } else {
                     // mark space before left brace
                     markSpacesBeforeBrace(body, FormatToken.Kind.BEFORE_ELSE_BRACE);
@@ -359,13 +359,21 @@ public class FormatVisitor extends NodeVisitor {
             }
         }
         if (isVirtual(body) && functionNode.getKind() == FunctionNode.Kind.ARROW) {
-            // the case where for example x => x + 5;
-            // the following condition should be always met but we are defensive
-            List<Statement> statements = body.getStatements();
-            if (!statements.isEmpty()) {
-                Statement statement = statements.get(0);
-                if (statement instanceof ReturnNode) {
-                    ((ReturnNode) statement).getExpression().accept(this);
+            Token nonEmpty = getPreviousNonEmptyToken(getStart(body));
+            if (nonEmpty != null) {
+                FormatToken token = tokenStream.getToken(ts.offset());
+                if (token != null) {
+                    appendTokenAfterLastVirtual(token, FormatToken.forFormat(FormatToken.Kind.BEFORE_ARROW_BLOCK));
+                }
+            }
+
+            handleVirtualBlock(body, FormatToken.Kind.INDENTATION_INC, FormatToken.Kind.INDENTATION_DEC, null, false);
+
+            nonEmpty = getPreviousNonEmptyToken(getFinish(body));
+            if (nonEmpty != null) {
+                FormatToken token = tokenStream.getToken(ts.offset());
+                if (token != null) {
+                    appendTokenAfterLastVirtual(token, FormatToken.forFormat(FormatToken.Kind.AFTER_ARROW_BLOCK));
                 }
             }
         } else {
@@ -375,13 +383,25 @@ public class FormatVisitor extends NodeVisitor {
         if (functionNode.isProgram()) {
             return false;
         }
-        if (functionNode.getKind() == FunctionNode.Kind.ARROW) {
-            int start = getStart(functionNode);
 
-            FormatToken leftParen = getNextToken(start, JsTokenId.BRACKET_LEFT_PAREN, start);
+        int start = getStart(functionNode);
+        if (functionNode.getKind() == FunctionNode.Kind.ARROW) {
+            FormatToken left = getNextToken(start, JsTokenId.BRACKET_LEFT_PAREN, start);
+            FormatToken leftParen = left;
+            if (left == null) {
+                // single parameter arrow without parenthesis
+                left = getNextToken(start, JsTokenId.IDENTIFIER, start);
+            }
+            if (left != null) {
+                FormatToken previous = left.previous();
+                if (previous != null) {
+                    appendToken(previous, FormatToken.forFormat(
+                            FormatToken.Kind.BEFORE_ARROW_FUNCTION_DECLARATION));
+                }
+            }
+
             handleFunctionParameters(functionNode, leftParen);
         } else {
-            int start = getStart(functionNode);
             // the star * is not multiplication (binary operator)
             // FIXME should this be solved in lexer?
             if (functionNode.getKind() == FunctionNode.Kind.GENERATOR) {
@@ -975,7 +995,7 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     private void handleStandardBlock(Block block) {
-        handleBlockContent(block);
+        handleBlockContent(block, true);
 
         // indentation mark & block start
         FormatToken formatToken = getPreviousToken(getStart(block), JsTokenId.BRACKET_LEFT_CURLY, true);
@@ -998,11 +1018,11 @@ public class FormatVisitor extends NodeVisitor {
 
     private void handleVirtualBlock(Block block, FormatToken.Kind afterBlock) {
         handleVirtualBlock(block, FormatToken.Kind.INDENTATION_INC, FormatToken.Kind.INDENTATION_DEC,
-                afterBlock);
+                afterBlock, true);
     }
 
     private void handleVirtualBlock(Block block, FormatToken.Kind indentationInc,
-            FormatToken.Kind indentationDec, FormatToken.Kind afterBlock) {
+            FormatToken.Kind indentationDec, FormatToken.Kind afterBlock, boolean markStatements) {
 
         assert isVirtual(block) : block;
 
@@ -1026,20 +1046,12 @@ public class FormatVisitor extends NodeVisitor {
             return;
         }
 
-        handleBlockContent(block);
+        handleBlockContent(block, markStatements);
 
         //Node statement = block.getStatements().get(0);
 
         // indentation mark & block start
         Token token = getPreviousNonEmptyToken(getStart(block));
-
-//        /*
-//         * If its VarNode it does not contain var keyword so we have to search
-//         * for it.
-//         */
-//        if (statement instanceof VarNode && token.id() == JsTokenId.KEYWORD_VAR) {
-//            token = getPreviousNonEmptyToken(ts.offset());
-//        }
 
         if (token != null) {
             FormatToken formatToken = tokenStream.getToken(ts.offset());
@@ -1075,72 +1087,74 @@ public class FormatVisitor extends NodeVisitor {
         }
     }
 
-    private void handleBlockContent(Block block) {
-        handleBlockContent(block.getStatements());
+    private void handleBlockContent(Block block, boolean markStatements) {
+        handleBlockContent(block.getStatements(), markStatements);
     }
 
-    private void handleBlockContent(List<Statement> statements) {
+    private void handleBlockContent(List<Statement> statements, boolean markStatements) {
         // statements
         //List<Statement> statements = block.getStatements();
         for (int i = 0; i < statements.size(); i++) {
             Node statement = statements.get(i);
             statement.accept(this);
 
-            int start = getStart(statement);
-            int finish = getFinish(statement);
+            if (markStatements) {
+                int start = getStart(statement);
+                int finish = getFinish(statement);
 
-            /*
-             * What do we solve here? Unfortunately nashorn parses single
-             * var statement as (possibly) multiple VarNodes. For example:
-             * var a=1,b=2; is parsed to two VarNodes. The first covering a=1,
-             * the second b=2. So we iterate subsequent VarNodes searching the
-             * last one and the proper finish token.
-             */
-            if (statement instanceof VarNode) {
-                FormatToken function = getNextToken(getStart(statement), null);
-                // proceed this only if the var node is not a function decalaration
-                // var node is created even for function for example for
-                // function x {} the var node is var x = function x() {}
-                if (function == null || function.getId() != JsTokenId.KEYWORD_FUNCTION) {
-                    int index = i + 1;
-                    Node lastVarNode = statement;
+                /*
+                 * What do we solve here? Unfortunately nashorn parses single
+                 * var statement as (possibly) multiple VarNodes. For example:
+                 * var a=1,b=2; is parsed to two VarNodes. The first covering a=1,
+                 * the second b=2. So we iterate subsequent VarNodes searching the
+                 * last one and the proper finish token.
+                 */
+                if (statement instanceof VarNode) {
+                    FormatToken function = getNextToken(getStart(statement), null);
+                    // proceed this only if the var node is not a function decalaration
+                    // var node is created even for function for example for
+                    // function x {} the var node is var x = function x() {}
+                    if (function == null || function.getId() != JsTokenId.KEYWORD_FUNCTION) {
+                        int index = i + 1;
+                        Node lastVarNode = statement;
 
-                    while (i + 1 < statements.size()) {
-                        Node next = statements.get(++i);
-                        if (!(next instanceof VarNode)) {
-                            i--;
-                            break;
-                        } else {
-                            Token token = getPreviousNonEmptyToken(getStart(next));
-                            if (token != null && (JsTokenId.KEYWORD_VAR == token.id()
-                                    || JsTokenId.KEYWORD_CONST == token.id()
-                                    || JsTokenId.RESERVED_LET == token.id())) {
+                        while (i + 1 < statements.size()) {
+                            Node next = statements.get(++i);
+                            if (!(next instanceof VarNode)) {
                                 i--;
                                 break;
+                            } else {
+                                Token token = getPreviousNonEmptyToken(getStart(next));
+                                if (token != null && (JsTokenId.KEYWORD_VAR == token.id()
+                                        || JsTokenId.KEYWORD_CONST == token.id()
+                                        || JsTokenId.RESERVED_LET == token.id())) {
+                                    i--;
+                                    break;
+                                }
                             }
+                            lastVarNode = next;
                         }
-                        lastVarNode = next;
-                    }
 
-                    for (int j = index; j < i + 1; j++) {
-                        Node skipped = statements.get(j);
-                        skipped.accept(this);
-                    }
+                        for (int j = index; j < i + 1; j++) {
+                            Node skipped = statements.get(j);
+                            skipped.accept(this);
+                        }
 
-                    finish = getFinish(lastVarNode);
+                        finish = getFinish(lastVarNode);
+                    }
                 }
-            }
 
-            FormatToken formatToken = getPreviousToken(start < finish ? finish - 1 : finish, null);
-            while (formatToken != null && (formatToken.getKind() == FormatToken.Kind.EOL
-                    || formatToken.getKind() == FormatToken.Kind.WHITESPACE
-                    || formatToken.getKind() == FormatToken.Kind.LINE_COMMENT
-                    || formatToken.getKind() == FormatToken.Kind.BLOCK_COMMENT)) {
-                formatToken = formatToken.previous();
-            }
-            if (formatToken != null) {
-                appendTokenAfterLastVirtual(formatToken,
-                        FormatToken.forFormat(FormatToken.Kind.AFTER_STATEMENT), true);
+                FormatToken formatToken = getPreviousToken(start < finish ? finish - 1 : finish, null);
+                while (formatToken != null && (formatToken.getKind() == FormatToken.Kind.EOL
+                        || formatToken.getKind() == FormatToken.Kind.WHITESPACE
+                        || formatToken.getKind() == FormatToken.Kind.LINE_COMMENT
+                        || formatToken.getKind() == FormatToken.Kind.BLOCK_COMMENT)) {
+                    formatToken = formatToken.previous();
+                }
+                if (formatToken != null) {
+                    appendTokenAfterLastVirtual(formatToken,
+                            FormatToken.forFormat(FormatToken.Kind.AFTER_STATEMENT), true);
+                }
             }
         }
     }
@@ -1482,8 +1496,15 @@ public class FormatVisitor extends NodeVisitor {
             FunctionNode function = (FunctionNode) node;
             if (node.getStart() == node.getFinish()) {
                 long lastToken = function.getLastToken();
-                int finish = com.oracle.js.parser.Token.descPosition(lastToken)
-                        + com.oracle.js.parser.Token.descLength(lastToken);
+                TokenType type = com.oracle.js.parser.Token.descType(lastToken);
+                int finish;
+                if (type == TokenType.EOL) {
+                    // when eol token length just stores line number
+                    finish = com.oracle.js.parser.Token.descPosition(lastToken);
+                } else {
+                    finish = com.oracle.js.parser.Token.descPosition(lastToken)
+                            + com.oracle.js.parser.Token.descLength(lastToken);
+                }
                 // check if it is a string
                 if (com.oracle.js.parser.Token.descType(lastToken).equals(TokenType.STRING)) {
                     finish++;
