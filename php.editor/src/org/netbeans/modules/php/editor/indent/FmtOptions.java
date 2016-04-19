@@ -103,6 +103,7 @@ public final class FmtOptions {
     public static final String RIGHT_MARGIN = SimpleValueNames.TEXT_LIMIT_WIDTH;
     public static final String INITIAL_INDENT = "init.indent"; //NOI18N
     public static final String CLASS_DECL_BRACE_PLACEMENT = "classDeclBracePlacement"; //NOI18N
+    public static final String ANONYMOUS_CLASS_BRACE_PLACEMENT = "anonymousClassBracePlacement"; //NOI18N
     public static final String METHOD_DECL_BRACE_PLACEMENT = "methodDeclBracePlacement"; //NOI18N
     public static final String IF_BRACE_PLACEMENT = "ifBracePlacement"; //NOI18N
     public static final String FOR_BRACE_PLACEMENT = "forBracePlacement"; //NOI18N
@@ -134,6 +135,7 @@ public final class FmtOptions {
     public static final String SPACE_BEFORE_ELSE = "spaceBeforeElse"; //NOI18N
     public static final String SPACE_BEFORE_CATCH = "spaceBeforeCatch"; //NOI18N
     public static final String SPACE_BEFORE_FINALLY = "spaceBeforeFinally"; //NOI18N
+    public static final String SPACE_BEFORE_ANONYMOUS_CLASS_PAREN = "spaceBeforeAnonymousClassParen"; //NOI18N
     public static final String SPACE_BEFORE_METHOD_DECL_PAREN = "spaceBeforeMethodDeclParen"; //NOI18N
     public static final String SPACE_BEFORE_METHOD_CALL_PAREN = "spaceBeforeMethodCallParen"; //NOI18N
     public static final String SPACE_BEFORE_IF_PAREN = "spaceBeforeIfParen"; //NOI18N
@@ -150,6 +152,7 @@ public final class FmtOptions {
     public static final String SPACE_AROUND_KEY_VALUE_OPS = "spaceAroundKeyValueOps"; //NOI18N
     public static final String SPACE_AROUND_OBJECT_OPS = "spaceAroundObjectOps"; //NOI18N
     public static final String SPACE_BEFORE_CLASS_DECL_LEFT_BRACE = "spaceBeforeClassDeclLeftBrace"; //NOI18N
+    public static final String SPACE_BEFORE_ANONYMOUS_CLASS_LEFT_BRACE = "spaceBeforeAnonymousClassLeftBrace"; //NOI18N
     public static final String SPACE_BEFORE_METHOD_DECL_LEFT_BRACE = "spaceBeforeMethodDeclLeftBrace"; //NOI18N
     public static final String SPACE_BEFORE_IF_LEFT_BRACE = "spaceBeforeIfLeftBrace"; //NOI18N
     public static final String SPACE_BEFORE_ELSE_LEFT_BRACE = "spaceBeforeElseLeftBrace"; //NOI18N
@@ -162,6 +165,7 @@ public final class FmtOptions {
     public static final String SPACE_BEFORE_FINALLY_LEFT_BRACE = "spaceBeforeFinallyLeftBrace"; //NOI18N
     public static final String SPACE_BEFORE_USE_TRAIT_BODY_LEFT_BRACE = "spaceBeforeUseTraitBodyLeftBrace"; //NOI18N
     public static final String SPACE_WITHIN_ARRAY_DECL_PARENS = "spaceWithinArrayDeclParens"; //NOI18N
+    public static final String SPACE_WITHIN_ANONYMOUS_CLASS_PARENS = "spaceWithinAnonymousClassParens"; //NOI18N
     public static final String SPACE_WITHIN_METHOD_DECL_PARENS = "spaceWithinMethodDeclParens"; //NOI18N
     public static final String SPACE_WITHIN_METHOD_CALL_PARENS = "spaceWithinMethodCallParens"; //NOI18N
     public static final String SPACE_WITHIN_IF_PARENS = "spaceWithinIfParens"; //NOI18N
@@ -264,6 +268,7 @@ public final class FmtOptions {
             {INITIAL_INDENT, "0"}, //NOI18N
 
             {CLASS_DECL_BRACE_PLACEMENT, OBRACE_SAMELINE},
+            {ANONYMOUS_CLASS_BRACE_PLACEMENT, OBRACE_SAMELINE},
             {METHOD_DECL_BRACE_PLACEMENT, OBRACE_SAMELINE},
             {IF_BRACE_PLACEMENT, OBRACE_SAMELINE},
             {FOR_BRACE_PLACEMENT, OBRACE_SAMELINE},
@@ -296,6 +301,7 @@ public final class FmtOptions {
             {SPACE_BEFORE_ELSE, TRUE},
             {SPACE_BEFORE_CATCH, TRUE},
             {SPACE_BEFORE_FINALLY, TRUE},
+            {SPACE_BEFORE_ANONYMOUS_CLASS_PAREN, FALSE},
             {SPACE_BEFORE_METHOD_DECL_PAREN, FALSE},
             {SPACE_BEFORE_METHOD_CALL_PAREN, FALSE},
             {SPACE_BEFORE_IF_PAREN, TRUE},
@@ -324,6 +330,7 @@ public final class FmtOptions {
             {SPACE_BEFORE_FINALLY_LEFT_BRACE, TRUE},
             {SPACE_BEFORE_USE_TRAIT_BODY_LEFT_BRACE, TRUE},
             {SPACE_WITHIN_ARRAY_DECL_PARENS, FALSE},
+            {SPACE_WITHIN_ANONYMOUS_CLASS_PARENS, FALSE},
             {SPACE_WITHIN_METHOD_DECL_PARENS, FALSE},
             {SPACE_WITHIN_METHOD_CALL_PARENS, FALSE},
             {SPACE_WITHIN_IF_PARENS, FALSE},

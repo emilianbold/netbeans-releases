@@ -69,6 +69,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.spi.debugger.ui.ViewFactory;
+import org.openide.util.ImageUtilities;
 
 
 // <RAVE>
@@ -196,8 +197,8 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
     }
     
     
-    static ExpandableTooltip createExpandableTooltip(String toolTipText) {
-        return new ExpandableTooltip(toolTipText);
+    static ExpandableTooltip createExpandableTooltip(String toolTipText, boolean expandable) {
+        return new ExpandableTooltip(toolTipText, expandable);
     }
 
     static class ExpandableTooltip extends JPanel {
@@ -205,11 +206,12 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
         private static final String UI_PREFIX = "ToolTip"; // NOI18N
         
         private JButton expButton;
+        private JButton pinButton;
         private JComponent textToolTip;
         private boolean widthCheck = true;
         private boolean sizeSet = false;
 
-        public ExpandableTooltip(String toolTipText) {
+        public ExpandableTooltip(String toolTipText, boolean expandable) {
             Font font = UIManager.getFont(UI_PREFIX + ".font"); // NOI18N
             Color backColor = UIManager.getColor(UI_PREFIX + ".background"); // NOI18N
             Color foreColor = UIManager.getColor(UI_PREFIX + ".foreground"); // NOI18N
@@ -224,12 +226,14 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
             ));
 
             setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-            Icon expIcon = UIManager.getIcon ("Tree.collapsedIcon");    // NOI18N
-            expButton = new JButton(expIcon);
-            expButton.setBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 5));
-            expButton.setBorderPainted(false);
-            expButton.setContentAreaFilled(false);
-            add(expButton);
+            if (expandable) {
+                Icon expIcon = UIManager.getIcon ("Tree.collapsedIcon");    // NOI18N
+                expButton = new JButton(expIcon);
+                expButton.setBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 5));
+                expButton.setBorderPainted(false);
+                expButton.setContentAreaFilled(false);
+                add(expButton);
+            }
             //JLabel l = new JLabel(toolTipText);
             // Multi-line tooltip:
             JTextArea l = createMultiLineToolTip(toolTipText, true);
@@ -242,12 +246,22 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
             if (backColor != null) {
                 l.setBackground(backColor);
             }
+            l.setBorder(new javax.swing.border.EmptyBorder(0, 3, 0, 3));
             textToolTip = l;
             add(l);
+            pinButton = new JButton(ImageUtilities.loadImageIcon("org/netbeans/editor/resources/pin.png", false));
+            pinButton.setBorder(new javax.swing.border.EmptyBorder(0, 3, 0, 0));
+            pinButton.setBorderPainted(false);
+            pinButton.setContentAreaFilled(false);
+            add(pinButton);
         }
 
         void addExpansionListener(ActionListener treeExpansionListener) {
             expButton.addActionListener(treeExpansionListener);
+        }
+        
+        void addPinListener(ActionListener treeExpansionListener) {
+            pinButton.addActionListener(treeExpansionListener);
         }
 
         void setWidthCheck(boolean widthCheck) {
@@ -268,16 +282,17 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
         @Override
         public void setSize(int width, int height) {
             Dimension prefSize = getPreferredSize();
-            Dimension buttonSize = expButton.getPreferredSize();
+            Dimension button1Size = (expButton != null) ? expButton.getPreferredSize() : new Dimension(0, 0);
+            Dimension button2Size = pinButton.getPreferredSize();
             if (widthCheck) {
                 Insets insets = getInsets();
-                int textWidth = width - insets.left - buttonSize.width - insets.right;
-                height = Math.max(height, buttonSize.height);
+                int textWidth = width - insets.left - button1Size.width - button2Size.width - insets.right;
+                height = Math.max(Math.max(height, button1Size.height), button2Size.height);
                 textToolTip.setSize(textWidth, height);
                 Dimension textPreferredSize = textToolTip.getPreferredSize();
                 super.setSize(
-                        insets.left + buttonSize.width + textPreferredSize.width + insets.right,
-                        insets.top + Math.max(buttonSize.height, textPreferredSize.height) + insets.bottom);
+                        insets.left + button1Size.width + button2Size.width + textPreferredSize.width + insets.right,
+                        insets.top + Math.max(Math.max(button1Size.height, textPreferredSize.height), button2Size.height) + insets.bottom);
             } else {
                 if (height >= prefSize.height) { // enough height
                     height = prefSize.height;

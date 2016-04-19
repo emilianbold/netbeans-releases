@@ -1097,4 +1097,37 @@ public class PHPFormatterSpacesTest extends PHPFormatterTestBase {
         reformatFileContents("testfiles/formatting/spaces/spaceAroundReturnType12.php", options);
     }
 
+    public void testSpacesBeforeAnonymousClassParen01() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceBeforeAnonymousClassParen01.php", options);
+    }
+
+    public void testSpacesBeforeAnonymousClassParen02() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_BEFORE_ANONYMOUS_CLASS_PAREN, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceBeforeAnonymousClassParen02.php", options);
+    }
+
+    public void testSpacesWithinAnonymousClassParen01() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceWithinAnonymousClassParen01.php", options);
+    }
+
+    public void testSpacesWithinAnonymousClassParen02() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_WITHIN_ANONYMOUS_CLASS_PARENS, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceWithinAnonymousClassParen02.php", options);
+    }
+
+    public void testSpacesWithinAnonymousClassParen03() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/spaces/spaceWithinAnonymousClassParen03.php", options);
+    }
+
+    public void testSpacesWithinAnonymousClassParen04() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_WITHIN_ANONYMOUS_CLASS_PARENS, true);
+        reformatFileContents("testfiles/formatting/spaces/spaceWithinAnonymousClassParen04.php", options);
+    }
+
 }

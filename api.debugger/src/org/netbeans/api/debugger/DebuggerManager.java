@@ -665,6 +665,27 @@ public final class DebuggerManager implements ContextProvider {
         }
         return w;
     }
+    
+    /**
+     * Create a watch pinned at the specified pin location.
+     * @param expr expression to watch for (the format is the responsibility
+     *    of the debugger plug-in implementation, but it is typically
+     *    a variable name).
+     * @param pin A pin where the watch should be pinned at.
+     * @return the new watch
+     * @since 1.54
+     */
+    public Watch createPinnedWatch(String expr, Watch.Pin pin) {
+        Watch w = new Watch (expr, pin);
+        if (Boolean.TRUE.equals(watchesInitializing.get())) {
+            watches.addElement (w);
+        } else {
+            initWatches ();
+            watches.addElement (w);
+            fireWatchCreated (w);
+        }
+        return w;
+    }
 
     /**
     * Gets all shared watches in the system.

@@ -57,5 +57,16 @@ public function tryExample() {
 }
 
 }
+
+public function anonymousClassExample($arg) {
+    $instance = new class ($arg) extends Anonymous {
+        public function __construct($arg) {
+        }
+        public function anon() {
+            echo "anonymous";
+        }
+    };
+    return $instance;
+}
 }
 ?>

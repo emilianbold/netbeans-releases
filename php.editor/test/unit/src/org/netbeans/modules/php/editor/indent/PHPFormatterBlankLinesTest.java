@@ -186,6 +186,12 @@ public class PHPFormatterBlankLinesTest extends PHPFormatterTestBase {
         reformatFileContents("testfiles/formatting/blankLines/Trait01.php", options);
     }
 
+    public void testBLAnonymousClass01() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        reformatFileContents("testfiles/formatting/blankLines/AnonymousClass01.php", options);
+    }
+
     public void testBLClass02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.INITIAL_INDENT, 0);
@@ -204,6 +210,16 @@ public class PHPFormatterBlankLinesTest extends PHPFormatterTestBase {
         options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
         options.put(FmtOptions.SPACE_BEFORE_CLASS_DECL_LEFT_BRACE, false);
         reformatFileContents("testfiles/formatting/blankLines/Trait02.php", options);
+    }
+
+    public void testBLAnonymousClass02() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.ANONYMOUS_CLASS_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.SPACE_BEFORE_CLASS_DECL_LEFT_BRACE, false);
+        reformatFileContents("testfiles/formatting/blankLines/AnonymousClass02.php", options);
     }
 
     public void testBLClass03() throws Exception {
@@ -225,6 +241,17 @@ public class PHPFormatterBlankLinesTest extends PHPFormatterTestBase {
         options.put(FmtOptions.SPACE_BEFORE_CLASS_DECL_LEFT_BRACE, false);
         reformatFileContents("testfiles/formatting/blankLines/Trait03.php", options);
     }
+
+    public void testBLAnonymousClass03() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.ANONYMOUS_CLASS_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.SAME_LINE);
+        options.put(FmtOptions.SPACE_BEFORE_CLASS_DECL_LEFT_BRACE, false);
+        reformatFileContents("testfiles/formatting/blankLines/AnonymousClass03.php", options);
+    }
+
 
     public void testBLFields01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
@@ -742,6 +769,213 @@ public class PHPFormatterBlankLinesTest extends PHPFormatterTestBase {
         options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
         options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
         reformatFileContents("testfiles/formatting/blankLines/SimpleTrait17.php", options);
+    }
+
+    public void testBLSimpleAnonymousClass01() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        reformatFileContents("testfiles/formatting/blankLines/SimpleAnonymousClass01.php", options);
+    }
+
+    public void testBLSimpleAnonymousClass02() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        reformatFileContents("testfiles/formatting/blankLines/SimpleAnonymousClass02.php", options);
+    }
+
+    public void testBLSimpleAnonymousClass03() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        reformatFileContents("testfiles/formatting/blankLines/SimpleAnonymousClass03.php", options);
+    }
+
+    public void testBLSimpleAnonymousClass04() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        reformatFileContents("testfiles/formatting/blankLines/SimpleAnonymousClass04.php", options);
+    }
+
+    public void testBLSimpleAnonymousClass05() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS, 1);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS_HEADER, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_USE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_USE, 0);
+        reformatFileContents("testfiles/formatting/blankLines/SimpleAnonymousClass05.php", options);
+    }
+
+    public void testBLSimpleAnonymousClass06() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS_HEADER, 1);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_USE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_USE, 0);
+        reformatFileContents("testfiles/formatting/blankLines/SimpleAnonymousClass06.php", options);
+    }
+
+    public void testBLSimpleAnonymousClass07() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS_HEADER, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS_END, 1);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_USE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_USE, 0);
+        reformatFileContents("testfiles/formatting/blankLines/SimpleAnonymousClass07.php", options);
+    }
+
+    public void testBLSimpleAnonymousClass08() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS_HEADER, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS, 1); // ignore
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_USE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_USE, 0);
+        reformatFileContents("testfiles/formatting/blankLines/SimpleAnonymousClass08.php", options);
+    }
+
+    public void testBLSimpleAnonymousClass09() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS_HEADER, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 1);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_USE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_USE, 0);
+        reformatFileContents("testfiles/formatting/blankLines/SimpleAnonymousClass09.php", options);
+    }
+
+    public void testBLSimpleAnonymousClass10() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS_HEADER, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION_END, 1);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_USE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_USE, 0);
+        reformatFileContents("testfiles/formatting/blankLines/SimpleAnonymousClass10.php", options);
+    }
+
+    public void testBLSimpleAnonymousClass11() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS_HEADER, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FUNCTION, 1); // before class end is used
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_USE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_USE, 0);
+        reformatFileContents("testfiles/formatting/blankLines/SimpleAnonymousClass11.php", options);
+    }
+
+    public void testBLSimpleAnonymousClass12() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS_HEADER, 1);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS_END, 1);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 1);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION_END, 1);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FUNCTION, 1);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_USE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_USE, 0);
+        reformatFileContents("testfiles/formatting/blankLines/SimpleAnonymousClass12.php", options);
+    }
+
+    public void testBLSimpleAnonymousClass13() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/blankLines/SimpleAnonymousClass13.php", options);
+    }
+
+    public void testBLSimpleAnonymousClass14() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/blankLines/SimpleAnonymousClass14.php", options);
+    }
+
+    public void testBLSimpleAnonymousClass15() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/blankLines/SimpleAnonymousClass15.php", options);
+    }
+
+    public void testBLSimpleAnonymousClass16() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.ANONYMOUS_CLASS_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        reformatFileContents("testfiles/formatting/blankLines/SimpleAnonymousClass16.php", options);
+    }
+
+    public void testBLSimpleAnonymousClass17() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.INITIAL_INDENT, 4);
+        options.put(FmtOptions.ANONYMOUS_CLASS_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        reformatFileContents("testfiles/formatting/blankLines/SimpleAnonymousClass17.php", options);
     }
 
     public void testBLSimpleUse01() throws Exception {
