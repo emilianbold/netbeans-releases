@@ -1496,8 +1496,15 @@ public class FormatVisitor extends NodeVisitor {
             FunctionNode function = (FunctionNode) node;
             if (node.getStart() == node.getFinish()) {
                 long lastToken = function.getLastToken();
-                int finish = com.oracle.js.parser.Token.descPosition(lastToken)
-                        + com.oracle.js.parser.Token.descLength(lastToken);
+                TokenType type = com.oracle.js.parser.Token.descType(lastToken);
+                int finish;
+                if (type == TokenType.EOL) {
+                    // when eol token length just stores line number
+                    finish = com.oracle.js.parser.Token.descPosition(lastToken);
+                } else {
+                    finish = com.oracle.js.parser.Token.descPosition(lastToken)
+                            + com.oracle.js.parser.Token.descLength(lastToken);
+                }
                 // check if it is a string
                 if (com.oracle.js.parser.Token.descType(lastToken).equals(TokenType.STRING)) {
                     finish++;
