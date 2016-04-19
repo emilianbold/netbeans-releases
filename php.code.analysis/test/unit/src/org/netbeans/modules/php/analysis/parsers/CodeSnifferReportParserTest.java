@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,13 +37,12 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.analysis.parsers;
 
 import java.io.File;
 import java.util.List;
-import static junit.framework.Assert.assertTrue;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.php.analysis.results.Result;
 
@@ -74,6 +73,25 @@ public class CodeSnifferReportParserTest extends NbTestCase {
         assertEquals("A file should declare new symbols (classes, functions, constants, etc.) and cause no other side effects, "
                 + "or it should execute logic with side effects, but should not do both. The first symbol is defined on line 15 "
                 + "and the first side effect is on line 19.", result.getDescription());
+    }
+
+    public void testParseLogWithSummary1() throws Exception {
+        List<Result> results = CodeSnifferReportParser.parse(getLogFile("phpcs-log-with-summary-1.xml"));
+        assertNotNull(results);
+        assertEquals(0, results.size());
+    }
+
+    public void testParseLogWithSummary2() throws Exception {
+        List<Result> results = CodeSnifferReportParser.parse(getLogFile("phpcs-log-with-summary-2.xml"));
+        assertNotNull(results);
+        assertEquals(1, results.size());
+
+        Result result = results.get(0);
+        assertEquals("/home/gapon/Download/PHP_CodeSniffer-master/CodeSniffer/DocGenerators/Generator.php", result.getFilePath());
+        assertEquals(31, result.getLine());
+        assertEquals(56, result.getColumn());
+        assertEquals("PEAR: Classes > ClassDeclaration > OpenBraceNewLine", result.getCategory());
+        assertEquals("Opening brace of a class must be on the line after the definition", result.getDescription());
     }
 
     private File getLogFile(String name) throws Exception {
