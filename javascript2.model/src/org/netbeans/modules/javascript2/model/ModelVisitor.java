@@ -381,7 +381,7 @@ public class ModelVisitor extends PathNodeVisitor {
 
                     for (TypeUsage type : types) {
                         // plus 5 due to the this.
-                        property.addAssignment(type, rhs.getStart() + 5);
+                        property.addAssignment(type, lhs.getStart() + 5);
                     }
                 }
 
