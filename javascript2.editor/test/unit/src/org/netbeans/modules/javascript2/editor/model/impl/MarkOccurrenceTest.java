@@ -2070,47 +2070,47 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/destructuringAssignments/objectDestructuring06.js", "var {a:ab=10, b^b=5} = {a: 3}; ", true);
     }
     
-    public void testExample01() throws Exception {
+    public void testExample01_01() throws Exception {
         // testing when the destructuring assignment is used as parameter definition
         checkOccurrences("testfiles/markoccurences/destructuringAssignments/example01.js", "function drawE^S6Chart({size = 'big', cords = { x: 0, y: 0 , z: 0}, radius = 25} = {}) {", true);
     }
     
-    public void testExample02() throws Exception {
+    public void testExample01_02() throws Exception {
         // testing when the destructuring assignment is used as parameter definition
         checkOccurrences("testfiles/markoccurences/destructuringAssignments/example01.js", "function drawES6Chart({si^ze = 'big', cords = { x: 0, y: 0 , z: 0}, radius = 25} = {}) {", true);
     }
     
-    public void testExample03() throws Exception {
+    public void testExample01_03() throws Exception {
         // testing when the destructuring assignment is used as parameter definition
         checkOccurrences("testfiles/markoccurences/destructuringAssignments/example01.js", "function drawES6Chart({size = 'big', co^rds = { x: 0, y: 0 , z: 0}, radius = 25} = {}) {", true);
     }
     
-    public void testExample04() throws Exception {
+    public void testExample01_04() throws Exception {
         // testing when the destructuring assignment is used as parameter definition
         checkOccurrences("testfiles/markoccurences/destructuringAssignments/example01.js", "function drawES6Chart({size = 'big', cords = { x^: 0, y: 0 , z: 0}, radius = 25} = {}) {", true);
     }
     
-    public void testExample05() throws Exception {
+    public void testExample01_05() throws Exception {
         // testing when the destructuring assignment is used as parameter definition
         checkOccurrences("testfiles/markoccurences/destructuringAssignments/example01.js", "function drawES6Chart({size = 'big', cords = { x: 0, y^: 0 , z: 0}, radius = 25} = {}) {", true);
     }
     
-    public void testExample06() throws Exception {
+    public void testExample01_06() throws Exception {
         // testing when the destructuring assignment is used as parameter definition
         checkOccurrences("testfiles/markoccurences/destructuringAssignments/example01.js", "function drawES6Chart({size = 'big', cords = { x: 0, y: 0 , z^: 0}, radius = 25} = {}) {", true);
     }
     
-    public void testExample07() throws Exception {
+    public void testExample01_07() throws Exception {
         // testing when the destructuring assignment is used as parameter definition
         checkOccurrences("testfiles/markoccurences/destructuringAssignments/example01.js", "function drawES6Chart({size = 'big', cords = { x: 0, y: 0 , z: 0}, rad^ius = 25} = {}) {", true);
     }
     
-    public void testExample08() throws Exception {
+    public void testExample01_08() throws Exception {
         // testing when the destructuring assignment is used as parameter definition
         checkOccurrences("testfiles/markoccurences/destructuringAssignments/example01.js", "function drawES6Chart({size = 'big', cords = { x: 0, y: 0 , z: 0}, radius = ^25} = {}) {", true);
     }
     
-    public void testExample09() throws Exception {
+    public void testExample01_09() throws Exception {
         // testing when the destructuring assignment is used as parameter definition
         checkOccurrences("testfiles/markoccurences/destructuringAssignments/example01.js", "function drawES6Chart({size = 'big', cords = { x: 0, y: 0 , z: 0}, radius = 25} = {^}) {", true);
     }
