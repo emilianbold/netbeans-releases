@@ -47,6 +47,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -89,6 +92,7 @@ public final class CodeSnifferReportParser extends DefaultHandler {
     @CheckForNull
     public static List<Result> parse(File file) {
         try {
+            sanitizeFile(file);
             try (Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"))) { // NOI18N
                 return create(reader).getResults();
             }
@@ -96,6 +100,29 @@ public final class CodeSnifferReportParser extends DefaultHandler {
             LOGGER.log(Level.INFO, null, ex);
         }
         return null;
+    }
+
+    // sanitize file content (the file can contain summary etc. so then it is not a valid XML file)
+    // memory usage can be improved
+    private static void sanitizeFile(File file) throws IOException {
+        String fileName = file.getAbsolutePath();
+        List<String> newLines = new ArrayList<>();
+        boolean content = false;
+        for (String line : Files.readAllLines(Paths.get(fileName), StandardCharsets.UTF_8)) {
+            if (!content) {
+                if (line.startsWith("<?xml")) { // NOI18N
+                    content = true;
+                }
+                continue;
+            }
+            if (content) {
+                newLines.add(line);
+                if (line.equals("</phpcs>")) { // NOI18N
+                    break;
+                }
+            }
+        }
+        Files.write(Paths.get(fileName), newLines, StandardCharsets.UTF_8);
     }
 
     @Override

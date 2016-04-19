@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.analysis.commands;
 
@@ -53,10 +53,13 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.base.input.InputProcessor;
 import org.netbeans.api.extexecution.base.input.InputProcessors;
 import org.netbeans.api.extexecution.base.input.LineProcessor;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.analysis.options.AnalysisOptions;
 import org.netbeans.modules.php.analysis.parsers.CodeSnifferReportParser;
@@ -83,7 +86,8 @@ public final class CodeSniffer {
 
     static final File XML_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-php-phpcs-log.xml"); // NOI18N
 
-    private static final String STANDARD_PARAM = "--standard=%s"; // NOI18N
+    private static final String RUNTIME_SET_PARAM = "--runtime-set"; // NOI18N
+    private static final String DEFAULT_STANDARD_PARAM = "default_standard"; // NOI18N
     private static final String LIST_STANDARDS_PARAM = "-i"; // NOI18N
     private static final String REPORT_PARAM = "--report=xml"; // NOI18N
     private static final String EXTENSIONS_PARAM = "--extensions=%s"; // NOI18N
@@ -152,7 +156,7 @@ public final class CodeSniffer {
     public List<Result> analyze(String standard, FileObject file, boolean noRecursion) {
         assert file.isValid() : "Invalid file given: " + file;
         try {
-            Integer result = getExecutable(Bundle.CodeSniffer_analyze(analyzeGroupCounter++))
+            Integer result = getExecutable(Bundle.CodeSniffer_analyze(analyzeGroupCounter++), findWorkDir(file))
                     .additionalParameters(getParameters(ensureStandard(standard), file, noRecursion))
                     .runAndWait(getDescriptor(), "Running code sniffer..."); // NOI18N
             if (result == null) {
@@ -182,7 +186,7 @@ public final class CodeSniffer {
         }
         StandardsOutputProcessorFactory standardsProcessorFactory = new StandardsOutputProcessorFactory();
         try {
-            getExecutable(Bundle.CodeSniffer_listStandards())
+            getExecutable(Bundle.CodeSniffer_listStandards(), null)
                     .additionalParameters(Collections.singletonList(LIST_STANDARDS_PARAM))
                     .runAndWait(getDescriptor(), standardsProcessorFactory, "Fetching standards..."); // NOI18N
             if (!standardsProcessorFactory.hasStandards()
@@ -203,11 +207,35 @@ public final class CodeSniffer {
         return null;
     }
 
-    private PhpExecutable getExecutable(String title) {
-        return new PhpExecutable(codeSnifferPath)
+    /**
+     * Finds project directory for the given file
+     * since it can contain {@code phpcs.xml{,.dist}}.
+     * @param file file to find project directory for
+     * @return project directory or {@code null}
+     */
+    @CheckForNull
+    private File findWorkDir(FileObject file) {
+        assert file != null;
+        Project project = FileOwnerQuery.getOwner(file);
+        if (project != null) {
+            File projectDir = FileUtil.toFile(project.getProjectDirectory());
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Project directory for {0} found in {1}", new Object[] {FileUtil.toFile(file), projectDir});
+            }
+            return projectDir;
+        }
+        return null;
+    }
+
+    private PhpExecutable getExecutable(String title, @NullAllowed File workDir) {
+        PhpExecutable executable = new PhpExecutable(codeSnifferPath)
                 .fileOutput(XML_LOG, "UTF-8", false) // NOI18N
                 .optionsSubcategory(AnalysisOptionsPanelController.OPTIONS_SUB_PATH)
                 .displayName(title);
+        if (workDir != null) {
+            executable.workDir(workDir);
+        }
+        return executable;
     }
 
     private ExecutionDescriptor getDescriptor() {
@@ -230,7 +258,9 @@ public final class CodeSniffer {
     private List<String> getParameters(String standard, FileObject file, boolean noRecursion) {
         Charset encoding = FileEncodingQuery.getEncoding(file);
         List<String> params = new ArrayList<>();
-        params.add(String.format(STANDARD_PARAM, standard));
+        params.add(RUNTIME_SET_PARAM);
+        params.add(DEFAULT_STANDARD_PARAM);
+        params.add(standard);
         params.add(REPORT_PARAM);
         params.add(String.format(EXTENSIONS_PARAM, StringUtils.implode(FileUtil.getMIMETypeExtensions(FileUtils.PHP_MIME_TYPE), ","))); // NOI18N
         params.add(String.format(ENCODING_PARAM, encoding.name()));
