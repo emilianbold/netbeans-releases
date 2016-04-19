@@ -721,8 +721,13 @@ public class JsFormatter implements Formatter {
                 // if it should be removed or there is eol (in fact space)
                 // which will stay there
                 if (remove || end.getKind() == FormatToken.Kind.EOL) {
-                    formatContext.remove(start.getOffset(),
-                            end.getOffset() - start.getOffset());
+                    if (start != end) {
+                        formatContext.remove(start.getOffset(),
+                                end.getOffset() - start.getOffset());
+                    }
+                    if (lastEol != null && start != end) {
+                        moveForward(start, end, formatContext, codeStyle, false);
+                    }
                 } else {
                     formatContext.replace(start.getOffset(),
                             end.getOffset() - start.getOffset(), " "); // NOI18N
