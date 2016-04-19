@@ -7,7 +7,7 @@ MyClass : FUNCTION MyClass [ANONYMOUS: false, DECLARED: true - MyClass, MODIFIER
         MyClass, RESOLVED: true
         # PROPERTIES
         arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-        myField   : OBJECT myField [ANONYMOUS: false, DECLARED: true - myField, MODIFIERS: PUBLIC, OBJECT]
+        myField   : OBJECT myField [ANONYMOUS: false, DECLARED: true - myField, MODIFIERS: PUBLIC, PROPERTY]
                   # PROPERTIES
                   doAgain     : FUNCTION doAgain [ANONYMOUS: false, DECLARED: false - doAgain, MODIFIERS: PUBLIC, METHOD]
                               # PROPERTIES
