@@ -47,10 +47,13 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.tools.Diagnostic;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.errors.OverrideErrorMessage;
 import org.netbeans.modules.java.source.parsing.Hacks;
+import org.openide.util.Exceptions;
 
 /**
  * Suppresses error warning that a semicolon is missing from the input. JShell automatically
@@ -69,15 +72,32 @@ public class SemicolonMissingRule implements OverrideErrorMessage {
         }
         
         int off = offset;
-        CharSequence seq = info.getSnapshot().getText();
+        final CharSequence seq = info.getSnapshot().getText();
         while (off < seq.length() && Character.isWhitespace(seq.charAt(off))) {
             off++;
         }
+        final Document doc = info.getSnapshot().getSource().getDocument(false);
         if (info.getSnapshot().getOriginalOffset(off) == -1) {
             // suppress semicolon message for end-of-snippet location.
             return ""; // NOI18N
         }
-        return null;
+        final boolean[] match = new boolean[1];
+        if (doc != null) {
+            final int foff = off;
+            doc.render(new Runnable() {
+                public void run() {
+                    if (foff < doc.getLength()) {
+                        match[0] = true;
+                    } else try {
+                        if (seq.charAt(foff) != doc.getText(foff, 1).charAt(0)) {
+                            match[0] = true;
+                        }
+                    } catch (BadLocationException ex) {
+                    }
+                }
+            });
+        }
+        return match[0] ? "" : null; // NOI18N
     }
 
     @Override

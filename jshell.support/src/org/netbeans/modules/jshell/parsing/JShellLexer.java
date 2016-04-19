@@ -166,49 +166,52 @@ public class JShellLexer implements Lexer<JShellToken>, TokenPropertyProvider<JS
                 case ' ':
                     break;
 
-                    /*
                 case '-':
-                    if (s == 0) {
-                        mark = input.readLength() - 1;
-                        s = 1;
+                    // retain 1, otherwise count as non-whitespace.
+                    if (s == 1 || s == 2) {
+                        s = 2;
+                    } else {
+                        s = 10;
                     }
                     break;
+
                 case '.':
                     // accept 3 consecutive dots
-                    if (s >= 1 && ++s == 4) {
+                    if (s >= 2 && ++s == 5) {
                         // read one more character to learn
                         int c2 = input.read();
                         if (c2 != '.') {
-                            if (mark > 0) {
-                                // some spaces were emitted
-                                input.backup(input.readLength() - mark);
-                                setState(S.PROMPT_MESSAGE); // not quite right, but
-                                return blockToken(JShellToken.MESSAGE_TEXT);
-                            }
                             input.backup(1);
-                            setState(S.MESSAGE);
-                            return tokenFactory.createToken(JShellToken.MESSAGE_MARK);
+                            setState(S.PROMPT_MESSAGE);
+                            return tokenFactory.createToken(JShellToken.ERROR_MARKER);
+                        } else {
+                            input.backup(1);
                         }
                     }
-                    s = 5;
+                    s = 10;
                     break;
                 case '^':
-                    if (s == 1) {
-                        if (mark > 0) {
-                            // some spaces were emitted
-                            input.backup(input.readLength() - mark);
-                            setState(S.INITIAL, S.MESSAGE);
-                            return blockToken(JShellToken.MESSAGE_TEXT);
+                    if (s == 0) {
+                        // only non-whitespaces at the beginning
+                        mark = input.readLength();
+                        s = 1;
+                        if (input.readLength() > 1) { // something else preceding the ^ marker
+                            input.backup(1);
+                            setState(S.PROMPT_MESSAGE);
+                            return tokenFactory.createToken(JShellToken.MESSAGE_TEXT);
                         }
-                        setState(S.INITIAL, S.MESSAGE);
-                        return tokenFactory.createToken(JShellToken.MESSAGE_MARK);
+                    } else if (s >= 1 && s < 3) {
+                        // terminating ^ after initial ^
+                        setState(S.PROMPT_MESSAGE);
+                        return tokenFactory.createToken(JShellToken.ERROR_MARKER);
+                    } else {
+                        s = 10;
                     }
-                    // fall through
-                    */
+                    break;
                 case LexerInput.EOF:
                     break CYCLE;
                 default:
-                    s = 5;
+                    s = 10;
                     break;
             }
         }

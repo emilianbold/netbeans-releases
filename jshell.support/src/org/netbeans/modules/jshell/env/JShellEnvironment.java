@@ -247,7 +247,7 @@ public class JShellEnvironment {
         } else {
             cpi = ClasspathInfo.create(platformTemp.getBootstrapLibraries(),
                     platformTemp.getStandardLibraries(),
-                    snippetClassPath);
+                    ClassPath.EMPTY);
         }
         this.classpathInfo = cpi;
         forceOpenDocument();

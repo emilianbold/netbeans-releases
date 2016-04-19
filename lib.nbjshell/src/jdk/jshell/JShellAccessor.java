@@ -44,6 +44,7 @@ package jdk.jshell;
 import com.sun.source.tree.Tree;
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import jdk.jshell.Snippet.Status;
 import jdk.jshell.TaskFactory.ParseTask;
 import static jdk.jshell.Util.REPL_DOESNOTMATTER_CLASS_NAME;
@@ -149,6 +150,8 @@ public class JShellAccessor {
                 REPL_DOESNOTMATTER_CLASS_NAME, imports, src, w);
         return new ErrWrapper(s, ow, s.kind());
     }
+    
+    private static AtomicInteger snippetClassId = new AtomicInteger();
 
     /**
      * Generates a wrapping for a text without declaring a new Snippet
@@ -202,7 +205,14 @@ public class JShellAccessor {
         if (kind == Tree.Kind.IMPORT) {
             outer = OuterWrap.wrapImport(input, w);
         } else {
-            outer = OuterWrap.wrapInClass(state.maps.packageName(), REPL_DOESNOTMATTER_CLASS_NAME, imports, input, w);
+            int id = snippetClassId.getAndIncrement();
+            String idString = Integer.toString(id, Character.MAX_RADIX);
+            if (idString.length() == 1) {
+                idString = "0" + idString;
+            }
+
+            String className = REPL_DOESNOTMATTER_CLASS_NAME.replace("00", idString);
+            outer = OuterWrap.wrapInClass(state.maps.packageName(), className, imports, input, w);
         }
         return new ErrWrapper(null, outer, snipKind);
     }

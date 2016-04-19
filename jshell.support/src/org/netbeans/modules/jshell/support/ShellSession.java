@@ -758,6 +758,7 @@ public class ShellSession {
     }
     
     private void reportErrorMessage(Throwable t) {
+        LOG.log(Level.INFO, "Error in JSHell", t);
         reportShellMessage(buildErrorMessage(t));
     }
     

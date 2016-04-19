@@ -633,8 +633,8 @@ public class ConsoleModel {
                     created.add(s);
                 } else {
                     updated.add(s);
+                    prevInput = inputSection;
                 }
-                prevInput = inputSection;
                 setInputSection(s);
             } else {
                 int start = s.getStart();
@@ -781,10 +781,10 @@ public class ConsoleModel {
     
     private synchronized void setInputSection(ConsoleSection s) {
         executingSection = null;
-        this.inputSection = s;
         if (s != null) {
             executing = false;
         }
+        this.inputSection = s;
         inputValid = true;
         invalidate();
     }
