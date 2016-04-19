@@ -246,3 +246,5 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-netbeans-api-knockout" value="${javadoc.web.root}/org-netbeans-api-knockout"/>
 <property name="javadoc.docs.org-netbeans-lib-v8debug" value="${javadoc.web.root}/org-netbeans-lib-v8debug"/>
 <property name="javadoc.docs.org-netbeans-modules-docker-api" value="${javadoc.web.root}/org-netbeans-modules-docker-api"/>
+<property name="javadoc.docs.org-netbeans-modules-csl-types" value="${javadoc.web.root}/org-netbeans-modules-csl-types"/>
+<property name="javadoc.docs.org-netbeans-modules-csl-api" value="${javadoc.web.root}/org-netbeans-modules-csl-api"/>

@@ -2,18 +2,19 @@ FUNCTION issue251911 [ANONYMOUS: false, DECLARED: true - issue251911, MODIFIERS:
 # RETURN TYPES
 undefined, RESOLVED: true
 # PROPERTIES
-MyLib          : FUNCTION MyLib [ANONYMOUS: false, DECLARED: true - MyLib, MODIFIERS: PUBLIC, CONSTRUCTOR]
-               # RETURN TYPES
-               undefined, RESOLVED: true
+MyLib          : OBJECT MyLib [ANONYMOUS: false, DECLARED: true - MyLib, MODIFIERS: PUBLIC, OBJECT]
                # PROPERTIES
                FALSE     : OBJECT FALSE [ANONYMOUS: false, DECLARED: true - FALSE, MODIFIERS: PRIVATE, VARIABLE]
+               MyLib     : FUNCTION MyLib [ANONYMOUS: false, DECLARED: true - MyLib, MODIFIERS: PRIVATE, CONSTRUCTOR]
+                         # RETURN TYPES
+                         MyLib.MyLib, RESOLVED: true
                TRUE      : OBJECT TRUE [ANONYMOUS: false, DECLARED: true - TRUE, MODIFIERS: PRIVATE, VARIABLE]
                _myLib    : OBJECT _myLib [ANONYMOUS: false, DECLARED: true - _myLib, MODIFIERS: PRIVATE, VARIABLE]
                _myLib_in : FUNCTION _myLib_in [ANONYMOUS: false, DECLARED: true - _myLib_in, MODIFIERS: PRIVATE, METHOD]
                          # RETURN TYPES
-                         @exp;MyLib@pro;FALSE, RESOLVED: false
-                         @exp;MyLib@pro;TRUE, RESOLVED: false
                          Boolean, RESOLVED: true
+                         FALSE, RESOLVED: false
+                         TRUE, RESOLVED: false
                          # PARAMETERS
                          OBJECT item [ANONYMOUS: false, DECLARED: true - item, MODIFIERS: PUBLIC, PARAMETER]
                          OBJECT container [ANONYMOUS: false, DECLARED: true - container, MODIFIERS: PUBLIC, PARAMETER]
@@ -23,9 +24,9 @@ MyLib          : FUNCTION MyLib [ANONYMOUS: false, DECLARED: true - MyLib, MODIF
                arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                in        : FUNCTION in [ANONYMOUS: false, DECLARED: true - in, MODIFIERS: PUBLIC, METHOD]
                          # RETURN TYPES
-                         @exp;MyLib@pro;FALSE, RESOLVED: false
-                         @exp;MyLib@pro;TRUE, RESOLVED: false
                          Boolean, RESOLVED: true
+                         FALSE, RESOLVED: false
+                         TRUE, RESOLVED: false
                          # PARAMETERS
                          OBJECT item [ANONYMOUS: false, DECLARED: true - item, MODIFIERS: PUBLIC, PARAMETER]
                          OBJECT container [ANONYMOUS: false, DECLARED: true - container, MODIFIERS: PUBLIC, PARAMETER]

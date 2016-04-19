@@ -24,6 +24,7 @@ METHOD     keys(O: Object): Array          [PUBLIC,   JS Platform
 METHOD     preventExtensions(O: Object):   [PUBLIC,   JS Platform
 METHOD     propertyIsEnumerable(V: String  [PUBLIC]   JS Platform
 METHOD     seal(O: Object): Object         [PUBLIC,   JS Platform
+METHOD     toFixed()                       [PUBLIC]   <font color=#999999>numberLiterals01.js</font>
 METHOD     toLocaleString(): String        [PUBLIC]   JS Platform
 METHOD     toString(): String              [PUBLIC]   JS Platform
 METHOD     valueOf(): Object               [PUBLIC]   JS Platform

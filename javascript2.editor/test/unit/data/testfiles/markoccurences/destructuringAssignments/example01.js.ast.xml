@@ -1,0 +1,293 @@
+<FunctionNode name=':program' kind='SCRIPT' start='0' end='279'>
+  <hasDeclaredFunctions/>
+  <isProgram/>
+  <!-- FunctionNode Parameters -->
+  <!-- FunctionNode Body -->
+  <Block start='0' end='279'>
+    <isFunctionBody/>
+    <isSynthetic/>
+    <!-- Block Statements -->
+    <VarNode name='drawES6Chart' start='0' end='148'>
+      <hasInit/>
+      <isAssignment/>
+      <isFunctionDeclaration/>
+      <!-- VarNode Assignment Dest -->
+      <IdentNode start='9' end='21'>
+        <name>drawES6Chart</name>
+        <isInitializedHere/>
+      </IdentNode>
+      <!-- VarNode Init -->
+      <FunctionNode name='drawES6Chart' kind='NORMAL' start='0' end='148'>
+        <isDeclared/>
+        <!-- FunctionNode Parameters -->
+        <IdentNode start='22' end='73'>
+          <name>arguments[0]</name>
+          <isDefaultParameter/>
+          <isDestructuredParameter/>
+        </IdentNode>
+        <!-- FunctionNode Body -->
+        <Block start='21' end='146'>
+          <isParameterBlock/>
+          <!-- Block Statements -->
+          <VarNode name='size' start='22' end='73'>
+          </VarNode>
+          <VarNode name='cords' start='22' end='73'>
+          </VarNode>
+          <VarNode name='radius' start='22' end='73'>
+          </VarNode>
+          <ExpressionStatement start='22' end='73'>
+            <BinaryNode type='ASSIGN' start='22' end='73'>
+              <isAssignment/>
+              <!-- BinaryNode lhs -->
+              <ObjectNode start='22' end='73'>
+                <!-- ObjectNode Elements -->
+                <PropertyNode name='size' start='23' end='34'>
+                  <!-- PropertyNode Key -->
+                  <IdentNode start='23' end='27'>
+                    <name>size</name>
+                    <isPropertyName/>
+                  </IdentNode>
+                  <!-- PropertyNode Value -->
+                  <BinaryNode type='ASSIGN' start='23' end='34'>
+                    <isAssignment/>
+                    <!-- BinaryNode lhs -->
+                    <IdentNode start='23' end='27'>
+                      <name>size</name>
+                    </IdentNode>
+                    <!-- BinaryNode rhs -->
+                    <StringLiteralNode value='big' start='31' end='34'/>
+                  </BinaryNode>
+                </PropertyNode>
+                <PropertyNode name='cords' start='37' end='59'>
+                  <!-- PropertyNode Key -->
+                  <IdentNode start='37' end='42'>
+                    <name>cords</name>
+                    <isPropertyName/>
+                  </IdentNode>
+                  <!-- PropertyNode Value -->
+                  <BinaryNode type='ASSIGN' start='37' end='59'>
+                    <isAssignment/>
+                    <!-- BinaryNode lhs -->
+                    <IdentNode start='37' end='42'>
+                      <name>cords</name>
+                    </IdentNode>
+                    <!-- BinaryNode rhs -->
+                    <ObjectNode start='45' end='59'>
+                      <!-- ObjectNode Elements -->
+                      <PropertyNode name='x' start='47' end='51'>
+                        <!-- PropertyNode Key -->
+                        <IdentNode start='47' end='48'>
+                          <name>x</name>
+                          <isPropertyName/>
+                        </IdentNode>
+                        <!-- PropertyNode Value -->
+                        <NumberLiteralNode value='0' start='50' end='51'/>
+                      </PropertyNode>
+                      <PropertyNode name='y' start='53' end='57'>
+                        <!-- PropertyNode Key -->
+                        <IdentNode start='53' end='54'>
+                          <name>y</name>
+                          <isPropertyName/>
+                        </IdentNode>
+                        <!-- PropertyNode Value -->
+                        <NumberLiteralNode value='0' start='56' end='57'/>
+                      </PropertyNode>
+                    </ObjectNode>
+                  </BinaryNode>
+                </PropertyNode>
+                <PropertyNode name='radius' start='61' end='72'>
+                  <!-- PropertyNode Key -->
+                  <IdentNode start='61' end='67'>
+                    <name>radius</name>
+                    <isPropertyName/>
+                  </IdentNode>
+                  <!-- PropertyNode Value -->
+                  <BinaryNode type='ASSIGN' start='61' end='72'>
+                    <isAssignment/>
+                    <!-- BinaryNode lhs -->
+                    <IdentNode start='61' end='67'>
+                      <name>radius</name>
+                    </IdentNode>
+                    <!-- BinaryNode rhs -->
+                    <NumberLiteralNode value='25' start='70' end='72'/>
+                  </BinaryNode>
+                </PropertyNode>
+              </ObjectNode>
+              <!-- BinaryNode rhs -->
+              <TernaryNode start='22' end='73'>
+                <BinaryNode type='EQ_STRICT' start='22' end='80'>
+                  <isComparison/>
+                  <!-- BinaryNode lhs -->
+                  <IdentNode start='22' end='73'>
+                    <name>arguments[0]</name>
+                    <isDefaultParameter/>
+                    <isDestructuredParameter/>
+                  </IdentNode>
+                  <!-- BinaryNode rhs -->
+                  <UnaryNode type='VOID' start='22' end='80'>
+                    <!-- UnaryNode Expression -->
+                    <NumberLiteralNode value='0' start='22' end='80'/>
+                  </UnaryNode>
+                </BinaryNode>
+                <JoinPredecessorExpression start='76' end='80'>
+                  <IdentNode start='76' end='80'>
+                    <name>test</name>
+                  </IdentNode>
+                </JoinPredecessorExpression>
+                <JoinPredecessorExpression start='22' end='73'>
+                  <IdentNode start='22' end='73'>
+                    <name>arguments[0]</name>
+                    <isDefaultParameter/>
+                    <isDestructuredParameter/>
+                  </IdentNode>
+                </JoinPredecessorExpression>
+              </TernaryNode>
+            </BinaryNode>
+          </ExpressionStatement>
+          <BlockStatement start='82' end='146'>
+            <Block start='82' end='146'>
+              <isFunctionBody/>
+              <!-- Block Statements -->
+              <ExpressionStatement start='86' end='146'>
+                <CallNode start='86' end='118'>
+                  <!-- CallNode Arguments -->
+                  <IdentNode start='98' end='102'>
+                    <name>size</name>
+                  </IdentNode>
+                  <IdentNode start='104' end='109'>
+                    <name>cords</name>
+                  </IdentNode>
+                  <IdentNode start='111' end='117'>
+                    <name>radius</name>
+                  </IdentNode>
+                  <!-- CallNode Function -->
+                  <AccessNode property='log' start='86' end='97'>
+                    <!-- AccessNode Base -->
+                    <IdentNode start='86' end='93'>
+                      <name>console</name>
+                    </IdentNode>
+                  </AccessNode>
+                </CallNode>
+              </ExpressionStatement>
+            </Block>
+          </BlockStatement>
+        </Block>
+      </FunctionNode>
+    </VarNode>
+    <ExpressionStatement start='150' end='211'>
+      <CallNode start='150' end='210'>
+        <!-- CallNode Arguments -->
+        <ObjectNode start='163' end='209'>
+          <!-- ObjectNode Elements -->
+          <PropertyNode name='cords' start='170' end='193'>
+            <!-- PropertyNode Key -->
+            <IdentNode start='170' end='175'>
+              <name>cords</name>
+              <isPropertyName/>
+            </IdentNode>
+            <!-- PropertyNode Value -->
+            <ObjectNode start='177' end='193'>
+              <!-- ObjectNode Elements -->
+              <PropertyNode name='x' start='179' end='184'>
+                <!-- PropertyNode Key -->
+                <IdentNode start='179' end='180'>
+                  <name>x</name>
+                  <isPropertyName/>
+                </IdentNode>
+                <!-- PropertyNode Value -->
+                <NumberLiteralNode value='18' start='182' end='184'/>
+              </PropertyNode>
+              <PropertyNode name='y' start='186' end='191'>
+                <!-- PropertyNode Key -->
+                <IdentNode start='186' end='187'>
+                  <name>y</name>
+                  <isPropertyName/>
+                </IdentNode>
+                <!-- PropertyNode Value -->
+                <NumberLiteralNode value='30' start='189' end='191'/>
+              </PropertyNode>
+            </ObjectNode>
+          </PropertyNode>
+          <PropertyNode name='radius' start='197' end='207'>
+            <!-- PropertyNode Key -->
+            <IdentNode start='197' end='203'>
+              <name>radius</name>
+              <isPropertyName/>
+            </IdentNode>
+            <!-- PropertyNode Value -->
+            <NumberLiteralNode value='30' start='205' end='207'/>
+          </PropertyNode>
+        </ObjectNode>
+        <!-- CallNode Function -->
+        <IdentNode start='150' end='162'>
+          <name>drawES6Chart</name>
+        </IdentNode>
+      </CallNode>
+    </ExpressionStatement>
+    <ExpressionStatement start='213' end='279'>
+      <CallNode start='213' end='278'>
+        <!-- CallNode Arguments -->
+        <ObjectNode start='226' end='277'>
+          <!-- ObjectNode Elements -->
+          <PropertyNode name='size' start='227' end='240'>
+            <!-- PropertyNode Key -->
+            <IdentNode start='227' end='231'>
+              <name>size</name>
+              <isPropertyName/>
+            </IdentNode>
+            <!-- PropertyNode Value -->
+            <StringLiteralNode value='small' start='235' end='240'/>
+          </PropertyNode>
+          <PropertyNode name='cords' start='243' end='264'>
+            <!-- PropertyNode Key -->
+            <IdentNode start='243' end='248'>
+              <name>cords</name>
+              <isPropertyName/>
+            </IdentNode>
+            <!-- PropertyNode Value -->
+            <ObjectNode start='250' end='264'>
+              <!-- ObjectNode Elements -->
+              <PropertyNode name='x' start='251' end='256'>
+                <!-- PropertyNode Key -->
+                <IdentNode start='251' end='252'>
+                  <name>x</name>
+                  <isPropertyName/>
+                </IdentNode>
+                <!-- PropertyNode Value -->
+                <UnaryNode type='SUB' start='254' end='256'>
+                  <!-- UnaryNode Expression -->
+                  <NumberLiteralNode value='5' start='255' end='256'/>
+                </UnaryNode>
+              </PropertyNode>
+              <PropertyNode name='y' start='258' end='263'>
+                <!-- PropertyNode Key -->
+                <IdentNode start='258' end='259'>
+                  <name>y</name>
+                  <isPropertyName/>
+                </IdentNode>
+                <!-- PropertyNode Value -->
+                <UnaryNode type='SUB' start='261' end='263'>
+                  <!-- UnaryNode Expression -->
+                  <NumberLiteralNode value='5' start='262' end='263'/>
+                </UnaryNode>
+              </PropertyNode>
+            </ObjectNode>
+          </PropertyNode>
+          <PropertyNode name='radius' start='266' end='276'>
+            <!-- PropertyNode Key -->
+            <IdentNode start='266' end='272'>
+              <name>radius</name>
+              <isPropertyName/>
+            </IdentNode>
+            <!-- PropertyNode Value -->
+            <NumberLiteralNode value='5' start='275' end='276'/>
+          </PropertyNode>
+        </ObjectNode>
+        <!-- CallNode Function -->
+        <IdentNode start='213' end='225'>
+          <name>drawES6Chart</name>
+        </IdentNode>
+      </CallNode>
+    </ExpressionStatement>
+  </Block>
+</FunctionNode>
