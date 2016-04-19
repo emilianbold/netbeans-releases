@@ -236,6 +236,9 @@ public class FmtOptions {
     public static final String wrapElements = "wrapElements"; // NOI18N
     public static final String wrapClassExtends = "wrapClassExtends"; // NOI18N
 
+    public static final String removeEmptyLinesInObject = "removeEmptyLinesInObject"; // NOI18N
+    public static final String removeEmptyLinesInArray = "removeEmptyLinesInArray"; // NOI18N
+
     public static final String preferFullyQualifiedNames = "preferFullyQualifiedNames"; //NOI18N
     public static final String preferMultipleUseStatementsCombined = "preferMultipleUseStatementsCombined"; //NOI18N
     public static final String startUseWithNamespaceSeparator = "startUseWithNamespaceSeparator"; //NOI18N
@@ -420,6 +423,9 @@ public class FmtOptions {
             { wrapElements, WRAP_ALWAYS},
             { wrapClassExtends, WRAP_NEVER},
 
+            { removeEmptyLinesInObject, TRUE},
+            { removeEmptyLinesInArray, TRUE},
+            
             { preferFullyQualifiedNames, FALSE},
             { preferMultipleUseStatementsCombined, FALSE},
             { startUseWithNamespaceSeparator, FALSE}

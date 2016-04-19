@@ -657,6 +657,7 @@ public class JsFormatter implements Formatter {
         }
 
         FormatToken end = null;
+        FormatToken firstEol = null;
         for (FormatToken current = token.next(); current != null;
                 current = current.next()) {
 
@@ -666,6 +667,9 @@ public class JsFormatter implements Formatter {
                     end = current;
                     break;
                 } else if (current.getKind() == FormatToken.Kind.EOL) {
+                    if (firstEol == null) {
+                        firstEol = current;
+                    }
                     lastEol = current;
                 }
             }
@@ -718,6 +722,15 @@ public class JsFormatter implements Formatter {
                 if (lastEol != null) {
                     end = lastEol;
                 }
+                if (firstEol != null && firstEol != lastEol
+                        && ((!codeStyle.removeEmptyLinesInObject
+                                && surroundingsContains(token, EnumSet.of(
+                                        FormatToken.Kind.AFTER_OBJECT_START, FormatToken.Kind.AFTER_PROPERTY)))
+                        || (!codeStyle.removeEmptyLinesInArray
+                                && surroundingsContains(token, EnumSet.of(
+                                        FormatToken.Kind.AFTER_ARRAY_LITERAL_START, FormatToken.Kind.AFTER_ARRAY_LITERAL_ITEM))))) {
+                    end = firstEol;
+                }
                 // if it should be removed or there is eol (in fact space)
                 // which will stay there
                 if (remove || end.getKind() == FormatToken.Kind.EOL) {
@@ -736,6 +749,26 @@ public class JsFormatter implements Formatter {
         }
     }
 
+    private boolean surroundingsContains(FormatToken token, Set<FormatToken.Kind> kinds) {
+        assert token.isVirtual();
+
+        FormatToken item = token;
+        while (item != null && item.isVirtual()) {
+            if (kinds.contains(item.getKind())) {
+                return true;
+            }
+            item = item.next();
+        }
+        item = token.previous();
+        while (item != null && item.isVirtual()) {
+            if (kinds.contains(item.getKind())) {
+                return true;
+            }
+            item = item.next();
+        }
+        return false;
+    }
+    
     private void formatComment(FormatToken comment, FormatContext formatContext, CodeStyle.Holder codeStyle, int indent) {
         // this assumes the firts line is already indented by EOL logic
         assert comment.getKind() == FormatToken.Kind.BLOCK_COMMENT

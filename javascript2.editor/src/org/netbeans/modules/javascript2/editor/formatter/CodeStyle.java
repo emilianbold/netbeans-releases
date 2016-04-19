@@ -668,6 +668,14 @@ public final class CodeStyle {
         return WrapStyle.valueOf(wrap);
     }
 
+    public boolean removeEmptyLinesInObject() {
+        return preferences.getBoolean(removeEmptyLinesInObject, provider.getDefaultAsBoolean(removeEmptyLinesInObject));
+    }
+    
+    public boolean removeEmptyLinesInArray() {
+        return preferences.getBoolean(removeEmptyLinesInArray, provider.getDefaultAsBoolean(removeEmptyLinesInArray));
+    }
+    
     // Uses
 
 //    public boolean preferFullyQualifiedNames() {
@@ -891,6 +899,9 @@ public final class CodeStyle {
         
         final CodeStyle.WrapStyle wrapClassExtends;
 
+        final boolean removeEmptyLinesInObject;
+        final boolean removeEmptyLinesInArray;
+        
         final boolean placeElseOnNewLine;
         final boolean placeWhileOnNewLine;
         final boolean placeCatchOnNewLine;
@@ -997,6 +1008,9 @@ public final class CodeStyle {
             wrapClasses = style.wrapClasses();
             wrapElements = style.wrapElements();
             wrapClassExtends = style.wrapClassExtends();
+
+            removeEmptyLinesInObject = style.removeEmptyLinesInObject();
+            removeEmptyLinesInArray = style.removeEmptyLinesInArray();
 
             placeElseOnNewLine = style.placeElseOnNewLine();
             placeWhileOnNewLine = style.placeWhileOnNewLine();

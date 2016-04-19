@@ -115,8 +115,8 @@ FormatToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null, id=null}
 FormatToken{kind=BEFORE_OBJECT, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=243, text={, id=BRACKET_LEFT_CURLY}
 FormatToken{kind=INDENTATION_INC, offset=-1, text=null, id=null}
-FormatToken{kind=AFTER_OBJECT_START, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_LEFT_BRACE, offset=-1, text=null, id=null}
+FormatToken{kind=AFTER_OBJECT_START, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=244, text=
 , id=EOL}
 FormatToken{kind=WHITESPACE, offset=245, text=  , id=WHITESPACE}

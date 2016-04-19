@@ -806,6 +806,12 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/objects14.js",new IndentPrefs(4, 4));
     }
     
+    public void testObjects14NoEmptyLinesRemoval() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.removeEmptyLinesInObject, Boolean.FALSE);
+        reformatFileContents("testfiles/formatter/objects14.js", options, ".noEmptyLinesRemoval.formatted");
+    }
+    
     public void testObjects14Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/objects14.js");
     }
@@ -1965,6 +1971,20 @@ public class JsFormatterTest extends JsTestBase {
         options.put(FmtOptions.wrapArrayInit, CodeStyle.WrapStyle.WRAP_IF_LONG);
         options.put(FmtOptions.wrapArrayInitItems, CodeStyle.WrapStyle.WRAP_IF_LONG);
         reformatFileContents("testfiles/formatter/arrays5.js", options, ".wrapIfLong.formatted");
+    }
+
+    public void testArrays6() throws Exception {
+        reformatFileContents("testfiles/formatter/arrays6.js",new IndentPrefs(4, 4));
+    }
+    
+    public void testArrays6NoEmptyLinesRemoval() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.removeEmptyLinesInArray, Boolean.FALSE);
+        reformatFileContents("testfiles/formatter/arrays6.js", options, ".noEmptyLinesRemoval.formatted");
+    }
+    
+    public void testArrays6Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/arrays6.js");
     }
 
     public void testPartialFormat1() throws Exception {

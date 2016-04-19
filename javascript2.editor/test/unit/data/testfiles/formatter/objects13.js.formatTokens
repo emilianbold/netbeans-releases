@@ -11,8 +11,8 @@ FormatToken{kind=WHITESPACE, offset=9, text= , id=WHITESPACE}
 FormatToken{kind=BEFORE_OBJECT, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=10, text={, id=BRACKET_LEFT_CURLY}
 FormatToken{kind=INDENTATION_INC, offset=-1, text=null, id=null}
-FormatToken{kind=AFTER_OBJECT_START, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_LEFT_BRACE, offset=-1, text=null, id=null}
+FormatToken{kind=AFTER_OBJECT_START, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=11, text=foo, id=IDENTIFIER}
 FormatToken{kind=BEFORE_PROPERTY_OPERATOR, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=14, text=:, id=OPERATOR_COLON}
@@ -74,8 +74,8 @@ FormatToken{kind=WHITESPACE, offset=130, text= , id=WHITESPACE}
 FormatToken{kind=BEFORE_OBJECT, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=131, text={, id=BRACKET_LEFT_CURLY}
 FormatToken{kind=INDENTATION_INC, offset=-1, text=null, id=null}
-FormatToken{kind=AFTER_OBJECT_START, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_LEFT_BRACE, offset=-1, text=null, id=null}
+FormatToken{kind=AFTER_OBJECT_START, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=132, text=
 , id=EOL}
 FormatToken{kind=WHITESPACE, offset=133, text=    , id=WHITESPACE}
@@ -140,8 +140,8 @@ FormatToken{kind=WHITESPACE, offset=230, text= , id=WHITESPACE}
 FormatToken{kind=BEFORE_OBJECT, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=231, text={, id=BRACKET_LEFT_CURLY}
 FormatToken{kind=INDENTATION_INC, offset=-1, text=null, id=null}
-FormatToken{kind=AFTER_OBJECT_START, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_LEFT_BRACE, offset=-1, text=null, id=null}
+FormatToken{kind=AFTER_OBJECT_START, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=232, text=
 , id=EOL}
 FormatToken{kind=WHITESPACE, offset=233, text=     , id=WHITESPACE}
