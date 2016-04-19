@@ -128,7 +128,7 @@ public abstract class SanitizingParser extends Parser {
             // module may be broken completely by broken/unfinished export
             // try to at least parse it as normal source
             context.isModule = false;
-            result = parseContext(context, sanitizing, errorManager);
+            result = parseContext(context, sanitizing, errorManager, false);
         }
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "Parsing took: {0} ms; source: {1}",
