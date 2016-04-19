@@ -18,6 +18,12 @@ echo "NetBeans";
     }
 }
 
+$anonymous = new class extends AnonymousExample {
+    public function main() {
+        return "anonymous";
+    }
+};
+
 function getFruit() {
     return "Apple";
 }

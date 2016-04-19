@@ -1,26 +1,27 @@
 <?php
 
-class Example {
+$instance = new class {
 
     public function ifExample ($a, $b) {
         if (convert($a) > $b) {
             echo "a is bigger than b";
         } elseif ($a == $b) {
-            echo $a." is equal to ".$b[0];
+            echo $a." is equal to ".$b;
         } else {
-            $result = getText($this->property1, $this->property2) ;
+            echo $this->property;
         }
-	$result = $a < $b ? $a : $b;
     }
 
 public function forExample() {
-    for ($i = 1; $i <= 10; $i++) {echo 'Item: '; echo $i;}
+    for ($i = 1; $i <= 10; $i++) {
+    echo $i;
+}
 }
 
 public function foreachEample() {
-$arr = array(1, 2, 3, 4, "b"=>5, "a"=>6);
+$arr = array(1, 2, 3, 4);
 foreach ($arr as &$value) {
-    $value = (int)$value * 2;
+    $value = $value * 2;
 }
 }
 
@@ -52,21 +53,7 @@ public function tryExample() {
     echo inverse(5) . "\n";
 } catch (Exception $e) {
     echo 'Caught exception: '.  $e->getMessage(). "\n";
-} finally {
-    echo "Finally block";
 }
 
 }
-
-public function anonymousClassExample($arg) {
-    $instance = new class ($arg) extends Anonymous {
-        public function __construct($arg) {
-        }
-        public function anon() {
-            echo "anonymous";
-        }
-    };
-    return $instance;
-}
-}
-?>
+};

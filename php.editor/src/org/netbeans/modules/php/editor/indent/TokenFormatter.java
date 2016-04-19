@@ -92,6 +92,7 @@ public class TokenFormatter {
         public int tabSize;
         public boolean expandTabsToSpaces;
         public CodeStyle.BracePlacement classDeclBracePlacement;
+        public CodeStyle.BracePlacement anonymousClassBracePlacement;
         public CodeStyle.BracePlacement methodDeclBracePlacement;
         public CodeStyle.BracePlacement ifBracePlacement;
         public CodeStyle.BracePlacement forBracePlacement;
@@ -112,6 +113,7 @@ public class TokenFormatter {
         public boolean spaceBeforeCatchLeftBrace;
         public boolean spaceBeforeFinallyLeftBrace;
         public boolean spaceBeforeUseTraitBodyLeftBrace;
+        public boolean spaceBeforeAnonymousClassParen;
         public boolean spaceBeforeMethodDeclParen;
         public boolean spaceBeforeMethodCallParen;
         public boolean spaceBeforeIfParen;
@@ -132,6 +134,7 @@ public class TokenFormatter {
         public boolean spaceAroundAssignOps;
         public boolean spaceAroundKeyValueOps;
         public boolean spaceWithinArrayDeclParens;
+        public boolean spaceWithinAnonymousClassParens;
         public boolean spaceWithinMethodDeclParens;
         public boolean spaceWithinMethodCallParens;
         public boolean spaceWithinIfParens;
@@ -220,6 +223,7 @@ public class TokenFormatter {
             expandTabsToSpaces = codeStyle.expandTabToSpaces();
 
             classDeclBracePlacement = codeStyle.getClassDeclBracePlacement();
+            anonymousClassBracePlacement = codeStyle.getAnonymousClassBracePlacement();
             methodDeclBracePlacement = codeStyle.getMethodDeclBracePlacement();
             ifBracePlacement = codeStyle.getIfBracePlacement();
             forBracePlacement = codeStyle.getForBracePlacement();
@@ -242,6 +246,7 @@ public class TokenFormatter {
             spaceBeforeFinallyLeftBrace = codeStyle.spaceBeforeFinallyLeftBrace();
             spaceBeforeUseTraitBodyLeftBrace = codeStyle.spaceBeforeUseTraitBodyLeftBrace();
 
+            spaceBeforeAnonymousClassParen = codeStyle.spaceBeforeAnonymousClassParen();
             spaceBeforeMethodDeclParen = codeStyle.spaceBeforeMethodDeclParen();
             spaceBeforeMethodCallParen = codeStyle.spaceBeforeMethodCallParen();
             spaceBeforeIfParen = codeStyle.spaceBeforeIfParen();
@@ -265,6 +270,7 @@ public class TokenFormatter {
             spaceAroundKeyValueOps = codeStyle.spaceAroundKeyValueOps();
 
             spaceWithinArrayDeclParens = codeStyle.spaceWithinArrayDeclParens();
+            spaceWithinAnonymousClassParens = codeStyle.spaceWithinAnonymousClassParens();
             spaceWithinMethodDeclParens = codeStyle.spaceWithinMethodDeclParens();
             spaceWithinMethodCallParens = codeStyle.spaceWithinMethodCallParens();
             spaceWithinIfParens = codeStyle.spaceWithinIfParens();
@@ -462,6 +468,16 @@ public class TokenFormatter {
                                         newLines = ws.lines;
                                         countSpaces = ws.spaces;
                                         break;
+                                    case WHITESPACE_BEFORE_ANONYMOUS_CLASS_LEFT_BRACE:
+                                        indentRule = true;
+                                        ws = countWhiteSpaceBeforeLeftBrace(docOptions.anonymousClassBracePlacement,
+                                                docOptions.spaceBeforeClassDeclLeftBrace, // use the same option as class decl
+                                                oldText,
+                                                indent,
+                                                peekLastBracedIndent(lastBracedBlockIndent));
+                                        newLines = ws.lines;
+                                        countSpaces = ws.spaces;
+                                        break;
                                     case WHITESPACE_BEFORE_FUNCTION_LEFT_BRACE:
                                         indentRule = true;
                                         ws = countWhiteSpaceBeforeLeftBrace(
@@ -621,6 +637,11 @@ public class TokenFormatter {
                                         newLines = docOptions.blankLinesAfterClassHeader + 1 > newLines ? docOptions.blankLinesAfterClassHeader + 1 : newLines;
                                         countSpaces = indent;
                                         break;
+                                    case WHITESPACE_AFTER_ANONYMOUS_CLASS_LEFT_BRACE:
+                                        indentRule = true;
+                                        newLines = docOptions.blankLinesAfterClassHeader + 1;
+                                        countSpaces = indent;
+                                        break;
                                     case WHITESPACE_AFTER_CLASS:
                                         indentRule = true;
                                         // If there is some another visible token after this one, add an extra line,
@@ -630,6 +651,11 @@ public class TokenFormatter {
                                         extraLines = isPenultimateTokenBeforeWhitespace(index, formatTokens) ? 0 : 1;
                                         newLines = docOptions.blankLinesAfterClass + extraLines > newLines ? docOptions.blankLinesAfterClass + extraLines : newLines;
                                         countSpaces = indent;
+                                        break;
+                                    case WHITESPACE_AFTER_ANONYMOUS_CLASS:
+                                        indentRule = true;
+                                        newLines = 0;
+                                        countSpaces = 0;
                                         break;
                                     case WHITESPACE_BEFORE_CLASS_RIGHT_BRACE:
                                         indentRule = true;
@@ -645,6 +671,19 @@ public class TokenFormatter {
                                         newLines = ws.lines;
                                         countSpaces = ws.spaces;
                                         lastBracePlacement = docOptions.classDeclBracePlacement;
+                                        break;
+                                    case WHITESPACE_BEFORE_ANONYMOUS_CLASS_RIGHT_BRACE:
+                                        indentRule = true;
+                                        if (docOptions.anonymousClassBracePlacement == CodeStyle.BracePlacement.PRESERVE_EXISTING) {
+                                            ws = countWhiteSpaceForPreserveExistingBracePlacement(oldText, popLastBracedIndent(lastBracedBlockIndent));
+                                        } else {
+                                            int lines = docOptions.blankLinesBeforeClassEnd + 1;
+                                            int spaces = docOptions.anonymousClassBracePlacement == CodeStyle.BracePlacement.NEW_LINE_INDENTED ? indent + docOptions.indentSize : indent;
+                                            ws = new Whitespace(lines, spaces);
+                                        }
+                                        newLines = ws.lines;
+                                        countSpaces = ws.spaces;
+                                        lastBracePlacement = docOptions.anonymousClassBracePlacement;
                                         break;
                                     case WHITESPACE_BEFORE_FUNCTION:
                                         indentRule = true;
@@ -1056,6 +1095,9 @@ public class TokenFormatter {
                                         }
                                         countSpaces = countSpaces + (docOptions.spaceAroundKeyValueOps ? 1 : 0);
                                         break;
+                                    case WHITESPACE_BEFORE_ANONYMOUS_CLASS_PAREN:
+                                        countSpaces = docOptions.spaceBeforeAnonymousClassParen ? 1 : 0;
+                                        break;
                                     case WHITESPACE_BEFORE_METHOD_DEC_PAREN:
                                         countSpaces = docOptions.spaceBeforeMethodDeclParen ? 1 : 0;
                                         break;
@@ -1136,8 +1178,21 @@ public class TokenFormatter {
                                     case WHITESPACE_BEFORE_ARRAY_DECL_RIGHT_PAREN:
                                         countSpaces = countSpacesForArrayDeclParens(index, indent, formatTokens);
                                         break;
-                                    case WHITESPACE_WITHIN_METHOD_DECL_PARENS:
+                                    case WHITESPACE_WITHIN_ANONYMOUS_CLASS_PARENS:
                                         int helpIndex = index - 1;
+                                        while (helpIndex > 0
+                                                && formatTokens.get(helpIndex).getId() != FormatToken.Kind.WHITESPACE_WITHIN_ANONYMOUS_CLASS_PARENS
+                                                && (formatTokens.get(helpIndex).getId() == FormatToken.Kind.WHITESPACE)) {
+                                            helpIndex--;
+                                        }
+                                        if (helpIndex > 0 && formatTokens.get(helpIndex).getId() == FormatToken.Kind.WHITESPACE_WITHIN_ANONYMOUS_CLASS_PARENS) {
+                                            countSpaces = 0;
+                                        } else {
+                                            countSpaces = docOptions.spaceWithinAnonymousClassParens ? 1 : 0;
+                                        }
+                                        break;
+                                    case WHITESPACE_WITHIN_METHOD_DECL_PARENS:
+                                        helpIndex = index - 1;
                                         while (helpIndex > 0
                                                 && formatTokens.get(helpIndex).getId() != FormatToken.Kind.WHITESPACE_WITHIN_METHOD_DECL_PARENS
                                                 && (formatTokens.get(helpIndex).getId() == FormatToken.Kind.WHITESPACE /*

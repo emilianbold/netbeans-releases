@@ -77,6 +77,11 @@
                               <EmptySpace max="32767" attributes="0"/>
                               <Component id="classDeclCombo" linkSize="1" min="-2" max="-2" attributes="1"/>
                           </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="anonymousClassLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                              <Component id="anonymousClassCombo" min="-2" max="-2" attributes="0"/>
+                          </Group>
                       </Group>
                   </Group>
               </Group>
@@ -97,7 +102,12 @@
                   <Component id="classDeclLabel" alignment="3" min="-2" pref="18" max="-2" attributes="0"/>
                   <Component id="classDeclCombo" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="anonymousClassLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="anonymousClassCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="methodDeclLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="methodDeclCombo" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -137,7 +147,7 @@
                   <Component id="otherCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="otherLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="18" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -201,6 +211,28 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="classDeclComboActionPerformed"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="anonymousClassLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/editor/indent/ui/Bundle.properties" key="FmtBraces.anonymousClassLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JComboBox" name="anonymousClassCombo">
+      <Properties>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+          <StringArray count="4">
+            <StringItem index="0" value="Item 1"/>
+            <StringItem index="1" value="Item 2"/>
+            <StringItem index="2" value="Item 3"/>
+            <StringItem index="3" value="Item 4"/>
+          </StringArray>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JLabel" name="methodDeclLabel">
       <Properties>

@@ -64,6 +64,7 @@ public class FmtBraces extends javax.swing.JPanel {
     public FmtBraces() {
         initComponents();
         classDeclCombo.putClientProperty(OPTION_ID, CLASS_DECL_BRACE_PLACEMENT);
+        anonymousClassCombo.putClientProperty(OPTION_ID, ANONYMOUS_CLASS_BRACE_PLACEMENT);
         methodDeclCombo.putClientProperty(OPTION_ID, METHOD_DECL_BRACE_PLACEMENT);
         ifCombo.putClientProperty(OPTION_ID, IF_BRACE_PLACEMENT);
         forCombo.putClientProperty(OPTION_ID, FOR_BRACE_PLACEMENT);
@@ -96,6 +97,8 @@ public class FmtBraces extends javax.swing.JPanel {
         bracesPlacementLabel = new javax.swing.JLabel();
         classDeclLabel = new javax.swing.JLabel();
         classDeclCombo = new javax.swing.JComboBox();
+        anonymousClassLabel = new javax.swing.JLabel();
+        anonymousClassCombo = new javax.swing.JComboBox<>();
         methodDeclLabel = new javax.swing.JLabel();
         methodDeclCombo = new javax.swing.JComboBox();
         otherLabel = new javax.swing.JLabel();
@@ -129,6 +132,10 @@ public class FmtBraces extends javax.swing.JPanel {
                 classDeclComboActionPerformed(evt);
             }
         });
+
+        org.openide.awt.Mnemonics.setLocalizedText(anonymousClassLabel, org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.anonymousClassLabel.text")); // NOI18N
+
+        anonymousClassCombo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         methodDeclLabel.setLabelFor(methodDeclCombo);
         org.openide.awt.Mnemonics.setLocalizedText(methodDeclLabel, org.openide.util.NbBundle.getMessage(FmtBraces.class, "LBL_bp_MethodDecl")); // NOI18N
@@ -221,7 +228,11 @@ public class FmtBraces extends javax.swing.JPanel {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(classDeclLabel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(classDeclCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                .addComponent(classDeclCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(anonymousClassLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(anonymousClassCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                 .addContainerGap())
         );
 
@@ -238,7 +249,11 @@ public class FmtBraces extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(classDeclLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(classDeclCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(6, 6, 6)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(anonymousClassLabel)
+                    .addComponent(anonymousClassCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(methodDeclLabel)
                     .addComponent(methodDeclCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -270,7 +285,7 @@ public class FmtBraces extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(otherCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(otherLabel))
-                .addContainerGap(18, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         bracesPlacementLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.bracesPlacementLabel.AccessibleContext.accessibleName")); // NOI18N
@@ -328,6 +343,8 @@ public class FmtBraces extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox<String> anonymousClassCombo;
+    private javax.swing.JLabel anonymousClassLabel;
     private javax.swing.JLabel bracesPlacementLabel;
     private javax.swing.JComboBox catchCombo;
     private javax.swing.JLabel catchLabel;

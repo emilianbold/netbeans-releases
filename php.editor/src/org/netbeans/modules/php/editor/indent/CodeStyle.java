@@ -124,6 +124,11 @@ public final class CodeStyle {
         return BracePlacement.valueOf(placement);
     }
 
+    public BracePlacement getAnonymousClassBracePlacement() {
+        String placement = preferences.get(ANONYMOUS_CLASS_BRACE_PLACEMENT, getDefaultAsString(ANONYMOUS_CLASS_BRACE_PLACEMENT));
+        return BracePlacement.valueOf(placement);
+    }
+
     public BracePlacement getMethodDeclBracePlacement() {
         String placement = preferences.get(METHOD_DECL_BRACE_PLACEMENT, getDefaultAsString(METHOD_DECL_BRACE_PLACEMENT));
         return BracePlacement.valueOf(placement);
@@ -264,6 +269,10 @@ public final class CodeStyle {
         return preferences.getBoolean(SPACE_BEFORE_FINALLY, getDefaultAsBoolean(SPACE_BEFORE_FINALLY));
     }
 
+    public boolean spaceBeforeAnonymousClassParen() {
+        return preferences.getBoolean(SPACE_BEFORE_ANONYMOUS_CLASS_PAREN, getDefaultAsBoolean(SPACE_BEFORE_ANONYMOUS_CLASS_PAREN));
+    }
+
     public boolean spaceBeforeMethodDeclParen() {
         return preferences.getBoolean(SPACE_BEFORE_METHOD_DECL_PAREN, getDefaultAsBoolean(SPACE_BEFORE_METHOD_DECL_PAREN));
     }
@@ -328,6 +337,10 @@ public final class CodeStyle {
         return preferences.getBoolean(SPACE_BEFORE_CLASS_DECL_LEFT_BRACE, getDefaultAsBoolean(SPACE_BEFORE_CLASS_DECL_LEFT_BRACE));
     }
 
+    public boolean spaceBeforeAnonymousClassLeftBrace() {
+        return preferences.getBoolean(SPACE_BEFORE_ANONYMOUS_CLASS_LEFT_BRACE, getDefaultAsBoolean(SPACE_BEFORE_ANONYMOUS_CLASS_LEFT_BRACE));
+    }
+
     public boolean spaceBeforeMethodDeclLeftBrace() {
         return preferences.getBoolean(SPACE_BEFORE_METHOD_DECL_LEFT_BRACE, getDefaultAsBoolean(SPACE_BEFORE_METHOD_DECL_LEFT_BRACE));
     }
@@ -370,6 +383,10 @@ public final class CodeStyle {
 
     public boolean spaceBeforeUseTraitBodyLeftBrace() {
         return preferences.getBoolean(SPACE_BEFORE_USE_TRAIT_BODY_LEFT_BRACE, getDefaultAsBoolean(SPACE_BEFORE_USE_TRAIT_BODY_LEFT_BRACE));
+    }
+
+    public boolean spaceWithinAnonymousClassParens() {
+        return preferences.getBoolean(SPACE_WITHIN_ANONYMOUS_CLASS_PARENS, getDefaultAsBoolean(SPACE_WITHIN_ANONYMOUS_CLASS_PARENS));
     }
 
     public boolean spaceWithinMethodDeclParens() {

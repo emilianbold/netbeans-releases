@@ -419,6 +419,8 @@ public class FormatVisitor extends DefaultVisitor {
         if (ts.token().id() == PHPTokenId.PHP_CURLY_OPEN) {
             if (parent instanceof ClassDeclaration || parent instanceof InterfaceDeclaration || parent instanceof TraitDeclaration) {
                 formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CLASS_LEFT_BRACE, ts.offset()));
+            } else if (isAnonymousClass(parent)) {
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_ANONYMOUS_CLASS_LEFT_BRACE, ts.offset()));
             } else if (parent instanceof FunctionDeclaration || parent instanceof MethodDeclaration) {
                 formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FUNCTION_LEFT_BRACE, ts.offset()));
             } else if (parent instanceof IfStatement) {
@@ -466,6 +468,8 @@ public class FormatVisitor extends DefaultVisitor {
 
             if (parent instanceof ClassDeclaration || parent instanceof InterfaceDeclaration || parent instanceof TraitDeclaration) {
                 formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_CLASS_LEFT_BRACE, ts.offset()));
+            } else if (isAnonymousClass(parent)) {
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_ANONYMOUS_CLASS_LEFT_BRACE, ts.offset()));
             } else {
                 formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_OTHER_LEFT_BRACE, ts.offset()));
             }
@@ -516,6 +520,12 @@ public class FormatVisitor extends DefaultVisitor {
                         }
                         addFormatToken(formatTokens);
                         formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_CLASS, ts.offset() + ts.token().length()));
+                    } else if (isAnonymousClass(parent)) {
+                        if (includeWSBeforePHPDoc) {
+                            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_ANONYMOUS_CLASS_RIGHT_BRACE, ts.offset()));
+                        }
+                        addFormatToken(formatTokens);
+                        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_ANONYMOUS_CLASS, ts.offset() + ts.token().length()));
                     } else if (parent instanceof FunctionDeclaration || parent instanceof MethodDeclaration) {
                         formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FUNCTION_RIGHT_BRACE, ts.offset()));
                         addFormatToken(formatTokens);
@@ -640,18 +650,44 @@ public class FormatVisitor extends DefaultVisitor {
     @Override
     public void visit(ClassInstanceCreation node) {
         scan(node.getClassName());
-        if (node.ctorParams() != null && node.ctorParams().size() > 0) {
-            boolean addIndentation = (path.size() > 2 && (path.get(1) instanceof ArrayElement) && (path.get(2) instanceof ArrayCreation));
-            if (addIndentation) {
-                formatTokens.add(new FormatToken.IndentToken(node.getClassName().getEndOffset(), options.continualIndentSize));
+        if (node.isAnonymous()) {
+            while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_CURLY_OPEN) {
+                switch (ts.token().id()) {
+                    case PHP_CLASS:
+                        addFormatToken(formatTokens);
+                        break;
+                    case PHP_IMPLEMENTS:
+                        if (node.getInterfaces().size() > 0) {
+                            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS, ts.offset(), ts.token().text().toString()));
+                            ts.movePrevious();
+                            addListOfNodes(node.getInterfaces(), FormatToken.Kind.WHITESPACE_IN_INTERFACE_LIST);
+                        }
+                        break;
+                    case PHP_EXTENDS:
+                        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_EXTENDS_IMPLEMENTS, ts.offset(), ts.token().text().toString()));
+                        addFormatToken(formatTokens);
+                        break;
+                    default:
+                        addFormatToken(formatTokens);
+                }
             }
-            processArguments(node.ctorParams());
-            if (addIndentation) {
-                formatTokens.add(new FormatToken.IndentToken(node.ctorParams().get(node.ctorParams().size() - 1).getEndOffset(), -1 * options.continualIndentSize));
-            }
-            addAllUntilOffset(node.getEndOffset());
-        } else {
+
+            ts.movePrevious();
             super.visit(node);
+        } else {
+            if (node.ctorParams() != null && node.ctorParams().size() > 0) {
+                boolean addIndentation = (path.size() > 2 && (path.get(1) instanceof ArrayElement) && (path.get(2) instanceof ArrayCreation));
+                if (addIndentation) {
+                    formatTokens.add(new FormatToken.IndentToken(node.getClassName().getEndOffset(), options.continualIndentSize));
+                }
+                processArguments(node.ctorParams());
+                if (addIndentation) {
+                    formatTokens.add(new FormatToken.IndentToken(node.ctorParams().get(node.ctorParams().size() - 1).getEndOffset(), -1 * options.continualIndentSize));
+                }
+                addAllUntilOffset(node.getEndOffset());
+            } else {
+                super.visit(node);
+            }
         }
     }
 
@@ -899,6 +935,14 @@ public class FormatVisitor extends DefaultVisitor {
                 addFormatToken(formatTokens); // add the first token of the expression and then add the indentation
                 Expression expression = node.getExpression();
                 boolean addIndent = !(expression instanceof MethodInvocation || expression instanceof StaticMethodInvocation);
+                if (expression instanceof Assignment) {
+                    // anonymous classes
+                    Assignment assignment = (Assignment) expression;
+                    Expression right = assignment.getRightHandSide();
+                    if (isAnonymousClass(right)) {
+                        addIndent = false;
+                    }
+                }
                 if (addIndent) {
                     formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), options.continualIndentSize));
                     super.visit(node);
@@ -1121,6 +1165,16 @@ public class FormatVisitor extends DefaultVisitor {
             boolean addIndentation = !(path.get(1) instanceof ReturnStatement
                     || path.get(1) instanceof Assignment
                     || (path.size() > 2 && path.get(1) instanceof MethodInvocation && path.get(2) instanceof Assignment));
+            // anonymous classes
+            if (options.wrapMethodCallArgs != CodeStyle.WrapStyle.WRAP_ALWAYS) {
+                for (Expression parameter : parameters) {
+                    if (isAnonymousClass(parameter)) {
+                        addIndentation = false;
+                        break;
+                    }
+                }
+            }
+
             if (addIndentation) {
                 formatTokens.add(new FormatToken.IndentToken(node.getFunctionName().getEndOffset(), options.continualIndentSize));
             }
@@ -1288,6 +1342,19 @@ public class FormatVisitor extends DefaultVisitor {
                     shift = true;
                     addAllUntilOffset(node.getStartOffset());
                     boolean addIndent = !(path.size() > 1 && (path.get(1) instanceof Assignment));
+
+                    // anonymous classes
+                    if (options.wrapMethodCallArgs != CodeStyle.WrapStyle.WRAP_ALWAYS) {
+                        FunctionInvocation method = node.getMethod();
+                        List<Expression> parameters = method.getParameters();
+                        for (Expression parameter : parameters) {
+                            if (isAnonymousClass(parameter)) {
+                                addIndent = false;
+                                break;
+                            }
+                        }
+                    }
+
                     if (addIndent) {
                         formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), options.continualIndentSize));
                     }
@@ -1350,11 +1417,18 @@ public class FormatVisitor extends DefaultVisitor {
                 && ((ts.offset() + ts.token().length()) <= node.getEndOffset())) {
             addFormatToken(formatTokens);
         }
+
+        boolean addIndent = !isAnonymousClass(node.getExpression());
+
         if (ts.token().id() == PHPTokenId.PHP_RETURN) {
             addFormatToken(formatTokens);
-            formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.continualIndentSize));
+            if (addIndent) {
+                formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.continualIndentSize));
+            }
             super.visit(node);
-            formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
+            if (addIndent) {
+                formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
+            }
         }
     }
 
@@ -1662,8 +1736,12 @@ public class FormatVisitor extends DefaultVisitor {
             case PHP_TOKEN:
                 text = ts.token().text().toString();
                 ASTNode parent = path.get(0);
-                if ("(".equals(text)) {
-                    if (parent instanceof FunctionDeclaration || parent instanceof MethodDeclaration) {
+                if ("(".equals(text)) { // NOI18N
+                    if (isAnonymousClass(parent)) {
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_ANONYMOUS_CLASS_PAREN, ts.offset()));
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_ANONYMOUS_CLASS_PARENS, ts.offset() + ts.token().length()));
+                    } else if (parent instanceof FunctionDeclaration || parent instanceof MethodDeclaration) {
                         tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_METHOD_DEC_PAREN, ts.offset()));
                         tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                         tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_METHOD_DECL_PARENS, ts.offset() + ts.token().length()));
@@ -1698,8 +1776,11 @@ public class FormatVisitor extends DefaultVisitor {
                     } else {
                         tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                     }
-                } else if (")".equals(text)) {
-                    if (parent instanceof FunctionDeclaration || parent instanceof MethodDeclaration) {
+                } else if (")".equals(text)) { // NOI18N
+                    if (isAnonymousClass(parent)) {
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_ANONYMOUS_CLASS_PARENS, ts.offset()));
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                    } else if (parent instanceof FunctionDeclaration || parent instanceof MethodDeclaration) {
                         tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_WITHIN_METHOD_DECL_PARENS, ts.offset()));
                         tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                     } else if (parent instanceof FunctionInvocation || parent instanceof MethodInvocation || parent instanceof ClassInstanceCreation) {
@@ -2238,5 +2319,9 @@ public class FormatVisitor extends DefaultVisitor {
             index++;
         }
         return index == text.length();
+    }
+
+    private static boolean isAnonymousClass(ASTNode astNode) {
+        return astNode instanceof ClassInstanceCreation && ((ClassInstanceCreation) astNode).isAnonymous();
     }
 }
