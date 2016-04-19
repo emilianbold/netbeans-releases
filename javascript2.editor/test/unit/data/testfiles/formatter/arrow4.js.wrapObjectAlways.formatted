@@ -1,7 +1,7 @@
 x => ({
-    id: id,
-    name: "Temp"
-});
+        id: id,
+        name: "Temp"
+    });
 
 y = ({
     id: id,
