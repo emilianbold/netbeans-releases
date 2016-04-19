@@ -835,7 +835,7 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
         }
 
         private void updateIcon() {
-            icon = new BufferedImage(15, 15, BufferedImage.TYPE_INT_ARGB);
+            icon = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
 
             Graphics2D g = (Graphics2D) icon.getGraphics();
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -849,20 +849,25 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
                 f = new Color(0xc5, 0xf3, 0x8f);
                 d = new Color(0x25, 0x97, 0x00);
             }
+            int x = 1;
+            int y = 1;
             if (id > 0) {
                 g.setColor(f);
-                g.fillPolygon(new int[]{4, 4,12, 4},
-                              new int[]{2,14, 8, 2}, 4);
+                g.fillPolygon(new int[]{x, x,    x+9, x},
+                              new int[]{y, y+14, y+7, y}, 4);
             }
             g.setColor(d);
-            g.drawPolygon(new int[]{4, 4,12, 4},
-                          new int[]{2,14, 8, 2}, 4);
+                g.drawPolygon(new int[]{x, x,    x+9, x},
+                              new int[]{y, y+14, y+7, y}, 4);
             if (!pub) {
+                x = 9;
+                y = 1;
                 g.setColor(new Color(0xc3, 0x87, 0x32));
-                g.drawPolygon(new int[]{11,14,14, 13, 13, 14, 14, 12, 12, 11, 11},
-                              new int[]{ 1, 1, 4,  4,  8,  8, 11, 11,  4,  4,  1}, 11);
-                g.fillPolygon(new int[]{12, 14, 14, 12, 12},
-                              new int[]{ 8,  8, 11, 11,  8}, 5);
+                g.drawOval(x, y, 5, 4);
+                g.drawPolygon(new int[]{x+3, x+3, x+5, x+5, x+3, x+3,  x+2, x+2},
+                              new int[]{y+4, y+7, y+7, y+9, y+9, y+10, y+10,y+4}, 8);
+                g.fillPolygon(new int[]{x+2, x+5, x+5, x+2, x+2},
+                              new int[]{y+7, y+7, y+10,y+10,y+7}, 5);
             }
         }
 
