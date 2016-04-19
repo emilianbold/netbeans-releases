@@ -287,6 +287,12 @@ final class CompletionContextFinder {
             return CompletionContext.NAMESPACE_KEYWORD;
         } else if (acceptTokenChains(tokenSequence, INSTANCEOF_TOKENCHAINS, moveNextSucces)) {
             return CompletionContext.TYPE_NAME;
+        } else if (acceptTokenChains(tokenSequence, GROUP_USE_KEYWORD_TOKENS, moveNextSucces)) {
+            return CompletionContext.GROUP_USE_KEYWORD;
+        } else if (acceptTokenChains(tokenSequence, GROUP_USE_CONST_KEYWORD_TOKENS, moveNextSucces)) {
+            return CompletionContext.GROUP_USE_CONST_KEYWORD;
+        } else if (acceptTokenChains(tokenSequence, GROUP_USE_FUNCTION_KEYWORD_TOKENS, moveNextSucces)) {
+            return CompletionContext.GROUP_USE_FUNCTION_KEYWORD;
         } else if (isInsideInterfaceDeclarationBlock(info, caretOffset, tokenSequence)) {
             CompletionContext paramContext = getParamaterContext(token, caretOffset, tokenSequence);
             if (paramContext != null) {
@@ -307,12 +313,6 @@ final class CompletionContextFinder {
                 }
                 return CompletionContext.NONE;
             }
-        } else if (acceptTokenChains(tokenSequence, GROUP_USE_KEYWORD_TOKENS, moveNextSucces)) {
-            return CompletionContext.GROUP_USE_KEYWORD;
-        } else if (acceptTokenChains(tokenSequence, GROUP_USE_CONST_KEYWORD_TOKENS, moveNextSucces)) {
-            return CompletionContext.GROUP_USE_CONST_KEYWORD;
-        } else if (acceptTokenChains(tokenSequence, GROUP_USE_FUNCTION_KEYWORD_TOKENS, moveNextSucces)) {
-            return CompletionContext.GROUP_USE_FUNCTION_KEYWORD;
         } else if (acceptTokenChains(tokenSequence, USE_KEYWORD_TOKENS, moveNextSucces)) {
             return CompletionContext.USE_KEYWORD;
         } else if (acceptTokenChains(tokenSequence, USE_CONST_KEYWORD_TOKENS, moveNextSucces)) {

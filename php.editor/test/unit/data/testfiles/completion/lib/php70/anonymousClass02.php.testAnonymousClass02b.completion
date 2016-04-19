@@ -21,9 +21,13 @@ VARIABLE   $php_errormsg                              PHP Platform
 VARIABLE   ? $a01                          [PUBLIC]   groupUse01.php
 VARIABLE   ? $a02                          [PUBLIC]   groupUse02.php
 VARIABLE   ? $a03                          [PUBLIC]   groupUse03.php
+VARIABLE   ? $a04                          [PUBLIC]   groupUse04.php
 VARIABLE   ? $ab01                         [PUBLIC]   groupUse01.php
 VARIABLE   ? $ab02                         [PUBLIC]   groupUse02.php
 VARIABLE   ? $ab03                         [PUBLIC]   groupUse03.php
+VARIABLE   ? $ab04                         [PUBLIC]   groupUse04.php
 VARIABLE   ? $abc01                        [PUBLIC]   groupUse01.php
 VARIABLE   ? $abc02                        [PUBLIC]   groupUse02.php
 VARIABLE   ? $abc03                        [PUBLIC]   groupUse03.php
+VARIABLE   ? $abc04                        [PUBLIC]   groupUse04.php
+VARIABLE   ? $mycls04                      [PUBLIC]   groupUse04.php

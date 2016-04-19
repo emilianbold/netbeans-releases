@@ -294,6 +294,10 @@ public class PHP70CodeCompletionTest extends PHPCodeCompletionTestBase {
         checkCompletion("testfiles/completion/lib/php70/groupUse03.php", "    B\\^ClsAB,", false);
     }
 
+    public void testGroupUse04a() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUse04.php", "use A\\ {^", false);
+    }
+
     public void testAnonymousClass01a() throws Exception {
         checkCompletion("testfiles/completion/lib/php70/anonymousClass01.php", "$an^on->testAnon();", false);
     }
