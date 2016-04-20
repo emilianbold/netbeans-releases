@@ -248,6 +248,8 @@ import javax.swing.text.Keymap;
  */
 public class Term extends JComponent implements Accessible {
     public static class ExternalCommandsConstants {
+        public static final String EXECUTION_ENV_PROPERTY_KEY = "ExecutionEnvironment_KEY"; //NOI18N
+
         public static final String COMMAND_PREFIX = "ext[::] "; //NOI18N
         public static final String IDE_OPEN = "ideopen"; //NOI18N
     }
@@ -666,9 +668,9 @@ public class Term extends JComponent implements Accessible {
         }
     }
     
-    private void fireExternalCommand(String cwd) {
+    private void fireExternalCommand(String command) {
         for (TermListener l : listeners) {
-            l.externalToolCalled(cwd);
+            l.externalToolCalled(command);
         }
     }
     
