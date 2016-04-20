@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.callgraph.api.Function;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.openide.text.PositionBounds;
 import org.openide.util.NbBundle;
 
 /**
@@ -71,9 +72,11 @@ public class VariableImpl implements Function {
     private final CsmOffsetableDeclaration variable;
     private String htmlDisplayName = ""; // NOI18N
     private String scopeName = null; // NOI18N
-    
+    private final PositionBounds positions;
+
     public VariableImpl(CsmOffsetableDeclaration variable) {
         this.variable = variable;
+        positions = CsmUtilities.createPositionBounds(variable);
     }
     
     @Override
@@ -153,15 +156,7 @@ public class VariableImpl implements Function {
     
     @Override
     public void open() {
-        final String taskName = "Open declaration"; //NOI18N
-        Runnable run = new Runnable() {
-
-            @Override
-            public void run() {
-                CsmUtilities.openSource(variable);
-            }
-        };
-        CsmModelAccessor.getModel().enqueue(run, taskName);
+        CsmUtilities.openSource(positions);
     }
    
     @Override
