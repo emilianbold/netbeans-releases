@@ -1577,7 +1577,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 // case like A.f1 = function (){} -> f1 is a public static property
                 AccessNode aNode = (AccessNode)bNode.getAssignmentDest();
                 List<Identifier> name = getName(aNode, parserResult);
-                if (ModelUtils.THIS.equals(name.get(0).getName())) {
+                if (name != null && ModelUtils.THIS.equals(name.get(0).getName())) {
                     isPrivilage = true;
                 } else {
                     if (!ModelUtils.PROTOTYPE.equals(aNode.getProperty()) && jsFunction.getParent().getJSKind().isFunction()) {
