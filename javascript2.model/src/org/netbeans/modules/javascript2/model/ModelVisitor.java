@@ -921,10 +921,12 @@ public class ModelVisitor extends PathNodeVisitor {
             if (canBeSingletonPattern(1)) {
                 // move all properties to the parent
                 JsObject singleton = resolveThisInSingletonPattern(fncScope);
-                fncScope.setJsKind(JsElement.Kind.CONSTRUCTOR);
-                List<JsObject> properties = new ArrayList(fncScope.getProperties().values());
-                for (JsObject property : properties) {
-                    ModelUtils.moveProperty(singleton, property);
+                if (singleton != null) {
+                    fncScope.setJsKind(JsElement.Kind.CONSTRUCTOR);
+                    List<JsObject> properties = new ArrayList(fncScope.getProperties().values());
+                    for (JsObject property : properties) {
+                        ModelUtils.moveProperty(singleton, property);
+                    }
                 }
             }
             modelBuilder.reset();
