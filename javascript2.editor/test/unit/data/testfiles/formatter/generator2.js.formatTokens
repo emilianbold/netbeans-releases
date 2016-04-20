@@ -160,6 +160,7 @@ FormatToken{kind=BEFORE_OBJECT_END, offset=-1, text=null, id=null}
 FormatToken{kind=BEFORE_RIGHT_BRACE, offset=-1, text=null, id=null}
 FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=185, text=}, id=BRACKET_RIGHT_CURLY}
+FormatToken{kind=AFTER_STATEMENT, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=186, text=
 , id=EOL}
 FormatToken{kind=EOL, offset=187, text=

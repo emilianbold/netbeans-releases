@@ -1106,17 +1106,13 @@ public class FormatVisitor extends NodeVisitor {
                  * last one and the proper finish token.
                  */
                 if (statement instanceof VarNode) {
-                    FormatToken function = getNextToken(getStart(statement), null);
-                    // proceed this only if the var node is not a function decalaration
-                    // var node is created even for function for example for
-                    // function x {} the var node is var x = function x() {}
-                    if (function == null || function.getId() != JsTokenId.KEYWORD_FUNCTION) {
+                    if (!isDeclaration((VarNode) statement)) {
                         int index = i + 1;
                         Node lastVarNode = statement;
 
                         while (i + 1 < statements.size()) {
                             Node next = statements.get(++i);
-                            if (!(next instanceof VarNode)) {
+                            if (!(next instanceof VarNode) || isDeclaration((VarNode) next)) {
                                 i--;
                                 break;
                             } else {
@@ -1562,6 +1558,23 @@ public class FormatVisitor extends NodeVisitor {
         return block.getStart() == block.getFinish()
                     || com.oracle.js.parser.Token.descType(block.getToken()) != TokenType.LBRACE
                     || block.isCatchBlock();
+    }
+
+    private boolean isDeclaration(VarNode varNode) {
+        if (varNode.isFunctionDeclaration() || varNode.isSynthetic()) {
+            return true;
+        }
+        if (varNode.getInit() instanceof ClassNode) {
+            IdentNode cIdent = ((ClassNode) varNode.getInit()).getIdent();
+            IdentNode vIdent = varNode.getName();
+            // this is artificial var node for simple class declaration
+            if (cIdent != null
+                    && cIdent.getStart() == vIdent.getStart()
+                    && cIdent.getFinish() == vIdent.getFinish()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @CheckForNull

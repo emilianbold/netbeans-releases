@@ -187,6 +187,7 @@ FormatToken{kind=BEFORE_CLASS_END, offset=-1, text=null, id=null}
 FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=308, text=}, id=BRACKET_RIGHT_CURLY}
 FormatToken{kind=AFTER_END_BRACE, offset=-1, text=null, id=null}
+FormatToken{kind=AFTER_STATEMENT, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=309, text=
 , id=EOL}
 FormatToken{kind=EOL, offset=310, text=

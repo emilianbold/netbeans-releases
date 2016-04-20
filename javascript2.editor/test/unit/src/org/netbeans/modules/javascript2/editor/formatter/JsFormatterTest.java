@@ -2319,6 +2319,14 @@ public class JsFormatterTest extends JsTestBase {
     public void testIssue258858StableTokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/issue258858_stable.js");
     }
+    
+    public void testIssue258872() throws Exception {
+        reformatFileContents("testfiles/formatter/issue258872.js", new IndentPrefs(4, 4));
+    }
+    
+    public void testIssue258872Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/issue258872.js");
+    }
 
     // braces formatting tests
     public void testBracesSameLine() throws Exception {

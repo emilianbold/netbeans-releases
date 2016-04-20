@@ -23,6 +23,7 @@ FormatToken{kind=TEXT, offset=10, text=}, id=BRACKET_RIGHT_CURLY}
 FormatToken{kind=BEFORE_SEMICOLON, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=11, text=;, id=OPERATOR_SEMICOLON}
 FormatToken{kind=AFTER_SEMICOLON, offset=-1, text=null, id=null}
+FormatToken{kind=AFTER_STATEMENT, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=12, text=
 , id=EOL}
 FormatToken{kind=EOL, offset=13, text=
