@@ -728,4 +728,9 @@ public class JsStructureScannerTest extends JsTestBase {
         // testing when the destructuring assignment is used as parameter definition
         checkStructure("testfiles/markoccurences/destructuringAssignments/example01.js");
     }
+    
+    public void testObjectPropertyAssignment01() throws Exception {
+        // testing when the destructuring assignment is used as parameter definition
+        checkStructure("testfiles/ecmascript6/parser/other/objectPropertyAssignment.js");
+    }
 }
