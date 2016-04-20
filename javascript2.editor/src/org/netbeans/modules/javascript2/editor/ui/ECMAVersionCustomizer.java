@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,9 +37,20 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-@NbBundle.Messages("LBL_CATEGORY_FRAMEWORKS_LABEL=JavaScript Frameworks")
+package org.netbeans.modules.javascript2.editor.ui;
+
+import javax.swing.JComponent;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript2.editor.api.FrameworksUtils;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+
+public class ECMAVersionCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
+
+@NbBundle.Messages("LBL_CATEGORY_FRAMEWORKS_LABEL=JavaScript")
 @ProjectCustomizer.CompositeCategoryProvider.Registrations({
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = FrameworksUtils.HTML5_CLIENT_PROJECT,
@@ -61,8 +72,23 @@
     )
 }
 )
-package org.netbeans.modules.javascript2.editor.api;
+    public static ECMAVersionCustomizer createCustomizer() {
+        return new ECMAVersionCustomizer();
+    }
 
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.openide.util.NbBundle;
+    
+    @Override
+    public ProjectCustomizer.Category createCategory(Lookup context) {
+        return ProjectCustomizer.Category.create(
+                ECMAScriptPanel.IDENTIFIER,
+                Bundle.LBL_CATEGORY_FRAMEWORKS_LABEL(),
+                null, (ProjectCustomizer.Category[]) null);
+    }
 
+    @Override
+    public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
+        Project project = context.lookup(Project.class);
+        return new ECMAScriptPanel(project, category);
+    }
+
+}
