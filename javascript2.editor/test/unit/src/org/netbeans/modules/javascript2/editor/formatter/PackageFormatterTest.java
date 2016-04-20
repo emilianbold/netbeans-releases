@@ -55,7 +55,7 @@ import org.netbeans.modules.csl.api.test.CslTestBase.IndentPrefs;
 import static org.netbeans.modules.csl.api.test.CslTestBase.read;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.javascript2.editor.JsonTestBase;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.openide.filesystems.FileObject;
 
 /**
