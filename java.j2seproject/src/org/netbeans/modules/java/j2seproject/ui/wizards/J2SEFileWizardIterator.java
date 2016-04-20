@@ -92,7 +92,6 @@ public class J2SEFileWizardIterator implements JavaFileWizardIteratorFactory {
             @Override
             public Set instantiate() throws IOException {
                 final J2SEProject project = (J2SEProject) Templates.getProject(wiz);
-                final SourceRoots src = project.getSourceRoots();
                 final boolean modularSources = hasModuleInfo(project.getSourceRoots());
                 final boolean modularTests = hasModuleInfo(project.getTestSourceRoots());
                 final Iterable<ClassPathSupport.Item> toMove = (Iterable<ClassPathSupport.Item>) wiz.getProperty(MoveToModulePathPanel.CP_ITEMS_TO_MOVE);

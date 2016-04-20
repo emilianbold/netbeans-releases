@@ -62,6 +62,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
@@ -245,6 +247,35 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
         return res;
     }
     
+    private void addRequires(FileObject createdFile, Set<String> requiredModuleNames) throws IOException {
+        if (requiredModuleNames == null) {
+            requiredModuleNames = new LinkedHashSet<>();
+            ClassPath modulePath = ClassPath.getClassPath(createdFile, JavaClassPathConstants.MODULE_COMPILE_PATH);
+            for (FileObject root : modulePath.getRoots()) {
+                String name = SourceUtils.getModuleName(root.toURL(), true);
+                if (name != null) {
+                    requiredModuleNames.add(name);
+                }
+            }
+        }
+        if (!requiredModuleNames.isEmpty()) {
+            final JavaSource src = JavaSource.forFileObject(createdFile);
+            if (src != null) {
+                final Set<String> mNames = requiredModuleNames;
+                src.runModificationTask((WorkingCopy copy) -> {
+                    copy.toPhase(JavaSource.Phase.RESOLVED);
+                    TreeMaker tm = copy.getTreeMaker();
+                    ModuleTree modle = (ModuleTree) copy.getCompilationUnit().getTypeDecls().get(0);
+                    ModuleTree newModle = modle;
+                    for (String mName : mNames) {
+                        newModle = tm.addModuleDirective(newModle, tm.Requires(false, tm.QualIdent(mName)));
+                    }
+                    copy.rewrite(modle, newModle);
+                }).commit();
+            }
+        }
+    }
+
     @Override
     public Set<FileObject> instantiate () throws IOException {
         FileObject dir = Templates.getTargetFolder( wiz );
@@ -255,6 +286,7 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
         FileObject template = Templates.getTemplate( wiz );
         
         FileObject createdFile = null;
+        Set<String> requiredModuleNames = null;
         if (this.type == Type.PACKAGE) {
             targetName = targetName.replace( '.', '/' ); // NOI18N
             createdFile = FileUtil.createFolder( dir, targetName );
@@ -262,14 +294,14 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
             Project project = Templates.getProject( wiz );
             String name = ProjectUtils.getInformation(project).getName();
             URL[] srcs = UnitTestForSourceQuery.findSources(dir);
-            final Set<String> mNames = new LinkedHashSet<>();
             if (srcs.length > 0) {
                 name += "Test";
+                requiredModuleNames = new LinkedHashSet<>();
                 for (int i = 0; i < srcs.length; i++) {
                     for (URL root : BinaryForSourceQuery.findBinaryRoots(srcs[i]).getRoots()) {
                         String mName = SourceUtils.getModuleName(root, true);
                         if (mName != null) {
-                            mNames.add(mName);
+                            requiredModuleNames.add(mName);
                         }
                     }
                 }
@@ -277,21 +309,6 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
             DataObject dTemplate = DataObject.find( template );                
             DataObject dobj = dTemplate.createFromTemplate( df, targetName, Collections.singletonMap("moduleName", name) );
             createdFile = dobj.getPrimaryFile();
-            if (!mNames.isEmpty()) {
-                JavaSource src = JavaSource.forFileObject(createdFile);
-                if (src != null) {
-                    src.runModificationTask((WorkingCopy copy) -> {
-                        copy.toPhase(JavaSource.Phase.RESOLVED);
-                        TreeMaker tm = copy.getTreeMaker();
-                        ModuleTree modle = (ModuleTree) copy.getCompilationUnit().getTypeDecls().get(0);
-                        ModuleTree newModle = modle;
-                        for (String mName : mNames) {
-                            newModle = tm.addModuleDirective(newModle, tm.Requires(false, tm.QualIdent(mName)));
-                        }
-                        copy.rewrite(modle, newModle);
-                    }).commit();
-                }
-            }
         } else {
             DataObject dTemplate = DataObject.find( template );                
             DataObject dobj = dTemplate.createFromTemplate( df, targetName );
@@ -309,6 +326,9 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
                     }
                 })
                 .ifPresent(res::addAll);
+        if (this.type == Type.MODULE_INFO) {
+            addRequires(createdFile, requiredModuleNames);
+        }
         return Collections.unmodifiableSet(res);
     }
     
