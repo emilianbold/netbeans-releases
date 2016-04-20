@@ -474,6 +474,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 addOccurence((IdentNode) argument, false);
             }
         }
+        processObjectPropertyAssignment(callNode);
         return super.enterCallNode(callNode);
     }
 
@@ -3775,6 +3776,49 @@ public class ModelVisitor extends PathNodeVisitor {
                         break;
                 }
             }
+        }
+    }
+    
+    private void processObjectPropertyAssignment(CallNode cNode) {
+        if (!(cNode.getFunction() instanceof AccessNode)) {
+            return;
+        }
+        
+        AccessNode aNode = (AccessNode)cNode.getFunction();
+        if ("assign".equals(aNode.getProperty()) 
+                && aNode.getBase() instanceof IdentNode
+                && "Object".equals(((IdentNode)aNode.getBase()).getName())) {
+            // the function call is Object.assign ...
+            final List<Expression> args = cNode.getArgs();
+            if (args != null && !args.isEmpty()) {
+                // first param is the target object
+                List<Identifier> targetName = getNodeName(args.get(0), parserResult);
+                if (targetName != null) {
+                    JsObjectImpl targetObject = ModelUtils.getJsObject(modelBuilder, targetName, false);
+                    if (targetObject != null) {
+                        for (int i = 1; i < args.size(); i++) {
+                            Expression expression = args.get(i);
+                            List<Identifier> argName = getNodeName(expression, parserResult);
+                            if (argName != null) {
+                                JsObjectImpl argObject = ModelUtils.getJsObject(modelBuilder, argName, false);
+                                if (argObject != null) {
+                                    for(JsObject property : argObject.getProperties().values()) {
+                                        JsObject copyProperty;
+                                        if (property.getJSKind().isFunction()) {
+                                            copyProperty = new JsFunctionReference(targetObject, property.getDeclarationName(), (JsFunction)property, true, property.getModifiers());
+                                        } else {
+                                            copyProperty = new JsObjectReference(targetObject, property.getDeclarationName(), property, true, property.getModifiers());
+                                        }
+                                        targetObject.addProperty(copyProperty.getName(), copyProperty);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            
         }
     }
     

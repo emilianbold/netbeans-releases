@@ -2115,6 +2115,16 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/destructuringAssignments/example01.js", "function drawES6Chart({size = 'big', cords = { x: 0, y: 0 , z: 0}, radius = 25} = {^}) {", true);
     }
     
+    public void testObjectPropertyAssignment01_01() throws Exception {
+        // testing when the destructuring assignment is used as parameter definition
+        checkOccurrences("testfiles/ecmascript6/parser/other/objectPropertyAssignment.js", "console.log(target.proper^ty1);", true);
+    }
+    
+    public void testObjectPropertyAssignment01_02() throws Exception {
+        // testing when the destructuring assignment is used as parameter definition
+        checkOccurrences("testfiles/ecmascript6/parser/other/objectPropertyAssignment.js", "console.log(target.prop^erty2);", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
