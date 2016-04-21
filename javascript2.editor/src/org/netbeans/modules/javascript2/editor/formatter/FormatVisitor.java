@@ -1219,7 +1219,9 @@ public class FormatVisitor extends NodeVisitor {
         if (leftParen != null) {
             FormatToken mark = leftParen.next();
             assert mark != null && mark.getKind() == FormatToken.Kind.AFTER_LEFT_PARENTHESIS : mark;
-            tokenStream.removeToken(mark);
+            if (mark.getKind() == FormatToken.Kind.AFTER_LEFT_PARENTHESIS) {
+                tokenStream.removeToken(mark);
+            }
 
             appendToken(leftParen, FormatToken.forFormat(leftMark));
             FormatToken rightParen = getPreviousToken(rightStart,
@@ -1227,7 +1229,9 @@ public class FormatVisitor extends NodeVisitor {
             if (rightParen != null) {
                 FormatToken previous = rightParen.previous();
                 assert previous != null && previous.getKind() == FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS : previous;
-                tokenStream.removeToken(previous);
+                if (previous.getKind() == FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS) {
+                    tokenStream.removeToken(previous);
+                }
 
                 previous = rightParen.previous();
                 if (previous != null) {
