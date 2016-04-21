@@ -431,7 +431,9 @@ public class JsConventionRule extends JsAstRule {
 
         @Override
         public boolean enterForNode(ForNode forNode) {
-            checkAssignmentInCondition(forNode.getTest().getExpression());
+            if (forNode.getTest() != null) {
+                checkAssignmentInCondition(forNode.getTest().getExpression());
+            }
             return super.enterForNode(forNode);
         }
 
