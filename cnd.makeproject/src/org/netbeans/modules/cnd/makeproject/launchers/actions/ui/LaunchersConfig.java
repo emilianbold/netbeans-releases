@@ -182,6 +182,14 @@ public class LaunchersConfig {
                     if (l == null) {
                         l = new LauncherConfig(id, pub);
                         map.put(id, l);
+                    } else {
+                        if(l.pub != pub) {
+                            // Launcher from public section is overrided by private section.
+                            // UI does not support node with two heads.
+                            // Move launcher from public section to private
+                            // Public seaction will hung. It will be deleted if other public launchesrs are touched.
+                            l.pub = pub;
+                        }
                     }
                     String subkey = key.substring(i + 1);
                     if (subkey.equals(LaunchersRegistry.NAME_TAG)) {
