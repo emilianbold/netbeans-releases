@@ -2,7 +2,7 @@ FUNCTION czechChars [ANONYMOUS: false, DECLARED: true - czechChars, MODIFIERS: P
 # RETURN TYPES
 undefined, RESOLVED: true
 # PROPERTIES
-czechChars_L1 : FUNCTION czechChars_L1 [ANONYMOUS: true, DECLARED: true - czechChars_L1, MODIFIERS: PUBLIC, FUNCTION]
+czechCharsL$1 : FUNCTION czechCharsL$1 [ANONYMOUS: true, DECLARED: true - czechCharsL$1, MODIFIERS: PUBLIC, FUNCTION]
               # RETURN TYPES
               undefined, RESOLVED: true
               # PARAMETERS
