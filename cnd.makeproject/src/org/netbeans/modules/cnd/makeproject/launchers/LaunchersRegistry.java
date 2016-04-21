@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.makeproject.launchers;
 
 import org.netbeans.modules.cnd.makeproject.LaunchersRegistryAccessor;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -64,14 +63,15 @@ public final class LaunchersRegistry {
 
     private final List<Launcher> launchers;
     private static final Object lock = "LaunchersRegistryLock"; //NOI18N
-    private static final String LAUNCHER_TAG = "launcher";  // NOI18N
-    private static final String COMMON_TAG = "common";  // NOI18N
-    private static final String COMMAND_TAG = "runCommand"; // NOI18N
-    private static final String BUILD_COMMAND_TAG = "buildCommand"; // NOI18N
-    private static final String NAME_TAG = "displayName";   // NOI18N
-    private static final String DIRECTORY_TAG = "runDir";   // NOI18N
-    private static final String SYMFILES_TAG = "symbolFiles";// NOI18N    
-    private static final String ENV_TAG = "env";// NOI18N
+    public static final String LAUNCHER_TAG = "launcher";  // NOI18N
+    public static final String COMMON_TAG = "common";  // NOI18N
+    public static final String COMMAND_TAG = "runCommand"; // NOI18N
+    public static final String BUILD_COMMAND_TAG = "buildCommand"; // NOI18N
+    public static final String NAME_TAG = "displayName";   // NOI18N
+    public static final String DIRECTORY_TAG = "runDir";   // NOI18N
+    public static final String SYMFILES_TAG = "symbolFiles";// NOI18N
+    public static final String ENV_TAG = "env";// NOI18N
+    public static final String HIDE_TAG = "hide";// NOI18N
     
     private static  Pattern pattern;
 
@@ -131,7 +131,7 @@ public final class LaunchersRegistry {
             if (matcher.find()) {
                 int index = Integer.parseInt(matcher.group(1));
                 Launcher l = create(index, key.substring(0, key.indexOf("." + COMMAND_TAG)), properties, common);//NOI18N
-                if (l != null) {
+                if (l != null && !l.isHide()) {
                     newLaunchers.add(l);
                 }
             }
@@ -193,7 +193,8 @@ public final class LaunchersRegistry {
                 launcher.putEnv(key.substring(key.lastIndexOf(".") + 1), properties.getProperty(key));
             }
         }
-        
+        String property = properties.getProperty(name + "." + HIDE_TAG);//NOI18N
+        launcher.setHide("true".equals(property));//NOI18N
         return launcher;
     }
     

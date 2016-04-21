@@ -60,6 +60,7 @@ public final class Launcher {
     private String runDir;
     private final Map<String, String> env = new HashMap<>();
     private String symbolFiles;
+    private boolean hide = false;
     //can not be set after the creation
     private final Launcher common;
 
@@ -138,6 +139,14 @@ public final class Launcher {
 
     /*package*/ void setSymbolFiles(String symbolFiles) {
         this.symbolFiles = symbolFiles;
+    }
+
+    public boolean isHide() {
+        return hide;
+    }
+
+    /*package*/ void setHide(boolean isHide) {
+        this.hide = isHide;
     }
 
     public String getDisplayedName() {
