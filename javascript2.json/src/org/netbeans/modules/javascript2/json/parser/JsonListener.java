@@ -1,6 +1,6 @@
 // Generated from Json.g4 by ANTLR 4.5.1
 
-package org.netbeans.modules.javascript2.editor.parser.json;
+package org.netbeans.modules.javascript2.json.parser;
 
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 

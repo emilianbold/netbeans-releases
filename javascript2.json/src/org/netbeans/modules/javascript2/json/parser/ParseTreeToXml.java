@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.parser.json;
+package org.netbeans.modules.javascript2.json.parser;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
