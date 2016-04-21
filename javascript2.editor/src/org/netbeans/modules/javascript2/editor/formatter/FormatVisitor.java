@@ -595,7 +595,8 @@ public class FormatVisitor extends NodeVisitor {
         }
 
         // indentation mark
-        FormatToken formatToken = getNextToken(getStart(classNode), JsTokenId.BRACKET_LEFT_CURLY, true);
+        FormatToken formatToken = getNextToken(heritage != null ? getFinish(heritage) : getStart(classNode),
+                JsTokenId.BRACKET_LEFT_CURLY, true);
         if (formatToken != null) {
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_CLASS_START));
