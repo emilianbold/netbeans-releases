@@ -346,6 +346,11 @@ public class FormatVisitor extends NodeVisitor {
             functionNode.visitExports(this);
         }
 
+//        if (functionNode.isClassConstructor() && !"constructor".equals(functionNode.getIdent().getName())) { // NOI18N
+//            // generated constructor
+//            return false;
+//        }
+
         Block body = functionNode.getBody();
         // default parameters are stored as assignments inside the function
         // body block - the real block is just behind it
@@ -579,6 +584,7 @@ public class FormatVisitor extends NodeVisitor {
     public boolean enterClassNode(ClassNode classNode) {
         Expression heritage = classNode.getClassHeritage();
         if (heritage != null) {
+            heritage.accept(this);
             FormatToken extendsToken = getPreviousToken(getStart(heritage), JsTokenId.KEYWORD_EXTENDS, getStart(classNode));
             if (extendsToken != null) {
                 FormatToken token = extendsToken.previous();
@@ -624,7 +630,7 @@ public class FormatVisitor extends NodeVisitor {
 
         markEndCurlyBrace(classNode);
 
-        return super.enterClassNode(classNode);
+        return false;
     }
 
     @Override
