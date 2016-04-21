@@ -88,7 +88,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     private static final int TYPE_UNKNOWN = -1;
     
     private final @NonNull Project proj;
-    private final ClassPath[] cache = new ClassPath[15];    
+    private final ClassPath[] cache = new ClassPath[17];    
     
     public ClassPathProviderImpl(@NonNull Project proj) {
         this.proj = proj;        
@@ -189,7 +189,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
             return null;
         }
         if (type.equals(ClassPath.COMPILE)) {
-            return getCompileTimeClasspath(fileType);//
+            return getCompileTimeClasspath(fileType);
         } else if (type.equals(ClassPath.EXECUTE)) {
             return getRuntimeClasspath(fileType);
         } else if (ClassPath.SOURCE.equals(type)) {
@@ -289,15 +289,16 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     private synchronized ClassPath getCompileTimeClasspath(int type) {
         if (type == TYPE_WEB) {
             type = TYPE_SRC;
-        }
+        }        
         ClassPath cp = cache[2+type];
         if (cp == null) {
             if (type == TYPE_SRC) {
                 cp = createMultiplexClassPath(
+                    // XXX has to be module-info based
                     new ModuleInfoSelector(proj.getLookup().lookup(NbMavenProjectImpl.class),
                         ClassPath.EMPTY,
-                                    getCompileClasspath(),
-                                    "CompileTimeClasspath" // NOI18N
+                        getCompileClasspath(),
+                        "CompileTimeClasspath" // NOI18N
                     )
                  );
             } else {
@@ -305,6 +306,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
                     new TestCompilePathSelector(proj.getLookup().lookup(NbMavenProjectImpl.class),
                         getCompileClasspath(),
                         getTestCompileClasspath(),
+                        getTestScopedCompileClasspath(),
                         "TestCompileTimeClasspath" // NOI18N
                     )
                  );                
@@ -349,33 +351,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     }
 
     private synchronized ClassPath getCompileClasspath() {
-        ClassPath cp = cache[13];
-        if (cp == null) {
-            
-            /*
-             XXX - the classpathElements in maven-compiler-plugin always were:
-              - all artifacts from the project with the scope - COMPILE, PROFILE and SYSTEM
-              - the path given by project.build.getOutputDirectory
-            
-             until jdk9 jigsaw: 
-              CompileClassPathImpl provided only the artifacts with the respective scope,
-              but NOT the project.build.getOutputDirectory.
-             since jdk9 jigsaw (and therefore maven-compiler-plugin 2.6): 
-              it is necessary to provide also project.build.getOutputDirectory 
-              (as that is the dir where maven copies the dependand jar/modules?)
-              
-             The question at this point is if we now should do so for all compiler versions 
-             (and also for < 2.6) and jdk-s < 9 or if we should difer between m-c-p < 2.6 and >=2.6 
-             and jdk version respectively.
-            */
-            
-            cp = ClassPathFactory.createClassPath(new CompileClassPathImpl(proj.getLookup().lookup(NbMavenProjectImpl.class), true));
-            cache[13] = cp;
-        }
-        return cp;
-    }
-
-    private synchronized ClassPath getTestCompileClasspath() {
         ClassPath cp = cache[14];
         if (cp == null) {
             
@@ -396,8 +371,62 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
              and jdk version respectively.
             */
             
-            cp = ClassPathFactory.createClassPath(new TestCompileClassPathImpl(proj.getLookup().lookup(NbMavenProjectImpl.class), true));
+            cp = ClassPathFactory.createClassPath(new CompileClassPathImpl(proj.getLookup().lookup(NbMavenProjectImpl.class), true));
             cache[14] = cp;
+        }
+        return cp;
+    }
+
+    private synchronized ClassPath getTestCompileClasspath() {
+        ClassPath cp = cache[15];
+        if (cp == null) {
+            
+            /*
+             XXX - the classpathElements in maven-compiler-plugin always were:
+              - all artifacts from the project with the scope - COMPILE, PROFILE and SYSTEM
+              - the path given by project.build.getOutputDirectory
+            
+             until jdk9 jigsaw: 
+              CompileClassPathImpl provided only the artifacts with the respective scope,
+              but NOT the project.build.getOutputDirectory.
+             since jdk9 jigsaw (and therefore maven-compiler-plugin 2.6): 
+              it is necessary to provide also project.build.getOutputDirectory 
+              (as that is the dir where maven copies the dependand jar/modules?)
+              
+             The question at this point is if we now should do so for all compiler versions 
+             (and also for < 2.6) and jdk-s < 9 or if we should difer between m-c-p < 2.6 and >=2.6 
+             and jdk version respectively.
+            */
+            
+            cp = ClassPathFactory.createClassPath(new TestCompileClassPathImpl(proj.getLookup().lookup(NbMavenProjectImpl.class), true));
+            cache[15] = cp;
+        }
+        return cp;
+    }
+    
+    private synchronized ClassPath getTestScopedCompileClasspath() {
+        ClassPath cp = cache[16];
+        if (cp == null) {
+            
+            /*
+             XXX - the classpathElements in maven-compiler-plugin always were:
+              - all artifacts from the project with the scope - COMPILE, PROFILE and SYSTEM
+              - the path given by project.build.getOutputDirectory
+            
+             until jdk9 jigsaw: 
+              CompileClassPathImpl provided only the artifacts with the respective scope,
+              but NOT the project.build.getOutputDirectory.
+             since jdk9 jigsaw (and therefore maven-compiler-plugin 2.6): 
+              it is necessary to provide also project.build.getOutputDirectory 
+              (as that is the dir where maven copies the dependand jar/modules?)
+              
+             The question at this point is if we now should do so for all compiler versions 
+             (and also for < 2.6) and jdk-s < 9 or if we should difer between m-c-p < 2.6 and >=2.6 
+             and jdk version respectively.
+            */
+            
+            cp = ClassPathFactory.createClassPath(new TestCompileClassPathImpl(proj.getLookup().lookup(NbMavenProjectImpl.class), true, true));
+            cache[16] = cp;
         }
         return cp;
     }
@@ -438,31 +467,66 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     }
 
     private synchronized ClassPath getModuleCompilePath(int type) {
-        if (cache[10] == null) {
-            cache[10] = createMultiplexClassPath(
-                            new ModuleInfoSelector(proj.getLookup().lookup(NbMavenProjectImpl.class),
-                                getCompileClasspath(),
-                                ClassPath.EMPTY,
-                                "ModuleCompilePath" // NOI18N
-                            )
-                        );
+        if (type == TYPE_WEB) {
+            type = TYPE_SRC;
         }
-        return cache[10];
+        
+        ClassPath cp = cache[10+type];
+        if (cp == null) {
+            if (type == TYPE_SRC) {
+                // XXX <= jdk8
+                // jdk9 has module-info
+                // jdk9 has no module-info but is SL9
+                cp = createMultiplexClassPath(
+                        new ModuleInfoSelector(proj.getLookup().lookup(NbMavenProjectImpl.class),
+                            getCompileClasspath(),
+                            ClassPath.EMPTY,
+                            "ModuleCompilePath" // NOI18N
+                        )
+                    );
+            } else {
+                cp = createMultiplexClassPath(
+                        new TestModulePathSelector(proj.getLookup().lookup(NbMavenProjectImpl.class),
+                            getCompileClasspath(),
+                            getTestCompileClasspath(),
+                            getTestScopedCompileClasspath(),
+                            "TestModuleCompilePath" // NOI18N
+                        )
+                    );                
+            }
+            cache[10+type] = cp;
+        }
+        return cache[10+type];
     }
 
     @NonNull
-    private synchronized ClassPath getModuleLegacyClassPath(final int type) {
+    private synchronized ClassPath getModuleLegacyClassPath(int type) {
+        if (type == TYPE_WEB) {
+            type = TYPE_SRC;
+        }
+        
         assert type >=0 && type <=1;
-        ClassPath cp = cache[11+type];
+        ClassPath cp = cache[12+type];
         if (cp == null) {
-            cp = createMultiplexClassPath (
-                    new ModuleInfoSelector(proj.getLookup().lookup(NbMavenProjectImpl.class), 
-                        getCompileClasspath(),
-                        ClassPath.EMPTY,
-                        "ModuleLegacyClassPath" // NOI18N
-                    )
-                 );   
-            cache[11+type] = cp;
+            if (type == TYPE_SRC) {
+                // XXX
+                cp = createMultiplexClassPath (
+                        new ModuleInfoSelector(proj.getLookup().lookup(NbMavenProjectImpl.class), 
+                            getCompileClasspath(),
+                            ClassPath.EMPTY,
+                            "ModuleLegacyClassPath" // NOI18N
+                        )
+                     );   
+            } else {
+                cp = createMultiplexClassPath (
+                        new ModuleInfoSelector(proj.getLookup().lookup(NbMavenProjectImpl.class), 
+                            getTestCompileClasspath(),
+                            ClassPath.EMPTY,
+                            "TestModuleLegacyClassPath" // NOI18N
+                        )
+                     ); 
+            }
+            cache[12+type] = cp;
         }
         return cp;
     }
@@ -527,35 +591,39 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
     }
            
     private static class TestModulePathSelector extends TestPathSelector {
-
-        public TestModulePathSelector(NbMavenProjectImpl proj, ClassPath compilePath, ClassPath testPath, String logDesc) {
-            super(proj, compilePath, testPath, logDesc);
+        public TestModulePathSelector(NbMavenProjectImpl proj, ClassPath compilePath, ClassPath testPath, ClassPath testScopedPath, String logDesc) {
+            super(proj, compilePath, testPath, testScopedPath, logDesc);
         }
-
         @Override
         protected ClassPath getActiveClassPath(boolean hasTestModuleDescriptor, boolean hasMainModuleDescriptor) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            // see org.apache.maven.plugin.compiler.TestCompilerMojo
+            if ( hasTestModuleDescriptor ) {
+                return testPath;
+            } else {
+                if(hasMainModuleDescriptor) {
+                    return compilePath;
+                } else {
+                    return ClassPath.EMPTY;
+                }
+            }
         }
-        
     }
     
     private static class TestCompilePathSelector extends TestPathSelector {
-        
-        public TestCompilePathSelector(NbMavenProjectImpl proj, ClassPath compilePath, ClassPath testPath, String logDesc) {
-            super(proj, compilePath, testPath, logDesc);
+        public TestCompilePathSelector(NbMavenProjectImpl proj, ClassPath compilePath, ClassPath testPath, ClassPath testScopedPath, String logDesc) {
+            super(proj, compilePath, testPath, testScopedPath, logDesc);
         }
-
         @Override
         protected ClassPath getActiveClassPath(boolean hasTestModuleDescriptor, boolean hasMainModuleDescriptor) {        
             // see org.apache.maven.plugin.compiler.TestCompilerMojo
             if ( hasTestModuleDescriptor ) {
-                if ( hasMainModuleDescriptor ) {
-                    return ClassPath.EMPTY;
-                } else {
-                    return compilePath;
-                }
+                return ClassPath.EMPTY;
             } else {
-                return testPath;
+                if(hasMainModuleDescriptor) {
+                    return testScopedPath;
+                } else {
+                    return testPath;
+                }
             }
         }
     }
@@ -567,12 +635,14 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
         
         protected final ClassPath compilePath;
         protected final ClassPath testPath;
+        protected final ClassPath testScopedPath;
         private final String logDesc;
         
-        public TestPathSelector(NbMavenProjectImpl proj, ClassPath compilePath, ClassPath testPath, String logDesc) {
+        public TestPathSelector(NbMavenProjectImpl proj, ClassPath compilePath, ClassPath testPath, ClassPath testScopedPath, String logDesc) {
             super(proj);
             this.compilePath = compilePath;
             this.testPath = testPath;
+            this.testScopedPath = testScopedPath;
             this.logDesc = logDesc;
         }
 

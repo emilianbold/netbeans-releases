@@ -49,6 +49,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.spi.java.classpath.FlaggedClassPathImplementation;
@@ -62,21 +63,28 @@ class TestCompileClassPathImpl extends AbstractProjectClassPathImpl implements F
 
     private volatile boolean incomplete;
     private final boolean addTestOutDir;
+    private final boolean testScoped;
 
     /** Creates a new instance of SrcClassPathImpl */
     public TestCompileClassPathImpl(NbMavenProjectImpl proj, boolean addTestOutDir) {
+        this(proj, addTestOutDir, false);
+    }
+    
+    public TestCompileClassPathImpl(NbMavenProjectImpl proj, boolean addTestOutDir, boolean testScoped) {
         super(proj);
         this.addTestOutDir = addTestOutDir;        
+        this.testScoped = testScoped;        
     }
     
     @Override
     URI[] createPath() {
-        List<URI> lst = new ArrayList<URI>();
+        List<URI> lst = new ArrayList<>();
+        MavenProject mavenProject = getMavenProject().getOriginalMavenProject();
         //TODO we shall add the test class output as well. how?
         // according the current 2.1 sources this is almost the same as getCompileClasspath()
         //except for the fact that multiproject references are not redirected to their respective
         // output folders.. we lways retrieve stuff from local repo..
-        List<Artifact> arts = getMavenProject().getOriginalMavenProject().getTestArtifacts();
+        List<Artifact> arts = mavenProject.getTestArtifacts();
         boolean broken = false;
         for (Artifact art : arts) {
             if (art.getFile() != null) {
@@ -86,6 +94,11 @@ class TestCompileClassPathImpl extends AbstractProjectClassPathImpl implements F
                 //null means dependencies were not resolved..
                 broken = true;
             }
+        }
+        if(testScoped) {
+            List<URI> cmplst = new ArrayList<>();
+            broken |= CompileClassPathImpl.getCompileArtifacts(mavenProject, cmplst);
+            lst.removeAll(cmplst);
         }
         if (incomplete != broken) {
             incomplete = broken;

@@ -49,6 +49,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.spi.java.classpath.FlaggedClassPathImplementation;
@@ -72,20 +73,7 @@ class CompileClassPathImpl extends AbstractProjectClassPathImpl implements Flagg
     @Override
     URI[] createPath() {
         List<URI> lst = new ArrayList<>();
-        // according the current 2.1 sources this is almost the same as getCompileClasspath()
-        //except for the fact that multiproject references are not redirected to their respective
-        // output folders.. we lways retrieve stuff from local repo..
-        List<Artifact> arts = getMavenProject().getOriginalMavenProject().getCompileArtifacts();
-        boolean broken = false;
-        for (Artifact art : arts) {
-            if (art.getFile() != null) {
-                lst.add(Utilities.toURI(art.getFile()));
-                broken |= !art.getFile().exists();
-            } else {
-              //NOPMD   //null means dependencies were not resolved..
-                broken = true;
-            } 
-        }
+        boolean broken = getCompileArtifacts(getMavenProject().getOriginalMavenProject(), lst);
         if(addOutputDir) {
             lst.add(Utilities.toURI(getProject().getProjectWatcher().getOutputDirectory(false)));
         }
@@ -97,6 +85,24 @@ class CompileClassPathImpl extends AbstractProjectClassPathImpl implements Flagg
         URI[] uris = new URI[lst.size()];
         uris = lst.toArray(uris);
         return uris;
+    }
+
+    static boolean getCompileArtifacts(MavenProject mavenProject, List<URI> lst) {
+        // according the current 2.1 sources this is almost the same as getCompileClasspath()
+        //except for the fact that multiproject references are not redirected to their respective
+        // output folders.. we lways retrieve stuff from local repo..
+        List<Artifact> arts = mavenProject.getCompileArtifacts();
+        boolean broken = false;
+        for (Artifact art : arts) {
+            if (art.getFile() != null) {
+                lst.add(Utilities.toURI(art.getFile()));
+                broken |= !art.getFile().exists();
+            } else {
+                //NOPMD   //null means dependencies were not resolved..
+                broken = true;
+            } 
+        }
+        return broken;
     }
 
     @Override
