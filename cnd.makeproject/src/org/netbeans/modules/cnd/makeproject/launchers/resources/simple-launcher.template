@@ -4,7 +4,7 @@
 # launcher1.runCommand=<Run Command>
 # [Optional extra properties] 
 # launcher1.displayName=<Display Name, runCommand by default>
-# launcher1.visible=<false if lancher is not visible in menu, true by default>
+# launcher1.hide=<true if lancher is not visible in menu, false by default>
 # launcher1.buildCommand=<Build Command, Build Command specified in project properties by default>
 # launcher1.runDir=<Run Directory, ${PROJECT_DIR} by default>
 # launcher1.symbolFiles=<Symbol Files loaded by debugger, ${OUTPUT_PATH} by default>
