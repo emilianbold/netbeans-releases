@@ -185,11 +185,27 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     }
 
     @Override
-    public Collection<? extends UseScope> getDeclaredUses() {
+    public Collection<? extends UseScope> getAllDeclaredSingleUses() {
+        return getDeclaredSingleUses(true);
+    }
+
+    @Override
+    public Collection<? extends UseScope> getDeclaredSingleUses() {
+        return getDeclaredSingleUses(false);
+    }
+
+    private Collection<? extends UseScope> getDeclaredSingleUses(final boolean includingGroupUses) {
         return filter(getElements(), new ElementFilter() {
             @Override
             public boolean isAccepted(ModelElement element) {
-                return element.getPhpElementKind().equals(PhpElementKind.USE_STATEMENT);
+                if (!element.getPhpElementKind().equals(PhpElementKind.USE_STATEMENT)) {
+                    return false;
+                }
+                if (includingGroupUses) {
+                    return true;
+                }
+                UseScope useScope = (UseScope) element;
+                return !useScope.isPartOfGroupUse();
             }
         });
     }

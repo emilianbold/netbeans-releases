@@ -1440,7 +1440,7 @@ public final class VariousUtils {
 
     public static Collection<QualifiedName> getRelativesToUses(NamespaceScope contextNamespace, QualifiedName fullName) {
         Set<QualifiedName> namesProposals = new HashSet<>();
-        Collection<? extends UseScope> declaredUses = contextNamespace.getDeclaredUses();
+        Collection<? extends UseScope> declaredUses = contextNamespace.getAllDeclaredSingleUses();
         for (UseScope useElement : declaredUses) {
             QualifiedName proposedName = QualifiedName.getSuffix(fullName, QualifiedName.create(useElement.getName()), true);
             if (proposedName != null) {
@@ -1476,7 +1476,7 @@ public final class VariousUtils {
     }
 
     public static Collection<QualifiedName> getComposedNames(QualifiedName name, NamespaceScope contextNamespace) {
-        Collection<? extends UseScope> declaredUses = contextNamespace.getDeclaredUses();
+        Collection<? extends UseScope> declaredUses = contextNamespace.getAllDeclaredSingleUses();
         Set<QualifiedName> namesProposals = new HashSet<>();
         if (!name.getKind().isFullyQualified()) {
             QualifiedName proposedName = QualifiedName.create(contextNamespace).append(name).toFullyQualified();
@@ -1548,9 +1548,9 @@ public final class VariousUtils {
             namespaces.add(name);
             resolved = true;
         } else {
-            Collection<? extends UseScope> uses = contextNamespace.getDeclaredUses();
+            Collection<? extends UseScope> uses = contextNamespace.getAllDeclaredSingleUses();
             if (uses.size() > 0) {
-                for (UseScope useDeclaration : contextNamespace.getDeclaredUses()) {
+                for (UseScope useDeclaration : contextNamespace.getAllDeclaredSingleUses()) {
                     if (useDeclaration.getOffset() < nameOffset) {
                         String firstNameSegment = name.getSegments().getFirst();
                         QualifiedName returnName;
@@ -1615,7 +1615,7 @@ public final class VariousUtils {
 
     private static boolean isAlias(final String name, final int offset, final NamespaceScope namespaceScope) {
         boolean result = false;
-        for (UseScope useElement : namespaceScope.getDeclaredUses()) {
+        for (UseScope useElement : namespaceScope.getAllDeclaredSingleUses()) {
             if (useElement.getOffset() < offset) {
                 AliasedName aliasName = useElement.getAliasedName();
                 if (aliasName != null) {
@@ -1640,7 +1640,7 @@ public final class VariousUtils {
             if (scope != null) {
                 NamespaceScope namespaceScope = (NamespaceScope) scope;
                 String firstSegmentName = qualifiedName.getSegments().getFirst();
-                for (UseScope useElement : namespaceScope.getDeclaredUses()) {
+                for (UseScope useElement : namespaceScope.getAllDeclaredSingleUses()) {
                     if (useElement.getOffset() < offset) {
                         AliasedName aliasName = useElement.getAliasedName();
                         if (aliasName != null) {

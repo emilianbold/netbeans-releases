@@ -232,6 +232,43 @@ public class FixUsesPerformerTest extends PHPTestBase {
         performTest("public function getSomething(SomeClassAlias $someClass) {}^", selections, false, options);
     }
 
+    public void testGroupUse_01() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(false, false, false, false, false);
+        performTest("$a = new ClsA();^", selections, false, options);
+    }
+
+    public void testGroupUse_02() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(false, false, false, false, false);
+        performTest("$a = new ClsA();^", selections, true, options);
+    }
+
+    public void testGroupUse_03() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(false, false, false, false, false);
+        performTest("$a = new ClsA();^", selections, true, options);
+    }
+
+    public void testGroupUse_04() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(false, false, false, false, false);
+        performTest("$a = new ClsA();^", selections, true, options);
+    }
+
+    public void testGroupUse_05() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(false, true, true, false, false);
+        performTest("$a = new ClsA();^", selections, true, options);
+    }
+
+    // XXX
+//    public void testGroupUse_06() throws Exception {
+//        List<Selection> selections = new ArrayList<>();
+//        Options options = new Options(false, true, true, true, false, false);
+//        performTest("$a = new ClsA();^", selections, true, options);
+//    }
+
     private String getTestResult(final String fileName, final String caretLine, final List<Selection> selections, final boolean removeUnusedUses, final Options options) throws Exception {
         FileObject testFile = getTestFile(fileName);
 
