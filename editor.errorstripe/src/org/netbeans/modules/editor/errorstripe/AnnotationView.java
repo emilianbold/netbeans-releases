@@ -65,6 +65,7 @@ import javax.accessibility.AccessibleRole;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
+import javax.swing.JLayeredPane;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -515,6 +516,10 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         //fix for issue #54080:
         //find the scrollpane which contains the pane:
         Component scrollPaneCandidade = pane.getParent();
+        
+        if (scrollPaneCandidade instanceof JLayeredPane) {
+            scrollPaneCandidade = scrollPaneCandidade.getParent();
+        }
         
         if (scrollPaneCandidade != null && !(scrollPaneCandidade instanceof JScrollPane)) {
             scrollPaneCandidade = scrollPaneCandidade.getParent();

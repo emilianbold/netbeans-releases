@@ -73,6 +73,7 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
+import javax.swing.JLayeredPane;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
@@ -747,6 +748,9 @@ public final class DocumentViewOp
             return;
         }
         Component parent = textComponent.getParent();
+        if(parent instanceof JLayeredPane) {
+            parent = parent.getParent();
+        }
         final Rectangle newVisibleRect;
         if (parent instanceof JViewport) {
             JViewport viewport = (JViewport) parent;
@@ -786,7 +790,11 @@ public final class DocumentViewOp
             // (in case there was a line nearly wide as viewport's width without Vscrollbar)\
             // which in turn causes viewport's height to decrease and triggers recomputation again etc.
             float eHeight = activeViewport.getExtentSize().height;
-            if ((parent = activeViewport.getParent()) instanceof JScrollPane) {
+            parent = activeViewport.getParent();
+            if(parent instanceof JLayeredPane) {
+                parent = parent.getParent();
+            }
+            if (parent instanceof JScrollPane) {
                 JScrollBar hScrollBar = ((JScrollPane)parent).getHorizontalScrollBar();
                 if (hScrollBar != null && hScrollBar.isVisible()) {
                     eHeight += hScrollBar.getHeight();

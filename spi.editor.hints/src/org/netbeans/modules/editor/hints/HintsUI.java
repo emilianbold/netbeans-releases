@@ -87,6 +87,7 @@ import javax.swing.BorderFactory;
 import javax.swing.InputMap;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
 import javax.swing.JTextArea;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
@@ -529,6 +530,9 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
 
     private int getUsableWidth(JTextComponent component) {
         Container parent = component.getParent();
+        if (parent instanceof JLayeredPane) {
+            parent = parent.getParent();
+        }
         return (parent instanceof JViewport)
             ? ((JViewport)parent).getExtentSize().width
             : component.getSize().width;
@@ -700,8 +704,12 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
 
                 Point p = comp.modelToView(Utilities.getRowStartFromLineOffset((BaseDocument) doc, line)).getLocation();
                 p.y += carretRectangle.height;
-                if( comp.getParent() instanceof JViewport ) {
+                if(comp.getParent() instanceof JViewport) {
                     p.x += ((JViewport)comp.getParent()).getViewPosition().x;
+                }
+                if(comp.getParent() instanceof JLayeredPane &&
+                        comp.getParent().getParent() instanceof JViewport) {
+                    p.x += ((JViewport)comp.getParent().getParent()).getViewPosition().x;
                 }
 
                 showPopup(fixes, description, comp, p);

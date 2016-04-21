@@ -429,6 +429,9 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         boolean hide = true;
         JTextComponent component = getActiveComponent();
         Container parent = component != null ? component.getParent() : null;
+        if (parent instanceof JLayeredPane) {
+            parent = parent.getParent();
+        }
         if (parent instanceof JViewport) {
             JViewport viewport = (JViewport) parent;
             Point viewPosition = viewport.getViewPosition();
@@ -477,6 +480,9 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                 activeJtc.removeFocusListener(this);
                 activeJtc.removeMouseListener(this);
                 Container parent = activeJtc.getParent();
+                if (parent instanceof JLayeredPane) {
+                    parent = parent.getParent();
+                }
                 if (parent instanceof JViewport) {
                     JViewport viewport = (JViewport) parent;
                     viewport.removeChangeListener(this);
@@ -488,6 +494,9 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                 component.addFocusListener(this);
                 component.addMouseListener(this);
                 Container parent = component.getParent();
+                if (parent instanceof JLayeredPane) {
+                    parent = parent.getParent();
+                }
                 if (parent instanceof JViewport) {
                     JViewport viewport = (JViewport) parent;
                     viewport.addChangeListener(this);

@@ -72,6 +72,7 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
+import javax.swing.JLayeredPane;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -388,6 +389,10 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
 
     private void addViewportListener(JEditorPane pane) {
         Container parent = pane.getParent();
+        
+        if (parent instanceof JLayeredPane) {
+            parent = parent.getParent();
+        }
 
         if (parent instanceof JViewport) {
             JViewport viewport = (JViewport) parent;
@@ -592,6 +597,10 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
                     public void run() {
                         for (JEditorPane pane : openedComponents) {
                             Container parent = pane.getParent();
+                            
+                            if (parent instanceof JLayeredPane) {
+                                parent = parent.getParent();
+                            }
 
                             if (parent instanceof JViewport) {
                                 JViewport viewport = (JViewport) parent;

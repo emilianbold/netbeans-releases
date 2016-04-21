@@ -64,6 +64,7 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JLayeredPane;
 import javax.swing.JViewport;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -1106,6 +1107,9 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     /** Is the parent of some editor component a viewport */
     private JViewport getParentViewport() {
         Component pc = component.getParent();
+        if (pc instanceof JLayeredPane) {
+            pc = pc.getParent();
+        }
         return (pc instanceof JViewport) ? (JViewport)pc : null;
     }
 
