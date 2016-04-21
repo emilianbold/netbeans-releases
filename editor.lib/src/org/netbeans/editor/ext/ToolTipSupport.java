@@ -46,6 +46,7 @@ package org.netbeans.editor.ext;
 
 import org.netbeans.api.editor.StickyWindowSupport;
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Point;
@@ -70,6 +71,7 @@ import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
+import javax.swing.JLayeredPane;
 import javax.swing.JTextArea;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
@@ -980,8 +982,12 @@ public class ToolTipSupport {
                 // Over glyph gutter - change coords
                 JTextComponent c = extEditorUI.getComponent();
                 if (c != null) {
-                    if (c.getParent() instanceof JViewport) {
-                        JViewport vp = (JViewport)c.getParent();
+                    Container parent = c.getParent();
+                    if (parent instanceof JLayeredPane) {
+                        parent = parent.getParent();
+                    }
+                    if (parent instanceof JViewport) {
+                        JViewport vp = (JViewport)parent;
                         p = new Point(vp.getViewPosition().x, p.y);
                     }
                 }

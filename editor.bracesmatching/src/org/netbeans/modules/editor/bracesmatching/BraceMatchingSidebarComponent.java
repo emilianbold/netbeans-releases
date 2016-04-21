@@ -64,6 +64,7 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
+import javax.swing.JLayeredPane;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
@@ -217,6 +218,9 @@ public class BraceMatchingSidebarComponent extends JComponent implements
         
         editorPane = findEditorPane(editor);
         Component parent = editor.getParent();
+        if (parent instanceof JLayeredPane) {
+            parent = parent.getParent();
+        }
         if (parent instanceof JViewport) {
             this.viewport = (JViewport)parent;
             // see #219015; need to listen on viewport change to show/hide the tooltip

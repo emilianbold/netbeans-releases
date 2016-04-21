@@ -62,6 +62,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import javax.swing.SwingUtilities;
 import java.awt.Component;
+import java.awt.Container;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JViewport;
@@ -216,9 +217,13 @@ public class PopupManager {
                 }
 
                 if (horizontalBounds == ScrollBarBounds){
-                    if (textComponent.getParent() instanceof JViewport){
-                        int shift = textComponent.getParent().getX();
-                        Rectangle viewBounds = ((JViewport)textComponent.getParent()).getViewRect();
+                    Container parent = textComponent.getParent();
+                    if (parent instanceof JLayeredPane) {
+                        parent = parent.getParent();
+                    }
+                    if (parent instanceof JViewport){
+                        int shift = parent.getX();
+                        Rectangle viewBounds = ((JViewport)parent).getViewRect();
                         bounds.x += viewBounds.x;
                         bounds.x -= shift;
                         bounds.width += shift;
@@ -291,6 +296,10 @@ public class PopupManager {
         
         Rectangle ret;
         Component viewParent = view.getParent();
+        
+        if (viewParent instanceof JLayeredPane) {
+            viewParent = viewParent.getParent();
+        }
         
         if (viewParent instanceof JViewport) {
             Rectangle viewBounds = ((JViewport)viewParent).getViewRect();
