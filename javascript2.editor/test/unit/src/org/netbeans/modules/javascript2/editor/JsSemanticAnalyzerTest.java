@@ -594,4 +594,8 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
         // testing when the destructuring assignment is used as parameter definition
         checkSemantic("testfiles/ecmascript6/parser/other/objectPropertyAssignment.js");
     }
+    
+    public void testSemanticalKeywords() throws Exception {
+        checkSemantic("testfiles/coloring/semanticalKeywords.js");
+    }
 }
