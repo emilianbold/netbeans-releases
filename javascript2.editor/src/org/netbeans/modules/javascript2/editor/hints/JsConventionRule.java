@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.hints;
 
+import com.oracle.js.parser.TokenType;
 import com.oracle.js.parser.ir.BinaryNode;
 import com.oracle.js.parser.ir.Block;
 import com.oracle.js.parser.ir.ForNode;
@@ -578,7 +579,12 @@ public class JsConventionRule extends JsAstRule {
 
         @Override
         public boolean enterReturnNode(ReturnNode returnNode) {
-            checkSemicolon(returnNode.getFinish());
+            FunctionNode function = getLexicalContext().getCurrentFunction();
+            if (function == null || function.getKind() != FunctionNode.Kind.ARROW
+                    || com.oracle.js.parser.Token.descType(function.getBody().getToken()) == TokenType.LBRACE) {
+                // if it is arrow without a real block & return
+                checkSemicolon(returnNode.getFinish());
+            }
             return super.enterReturnNode(returnNode);
         }
 
