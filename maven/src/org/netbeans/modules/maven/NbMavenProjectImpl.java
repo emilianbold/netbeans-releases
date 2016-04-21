@@ -98,6 +98,7 @@ import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.modelcache.MavenProjectCache;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
+import org.netbeans.modules.maven.queries.UnitTestsCompilerOptionsQueryImpl;
 import org.netbeans.modules.maven.spi.nodes.OtherSourcesExclude;
 import org.netbeans.modules.maven.spi.queries.JavaLikeRootProvider;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
@@ -865,7 +866,9 @@ public final class NbMavenProjectImpl implements Project {
                     LookupProviderSupport.createSourcesMerger(),
                     LookupProviderSupport.createSharabilityQueryMerger(),
                     ProjectClassPathModifier.extenderForModifier(this),
-                    LookupMergerSupport.createClassPathModifierMerger());
+                    LookupMergerSupport.createClassPathModifierMerger(),
+                    new UnitTestsCompilerOptionsQueryImpl(this)
+        );
     }
 
     //MEVENIDE-448 seems to help against creation of duplicate project instances
