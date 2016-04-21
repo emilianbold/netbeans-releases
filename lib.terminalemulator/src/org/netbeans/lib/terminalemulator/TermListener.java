@@ -64,6 +64,6 @@ public class TermListener {
     
     public void cwdChanged(String cwd) {}
 
-    public void externalToolCalled(String cwd) {}
+    public void externalToolCalled(String command) {}
 } 
 

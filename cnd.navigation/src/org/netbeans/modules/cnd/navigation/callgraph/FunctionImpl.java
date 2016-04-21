@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.callgraph.api.Function;
@@ -59,6 +58,7 @@ import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphPreferences;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.openide.text.PositionBounds;
 import org.openide.util.NbBundle;
 
 public class FunctionImpl implements Function {
@@ -77,11 +77,13 @@ public class FunctionImpl implements Function {
     private final CsmFunction cachedFunctionDefinition;
     private final CsmFunction cachedFunctionDeclaration;
     private final boolean isVirtual;
+    private final PositionBounds positions;
 
     public FunctionImpl(CsmFunction function) {
         this.function = function;
         cachedFunctionDefinition = initDefinition();
         cachedFunctionDeclaration = initDeclaration();
+        positions = CsmUtilities.createPositionBounds(cachedFunctionDefinition);
         isVirtual = initVirtual();
     }
 
@@ -222,15 +224,7 @@ public class FunctionImpl implements Function {
 
     @Override
     public void open() {
-        final String taskName = "Open declaration"; //NOI18N
-        Runnable run = new Runnable() {
-
-            @Override
-            public void run() {
-                CsmUtilities.openSource(getDefinition());
-            }
-        };
-        CsmModelAccessor.getModel().enqueue(run, taskName);
+        CsmUtilities.openSource(positions);
     }
 
     @Override

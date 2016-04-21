@@ -333,6 +333,7 @@ public final class TerminalSupportImpl {
                                             ? promptCommand
                                             : promptCommand + ';' + usrPrompt
                             );
+                            term.putClientProperty(EXECUTION_ENV_PROPERTY_KEY, ExecutionEnvironmentFactory.toUniqueID(env));
                         }
 
                         String shell = hostInfo.getLoginShell();

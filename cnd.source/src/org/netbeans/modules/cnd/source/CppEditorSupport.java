@@ -277,31 +277,33 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
     }
 
     private static void rebuildDocumentControls(final StyledDocument doc) {
-        // rebuild all controls managing document:
-        //  - rebuild token hierarchy
-        //  - anything else?
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                BaseDocument bdoc = (BaseDocument) doc;
-                try {
-                    if (bdoc != null) {
-                        bdoc.extWriteLock();
-                        MutableTextInput mti = (MutableTextInput) bdoc.getProperty(MutableTextInput.class);
-                        if (mti != null) {
-                            TokenHierarchyControl thc = mti.tokenHierarchyControl();
-                            if (thc != null) {
-                                thc.rebuild();
+        if (doc instanceof BaseDocument) {
+            // rebuild all controls managing document:
+            //  - rebuild token hierarchy
+            //  - anything else?
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    BaseDocument bdoc = (BaseDocument) doc;
+                    try {
+                        if (bdoc != null) {
+                            bdoc.extWriteLock();
+                            MutableTextInput mti = (MutableTextInput) doc.getProperty(MutableTextInput.class);
+                            if (mti != null) {
+                                TokenHierarchyControl thc = mti.tokenHierarchyControl();
+                                if (thc != null) {
+                                    thc.rebuild();
+                                }
                             }
                         }
-                    }
-                } finally {
-                    if (bdoc != null) {
-                        bdoc.extWriteUnlock();
+                    } finally {
+                        if (bdoc != null) {
+                            bdoc.extWriteUnlock();
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
     }
     
     private final static class PropertiesProviders {
