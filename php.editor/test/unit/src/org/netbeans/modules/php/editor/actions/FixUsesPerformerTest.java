@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -104,6 +105,7 @@ public class FixUsesPerformerTest extends PHPTestBase {
         performTest("new \\Foo\\Bar\\B^az(); //HERE", createSelections(selections, ItemVariant.Type.CLASS), true, options);
     }
 
+    @RandomlyFails
     public void testIssue214699() throws Exception {
         String[] selections = new String[] {"\\Foo\\Bar\\ClassName", "\\Baz\\Bat\\ClassName", "\\Fom\\Bom\\ClassName"};
         performTest("$a = new ClassName();^//HERE", createSelections(selections, ItemVariant.Type.CLASS));
