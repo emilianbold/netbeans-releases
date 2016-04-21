@@ -88,7 +88,7 @@ public class UsedNamesCollector {
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(parserResult.getModel().getFileScope(), caretPosition);
         assert namespaceScope != null;
         OffsetRange offsetRange = namespaceScope.getBlockRange();
-        Collection<? extends UseScope> declaredUses = namespaceScope.getDeclaredUses();
+        Collection<? extends UseScope> declaredUses = namespaceScope.getAllDeclaredSingleUses();
         NamespaceNameVisitor namespaceNameVisitor = new NamespaceNameVisitor(offsetRange);
         parserResult.getProgram().accept(namespaceNameVisitor);
         possibleNames = namespaceNameVisitor.getExistingNames();

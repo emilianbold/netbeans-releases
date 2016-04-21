@@ -199,7 +199,7 @@ public abstract class TypeNameResolverImpl implements TypeNameResolver {
             String firstSegmentName = qualifiedName.getSegments().getFirst();
             UseScope matchedUseScope = null;
             int lastOffset = -1;
-            for (UseScope useElement : namespaceScope.getDeclaredUses()) {
+            for (UseScope useElement : namespaceScope.getAllDeclaredSingleUses()) {
                 // trying to make a FQ from exact use element, they are FQ by default
                 if (useElement.getNameRange().containsInclusive(getOffset())) {
                     result = QualifiedName.create(true, qualifiedName.getSegments());
@@ -303,7 +303,7 @@ public abstract class TypeNameResolverImpl implements TypeNameResolver {
             UseScope result = null;
             String firstSegmentName = nonFullyQualifiedName.getSegments().getFirst();
             int lastOffset = -1;
-            for (UseScope useScope : namespaceScope.getDeclaredUses()) {
+            for (UseScope useScope : namespaceScope.getAllDeclaredSingleUses()) {
                 if (useScope.getOffset() < getOffset()) {
                     AliasedName aliasName = useScope.getAliasedName();
                     if (aliasName != null) {
@@ -411,7 +411,7 @@ public abstract class TypeNameResolverImpl implements TypeNameResolver {
                 if (isFromCurrentNamespace(fullyQualifiedName, namespaceName)) {
                     result = resolveFromCurrentNamespace(fullyQualifiedName, namespaceName);
                 } else {
-                    result = resolveFromAnotherNamespace(fullyQualifiedName, namespaceScope.getDeclaredUses());
+                    result = resolveFromAnotherNamespace(fullyQualifiedName, namespaceScope.getAllDeclaredSingleUses());
                 }
             }
             return result;

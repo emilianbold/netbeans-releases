@@ -230,7 +230,7 @@ public final class PhpCommentGenerator {
                 final VariableScope variableScope = model.getVariableScope(decl.getEndOffset() - 1);
                 NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), decl.getEndOffset() - 1);
                 if (namespaceScope != null) {
-                    declaredUses = namespaceScope.getDeclaredUses();
+                    declaredUses = namespaceScope.getAllDeclaredSingleUses();
                 }
                 if (variableScope instanceof FunctionScope) {
                     fnc = (FunctionScope) variableScope;
