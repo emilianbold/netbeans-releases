@@ -85,6 +85,7 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JLayeredPane;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
@@ -1560,6 +1561,9 @@ public final class EditorCaret implements Caret {
             boolean log = LOG.isLoggable(Level.FINE);
             Component parent = c.getParent();
             Rectangle editorRect;
+            if (parent instanceof JLayeredPane) {
+                parent = parent.getParent();
+            }
             if (parent instanceof JViewport) {
                 JViewport viewport = (JViewport) parent;
                 editorRect = viewport.getViewRect();
@@ -1628,6 +1632,9 @@ public final class EditorCaret implements Caret {
                                     // horizontal scrollbar would hide the caret so enlarge the scroll bounds by hscrollbar height.
                                     if (oldCaretBounds == null) {
                                         Component viewport = c.getParent();
+                                        if(viewport instanceof JLayeredPane) {
+                                            viewport = viewport.getParent();
+                                        }
                                         if (viewport instanceof JViewport) {
                                             Component scrollPane = viewport.getParent();
                                             if (scrollPane instanceof JScrollPane) {
@@ -2101,6 +2108,9 @@ public final class EditorCaret implements Caret {
                 // they intersect with the horizontal scrollbar
                 // and if so the view will be scrolled.
                 Container parent = component.getParent();
+                if(parent instanceof JLayeredPane) {
+                    parent = parent.getParent();
+                }
                 if (parent instanceof JViewport) {
                     parent = parent.getParent(); // parent of viewport
                     if (parent instanceof JScrollPane) {
