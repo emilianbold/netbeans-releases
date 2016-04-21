@@ -169,9 +169,14 @@ public class XMLTextRepresentation extends TextRepresentation {
     }
 
 
-    private JViewport getParentViewport (JEditorPane component) {
-        Component pc = component.getParent();
-        return (pc instanceof JViewport) ? (JViewport)pc : null;
+    private JViewport getParentViewport (Component component) {
+            if (component == null) {
+                return null;
+            } else if (component instanceof JViewport) {
+                return (JViewport) component;
+            } else {
+                return getParentViewport(component.getParent());
+            }
     }        
     
 }
