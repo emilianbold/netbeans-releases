@@ -857,7 +857,7 @@ public class ModelVisitor extends PathNodeVisitor {
         if (functionNode.isProgram()) {
             fncScope = fncParent;
             if (this.parserResult.getSnapshot().getSource().getFileObject() != null) {
-                LOGGER.log(Level.FINEST, "Creating model for: {0}", this.parserResult.getSnapshot().getSource().getFileObject().getPath()); //NOI18N
+                LOGGER.log(Level.FINE, "Creating model for: {0}", this.parserResult.getSnapshot().getSource().getFileObject().getPath()); //NOI18N
             }
         } else {
             JsObject property = fncParent.getProperty(modelBuilder.getFunctionName(functionNode));
