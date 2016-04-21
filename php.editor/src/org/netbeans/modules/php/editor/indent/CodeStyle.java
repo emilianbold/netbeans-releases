@@ -629,6 +629,10 @@ public final class CodeStyle {
         return preferences.getBoolean(PREFER_MULTIPLE_USE_STATEMENTS_COMBINED, getDefaultAsBoolean(PREFER_MULTIPLE_USE_STATEMENTS_COMBINED));
     }
 
+    public boolean preferGroupUses() {
+        return preferences.getBoolean(PREFER_GROUP_USES, getDefaultAsBoolean(PREFER_GROUP_USES));
+    }
+
     public boolean startUseWithNamespaceSeparator() {
         return preferences.getBoolean(START_USE_WITH_NAMESPACE_SEPARATOR, getDefaultAsBoolean(START_USE_WITH_NAMESPACE_SEPARATOR));
     }

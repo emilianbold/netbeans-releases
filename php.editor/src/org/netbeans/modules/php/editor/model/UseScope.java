@@ -68,5 +68,6 @@ public interface UseScope extends Scope {
     AliasedName getAliasedName();
     UseAliasElement getAliasElement();
     Type getType();
+    boolean isPartOfGroupUse();
 
 }

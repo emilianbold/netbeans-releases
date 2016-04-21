@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.actions;
 
@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Objects;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -63,9 +64,11 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.indent.CodeStyle;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.editor.model.GroupUseScope;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.UseScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.UnusedUsesCollector;
@@ -130,8 +133,15 @@ public class FixUsesPerformer {
         assert namespaceScope != null;
         int startOffset = getOffset(baseDocument, namespaceScope);
         List<UsePart> useParts = new ArrayList<>();
-        Collection<? extends UseScope> declaredUses = namespaceScope.getDeclaredUses();
+        Collection<? extends GroupUseScope> declaredGroupUses = namespaceScope.getDeclaredGroupUses();
+        for (GroupUseScope groupUseElement : declaredGroupUses) {
+            for (UseScope useElement : groupUseElement.getUseScopes()) {
+                processUseElement(useElement, useParts);
+            }
+        }
+        Collection<? extends UseScope> declaredUses = namespaceScope.getDeclaredSingleUses();
         for (UseScope useElement : declaredUses) {
+            assert !useElement.isPartOfGroupUse() : useElement;
             processUseElement(useElement, useParts);
         }
         for (int i = 0; i < selections.size(); i++) {
@@ -328,22 +338,29 @@ public class FixUsesPerformer {
 
     private static int getOffset(BaseDocument baseDocument, NamespaceScope namespaceScope) {
         try {
-            return LineDocumentUtils.getLineEnd(baseDocument, getReferenceElement(namespaceScope).getOffset());
+            ModelElement lastSingleUse = getLastUse(namespaceScope, false);
+            ModelElement lastGroupUse = getLastUse(namespaceScope, true);
+            if (lastSingleUse.getOffset() > lastGroupUse.getOffset()) {
+                return LineDocumentUtils.getLineEnd(baseDocument, lastSingleUse.getOffset());
+            }
+            // XXX is this correct?
+            return LineDocumentUtils.getLineEnd(baseDocument, lastGroupUse.getNameRange().getEnd());
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
         return 0;
     }
 
-    private static ModelElement getReferenceElement(NamespaceScope namespaceScope) {
+    private static ModelElement getLastUse(NamespaceScope namespaceScope, boolean group) {
         ModelElement offsetElement = null;
-        Collection<? extends UseScope> declaredUses = namespaceScope.getDeclaredUses();
-        for (UseScope useElement : declaredUses) {
-            if (offsetElement == null || offsetElement.getOffset() < useElement.getOffset()) {
+        Collection<? extends Scope> declaredUses = group ? namespaceScope.getDeclaredGroupUses() : namespaceScope.getDeclaredSingleUses();
+        for (Scope useElement : declaredUses) {
+            if (offsetElement == null
+                    || offsetElement.getOffset() < useElement.getOffset()) {
                 offsetElement = useElement;
             }
         }
-        return (offsetElement != null) ? offsetElement : namespaceScope;
+        return offsetElement != null ? offsetElement : namespaceScope;
     }
 
     private interface AliasStrategy {

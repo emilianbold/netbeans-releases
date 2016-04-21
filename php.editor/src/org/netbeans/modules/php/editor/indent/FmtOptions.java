@@ -220,6 +220,7 @@ public final class FmtOptions {
     public static final String WRAP_AFTER_ASSIGN_OPS = "wrapAfterAssignOps"; // NOI18N
     public static final String PREFER_FULLY_QUALIFIED_NAMES = "preferFullyQualifiedNames"; //NOI18N
     public static final String PREFER_MULTIPLE_USE_STATEMENTS_COMBINED = "preferMultipleUseStatementsCombined"; //NOI18N
+    public static final String PREFER_GROUP_USES = "preferGroupUses"; // NOI18N
     public static final String START_USE_WITH_NAMESPACE_SEPARATOR = "startUseWithNamespaceSeparator"; //NOI18N
     public static final String ALIASES_CAPITALS_OF_NAMESPACES = "aliasesCapitalsOfNamespacesNames"; //NOI18N
     public static CodeStyleProducer codeStyleProducer;
@@ -386,6 +387,7 @@ public final class FmtOptions {
             {WRAP_AFTER_ASSIGN_OPS, FALSE},
             {PREFER_FULLY_QUALIFIED_NAMES, FALSE},
             {PREFER_MULTIPLE_USE_STATEMENTS_COMBINED, FALSE},
+            {PREFER_GROUP_USES, FALSE},
             {START_USE_WITH_NAMESPACE_SEPARATOR, FALSE},
             {ALIASES_CAPITALS_OF_NAMESPACES, FALSE}
         };
