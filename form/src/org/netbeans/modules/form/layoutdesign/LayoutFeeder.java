@@ -4781,6 +4781,7 @@ class LayoutFeeder implements LayoutConstants {
                 }
                 iDesc1.parent = iDesc2.parent = commonGroup;
                 iDesc1.newSubGroup = iDesc2.newSubGroup = true;
+                iDesc1.neighbor = iDesc2.neighbor = null;
             } else {
                 // prefer sub-group in case of end position, outer group in case
                 // of resizing in parallel with sub-group
