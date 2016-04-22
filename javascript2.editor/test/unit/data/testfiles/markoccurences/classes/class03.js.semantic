@@ -7,7 +7,7 @@ var |>CLASS,GLOBAL:Polygon<| = class |>CLASS:Polygon2<| {
     
   }
   
-  static |>METHOD:test<| () {
+  |>CUSTOM2:static<| |>METHOD:test<| () {
         |>GLOBAL:console<|.log("test");
         var |>LOCAL_VARIABLE_DECLARATION:p<| = new Polygon2(1,2);
         |>GLOBAL:console<|.log(|>LOCAL_VARIABLE:p<|.width);

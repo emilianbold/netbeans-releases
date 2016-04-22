@@ -11,7 +11,7 @@ class |>CLASS,GLOBAL:Point<| {
      * @param {Point} a 
      * @param {Point} b 
      */
-    static |>METHOD:distance<|(a, b) {
+    |>CUSTOM2:static<| |>METHOD:distance<|(a, b) {
         const dx = a.|>FIELD:x<| - b.|>FIELD:x<|;
         const dy = a.|>FIELD:y<| - b.|>FIELD:y<|;
 
