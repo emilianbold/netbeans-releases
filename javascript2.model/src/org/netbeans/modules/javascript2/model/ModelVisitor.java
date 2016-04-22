@@ -630,7 +630,7 @@ public class ModelVisitor extends PathNodeVisitor {
         if ((varNode != null  && cnIdent != null && varNode.getName().getName().equals(cnIdent.getName()))
             // case1: var Polygon = class Polygon {}
             // case2: class Polygon {}
-                || (varNode != null && cnIdent == null) ) {
+                || (varNode != null && !varNode.isSynthetic() && cnIdent == null) ) {
             // case 3: var Polygon = class{}
             // we create just one object
             className = ModelElementFactory.create(parserResult, varNode.getName());
