@@ -3208,18 +3208,13 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                final ToolTipView.ExpandableTooltip expTooltip = ToolTipView.getExpTooltipForText(lhs + "=" + rhs); //NOI18N
-                expTooltip.addExpansionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        evaluateInOutline(lhs);
-                    }
-                });
+                final ToolTipView.ExpandableTooltip expTooltip = ToolTipView.getExpTooltipForText(DbxDebuggerImpl.this, lhs, rhs);
                 expTooltip.showTooltip();
             }
         });
     }
     
+    @Override
     public void evaluateInOutline(String expr) {
         dbx.expr_heval(RT_EVAL_TOOLTIP, expr);
     }
