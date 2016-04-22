@@ -296,15 +296,14 @@ public class EditorCaretTransferHandler extends TransferHandler {
         Transferable t = support.getTransferable();
         if (c instanceof JTextComponent) {
             JTextComponent tc = (JTextComponent) c;
-            if (t.isDataFlavorSupported(RECTANGULAR_SELECTION_FLAVOR) && c instanceof JTextComponent) {
-                boolean result = false;
-                try {
-                    if (Boolean.TRUE.equals(tc.getClientProperty(RECTANGULAR_SELECTION_PROPERTY))) {
+            if (RectangularSelectionUtils.isRectangularSelection(tc)) {
+                if (t.isDataFlavorSupported(RECTANGULAR_SELECTION_FLAVOR)) {
+                    boolean result = false;
+                    try {
                         final RectangularSelectionData data = (RectangularSelectionData) t.getTransferData(RECTANGULAR_SELECTION_FLAVOR);
                         final List<Position> regions = RectangularSelectionUtils.regionsCopy(tc);
                         final Document doc = tc.getDocument();
                         DocUtils.runAtomicAsUser(doc, new Runnable() {
-
                             @Override
                             public void run() {
                                 try {
@@ -324,25 +323,12 @@ public class EditorCaretTransferHandler extends TransferHandler {
                             }
 
                         });
-
-                    } else { // Regular selection
-                        String s = (String) t.getTransferData(DataFlavor.stringFlavor); // There should be string flavor
-                        if (s != null) {
-                            tc.replaceSelection(s);
-                        }
+                        result = true;
+                    } catch (UnsupportedFlavorException | IOException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
-                    result = true;
-
-                } catch (UnsupportedFlavorException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-
-                return result;
-
-            } else if (RectangularSelectionUtils.isRectangularSelection(tc)) {
-                if (t.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+                    return result;
+                } else if (t.isDataFlavorSupported(DataFlavor.stringFlavor)) {
                     try {
                         // Paste individual lines into rectangular selection
                         String s = (String) t.getTransferData(DataFlavor.stringFlavor); // There should be string flavor
@@ -383,18 +369,18 @@ public class EditorCaretTransferHandler extends TransferHandler {
                 }
             } else {
                 Caret caret = ((JTextComponent) c).getCaret();
-                if(caret instanceof EditorCaret && ((EditorCaret) caret).getSortedCarets().size() > 1) {
+                if (caret instanceof EditorCaret && ((EditorCaret) caret).getSortedCarets().size() > 1) {
                     final EditorCaret editorCaret = (EditorCaret) caret;
                     boolean result = false;
                     MultiCaretData multiCaretData = null;
-                    if(t.isDataFlavorSupported(MULTI_CARET_FLAVOR)) {
+                    if (t.isDataFlavorSupported(MULTI_CARET_FLAVOR)) {
                         try {
                             multiCaretData = (MultiCaretData) t.getTransferData(MULTI_CARET_FLAVOR);
                         } catch (UnsupportedFlavorException | IOException ex) {
                             Exceptions.printStackTrace(ex);
                         }
                     }
-                    if(multiCaretData != null && multiCaretData.strings().length == editorCaret.getCarets().size()) {
+                    if (multiCaretData != null && multiCaretData.strings().length == editorCaret.getCarets().size()) {
                         final MultiCaretData content = multiCaretData;
                         final Document doc = ((JTextComponent) c).getDocument();
                         DocUtils.runAtomicAsUser(doc, new Runnable() {
@@ -445,7 +431,6 @@ public class EditorCaretTransferHandler extends TransferHandler {
                             Exceptions.printStackTrace(ex);
                         }
                     }
-
                     return result;
                 }
             }
