@@ -1685,7 +1685,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     isPriviliged = true;
                     parent = (JsObjectImpl)resolveThis(parent);
                     JsObject hParent = parent;
-                    while(hParent.getKind() != ElementKind.FILE) {
+                    while(hParent.getKind() != ElementKind.FILE && hParent.getDeclarationName() != null) {
                         name.add(0, hParent.getDeclarationName());
                         hParent = hParent.getParent();
                     }
