@@ -2711,7 +2711,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         send("-gdb-set unwindonsignal off"); //NOI18N
     }
 
-//    @Override
+    @Override
     public void evaluateInOutline(String expr) {
         // balloonEvaluate() requests come from the editor completely
         // independently of debugger startup and shutdown.
@@ -2823,14 +2823,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
                         @Override
                         public void run() {
-                            final ToolTipView.ExpandableTooltip expTooltip = ToolTipView.getExpTooltipForText(expr + "=" + finalVal); //NOI18N
-                            expTooltip.addExpansionListener(new ActionListener() {
-
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    evaluateInOutline(expr);
-                                }
-                            });
+                            final ToolTipView.ExpandableTooltip expTooltip = ToolTipView.getExpTooltipForText(GdbDebuggerImpl.this, expr, finalVal);
                             expTooltip.showTooltip();
                         }
                     });
