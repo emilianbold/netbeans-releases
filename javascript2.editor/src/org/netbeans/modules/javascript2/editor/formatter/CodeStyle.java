@@ -49,7 +49,7 @@ import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import static org.netbeans.modules.javascript2.editor.formatter.FmtOptions.*;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 
 /**
  *  XXX make sure the getters get the defaults from somewhere
@@ -145,6 +145,11 @@ public final class CodeStyle {
 
     public BracePlacement getFunctionDeclBracePlacement() {
         String placement = preferences.get(functionDeclBracePlacement, provider.getDefaultAsString(functionDeclBracePlacement));
+        return BracePlacement.valueOf(placement);
+    }
+
+    public BracePlacement getClassDeclBracePlacement() {
+        String placement = preferences.get(classDeclBracePlacement, provider.getDefaultAsString(classDeclBracePlacement));
         return BracePlacement.valueOf(placement);
     }
 
@@ -336,6 +341,10 @@ public final class CodeStyle {
 
     public boolean spaceAroundAssignOps() {
         return preferences.getBoolean(spaceAroundAssignOps, provider.getDefaultAsBoolean(spaceAroundAssignOps));
+    }
+    
+    public boolean spaceAroundArrowOps() {
+        return preferences.getBoolean(spaceAroundArrowOps, provider.getDefaultAsBoolean(spaceAroundArrowOps));
     }
 
     public boolean spaceAroundObjectOps() {
@@ -616,6 +625,11 @@ public final class CodeStyle {
         String wrap = preferences.get(wrapAssignOps, provider.getDefaultAsString(wrapAssignOps));
         return WrapStyle.valueOf(wrap);
     }
+    
+    public WrapStyle wrapArrowOps() {
+        String wrap = preferences.get(wrapArrowOps, provider.getDefaultAsString(wrapArrowOps));
+        return WrapStyle.valueOf(wrap);
+    }
 
     public boolean wrapAfterTernaryOps() {
         return preferences.getBoolean(wrapAfterTernaryOps, provider.getDefaultAsBoolean(wrapAfterTernaryOps));
@@ -633,12 +647,35 @@ public final class CodeStyle {
         String wrap = preferences.get(wrapObjects, provider.getDefaultAsString(wrapObjects));
         return WrapStyle.valueOf(wrap);
     }
-
+    
     public WrapStyle wrapProperties() {
         String wrap = preferences.get(wrapProperties, provider.getDefaultAsString(wrapProperties));
         return WrapStyle.valueOf(wrap);
     }
 
+    public WrapStyle wrapClasses() {
+        String wrap = preferences.get(wrapClasses, provider.getDefaultAsString(wrapClasses));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public WrapStyle wrapElements() {
+        String wrap = preferences.get(wrapElements, provider.getDefaultAsString(wrapElements));
+        return WrapStyle.valueOf(wrap);
+    }
+    
+    public WrapStyle wrapClassExtends() {
+        String wrap = preferences.get(wrapClassExtends, provider.getDefaultAsString(wrapClassExtends));
+        return WrapStyle.valueOf(wrap);
+    }
+
+    public boolean removeEmptyLinesInObject() {
+        return preferences.getBoolean(removeEmptyLinesInObject, provider.getDefaultAsBoolean(removeEmptyLinesInObject));
+    }
+    
+    public boolean removeEmptyLinesInArray() {
+        return preferences.getBoolean(removeEmptyLinesInArray, provider.getDefaultAsBoolean(removeEmptyLinesInArray));
+    }
+    
     // Uses
 
 //    public boolean preferFullyQualifiedNames() {
@@ -687,6 +724,8 @@ public final class CodeStyle {
         final int rightMargin;
 
         final CodeStyle.BracePlacement functionDeclBracePlacement;
+
+        final CodeStyle.BracePlacement classDeclBracePlacement;
 
         final CodeStyle.BracePlacement ifBracePlacement;
 
@@ -739,6 +778,8 @@ public final class CodeStyle {
         final boolean spaceAroundKeyValueOps;
 
         final boolean spaceAroundAssignOps;
+        
+        final boolean spaceAroundArrowOps;
 
         final boolean spaceAroundObjectOps;
 
@@ -839,6 +880,8 @@ public final class CodeStyle {
         final CodeStyle.WrapStyle wrapTernaryOps;
 
         final CodeStyle.WrapStyle wrapAssignOps;
+        
+        final CodeStyle.WrapStyle wrapArrowOps;
 
         final boolean wrapAfterTernaryOps;
 
@@ -850,6 +893,15 @@ public final class CodeStyle {
 
         final CodeStyle.WrapStyle wrapProperties;
 
+        final CodeStyle.WrapStyle wrapClasses;
+
+        final CodeStyle.WrapStyle wrapElements;
+        
+        final CodeStyle.WrapStyle wrapClassExtends;
+
+        final boolean removeEmptyLinesInObject;
+        final boolean removeEmptyLinesInArray;
+        
         final boolean placeElseOnNewLine;
         final boolean placeWhileOnNewLine;
         final boolean placeCatchOnNewLine;
@@ -867,6 +919,7 @@ public final class CodeStyle {
             rightMargin = style.getRightMargin();
 
             functionDeclBracePlacement = style.getFunctionDeclBracePlacement();
+            classDeclBracePlacement = style.getClassDeclBracePlacement();
             ifBracePlacement = style.getIfBracePlacement();
             forBracePlacement = style.getForBracePlacement();
             whileBracePlacement = style.getWhileBracePlacement();
@@ -894,6 +947,7 @@ public final class CodeStyle {
             spaceAroundTernaryOps = style.spaceAroundTernaryOps();
             spaceAroundKeyValueOps = style.spaceAroundKeyValueOps();
             spaceAroundAssignOps = style.spaceAroundAssignOps();
+            spaceAroundArrowOps = style.spaceAroundArrowOps();
             spaceAroundObjectOps = style.spaceAroundObjectOps();
             spaceBeforeClassDeclLeftBrace = style.spaceBeforeClassDeclLeftBrace();
             spaceBeforeMethodDeclLeftBrace = style.spaceBeforeMethodDeclLeftBrace();
@@ -945,11 +999,18 @@ public final class CodeStyle {
             wrapAfterBinaryOps = style.wrapAfterBinaryOps();
             wrapTernaryOps = style.wrapTernaryOps();
             wrapAssignOps = style.wrapAssignOps();
+            wrapArrowOps = style.wrapArrowOps();
             wrapAfterTernaryOps = style.wrapAfterTernaryOps();
             wrapBlockBrace = style.wrapBlockBrace();
             wrapStatementsOnTheSameLine = style.wrapStatementsOnTheSameLine();
             wrapObjects = style.wrapObjects();
             wrapProperties = style.wrapProperties();
+            wrapClasses = style.wrapClasses();
+            wrapElements = style.wrapElements();
+            wrapClassExtends = style.wrapClassExtends();
+
+            removeEmptyLinesInObject = style.removeEmptyLinesInObject();
+            removeEmptyLinesInArray = style.removeEmptyLinesInArray();
 
             placeElseOnNewLine = style.placeElseOnNewLine();
             placeWhileOnNewLine = style.placeWhileOnNewLine();
