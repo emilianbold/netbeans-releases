@@ -89,6 +89,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -123,12 +124,13 @@ import org.netbeans.modules.javascript2.model.spi.FunctionArgument;
 import org.netbeans.modules.javascript2.model.spi.FunctionInterceptor;
 import org.netbeans.modules.javascript2.types.spi.ParserResult;
 import org.openide.filesystems.FileObject;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Petr Pisl
  */
-public class ModelVisitor extends PathNodeVisitor {
+public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
 
     private static final Logger LOGGER = Logger.getLogger(ModelVisitor.class.getName());
     private static final boolean log = true;
@@ -160,6 +162,41 @@ public class ModelVisitor extends PathNodeVisitor {
 
     public JsObject getGlobalObject() {
         return modelBuilder.getGlobal();
+    }
+
+    @Override
+    public void processCalls(
+            org.netbeans.modules.javascript2.model.spi.ModelElementFactory elementFactory,
+            Map<String, Map<Integer, List<TypeUsage>>> returnTypesFromFrameworks) {
+        final Map<FunctionInterceptor, Collection<ModelVisitor.FunctionCall>> calls = getCallsForProcessing();
+        if (calls != null && !calls.isEmpty()) {
+            for (Map.Entry<FunctionInterceptor, Collection<ModelVisitor.FunctionCall>> entry : calls.entrySet()) {
+                Collection<ModelVisitor.FunctionCall> fncCalls = entry.getValue();
+                if (fncCalls != null && !fncCalls.isEmpty()) {
+                    for (ModelVisitor.FunctionCall call : fncCalls) {
+                        Collection<TypeUsage> returnTypes = entry.getKey().intercept(parserResult.getSnapshot(), call.getName(),
+                                getGlobalObject(), call.getScope(), elementFactory, call.getArguments());
+                        if (returnTypes != null) {
+                            Map<Integer, List<TypeUsage>> functionCalls = returnTypesFromFrameworks.get(call.getName());
+                            if (functionCalls == null) {
+                                functionCalls = new HashMap<Integer, List<TypeUsage>>();
+                                returnTypesFromFrameworks.put(call.getName(), functionCalls);
+                            }
+                            List<TypeUsage> types = functionCalls.get(call.getCallOffset());
+                            if (types == null) {
+                                types = new ArrayList();
+                                functionCalls.put(new Integer(call.getCallOffset()), types);
+                            }
+                            for (TypeUsage type: returnTypes) {
+                                if (!types.contains(type)) {
+                                    types.add(type);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
 
@@ -3720,5 +3757,21 @@ public class ModelVisitor extends PathNodeVisitor {
             sb.append(node.getClass().getName());
         }
         return sb.toString();
+    }
+
+
+    @ServiceProvider(service = ModelResolver.Provider.class, position = 10_000)
+    public static final class Provider implements ModelResolver.Provider {
+
+        @Override
+        public ModelResolver create(ParserResult result, OccurrenceBuilder occurrenceBuilder) {
+            final ModelVisitor visitor = new ModelVisitor(result, occurrenceBuilder);
+            FunctionNode root = result.getLookup().lookup(FunctionNode.class);
+            if (root != null) {
+                root.accept(visitor);
+            }
+            return visitor;
+        }
+
     }
 }

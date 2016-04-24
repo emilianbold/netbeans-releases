@@ -37,63 +37,35 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
-import org.antlr.v4.runtime.ANTLRInputStream;
-import org.antlr.v4.runtime.CommonTokenStream;
+import com.oracle.js.parser.ir.FunctionNode;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.javascript2.editor.api.JsonOptionsQuery;
-import org.netbeans.modules.javascript2.json.parser.JsonLexer;
-import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Petr Hejl
+ * @author Petr Pisl
  */
-public class JsonParser extends SanitizingParser<JsonParserResult> {
+public class ScriptParserResult extends JsParserResult {
 
-    public JsonParser() {
-        super(JsTokenId.jsonLanguage());
+    private final FunctionNode root;
+
+    public ScriptParserResult(@NonNull Snapshot snapshot, @NullAllowed FunctionNode root) {
+        super(snapshot);
+        this.root = root;
     }
 
     @Override
-    protected String getDefaultScriptName() {
-        return "json.json"; // NOI18N
-    }
-
-    @Override
-    protected JsonParserResult parseSource(SanitizingParser.Context ctx, JsErrorManager errorManager) throws Exception {
-        final Snapshot snapshot = ctx.getSnapshot();
-        final String text = ctx.getSource();
-        final FileObject fo = snapshot.getSource().getFileObject();
-        final boolean allowComments = fo != null && JsonOptionsQuery.getOptions(fo).isCommentSupported();
-        final JsonLexer lex = new JsonLexer(new ANTLRInputStream(text), allowComments);
-        lex.removeErrorListeners(); //Remove default console log listener
-//        lex.addErrorListener(errorManager);
-        final CommonTokenStream tokens = new CommonTokenStream(lex);
-        org.netbeans.modules.javascript2.json.parser.JsonParser parser =
-                new org.netbeans.modules.javascript2.json.parser.JsonParser(tokens);
-        parser.removeErrorListeners();  //Remove default console log listener
-        parser.addErrorListener(errorManager);
-        return new JsonParserResult(
-                snapshot,
-                parser.json());
-    }
-
     @NonNull
-    @Override
-    protected JsonParserResult createErrorResult(Snapshot snapshot) {
-        return new JsonParserResult(snapshot, null);
+    protected Lookup createAdditionalLookup() {
+        return this.root == null ?
+                super.createAdditionalLookup() :
+                Lookups.fixed(this.root);
     }
 
-    @Override
-    protected String getMimeType() {
-        return JsTokenId.JSON_MIME_TYPE;
+    public FunctionNode getRoot() {
+        return root;
     }
-
-    @Override
-    protected Sanitize getSanitizeStrategy() {
-        return Sanitize.NEVER;
-    }
-
 }

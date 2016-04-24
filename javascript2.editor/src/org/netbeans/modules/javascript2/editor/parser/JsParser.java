@@ -49,7 +49,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
  * @author Petr Pisl
  * @author Petr Hejl
  */
-public class JsParser extends SanitizingParser {
+public class JsParser extends SanitizingParser<ScriptParserResult> {
 
     public JsParser() {
         super(JsTokenId.javascriptLanguage());
@@ -61,7 +61,12 @@ public class JsParser extends SanitizingParser {
     }
 
     @Override
-    protected FunctionNode parseSource(Snapshot snapshot, String name, String text, int caretOffset, JsErrorManager errorManager, boolean isModule) throws Exception {
+    protected ScriptParserResult parseSource(SanitizingParser.Context context, JsErrorManager errorManager) throws Exception {
+        final Snapshot snapshot = context.getSnapshot();
+        final String name = context.getName();
+        final String text = context.getSource();
+        final int caretOffset = context.getCaretOffset();
+        final boolean isModule = context.isModule();
         String parsableText = text;
 //        System.out.println(text);
 //        System.out.println("----------------");
@@ -101,9 +106,19 @@ public class JsParser extends SanitizingParser {
         } else {
             node = parser.parse();
         }
-
-        return node;
+        if (node == null && context.isModule()) {
+            // module may be broken completely by broken/unfinished export
+            // try to at least parse it as normal source
+            context.setModule(false);
+            return parseSource(context, errorManager);
+        }
+        return new ScriptParserResult(snapshot, node);
     }
+
+    @Override
+    protected ScriptParserResult createErrorResult(Snapshot snapshot) {
+        return new ScriptParserResult(snapshot, null);
+     }
 
     @Override
     protected String getMimeType() {

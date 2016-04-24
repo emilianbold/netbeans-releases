@@ -106,25 +106,27 @@ public class JsonLanguage extends DefaultLanguageConfig {
         return new JsonParser();
     }
 
-    @Override
-    public boolean hasStructureScanner() {
-        return true;
-    }
-
-    @Override
-    public StructureScanner getStructureScanner() {
-        return new JsStructureScanner(JsTokenId.jsonLanguage());
-    }
+// todo: tzezula - disable for now
+//    @Override
+//    public boolean hasStructureScanner() {
+//        return true;
+//    }
+//
+//    @Override
+//    public StructureScanner getStructureScanner() {
+//        return new JsStructureScanner(JsTokenId.jsonLanguage());
+//    }
 
 //    @Override
 //    public SemanticAnalyzer getSemanticAnalyzer() {
 //        return new JsSemanticAnalyzer();
 //    }
 
-    @Override
-    public DeclarationFinder getDeclarationFinder() {
-        return new DeclarationFinderImpl(JsTokenId.jsonLanguage());
-    }
+// todo: tzezula - disable for now
+//    @Override
+//    public DeclarationFinder getDeclarationFinder() {
+//        return new DeclarationFinderImpl(JsTokenId.jsonLanguage());
+//    }
 
 //    @Override
 //    public boolean hasOccurrencesFinder() {

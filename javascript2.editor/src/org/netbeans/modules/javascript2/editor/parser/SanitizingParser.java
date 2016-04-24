@@ -37,7 +37,6 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
-import com.oracle.js.parser.ir.FunctionNode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -45,6 +44,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -62,7 +63,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Petr Hejl
  */
-public abstract class SanitizingParser extends Parser {
+public abstract class SanitizingParser<R extends JsParserResult> extends Parser {
 
     private static final Logger LOGGER = Logger.getLogger(SanitizingParser.class.getName());
     
@@ -77,7 +78,7 @@ public abstract class SanitizingParser extends Parser {
 
     private final Language<JsTokenId> language;
 
-    private JsParserResult lastResult = null;
+    private R lastResult = null;
 
     public SanitizingParser(Language<JsTokenId> language) {
         this.language = language;
@@ -90,22 +91,30 @@ public abstract class SanitizingParser extends Parser {
         }
         try {
             JsErrorManager errorManager = new JsErrorManager(snapshot, language);
-            lastResult = parseSource(snapshot, event, Sanitize.NONE, errorManager);
+            lastResult = parseSource(snapshot, event, getSanitizeStrategy(), errorManager);
             lastResult.setErrors(errorManager.getErrors());
         } catch (Exception ex) {
             LOGGER.log (Level.INFO, "Exception during parsing", ex);
             // TODO create empty result
-            lastResult = new JsParserResult(snapshot, null);
+            lastResult = createErrorResult(snapshot);
         }
     }
 
     protected abstract String getDefaultScriptName();
 
-    protected abstract FunctionNode parseSource(Snapshot snapshot, String name, String text, int caretOffset,  JsErrorManager errorManager, boolean isModule) throws Exception;
+    @CheckForNull
+    protected abstract R parseSource(Context context, JsErrorManager errorManager) throws Exception;
 
     protected abstract String getMimeType();
-    
-    final JsParserResult parseSource(Snapshot snapshot, SourceModificationEvent event,
+
+    @NonNull
+    protected abstract R createErrorResult(@NonNull Snapshot snapshot);
+
+    protected Sanitize getSanitizeStrategy() {
+        return Sanitize.NONE;
+    }
+
+    final R parseSource(Snapshot snapshot, SourceModificationEvent event,
             Sanitize sanitizing, JsErrorManager errorManager) throws Exception {
 
         FileObject fo = snapshot.getSource().getFileObject();
@@ -117,26 +126,20 @@ public abstract class SanitizingParser extends Parser {
             scriptName = getDefaultScriptName();
         }
         if (!isParsable(snapshot)) {
-            return new JsParserResult(snapshot, null);
+            return createErrorResult(snapshot);
         }
         int caretOffset = GsfUtilities.getLastKnownCaretOffset(snapshot, event);
 
         Context context = new Context(scriptName, snapshot, caretOffset, language);
-        JsParserResult result = parseContext(context, sanitizing, errorManager);
+        R result = parseContext(context, sanitizing, errorManager);
 
-        if (result.getRoot() == null && context.isModule()) {
-            // module may be broken completely by broken/unfinished export
-            // try to at least parse it as normal source
-            context.isModule = false;
-            result = parseContext(context, sanitizing, errorManager);
-        }
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "Parsing took: {0} ms; source: {1}",
                     new Object[]{(System.nanoTime() - startTime) / 1000000, scriptName});
         }
         return result;
     }
-    
+
     /**
      * This method try to analyze the text and says whether the snapshot should be file
      * @param snapshot
@@ -203,12 +206,12 @@ public abstract class SanitizingParser extends Parser {
         return true;
     }
     
-    JsParserResult parseContext(Context context, Sanitize sanitizing,
+    R parseContext(Context context, Sanitize sanitizing,
             JsErrorManager errorManager) throws Exception {
         return parseContext(context, sanitizing, errorManager, true);
     }
     
-    private JsParserResult parseContext(Context context, Sanitize sanitizing,
+    private R parseContext(Context context, Sanitize sanitizing,
             JsErrorManager errorManager, boolean copyErrors) throws Exception {
         
         boolean sanitized = false;
@@ -225,8 +228,7 @@ public abstract class SanitizingParser extends Parser {
         }
         
         JsErrorManager current = new JsErrorManager(context.getSnapshot(), language);
-        FunctionNode node = parseSource(context.getSnapshot(), context.getName(),
-                context.getSource(), context.getCaretOffset(), current, context.isModule());
+        R r = parseSource(context, current);
 
         if (copyErrors) {
             errorManager.fillErrors(current);
@@ -242,11 +244,13 @@ public abstract class SanitizingParser extends Parser {
                 }
             }
             // TODO not very clever check
-            if (node == null || !current.isEmpty()) {
+            if (r == null || !current.isEmpty()) {
                 return parseContext(context, sanitizing.next(), errorManager, false);
             }
         }
-        return new JsParserResult(context.getSnapshot(), node);
+        return r != null ?
+            r :
+            createErrorResult(context.getSnapshot());
     }
 
     private boolean sanitizeSource(Context context, Sanitize sanitizing, JsErrorManager errorManager) {
@@ -542,7 +546,7 @@ public abstract class SanitizingParser extends Parser {
     /**
      * Parsing context
      */
-    static class Context {
+    protected final static class Context {
 
         private static final List<JsTokenId> IMPORT_EXPORT = new ArrayList<JsTokenId>(2);
 
@@ -566,7 +570,7 @@ public abstract class SanitizingParser extends Parser {
         
         private Boolean isModule = null;
 
-        public Context(String name, Snapshot snapshot, int caretOffset, Language<JsTokenId> language) {
+        Context(String name, Snapshot snapshot, int caretOffset, Language<JsTokenId> language) {
             this.name = name;
             this.snapshot = snapshot;
             this.caretOffset = caretOffset;
@@ -620,6 +624,10 @@ public abstract class SanitizingParser extends Parser {
                 isModule = isModule(snapshot, language);
             }
             return isModule;
+        }
+
+        public void setModule(boolean isModule) {
+            this.isModule = isModule;
         }
 
         private static boolean isModule(Snapshot snapshot, Language<JsTokenId> language) {
