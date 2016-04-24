@@ -160,6 +160,14 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
         lc = getLexicalContext();
     }
 
+    @Override
+    public void init() {
+        final FunctionNode root = parserResult.getLookup().lookup(FunctionNode.class);
+        if (root != null) {
+            root.accept(this);
+        }
+    }
+
     public JsObject getGlobalObject() {
         return modelBuilder.getGlobal();
     }
@@ -3766,10 +3774,6 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
         @Override
         public ModelResolver create(ParserResult result, OccurrenceBuilder occurrenceBuilder) {
             final ModelVisitor visitor = new ModelVisitor(result, occurrenceBuilder);
-            FunctionNode root = result.getLookup().lookup(FunctionNode.class);
-            if (root != null) {
-                root.accept(visitor);
-            }
             return visitor;
         }
 

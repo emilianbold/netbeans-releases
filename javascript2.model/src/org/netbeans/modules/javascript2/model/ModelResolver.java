@@ -57,6 +57,7 @@ import org.openide.util.Lookup;
  * @author Tomas Zezula
  */
 public interface ModelResolver {
+    void init();
     JsObject getGlobalObject();
     JsObject resolveThis(JsObject where);
     void processCalls(

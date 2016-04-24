@@ -102,6 +102,42 @@ public final class JsonModelResolver extends JsonBaseVisitor<Boolean> implements
     }
 
     @Override
+    public void init() {
+        final JsonParser.JsonContext parseTree = parserResult.getLookup().lookup(JsonParser.JsonContext.class);
+        if (LOG.isLoggable(Level.FINEST)) {
+            final FileObject file = parserResult.getSnapshot().getSource().getFileObject();
+            if (parseTree != null) {
+                try {
+                    final JsonLexer l = new JsonLexer(new ANTLRInputStream());
+                    JsonBaseVisitor<Document> visitor = new ParseTreeToXml(
+                            l,
+                            new JsonParser(new CommonTokenStream(l)));
+                    LOG.log(Level.FINEST,
+                            "Parse tree for file: {0}\n{1}",    //NOI18N
+                            new Object[]{
+                                file == null ? null : FileUtil.getFileDisplayName(file),
+                                ParseTreeToXml.stringify(visitor.visit(parseTree))
+                            });
+                } catch (IOException ioe) {
+                    LOG.log(
+                        Level.FINEST,
+                        "Error dumping parse tree for file: {0} : {1}",      //NOI18N
+                        new Object[] {
+                            file == null ? null : FileUtil.getFileDisplayName(file),
+                            ioe.getMessage()
+                        });
+                }
+            } else {
+                LOG.log(
+                        Level.FINEST,
+                        "No parse tree for file: {0}",      //NOI18N
+                        file == null ? null : FileUtil.getFileDisplayName(file));
+            }
+        }
+        parseTree.accept(this);
+    }
+
+    @Override
     public JsObject getGlobalObject() {
         return modelBuilder.getGlobal();
     }
@@ -344,42 +380,7 @@ public final class JsonModelResolver extends JsonBaseVisitor<Boolean> implements
             if (parseTree == null) {
                 return null;
             }
-            final JsonModelResolver resolver = new JsonModelResolver(result, occurrenceBuilder);
-            
-            if (LOG.isLoggable(Level.FINEST)) {
-                final FileObject file = result.getSnapshot().getSource().getFileObject();
-                if (parseTree != null) {
-                    try {
-                        final JsonLexer l = new JsonLexer(new ANTLRInputStream());
-                        JsonBaseVisitor<Document> visitor = new ParseTreeToXml(
-                                l,
-                                new JsonParser(new CommonTokenStream(l)));
-                        LOG.log(Level.FINEST,
-                                "Parse tree for file: {0}\n{1}",    //NOI18N
-                                new Object[]{
-                                    file == null ? null : FileUtil.getFileDisplayName(file),
-                                    ParseTreeToXml.stringify(visitor.visit(parseTree))
-                                });
-                    } catch (IOException ioe) {
-                        LOG.log(
-                            Level.FINEST,
-                            "Error dumping parse tree for file: {0} : {1}",      //NOI18N
-                            new Object[] {
-                                file == null ? null : FileUtil.getFileDisplayName(file),
-                                ioe.getMessage()
-                            });
-                    }
-                } else {
-                    LOG.log(
-                            Level.FINEST,
-                            "No parse tree for file: {0}",      //NOI18N
-                            file == null ? null : FileUtil.getFileDisplayName(file));
-                }
-            }
-            if (parseTree != null) {
-                parseTree.accept(resolver);
-            }
-            return resolver;
+            return new JsonModelResolver(result, occurrenceBuilder);
         }
     }
 }

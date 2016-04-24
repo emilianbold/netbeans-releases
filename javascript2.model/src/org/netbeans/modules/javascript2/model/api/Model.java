@@ -194,6 +194,7 @@ public final class Model {
             if (visitor == null) {
                 throw new IllegalStateException("No ModelResolver for result: " + parserResult);    //NOI18N
             }
+            visitor.init();
             long startResolve = System.currentTimeMillis();
             // create all occurrences
             occurrenceBuilder.processOccurrences(visitor.getGlobalObject());
