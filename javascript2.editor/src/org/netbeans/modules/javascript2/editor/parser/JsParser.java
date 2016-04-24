@@ -49,7 +49,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
  * @author Petr Pisl
  * @author Petr Hejl
  */
-public class JsParser extends SanitizingParser<ScriptParserResult> {
+public class JsParser extends SanitizingParser<JsParserResult> {
 
     public JsParser() {
         super(JsTokenId.javascriptLanguage());
@@ -61,7 +61,7 @@ public class JsParser extends SanitizingParser<ScriptParserResult> {
     }
 
     @Override
-    protected ScriptParserResult parseSource(SanitizingParser.Context context, JsErrorManager errorManager) throws Exception {
+    protected JsParserResult parseSource(SanitizingParser.Context context, JsErrorManager errorManager) throws Exception {
         final Snapshot snapshot = context.getSnapshot();
         final String name = context.getName();
         final String text = context.getSource();
@@ -112,12 +112,12 @@ public class JsParser extends SanitizingParser<ScriptParserResult> {
             context.setModule(false);
             return parseSource(context, errorManager);
         }
-        return new ScriptParserResult(snapshot, node);
+        return new JsParserResult(snapshot, node);
     }
 
     @Override
-    protected ScriptParserResult createErrorResult(Snapshot snapshot) {
-        return new ScriptParserResult(snapshot, null);
+    protected JsParserResult createErrorResult(Snapshot snapshot) {
+        return new JsParserResult(snapshot, null);
      }
 
     @Override

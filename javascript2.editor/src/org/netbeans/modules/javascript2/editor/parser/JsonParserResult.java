@@ -52,26 +52,27 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Tomas Zezula
  */
-public final class JsonParserResult extends JsParserResult {
+public final class JsonParserResult extends BaseParserResult {
 
     private final org.netbeans.modules.javascript2.json.parser.JsonParser.JsonContext parseTree;
 
     JsonParserResult(
             @NonNull final Snapshot snapshot,
             @NullAllowed final org.netbeans.modules.javascript2.json.parser.JsonParser.JsonContext parseTree) {
-        super(snapshot);
+        super(snapshot, createAdditionalLookup(parseTree));
         this.parseTree = parseTree;
-    }
-
-    @Override
-    protected Lookup createAdditionalLookup() {
-        return this.parseTree == null ?
-                super.createAdditionalLookup() :
-                Lookups.singleton(this.parseTree);
     }
 
     @CheckForNull
     org.netbeans.modules.javascript2.json.parser.JsonParser.JsonContext getJson() {
         return parseTree;
+    }
+
+    @NonNull
+    private static Lookup createAdditionalLookup(
+            @NullAllowed final org.netbeans.modules.javascript2.json.parser.JsonParser.JsonContext parseTree) {
+        return parseTree == null ?
+                Lookup.EMPTY :
+                Lookups.singleton(parseTree);
     }
 }

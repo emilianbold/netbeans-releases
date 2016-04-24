@@ -242,7 +242,7 @@ public class JsErrorManager extends ErrorManager implements ANTLRErrorListener {
         Collection<FilterableError.SetFilterAction> enableFilterAction = ParsingErrorFilter.getEnableFilterAction(file);
         FilterableError.SetFilterAction disableFilterAction = ParsingErrorFilter.getDisableFilterAction(file);
         
-        if (snapshot != null && JsParserResult.isEmbedded(snapshot)) {
+        if (snapshot != null && BaseParserResult.isEmbedded(snapshot)) {
             int nextCorrect = -1;
             boolean afterGeneratedIdentifier = false;
             for (SimpleError error : errors) {

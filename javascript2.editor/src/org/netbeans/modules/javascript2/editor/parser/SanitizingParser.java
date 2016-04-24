@@ -63,7 +63,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Petr Hejl
  */
-public abstract class SanitizingParser<R extends JsParserResult> extends Parser {
+public abstract class SanitizingParser<R extends BaseParserResult> extends Parser {
 
     private static final Logger LOGGER = Logger.getLogger(SanitizingParser.class.getName());
     
@@ -631,7 +631,7 @@ public abstract class SanitizingParser<R extends JsParserResult> extends Parser 
         }
 
         private static boolean isModule(Snapshot snapshot, Language<JsTokenId> language) {
-            if (JsParserResult.isEmbedded(snapshot)) {
+            if (BaseParserResult.isEmbedded(snapshot)) {
                 return isModule(snapshot, language, 0, Integer.MAX_VALUE);
             } else {
                 TokenSequence<? extends JsTokenId> seq = LexUtilities.getJsPositionedSequence(snapshot, 0);
@@ -648,7 +648,7 @@ public abstract class SanitizingParser<R extends JsParserResult> extends Parser 
         }
 
         private static boolean isModule(Snapshot snapshot, Language<JsTokenId> language, int offset, int max) {
-            assert JsParserResult.isEmbedded(snapshot);
+            assert BaseParserResult.isEmbedded(snapshot);
             TokenSequence<? extends JsTokenId> seq = LexUtilities.getNextJsTokenSequence(
                 snapshot, offset, Integer.MAX_VALUE, language);
             if (seq != null) {
