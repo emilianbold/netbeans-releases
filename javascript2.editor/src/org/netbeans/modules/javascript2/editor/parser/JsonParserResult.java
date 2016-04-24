@@ -59,7 +59,7 @@ public final class JsonParserResult extends BaseParserResult {
     JsonParserResult(
             @NonNull final Snapshot snapshot,
             @NullAllowed final org.netbeans.modules.javascript2.json.parser.JsonParser.JsonContext parseTree) {
-        super(snapshot, createAdditionalLookup(parseTree));
+        super(snapshot, true, createAdditionalLookup(parseTree));
         this.parseTree = parseTree;
     }
 

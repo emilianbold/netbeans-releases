@@ -53,7 +53,7 @@ public class JsParserResult extends BaseParserResult {
     private final FunctionNode root;
 
     public JsParserResult(@NonNull Snapshot snapshot, @NullAllowed FunctionNode root) {
-        super(snapshot, createAdditionalLookup(root));
+        super(snapshot, root != null, createAdditionalLookup(root));
         this.root = root;
     }
 

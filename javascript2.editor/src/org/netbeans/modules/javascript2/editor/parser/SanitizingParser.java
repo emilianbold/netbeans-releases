@@ -132,6 +132,12 @@ public abstract class SanitizingParser<R extends BaseParserResult> extends Parse
 
         Context context = new Context(scriptName, snapshot, caretOffset, language);
         R result = parseContext(context, sanitizing, errorManager);
+        if (!result.success() && context.isModule()) {
+            // module may be broken completely by broken/unfinished export
+            // try to at least parse it as normal source
+            context.isModule = false;
+            result = parseContext(context, sanitizing, errorManager);
+        }
 
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "Parsing took: {0} ms; source: {1}",
@@ -624,10 +630,6 @@ public abstract class SanitizingParser<R extends BaseParserResult> extends Parse
                 isModule = isModule(snapshot, language);
             }
             return isModule;
-        }
-
-        public void setModule(boolean isModule) {
-            this.isModule = isModule;
         }
 
         private static boolean isModule(Snapshot snapshot, Language<JsTokenId> language) {

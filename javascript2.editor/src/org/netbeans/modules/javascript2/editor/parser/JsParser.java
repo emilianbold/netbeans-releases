@@ -106,12 +106,6 @@ public class JsParser extends SanitizingParser<JsParserResult> {
         } else {
             node = parser.parse();
         }
-        if (node == null && context.isModule()) {
-            // module may be broken completely by broken/unfinished export
-            // try to at least parse it as normal source
-            context.setModule(false);
-            return parseSource(context, errorManager);
-        }
         return new JsParserResult(snapshot, node);
     }
 

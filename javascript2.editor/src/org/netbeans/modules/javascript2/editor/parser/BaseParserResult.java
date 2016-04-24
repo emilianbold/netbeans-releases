@@ -83,14 +83,17 @@ public abstract class BaseParserResult extends ParserResult {
     private final ModelContainer modelContainer = new ModelContainer();
     private final DocumentationContainer documentationContainer = new DocumentationContainer();
     private final boolean embedded;
+    private final boolean success;
     private final Lookup lookup;
     private List<? extends FilterableError> errors;
 
     BaseParserResult(
             Snapshot snapshot,
+            boolean success,
             @NonNull final Lookup additionalLkp) {
         super(snapshot);
         errors = Collections.emptyList();
+        this.success = success;
         embedded = isEmbedded(snapshot);
         final Lookup baseLkp = Lookups.fixed(this, modelContainer, documentationContainer);
         lookup = new ProxyLookup(baseLkp, additionalLkp);
@@ -138,6 +141,10 @@ public abstract class BaseParserResult extends ParserResult {
 
     public static boolean isEmbedded(@NonNull Snapshot snapshot) {
         return !MIME_TYPES.contains(snapshot.getMimePath().getPath());
+    }
+
+    boolean success() {
+        return this.success;
     }
 
 }
