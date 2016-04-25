@@ -128,10 +128,14 @@ public class MavenShellLauncher implements PrerequisitesChecker, LateBoundPrereq
         }
         String newArgs;
         
-        if (execArgs.contains(PLACEHOLDER_JSHELL_ARGS)) {
-            newArgs = execArgs.replace(PLACEHOLDER_JSHELL_ARGS, sb.toString());
+        if (execArgs != null) {
+            if (execArgs.contains(PLACEHOLDER_JSHELL_ARGS)) {
+                newArgs = execArgs.replace(PLACEHOLDER_JSHELL_ARGS, sb.toString());
+            } else {
+                newArgs = sb.append(" ").append(execArgs).toString(); // NOI18N
+            }
         } else {
-            newArgs = sb.append(" ").append(execArgs).toString(); // NOI18N
+            newArgs = sb.toString();
         }
         config.setProperty(PROPERTY_EXEC_ARGS, newArgs);
         config.setProperty(PROPERTY_JSHELL_KEY, agent.getAuthorizationKey());
