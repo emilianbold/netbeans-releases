@@ -12,13 +12,13 @@ use \Foo\Bar\Baz,
 // "Prefer Group Use Statements"
 use \Foo\Bar\ {
     Baz,
-    Bar
+    Bat
 };
 
 class Bat {
 
     function __construct() {
-        Baz::getInstance(); // VS
+        Baz::getInstance();
         // "Prefer Fully Qualified Names over Use of Unqualified Names"
         \Foo\Bar\Baz::getInstance();
     }
