@@ -383,7 +383,7 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
             } else {
                 // add own "disabled" color
                 baseName = baseName != null ? baseName : getDisplayName();
-                return "<font color='!controlShadow'>" + baseName; // NOI18N
+                return "<font color='!textInactiveText'>" + baseName; // NOI18N
             }
         }
         return super.getHtmlDisplayName();
