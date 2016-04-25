@@ -101,7 +101,7 @@ import org.openide.util.lookup.InstanceContent;
  * Navigator Tree node.
  */
 public class CppDeclarationNode extends AbstractCsmNode implements Comparable<CppDeclarationNode> {
-    private static final String FONT_COLORCONTROLSHADOW = "<font color='!controlShadow'>  "; // NOI18N
+    private static final String FONT_COLORCONTROLSHADOW = "<font color='!textInactiveText'>  "; // NOI18N
     private static final byte INCLUDE_WEIGHT = 5*10+0;
     private static final byte FUNCTION_DECLARATION_WEIGHT = 3*10+0;
     private static final byte FUNCTION_DEFINITION_WEIGHT = 3*10+1;

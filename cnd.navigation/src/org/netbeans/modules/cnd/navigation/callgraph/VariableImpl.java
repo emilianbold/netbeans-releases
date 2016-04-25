@@ -125,7 +125,7 @@ public class VariableImpl implements Function {
                     if (cls != null && cls.getName().length() > 0) {
                         String name = CsmDisplayUtilities.htmlize(cls.getName().toString());
                         String in = NbBundle.getMessage(CallImpl.class, "LBL_inClass"); // NOI18N
-                        return displayName + "<font color=\'!controlShadow\'>  " + in + " " + name; // NOI18N
+                        return displayName + "<font color=\'!textInactiveText\'>  " + in + " " + name; // NOI18N
                     }
                 }
         } catch (AssertionError ex) {

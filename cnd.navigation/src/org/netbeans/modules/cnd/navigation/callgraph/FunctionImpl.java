@@ -193,7 +193,7 @@ public class FunctionImpl implements Function {
                         displayName ="<i>"+displayName+"</i>"; // NOI18N
                     }
                     scopeName = cls.getName().toString()+"::"; // NOI18N
-                    return displayName + "<font color=\'!controlShadow\'>  " + in + " " + name; // NOI18N
+                    return displayName + "<font color=\'!textInactiveText\'>  " + in + " " + name; // NOI18N
                 }
             }
         } catch (AssertionError ex) {

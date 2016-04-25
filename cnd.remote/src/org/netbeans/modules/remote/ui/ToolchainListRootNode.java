@@ -217,7 +217,7 @@ public class ToolchainListRootNode extends AbstractNode {
 
         @Override
         public String getHtmlDisplayName() {
-            return tool.getDisplayName() + "  <font color='!controlShadow'> [" + tool.getPath() + ']'; //NOI18N
+            return tool.getDisplayName() + "  <font color='!textInactiveText'> [" + tool.getPath() + ']'; //NOI18N
         }
 
         @Override
