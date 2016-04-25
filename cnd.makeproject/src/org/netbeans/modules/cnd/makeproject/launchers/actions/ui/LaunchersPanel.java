@@ -56,6 +56,7 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -78,6 +79,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
@@ -287,7 +289,7 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
         boolean top = true;
         boolean bottom = true;
         if (b) {
-            c = selectedConfiguration.getID() > 0;
+            c = selectedConfiguration.getID() >= 0;
             int index = launchers.indexOf(selectedConfiguration);
             if (index > 1) {
                 bottom = index == launchers.size()-1;
@@ -859,7 +861,7 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
 
     public static class LauncherNode extends AbstractNode {
 
-        private BufferedImage icon;
+        private Image icon;
         private static JTextField test = new JTextField();
         private String name;
         private String command;
@@ -879,40 +881,14 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
         }
 
         private void updateIcon() {
-            icon = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
-
-            Graphics2D g = (Graphics2D) icon.getGraphics();
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            LookAndFeel laf = UIManager.getLookAndFeel();
-            Color d;
-            Color f;
-            if( laf.getDefaults().getBoolean( "nb.dark.theme" ) ) { //NOI18N
-                d = new Color(0xc5, 0xf3, 0x8f);
-                f = new Color(0x25, 0x97, 0x00);
+            final String resources = "org/netbeans/modules/cnd/makeproject/launchers/resources/"; // NOI18N
+            String iconFile;
+            if (id >= 0) {
+                iconFile = pub ? "launcher_public.png" : "launcher_private.png"; // NOI18N
             } else {
-                f = new Color(0xc5, 0xf3, 0x8f);
-                d = new Color(0x25, 0x97, 0x00);
+                iconFile = pub ? "common_public.png" : "common_private.png"; // NOI18N
             }
-            int x = 1;
-            int y = 1;
-            if (id > 0) {
-                g.setColor(f);
-                g.fillPolygon(new int[]{x, x,    x+9, x},
-                              new int[]{y, y+14, y+7, y}, 4);
-            }
-            g.setColor(d);
-                g.drawPolygon(new int[]{x, x,    x+9, x},
-                              new int[]{y, y+14, y+7, y}, 4);
-            if (!pub) {
-                x = 9;
-                y = 1;
-                g.setColor(new Color(0xc3, 0x87, 0x32));
-                g.drawOval(x, y, 5, 4);
-                g.drawPolygon(new int[]{x+3, x+3, x+5, x+5, x+3, x+3,  x+2, x+2},
-                              new int[]{y+4, y+7, y+7, y+9, y+9, y+10, y+10,y+4}, 8);
-                g.fillPolygon(new int[]{x+2, x+5, x+5, x+2, x+2},
-                              new int[]{y+7, y+7, y+10,y+10,y+7}, 5);
-            }
+            icon = ImageUtilities.loadImage(resources + iconFile, false);
         }
 
         public LauncherConfig getConfiguration() {
@@ -942,7 +918,7 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
 
         @Override
         public String getHtmlDisplayName() {
-            if (hide) {
+            if (hide || id < 0) {
                 return "<font color='!textInactiveText'>" + getDisplayName()+"</font>"; // NOI18N
             }
             return super.getHtmlDisplayName();
@@ -950,7 +926,7 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
 
         @Override
         public String getDisplayName() {
-            if (id <= 0) {
+            if (id < 0) {
                 return NbBundle.getMessage(LaunchersPanel.class, "COMMON_PROPERTIES");
             } else {
                 String res = name;
