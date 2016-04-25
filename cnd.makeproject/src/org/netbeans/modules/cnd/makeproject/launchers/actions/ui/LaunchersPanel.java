@@ -798,6 +798,18 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
     private javax.swing.JButton upButton;
     // End of variables declaration//GEN-END:variables
 
+    
+    private static String shadedColor;
+    private static synchronized String getShadedColor() {
+        if (shadedColor == null) {
+            if (UIManager.getDefaults().getColor("Tree.selectionBackground").equals(UIManager.getDefaults().getColor("controlShadow"))) { // NOI18N
+                shadedColor = "!Tree.selectionBorderColor"; // NOI18N
+            } else {
+                shadedColor = "!controlShadow"; // NOI18N
+            }
+        }
+        return shadedColor;
+    }
     private final class SelectionChangeListener implements PropertyChangeListener {
 
         @Override
@@ -942,7 +954,7 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
         @Override
         public String getHtmlDisplayName() {
             if (hide) {
-                return "<font color='!controlShadow'>" + getDisplayName(); // NOI18N
+                return "<font color='"+getShadedColor()+"'>" + getDisplayName()+"</font>"; // NOI18N
             }
             return super.getHtmlDisplayName();
         }
@@ -965,4 +977,5 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
             return getDisplayName();
         }
     }
+    
 }

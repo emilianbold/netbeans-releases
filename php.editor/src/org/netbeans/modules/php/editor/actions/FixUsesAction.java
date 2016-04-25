@@ -347,7 +347,7 @@ public class FixUsesAction extends BaseAction {
             return preferMultipleUseStatementsCombined;
         }
 
-        public boolean isPreferGroupUses() {
+        public boolean preferGroupUses() {
             return preferGroupUses;
         }
 

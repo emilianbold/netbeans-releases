@@ -61,6 +61,7 @@ public class FmtUses extends javax.swing.JPanel {
         initComponents();
         preferFullyQualifiedNamesCheckBox.putClientProperty(OPTION_ID, FmtOptions.PREFER_FULLY_QUALIFIED_NAMES);
         preferMultipleUseStatementsCombinedCheckBox.putClientProperty(OPTION_ID, FmtOptions.PREFER_MULTIPLE_USE_STATEMENTS_COMBINED);
+        preferGroupUsesCheckBox.putClientProperty(OPTION_ID, FmtOptions.PREFER_GROUP_USES);
         startUseWithNamespaceSeparatorCheckBox.putClientProperty(OPTION_ID, FmtOptions.START_USE_WITH_NAMESPACE_SEPARATOR);
         aliasesCapitalsOfNamespacesCheckBox.putClientProperty(OPTION_ID, FmtOptions.ALIASES_CAPITALS_OF_NAMESPACES);
     }
@@ -86,6 +87,7 @@ public class FmtUses extends javax.swing.JPanel {
 
         preferFullyQualifiedNamesCheckBox = new javax.swing.JCheckBox();
         preferMultipleUseStatementsCombinedCheckBox = new javax.swing.JCheckBox();
+        preferGroupUsesCheckBox = new javax.swing.JCheckBox();
         startUseWithNamespaceSeparatorCheckBox = new javax.swing.JCheckBox();
         aliasesCapitalsOfNamespacesCheckBox = new javax.swing.JCheckBox();
 
@@ -93,16 +95,18 @@ public class FmtUses extends javax.swing.JPanel {
         setOpaque(false);
 
         preferFullyQualifiedNamesCheckBox.setMnemonic('F');
-        preferFullyQualifiedNamesCheckBox.setText(org.openide.util.NbBundle.getMessage(FmtUses.class, "FmtUses.preferFullyQualifiedNamesCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(preferFullyQualifiedNamesCheckBox, org.openide.util.NbBundle.getMessage(FmtUses.class, "FmtUses.preferFullyQualifiedNamesCheckBox.text")); // NOI18N
 
         preferMultipleUseStatementsCombinedCheckBox.setMnemonic('M');
-        preferMultipleUseStatementsCombinedCheckBox.setText(org.openide.util.NbBundle.getMessage(FmtUses.class, "FmtUses.preferMultipleUseStatementsCombinedCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(preferMultipleUseStatementsCombinedCheckBox, org.openide.util.NbBundle.getMessage(FmtUses.class, "FmtUses.preferMultipleUseStatementsCombinedCheckBox.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(preferGroupUsesCheckBox, org.openide.util.NbBundle.getMessage(FmtUses.class, "FmtUses.preferGroupUsesCheckBox.text")); // NOI18N
 
         startUseWithNamespaceSeparatorCheckBox.setMnemonic('S');
-        startUseWithNamespaceSeparatorCheckBox.setText(org.openide.util.NbBundle.getMessage(FmtUses.class, "FmtUses.startUseWithNamespaceSeparatorCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(startUseWithNamespaceSeparatorCheckBox, org.openide.util.NbBundle.getMessage(FmtUses.class, "FmtUses.startUseWithNamespaceSeparatorCheckBox.text")); // NOI18N
 
         aliasesCapitalsOfNamespacesCheckBox.setMnemonic('g');
-        aliasesCapitalsOfNamespacesCheckBox.setText(org.openide.util.NbBundle.getMessage(FmtUses.class, "FmtUses.aliasesCapitalsOfNamespacesCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(aliasesCapitalsOfNamespacesCheckBox, org.openide.util.NbBundle.getMessage(FmtUses.class, "FmtUses.aliasesCapitalsOfNamespacesCheckBox.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -114,7 +118,8 @@ public class FmtUses extends javax.swing.JPanel {
                     .addComponent(preferFullyQualifiedNamesCheckBox)
                     .addComponent(preferMultipleUseStatementsCombinedCheckBox)
                     .addComponent(startUseWithNamespaceSeparatorCheckBox)
-                    .addComponent(aliasesCapitalsOfNamespacesCheckBox))
+                    .addComponent(aliasesCapitalsOfNamespacesCheckBox)
+                    .addComponent(preferGroupUsesCheckBox))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -125,6 +130,8 @@ public class FmtUses extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(preferMultipleUseStatementsCombinedCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(preferGroupUsesCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(startUseWithNamespaceSeparatorCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(aliasesCapitalsOfNamespacesCheckBox)
@@ -134,6 +141,7 @@ public class FmtUses extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox aliasesCapitalsOfNamespacesCheckBox;
     private javax.swing.JCheckBox preferFullyQualifiedNamesCheckBox;
+    private javax.swing.JCheckBox preferGroupUsesCheckBox;
     private javax.swing.JCheckBox preferMultipleUseStatementsCombinedCheckBox;
     private javax.swing.JCheckBox startUseWithNamespaceSeparatorCheckBox;
     // End of variables declaration//GEN-END:variables
