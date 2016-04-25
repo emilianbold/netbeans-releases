@@ -89,6 +89,7 @@ import org.netbeans.modules.javascript2.model.ParameterObject;
 import org.netbeans.modules.javascript2.model.spi.FunctionInterceptor;
 import org.netbeans.modules.javascript2.model.spi.ModelContainer;
 import org.netbeans.modules.javascript2.model.spi.ModelElementFactory;
+import org.netbeans.modules.javascript2.model.ModelResolver;
 import org.netbeans.modules.javascript2.model.spi.ObjectInterceptor;
 import org.netbeans.modules.javascript2.types.api.DeclarationScope;
 import org.netbeans.modules.javascript2.types.api.Identifier;
@@ -150,7 +151,7 @@ public final class Model {
 
     private final OccurrenceBuilder occurrenceBuilder;
     
-    private ModelVisitor visitor;
+    private ModelResolver visitor;
     
     private Map<String, Map<Integer, List<TypeUsage>>> returnTypesFromFrameworks;
     
@@ -185,15 +186,15 @@ public final class Model {
         return null;
     }
     
-    private synchronized ModelVisitor getModelVisitor() {
+    private synchronized ModelResolver getModelVisitor() {
         boolean resolveWindowProperties = false;
         if (visitor == null) {
             long start = System.currentTimeMillis();
-            visitor = new ModelVisitor(parserResult, occurrenceBuilder);
-            FunctionNode root = parserResult.getLookup().lookup(FunctionNode.class);
-            if (root != null) {
-                root.accept(visitor);
+            visitor = ModelResolver.create(parserResult, occurrenceBuilder);
+            if (visitor == null) {
+                throw new IllegalStateException("No ModelResolver for result: " + parserResult);    //NOI18N
             }
+            visitor.init();
             long startResolve = System.currentTimeMillis();
             // create all occurrences
             occurrenceBuilder.processOccurrences(visitor.getGlobalObject());
@@ -202,36 +203,7 @@ public final class Model {
 
             ModelElementFactory elementFactory = ModelElementFactoryAccessor.getDefault().createModelElementFactory();
             long startCallingME = System.currentTimeMillis();
-            Map<FunctionInterceptor, Collection<ModelVisitor.FunctionCall>> calls = visitor.getCallsForProcessing();
-            if (calls != null && !calls.isEmpty()) {
-                for (Map.Entry<FunctionInterceptor, Collection<ModelVisitor.FunctionCall>> entry : calls.entrySet()) {
-                    Collection<ModelVisitor.FunctionCall> fncCalls = entry.getValue();
-                    if (fncCalls != null && !fncCalls.isEmpty()) {
-                        for (ModelVisitor.FunctionCall call : fncCalls) {
-                            Collection<TypeUsage> returnTypes = entry.getKey().intercept(parserResult.getSnapshot(), call.getName(),
-                                    visitor.getGlobalObject(), call.getScope(), elementFactory, call.getArguments());
-                            if (returnTypes != null) {
-                                Map<Integer, List<TypeUsage>> functionCalls = returnTypesFromFrameworks.get(call.getName());
-                                if (functionCalls == null) {
-                                    functionCalls = new HashMap<Integer, List<TypeUsage>>();
-                                    returnTypesFromFrameworks.put(call.getName(), functionCalls);
-                                }
-                                List<TypeUsage> types = functionCalls.get(call.getCallOffset());
-                                if (types == null) {
-                                    types = new ArrayList();
-                                    functionCalls.put(new Integer(call.getCallOffset()), types);
-                                }
-                                for (TypeUsage type: returnTypes) {
-                                    if (!types.contains(type)) {
-                                        types.add(type);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            
+            visitor.processCalls(elementFactory, returnTypesFromFrameworks);
             for (ObjectInterceptor objectInterceptor : ModelExtender.getDefault().getObjectInterceptors()) {
                 objectInterceptor.interceptGlobal(visitor.getGlobalObject(), elementFactory);
             }

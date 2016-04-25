@@ -37,15 +37,20 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
-import com.oracle.js.parser.ir.FunctionNode;
+import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.javascript2.editor.api.JsonOptionsQuery;
+import org.netbeans.modules.javascript2.json.parser.JsonLexer;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Petr Hejl
  */
-public class JsonParser extends SanitizingParser {
+public class JsonParser extends SanitizingParser<JsonParserResult> {
 
     public JsonParser() {
         super(JsTokenId.jsonLanguage());
@@ -57,45 +62,38 @@ public class JsonParser extends SanitizingParser {
     }
 
     @Override
-    protected FunctionNode parseSource(Snapshot snapshot, String name, String text, int caretOffset, JsErrorManager errorManager, boolean isModule) throws Exception {
-        return null;
-//        Source source = new Source(name, text);
-//        Options options = new Options("nashorn");
-//        options.process(new String[] {
-//            "--parse-only=true", // NOI18N
-//            "--empty-statements=true", // NOI18N
-//            "--debug-lines=false"}); // NOI18N
-//
-//        errorManager.setLimit(0);
-//        jdk.nashorn.internal.runtime.Context nashornContext = new jdk.nashorn.internal.runtime.Context(options, errorManager, JsonParser.class.getClassLoader());
-//        // XXX
-//        //jdk.nashorn.internal.runtime.Context.setContext(nashornContext);
-//        jdk.nashorn.internal.codegen.Compiler compiler = jdk.nashorn.internal.codegen.Compiler.compiler(source, nashornContext);
-//        jdk.nashorn.internal.parser.JSONParser parser = new jdk.nashorn.internal.parser.JSONParser(source, errorManager, nashornContext._strict);
-//
-//        Node objectNode = null;
-//        try {
-//            objectNode = parser.parse();
-//        } catch (ParserException ex) {
-//            // JSON parser has no recovery
-//            errorManager.error(ex);
-//        }
-//
-//        // we are doing this as our infrusture requires function node on top
-//        // TODO we may get rid of such dep later
-//        FunctionNode node = null;
-//        if (objectNode != null) {
-//            node = new FunctionNode(source, 0, text.length(), compiler, null, null, "runScript"); // NOI18N
-//            node.setKind(FunctionNode.Kind.SCRIPT);
-//            node.setStatements(Collections.<Node>singletonList(objectNode));
-//            node.setIdent(new IdentNode(source, objectNode.getToken(), 0, node.getName()));
-//        }
-//        return node;
+    protected JsonParserResult parseSource(SanitizingParser.Context ctx, JsErrorManager errorManager) throws Exception {
+        final Snapshot snapshot = ctx.getSnapshot();
+        final String text = ctx.getSource();
+        final FileObject fo = snapshot.getSource().getFileObject();
+        final boolean allowComments = fo != null && JsonOptionsQuery.getOptions(fo).isCommentSupported();
+        final JsonLexer lex = new JsonLexer(new ANTLRInputStream(text), allowComments);
+        lex.removeErrorListeners(); //Remove default console log listener
+//        lex.addErrorListener(errorManager);
+        final CommonTokenStream tokens = new CommonTokenStream(lex);
+        org.netbeans.modules.javascript2.json.parser.JsonParser parser =
+                new org.netbeans.modules.javascript2.json.parser.JsonParser(tokens);
+        parser.removeErrorListeners();  //Remove default console log listener
+        parser.addErrorListener(errorManager);
+        return new JsonParserResult(
+                snapshot,
+                parser.json());
+    }
+
+    @NonNull
+    @Override
+    protected JsonParserResult createErrorResult(Snapshot snapshot) {
+        return new JsonParserResult(snapshot, null);
     }
 
     @Override
     protected String getMimeType() {
         return JsTokenId.JSON_MIME_TYPE;
+    }
+
+    @Override
+    protected Sanitize getSanitizeStrategy() {
+        return Sanitize.NEVER;
     }
 
 }

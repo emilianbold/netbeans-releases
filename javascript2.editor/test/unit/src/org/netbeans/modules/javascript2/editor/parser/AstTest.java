@@ -2895,8 +2895,9 @@ public class AstTest extends CslTestBase {
         JsParser parser = new JsParser();
         SanitizingParser.Context context = new JsParser.Context(testFO.getNameExt(), snapshot, -1, JsTokenId.javascriptLanguage());
         JsErrorManager manager = new JsErrorManager(snapshot, JsTokenId.javascriptLanguage());
-        FunctionNode program = parser.parseSource(snapshot, testFO.getNameExt(), snapshot.getText().toString(), -1, manager, context.isModule());
-        
+
+        JsParserResult result = parser.parseSource(context, manager);
+        FunctionNode program = result.getRoot();
         LexicalContext lc = new LexicalContext();
         AstXmlVisitor visitor = new AstXmlVisitor(lc);
         String xmlTree = "";

@@ -49,7 +49,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
  * @author Petr Pisl
  * @author Petr Hejl
  */
-public class JsParser extends SanitizingParser {
+public class JsParser extends SanitizingParser<JsParserResult> {
 
     public JsParser() {
         super(JsTokenId.javascriptLanguage());
@@ -61,7 +61,12 @@ public class JsParser extends SanitizingParser {
     }
 
     @Override
-    protected FunctionNode parseSource(Snapshot snapshot, String name, String text, int caretOffset, JsErrorManager errorManager, boolean isModule) throws Exception {
+    protected JsParserResult parseSource(SanitizingParser.Context context, JsErrorManager errorManager) throws Exception {
+        final Snapshot snapshot = context.getSnapshot();
+        final String name = context.getName();
+        final String text = context.getSource();
+        final int caretOffset = context.getCaretOffset();
+        final boolean isModule = context.isModule();
         String parsableText = text;
 //        System.out.println(text);
 //        System.out.println("----------------");
@@ -101,9 +106,13 @@ public class JsParser extends SanitizingParser {
         } else {
             node = parser.parse();
         }
-
-        return node;
+        return new JsParserResult(snapshot, node);
     }
+
+    @Override
+    protected JsParserResult createErrorResult(Snapshot snapshot) {
+        return new JsParserResult(snapshot, null);
+     }
 
     @Override
     protected String getMimeType() {

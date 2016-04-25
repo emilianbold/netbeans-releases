@@ -38,16 +38,8 @@
 package org.netbeans.modules.javascript2.editor.parser;
 
 import com.oracle.js.parser.ir.FunctionNode;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.css.lib.api.FilterableError;
-import org.netbeans.modules.javascript2.doc.spi.DocumentationContainer;
-import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
-import org.netbeans.modules.javascript2.model.spi.ModelContainer;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -56,92 +48,23 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Petr Pisl
  */
-public class JsParserResult extends org.netbeans.modules.javascript2.types.spi.ParserResult {
+public class JsParserResult extends BaseParserResult {
 
-    private final ModelContainer modelContainer = new ModelContainer();
-    private final DocumentationContainer documentationContainer = new DocumentationContainer();
     private final FunctionNode root;
-    private final boolean embedded;
-    private final Lookup lookup;
-    private List<? extends FilterableError> errors;
 
     public JsParserResult(@NonNull Snapshot snapshot, @NullAllowed FunctionNode root) {
-        super(snapshot);
+        super(snapshot, root != null, createAdditionalLookup(root));
         this.root = root;
-        this.errors = Collections.<FilterableError>emptyList();
-        this.embedded = isEmbedded(snapshot);
-        if (root == null) {
-            lookup = Lookups.fixed(this, modelContainer, documentationContainer);
-        } else {
-            lookup = Lookups.fixed(this, modelContainer, documentationContainer, root);
-        }
-    }
-
-    public static boolean isEmbedded(@NonNull Snapshot snapshot) {
-        List<String> mimeTypes = Arrays.asList(
-                JsTokenId.JAVASCRIPT_MIME_TYPE,
-                JsTokenId.GULP_MIME_TYPE,
-                JsTokenId.GRUNT_MIME_TYPE,
-                JsTokenId.KARMACONF_MIME_TYPE,
-                JsTokenId.JSON_MIME_TYPE,
-                JsTokenId.PACKAGE_JSON_MIME_TYPE,
-                JsTokenId.BOWER_JSON_MIME_TYPE,
-                JsTokenId.BOWERRC_JSON_MIME_TYPE,
-                JsTokenId.JSHINTRC_JSON_MIME_TYPE
-        );
-
-        return !mimeTypes.contains(snapshot.getMimePath().getPath());
-    }
-
-    @Override
-    public Lookup getLookup() {
-        return lookup;
-    }
-
-    public List<? extends FilterableError> getErrors(boolean includeFiltered) {
-        if (includeFiltered) {
-            return Collections.unmodifiableList(errors);
-        } else {
-            //remove filtered issues
-            List<FilterableError> result = new ArrayList<FilterableError>();
-            for(FilterableError e : errors) {
-                if(!e.isFiltered()) {
-                    result.add(e);
-                }
-            }
-            return result;
-        }
-    }
-    
-    @Override
-    public List<? extends FilterableError> getDiagnostics() {
-        return getErrors(false);
-    }
-
-    @Override
-    protected void invalidate() {
-
     }
 
     public FunctionNode getRoot() {
         return root;
     }
 
-    public void setErrors(List<? extends FilterableError> errors) {
-        this.errors = errors;
+    @NonNull
+    private static Lookup createAdditionalLookup(FunctionNode root) {
+        return root == null ?
+                Lookup.EMPTY :
+                Lookups.fixed(root);
     }
-
-//    public JsDocumentationHolder getDocumentationHolder() {
-//        synchronized (this) {
-//            if (docHolder == null) {
-//                docHolder = JsDocumentationSupport.getDocumentationHolder(this);
-//            }
-//            return docHolder;
-//        }
-//    }
-
-    public boolean isEmbedded() {
-        return embedded;
-    }
-
 }
