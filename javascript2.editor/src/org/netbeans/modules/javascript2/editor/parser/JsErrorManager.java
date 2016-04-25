@@ -37,10 +37,12 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
-import jdk.nashorn.internal.parser.Token;
-import jdk.nashorn.internal.parser.TokenType;
-import jdk.nashorn.internal.runtime.ErrorManager;
+import com.oracle.js.parser.Token;
+import com.oracle.js.parser.TokenType;
+import com.oracle.js.parser.ErrorManager;
+import com.oracle.js.parser.ParserException;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -51,16 +53,23 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import jdk.nashorn.internal.runtime.ParserException;
+import org.antlr.v4.runtime.ANTLRErrorListener;
+import org.antlr.v4.runtime.Parser;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.atn.ATNConfigSet;
+import org.antlr.v4.runtime.dfa.DFA;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.editor.document.LineDocument;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.css.lib.api.FilterableError;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import static org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId.values;
-import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 
@@ -68,7 +77,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Petr Hejl, Petr Pisl
  */
-public class JsErrorManager extends ErrorManager {
+public class JsErrorManager extends ErrorManager implements ANTLRErrorListener {
 
     private static final Logger LOGGER = Logger.getLogger(JsErrorManager.class.getName());
 
@@ -114,7 +123,7 @@ public class JsErrorManager extends ErrorManager {
     private final static Map<String, JsTokenId> JS_TEXT_TOKENS = new HashMap<String, JsTokenId>();
 
     static {
-        for (JsTokenId jsTokenId : values()) {
+        for (JsTokenId jsTokenId : JsTokenId.values()) {
             if (jsTokenId.fixedText() != null) {
                 JS_TEXT_TOKENS.put(jsTokenId.fixedText(), jsTokenId);
             }
@@ -136,7 +145,7 @@ public class JsErrorManager extends ErrorManager {
         for (ParserError error : parserErrors) {
             if (error.message != null
                     && (error.message.contains("Expected }") || error.message.contains("but found }"))) { // NOI18N
-                return new JsParserError(convert(error),
+                return new JsParserError(error.toSimpleError(snapshot, language),
                         snapshot != null ? snapshot.getSource().getFileObject() : null,
                         Severity.ERROR, null, true, false, false, 
                         enableFilterAction, disableFilterAction);
@@ -155,7 +164,7 @@ public class JsErrorManager extends ErrorManager {
         for (ParserError error : parserErrors) {
             if (error.message != null
                     && error.message.contains("Expected ;")) { // NOI18N
-                return new JsParserError(convert(error),
+                return new JsParserError(error.toSimpleError(snapshot, language),
                         snapshot != null ? snapshot.getSource().getFileObject() : null,
                         Severity.ERROR, null, true, false, false,
                         enableFilterAction, disableFilterAction);
@@ -170,13 +179,13 @@ public class JsErrorManager extends ErrorManager {
 
     @Override
     public void error(ParserException e) {
-        addParserError(new ParserError(e.getMessage(), e.getLineNumber(), e.getColumnNumber(), e.getToken()));
+        addParserError(new NashornParserError(e.getMessage(), e.getLineNumber(), e.getColumnNumber(), e.getToken()));
     }
 
     @Override
     public void error(String message) {
         LOGGER.log(Level.FINE, "Error {0}", message);
-        addParserError(new ParserError(message));
+        addParserError(new NashornParserError(message));
     }
 
     @Override
@@ -196,7 +205,7 @@ public class JsErrorManager extends ErrorManager {
             } else {
                 ArrayList<SimpleError> errors = new ArrayList<SimpleError>(parserErrors.size());
                 for (ParserError error : parserErrors) {
-                    errors.add(convert(error));
+                    errors.add(error.toSimpleError(snapshot, language));
                 }
                 Collections.sort(errors, POSITION_COMPARATOR);
                 convertedErrors = convert(snapshot, errors);
@@ -226,58 +235,6 @@ public class JsErrorManager extends ErrorManager {
         parserErrors.add(error);
     }
 
-    private SimpleError convert(ParserError error) {
-        String message = error.message;
-        int offset = -1;
-        Matcher matcher = ERROR_MESSAGE_PATTERN.matcher(message);
-        if (matcher.matches()) {
-            message = matcher.group(1);
-        }
-        message = REPLACE_POINTER_PATTERN.matcher(message).replaceAll(""); // NOI18N
-
-
-        if (error.token > 0) {
-            offset = Token.descPosition(error.token);
-            if (Token.descType(error.token) == TokenType.EOF
-                    && snapshot.getOriginalOffset(offset) == -1) {
-
-                int realOffset = -1;
-                TokenSequence<? extends JsTokenId> ts =
-                        LexUtilities.getPositionedSequence(snapshot, offset, language);
-                while (ts.movePrevious()) {
-                    if (snapshot.getOriginalOffset(ts.offset()) > 0) {
-                        realOffset = ts.offset() + ts.token().length() - 1;
-                        break;
-                    }
-                }
-
-                if (realOffset > 0) {
-                    offset = realOffset;
-                }
-            }
-        } else if (error.line == -1 && error.column == -1) {
-            // is this still used ?
-            String parts[] = error.message.split(":");
-//            if (parts.length > 4) {
-//                message = parts[4];
-//                int index = message.indexOf('\n');
-//                if (index > 0) {
-//                    message = message.substring(0, index);
-//                }
-//
-//            }
-            if (parts.length > 3) {
-                try {
-                    offset = Integer.parseInt(parts[3]);
-                } catch (NumberFormatException nfe) {
-                    // do nothing
-                }
-            }
-        }
-
-        return new SimpleError(message, offset);
-    }
-
     private static List<JsParserError> convert(Snapshot snapshot, List<SimpleError> errors) {
         // basically we are solwing showExplorerBadge attribute here
         List<JsParserError> ret = new ArrayList<JsParserError>(errors.size());
@@ -285,7 +242,7 @@ public class JsErrorManager extends ErrorManager {
         Collection<FilterableError.SetFilterAction> enableFilterAction = ParsingErrorFilter.getEnableFilterAction(file);
         FilterableError.SetFilterAction disableFilterAction = ParsingErrorFilter.getDisableFilterAction(file);
         
-        if (snapshot != null && JsParserResult.isEmbedded(snapshot)) {
+        if (snapshot != null && BaseParserResult.isEmbedded(snapshot)) {
             int nextCorrect = -1;
             boolean afterGeneratedIdentifier = false;
             for (SimpleError error : errors) {
@@ -357,6 +314,38 @@ public class JsErrorManager extends ErrorManager {
         return ts.offset();
     }
 
+    //--- Antlr4 ---
+    @Override
+    public void syntaxError(
+            final Recognizer<?, ?> recognizer,
+            final Object offendingSymbol,
+            final int line,
+            final int charPositionInLine,
+            final String msg,
+            final RecognitionException e) {
+        if (recognizer instanceof Parser) {
+            //Recognizer can be either Parser or Lexer
+            List<String> stack = ((Parser) recognizer).getRuleInvocationStack();
+            Collections.reverse(stack);
+        }
+        addParserError(new AntlrParserError(msg, line, charPositionInLine, offendingSymbol));
+    }
+
+    @Override
+    public void reportAmbiguity(Parser parser, DFA dfa, int i, int i1, boolean bln, BitSet bitset, ATNConfigSet atncs) {
+        //Not important
+    }
+
+    @Override
+    public void reportAttemptingFullContext(Parser parser, DFA dfa, int i, int i1, BitSet bitset, ATNConfigSet atncs) {
+        //Not important
+    }
+
+    @Override
+    public void reportContextSensitivity(Parser parser, DFA dfa, int i, int i1, int i2, ATNConfigSet atncs) {
+        //Not important
+    }
+
     static class SimpleError {
 
         private final String message;
@@ -377,17 +366,12 @@ public class JsErrorManager extends ErrorManager {
         }
     }
 
-    private static class ParserError {
+    private abstract static class ParserError {
+        final String message;
+        final int line;
+        final int column;
 
-        protected final String message;
-
-        protected final int line;
-
-        protected final int column;
-
-        protected final long token;
-
-        public ParserError(String message, int line, int column, long token) {
+        ParserError(String message, int line, int column) {
             if (message.length() > MAX_MESSAGE_LENGTH) {
                 int index = message.indexOf('\n', MAX_MESSAGE_LENGTH);
                 this.message = message.substring(0, (index < MAX_MESSAGE_LENGTH && index > 0) ? index : MAX_MESSAGE_LENGTH);
@@ -395,18 +379,120 @@ public class JsErrorManager extends ErrorManager {
             } else {
                 this.message = message;
             }
-
             this.line = line;
             this.column = column;
+        }
+        abstract SimpleError toSimpleError(@NonNull Snapshot snapshot, @NonNull Language<JsTokenId> language);
+    }
+
+    private static final class NashornParserError extends ParserError {
+
+        final long token;
+
+        NashornParserError(String message, int line, int column, long token) {
+            super(message, line, column);
             this.token = token;
         }
 
-        public ParserError(String message, long token) {
+        NashornParserError(String message, long token) {
             this(message, -1, -1, token);
         }
 
-        public ParserError(String message) {
+        NashornParserError(String message) {
             this(message, -1, -1, -1);
+        }
+
+        @Override
+        SimpleError toSimpleError(
+                @NonNull final Snapshot snapshot,
+                @NonNull final Language<JsTokenId> language) {
+            String message = this.message;
+            int offset = -1;
+            Matcher matcher = ERROR_MESSAGE_PATTERN.matcher(message);
+            if (matcher.matches()) {
+                message = matcher.group(1);
+            }
+            message = REPLACE_POINTER_PATTERN.matcher(message).replaceAll(""); // NOI18N
+
+            if (this.token > 0) {
+                offset = Token.descPosition(this.token);
+                if (Token.descType(this.token) == TokenType.EOF
+                        && snapshot.getOriginalOffset(offset) == -1) {
+
+                    int realOffset = -1;
+                    TokenSequence<? extends JsTokenId> ts =
+                            LexUtilities.getPositionedSequence(snapshot, offset, language);
+                    while (ts.movePrevious()) {
+                        if (snapshot.getOriginalOffset(ts.offset()) > 0) {
+                            realOffset = ts.offset() + ts.token().length() - 1;
+                            break;
+                        }
+                    }
+
+                    if (realOffset > 0) {
+                        offset = realOffset;
+                    }
+                }
+            } else if (this.line == -1 && this.column == -1) {
+                // is this still used ?
+                String parts[] = this.message.split(":");
+    //            if (parts.length > 4) {
+    //                message = parts[4];
+    //                int index = message.indexOf('\n');
+    //                if (index > 0) {
+    //                    message = message.substring(0, index);
+    //                }
+    //
+    //            }
+                if (parts.length > 3) {
+                    try {
+                        offset = Integer.parseInt(parts[3]);
+                    } catch (NumberFormatException nfe) {
+                        // do nothing
+                    }
+                }
+            }
+            return new SimpleError(message, offset);
+        }
+    }
+
+    private static final class AntlrParserError extends ParserError {
+        
+        final Object token;
+
+        public AntlrParserError(String message, int line, int column, Object token) {
+            super(message, line, column);
+            this.token = token;
+        }
+
+        @Override
+        SimpleError toSimpleError(Snapshot snapshot, Language<JsTokenId> language) {
+            String message = this.message;
+            LineDocument doc = (LineDocument)snapshot.getSource().getDocument(false);
+            if (doc == null) {
+                LOGGER.log(Level.WARNING, "No document found");
+                return new SimpleError(message, 0);
+            }
+            int lineOffset = LineDocumentUtils.getLineStartFromIndex((LineDocument)snapshot.getSource().getDocument(false), this.line - 1);
+            int offset = lineOffset + this.column;
+            if (offset > -1 && offset < snapshot.getText().length()
+                    && snapshot.getOriginalOffset(offset) == -1) {
+
+                int realOffset = -1;
+                TokenSequence<? extends JsTokenId> ts
+                        = LexUtilities.getPositionedSequence(snapshot, offset, language);
+                while (ts.movePrevious()) {
+                    if (snapshot.getOriginalOffset(ts.offset()) > 0) {
+                        realOffset = ts.offset() + ts.token().length() - 1;
+                        break;
+                    }
+                }
+
+                if (realOffset > 0) {
+                    offset = realOffset;
+                }
+            }
+            return new SimpleError(message, offset);
         }
     }
 }
