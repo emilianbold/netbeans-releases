@@ -68,7 +68,9 @@ public class LaunchersConfig {
     private final TreeMap<Integer, LauncherConfig> map = new TreeMap<>();
     private final ArrayList<String> commentsPublic = new ArrayList<>();
     private final ArrayList<String> commentsPrivate = new ArrayList<>();
-
+    public static final int COMMON_LAUNCHER_INDEX = -1;
+    private static final int COMMON_PUBLIC_INDEX = COMMON_LAUNCHER_INDEX;
+    private static final int COMMON_PRIVATE_INDEX = -2;
     public LaunchersConfig(Project project) {
         this.project = project;
     }
@@ -95,8 +97,8 @@ public class LaunchersConfig {
         } else {
             privateLaunchers = null;
         }
-        map.put(-1, new LauncherConfig(-1, true));
-        map.put(0, new LauncherConfig(0, false));
+        map.put(COMMON_PUBLIC_INDEX, new LauncherConfig(COMMON_PUBLIC_INDEX, true));
+        map.put(COMMON_PRIVATE_INDEX, new LauncherConfig(COMMON_PRIVATE_INDEX, false));
         if (publicLaunchers != null && publicLaunchers.isValid()) {
             load(publicLaunchers, true);
         }
@@ -107,7 +109,7 @@ public class LaunchersConfig {
 
     private void load(FileObject config, boolean pub) {
         try {
-            int id = pub ? -1 : 0;
+            int id = pub ? COMMON_PUBLIC_INDEX : COMMON_PRIVATE_INDEX;
             LauncherConfig l = map.get(id);
             if (l == null) {
                 l = new LauncherConfig(id, pub);
@@ -158,7 +160,7 @@ public class LaunchersConfig {
 
     private void add(String key, String value, boolean pub) {
         if (key.startsWith(LaunchersRegistry.COMMON_TAG + ".")) { //NOI18N
-            int id = pub ? -1 : 0;
+            int id = pub ? COMMON_PUBLIC_INDEX : COMMON_PRIVATE_INDEX;
             LauncherConfig l = map.get(id);
             if (l == null) {
                 l = new LauncherConfig(id, pub);
@@ -257,7 +259,7 @@ public class LaunchersConfig {
             // need to reorder IDs
             int i = 0;
             for (LauncherConfig l : launchers) {
-                if (l.id > 0) {
+                if (l.id >= 0) {
                     if (l.pub) {
                         i = (i + 1000) / 1000;
                         i = i * 1000;
@@ -274,7 +276,7 @@ public class LaunchersConfig {
         boolean hasPrivateConfig = false;
         boolean hasPublicConfig = false;
         for (LauncherConfig l : launchers) {
-            if (l.id > 0) {
+            if (l.id >= 0) {
                 if (l.pub) {
                     hasPublicConfig |= !l.name.isEmpty() || !l.command.isEmpty() || l.buildCommand.isEmpty() || !l.env.isEmpty() || !l.runDir.isEmpty() || !l.symbolFiles.isEmpty();
                 } else {
@@ -354,7 +356,7 @@ public class LaunchersConfig {
             boolean addNewLine = !c.isEmpty();
             for (LauncherConfig l : launchers) {
                 if (l.pub == pub) {
-                    if (l.id <= 0) {
+                    if (l.id < 0) {
                         if (!l.runDir.isEmpty() || !l.symbolFiles.isEmpty() || !l.env.isEmpty()) {
                             if (addNewLine) {
                                 bw.newLine();

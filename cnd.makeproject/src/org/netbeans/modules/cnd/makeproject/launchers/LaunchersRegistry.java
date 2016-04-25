@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import static org.netbeans.modules.cnd.makeproject.launchers.actions.ui.LaunchersConfig.COMMON_LAUNCHER_INDEX;
 import org.netbeans.modules.cnd.makeproject.spi.ProjectMetadataFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileObject;
@@ -125,7 +126,7 @@ public final class LaunchersRegistry {
 
     boolean load(Properties properties) {
         List<Launcher> newLaunchers = new ArrayList<>();
-        Launcher common = create(-1, COMMON_TAG, properties, null);
+        Launcher common = create(COMMON_LAUNCHER_INDEX, COMMON_TAG, properties, null);
         for (String key : properties.stringPropertyNames()) {
             Matcher matcher = pattern.matcher(key);
             if (matcher.find()) {

@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.makeproject.launchers;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import static org.netbeans.modules.cnd.makeproject.launchers.actions.ui.LaunchersConfig.COMMON_LAUNCHER_INDEX;
 
 /**
  *
@@ -65,7 +66,7 @@ public final class Launcher {
     private final Launcher common;
 
     public Launcher(String command, Launcher common) {
-        this(-1, command, common);
+        this(COMMON_LAUNCHER_INDEX, command, common);
     }
     
     public Launcher(int index, String command, Launcher common) {

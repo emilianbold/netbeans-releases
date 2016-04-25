@@ -19,6 +19,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import static org.netbeans.modules.cnd.makeproject.launchers.actions.ui.LaunchersConfig.COMMON_LAUNCHER_INDEX;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
@@ -137,7 +138,8 @@ public final class LauncherExecutor {
                     break;
             }
         }
-        return -1;
+        // launcher without index is for common
+        return COMMON_LAUNCHER_INDEX;
     }
     
     private void onBuild(final Project project) {
@@ -155,7 +157,7 @@ public final class LauncherExecutor {
         }
         String args = "";
         int index = getArgsIndex(buildCommand);
-        if (index > 0) {
+        if (index >= 0) {
             args = buildCommand.substring(index + 1);
             buildCommand = removeQuotes(buildCommand.substring(0, index));
         }
