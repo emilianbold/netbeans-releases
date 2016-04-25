@@ -351,20 +351,28 @@ public class LaunchersConfig {
                 bw.write(s);
                 bw.newLine();
             }
+            boolean addNewLine = !c.isEmpty();
             for (LauncherConfig l : launchers) {
                 if (l.pub == pub) {
                     if (l.id <= 0) {
+                        if (!l.runDir.isEmpty() || !l.symbolFiles.isEmpty() || !l.env.isEmpty()) {
+                            if (addNewLine) {
+                                bw.newLine();
+                            }
+                        }
                         if (!l.runDir.isEmpty()) {
                             bw.write(LaunchersRegistry.COMMON_TAG + "."); //NOI18N
                             bw.write(LaunchersRegistry.DIRECTORY_TAG);
                             bw.write("="+l.runDir); //NOI18N
                             bw.newLine();
+                            addNewLine = true;
                         }
                         if (!l.symbolFiles.isEmpty()) {
                             bw.write(LaunchersRegistry.COMMON_TAG + "."); //NOI18N
                             bw.write(LaunchersRegistry.SYMFILES_TAG);
                             bw.write("="+l.symbolFiles); //NOI18N
                             bw.newLine();
+                            addNewLine = true;
                         }
                         for(Map.Entry<String,String> e : l.env.entrySet()) {
                             bw.write(LaunchersRegistry.COMMON_TAG + "."); //NOI18N
@@ -372,19 +380,25 @@ public class LaunchersConfig {
                             bw.write(e.getKey()+"="); //NOI18N
                             bw.write(e.getValue());
                             bw.newLine();
+                            addNewLine = true;
                         }
                     } else {
+                        if (addNewLine) {
+                            bw.newLine();
+                        }
                         if (!l.name.isEmpty()) {
                             bw.write(LaunchersRegistry.LAUNCHER_TAG + l.id + "."); //NOI18N
                             bw.write(LaunchersRegistry.NAME_TAG);
                             bw.write("="+l.name); //NOI18N
                             bw.newLine();
+                            addNewLine = true;
                         }
                         if (l.hide) {
                             bw.write(LaunchersRegistry.LAUNCHER_TAG + l.id + "."); //NOI18N
                             bw.write(LaunchersRegistry.HIDE_TAG);
                             bw.write("=true"); //NOI18N
                             bw.newLine();
+                            addNewLine = true;
                         }
                         if (!l.command.isEmpty()) {
                             StringBuilder buf = new StringBuilder();
@@ -392,24 +406,28 @@ public class LaunchersConfig {
                             buf.append(LaunchersRegistry.COMMAND_TAG);
                             buf.append("="+l.command); //NOI18N
                             writeWrapLine(buf.toString(), bw);
+                            addNewLine = true;
                         }
                         if (!l.buildCommand.isEmpty()) {
                             bw.write(LaunchersRegistry.LAUNCHER_TAG + l.id + "."); //NOI18N
                             bw.write(LaunchersRegistry.BUILD_COMMAND_TAG);
                             bw.write("="+l.buildCommand); //NOI18N
                             bw.newLine();
+                            addNewLine = true;
                         }
                         if (!l.runDir.isEmpty()) {
                             bw.write(LaunchersRegistry.LAUNCHER_TAG + l.id + "."); //NOI18N
                             bw.write(LaunchersRegistry.DIRECTORY_TAG);
                             bw.write("="+l.runDir); //NOI18N
                             bw.newLine();
+                            addNewLine = true;
                         }
                         if (!l.symbolFiles.isEmpty()) {
                             bw.write(LaunchersRegistry.LAUNCHER_TAG + l.id + "."); //NOI18N
                             bw.write(LaunchersRegistry.SYMFILES_TAG);
                             bw.write("="+l.symbolFiles); //NOI18N
                             bw.newLine();
+                            addNewLine = true;
                         }
                         for(Map.Entry<String,String> e : l.env.entrySet()) {
                             bw.write(LaunchersRegistry.LAUNCHER_TAG + l.id + "."); //NOI18N
@@ -417,6 +435,7 @@ public class LaunchersConfig {
                             bw.write(e.getKey()+"="); //NOI18N
                             bw.write(e.getValue());
                             bw.newLine();
+                            addNewLine = true;
                         }
                     }
                 }
@@ -437,13 +456,13 @@ public class LaunchersConfig {
         StringBuilder buf = new StringBuilder();
         for (int i = 0; i < s.length(); i++) {
             final char c = s.charAt(i);
-            if (c == ' ' && buf.length() > 80) {
+            buf.append(c);
+            if (c == ' ' && buf.length() > 80 && i+1 < s.length()) {
                 buf.append("\\"); //NOI18N
                 bw.write(buf.toString());
                 bw.newLine();
                 buf.setLength(0);
             }
-            buf.append(c);
         }
         bw.write(buf.toString());
         bw.newLine();
