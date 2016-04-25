@@ -2,6 +2,12 @@
 
 namespace A;
 
+const C_A = 'C-A';
+
+function fa() {
+    echo __FUNCTION__;
+}
+
 class ClsA {
 
     public function test() {
@@ -11,6 +17,9 @@ class ClsA {
 }
 
 class ClsUnused {
+}
+
+interface Iface {
 }
 
 class ClsAB implements Iface {
@@ -23,6 +32,12 @@ class MyCls implements Iface {
 
 namespace A\B;
 
+const C_B = 'C-B';
+
+function fb() {
+    echo __FUNCTION__;
+}
+
 class ClsAB {
 
     public function test() {
@@ -32,6 +47,12 @@ class ClsAB {
 }
 
 namespace A\B\C;
+
+const C_C = 'C-C';
+
+function fc() {
+    echo __FUNCTION__;
+}
 
 class ClsABC {
 
@@ -49,6 +70,17 @@ class ClsABC2 {
 
 }
 
+namespace X;
+
+const C_X = 'C-X';
+
+function fx() {
+    echo __FUNCTION__;
+}
+
+class MyX {
+}
+
 namespace Run;
 
 use \A\ {
@@ -57,8 +89,32 @@ use \A\ {
     B\ClsAB,
     ClsA
 };
+use \X\MyX;
+use const \A\ {
+    B\C\C_C,
+    B\C_B,
+    C_A
+};
+use const \X\C_X;
+use function \A\ {
+    B\C\fc,
+    B\fb,
+    fa
+};
+use function \X\fx;
+
+echo C_A . PHP_EOL;
+echo C_B . PHP_EOL;
+echo C_C . PHP_EOL;
+echo C_X . PHP_EOL;
+
+echo fa() . PHP_EOL;
+echo fb() . PHP_EOL;
+echo fc() . PHP_EOL;
+echo fx() . PHP_EOL;
 
 $a = new ClsA();
 $ab = new ClsAB();
 $abc = new ClsABC();
 $mycls = new MyCls();
+$x = new MyX();

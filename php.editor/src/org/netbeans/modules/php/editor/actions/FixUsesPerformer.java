@@ -48,6 +48,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -57,6 +58,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.actions.FixUsesAction.Options;
 import org.netbeans.modules.php.editor.actions.ImportData.ItemVariant;
 import org.netbeans.modules.php.editor.api.AliasedName;
@@ -85,8 +87,8 @@ import org.openide.util.Exceptions;
 public class FixUsesPerformer {
 
     private static final String NEW_LINE = "\n"; //NOI18N
-    private static final String SEMICOLON = ";"; //NOI18N
-    private static final String SPACE = " "; //NOI18N
+    private static final char SEMICOLON = ';'; //NOI18N
+    private static final char SPACE = ' '; //NOI18N
     private static final String USE_KEYWORD = "use"; //NOI18N
     private static final String USE_PREFIX = NEW_LINE + USE_KEYWORD + SPACE; //NOI18N
     private static final String USE_CONST_PREFIX = NEW_LINE + USE_KEYWORD + SPACE + "const" + SPACE; //NOI18N
@@ -94,7 +96,9 @@ public class FixUsesPerformer {
     private static final String AS_KEYWORD = "as"; //NOI18N
     private static final String AS_CONCAT = SPACE + AS_KEYWORD + SPACE;
     private static final String EMPTY_STRING = ""; //NOI18N
-    private static final String COLON = ","; //NOI18N
+    private static final char COMMA = ','; //NOI18N
+    private static final char CURLY_OPEN = '{'; //NOI18N
+    private static final char CURLY_CLOSE = '}'; //NOI18N
     private final PHPParseResult parserResult;
     private final ImportData importData;
     private final List<ItemVariant> selections;
@@ -253,24 +257,130 @@ public class FixUsesPerformer {
         if (useParts.size() > 0) {
             insertString.append(NEW_LINE);
         }
-        if (options.preferMultipleUseStatementsCombined()) {
-            insertString.append(createStringForMultipleUse(useParts));
+        String indentString = null;
+        if (options.preferGroupUses()
+                || options.preferMultipleUseStatementsCombined()) {
+            CodeStyle codeStyle = CodeStyle.get(baseDocument);
+            indentString = IndentUtils.createIndentString(codeStyle.getIndentSize(), codeStyle.expandTabToSpaces(), codeStyle.getTabSize());
+        }
+
+        if (options.preferGroupUses()) {
+            insertString.append(createStringForGroupUse(useParts, indentString));
+        } else if (options.preferMultipleUseStatementsCombined()) {
+            insertString.append(createStringForMultipleUse(useParts, indentString));
         } else {
             insertString.append(createStringForCommonUse(useParts));
         }
         return insertString.toString();
     }
 
-    private String createStringForMultipleUse(List<UsePart> useParts) {
+    private String createStringForGroupUse(List<UsePart> useParts, String indentString) {
+        List<UsePart> typeUseParts = new ArrayList<>(useParts.size());
+        List<UsePart> constUseParts = new ArrayList<>(useParts.size());
+        List<UsePart> functionUseParts = new ArrayList<>(useParts.size());
+        for (UsePart usePart : useParts) {
+            switch (usePart.getType()) {
+                case TYPE:
+                    typeUseParts.add(usePart);
+                    break;
+                case CONST:
+                    constUseParts.add(usePart);
+                    break;
+                case FUNCTION:
+                    functionUseParts.add(usePart);
+                    break;
+                default:
+                    assert false : "Unknown type: " + usePart.getType();
+            }
+        }
         StringBuilder insertString = new StringBuilder();
-        CodeStyle codeStyle = CodeStyle.get(baseDocument);
-        String indentString = IndentUtils.createIndentString(codeStyle.getIndentSize(), codeStyle.expandTabToSpaces(), codeStyle.getTabSize());
+        // types
+        createStringForGroupUse(insertString, indentString, USE_PREFIX, typeUseParts);
+        // constants
+        createStringForGroupUse(insertString, indentString, USE_CONST_PREFIX, constUseParts);
+        // functions
+        createStringForGroupUse(insertString, indentString, USE_FUNCTION_PREFIX, functionUseParts);
+        return insertString.toString();
+    }
+
+    private List<String> usePartsToNamespaces(List<UsePart> useParts) {
+        return useParts.stream()
+                .map(part -> part.getTextPart())
+                .collect(Collectors.toList());
+    }
+
+    private void createStringForGroupUse(StringBuilder insertString, String indentString, String usePrefix, List<UsePart> useParts) {
+        List<UsePart> groupedUseParts = new ArrayList<>(useParts.size());
+        List<UsePart> nonGroupedUseParts = new ArrayList<>(useParts.size());
+        List<String> prefixes = CodeUtils.getCommonNamespacePrefixes(usePartsToNamespaces(useParts));
+        String lastGroupUsePrefix = null;
+        for (UsePart usePart : useParts) {
+            String fqNamespace = CodeUtils.fullyQualifyNamespace(usePart.getTextPart());
+            String groupUsePrefix = null;
+            for (String prefix : prefixes) {
+                if (fqNamespace.startsWith(prefix)) {
+                    groupUsePrefix = prefix;
+                    break;
+                }
+            }
+            if (groupUsePrefix != null) {
+                if (lastGroupUsePrefix != null
+                        && !lastGroupUsePrefix.equals(groupUsePrefix)) {
+                    processGroupedUseParts(insertString, indentString, usePrefix, lastGroupUsePrefix, groupedUseParts);
+                }
+                lastGroupUsePrefix = groupUsePrefix;
+                processNonGroupedUseParts(insertString, indentString, nonGroupedUseParts);
+                groupedUseParts.add(usePart);
+            } else {
+                processGroupedUseParts(insertString, indentString, usePrefix, lastGroupUsePrefix, groupedUseParts);
+                nonGroupedUseParts.add(usePart);
+            }
+        }
+        processNonGroupedUseParts(insertString, indentString, nonGroupedUseParts);
+        processGroupedUseParts(insertString, indentString, usePrefix, lastGroupUsePrefix, groupedUseParts);
+    }
+
+    private void processNonGroupedUseParts(StringBuilder insertString, String indentString, List<UsePart> nonGroupedUseParts) {
+        if (nonGroupedUseParts.isEmpty()) {
+            return;
+        }
+        if (options.preferMultipleUseStatementsCombined()) {
+            insertString.append(createStringForMultipleUse(nonGroupedUseParts, indentString));
+        } else {
+            insertString.append(createStringForCommonUse(nonGroupedUseParts));
+        }
+        nonGroupedUseParts.clear();
+    }
+
+    private void processGroupedUseParts(StringBuilder insertString, String indentString, String usePrefix, String groupUsePrefix, List<UsePart> groupedUseParts) {
+        if (groupedUseParts.isEmpty()) {
+            return;
+        }
+        assert groupUsePrefix != null : groupedUseParts;
+        String properGroupUsePrefix = modifyUseName(groupUsePrefix);
+        insertString.append(usePrefix).append(properGroupUsePrefix).append(SPACE).append(CURLY_OPEN).append(NEW_LINE);
+        boolean first = true;
+        int prefixLength = properGroupUsePrefix.length();
+        for (UsePart groupUsePart : groupedUseParts) {
+            if (first) {
+                first = false;
+            } else {
+                insertString.append(COMMA).append(NEW_LINE);
+            }
+            insertString.append(indentString).append(groupUsePart.getTextPart().substring(prefixLength));
+        }
+        insertString.append(NEW_LINE).append(CURLY_CLOSE).append(SEMICOLON);
+        groupedUseParts.clear();
+    }
+
+    private String createStringForMultipleUse(List<UsePart> useParts, String indentString) {
+        StringBuilder insertString = new StringBuilder();
         UsePart.Type lastUsePartType = null;
         for (Iterator<UsePart> it = useParts.iterator(); it.hasNext(); ) {
             UsePart usePart = it.next();
             if (lastUsePartType != null) {
                 if (lastUsePartType == usePart.getType()) {
-                    insertString.append(COLON).append(NEW_LINE).append(indentString);
+                    insertString.append(COMMA).append(NEW_LINE).append(indentString);
                 } else {
                     insertString.append(SEMICOLON);
                 }
@@ -340,17 +450,29 @@ public class FixUsesPerformer {
         try {
             ModelElement lastSingleUse = getLastUse(namespaceScope, false);
             ModelElement lastGroupUse = getLastUse(namespaceScope, true);
-            if (lastSingleUse.getOffset() > lastGroupUse.getOffset()) {
+            if (lastSingleUse != null
+                    && lastGroupUse != null) {
+                if (lastSingleUse.getOffset() > lastGroupUse.getOffset()) {
+                    return LineDocumentUtils.getLineEnd(baseDocument, lastSingleUse.getOffset());
+                }
+                // XXX is this correct?
+                return LineDocumentUtils.getLineEnd(baseDocument, lastGroupUse.getNameRange().getEnd());
+            }
+            if (lastSingleUse != null) {
                 return LineDocumentUtils.getLineEnd(baseDocument, lastSingleUse.getOffset());
             }
-            // XXX is this correct?
-            return LineDocumentUtils.getLineEnd(baseDocument, lastGroupUse.getNameRange().getEnd());
+            if (lastGroupUse != null) {
+                // XXX is this correct?
+                return LineDocumentUtils.getLineEnd(baseDocument, lastGroupUse.getNameRange().getEnd());
+            }
+            return LineDocumentUtils.getLineEnd(baseDocument, namespaceScope.getOffset());
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
         return 0;
     }
 
+    @CheckForNull
     private static ModelElement getLastUse(NamespaceScope namespaceScope, boolean group) {
         ModelElement offsetElement = null;
         Collection<? extends Scope> declaredUses = group ? namespaceScope.getDeclaredGroupUses() : namespaceScope.getDeclaredSingleUses();
@@ -360,7 +482,7 @@ public class FixUsesPerformer {
                 offsetElement = useElement;
             }
         }
-        return offsetElement != null ? offsetElement : namespaceScope;
+        return offsetElement;
     }
 
     private interface AliasStrategy {
@@ -659,5 +781,11 @@ public class FixUsesPerformer {
             return this.isFromAliasedElement == other.isFromAliasedElement;
         }
 
+        @Override
+        public String toString() {
+            return "UsePart{" + type + " " + textPart + '}'; // NOI18N
+        }
+
     }
+
 }

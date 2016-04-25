@@ -264,12 +264,65 @@ public class FixUsesPerformerTest extends PHPTestBase {
         performTest("$a = new ClsA();^", selections, true, options);
     }
 
-    // XXX
-//    public void testGroupUse_06() throws Exception {
-//        List<Selection> selections = new ArrayList<>();
-//        Options options = new Options(false, true, true, true, false, false);
-//        performTest("$a = new ClsA();^", selections, true, options);
-//    }
+    public void testGroupUse_06() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(false, true, true, true, false, false);
+        performTest("$a = new ClsA();^", selections, true, options);
+    }
+
+    public void testGroupUse_07() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(true, true, true, true, false, true);
+        performTest("fa();^", selections, true, options);
+    }
+
+    public void testGroupUse_08() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(true, false, true, true, false, true);
+        performTest("fa();^", selections, true, options);
+    }
+
+    public void testGroupUse_09() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(true, true, true, false, false, true);
+        performTest("fa();^", selections, true, options);
+    }
+
+    public void testGroupUse_10() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(true, true, true, true, false, true);
+        performTest("fa();^", selections, true, options);
+    }
+
+    public void testGroupUse_11() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(true, true, true, true, false, true);
+        performTest("fa();^", selections, true, options);
+    }
+
+    public void testGroupUse_12() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(true, true, true, true, false, true);
+        performTest("fa();^", selections, true, options);
+    }
+
+    public void testGroupUse_13() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(true, true, true, true, false, true);
+        performTest("fa();^", selections, true, options);
+    }
+
+    public void testGroupUse_14() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(true, true, true, true, false, true);
+        performTest("fa();^", selections, false, options);
+    }
+
+    public void testGroupUseComplex_01() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(false, true, true, true, false, false);
+        performTest("$a = new ClsA();^", selections, true, options);
+    }
 
     private String getTestResult(final String fileName, final String caretLine, final List<Selection> selections, final boolean removeUnusedUses, final Options options) throws Exception {
         FileObject testFile = getTestFile(fileName);

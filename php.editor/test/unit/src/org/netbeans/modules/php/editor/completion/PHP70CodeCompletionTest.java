@@ -298,6 +298,46 @@ public class PHP70CodeCompletionTest extends PHPCodeCompletionTestBase {
         checkCompletion("testfiles/completion/lib/php70/groupUse04.php", "use A\\ {^", false);
     }
 
+    public void testGroupUseConst01a() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUseConst01.php", "use const A\\ {^", false);
+    }
+
+    public void testGroupUseConst01b() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUseConst01.php", "    B\\^C_B,", false);
+    }
+
+    public void testGroupUseConst01c() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUseConst01.php", "    B\\C\\C_^C", false);
+    }
+
+    public void testGroupUseConst02a() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUseConst02.php", "use const A\\{^", false);
+    }
+
+    public void testGroupUseConst03a() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUseConst03.php", "use const \\A\\{^", false);
+    }
+
+    public void testGroupUseFunction01a() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUseFunction01.php", "use function A\\ {^", false);
+    }
+
+    public void testGroupUseFunction01b() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUseFunction01.php", "    B\\^fb,", false);
+    }
+
+    public void testGroupUseFunction01c() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUseFunction01.php", "    B\\C\\f^c", false);
+    }
+
+    public void testGroupUseFunction02a() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUseFunction02.php", "use function A\\{^", false);
+    }
+
+    public void testGroupUseFunction03a() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUseFunction03.php", "use function \\A\\{^", false);
+    }
+
     public void testAnonymousClass01a() throws Exception {
         checkCompletion("testfiles/completion/lib/php70/anonymousClass01.php", "$an^on->testAnon();", false);
     }

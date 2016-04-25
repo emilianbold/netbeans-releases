@@ -50,6 +50,9 @@ METHOD     bazz()                          [PUBLIC]   My\Firm
 METHOD     bazz()                          [PUBLIC]   My\Firm
 METHOD     bazz(...$data)                  [PUBLIC]   My\Firm
 METHOD     boolTypeHint(bool $arg)         [PUBLIC]   scalarTypeHints.php
+METHOD     fa()                            [PUBLIC]   A
+METHOD     fb()                            [PUBLIC]   A\B
+METHOD     fc()                            [PUBLIC]   A\B\C
 METHOD     floatTypeHint(float $arg)       [PUBLIC]   scalarTypeHints.php
 METHOD     fnc()                           [PUBLIC]   uniformVariableSyntax01.php
 METHOD     fnc()                           [PUBLIC]   uniformVariableSyntax02.php
@@ -73,6 +76,9 @@ VARIABLE   $argc                                      PHP Platform
 VARIABLE   $argv                                      PHP Platform
 VARIABLE   $http_response_header                      PHP Platform
 VARIABLE   $php_errormsg                              PHP Platform
+CONSTANT   C_A 'C-A'                       [PUBLIC]   A
+CONSTANT   C_B 'C-B'                       [PUBLIC]   A\B
+CONSTANT   C_C 'C-C'                       [PUBLIC]   A\B\C
 KEYWORD    abstract                                   null
 KEYWORD    and                                        null
 KEYWORD    array                                      null
