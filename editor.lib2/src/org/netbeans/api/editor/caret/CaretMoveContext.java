@@ -50,7 +50,7 @@ import javax.swing.text.Position;
 import org.netbeans.api.annotations.common.NonNull;
 
 /**
- * Context for carets moving within {@link CaretMoveHandler}.
+ * Context for carets moving within {@link org.netbeans.spi.editor.caret.CaretMoveHandler}.
  *
  * @author Miloslav Metelka
  * @since 2.6
@@ -114,7 +114,7 @@ public final class CaretMoveContext {
      *  or true otherwise.
      */
     public boolean setDot(@NonNull CaretInfo caret, @NonNull Position dotPos) {
-        NavigationFilter naviFilter = transaction.getCaret().getNavigationFilterNoDefault(getMoveOrigin());
+        NavigationFilter naviFilter = transaction.getCaret().getNavigationFilterNoDefault(transaction.getOrigin());
         if (naviFilter != null) {
             FilterBypassImpl fbi = new FilterBypassImpl(transaction, caret, transaction.getDocument());
             naviFilter.setDot(fbi, dotPos.getOffset(), Position.Bias.Forward);
@@ -133,7 +133,7 @@ public final class CaretMoveContext {
      *  or true otherwise.
      */
     public boolean moveDot(@NonNull CaretInfo caret, @NonNull Position dotPos) {
-        NavigationFilter naviFilter = transaction.getCaret().getNavigationFilterNoDefault(getMoveOrigin());
+        NavigationFilter naviFilter = transaction.getCaret().getNavigationFilterNoDefault(transaction.getOrigin());
         if (naviFilter != null) {
             FilterBypassImpl fbi = new FilterBypassImpl(transaction, caret, transaction.getDocument());
             naviFilter.moveDot(fbi, dotPos.getOffset(), Position.Bias.Forward);
@@ -188,13 +188,4 @@ public final class CaretMoveContext {
         return getComponent().getDocument();
     }
     
-    /**
-     * Describes the origin of the movement, the calling operation
-     * @return movement description
-     * @see EditorCaret.MoveCaretsOrigin
-     */
-    public @NonNull MoveCaretsOrigin getMoveOrigin() {
-        return transaction.getOrigin();
-    }
-
 }

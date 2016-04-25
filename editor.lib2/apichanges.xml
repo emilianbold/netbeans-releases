@@ -107,6 +107,30 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     
     <changes>
+        <change id="editor-caret-filters">
+            <summary>Support for Navigation Filters, and caret move origins</summary>
+            <version major="2" minor="9"/>
+            <date day="14" month="4" year="2016"/>
+            <author login="sdedic"/>
+            <compatibility binary="compatible" semantic="compatible" source="compatible" addition="yes" deprecation="no" deletion="no"/>
+            <description>
+                <p>
+                    Swing NavigationFilters implemented on top of the Caret API. Caret API caller may describe the operation which causes
+                    the caret to be moved, so that filters and caret listeners can react on specific action groups.
+                </p>
+                <p>
+                    A boilerplate NavigationFilter is provided, that supports chaining of filters on the caret
+                </p>
+            </description>
+            <class name="CaretMoveContext" package="org.netbeans.api.editor.caret"/>
+            <class name="EditorCaret" package="org.netbeans.api.editor.caret"/>
+            <class name="EditorCaretEvent" package="org.netbeans.api.editor.caret"/>
+            <class name="MoveCaretsOrigin" package="org.netbeans.api.editor.caret"/>
+            <class name="NavigationFilterBypass" package="org.netbeans.spi.editor.caret"/>
+            <class name="CascadingNavigationFilter" package="org.netbeans.spi.editor.caret"/>
+            
+            <issue number="555555555"/>
+        </change>
         <change id="editor-registry-find-component">
             <summary>Added EditorRegistry.findComponent</summary>
             <version major="2" minor="8"/>

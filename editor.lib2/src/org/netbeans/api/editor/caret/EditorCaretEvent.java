@@ -101,6 +101,7 @@ public final class EditorCaretEvent extends java.util.EventObject {
      * does not originate form an user-triggered editor action.
      * 
      * @return the original reason for caret movement, or {@code null}.
+     * @since 2.9
      */
     public @CheckForNull MoveCaretsOrigin getOrigin() {
         return origin;

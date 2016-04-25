@@ -52,23 +52,27 @@ import org.openide.util.Parameters;
 
 /**
  * Boilerplate {@link NavigationFilter}, which supports chaining of filters
- * on an JTextComponent. The implementation should call super methods to 
+ * on an JTextComponent. 
+ * <p>
+ * The implementation should call super methods to 
  * allow lower-precedence filters to react. If the implementation desires to
  * disable the filters and take the movement action directly, it can still use
  * the {@link FilterBypass} instance passed.
- * <p/>
+ * </p><p>
  * There are helper {@link #register} and {@link #unregister} methods which 
  * ensure the chain of filters is correctly maintained. After registering, methods
  * implemented by this class will delegate to the remembered formerly-toplevel filter.
  * Implementor of this class may safely call super.* methods to delegate to filters
  * further in the chain.
- * <p/>
+ * </p>
  * 
  * @author sdedic
+ * @since 2.9
  */
 public abstract class CascadingNavigationFilter extends NavigationFilter {
     private NavigationFilter    previous;
-    private EditorCaret         owner;
+    private JTextComponent      owner;
+    private MoveCaretsOrigin    regKey;
 
     /**
      * Returns the next filter in the chain. This class' implementations of NavigationFilter
@@ -110,12 +114,13 @@ public abstract class CascadingNavigationFilter extends NavigationFilter {
     /**
      * Removes this NavigationFilter from the chain; preceding filter will
      * be connected to the following one, so the chain will not be broken.
-     * @param orig the operation specifier, must not be null, use {@link EditorCaret.MoveCaretsOrigin#DEFAULT}
-     * for the default placement.
      */
-    public final void unregister(@NonNull MoveCaretsOrigin orig) {
-        Parameters.notNull("orig", orig);
-        NavigationFilter f = owner.getNavigationFilter(orig);
+    public final void unregister() {
+        if (regKey == null) {
+            // not registered
+            return;
+        }
+        NavigationFilter f = EditorCaret.getNavigationFilter(owner, regKey);
         CascadingNavigationFilter next = null;
         
         while (f instanceof CascadingNavigationFilter && f != this) {
@@ -126,7 +131,7 @@ public abstract class CascadingNavigationFilter extends NavigationFilter {
             return;
         }
         if (next == null) {
-            owner.setNavigationFilter(orig, previous);
+            EditorCaret.setNavigationFilter(owner, regKey, previous);
         } else {
             next.previous = previous;
         }
@@ -136,34 +141,36 @@ public abstract class CascadingNavigationFilter extends NavigationFilter {
     }
 
     /**
-     * Registers this Filter into the NavigationFilter chain. This filter will
+     * Registers this Filter into the NavigationFilter chain. 
+     * <p>
+     * This filter will
      * be placed on top of the filter's chain and the formerly-toplevel filter will
      * be remembered for delegation.
-     * <p/>
+     * </p><p>
      * It is not permitted to register with more carets; make multiple instances of
      * the filter for that case.
+     * </p>
      * 
      * @param caret where this Filter should be registered.
      * @param origin operation specifier
      */
     public final void register(
-            @NonNull EditorCaret caret,
+            @NonNull JTextComponent component,
             @NonNull MoveCaretsOrigin origin) {
-        Parameters.notNull("caret", caret);
+        Parameters.notNull("caret", component);
         Parameters.notNull("origin", origin);
         if (owner != null) {
             throw new IllegalStateException();
         }
-        NavigationFilter prev = caret.getNavigationFilter(origin);
-        caret.setNavigationFilter(origin, this);
-        setOwnerAndPrevious(caret, prev);
+        EditorCaret.setNavigationFilter(component, origin, this);
     }
     
-    public void setOwnerAndPrevious(EditorCaret ec, NavigationFilter prev) {
+    public void setOwnerAndPrevious(JTextComponent component, MoveCaretsOrigin orig, NavigationFilter prev) {
         if (this.owner != null) {
             throw new IllegalStateException("Can be registered only once");
         }
-        this.owner = ec;
+        this.owner = component;
         this.previous = prev;
+        this.regKey = orig;
     }
 }
