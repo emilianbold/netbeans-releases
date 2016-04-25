@@ -127,7 +127,7 @@ public final class MakefileStructureScanner implements StructureScanner {
             }
             if (shaded) {
                 formatter.appendHtml("<font color=\""); // NOI18N
-                formatter.appendHtml(getShadedColor());
+                formatter.appendHtml("!textInactiveText"); // NOI18N
                 formatter.appendHtml("\">"); // NOI18N
             }
             formatter.appendText(target);
@@ -179,19 +179,5 @@ public final class MakefileStructureScanner implements StructureScanner {
         public ImageIcon getCustomIcon() {
             return ICON;
         }
-    }
-
-    // Copied from org.apache.tools.ant.module.nodes.AntTargetNode
-    // Looks like there is some wisdom behind
-    private static String shadedColor;
-    private static synchronized String getShadedColor() {
-        if (shadedColor == null) {
-            if (UIManager.getDefaults().getColor("Tree.selectionBackground").equals(UIManager.getDefaults().getColor("controlShadow"))) { // NOI18N
-                shadedColor = "!Tree.selectionBorderColor"; // NOI18N
-            } else {
-                shadedColor = "!controlShadow"; // NOI18N
-            }
-        }
-        return shadedColor;
     }
 }
