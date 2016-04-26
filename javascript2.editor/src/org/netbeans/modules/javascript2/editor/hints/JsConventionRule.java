@@ -41,26 +41,31 @@
  */
 package org.netbeans.modules.javascript2.editor.hints;
 
-import jdk.nashorn.internal.ir.BinaryNode;
-import jdk.nashorn.internal.ir.Block;
-import jdk.nashorn.internal.ir.DoWhileNode;
-import jdk.nashorn.internal.ir.ExecuteNode;
-import jdk.nashorn.internal.ir.ForNode;
-import jdk.nashorn.internal.ir.FunctionNode;
-import jdk.nashorn.internal.ir.IfNode;
-import jdk.nashorn.internal.ir.LiteralNode;
-import jdk.nashorn.internal.ir.Node;
-import jdk.nashorn.internal.ir.ObjectNode;
-import jdk.nashorn.internal.ir.ReturnNode;
-import jdk.nashorn.internal.ir.VarNode;
-import jdk.nashorn.internal.ir.WhileNode;
+import com.oracle.js.parser.TokenType;
+import com.oracle.js.parser.ir.BinaryNode;
+import com.oracle.js.parser.ir.Block;
+import com.oracle.js.parser.ir.ForNode;
+import com.oracle.js.parser.ir.FunctionNode;
+import com.oracle.js.parser.ir.IfNode;
+import com.oracle.js.parser.ir.LiteralNode;
+import com.oracle.js.parser.ir.Node;
+import com.oracle.js.parser.ir.ObjectNode;
+import com.oracle.js.parser.ir.ReturnNode;
+import com.oracle.js.parser.ir.ThrowNode;
+import com.oracle.js.parser.ir.VarNode;
+import com.oracle.js.parser.ir.WhileNode;
+import static com.oracle.js.parser.TokenType.EQ;
+import static com.oracle.js.parser.TokenType.NE;
+import com.oracle.js.parser.ir.ClassNode;
+import com.oracle.js.parser.ir.ExpressionStatement;
+import com.oracle.js.parser.ir.IdentNode;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import jdk.nashorn.internal.ir.ThrowNode;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Hint;
@@ -69,10 +74,10 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.hints.JsHintsProvider.JsRuleContext;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
-import org.netbeans.modules.javascript2.editor.model.impl.PathNodeVisitor;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
+import org.netbeans.modules.javascript2.model.api.ModelUtils;
+import org.netbeans.modules.javascript2.model.spi.PathNodeVisitor;
 import org.openide.util.NbBundle;
 
 /**
@@ -80,6 +85,12 @@ import org.openide.util.NbBundle;
  * @author Petr Pisl
  */
 public class JsConventionRule extends JsAstRule {
+    
+    private static List<JsTokenId> PREVIOUS_IGNORE = new ArrayList<>();
+    
+    static {
+        Collections.addAll(PREVIOUS_IGNORE, JsTokenId.BLOCK_COMMENT, JsTokenId.DOC_COMMENT, JsTokenId.LINE_COMMENT, JsTokenId.WHITESPACE);
+    }
     
     @Override
     void computeHints(JsRuleContext context, List<Hint> hints, int offset, HintsProvider.HintsManager manager) {
@@ -241,9 +252,16 @@ public class JsConventionRule extends JsAstRule {
                     }
                 }
             } else if (!ts.moveNext() && ts.movePrevious() && ts.moveNext()) {
+                int originalOffset = ts.offset();
+                CharSequence originalText = ts.token().text();
+
+                Token<? extends JsTokenId> previous = LexUtilities.findPrevious(ts, PREVIOUS_IGNORE);
+                if (previous != null && previous.id() == JsTokenId.OPERATOR_SEMICOLON) {
+                    return;
+                }
                 // we are probably at the end of file without the semicolon
-                fileOffset = context.parserResult.getSnapshot().getOriginalOffset(ts.offset());
-                addMissingSemicolonHint(fileOffset, ts.token().text().toString());
+                fileOffset = context.parserResult.getSnapshot().getOriginalOffset(originalOffset);
+                addMissingSemicolonHint(fileOffset, originalText.toString());
             }
         }
         
@@ -427,41 +445,48 @@ public class JsConventionRule extends JsAstRule {
         }
 
         @Override
-        public Node enter(DoWhileNode doWhileNode) {
-            checkAssignmentInCondition(doWhileNode.getTest());
-            return super.enter(doWhileNode);
-        }
-
-        @Override
-        public Node enter(ForNode forNode) {
-            checkAssignmentInCondition(forNode.getTest());
-            return super.enter(forNode);
-        }
-
-        @Override
-        public Node enter(IfNode ifNode) {
-            checkAssignmentInCondition(ifNode.getTest());
-            return super.enter(ifNode);
-        }
-
-        @Override
-        public Node enter(WhileNode whileNode) {
-            checkAssignmentInCondition(whileNode.getTest());
-            return super.enter(whileNode);
-        }
-
-        @Override
-        public Node enter(ExecuteNode executeNode) {
-            if (!(executeNode.getExpression() instanceof Block)) {
-                checkSemicolon(executeNode.getFinish());
+        public boolean enterForNode(ForNode forNode) {
+            if (forNode.getTest() != null) {
+                checkAssignmentInCondition(forNode.getTest().getExpression());
             }
-            return super.enter(executeNode);
+            return super.enterForNode(forNode);
         }
 
         @Override
-        public Node enter(ThrowNode throwNode) {
+        public boolean enterIfNode(IfNode ifNode) {
+            checkAssignmentInCondition(ifNode.getTest());
+            return super.enterIfNode(ifNode);
+        }
+
+        @Override
+        public boolean enterWhileNode(WhileNode whileNode) {
+            checkAssignmentInCondition(whileNode.getTest().getExpression());
+            return super.enterWhileNode(whileNode);
+        }
+        
+
+// TRUFFLE        
+//        @Override
+//        public Node enter(ExecuteNode executeNode) {
+//            if (!(executeNode.getExpression() instanceof Block)) {
+//                checkSemicolon(executeNode.getFinish());
+//            }
+//            return super.enter(executeNode);
+//        }
+
+        @Override
+        public boolean enterExpressionStatement(ExpressionStatement expressionStatement) {
+            Block block = getLexicalContext().getCurrentBlock();
+            if (block == null || !block.isParameterBlock()) {
+                checkSemicolon(expressionStatement.getFinish());
+            }
+            return super.enterExpressionStatement(expressionStatement);
+        }
+        
+        @Override
+        public boolean enterThrowNode(ThrowNode throwNode) {
             checkSemicolon(throwNode.getExpression().getFinish());
-            return super.enter(throwNode);
+            return super.enterThrowNode(throwNode);
         }
         
         
@@ -469,7 +494,7 @@ public class JsConventionRule extends JsAstRule {
         @Override
         @NbBundle.Messages({"# {0} - the eunexpected token",
             "UnexpectedObjectTrailing=Unexpected \"{0}\"."})
-        public Node enter(ObjectNode objectNode) {
+        public boolean enterObjectNode(ObjectNode objectNode) {
             checkDuplicateLabels(objectNode);
             if (objectTrailingComma != null) {
                 int offset = context.parserResult.getSnapshot().getOriginalOffset(objectNode.getFinish());
@@ -477,7 +502,7 @@ public class JsConventionRule extends JsAstRule {
                     TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(
                             context.parserResult.getSnapshot(), objectNode.getFinish());
                     if (ts == null) {
-                        return super.enter(objectNode);
+                        return super.enterObjectNode(objectNode);
                     }
                     ts.move(objectNode.getFinish());
                     if (ts.movePrevious() && ts.moveNext() && ts.movePrevious()) {
@@ -496,13 +521,13 @@ public class JsConventionRule extends JsAstRule {
                     }
                 }
             }
-            return super.enter(objectNode);
+            return super.enterObjectNode(objectNode);
         }
 
         @Override
         @NbBundle.Messages({"# {0} - the eunexpected token",
             "UnexpectedArrayTrailing=Unexpected \"{0}\"."})
-        public Node enter(LiteralNode literalNode) {
+        public boolean enterLiteralNode(LiteralNode literalNode) {
             if (arrayTrailingComma != null) {
                 if (literalNode.getValue() instanceof Node[]) {
                     int offset = context.parserResult.getSnapshot().getOriginalOffset(literalNode.getFinish());
@@ -510,7 +535,7 @@ public class JsConventionRule extends JsAstRule {
                         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(
                                 context.parserResult.getSnapshot(), literalNode.getFinish());
                         if (ts == null) {
-                            return super.enter(literalNode);
+                            return super.enterLiteralNode(literalNode);
                         }
                         ts.move(literalNode.getFinish());
                         if (ts.movePrevious() && ts.moveNext() && ts.movePrevious()) {
@@ -530,11 +555,11 @@ public class JsConventionRule extends JsAstRule {
                     }
                 }
             }
-            return super.enter(literalNode);
+            return super.enterLiteralNode(literalNode);
         }
 
         @Override
-        public Node enter(VarNode varNode) {
+        public boolean enterVarNode(VarNode varNode) {
             boolean check = true;
             Node previous = getPath().get(getPath().size() - 1);
             if (previous instanceof Block) {
@@ -545,22 +570,42 @@ public class JsConventionRule extends JsAstRule {
             } else if (previous instanceof ForNode) {
                 check = false;
             }
+
+            if (varNode.isFunctionDeclaration() || varNode.isExport() || varNode.isDestructuring()) {
+                check = false;
+            }
+            if (varNode.getInit() instanceof ClassNode) {
+                IdentNode cIdent = ((ClassNode) varNode.getInit()).getIdent();
+                IdentNode vIdent = varNode.getName();
+                // this is artificial var node for simple class declaration
+                if (cIdent != null
+                        && cIdent.getStart() == vIdent.getStart()
+                        && cIdent.getFinish() == vIdent.getFinish()) {
+                    check = false;
+                }
+            }
+
             if (check) {
                 checkSemicolon(varNode.getFinish());
             }
-            return super.enter(varNode);
+            return super.enterVarNode(varNode);
         }
 
         @Override
-        public Node enter(ReturnNode returnNode) {
-            checkSemicolon(returnNode.getFinish());
-            return super.enter(returnNode);
+        public boolean enterReturnNode(ReturnNode returnNode) {
+            FunctionNode function = getLexicalContext().getCurrentFunction();
+            if (function == null || function.getKind() != FunctionNode.Kind.ARROW
+                    || com.oracle.js.parser.Token.descType(function.getBody().getToken()) == TokenType.LBRACE) {
+                // if it is arrow without a real block & return
+                checkSemicolon(returnNode.getFinish());
+            }
+            return super.enterReturnNode(returnNode);
         }
 
         @Override
-        public Node enter(BinaryNode binaryNode) {
+        public boolean enterBinaryNode(BinaryNode binaryNode) {
             checkCondition(binaryNode);
-            return super.enter(binaryNode);
+            return super.enterBinaryNode(binaryNode);
         }
     }
 }
