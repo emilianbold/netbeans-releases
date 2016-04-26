@@ -532,8 +532,10 @@ public final class Model {
                     result.add(object);
                 }
             }
-            for (JsObject object : ((JsFunction)scope).getParameters()) {
-                result.add(object);
+            if (scope instanceof JsFunction) {
+                for (JsObject object : ((JsFunction)scope).getParameters()) {
+                    result.add(object);
+                }
             }
             scope = scope.getParentScope();
         }

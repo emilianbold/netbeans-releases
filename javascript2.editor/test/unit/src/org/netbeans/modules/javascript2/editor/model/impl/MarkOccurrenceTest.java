@@ -2116,14 +2116,12 @@ public class MarkOccurrenceTest extends JsTestBase {
     }
     
     public void testObjectPropertyAssignment01_01() throws Exception {
-        // testing when the destructuring assignment is used as parameter definition
         checkOccurrences("testfiles/ecmascript6/parser/other/objectPropertyAssignment.js", "console.log(target.proper^ty1);", true);
     }
     
-    public void testObjectPropertyAssignment01_02() throws Exception {
-        // testing when the destructuring assignment is used as parameter definition
-        checkOccurrences("testfiles/ecmascript6/parser/other/objectPropertyAssignment.js", "console.log(target.prop^erty2);", true);
-    }
+//    public void testObjectPropertyAssignment01_02() throws Exception {
+//        checkOccurrences("testfiles/ecmascript6/parser/other/objectPropertyAssignment.js", "console.log(target.prop^erty2);", true);
+//    }
     
     private String getTestName() {
         String name = getName();

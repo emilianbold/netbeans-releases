@@ -125,9 +125,13 @@ public class OccurrenceBuilder {
         JsObject parent = item.currentParent;
         if (!(parent instanceof JsWith || (parent.getParent() != null && parent.getParent() instanceof JsWith))) {
             while (scope != null && property == null && parameter == null) {
-                JsFunction function = (JsFunction)scope;
-                property = function.getProperty(name);
-                parameter = function.getParameter(name);
+                if (scope instanceof JsFunction) {
+                    JsFunction function = (JsFunction)scope;
+                    property = function.getProperty(name);
+                    parameter = function.getParameter(name);
+                } else {
+                    property = ((DeclarationScopeImpl)scope).getProperty(name);
+                }
                 scope = scope.getParentScope();
             }
             if(parameter != null) {

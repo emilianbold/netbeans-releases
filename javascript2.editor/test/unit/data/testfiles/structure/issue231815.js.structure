@@ -55,6 +55,3 @@ $:PARAMETER:[PUBLIC]:ESCAPED{$}:
         minValue:FIELD:[PUBLIC]:ESCAPED{minValue}<font color="#999999">ESCAPED{ : }@var;avgESCAPED{|}@var;baseValueESCAPED{|}NumberESCAPED{|}prv.json.columns.temperature</font>:
         scale:FIELD:[PUBLIC]:ESCAPED{scale}<font color="#999999">ESCAPED{ : }@var;avgESCAPED{|}@var;baseValueESCAPED{|}NumberESCAPED{|}prv.json.columns.temperatureESCAPED{|}prv.maxValueESCAPED{|}prv.minValue</font>:
       settings:CLASS:[PRIVATE]:ESCAPED{settings}:
-app:CLASS:[PUBLIC]:ESCAPED{app}:
-  graph:CLASS:[PUBLIC]:ESCAPED{graph}:
-    hint:FIELD:[PUBLIC]:ESCAPED{hint}<font color="#999999">ESCAPED{ : }String</font>:
