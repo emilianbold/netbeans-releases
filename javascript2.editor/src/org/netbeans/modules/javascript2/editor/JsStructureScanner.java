@@ -72,7 +72,6 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.api.StructureScanner.Configuration;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
@@ -82,6 +81,7 @@ import org.netbeans.modules.javascript2.model.api.Index;
 import org.netbeans.modules.javascript2.model.api.JsReference;
 import org.netbeans.modules.javascript2.types.api.Type;
 import org.netbeans.modules.javascript2.types.api.TypeUsage;
+import org.netbeans.modules.javascript2.types.spi.ParserResult;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -102,11 +102,11 @@ public class JsStructureScanner implements StructureScanner {
     }
 
     @Override
-    public List<? extends StructureItem> scan(ParserResult info) {
+    public List<? extends StructureItem> scan(org.netbeans.modules.csl.spi.ParserResult info) {
         final List<StructureItem> items = new ArrayList<StructureItem>();
         long start = System.currentTimeMillis();
         LOGGER.log(Level.FINE, "Structure scanner started at {0} ms", start);
-        JsParserResult result = (JsParserResult) info;
+        ParserResult result = (ParserResult) info;
         final Model model = Model.getModel(result, false);
         model.resolve();
         JsObject globalObject = model.getGlobalObject();
@@ -117,7 +117,7 @@ public class JsStructureScanner implements StructureScanner {
         return items;
     }
 
-    private List<StructureItem> getEmbededItems(JsParserResult result, JsObject jsObject, List<StructureItem> collectedItems, List<String> processedObjects, CancelSupport cancel) {
+    private List<StructureItem> getEmbededItems(ParserResult result, JsObject jsObject, List<StructureItem> collectedItems, List<String> processedObjects, CancelSupport cancel) {
         if (ModelUtils.wasProcessed(jsObject, processedObjects)) {
             return collectedItems;
         }
@@ -285,12 +285,12 @@ public class JsStructureScanner implements StructureScanner {
     }
     
     @Override
-    public Map<String, List<OffsetRange>> folds(ParserResult info) {
+    public Map<String, List<OffsetRange>> folds(org.netbeans.modules.csl.spi.ParserResult info) {
         long start = System.currentTimeMillis(); 
         Map<String, List<OffsetRange>> folds;
         String mimeType = info.getSnapshot().getMimeType();
         if (JsTokenId.isJSONBasedMimeType(mimeType)) {
-            folds = foldsJson(info);
+            folds = foldsJson((ParserResult)info);
         } else {
             folds = new HashMap<String, List<OffsetRange>>();
             TokenHierarchy th = info.getSnapshot().getTokenHierarchy();
@@ -415,10 +415,10 @@ public class JsStructureScanner implements StructureScanner {
         
         final private List<? extends StructureItem> children;
         final private String sortPrefix;
-        final protected JsParserResult parserResult;
+        final protected ParserResult parserResult;
         final private String fqn;
         
-        public JsStructureItem(JsObject elementHandle, List<? extends StructureItem> children, String sortPrefix, JsParserResult parserResult) {
+        public JsStructureItem(JsObject elementHandle, List<? extends StructureItem> children, String sortPrefix, ParserResult parserResult) {
             this.modelElement = elementHandle;
             this.sortPrefix = sortPrefix;
             this.parserResult = parserResult;
@@ -545,7 +545,7 @@ public class JsStructureScanner implements StructureScanner {
     
     private class JsClassStructureItem extends JsStructureItem {
         
-        public JsClassStructureItem(JsObject elementHandle, List<? extends StructureItem> children, JsParserResult parserResult) {
+        public JsClassStructureItem(JsObject elementHandle, List<? extends StructureItem> children, ParserResult parserResult) {
             super(elementHandle, children, "cl", parserResult); //NOI18N
         }
         
@@ -595,7 +595,10 @@ public class JsStructureScanner implements StructureScanner {
 
         private final List<TypeUsage> resolvedTypes;
 
-        public JsFunctionStructureItem(JsFunction elementHandle, List<? extends StructureItem> children, JsParserResult parserResult) {
+        public JsFunctionStructureItem(
+                JsFunction elementHandle,
+                List<? extends StructureItem> children,
+                ParserResult parserResult) {
             super(elementHandle, children, "fn", parserResult); //NOI18N
             Collection<? extends TypeUsage> returnTypes = getFunctionScope().getReturnTypes();
             resolvedTypes = new ArrayList<TypeUsage>(ModelUtils.resolveTypes(returnTypes,
@@ -701,7 +704,7 @@ public class JsStructureScanner implements StructureScanner {
 
     private class JsObjectStructureItem extends JsStructureItem {
 
-        public JsObjectStructureItem(JsObject elementHandle, List<? extends StructureItem> children, JsParserResult parserResult) {
+        public JsObjectStructureItem(JsObject elementHandle, List<? extends StructureItem> children, ParserResult parserResult) {
             super(elementHandle, children, "ob", parserResult); //NOI18N
         }
 
@@ -735,7 +738,7 @@ public class JsStructureScanner implements StructureScanner {
 
         private final List<TypeUsage> resolvedTypes;
         
-        public JsSimpleStructureItem(JsObject elementHandle, String sortPrefix, JsParserResult parserResult) {
+        public JsSimpleStructureItem(JsObject elementHandle, String sortPrefix, ParserResult parserResult) {
             super(elementHandle, null, sortPrefix, parserResult);
             this.object = elementHandle;
 
