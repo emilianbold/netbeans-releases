@@ -106,16 +106,15 @@ public class JsonLanguage extends DefaultLanguageConfig {
         return new JsonParser();
     }
 
-// todo: tzezula - disable for now
-//    @Override
-//    public boolean hasStructureScanner() {
-//        return true;
-//    }
-//
-//    @Override
-//    public StructureScanner getStructureScanner() {
-//        return new JsStructureScanner(JsTokenId.jsonLanguage());
-//    }
+    @Override
+    public boolean hasStructureScanner() {
+        return true;
+    }
+
+    @Override
+    public StructureScanner getStructureScanner() {
+        return new JsStructureScanner(JsTokenId.jsonLanguage());
+    }
 
 //    @Override
 //    public SemanticAnalyzer getSemanticAnalyzer() {
