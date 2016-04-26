@@ -559,7 +559,7 @@ public class ModelUtils {
 //            }
         } else if(type.getType().startsWith(SemiTypeResolverVisitor.ST_VAR)){
             String name = type.getType().substring(5);
-            JsFunction declarationScope = object instanceof DeclarationScope ? (JsFunction)object : (JsFunction)getDeclarationScope(object);
+            DeclarationScope declarationScope = object instanceof DeclarationScope ? (DeclarationScope)object : getDeclarationScope(object);
             List<JsObject> variables = new ArrayList(ModelUtils.getVariables(declarationScope));
             if (!(object instanceof DeclarationScope) && object.getParent() != null && !(object.getParent() instanceof DeclarationScope)) {
                 variables.addAll(object.getParent().getProperties().values());
@@ -596,18 +596,20 @@ public class ModelUtils {
                     }
                 }
                 if (!resolved) {
-                    Collection<? extends JsObject> parameters = declarationScope.getParameters();
-                    boolean isParameter = false;
-                    for (JsObject parameter : parameters) {
-                        if (name.equals(parameter.getName())) {
-                            Collection<? extends TypeUsage> assignments = parameter.getAssignmentForOffset(parameter.getOffset());
-                            result.addAll(assignments);
-                            isParameter = true;
-                            break;
+                    if (declarationScope instanceof JsFunction) {
+                        Collection<? extends JsObject> parameters = ((JsFunction)declarationScope).getParameters();
+                        boolean isParameter = false;
+                        for (JsObject parameter : parameters) {
+                            if (name.equals(parameter.getName())) {
+                                Collection<? extends TypeUsage> assignments = parameter.getAssignmentForOffset(parameter.getOffset());
+                                result.addAll(assignments);
+                                isParameter = true;
+                                break;
+                            }
                         }
-                    }
-                    if (!isParameter) {
-                        result.add(new TypeUsage(name, type.getOffset(), false));
+                        if (!isParameter) {
+                            result.add(new TypeUsage(name, type.getOffset(), false));
+                        }
                     }
                 }
             }

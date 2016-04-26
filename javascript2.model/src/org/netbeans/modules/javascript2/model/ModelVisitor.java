@@ -1570,11 +1570,13 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
                             // -> the variable will be reference fo the function
                             FunctionNode fNode = (FunctionNode) bNode.rhs();
                             JsObject original = parentFn.getProperty(modelBuilder.getFunctionName(fNode));
-                            Identifier varName = new Identifier(varNode.getName().getName(), getOffsetRange(varNode.getName()));
-                            OffsetRange range = varName.getOffsetRange();
-                            JsFunctionReference variable = new JsFunctionReference(parentFn, varName, (JsFunction) original, true, original.getModifiers());
-                            variable.addOccurrence(varName.getOffsetRange());
-                            parentFn.addProperty(varName.getName(), variable);
+                            if (original != null) {
+                                Identifier varName = new Identifier(varNode.getName().getName(), getOffsetRange(varNode.getName()));
+                                OffsetRange range = varName.getOffsetRange();
+                                JsFunctionReference variable = new JsFunctionReference(parentFn, varName, (JsFunction) original, true, original.getModifiers());
+                                variable.addOccurrence(varName.getOffsetRange());
+                                parentFn.addProperty(varName.getName(), variable);
+                            }
                         }
                     }
                 }
@@ -3014,8 +3016,10 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
         } else {
             DeclarationScope scope = modelBuilder.getCurrentDeclarationScope();
             JsObject parameter = null;
-            JsFunction function = (JsFunction)scope;
-            parameter = function.getParameter(iNode.getName());
+            if (scope instanceof JsFunction) {
+                JsFunction function = (JsFunction)scope;
+                parameter = function.getParameter(iNode.getName());
+            }
             if (parameter != null) {
                 parameter.addOccurrence(getOffsetRange(iNode));
             } else {
@@ -3362,7 +3366,7 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
                         for (int i = 1; i < args.size(); i++) {
                             Expression expression = args.get(i);
                             List<Identifier> argName = getNodeName(expression, parserResult);
-                            if (argName != null) {
+                            if (argName != null && !argName.isEmpty()) {
                                 JsObjectImpl argObject = ModelUtils.getJsObject(modelBuilder, argName, false);
                                 if (argObject != null) {
                                     for(JsObject property : argObject.getProperties().values()) {
