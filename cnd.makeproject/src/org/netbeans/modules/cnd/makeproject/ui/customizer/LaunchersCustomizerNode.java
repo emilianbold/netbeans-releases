@@ -63,7 +63,7 @@ public class LaunchersCustomizerNode extends CustomizerNode {
     @Override
     public JPanel getPanel(Configuration configuration) {
         if (launchersPropPanel == null) {
-            launchersPropPanel = new LaunchersPanel(getContext().getProject());
+            launchersPropPanel = new LaunchersPanel(getContext().getProject(), false);
             getContext().registerSavable(launchersPropPanel);
         }
         return launchersPropPanel;

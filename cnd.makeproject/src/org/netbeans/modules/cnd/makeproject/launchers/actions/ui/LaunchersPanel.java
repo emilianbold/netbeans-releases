@@ -42,28 +42,24 @@
 package org.netbeans.modules.cnd.makeproject.launchers.actions.ui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.ImageIcon;
+import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -81,6 +77,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -100,15 +97,38 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
     final ListView h_list;
     private boolean modified = false;
     private volatile boolean resetFields = true;
+    private final Preferences panelPreferences = NbPreferences.forModule(getClass()).node("launchers"); // NOI18N
+
 
     /**
      * Creates new form LaunchersPanel
      */
-    public LaunchersPanel(Project project) {
-        setPreferredSize(new Dimension(640, 450));
+    public LaunchersPanel(Project project, final boolean standAloneDialog) {
+        if (standAloneDialog) {
+            setPreferredSize(new Dimension(panelPreferences.getInt("dialogSizeW", 640), // NOI18N
+                                           panelPreferences.getInt("dialogSizeH", 450))); // NOI18N
+        } else {
+            setPreferredSize(new Dimension(640, 450));
+        }
         setMinimumSize(new Dimension(400, 200));
         initComponents();
-        
+        addHierarchyListener(new HierarchyListener() {
+            @Override
+            public void hierarchyChanged(HierarchyEvent e) {
+                if (e.getChangeFlags() == HierarchyEvent.SHOWING_CHANGED) {
+                    if (!e.getChanged().isVisible()){
+                        if (standAloneDialog) {
+                            panelPreferences.putInt("dialogSizeW", getSize().width); // NOI18N
+                            panelPreferences.putInt("dialogSizeH", getSize().height); // NOI18N
+                        }
+                        if (selectedConfiguration != null) {
+                            int index = launchers.indexOf(selectedConfiguration);
+                            panelPreferences.putInt("lastSelecion", index); // NOI18N
+                        }
+                    }
+                }
+            }
+        });
         envVarModel = new ListTableModel(NbBundle.getMessage(LaunchersPanel.class, "EnvName"),
                                  NbBundle.getMessage(LaunchersPanel.class, "EnvValue"));
 	envVarTable = new JTable(envVarModel);
@@ -166,7 +186,6 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
         runTextField.getDocument().addDocumentListener(documentListener);
     }
 
-
     @Override
     public void save() {
         updateSelectedConfiguration();
@@ -187,8 +206,16 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
 
         if (sc == null) {
             if (nodes.getNodesCount() > 0) {
+                int index = panelPreferences.getInt("lastSelecion", -1); // NOI18N
+                if (index < 0) {
+                    index = 0;
+                } else {
+                    if (index >= nodes.getNodesCount()) {
+                        index = 0;
+                    }
+                }
                 try {
-                    manager.setSelectedNodes(new Node[]{nodes.getNodeAt(0)});
+                    manager.setSelectedNodes(new Node[]{nodes.getNodeAt(index)});
                 } catch (PropertyVetoException ex) {
                     Exceptions.printStackTrace(ex);
                 }
