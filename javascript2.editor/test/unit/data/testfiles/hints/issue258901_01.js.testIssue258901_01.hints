@@ -1,3 +1,0 @@
-var [one, two, three ] = foo; //<- false warning here d
-                     -
-HINT:Expected semicolon ; after "]".

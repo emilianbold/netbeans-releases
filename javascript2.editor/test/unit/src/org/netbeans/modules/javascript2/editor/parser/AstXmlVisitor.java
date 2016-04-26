@@ -455,7 +455,8 @@ public class AstXmlVisitor extends NodeVisitor {
         processAttribute(node.isConst(), "isConst");
         processAttribute(node.isFunctionDeclaration(), "isFunctionDeclaration");
         processAttribute(node.isLet(), "isLet");
-        processAttribute(node.isSynthetic(), "isSynthetic");
+        processAttribute(node.isExport(), "isExport");
+        processAttribute(node.isDestructuring(), "isDestructuring");
 
         processWithComment(node.getAssignmentDest(), "VarNode Assignment Dest");
         processWithComment(node.getInit(), "VarNode Init");
