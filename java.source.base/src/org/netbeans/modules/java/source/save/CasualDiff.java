@@ -3246,6 +3246,7 @@ public class CasualDiff {
                     } else {
                         end = bounds[1];
                     }
+                    start = Math.max(start, pos);
                     copyTo(start, pos = end, printer);
                     wasLeadingDelete = false;
                     break;
