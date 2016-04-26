@@ -823,7 +823,7 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
             buildTextField.setText(cfg == null ? null : cfg.getBuildCommand());
             symbolsTextField.setText(cfg == null ? null : cfg.getSymbolFiles());
             publicCheckBox.setSelected(cfg == null ? false : cfg.getPublic());
-            hideCheckBox.setSelected(cfg == null ? false : cfg.isHide());
+            hideCheckBox.setSelected(cfg == null ? false : (cfg.isHide() || (cfg.getID() < 0)));
 	    ArrayList<String> col0 = new ArrayList<>();
 	    ArrayList<String> col1 = new ArrayList<>();
             int n;
