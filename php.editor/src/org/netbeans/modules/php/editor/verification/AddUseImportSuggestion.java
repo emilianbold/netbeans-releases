@@ -227,6 +227,9 @@ public class AddUseImportSuggestion extends SuggestionRule {
             QualifiedName importName = QualifiedName.getPrefix(indexedName, nodeName, true);
 
             if (importName != null && context.fileScope != null) {
+                if (importName.toFullyQualified().equals(indexedName)) { // #258480
+                    return;
+                }
                 final String retvalStr = importName.toString();
                 NamespaceScope currentScope = ModelUtils.getNamespaceScope(currenNamespace, context.fileScope);
 

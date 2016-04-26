@@ -289,6 +289,10 @@ public class HintsTest extends PHPHintsTestBase {
         checkHints(new AddUseImportSuggestion(), "testAddUseImportSuggestion_02.php", "new Foox\\Barx();^");
     }
 
+    public void testIssue258480() throws Exception {
+        checkHints(new AddUseImportSuggestion(), "testIssue258480.php", "$x = date2();^");
+    }
+
     public void testIssue223842() throws Exception {
         checkHints(new IntroduceSuggestion(), "testIssue223842.php", "Foo::{\"\"}();^");
     }
