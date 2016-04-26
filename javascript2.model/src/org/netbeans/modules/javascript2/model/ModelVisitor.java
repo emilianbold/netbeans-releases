@@ -1414,21 +1414,27 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
             
             
             
+            private void handleDeclarations() {
+                if (!declaredFunctions.isEmpty() || !declaredVars.isEmpty()) {
+                    for (FunctionNode fnNode : declaredFunctions) {
+                        handleDeclaredFunction(currentBlockScope, parentFn, fnNode);
+                    }
+                    for (VarNode varNode : declaredVars) {
+                        if (varNode.isLet()) {
+                            // block scope variable
+                            handleDeclaredVariable(currentBlockScope, parentFn, varNode, docHolder);
+                        } else {
+                            handleDeclaredVariable(parentFn, parentFn, varNode, docHolder);
+                        }
+                    }
+                    declaredFunctions.clear();
+                    declaredVars.clear();
+                }
+            }
+            
             @Override
             public boolean enterBlock(Block block) {
-                for (FunctionNode fnNode : declaredFunctions) {
-                    handleDeclaredFunction(currentBlockScope, parentFn, fnNode);
-                }
-                for (VarNode varNode : declaredVars) {
-                    if (varNode.isLet()) {
-                        // block scope variable
-                        handleDeclaredVariable(currentBlockScope, parentFn, varNode, docHolder);
-                    } else {
-                        handleDeclaredVariable(currentBlockScope, parentFn, varNode, docHolder);
-                    }
-                }
-                declaredFunctions.clear();
-                declaredVars.clear();
+                handleDeclarations();
                 if (inNode.isStrict()) {
                     if (getPath().size() > 0) {
                         // we are in strict mode -> possible block scope declaration
@@ -1444,22 +1450,7 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
             @Override
             public Node leaveBlock(Block block) {
                 if (inNode.isStrict() || getPath().size() == 1) {
-                    if(!declaredFunctions.isEmpty() || !declaredVars.isEmpty()) {
-                        for(FunctionNode fnNode: declaredFunctions) {
-                            handleDeclaredFunction(currentBlockScope, parentFn, fnNode);
-                        }
-                        for (VarNode varNode: declaredVars) {
-                            JsDocumentationHolder docHolder = JsDocumentationSupport.getDocumentationHolder(parserResult);
-                            if (varNode.isLet()) {
-                                // block scope variable
-                                handleDeclaredVariable(currentBlockScope, parentFn, varNode, docHolder);
-                            } else {
-                                handleDeclaredVariable(parentFn, parentFn, varNode, docHolder);
-                            }
-                        }
-                        declaredFunctions.clear();
-                        declaredVars.clear();
-                    }
+                    handleDeclarations();
                     if (getPath().size() > 1) {
                         DeclarationScopeImpl parentScope = (DeclarationScopeImpl)currentBlockScope.getParentScope();
                         if (!((JsObject)currentBlockScope).getProperties().isEmpty()) {
@@ -1475,20 +1466,7 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
 
             @Override
             public Node leaveExportNode(ExportNode exportNode) {
-                if (!declaredFunctions.isEmpty() || !declaredVars.isEmpty()) {
-                    for(FunctionNode fnNode: declaredFunctions) {
-                        handleDeclaredFunction(parentFn, parentFn, fnNode);
-                    }
-                    for (VarNode varNode: declaredVars) {
-                        JsDocumentationHolder docHolder = JsDocumentationSupport.getDocumentationHolder(parserResult);
-                        if (varNode.isLet()) {
-                            // block scope variable
-                            handleDeclaredVariable(parentFn, parentFn, varNode, docHolder);
-                        } else {
-                            handleDeclaredVariable(parentFn, parentFn, varNode, docHolder);
-                        }
-                    }
-                }
+                handleDeclarations();
                 return super.leaveExportNode(exportNode);
             }
             
