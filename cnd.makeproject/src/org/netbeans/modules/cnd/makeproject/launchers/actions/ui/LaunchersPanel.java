@@ -888,7 +888,7 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
             } else {
                 iconFile = pub ? "common_public.png" : "common_private.png"; // NOI18N
             }
-            icon = ImageUtilities.loadImage(resources + iconFile, false);
+            icon = ImageUtilities.icon2Image(ImageUtilities.loadImageIcon(resources + iconFile, false));
         }
 
         public LauncherConfig getConfiguration() {
