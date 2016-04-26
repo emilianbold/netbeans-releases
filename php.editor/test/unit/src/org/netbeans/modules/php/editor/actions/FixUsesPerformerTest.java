@@ -55,6 +55,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.PHPTestBase;
 import org.netbeans.modules.php.editor.actions.FixUsesAction.Options;
 import org.netbeans.modules.php.editor.actions.ImportData.ItemVariant;
@@ -236,25 +237,25 @@ public class FixUsesPerformerTest extends PHPTestBase {
 
     public void testGroupUse_01() throws Exception {
         List<Selection> selections = new ArrayList<>();
-        Options options = new Options(false, false, false, false, false);
+        Options options = new Options(false, false, false, false, false, PhpVersion.PHP_70);
         performTest("$a = new ClsA();^", selections, false, options);
     }
 
     public void testGroupUse_02() throws Exception {
         List<Selection> selections = new ArrayList<>();
-        Options options = new Options(false, false, false, false, false);
+        Options options = new Options(false, false, false, false, false, PhpVersion.PHP_70);
         performTest("$a = new ClsA();^", selections, true, options);
     }
 
     public void testGroupUse_03() throws Exception {
         List<Selection> selections = new ArrayList<>();
-        Options options = new Options(false, false, false, false, false);
+        Options options = new Options(false, false, false, false, false, PhpVersion.PHP_70);
         performTest("$a = new ClsA();^", selections, true, options);
     }
 
     public void testGroupUse_04() throws Exception {
         List<Selection> selections = new ArrayList<>();
-        Options options = new Options(false, false, false, false, false);
+        Options options = new Options(false, false, false, false, false, PhpVersion.PHP_70);
         performTest("$a = new ClsA();^", selections, true, options);
     }
 
@@ -266,61 +267,61 @@ public class FixUsesPerformerTest extends PHPTestBase {
 
     public void testGroupUse_06() throws Exception {
         List<Selection> selections = new ArrayList<>();
-        Options options = new Options(false, true, true, true, false, false);
+        Options options = new Options(false, true, true, true, false, PhpVersion.PHP_70);
         performTest("$a = new ClsA();^", selections, true, options);
     }
 
     public void testGroupUse_07() throws Exception {
         List<Selection> selections = new ArrayList<>();
-        Options options = new Options(true, true, true, true, false, true);
+        Options options = new Options(true, true, true, true, false, PhpVersion.PHP_70);
         performTest("fa();^", selections, true, options);
     }
 
     public void testGroupUse_08() throws Exception {
         List<Selection> selections = new ArrayList<>();
-        Options options = new Options(true, false, true, true, false, true);
+        Options options = new Options(true, false, true, true, false, PhpVersion.PHP_70);
         performTest("fa();^", selections, true, options);
     }
 
     public void testGroupUse_09() throws Exception {
         List<Selection> selections = new ArrayList<>();
-        Options options = new Options(true, true, true, false, false, true);
+        Options options = new Options(true, true, true, false, false, PhpVersion.PHP_70);
         performTest("fa();^", selections, true, options);
     }
 
     public void testGroupUse_10() throws Exception {
         List<Selection> selections = new ArrayList<>();
-        Options options = new Options(true, true, true, true, false, true);
+        Options options = new Options(true, true, true, true, false, PhpVersion.PHP_70);
         performTest("fa();^", selections, true, options);
     }
 
     public void testGroupUse_11() throws Exception {
         List<Selection> selections = new ArrayList<>();
-        Options options = new Options(true, true, true, true, false, true);
+        Options options = new Options(true, true, true, true, false, PhpVersion.PHP_70);
         performTest("fa();^", selections, true, options);
     }
 
     public void testGroupUse_12() throws Exception {
         List<Selection> selections = new ArrayList<>();
-        Options options = new Options(true, true, true, true, false, true);
+        Options options = new Options(true, true, true, true, false, PhpVersion.PHP_70);
         performTest("fa();^", selections, true, options);
     }
 
     public void testGroupUse_13() throws Exception {
         List<Selection> selections = new ArrayList<>();
-        Options options = new Options(true, true, true, true, false, true);
+        Options options = new Options(true, true, true, true, false, PhpVersion.PHP_70);
         performTest("fa();^", selections, true, options);
     }
 
     public void testGroupUse_14() throws Exception {
         List<Selection> selections = new ArrayList<>();
-        Options options = new Options(true, true, true, true, false, true);
+        Options options = new Options(true, true, true, true, false, PhpVersion.PHP_70);
         performTest("fa();^", selections, false, options);
     }
 
     public void testGroupUseComplex_01() throws Exception {
         List<Selection> selections = new ArrayList<>();
-        Options options = new Options(false, true, true, true, false, false);
+        Options options = new Options(false, true, true, true, false, PhpVersion.PHP_70);
         performTest("$a = new ClsA();^", selections, true, options);
     }
 

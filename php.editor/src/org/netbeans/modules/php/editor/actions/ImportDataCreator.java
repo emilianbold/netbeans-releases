@@ -51,6 +51,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.actions.FixUsesAction.Options;
 import org.netbeans.modules.php.editor.actions.ImportData.DataItem;
 import org.netbeans.modules.php.editor.actions.ImportData.ItemVariant;
@@ -112,7 +113,7 @@ public class ImportDataCreator {
         Collection<FullyQualifiedElement> filteredDuplicates = filterDuplicates(filteredPlatformConstsAndFunctions);
         Collection<FullyQualifiedElement> filteredExactUnqualifiedNames = filterExactUnqualifiedName(filteredDuplicates, fqElementName);
         if (filteredExactUnqualifiedNames.isEmpty()) {
-            if (options.isPhp56OrGreater()) {
+            if (options.getPhpVersion().compareTo(PhpVersion.PHP_56) >= 0) {
                 possibleItems.add(new EmptyItem(fqElementName));
             } else {
                 if (!isConstOrFunction(fqElementName)) {
@@ -148,14 +149,12 @@ public class ImportDataCreator {
 
     private Collection<FullyQualifiedElement> fetchPossibleFQElements(final String typeName) {
         Collection<FullyQualifiedElement> possibleTypes = new HashSet<>();
-        Collection<ClassElement> possibleClasses = phpIndex.getClasses(NameKind.prefix(typeName));
-        Collection<InterfaceElement> possibleIfaces = phpIndex.getInterfaces(NameKind.prefix(typeName));
-        // XXX only for php 5.4+
-        Collection<TraitElement> possibleTraits = phpIndex.getTraits(NameKind.prefix(typeName));
-        possibleTypes.addAll(possibleClasses);
-        possibleTypes.addAll(possibleIfaces);
-        possibleTypes.addAll(possibleTraits);
-        if (options.isPhp56OrGreater()) {
+        possibleTypes.addAll(phpIndex.getClasses(NameKind.prefix(typeName)));
+        possibleTypes.addAll(phpIndex.getInterfaces(NameKind.prefix(typeName)));
+        if (options.getPhpVersion().compareTo(PhpVersion.PHP_54) >= 0) {
+            possibleTypes.addAll(phpIndex.getTraits(NameKind.prefix(typeName)));
+        }
+        if (options.getPhpVersion().compareTo(PhpVersion.PHP_56) >= 0) {
             Collection<FunctionElement> possibleFunctions = phpIndex.getFunctions(NameKind.prefix(typeName));
             Collection<ConstantElement> possibleConstants = phpIndex.getConstants(NameKind.prefix(typeName));
             possibleTypes.addAll(possibleFunctions);
