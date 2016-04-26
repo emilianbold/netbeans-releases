@@ -13,10 +13,12 @@
         <VarNode name='p' start='9' end='11'>
           <isBlockScoped/>
           <isLet/>
+          <isDestructuring/>
         </VarNode>
         <VarNode name='q' start='9' end='14'>
           <isBlockScoped/>
           <isLet/>
+          <isDestructuring/>
         </VarNode>
         <ForNode start='0' end='22'>
           <ArrayLiteralNode start='9' end='15'>

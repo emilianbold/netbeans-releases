@@ -37,7 +37,7 @@
     <VarNode name='*default*' start='43' end='66'>
       <hasInit/>
       <isAssignment/>
-      <isSynthetic/>
+      <isExport/>
       <!-- VarNode Assignment Dest -->
       <IdentNode start='43' end='66'>
         <name>*default*</name>
