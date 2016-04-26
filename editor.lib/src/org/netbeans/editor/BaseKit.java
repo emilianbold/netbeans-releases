@@ -1467,7 +1467,70 @@ public class BaseKit extends DefaultEditorKit {
                 }
 
                 final BaseDocument doc = (BaseDocument)target.getDocument();
-                final int insertionOffset = computeInsertionOffset(target.getCaret());
+                Caret caret = target.getCaret();
+                if(caret instanceof EditorCaret && ((EditorCaret)caret).getCarets().size() > 1) {
+                    final EditorCaret editorCaret = (EditorCaret) caret;
+                    final Indent indenter = Indent.get(doc);
+                    indenter.lock();
+                    try {
+                        doc.runAtomicAsUser(new Runnable() {
+                            @Override
+                            public void run() {
+                                editorCaret.moveCarets(new CaretMoveHandler() {
+                                    @Override
+                                    public void moveCarets(CaretMoveContext context) {
+                                        boolean beeped = false;
+                                        DocumentUtilities.setTypingModification(doc, true);
+                                        // Store current state of caret(s) for undo
+                                        UndoableEdit caretUndoEdit = CaretUndo.createCaretUndoEdit(editorCaret, doc, false);
+                                        if (caretUndoEdit != null) {
+                                            doc.addUndoableEdit(caretUndoEdit);
+                                        }
+                                        for (CaretInfo c : context.getOriginalSortedCarets()) {
+                                            try {
+                                                int insertionOffset = computeInsertionOffset(c.getDot(), c.getMark());
+                                                int insertionLength = computeInsertionLength(c.getDot(), c.getMark());
+                                                String insertionText = "\n"; //NOI18N
+                                                try {
+                                                    doc.remove(insertionOffset, insertionLength);
+                                                    // insert new line, caret moves to the new line
+                                                    int dotPos = insertionOffset;
+
+                                                    doc.insertString(insertionOffset, insertionText, null);
+                                                    dotPos += insertionText.indexOf('\n') + 1; //NOI18N
+
+                                                    // reindent the new line
+                                                    Position newDotPos = doc.createPosition(dotPos);
+                                                    indenter.reindent(dotPos);
+
+                                                    // adjust the caret
+                                                    context.setDot(c, newDotPos);
+                                                } finally {
+                                                    DocumentUtilities.setTypingModification(doc, false);
+                                                }
+                                            } catch (BadLocationException ble) {
+                                                LOG.log(Level.FINE, null, ble);
+                                                if(!beeped) {
+                                                    target.getToolkit().beep();
+                                                    beeped = true;
+                                                }
+                                            }
+                                        }
+                                        // Store current state of caret(s) for redo
+                                        UndoableEdit caretRedoEdit = CaretUndo.createCaretUndoEdit(editorCaret, doc, true);
+                                        if (caretRedoEdit != null) {
+                                            doc.addUndoableEdit(caretRedoEdit);
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                    } finally {
+                        indenter.unlock();
+                    }
+                        
+                } else {
+                final int insertionOffset = computeInsertionOffset(caret);
                 final TypedBreakInterceptorsManager.Transaction transaction = TypedBreakInterceptorsManager.getInstance().openTransaction(
                         target, insertionOffset, insertionOffset);
                 
@@ -1506,7 +1569,7 @@ public class BaseKit extends DefaultEditorKit {
                 } finally {
                     transaction.close();
                 }
-                
+                }                
             }
         }
 
@@ -1594,14 +1657,21 @@ public class BaseKit extends DefaultEditorKit {
         }
         
         private int computeInsertionOffset(Caret caret) {
+            return computeInsertionOffset(caret.getMark(), caret.getDot());
+        }
+     
+        private int computeInsertionOffset(int dot, int mark) {
             // If selection is present return begining of selection
-            return Math.min(caret.getMark(), caret.getDot());
+            return Math.min(mark, dot);
         }
         
         private int computeInsertionLength(Caret caret) {
-            return 
-                    Math.max(caret.getMark(), caret.getDot()) -
-                    Math.min(caret.getMark(), caret.getDot());
+            return computeInsertionLength(caret.getDot(), caret.getMark());
+        }
+        
+        private int computeInsertionLength(int dot, int mark) {
+            return Math.max(mark, dot) -
+                   Math.min(mark, dot);
         }
     } // End of InsertBreakAction class
 
