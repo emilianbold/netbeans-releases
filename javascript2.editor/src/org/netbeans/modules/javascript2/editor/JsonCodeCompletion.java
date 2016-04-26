@@ -65,13 +65,14 @@ import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.csl.spi.support.CancelSupport;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.parser.JsonParserResult;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
+import org.netbeans.modules.javascript2.model.api.JsObject;
+import org.netbeans.modules.javascript2.model.api.Model;
+import org.netbeans.modules.javascript2.model.spi.ModelContainer;
+import org.netbeans.modules.javascript2.types.spi.ParserResult;
 
 /**
  *
@@ -81,7 +82,7 @@ public class JsonCodeCompletion implements CodeCompletionHandler {
 
     private static final Logger LOGGER = Logger.getLogger(JsonCodeCompletion.class.getName());
     private boolean caseSensitive;
-    
+
     @Override
     public CodeCompletionResult complete(CodeCompletionContext context) {
         final CancelSupport cancelSupport = CancelSupport.getDefault();
@@ -90,13 +91,13 @@ public class JsonCodeCompletion implements CodeCompletionHandler {
         }
 
         long start = System.currentTimeMillis();
-        
+
         BaseDocument doc = (BaseDocument) context.getParserResult().getSnapshot().getSource().getDocument(false);
         if (doc == null) {
             return CodeCompletionResult.NONE;
         }
 
-        ParserResult info = context.getParserResult();
+        ParserResult info = (ParserResult) context.getParserResult();
 
         TokenHierarchy<?> th = info.getSnapshot().getTokenHierarchy();
         if (th == null) {
@@ -106,17 +107,17 @@ public class JsonCodeCompletion implements CodeCompletionHandler {
         if (ts == null) {
             return CodeCompletionResult.NONE;
         }
-        
+
         String pref = context.getPrefix();
         int caretOffset = context.getParserResult().getSnapshot().getEmbeddedOffset(context.getCaretOffset());
         final int anchor = caretOffset - pref.length();
 
-        ts.move(anchor);        
+        ts.move(anchor);
         if (!ts.moveNext() && !ts.movePrevious()){
             return CodeCompletionResult.NONE;
         }
-               
-        Model model = ((JsonParserResult)info).getModel();
+
+        final Model model = Model.getModel(info, false);
         if (model == null) {
             return CodeCompletionResult.NONE;
         }
@@ -129,7 +130,7 @@ public class JsonCodeCompletion implements CodeCompletionHandler {
         ts.movePrevious();
         final Token<? extends JsTokenId> prevToken = LexUtilities.findPreviousNonWsNonComment(ts);
         final JsTokenId prevTokenId = prevToken.id();
-        
+
         if (prevTokenId == JsTokenId.BRACKET_LEFT_CURLY || prevTokenId == JsTokenId.OPERATOR_COMMA) {
             if (tokenId == JsTokenId.STRING || tokenId == JsTokenId.WHITESPACE) {
                 Set<String> keys = new HashSet<>();
@@ -187,7 +188,7 @@ public class JsonCodeCompletion implements CodeCompletionHandler {
                             public Set<Modifier> getModifiers() {
                                 return null;
                             }
-                            
+
                             @Override
                             public boolean isSmart() {
                                 return false;
@@ -207,7 +208,7 @@ public class JsonCodeCompletion implements CodeCompletionHandler {
                 }
             }
         }
-        
+
 
         long end = System.currentTimeMillis();
         LOGGER.log(Level.FINE, "Counting JSON CC took {0}ms ",  (end - start));
@@ -215,11 +216,13 @@ public class JsonCodeCompletion implements CodeCompletionHandler {
         if (!resultList.isEmpty()) {
             return new DefaultCompletionResult(resultList, false);
         }
-        return CodeCompletionResult.NONE;        
+        return CodeCompletionResult.NONE;
     }
 
     @Override
-    public String document(ParserResult info, ElementHandle element) {
+    public String document(
+            org.netbeans.modules.csl.spi.ParserResult info,
+            ElementHandle element) {
         return null;
     }
 
@@ -229,7 +232,10 @@ public class JsonCodeCompletion implements CodeCompletionHandler {
     }
 
     @Override
-    public String getPrefix(ParserResult info, int caretOffset, boolean upToOffset) {
+    public String getPrefix(
+            org.netbeans.modules.csl.spi.ParserResult info,
+            int caretOffset,
+            boolean upToOffset) {
         String prefix = "";
         BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);
         if (doc == null) {
@@ -243,7 +249,7 @@ public class JsonCodeCompletion implements CodeCompletionHandler {
         ts.move(offset);
         if (!ts.moveNext() && !ts.movePrevious()) {
             return null;
-        }        
+        }
         if (ts.offset() == offset) {
             // We're looking at the offset to the RIGHT of the caret
             // and here I care about what's on the left
@@ -260,7 +266,7 @@ public class JsonCodeCompletion implements CodeCompletionHandler {
                     prefix = prefix.substring(prefixIndex, offset - ts.offset() - 1);
                 }
             }
-            if (id == JsTokenId.LITERAL_FALSE || id == JsTokenId.LITERAL_TRUE || id == JsTokenId.LITERAL_NULL) {
+            if (id == JsTokenId.KEYWORD_FALSE || id == JsTokenId.KEYWORD_TRUE || id == JsTokenId.KEYWORD_NULL) {
                 prefix = token.text().toString();
                 if (upToOffset) {
                     if (offset - ts.offset() >= 0) {
@@ -285,7 +291,12 @@ public class JsonCodeCompletion implements CodeCompletionHandler {
     }
 
     @Override
-    public String resolveTemplateVariable(String variable, ParserResult info, int caretOffset, String name, Map parameters) {
+    public String resolveTemplateVariable(
+            String variable,
+            org.netbeans.modules.csl.spi.ParserResult info,
+            int caretOffset,
+            String name,
+            Map parameters) {
         return null;
     }
 
@@ -295,10 +306,13 @@ public class JsonCodeCompletion implements CodeCompletionHandler {
     }
 
     @Override
-    public ParameterInfo parameters(ParserResult info, int caretOffset, CompletionProposal proposal) {
+    public ParameterInfo parameters(
+            org.netbeans.modules.csl.spi.ParserResult info,
+            int caretOffset,
+            CompletionProposal proposal) {
         return ParameterInfo.NONE;
     }
-    
+
     /** XXX - Once the JS framework support becomes plugable, should be moved to jQueryCompletionHandler getPrefix() */
     private int getPrefixIndexFromSequence(String prefix) {
         int spaceIndex = prefix.lastIndexOf(" ") + 1; //NOI18N
@@ -319,7 +333,7 @@ public class JsonCodeCompletion implements CodeCompletionHandler {
         return caseSensitive ? theString.startsWith(prefix)
                 : theString.toLowerCase().startsWith(prefix.toLowerCase());
     }
-    
+
     private boolean findKeys(JsObject object, int offset, Set<String> keys) {
         boolean containsOffset = false;
         for (Map.Entry<String, ? extends JsObject> entry : object.getProperties().entrySet()) {
