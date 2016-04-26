@@ -231,6 +231,11 @@ public class AddUseImportSuggestion extends SuggestionRule {
                 NamespaceScope currentScope = ModelUtils.getNamespaceScope(currenNamespace, context.fileScope);
 
                 if (currentScope != null) {
+                    // #258480 - check if element is not from the current namespace
+                    if (indexedName.getNamespaceName().equals(currentScope.getNamespaceName().toString())) {
+                        return;
+                    }
+
                     Collection<? extends UseScope> declaredUses = currentScope.getAllDeclaredSingleUses();
                     List<? extends UseScope> suitableUses = ModelUtils.filter(declaredUses, new ModelUtils.ElementFilter<UseScope>() {
 
