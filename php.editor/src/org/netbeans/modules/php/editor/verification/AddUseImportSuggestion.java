@@ -227,13 +227,15 @@ public class AddUseImportSuggestion extends SuggestionRule {
             QualifiedName importName = QualifiedName.getPrefix(indexedName, nodeName, true);
 
             if (importName != null && context.fileScope != null) {
-                if (importName.toFullyQualified().equals(indexedName)) { // #258480
-                    return;
-                }
                 final String retvalStr = importName.toString();
                 NamespaceScope currentScope = ModelUtils.getNamespaceScope(currenNamespace, context.fileScope);
 
                 if (currentScope != null) {
+                    // #258480 - check if element is not from the current namespace
+                    if (indexedName.getNamespaceName().equals(currentScope.getNamespaceName().toString())) {
+                        return;
+                    }
+
                     Collection<? extends UseScope> declaredUses = currentScope.getAllDeclaredSingleUses();
                     List<? extends UseScope> suitableUses = ModelUtils.filter(declaredUses, new ModelUtils.ElementFilter<UseScope>() {
 
