@@ -179,7 +179,7 @@ public class JsStructureScanner implements StructureScanner {
             } else if (child.getJSKind() == JsElement.Kind.PROPERTY) {
                 if(child.isDeclared() && (child.getModifiers().contains(Modifier.PUBLIC)
                         || !(jsObject.getParent() instanceof JsFunction)))
-                collectedItems.add(new JsSimpleStructureItem(child, "prop-", result)); //NOI18N
+                    collectedItems.add(new JsSimpleStructureItem(child, children.isEmpty() ? null : children, "prop-", result)); //NOI18N
             } else if ((child.getJSKind() == JsElement.Kind.VARIABLE || child.getJSKind() == JsElement.Kind.CONSTANT)&& child.isDeclared()
                 && (!jsObject.isAnonymous() || (jsObject.isAnonymous() && jsObject.getFullyQualifiedName().indexOf('.') == -1))) {
                     if (children.isEmpty()) {
@@ -724,7 +724,7 @@ public class JsStructureScanner implements StructureScanner {
             if (isDeprecated) {
                 formatter.deprecated(true);
             }
-            formatter.appendText(object.getName());
+            formatter.appendText(object.isAnonymous() ? "{...}" : object.getName()); //NOI18N
             if (isDeprecated) {
                 formatter.deprecated(false);
             }
@@ -739,7 +739,11 @@ public class JsStructureScanner implements StructureScanner {
         private final List<TypeUsage> resolvedTypes;
         
         public JsSimpleStructureItem(JsObject elementHandle, String sortPrefix, ParserResult parserResult) {
-            super(elementHandle, null, sortPrefix, parserResult);
+            this(elementHandle, null, sortPrefix, parserResult);
+        }
+
+        public JsSimpleStructureItem(JsObject elementHandle, List<? extends StructureItem> children, String sortPrefix, ParserResult parserResult) {
+            super(elementHandle, children, sortPrefix, parserResult);
             this.object = elementHandle;
 
             Collection<? extends TypeUsage> assignmentForOffset = object.getAssignments();//tForOffset(object.getDeclarationName().getOffsetRange().getEnd());
