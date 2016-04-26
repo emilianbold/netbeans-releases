@@ -41,11 +41,14 @@
  */
 package org.netbeans.modules.javascript2.editor.navigation;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -58,6 +61,7 @@ import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
 import org.netbeans.modules.javascript2.model.api.JsObject;
 import org.netbeans.modules.javascript2.model.api.Model;
 import org.netbeans.modules.javascript2.model.api.ModelUtils;
+import org.netbeans.modules.javascript2.types.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 
@@ -83,50 +87,7 @@ public class JsonOccurrencesFinder extends OccurrencesFinder<JsonParserResult> {
 
     @Override
     public void run(JsonParserResult result, SchedulerEvent event) {
-        //remove the last occurrences - the CSL caches the last found occurences for us
-        range2Attribs = null;
-        if (cancelled.getAndSet(false)) {
-            return;
-        }
-        TokenHierarchy<?> th = result.getSnapshot().getTokenHierarchy();
-        if (th == null) {
-            return;
-        }
-        TokenSequence<JsTokenId> ts = th.tokenSequence(JsTokenId.jsonLanguage());
-        if (ts == null) {
-            return;
-        }
-        int offset = result.getSnapshot().getEmbeddedOffset(caretPosition);
-        int delta = ts.move(offset);        
-        if (!ts.moveNext() && !ts.movePrevious()){
-            return;
-        }               
-        final Model model = Model.getModel(result, false);
-        if (model == null) {
-            return;
-        }
-        Token<? extends JsTokenId> token = ts.token();
-        JsTokenId tokenId = token.id();
-        if (tokenId != JsTokenId.STRING && delta == 0 && ts.movePrevious()) {
-            token = ts.token();
-            tokenId = token.id();
-        }
-        ts.movePrevious();
-        final Token<? extends JsTokenId> prevToken = LexUtilities.findPreviousNonWsNonComment(ts);
-        final JsTokenId prevTokenId = prevToken.id();
-        Set<OffsetRange> ranges = new HashSet<>();        
-        if (tokenId == JsTokenId.STRING && (prevTokenId == JsTokenId.BRACKET_LEFT_CURLY || prevTokenId == JsTokenId.OPERATOR_COMMA)) {
-            CharSequence text = token.text();
-            findRanges(model.getGlobalObject(), text.subSequence(1, text.length() - 1).toString(), ranges);
-        }
-        range2Attribs = new HashMap<>();
-        if (cancelled.getAndSet(false)) {
-            return;
-        }
-        for (OffsetRange offsetRange : ranges) {
-            range2Attribs.put(ModelUtils.documentOffsetRange(result, offsetRange.getStart(), offsetRange.getEnd()), ColoringAttributes.MARK_OCCURRENCES);
-        }
-        
+        range2Attribs = calculateOccurences(result, caretPosition, true, cancelled);
     }
 
     @Override
@@ -142,14 +103,81 @@ public class JsonOccurrencesFinder extends OccurrencesFinder<JsonParserResult> {
     @Override
     public void cancel() {
         cancelled.set(true);
-    }    
+    }
 
-    private void findRanges(JsObject object, String key, Set<OffsetRange> ranges) {
+    @NonNull
+    public static Set<OffsetRange> calculateOccurances(
+            @NonNull final ParserResult result,
+            final int caretPosition,
+            final boolean includeQuotes) {
+        final Map<OffsetRange,ColoringAttributes> occ = calculateOccurences(
+                result,
+                caretPosition,
+                includeQuotes,
+                new AtomicBoolean());
+        return occ == null ?
+                Collections.emptySet() :
+                occ.keySet();
+    }
+
+    @CheckForNull
+    private static Map<OffsetRange, ColoringAttributes> calculateOccurences(
+            @NonNull final ParserResult result,
+            final int caretPosition,
+            boolean includeQuotes,
+            @NonNull final AtomicBoolean cancelled) {
+        if (cancelled.getAndSet(false)) {
+            return null;
+        }
+        TokenHierarchy<?> th = result.getSnapshot().getTokenHierarchy();
+        if (th == null) {
+            return null;
+        }
+        TokenSequence<JsTokenId> ts = th.tokenSequence(JsTokenId.jsonLanguage());
+        if (ts == null) {
+            return null;
+        }
+        int offset = result.getSnapshot().getEmbeddedOffset(caretPosition);
+        int delta = ts.move(offset);
+        if (!ts.moveNext() && !ts.movePrevious()){
+            return null;
+        }
+        final Model model = Model.getModel(result, false);
+        if (model == null) {
+            return null;
+        }
+        Token<? extends JsTokenId> token = ts.token();
+        JsTokenId tokenId = token.id();
+        if (tokenId != JsTokenId.STRING && delta == 0 && ts.movePrevious()) {
+            token = ts.token();
+            tokenId = token.id();
+        }
+        ts.movePrevious();
+        final Token<? extends JsTokenId> prevToken = LexUtilities.findPreviousNonWsNonComment(ts);
+        final JsTokenId prevTokenId = prevToken.id();
+        Set<OffsetRange> ranges = new HashSet<>();
+        if (tokenId == JsTokenId.STRING && (prevTokenId == JsTokenId.BRACKET_LEFT_CURLY || prevTokenId == JsTokenId.OPERATOR_COMMA)) {
+            CharSequence text = token.text();
+            findRanges(model.getGlobalObject(), text.subSequence(1, text.length() - 1).toString(), includeQuotes, ranges);
+        }
+        final Map<OffsetRange, ColoringAttributes> res = new HashMap<>();
+        if (cancelled.getAndSet(false)) {
+            return null;
+        }
+        for (OffsetRange offsetRange : ranges) {
+            res.put(ModelUtils.documentOffsetRange(result, offsetRange.getStart(), offsetRange.getEnd()), ColoringAttributes.MARK_OCCURRENCES);
+        }
+        return res;
+    }
+
+    private static void findRanges(JsObject object, String key, boolean includeQuotes, Set<OffsetRange> ranges) {
         for (Map.Entry<String, ? extends JsObject> entry : object.getProperties().entrySet()) {
             if (!entry.getValue().isAnonymous() && key.equals(entry.getKey())) {
-                ranges.add(new OffsetRange(entry.getValue().getOffset(), entry.getValue().getOffset() + key.length() + 2));
+                ranges.add(new OffsetRange(
+                        (includeQuotes ? 0 : 1) + entry.getValue().getOffset(),
+                        (includeQuotes ? 2 : 1) + entry.getValue().getOffset() + key.length()));
             }
-            findRanges(entry.getValue(), key, ranges);
+            findRanges(entry.getValue(), key, includeQuotes, ranges);
         }
     }
 }
