@@ -57,11 +57,11 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = JsonOptionsQueryImplementation.class, position = 100000)
 public class GlobalJsonOptionsQueryImpl implements JsonOptionsQueryImplementation {
     private static final Logger LOG = Logger.getLogger(GlobalJsonOptionsQueryImpl.class.getName());
-    private static final String PROP_ALLOW_COMMETS="json.comments";  //NOI18N
+    private static final String PROP_ALLOW_COMMENTS="json.comments";  //NOI18N
     private static final Pattern FILES;
     static {
         Pattern p = null;
-        final String propVal = System.getProperty(PROP_ALLOW_COMMETS);
+        final String propVal = System.getProperty(PROP_ALLOW_COMMENTS);
         if (propVal != null) {
             try {
                 p = Pattern.compile(propVal);
