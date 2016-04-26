@@ -189,6 +189,8 @@ public class JsStructureScanner implements StructureScanner {
                     }
             } else if ((child.getJSKind() == JsElement.Kind.CLASS && child.isDeclared())) {
                 collectedItems.add(new JsClassStructureItem(child, children, result));
+            } else if (child.getJSKind() == JsElement.Kind.BLOCK) {
+                collectedItems.addAll(children);
             }
          }
         
@@ -213,8 +215,9 @@ public class JsStructureScanner implements StructureScanner {
                 } 
             }
         }
-        
-        if (jsObject.getDeclarationName() != null) {
+        if (jsObject.getJSKind() == JsElement.Kind.BLOCK) {
+            
+        } else if (jsObject.getDeclarationName() != null) {
             Collection<? extends TypeUsage> assignmentForOffset = jsObject.getAssignmentForOffset(jsObject.getDeclarationName().getOffsetRange().getEnd());
             if (assignmentForOffset.size() == 1) {
                 JsObject assignedObject = ModelUtils.findJsObjectByName(Model.getModel(result, false).getGlobalObject(), assignmentForOffset.iterator().next().getType());

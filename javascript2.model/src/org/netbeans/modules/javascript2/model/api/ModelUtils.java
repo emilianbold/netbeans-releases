@@ -357,9 +357,11 @@ public class ModelUtils {
                     result.put(object.getName(), object);
                 }
             }
-            for (JsObject object : ((JsFunction)inScope).getParameters()) {
-                if (!result.containsKey(object.getName())) {
-                    result.put(object.getName(), object);
+            if (inScope instanceof JsFunction) {
+                for (JsObject object : ((JsFunction)inScope).getParameters()) {
+                    if (!result.containsKey(object.getName())) {
+                        result.put(object.getName(), object);
+                    }
                 }
             }
             for (JsObject object : ((JsObject)inScope).getProperties().values()) {

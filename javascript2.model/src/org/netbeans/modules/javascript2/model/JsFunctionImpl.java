@@ -71,6 +71,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
     final private HashMap <String, JsObject> parametersByName;
     final private List<JsObject> parameters;
     final private Set<TypeUsage> returnTypes;
+    private boolean isStrict;
 
     public JsFunctionImpl(DeclarationScope scope, JsObject parentObject, Identifier name,
             List<Identifier> parameters, OffsetRange offsetRange, String mimeType, String sourceLabel) {
@@ -164,7 +165,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
 
         JsElement.Kind result = JsElement.Kind.FUNCTION;
 
-        if (getParent().getJSKind() != JsElement.Kind.FILE) {
+        if (!(getParent() instanceof JsObjectReference) && getParent().getJSKind() != JsElement.Kind.FILE) {
             result = JsElement.Kind.METHOD;
         }
         return result;
@@ -382,7 +383,13 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         sb.append(getDeclarationName().getName()).append("()");
         return sb.toString();
     }
-    
-    
+
+    public boolean isStrict() {
+        return isStrict;
+    }
+
+    public void setStrict(boolean isStrict) {
+        this.isStrict = isStrict;
+    }
     
 }

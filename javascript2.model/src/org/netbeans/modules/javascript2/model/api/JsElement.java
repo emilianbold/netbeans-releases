@@ -73,7 +73,8 @@ public interface JsElement extends ElementHandle {
         CALLBACK(16),
         CLASS(17),
         GENERATOR(18),
-        CONSTANT(19);
+        CONSTANT(19), 
+        BLOCK(20);
         
         private final int id;
         private static final Map<Integer, Kind> LOOKUP = new HashMap<Integer, Kind>();

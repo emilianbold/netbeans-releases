@@ -2823,6 +2823,15 @@ public class AstTest extends CslTestBase {
         checkAstResult("testfiles/markoccurences/destructuringAssignments/example01.js");
     }
     
+    public void testDestructuringAssignmentArray01() throws Exception {
+        checkAstResult("testfiles/markoccurences/destructuringAssignments/arrayDestructuring01.js");
+    }
+    
+    public void testDestructuringAssignmentArray02() throws Exception {
+        checkAstResult("testfiles/markoccurences/destructuringAssignments/arrayDestructuring02.js");
+    }
+    
+    
 //    public void testModelObject01() throws Exception {
 //        checkAstResult("testfiles/model/objects/object01.js");
 //    }
