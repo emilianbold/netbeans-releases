@@ -30,10 +30,13 @@
           <isParameterBlock/>
           <!-- Block Statements -->
           <VarNode name='size' start='22' end='79'>
+            <isDestructuring/>
           </VarNode>
           <VarNode name='cords' start='22' end='79'>
+            <isDestructuring/>
           </VarNode>
           <VarNode name='radius' start='22' end='79'>
+            <isDestructuring/>
           </VarNode>
           <ExpressionStatement start='22' end='79'>
             <BinaryNode type='ASSIGN' start='22' end='79'>

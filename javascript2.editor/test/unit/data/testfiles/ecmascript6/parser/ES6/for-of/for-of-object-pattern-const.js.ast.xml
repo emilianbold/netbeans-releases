@@ -13,10 +13,12 @@
         <VarNode name='x' start='11' end='13'>
           <isBlockScoped/>
           <isConst/>
+          <isDestructuring/>
         </VarNode>
         <VarNode name='y' start='11' end='16'>
           <isBlockScoped/>
           <isConst/>
+          <isDestructuring/>
         </VarNode>
         <ForNode start='0' end='24'>
           <ObjectNode start='11' end='17'>

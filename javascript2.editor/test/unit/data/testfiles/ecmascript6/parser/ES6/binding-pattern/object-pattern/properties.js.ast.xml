@@ -9,22 +9,27 @@
     <VarNode name='a' start='4' end='6'>
       <isBlockScoped/>
       <isLet/>
+      <isDestructuring/>
     </VarNode>
     <VarNode name='b' start='4' end='8'>
       <isBlockScoped/>
       <isLet/>
+      <isDestructuring/>
     </VarNode>
     <VarNode name='d' start='4' end='14'>
       <isBlockScoped/>
       <isLet/>
+      <isDestructuring/>
     </VarNode>
     <VarNode name='f' start='4' end='18'>
       <isBlockScoped/>
       <isLet/>
+      <isDestructuring/>
     </VarNode>
     <VarNode name='h' start='4' end='27'>
       <isBlockScoped/>
       <isLet/>
+      <isDestructuring/>
     </VarNode>
     <ExpressionStatement start='4' end='31'>
       <BinaryNode type='ASSIGN' start='4' end='31'>

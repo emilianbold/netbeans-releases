@@ -39,8 +39,10 @@
       </ObjectNode>
     </VarNode>
     <VarNode name='p' start='30' end='32'>
+      <isDestructuring/>
     </VarNode>
     <VarNode name='q' start='30' end='35'>
+      <isDestructuring/>
     </VarNode>
     <ExpressionStatement start='30' end='40'>
       <BinaryNode type='ASSIGN' start='30' end='40'>

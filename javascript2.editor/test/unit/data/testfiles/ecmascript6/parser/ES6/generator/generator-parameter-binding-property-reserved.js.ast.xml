@@ -19,6 +19,7 @@
           <isParameterBlock/>
           <!-- Block Statements -->
           <VarNode name='yield' start='11' end='18'>
+            <isDestructuring/>
           </VarNode>
           <ExpressionStatement start='11' end='18'>
             <BinaryNode type='ASSIGN' start='11' end='18'>

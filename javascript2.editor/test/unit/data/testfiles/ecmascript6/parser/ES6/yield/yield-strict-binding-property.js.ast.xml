@@ -10,6 +10,7 @@
       <StringLiteralNode value='use strict' start='1' end='11'/>
     </ExpressionStatement>
     <VarNode name='x' start='18' end='28'>
+      <isDestructuring/>
     </VarNode>
     <ExpressionStatement start='18' end='36'>
       <BinaryNode type='ASSIGN' start='18' end='36'>

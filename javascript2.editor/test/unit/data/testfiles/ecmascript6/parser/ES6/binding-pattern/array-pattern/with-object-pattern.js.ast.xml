@@ -9,6 +9,7 @@
     <VarNode name='a' start='4' end='7'>
       <isBlockScoped/>
       <isLet/>
+      <isDestructuring/>
     </VarNode>
     <ExpressionStatement start='4' end='13'>
       <BinaryNode type='ASSIGN' start='4' end='13'>
