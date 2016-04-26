@@ -462,6 +462,17 @@ public abstract class Properties {
             save ();
         }
 
+        void removeProperty(String propertyName) {
+            synchronized (this) {
+                if (!isInitialized) {
+                    load ();
+                    isInitialized = true;
+                }
+                properties.remove (propertyName);
+            }
+            save ();
+        }
+
         private synchronized ReentrantReadWriteLock getRWLock(String propertyName) {
             ReentrantReadWriteLock rwl = propertyRWLocks.get(propertyName);
             if (rwl == null) {
@@ -1404,6 +1415,11 @@ public abstract class Properties {
             pcs.firePropertyChange(propertyName, null, value);
         }
 
+        public void unset (String propertyName) {
+            impl.removeProperty (propertyName);
+            pcs.firePropertyChange(propertyName, null, null);
+        }
+
         @Override
         public Properties getProperties (String propertyName) {
             synchronized (childProperties) {
@@ -1518,7 +1534,7 @@ public abstract class Properties {
 
     private static class DelegatingProperties extends Properties {
 
-        private Properties delegatingProperties;
+        private PropertiesImpl delegatingProperties;
         private String root;
         private final Map<String, Reference<Properties>> childProperties =
                 new HashMap<String, Reference<Properties>>();
@@ -1526,7 +1542,7 @@ public abstract class Properties {
                 new WeakHashMap<PropertyChangeListener, PropertyChangeListener>();
 
 
-        DelegatingProperties (Properties properties, String root) {
+        DelegatingProperties (PropertiesImpl properties, String root) {
             delegatingProperties = properties;
             this.root = root;
         }
@@ -1659,6 +1675,10 @@ public abstract class Properties {
         @Override
         public void setMap (String propertyName, Map value) {
             delegatingProperties.setMap (root + '.' + propertyName, value);
+        }
+
+        public void unset (String propertyName) {
+            delegatingProperties.unset (root + '.' + propertyName);
         }
 
         @Override

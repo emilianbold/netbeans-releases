@@ -194,10 +194,12 @@ implements Executor {
     }
     
     public void runAction(final Object action) {
-        runAction(getJDIAction(action), StepRequest.STEP_LINE, true, null);
+        runAction(getJDIAction(action), StepRequest.STEP_LINE, true, null, null, null);
     }
 
-    private void runAction(final int stepDepth, final int stepSize, boolean doResume, Lock lock) {
+    private void runAction(final int stepDepth, final int stepSize, boolean doResume, Lock lock,
+                           Boolean isSteppingFromFilteredLocation,
+                           Boolean isSteppingFromCompoundFilteredLocation) {
         //S ystem.out.println("\nStepAction.doAction");
         int suspendPolicy = getDebuggerImpl().getSuspend();
         JPDAThreadImpl resumeThread = (JPDAThreadImpl) getDebuggerImpl().getCurrentThread();
@@ -276,13 +278,21 @@ implements Executor {
             methodName = resumeThread.getMethodName ();
             depth = resumeThread.getStackDepth();
             CallStackFrame topFrame = getTopFrame(resumeThread);
-            steppingFromFilteredLocation = !getSmartSteppingFilterImpl ().stopHere(className);
-            if (topFrame != null) {
-                steppingFromCompoundFilteredLocation = !getCompoundSmartSteppingListener ().stopAt
-                         (lookupProvider, topFrame, getSmartSteppingFilterImpl()).isStop();
+            if (isSteppingFromFilteredLocation != null) {
+                steppingFromFilteredLocation = isSteppingFromFilteredLocation;
             } else {
-                steppingFromCompoundFilteredLocation = !getCompoundSmartSteppingListener ().stopHere
-                         (lookupProvider, resumeThread, getSmartSteppingFilterImpl());
+                steppingFromFilteredLocation = !getSmartSteppingFilterImpl ().stopHere(className);
+            }
+            if (isSteppingFromCompoundFilteredLocation != null) {
+                steppingFromCompoundFilteredLocation = isSteppingFromCompoundFilteredLocation;
+            } else {
+                if (topFrame != null) {
+                    steppingFromCompoundFilteredLocation = !getCompoundSmartSteppingListener ().stopAt
+                             (lookupProvider, topFrame, getSmartSteppingFilterImpl()).isStop();
+                } else {
+                    steppingFromCompoundFilteredLocation = !getCompoundSmartSteppingListener ().stopHere
+                             (lookupProvider, resumeThread, getSmartSteppingFilterImpl());
+                }
             }
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine("JDI Request (step "+stepDepth+"): " + stepRequest);
@@ -518,7 +528,9 @@ implements Executor {
                 }
             }
             if (!actionRun) {
-                runAction(stepDepth, stepSize, false, lock);
+                runAction(stepDepth, stepSize, false, lock,
+                          steppingFromFilteredLocation,
+                          steppingFromCompoundFilteredLocation);
             }
             /*
             if (!stepThrough || smartSteppingStepOut) {
