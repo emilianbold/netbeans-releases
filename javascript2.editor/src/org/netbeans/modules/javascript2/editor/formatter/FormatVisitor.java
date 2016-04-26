@@ -900,7 +900,7 @@ public class FormatVisitor extends NodeVisitor {
 
     @Override
     public boolean enterVarNode(VarNode varNode) {
-        if (varNode.isSynthetic()) {
+        if (varNode.isExport() || varNode.isDestructuring()) {
             return false;
         }
         int finish = getFinish(varNode) - 1;
@@ -1572,7 +1572,7 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     private boolean isDeclaration(VarNode varNode) {
-        if (varNode.isFunctionDeclaration() || varNode.isSynthetic()) {
+        if (varNode.isFunctionDeclaration() || varNode.isExport() || varNode.isDestructuring()) {
             return true;
         }
         if (varNode.getInit() instanceof ClassNode) {

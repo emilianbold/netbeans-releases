@@ -571,7 +571,7 @@ public class JsConventionRule extends JsAstRule {
                 check = false;
             }
 
-            if (varNode.isFunctionDeclaration() || varNode.isSynthetic()) {
+            if (varNode.isFunctionDeclaration() || varNode.isExport() || varNode.isDestructuring()) {
                 check = false;
             }
             if (varNode.getInit() instanceof ClassNode) {
