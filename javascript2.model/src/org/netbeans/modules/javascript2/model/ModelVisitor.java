@@ -48,7 +48,6 @@ import com.oracle.js.parser.Token;
 import com.oracle.js.parser.ir.AccessNode;
 import com.oracle.js.parser.ir.BinaryNode;
 import com.oracle.js.parser.ir.Block;
-import com.oracle.js.parser.ir.BlockStatement;
 import com.oracle.js.parser.ir.CallNode;
 import com.oracle.js.parser.ir.CatchNode;
 import com.oracle.js.parser.ir.ClassNode;
@@ -65,14 +64,10 @@ import com.oracle.js.parser.ir.Node;
 import com.oracle.js.parser.ir.ObjectNode;
 import com.oracle.js.parser.ir.PropertyNode;
 import com.oracle.js.parser.ir.ReturnNode;
-import com.oracle.js.parser.ir.Statement;
-import com.oracle.js.parser.ir.Symbol;
 import com.oracle.js.parser.ir.TernaryNode;
-import com.oracle.js.parser.ir.TryNode;
 import com.oracle.js.parser.ir.UnaryNode;
 import com.oracle.js.parser.ir.VarNode;
 import com.oracle.js.parser.ir.WithNode;
-import com.oracle.js.parser.ir.visitor.NodeVisitor;
 import com.oracle.js.parser.TokenType;
 import com.oracle.js.parser.ir.ExportClauseNode;
 import com.oracle.js.parser.ir.ExportNode;
@@ -147,7 +142,8 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
     private Map<FunctionInterceptor, Collection<FunctionCall>> functionCalls = null;
     private final String scriptName;
     private LexicalContext lc;
-//    private JsObjectImpl fromAN = null;
+
+    private final static String BLOCK_OBJECT_NAME_PREFIX = "block-"; //NOI18N
 
     public ModelVisitor(ParserResult parserResult, OccurrenceBuilder occurrenceBuilder) {
         super();
@@ -246,7 +242,7 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
 
     @Override
     public boolean enterBlock(Block block) {
-        DeclarationScopeImpl blockScope = (DeclarationScopeImpl)modelBuilder.getCurrentDeclarationScope().getProperty("block" + block.getStart());
+        DeclarationScopeImpl blockScope = (DeclarationScopeImpl)modelBuilder.getCurrentDeclarationScope().getProperty(BLOCK_OBJECT_NAME_PREFIX + block.getStart());
         if ( blockScope!= null) {
             // in this block there are a declarations that we are interested in. 
             modelBuilder.setCurrentObject(blockScope);
@@ -257,7 +253,7 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
     @Override
     public Node leaveBlock(Block block) {
         DeclarationScopeImpl currentScope = modelBuilder.getCurrentDeclarationScope();
-        if (currentScope.getJSKind() == JsElement.Kind.BLOCK && currentScope.getName().equals("block" + block.getStart())) {
+        if (currentScope.getJSKind() == JsElement.Kind.BLOCK && currentScope.getName().equals(BLOCK_OBJECT_NAME_PREFIX + block.getStart())) {
             // removing the block as declaration scope from 
             modelBuilder.reset();
         }
@@ -1919,7 +1915,7 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
                     if (getPath().size() > 0) {
                         // we are in strict mode -> possible block scope declaration
                         currentBlockScope = new DeclarationScopeImpl(currentBlockScope, currentBlockScope, 
-                                new Identifier("block" + block.getStart(), OffsetRange.NONE), new OffsetRange(block.getStart(), block.getFinish()), currentBlockScope.getMimeType() , currentBlockScope.getSourceLabel());
+                                new Identifier(BLOCK_OBJECT_NAME_PREFIX + block.getStart(), OffsetRange.NONE), new OffsetRange(block.getStart(), block.getFinish()), currentBlockScope.getMimeType() , currentBlockScope.getSourceLabel());
                         currentBlockScope.setJsKind(JsElement.Kind.BLOCK);
                     }
                 }
@@ -2017,7 +2013,7 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
     }
     
     private void handleDeclaredFunction(DeclarationScopeImpl inScope, JsObject parent,  FunctionNode fnNode) {
-        LOGGER.log(Level.FINEST, "       vunction: " + debugInfo(fnNode)); // NOI18N
+        LOGGER.log(Level.FINEST, "       function: " + debugInfo(fnNode)); // NOI18N
         String name = fnNode.isAnonymous() ? modelBuilder.getFunctionName(fnNode) : fnNode.getIdent().getName();
         Identifier fnName = new Identifier(name, new OffsetRange(fnNode.getIdent().getStart(), fnNode.getIdent().getFinish()));
         if (fnNode.isClassConstructor() && !ModelUtils.CONSTRUCTOR.equals(fnName.getName())) {
