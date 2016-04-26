@@ -176,22 +176,27 @@ public final class CodeUtils {
                 && name.charAt(0) == '#'; // NOI18N
     }
 
+    public static PhpVersion getPhpVersion(FileObject file) {
+        assert file != null;
+        return PhpLanguageProperties.forFileObject(file).getPhpVersion();
+    }
+
     public static boolean isPhpVersion(FileObject file, PhpVersion version) {
         assert file != null;
         assert version != null;
-        return PhpLanguageProperties.forFileObject(file).getPhpVersion() == version;
+        return getPhpVersion(file) == version;
     }
 
     public static boolean isPhpVersionLessThan(FileObject file, PhpVersion version) {
         assert file != null;
         assert version != null;
-        return PhpLanguageProperties.forFileObject(file).getPhpVersion().compareTo(version) < 0;
+        return getPhpVersion(file).compareTo(version) < 0;
     }
 
     public static boolean isPhpVersionGreaterThan(FileObject file, PhpVersion version) {
         assert file != null;
         assert version != null;
-        return PhpLanguageProperties.forFileObject(file).getPhpVersion().compareTo(version) > 0;
+        return getPhpVersion(file).compareTo(version) > 0;
     }
 
     /**

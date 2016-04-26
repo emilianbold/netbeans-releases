@@ -58,6 +58,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.actions.FixUsesAction.Options;
 import org.netbeans.modules.php.editor.actions.ImportData.ItemVariant;
@@ -264,7 +265,8 @@ public class FixUsesPerformer {
             indentString = IndentUtils.createIndentString(codeStyle.getIndentSize(), codeStyle.expandTabToSpaces(), codeStyle.getTabSize());
         }
 
-        if (options.preferGroupUses()) {
+        if (options.preferGroupUses()
+                && options.getPhpVersion().compareTo(PhpVersion.PHP_70) >= 0) {
             insertString.append(createStringForGroupUse(useParts, indentString));
         } else if (options.preferMultipleUseStatementsCombined()) {
             insertString.append(createStringForMultipleUse(useParts, indentString));
