@@ -1544,7 +1544,7 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
         Expression init = varNode.getInit();
         boolean createVariable = true;
         if (!varNode.isFunctionDeclaration() // we skip syntetic variables created from case: function f1(){}
-                && !varNode.isSynthetic()) { // we skip syntetic variables created from export expression
+                && !varNode.isExport()) { // we skip syntetic variables created from export expression
             if (init instanceof FunctionNode && !((FunctionNode) init).isNamedFunctionExpression()) {
                     // case: var f1 = function () {}
                 // the function here is already, need to be just fixed the name offsets
@@ -2265,7 +2265,7 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
          if (!(init instanceof ObjectNode || rNode != null
                  || init instanceof LiteralNode.ArrayLiteralNode
                  || init instanceof ClassNode
-                 || varNode.isSynthetic())) {
+                 || varNode.isExport())) {
             JsObject parent = modelBuilder.getCurrentObject();
             //parent = canBeSingletonPattern(1) ? resolveThis(parent) : parent;
             if (parent instanceof CatchBlockImpl) {
