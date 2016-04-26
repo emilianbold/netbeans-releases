@@ -304,8 +304,36 @@ public class FixUsesAction extends BaseAction {
         private final boolean preferGroupUses;
         private final boolean startUseWithNamespaceSeparator;
         private final boolean aliasesCapitalsOfNamespaces;
-        private final boolean isPhp56OrGreater;
+        private final PhpVersion phpVersion;
 
+        // for unit tests
+        Options(
+                boolean preferFullyQualifiedNames,
+                boolean preferMultipleUseStatementsCombined,
+                boolean preferGroupUses,
+                boolean startUseWithNamespaceSeparator,
+                boolean aliasesCapitalsOfNamespaces,
+                PhpVersion phpVersion) {
+            this.preferFullyQualifiedNames = preferFullyQualifiedNames;
+            this.preferMultipleUseStatementsCombined = preferMultipleUseStatementsCombined;
+            this.preferGroupUses = preferGroupUses;
+            this.startUseWithNamespaceSeparator = startUseWithNamespaceSeparator;
+            this.aliasesCapitalsOfNamespaces = aliasesCapitalsOfNamespaces;
+            this.phpVersion = phpVersion;
+        }
+
+        // legacy, for unit tests
+        Options(
+                boolean preferFullyQualifiedNames,
+                boolean preferMultipleUseStatementsCombined,
+                boolean startUseWithNamespaceSeparator,
+                boolean aliasesCapitalsOfNamespaces,
+                boolean isPhp56OrGreater) {
+            this(preferFullyQualifiedNames, preferMultipleUseStatementsCombined, false, startUseWithNamespaceSeparator, aliasesCapitalsOfNamespaces,
+                    isPhp56OrGreater ? PhpVersion.PHP_56 : PhpVersion.PHP_5);
+        }
+
+        // legacy, for unit tests
         Options(
                 boolean preferFullyQualifiedNames,
                 boolean preferMultipleUseStatementsCombined,
@@ -313,21 +341,8 @@ public class FixUsesAction extends BaseAction {
                 boolean startUseWithNamespaceSeparator,
                 boolean aliasesCapitalsOfNamespaces,
                 boolean isPhp56OrGreater) {
-            this.preferFullyQualifiedNames = preferFullyQualifiedNames;
-            this.preferMultipleUseStatementsCombined = preferMultipleUseStatementsCombined;
-            this.preferGroupUses = preferGroupUses;
-            this.startUseWithNamespaceSeparator = startUseWithNamespaceSeparator;
-            this.aliasesCapitalsOfNamespaces = aliasesCapitalsOfNamespaces;
-            this.isPhp56OrGreater = isPhp56OrGreater;
-        }
-
-        Options(
-                boolean preferFullyQualifiedNames,
-                boolean preferMultipleUseStatementsCombined,
-                boolean startUseWithNamespaceSeparator,
-                boolean aliasesCapitalsOfNamespaces,
-                boolean isPhp56OrGreater) {
-            this(preferFullyQualifiedNames, preferMultipleUseStatementsCombined, false, startUseWithNamespaceSeparator, aliasesCapitalsOfNamespaces, isPhp56OrGreater);
+            this(preferFullyQualifiedNames, preferMultipleUseStatementsCombined, preferGroupUses, startUseWithNamespaceSeparator, aliasesCapitalsOfNamespaces,
+                    isPhp56OrGreater ? PhpVersion.PHP_56 : PhpVersion.PHP_5);
         }
 
         public Options(CodeStyle codeStyle, FileObject fileObject) {
@@ -336,7 +351,7 @@ public class FixUsesAction extends BaseAction {
             this.preferGroupUses = codeStyle.preferGroupUses();
             this.startUseWithNamespaceSeparator = codeStyle.startUseWithNamespaceSeparator();
             this.aliasesCapitalsOfNamespaces = codeStyle.aliasesFromCapitalsOfNamespaces();
-            this.isPhp56OrGreater = CodeUtils.isPhpVersionGreaterThan(fileObject, PhpVersion.PHP_55);
+            this.phpVersion = CodeUtils.getPhpVersion(fileObject);
         }
 
         public boolean preferFullyQualifiedNames() {
@@ -359,9 +374,10 @@ public class FixUsesAction extends BaseAction {
             return aliasesCapitalsOfNamespaces;
         }
 
-        public boolean isPhp56OrGreater() {
-            return isPhp56OrGreater;
+        public PhpVersion getPhpVersion() {
+            return phpVersion;
         }
 
     }
+
 }
