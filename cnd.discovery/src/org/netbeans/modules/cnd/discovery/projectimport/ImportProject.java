@@ -127,6 +127,7 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.remote.api.RfsListenerSupport;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -1545,11 +1546,17 @@ public class ImportProject implements PropertyChangeListener {
         int i = toolPath.lastIndexOf('/');
         if (i > 0) {
             final String basePath = toolPath.substring(0, i);
-            if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
-                NbBundle.getMessage(ImportProject.class, "TOOL_COLLECTION_MISMATCH_EXPLANATION", toolPath), // NOI18N    
-                NbBundle.getMessage(ImportProject.class, "TOOL_COLLECTION_MISMATCH_TITLE"), // NOI18N
-                NotifyDescriptor.YES_NO_OPTION)) != NotifyDescriptor.YES_OPTION){
+            if (CndUtils.isUnitTestMode() || CndUtils.isStandalone()) {
+                logger.log(Level.INFO, NbBundle.getMessage(ImportProject.class, "TOOL_COLLECTION_MISMATCH_EXPLANATION", toolPath));
+                logger.log(Level.INFO, "Confirm - No");
                 return;
+            } else {
+                if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
+                    NbBundle.getMessage(ImportProject.class, "TOOL_COLLECTION_MISMATCH_EXPLANATION", toolPath), // NOI18N    
+                    NbBundle.getMessage(ImportProject.class, "TOOL_COLLECTION_MISMATCH_TITLE"), // NOI18N
+                    NotifyDescriptor.YES_NO_OPTION)) != NotifyDescriptor.YES_OPTION){
+                    return;
+                }
             }
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
