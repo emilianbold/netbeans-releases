@@ -67,9 +67,9 @@ import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.javascript2.json.parser.JsonParser;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
-import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.Exceptions;
 
@@ -147,18 +147,31 @@ public class JsFormatter implements Formatter {
                 FormatVisitor visitor = new FormatVisitor(tokenStream,
                         ts, context.endOffset());
 
-                FunctionNode root = ((JsParserResult) compilationInfo).getRoot();
-                if (root != null) {
-                    root.accept(visitor);
+
+                if (!(compilationInfo instanceof org.netbeans.modules.javascript2.types.spi.ParserResult)) {
+                    throw new IllegalArgumentException(String.valueOf(compilationInfo));
+                }
+                org.netbeans.modules.javascript2.types.spi.ParserResult result =
+                            (org.netbeans.modules.javascript2.types.spi.ParserResult) compilationInfo;
+                final FormatContext formatContext;
+                final JsonParser.JsonContext json = result.getLookup().lookup(JsonParser.JsonContext.class);
+                if (json != null) {
+                    //Todo: JSON
+                    formatContext = new FormatContext(context, provider, compilationInfo.getSnapshot(), language, null);
                 } else {
-                    LOGGER.log(Level.FINE, "Format visitor not executed; no root node");
+                    final FunctionNode fun = result.getLookup().lookup(FunctionNode.class);
+                    if (fun != null) {
+                        fun.accept(visitor);
+                    } else {
+                        LOGGER.log(Level.FINE, "Format visitor not executed; no root node");
+                    }
+                    formatContext = new FormatContext(context, provider, compilationInfo.getSnapshot(), language, fun);
                 }
                 LOGGER.log(Level.FINE, "Format visitor: {0} ms",
                         (System.nanoTime() - startTime) / 1000000);
 
                 startTime = System.nanoTime();
 
-                FormatContext formatContext = new FormatContext(context, provider, compilationInfo.getSnapshot(), language, root);
                 CodeStyle.Holder codeStyle = CodeStyle.get(formatContext).toHolder();
                 
                 int indentLevelSize = codeStyle.indentSize;
