@@ -59,6 +59,7 @@ import static com.oracle.js.parser.TokenType.NE;
 import com.oracle.js.parser.ir.ClassNode;
 import com.oracle.js.parser.ir.ExpressionStatement;
 import com.oracle.js.parser.ir.IdentNode;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -84,6 +85,12 @@ import org.openide.util.NbBundle;
  * @author Petr Pisl
  */
 public class JsConventionRule extends JsAstRule {
+    
+    private static List<JsTokenId> PREVIOUS_IGNORE = new ArrayList<>();
+    
+    static {
+        Collections.addAll(PREVIOUS_IGNORE, JsTokenId.BLOCK_COMMENT, JsTokenId.DOC_COMMENT, JsTokenId.LINE_COMMENT, JsTokenId.WHITESPACE);
+    }
     
     @Override
     void computeHints(JsRuleContext context, List<Hint> hints, int offset, HintsProvider.HintsManager manager) {
@@ -245,9 +252,16 @@ public class JsConventionRule extends JsAstRule {
                     }
                 }
             } else if (!ts.moveNext() && ts.movePrevious() && ts.moveNext()) {
+                int originalOffset = ts.offset();
+                CharSequence originalText = ts.token().text();
+
+                Token<? extends JsTokenId> previous = LexUtilities.findPrevious(ts, PREVIOUS_IGNORE);
+                if (previous != null && previous.id() == JsTokenId.OPERATOR_SEMICOLON) {
+                    return;
+                }
                 // we are probably at the end of file without the semicolon
-                fileOffset = context.parserResult.getSnapshot().getOriginalOffset(ts.offset());
-                addMissingSemicolonHint(fileOffset, ts.token().text().toString());
+                fileOffset = context.parserResult.getSnapshot().getOriginalOffset(originalOffset);
+                addMissingSemicolonHint(fileOffset, originalText.toString());
             }
         }
         
