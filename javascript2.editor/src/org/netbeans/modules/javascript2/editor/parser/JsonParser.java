@@ -40,7 +40,7 @@ package org.netbeans.modules.javascript2.editor.parser;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.javascript2.editor.api.JsonOptionsQuery;
+import org.netbeans.modules.javascript2.json.api.JsonOptionsQuery;
 import org.netbeans.modules.javascript2.json.parser.JsonLexer;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;

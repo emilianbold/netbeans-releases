@@ -39,63 +39,56 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.options;
+package org.netbeans.modules.javascript2.json.api;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.javascript2.editor.spi.JsonOptionsQueryImplementation;
+import java.util.ArrayDeque;
+import java.util.Collection;
+import java.util.Deque;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.javascript2.json.spi.JsonOptionsQueryImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 
 /**
- * Todo: UI for customization, for now taken from VM property.
+ *
  * @author Tomas Zezula
  */
-@ServiceProvider(service = JsonOptionsQueryImplementation.class, position = 100000)
-public class GlobalJsonOptionsQueryImpl implements JsonOptionsQueryImplementation {
-    private static final Logger LOG = Logger.getLogger(GlobalJsonOptionsQueryImpl.class.getName());
-    private static final String PROP_ALLOW_COMMETS="json.commets";  //NOI18N
-    private static final Pattern FILES;
-    static {
-        Pattern p = null;
-        final String propVal = System.getProperty(PROP_ALLOW_COMMETS);
-        if (propVal != null) {
-            try {
-                p = Pattern.compile(propVal);
-            } catch (PatternSyntaxException e) {
-                LOG.log(
-                        Level.WARNING,
-                        "Cannot compile: {0}, error: {1}",  //NOI18N
-                        new Object[]{ propVal, e.getMessage()});
+public class JsonOptionsQuery {
+
+    private JsonOptionsQuery() {
+        throw new IllegalStateException("No instance allowed"); //NOI18N
+    }
+
+    @NonNull
+    public static Result getOptions(@NonNull final FileObject file) {
+        Parameters.notNull("file", file);
+        final Deque<JsonOptionsQueryImplementation.Result> results = new ArrayDeque<JsonOptionsQueryImplementation.Result>();
+        for (JsonOptionsQueryImplementation impl : Lookup.getDefault().lookupAll(JsonOptionsQueryImplementation.class)) {
+            final JsonOptionsQueryImplementation.Result res = impl.getOptions(file);
+            if (res != null) {
+                results.offer(res);
             }
         }
-        FILES = p;
+        return new Result(results);
     }
 
-    @Override
-    @CheckForNull
-    public Result getOptions(FileObject file) {
-        if (FILES != null && FILES.matcher(file.getNameExt()).matches()) {
-            return new JsonOptionsResult(true);
-        }
-        return null;
-    }
+    public static final class Result {
+        private final Collection<? extends JsonOptionsQueryImplementation.Result> delegates;
 
-    private final class JsonOptionsResult implements JsonOptionsQueryImplementation.Result {
-        private final boolean commentSupported;
-
-        JsonOptionsResult(
-            final boolean commentSupported) {
-            this.commentSupported = commentSupported;
+        private Result(@NonNull final Collection<? extends JsonOptionsQueryImplementation.Result> delegates) {
+            Parameters.notNull("delegates", delegates); //NOI18N
+            this.delegates = delegates;
         }
 
-        @Override
-        @CheckForNull
-        public Boolean isCommentSupported() {
-            return commentSupported;
+        public boolean isCommentSupported() {
+            for (JsonOptionsQueryImplementation.Result delegate : delegates) {
+                final Boolean res = delegate.isCommentSupported();
+                if (res != null) {
+                    return res;
+                }
+            }
+            return false;
         }
     }
 }

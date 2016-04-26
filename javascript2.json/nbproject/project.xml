@@ -23,6 +23,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.filesystems</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>9.10</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -30,11 +38,22 @@
                         <specification-version>9.7</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util.lookup</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>8.33</specification-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.javascript2.editor</friend>
+                <friend>org.netbeans.modules.javascript2.lexer</friend>
                 <friend>org.netbeans.modules.javascript2.model</friend>
+                <package>org.netbeans.modules.javascript2.json.api</package>
                 <package>org.netbeans.modules.javascript2.json.parser</package>
+                <package>org.netbeans.modules.javascript2.json.spi</package>
             </friend-packages>
         </data>
     </configuration>

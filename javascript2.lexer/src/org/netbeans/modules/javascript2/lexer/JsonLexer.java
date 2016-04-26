@@ -43,31 +43,38 @@
 package org.netbeans.modules.javascript2.lexer;
 
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.modules.javascript2.json.api.JsonOptionsQuery;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
+import org.openide.filesystems.FileObject;
 
-
+import static org.netbeans.modules.javascript2.json.parser.JsonLexer.*;
 
 /**
  *
- * @author Petr Hejl
+ * @author Petr Hejl, Dusan Balek
  */
 public class JsonLexer implements Lexer<JsTokenId> {
 
     private static final Logger LOGGER = Logger.getLogger(JsonLexer.class.getName());
 
-    private final JsonColoringLexer scanner;
+    private final org.netbeans.modules.javascript2.json.parser.JsonLexer scanner;
 
     private TokenFactory<JsTokenId> tokenFactory;
 
     private JsonLexer(LexerRestartInfo<JsTokenId> info) {
-        scanner = new JsonColoringLexer(info);
         tokenFactory = info.tokenFactory();
+        NbLexerCharStream charStream = new NbLexerCharStream(info);
+        FileObject fo = (FileObject) info.getAttributeValue(FileObject.class);
+        boolean allowComments = fo != null ? JsonOptionsQuery.getOptions(fo).isCommentSupported() : false;
+        scanner = new org.netbeans.modules.javascript2.json.parser.JsonLexer(charStream, allowComments, true);
+        if (info.state() != null && info.state() instanceof LexerState) {
+            scanner.setLexerState((LexerState) info.state());
+        }
     }
 
     public static JsonLexer create(LexerRestartInfo<JsTokenId> info) {
@@ -78,16 +85,12 @@ public class JsonLexer implements Lexer<JsTokenId> {
 
     @Override
     public Token<JsTokenId> nextToken() {
-        try {
-            JsTokenId tokenId = scanner.nextToken();
-            LOGGER.log(Level.FINEST, "Lexed token is {0}", tokenId);
-            Token<JsTokenId> token = null;
-            if (tokenId != null) {
-                token = tokenFactory.createToken(tokenId);
-            }
+        org.antlr.v4.runtime.Token nextToken = scanner.nextToken();
+        Token<JsTokenId> token = null;
+        if (nextToken.getType() != scanner.EOF) {            
+            token = tokenFactory.createToken(tokenId(nextToken.getType()));
+            LOGGER.log(Level.FINEST, "Lexed token is {0}", token.id());
             return token;
-        } catch (IOException ex) {
-            Logger.getLogger(JsonLexer.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
@@ -99,5 +102,28 @@ public class JsonLexer implements Lexer<JsTokenId> {
 
     @Override
     public void release() {
+    }
+    
+    private static JsTokenId tokenId(int type) {
+        switch (type) {
+            case COLON: return JsTokenId.OPERATOR_COLON;
+            case COMMA: return JsTokenId.OPERATOR_COMMA;
+            case DOT: return JsTokenId.OPERATOR_DOT;
+            case PLUS: return JsTokenId.OPERATOR_PLUS;
+            case MINUS: return JsTokenId.OPERATOR_MINUS;
+            case LBRACE: return JsTokenId.BRACKET_LEFT_CURLY;
+            case RBRACE: return JsTokenId.BRACKET_RIGHT_CURLY;
+            case LBRACKET: return JsTokenId.BRACKET_LEFT_BRACKET;
+            case RBRACKET: return JsTokenId.BRACKET_RIGHT_BRACKET;
+            case TRUE: return JsTokenId.KEYWORD_TRUE;
+            case FALSE: return JsTokenId.KEYWORD_FALSE;
+            case NULL: return JsTokenId.KEYWORD_NULL;
+            case NUMBER: return JsTokenId.NUMBER;
+            case STRING: return JsTokenId.STRING;
+            case LINE_COMMENT: return JsTokenId.LINE_COMMENT;
+            case COMMENT: return JsTokenId.BLOCK_COMMENT;
+            case WS: return JsTokenId.WHITESPACE;
+            default: return JsTokenId.ERROR;
+        }
     }
 }
