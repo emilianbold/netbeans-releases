@@ -66,12 +66,10 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.support.CancelSupport;
-import org.netbeans.modules.javascript2.editor.parser.JsonParserResult;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
 import org.netbeans.modules.javascript2.model.api.JsObject;
 import org.netbeans.modules.javascript2.model.api.Model;
-import org.netbeans.modules.javascript2.model.spi.ModelContainer;
 import org.netbeans.modules.javascript2.types.spi.ParserResult;
 
 /**
