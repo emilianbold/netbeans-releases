@@ -111,6 +111,7 @@ public final class FmtOptions {
     public static final String SWITCH_BRACE_PLACEMENT = "switchBracePlacement"; //NOI18N
     public static final String CATCH_BRACE_PLACEMENT = "catchBracePlacement"; //NOI18N
     public static final String USE_TRAIT_BODY_BRACE_PLACEMENT = "useTraitBodyBracePlacement"; //NOI18N
+    public static final String GROUP_USE_BRACE_PLACEMENT = "groupUseBracePlacement"; //NOI18N
     public static final String OTHER_BRACE_PLACEMENT = "otherBracePlacement"; //NOI18N
     public static final String BLANK_LINES_BEFORE_NAMESPACE = "blankLinesBeforeNamespace"; //NOI18N
     public static final String BLANK_LINES_AFTER_NAMESPACE = "blankLinesAfterNamespace"; //NOI18N
@@ -200,6 +201,7 @@ public final class FmtOptions {
     public static final String ALIGN_MULTILINE_ARRAY_INIT = "alignMultilineArrayInit"; //NOI18N
     public static final String GROUP_ALIGNMENT_ASSIGNMENT = "groupAlignmentAssignment"; //NOI18N
     public static final String GROUP_ALIGNMENT_ARRAY_INIT = "groupAlignmentArrayInit"; //NOI18N
+    public static final String WRAP_GROUP_USE_LIST = "wrapGroupUseList"; //NOI18N
     public static final String WRAP_EXTENDS_IMPLEMENTS_KEYWORD = "wrapExtendsImplementsKeyword"; //NOI18N
     public static final String WRAP_EXTENDS_IMPLEMENTS_LIST = "wrapExtendsImplementsList"; //NOI18N
     public static final String WRAP_METHOD_PARAMS = "wrapMethodParams"; //NOI18N
@@ -215,6 +217,7 @@ public final class FmtOptions {
     public static final String WRAP_TERNARY_OPS = "wrapTernaryOps"; //NOI18N
     public static final String WRAP_ASSIGN_OPS = "wrapAssignOps"; //NOI18N
     public static final String WRAP_BLOCK_BRACES = "wrapBlockBraces";  //NOI18N
+    public static final String WRAP_GROUP_USE_BRACES = "wrapGroupUseBraces"; // NOI18N
     public static final String WRAP_STATEMENTS_ON_THE_LINE = "wrapStateMentsOnTheLine"; // NOI18N
     public static final String WRAP_AFTER_BIN_OPS = "wrapAfterBinOps"; // NOI18N
     public static final String WRAP_AFTER_ASSIGN_OPS = "wrapAfterAssignOps"; // NOI18N
@@ -277,6 +280,7 @@ public final class FmtOptions {
             {SWITCH_BRACE_PLACEMENT, OBRACE_SAMELINE},
             {CATCH_BRACE_PLACEMENT, OBRACE_SAMELINE},
             {USE_TRAIT_BODY_BRACE_PLACEMENT, OBRACE_SAMELINE},
+            {GROUP_USE_BRACE_PLACEMENT, OBRACE_SAMELINE},
             {OTHER_BRACE_PLACEMENT, OBRACE_SAMELINE},
             {BLANK_LINES_BEFORE_NAMESPACE, "1"}, //NOI18N
             {BLANK_LINES_AFTER_NAMESPACE, "1"}, //NOI18N
@@ -367,6 +371,7 @@ public final class FmtOptions {
 
             {GROUP_ALIGNMENT_ARRAY_INIT, FALSE},
             {GROUP_ALIGNMENT_ASSIGNMENT, FALSE},
+            {WRAP_GROUP_USE_LIST, WRAP_NEVER},
             {WRAP_EXTENDS_IMPLEMENTS_KEYWORD, WRAP_NEVER}, //NOI18N
             {WRAP_EXTENDS_IMPLEMENTS_LIST, WRAP_NEVER}, //NOI18N
             {WRAP_METHOD_PARAMS, WRAP_NEVER}, //NOI18N
@@ -382,6 +387,7 @@ public final class FmtOptions {
             {WRAP_TERNARY_OPS, WRAP_NEVER},
             {WRAP_ASSIGN_OPS, WRAP_NEVER},
             {WRAP_BLOCK_BRACES, TRUE},
+            {WRAP_GROUP_USE_BRACES, FALSE},
             {WRAP_STATEMENTS_ON_THE_LINE, TRUE},
             {WRAP_AFTER_BIN_OPS, FALSE},
             {WRAP_AFTER_ASSIGN_OPS, FALSE},

@@ -1002,6 +1002,30 @@ public class PHPFormatterBlankLinesTest extends PHPFormatterTestBase {
         reformatFileContents("testfiles/formatting/blankLines/Use04.php", options);
     }
 
+    public void testBLSimpleGroupUse01() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        reformatFileContents("testfiles/formatting/blankLines/GroupUse01.php", options);
+    }
+
+    public void testBLSimpleGroupUse02() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        reformatFileContents("testfiles/formatting/blankLines/GroupUse02.php", options);
+    }
+
+    public void testBLSimpleGroupUse03() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        reformatFileContents("testfiles/formatting/blankLines/GroupUse03.php", options);
+    }
+
+    public void testBLSimpleGroupUse04() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        reformatFileContents("testfiles/formatting/blankLines/GroupUse04.php", options);
+    }
+
     public void testOpenClosePHPTag01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/blankLines/OpenClosePHPTag01.php", options);
