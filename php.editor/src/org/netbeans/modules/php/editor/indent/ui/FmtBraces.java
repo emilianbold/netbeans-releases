@@ -63,6 +63,10 @@ public class FmtBraces extends javax.swing.JPanel {
 
     public FmtBraces() {
         initComponents();
+
+        mainScrollPane.getViewport().setBackground(java.awt.SystemColor.controlLtHighlight);
+        mainScrollPane.getVerticalScrollBar().setUnitIncrement(20);
+
         classDeclCombo.putClientProperty(OPTION_ID, CLASS_DECL_BRACE_PLACEMENT);
         anonymousClassCombo.putClientProperty(OPTION_ID, ANONYMOUS_CLASS_BRACE_PLACEMENT);
         methodDeclCombo.putClientProperty(OPTION_ID, METHOD_DECL_BRACE_PLACEMENT);
@@ -72,6 +76,7 @@ public class FmtBraces extends javax.swing.JPanel {
         whileCombo.putClientProperty(OPTION_ID, WHILE_BRACE_PLACEMENT);
         catchCombo.putClientProperty(OPTION_ID, CATCH_BRACE_PLACEMENT);
         useTraitCombo.putClientProperty(OPTION_ID, USE_TRAIT_BODY_BRACE_PLACEMENT);
+        groupUseCombo.putClientProperty(OPTION_ID, GROUP_USE_BRACE_PLACEMENT);
         otherCombo.putClientProperty(OPTION_ID, OTHER_BRACE_PLACEMENT);
     }
 
@@ -94,31 +99,36 @@ public class FmtBraces extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        mainScrollPane = new javax.swing.JScrollPane();
+        mainPanel = new javax.swing.JPanel();
         bracesPlacementLabel = new javax.swing.JLabel();
+        jSeparator1 = new javax.swing.JSeparator();
         classDeclLabel = new javax.swing.JLabel();
         classDeclCombo = new javax.swing.JComboBox();
         anonymousClassLabel = new javax.swing.JLabel();
         anonymousClassCombo = new javax.swing.JComboBox<>();
         methodDeclLabel = new javax.swing.JLabel();
         methodDeclCombo = new javax.swing.JComboBox();
-        otherLabel = new javax.swing.JLabel();
-        otherCombo = new javax.swing.JComboBox();
-        jSeparator1 = new javax.swing.JSeparator();
-        ifCombo = new javax.swing.JComboBox();
-        forCombo = new javax.swing.JComboBox();
-        whileCombo = new javax.swing.JComboBox();
-        switchCombo = new javax.swing.JComboBox();
-        catchCombo = new javax.swing.JComboBox();
         ifLabel = new javax.swing.JLabel();
+        ifCombo = new javax.swing.JComboBox();
         forLabel = new javax.swing.JLabel();
+        forCombo = new javax.swing.JComboBox();
         whileLabel = new javax.swing.JLabel();
+        whileCombo = new javax.swing.JComboBox();
         switchLabel = new javax.swing.JLabel();
+        switchCombo = new javax.swing.JComboBox();
         catchLabel = new javax.swing.JLabel();
+        catchCombo = new javax.swing.JComboBox();
         useTraitLabel = new javax.swing.JLabel();
         useTraitCombo = new javax.swing.JComboBox();
+        groupUseLabel = new javax.swing.JLabel();
+        groupUseCombo = new javax.swing.JComboBox<>();
+        otherLabel = new javax.swing.JLabel();
+        otherCombo = new javax.swing.JComboBox();
 
         setName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "LBL_Braces")); // NOI18N
         setOpaque(false);
+        setLayout(new java.awt.BorderLayout());
 
         bracesPlacementLabel.setLabelFor(bracesPlacementLabel);
         org.openide.awt.Mnemonics.setLocalizedText(bracesPlacementLabel, org.openide.util.NbBundle.getMessage(FmtBraces.class, "LBL_br_bracesPlacement")); // NOI18N
@@ -133,6 +143,7 @@ public class FmtBraces extends javax.swing.JPanel {
             }
         });
 
+        anonymousClassLabel.setLabelFor(anonymousClassCombo);
         org.openide.awt.Mnemonics.setLocalizedText(anonymousClassLabel, org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.anonymousClassLabel.text")); // NOI18N
 
         anonymousClassCombo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
@@ -147,6 +158,40 @@ public class FmtBraces extends javax.swing.JPanel {
             }
         });
 
+        ifLabel.setLabelFor(ifCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(ifLabel, org.openide.util.NbBundle.getMessage(FmtBraces.class, "LBL_bp_If")); // NOI18N
+
+        ifCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        forLabel.setLabelFor(forCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(forLabel, org.openide.util.NbBundle.getMessage(FmtBraces.class, "LBL_bp_FOR")); // NOI18N
+
+        forCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        whileLabel.setLabelFor(whileCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(whileLabel, org.openide.util.NbBundle.getMessage(FmtBraces.class, "LBL_bp_WHILE")); // NOI18N
+
+        whileCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        switchLabel.setLabelFor(switchCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(switchLabel, org.openide.util.NbBundle.getMessage(FmtBraces.class, "LBL_bp_SWITCH")); // NOI18N
+
+        switchCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        catchLabel.setLabelFor(catchCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(catchLabel, org.openide.util.NbBundle.getMessage(FmtBraces.class, "LBL_bp_catch")); // NOI18N
+
+        catchCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        org.openide.awt.Mnemonics.setLocalizedText(useTraitLabel, org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.useTraitLabel.text")); // NOI18N
+
+        useTraitCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        groupUseLabel.setLabelFor(groupUseCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(groupUseLabel, org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.groupUseLabel.text")); // NOI18N
+
+        groupUseCombo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
         otherLabel.setLabelFor(otherCombo);
         org.openide.awt.Mnemonics.setLocalizedText(otherLabel, org.openide.util.NbBundle.getMessage(FmtBraces.class, "LBL_bp_Other")); // NOI18N
 
@@ -157,139 +202,107 @@ public class FmtBraces extends javax.swing.JPanel {
             }
         });
 
-        ifCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
-        forCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
-        whileCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
-        switchCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
-        catchCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
-        ifLabel.setLabelFor(ifCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(ifLabel, org.openide.util.NbBundle.getMessage(FmtBraces.class, "LBL_bp_If")); // NOI18N
-
-        forLabel.setLabelFor(forCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(forLabel, org.openide.util.NbBundle.getMessage(FmtBraces.class, "LBL_bp_FOR")); // NOI18N
-
-        whileLabel.setLabelFor(whileCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(whileLabel, org.openide.util.NbBundle.getMessage(FmtBraces.class, "LBL_bp_WHILE")); // NOI18N
-
-        switchLabel.setLabelFor(switchCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(switchLabel, org.openide.util.NbBundle.getMessage(FmtBraces.class, "LBL_bp_SWITCH")); // NOI18N
-
-        catchLabel.setLabelFor(catchCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(catchLabel, org.openide.util.NbBundle.getMessage(FmtBraces.class, "LBL_bp_catch")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(useTraitLabel, org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.useTraitLabel.text")); // NOI18N
-
-        useTraitCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
+        javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
+        mainPanel.setLayout(mainPanelLayout);
+        mainPanelLayout.setHorizontalGroup(
+            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(mainPanelLayout.createSequentialGroup()
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(mainPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(forLabel)
+                            .addComponent(ifLabel)
+                            .addComponent(whileLabel)
+                            .addComponent(switchLabel)
+                            .addComponent(catchLabel)
+                            .addComponent(useTraitLabel)
+                            .addComponent(otherLabel)
+                            .addComponent(methodDeclLabel)
+                            .addComponent(classDeclLabel)
+                            .addComponent(anonymousClassLabel)
+                            .addComponent(groupUseLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(classDeclCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(anonymousClassCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(methodDeclCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(ifCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(forCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(whileCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(switchCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(catchCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(useTraitCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(groupUseCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(otherCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(mainPanelLayout.createSequentialGroup()
+                        .addGap(12, 12, 12)
                         .addComponent(bracesPlacementLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jSeparator1))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(forLabel)
-                                    .addComponent(ifLabel)
-                                    .addComponent(whileLabel)
-                                    .addComponent(switchLabel)
-                                    .addComponent(catchLabel))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(catchCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(switchCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(whileCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(forCombo, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(ifCombo, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(useTraitLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(useTraitCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(otherLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(otherCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(methodDeclLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(methodDeclCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(classDeclLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(classDeclCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(anonymousClassLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(anonymousClassCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                        .addComponent(jSeparator1)))
                 .addContainerGap())
         );
 
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {classDeclCombo, methodDeclCombo});
+        mainPanelLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {classDeclCombo, methodDeclCombo});
 
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+        mainPanelLayout.setVerticalGroup(
+            mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(bracesPlacementLabel)
                     .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(classDeclLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(classDeclCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(anonymousClassLabel)
                     .addComponent(anonymousClassCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(methodDeclLabel)
                     .addComponent(methodDeclCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(ifCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(ifLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(forCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(forLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(whileCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(whileLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(switchCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(switchLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(catchCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(catchLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(useTraitCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(useTraitLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(groupUseLabel)
+                    .addComponent(groupUseCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(otherCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(otherLabel))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         bracesPlacementLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.bracesPlacementLabel.AccessibleContext.accessibleName")); // NOI18N
         bracesPlacementLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.bracesPlacementLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        jSeparator1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.jSeparator1.AccessibleContext.accessibleName")); // NOI18N
+        jSeparator1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.jSeparator1.AccessibleContext.accessibleDescription")); // NOI18N
         classDeclLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.classDeclLabel.AccessibleContext.accessibleName")); // NOI18N
         classDeclLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.classDeclLabel.AccessibleContext.accessibleDescription")); // NOI18N
         classDeclCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.classDeclCombo.AccessibleContext.accessibleName")); // NOI18N
@@ -298,32 +311,34 @@ public class FmtBraces extends javax.swing.JPanel {
         methodDeclLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.methodDeclLabel.AccessibleContext.accessibleDescription")); // NOI18N
         methodDeclCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.methodDeclCombo.AccessibleContext.accessibleName")); // NOI18N
         methodDeclCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.methodDeclCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        ifLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.ifLabel.AccessibleContext.accessibleName")); // NOI18N
+        ifLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.ifLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        ifCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.ifCombo.AccessibleContext.accessibleName")); // NOI18N
+        ifCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.ifCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        forLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.forLabel.AccessibleContext.accessibleName")); // NOI18N
+        forLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.forLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        forCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.forCombo.AccessibleContext.accessibleName")); // NOI18N
+        forCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.forCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        whileLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.whileLabel.AccessibleContext.accessibleName")); // NOI18N
+        whileLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.whileLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        whileCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.whileCombo.AccessibleContext.accessibleName")); // NOI18N
+        whileCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.whileCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        switchLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.switchLabel.AccessibleContext.accessibleName")); // NOI18N
+        switchLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.switchLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        switchCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.switchCombo.AccessibleContext.accessibleName")); // NOI18N
+        switchCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.switchCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        catchLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.catchLabel.AccessibleContext.accessibleName")); // NOI18N
+        catchLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.catchLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        catchCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.catchCombo.AccessibleContext.accessibleName")); // NOI18N
+        catchCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.catchCombo.AccessibleContext.accessibleDescription")); // NOI18N
         otherLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.otherLabel.AccessibleContext.accessibleName")); // NOI18N
         otherLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.otherLabel.AccessibleContext.accessibleDescription")); // NOI18N
         otherCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.otherCombo.AccessibleContext.accessibleName")); // NOI18N
         otherCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.otherCombo.AccessibleContext.accessibleDescription")); // NOI18N
-        jSeparator1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.jSeparator1.AccessibleContext.accessibleName")); // NOI18N
-        jSeparator1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.jSeparator1.AccessibleContext.accessibleDescription")); // NOI18N
-        ifCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.ifCombo.AccessibleContext.accessibleName")); // NOI18N
-        ifCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.ifCombo.AccessibleContext.accessibleDescription")); // NOI18N
-        forCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.forCombo.AccessibleContext.accessibleName")); // NOI18N
-        forCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.forCombo.AccessibleContext.accessibleDescription")); // NOI18N
-        whileCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.whileCombo.AccessibleContext.accessibleName")); // NOI18N
-        whileCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.whileCombo.AccessibleContext.accessibleDescription")); // NOI18N
-        switchCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.switchCombo.AccessibleContext.accessibleName")); // NOI18N
-        switchCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.switchCombo.AccessibleContext.accessibleDescription")); // NOI18N
-        catchCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.catchCombo.AccessibleContext.accessibleName")); // NOI18N
-        catchCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.catchCombo.AccessibleContext.accessibleDescription")); // NOI18N
-        ifLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.ifLabel.AccessibleContext.accessibleName")); // NOI18N
-        ifLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.ifLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        forLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.forLabel.AccessibleContext.accessibleName")); // NOI18N
-        forLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.forLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        whileLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.whileLabel.AccessibleContext.accessibleName")); // NOI18N
-        whileLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.whileLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        switchLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.switchLabel.AccessibleContext.accessibleName")); // NOI18N
-        switchLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.switchLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        catchLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.catchLabel.AccessibleContext.accessibleName")); // NOI18N
-        catchLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.catchLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
+        mainScrollPane.setViewportView(mainPanel);
+
+        add(mainScrollPane, java.awt.BorderLayout.CENTER);
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtBraces.class, "FmtBraces.AccessibleContext.accessibleDescription")); // NOI18N
@@ -352,9 +367,13 @@ public class FmtBraces extends javax.swing.JPanel {
     private javax.swing.JLabel classDeclLabel;
     private javax.swing.JComboBox forCombo;
     private javax.swing.JLabel forLabel;
+    private javax.swing.JComboBox<String> groupUseCombo;
+    private javax.swing.JLabel groupUseLabel;
     private javax.swing.JComboBox ifCombo;
     private javax.swing.JLabel ifLabel;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JPanel mainPanel;
+    private javax.swing.JScrollPane mainScrollPane;
     private javax.swing.JComboBox methodDeclCombo;
     private javax.swing.JLabel methodDeclLabel;
     private javax.swing.JComboBox otherCombo;

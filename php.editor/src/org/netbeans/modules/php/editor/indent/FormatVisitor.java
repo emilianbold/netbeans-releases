@@ -82,6 +82,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.GroupUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
@@ -1564,22 +1565,56 @@ public class FormatVisitor extends DefaultVisitor {
     }
 
     @Override
+    public void visit(GroupUseStatementPart node) {
+        scan(node.getBaseNamespaceName());
+        List<SingleUseStatementPart> items = node.getItems();
+        if (items.size() > 0) {
+            while (ts.moveNext()
+                    && ts.offset() < items.get(0).getStartOffset()
+                    && lastIndex < ts.index()) {
+                if (ts.token().id() == PHPTokenId.PHP_CURLY_OPEN) {
+                    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_GROUP_USE_LEFT_BRACE, ts.offset()));
+                    formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.continualIndentSize));
+                }
+                addFormatToken(formatTokens);
+            }
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AFTER_GROUP_USE_LEFT_BRACE, ts.offset()));
+
+            ts.movePrevious();
+            addListOfNodes(items, FormatToken.Kind.WHITESPACE_IN_GROUP_USE_LIST);
+
+            while (ts.moveNext()
+                    && ts.offset() < node.getEndOffset()
+                    && lastIndex < ts.index()) {
+                if (ts.token().id() == PHPTokenId.PHP_CURLY_CLOSE) {
+                    formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
+                    formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_GROUP_USE_RIGHT_BRACE, ts.offset()));
+                }
+                addFormatToken(formatTokens);
+            }
+        }
+    }
+
+    @Override
     public void visit(SingleUseStatementPart statementPart) {
-        FormatToken lastFormatToken = formatTokens.get(formatTokens.size() - 1);
-        boolean lastRemoved = false;
-        if (ts.token().id() == PHPTokenId.PHP_NS_SEPARATOR
-                && lastFormatToken.getId() == FormatToken.Kind.TEXT
-                && "\\".equals(lastFormatToken.getOldText())) {
-            formatTokens.remove(formatTokens.size() - 1);
-            lastRemoved = true;
-        }
-        if (isFirstUseStatementPart) {
-            formatTokens.add(new FormatToken.AnchorToken(ts.offset()));
-            isFirstUseStatementPart = false;
-        }
-        formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_USES_PART, ts.offset()));
-        if (lastRemoved) {
-            formatTokens.add(lastFormatToken);
+        if (!(path.size() > 0
+                && path.get(1) instanceof GroupUseStatementPart)) {
+            FormatToken lastFormatToken = formatTokens.get(formatTokens.size() - 1);
+            boolean lastRemoved = false;
+            if (ts.token().id() == PHPTokenId.PHP_NS_SEPARATOR
+                    && lastFormatToken.getId() == FormatToken.Kind.TEXT
+                    && "\\".equals(lastFormatToken.getOldText())) {
+                formatTokens.remove(formatTokens.size() - 1);
+                lastRemoved = true;
+            }
+            if (isFirstUseStatementPart) {
+                formatTokens.add(new FormatToken.AnchorToken(ts.offset()));
+                isFirstUseStatementPart = false;
+            }
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_USES_PART, ts.offset()));
+            if (lastRemoved) {
+                formatTokens.add(lastFormatToken);
+            }
         }
         super.visit(statementPart);
     }
