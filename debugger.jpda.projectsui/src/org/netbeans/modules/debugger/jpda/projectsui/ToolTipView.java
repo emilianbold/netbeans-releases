@@ -226,6 +226,11 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
             ));
 
             setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+            pinButton = new JButton(ImageUtilities.loadImageIcon("org/netbeans/editor/resources/pin.png", false));
+            pinButton.setBorder(new javax.swing.border.EmptyBorder(0, 3, 0, 0));
+            pinButton.setBorderPainted(false);
+            pinButton.setContentAreaFilled(false);
+            add(pinButton);
             if (expandable) {
                 Icon expIcon = UIManager.getIcon ("Tree.collapsedIcon");    // NOI18N
                 expButton = new JButton(expIcon);
@@ -249,11 +254,6 @@ public class ToolTipView extends JComponent implements org.openide.util.HelpCtx.
             l.setBorder(new javax.swing.border.EmptyBorder(0, 3, 0, 3));
             textToolTip = l;
             add(l);
-            pinButton = new JButton(ImageUtilities.loadImageIcon("org/netbeans/editor/resources/pin.png", false));
-            pinButton.setBorder(new javax.swing.border.EmptyBorder(0, 3, 0, 0));
-            pinButton.setBorderPainted(false);
-            pinButton.setContentAreaFilled(false);
-            add(pinButton);
         }
 
         void addExpansionListener(ActionListener treeExpansionListener) {
