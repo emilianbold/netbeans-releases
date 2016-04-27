@@ -55,10 +55,13 @@ public final class EditorCaretEvent extends java.util.EventObject {
     
     private final int affectedEndOffset;
     
-    EditorCaretEvent(EditorCaret source, int affectedStartOffset, int affectedEndOffset) {
+    private final MoveCaretsOrigin origin;
+    
+    EditorCaretEvent(EditorCaret source, int affectedStartOffset, int affectedEndOffset, MoveCaretsOrigin origin) {
         super(source);
         this.affectedStartOffset = affectedStartOffset;
         this.affectedEndOffset = affectedEndOffset;
+        this.origin = origin;
     }
     
     /**

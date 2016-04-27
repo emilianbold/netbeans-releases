@@ -99,6 +99,7 @@ public class TokenFormatter {
         public CodeStyle.BracePlacement whileBracePlacement;
         public CodeStyle.BracePlacement switchBracePlacement;
         public CodeStyle.BracePlacement useTraitBodyBracePlacement;
+        public CodeStyle.BracePlacement groupUseBracePlacement;
         public CodeStyle.BracePlacement catchBracePlacement;
         public CodeStyle.BracePlacement otherBracePlacement;
         public boolean spaceBeforeClassDeclLeftBrace;
@@ -176,6 +177,7 @@ public class TokenFormatter {
         public int blankLinesAfterOpenPHPTag;
         public int blankLinesAfterOpenPHPTagInHTML;
         public int blankLinesBeforeClosePHPTag;
+        public CodeStyle.WrapStyle wrapGroupUseList;
         public CodeStyle.WrapStyle wrapExtendsImplementsKeyword;
         public CodeStyle.WrapStyle wrapExtendsImplementsList;
         public CodeStyle.WrapStyle wrapMethodParams;
@@ -191,6 +193,7 @@ public class TokenFormatter {
         public CodeStyle.WrapStyle wrapTernaryOps;
         public CodeStyle.WrapStyle wrapAssignOps;
         public boolean wrapBlockBrace;
+        public boolean wrapGroupUseBraces;
         public boolean wrapStatementsOnTheSameLine;
         public boolean wrapAfterBinOps;
         public boolean wrapAfterAssignOps;
@@ -231,6 +234,7 @@ public class TokenFormatter {
             switchBracePlacement = codeStyle.getSwitchBracePlacement();
             catchBracePlacement = codeStyle.getCatchBracePlacement();
             useTraitBodyBracePlacement = codeStyle.getUseTraitBodyBracePlacement();
+            groupUseBracePlacement = codeStyle.getGroupUseBracePlacement();
             otherBracePlacement = codeStyle.getOtherBracePlacement();
 
             spaceBeforeClassDeclLeftBrace = codeStyle.spaceBeforeClassDeclLeftBrace();
@@ -316,6 +320,7 @@ public class TokenFormatter {
             blankLinesAfterOpenPHPTagInHTML = codeStyle.getBlankLinesAfterOpenPHPTagInHTML();
             blankLinesBeforeClosePHPTag = codeStyle.getBlankLinesBeforeClosePHPTag();
 
+            wrapGroupUseList = codeStyle.wrapGroupUseList();
             wrapExtendsImplementsKeyword = codeStyle.wrapExtendsImplementsKeyword();
             wrapExtendsImplementsList = codeStyle.wrapExtendsImplementsList();
             wrapMethodParams = codeStyle.wrapMethodParams();
@@ -331,6 +336,7 @@ public class TokenFormatter {
             wrapTernaryOps = codeStyle.wrapTernaryOps();
             wrapAssignOps = codeStyle.wrapAssignOps();
             wrapBlockBrace = codeStyle.wrapBlockBrace();
+            wrapGroupUseBraces = codeStyle.wrapGroupUseBraces();
             wrapStatementsOnTheSameLine = codeStyle.wrapStatementsOnTheSameLine();
             wrapAfterBinOps = codeStyle.wrapAfterBinOps();
             wrapAfterAssignOps = codeStyle.wrapAfterAssignOps();
@@ -554,6 +560,19 @@ public class TokenFormatter {
                                         newLines = ws.lines;
                                         countSpaces = ws.spaces;
                                         break;
+                                    case WHITESPACE_BEFORE_GROUP_USE_LEFT_BRACE:
+                                        indentRule = true;
+                                        ws = countWhiteSpaceBeforeLeftBrace(docOptions.groupUseBracePlacement, false, oldText, indent, 0);
+                                        newLines = ws.lines;
+                                        countSpaces = ws.spaces;
+                                        break;
+                                    case WHITESPACE_AFTER_GROUP_USE_LEFT_BRACE:
+                                        indentRule = docOptions.wrapGroupUseBraces;
+                                        if (docOptions.wrapGroupUseBraces) {
+                                            newLines = 1;
+                                            countSpaces = indent;
+                                        }
+                                        break;
                                     case WHITESPACE_BEFORE_OTHER_LEFT_BRACE:
                                         indentRule = true;
                                         ws = countWhiteSpaceBeforeLeftBrace(docOptions.otherBracePlacement, docOptions.spaceBeforeTryLeftBrace, oldText, indent, 0, isAfterLineComment(formatTokens, index));
@@ -614,6 +633,16 @@ public class TokenFormatter {
                                         newLines = ws.lines;
                                         countSpaces = indentRule ? ws.spaces : 1;
                                         lastBracePlacement = docOptions.useTraitBodyBracePlacement;
+                                        break;
+                                    case WHITESPACE_BEFORE_GROUP_USE_RIGHT_BRACE:
+                                        indentRule = oldText != null && countOfNewLines(oldText) > 0
+                                                ? true
+                                                : docOptions.wrapGroupUseBraces;
+                                        ws = countWhiteSpaceBeforeRightBrace(docOptions.groupUseBracePlacement, newLines, 0, indent, formatTokens, index - 1, oldText, popLastBracedIndent(lastBracedBlockIndent));
+                                        indentLine = indentRule;
+                                        newLines = ws.lines;
+                                        countSpaces = indentRule ? ws.spaces : 0;
+                                        lastBracePlacement = docOptions.groupUseBracePlacement;
                                         break;
                                     case WHITESPACE_BEFORE_OTHER_RIGHT_BRACE:
                                         indentRule = oldText != null && countOfNewLines(oldText) > 0 ? true : docOptions.wrapBlockBrace;
@@ -931,6 +960,36 @@ public class TokenFormatter {
                                                 break;
                                             default:
                                                 assert false : docOptions.wrapArrayInit;
+                                        }
+                                        break;
+                                    case WHITESPACE_IN_GROUP_USE_LIST:
+                                        indentRule = true;
+                                        switch (docOptions.wrapGroupUseList) {
+                                            case WRAP_ALWAYS:
+                                                newLines = 1;
+                                                countSpaces = indent;
+                                                break;
+                                            case WRAP_NEVER:
+                                                if (isAfterLineComment(formatTokens, index)) {
+                                                    newLines = 1;
+                                                    countSpaces = indent;
+                                                } else {
+                                                    newLines = 0;
+                                                    countSpaces = docOptions.spaceAfterComma ? 1 : 0;
+                                                }
+                                                break;
+                                            case WRAP_IF_LONG:
+                                                if (isAfterLineComment(formatTokens, index)
+                                                        || column + 1 + countLengthOfNextSequence(formatTokens, index + 1) > docOptions.margin) {
+                                                    newLines = 1;
+                                                    countSpaces = indent;
+                                                } else {
+                                                    newLines = 0;
+                                                    countSpaces = 1;
+                                                }
+                                                break;
+                                            default:
+                                                assert false : docOptions.wrapGroupUseList;
                                         }
                                         break;
                                     case WHITESPACE_AROUND_OBJECT_OP:

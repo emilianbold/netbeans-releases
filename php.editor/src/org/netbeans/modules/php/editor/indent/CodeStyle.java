@@ -164,6 +164,11 @@ public final class CodeStyle {
         return BracePlacement.valueOf(placement);
     }
 
+    public BracePlacement getGroupUseBracePlacement() {
+        String placement = preferences.get(GROUP_USE_BRACE_PLACEMENT, getDefaultAsString(GROUP_USE_BRACE_PLACEMENT));
+        return BracePlacement.valueOf(placement);
+    }
+
     public BracePlacement getOtherBracePlacement() {
         String placement = preferences.get(OTHER_BRACE_PLACEMENT, getDefaultAsString(OTHER_BRACE_PLACEMENT));
         return BracePlacement.valueOf(placement);
@@ -533,6 +538,11 @@ public final class CodeStyle {
 
     // Wrapping ----------------------------------------------------------------
 
+    public WrapStyle wrapGroupUseList() {
+        String wrap = preferences.get(WRAP_GROUP_USE_LIST, getDefaultAsString(WRAP_GROUP_USE_LIST));
+        return WrapStyle.valueOf(wrap);
+    }
+
     public WrapStyle wrapExtendsImplementsKeyword() {
         String wrap = preferences.get(WRAP_EXTENDS_IMPLEMENTS_KEYWORD, getDefaultAsString(WRAP_EXTENDS_IMPLEMENTS_KEYWORD));
         return WrapStyle.valueOf(wrap);
@@ -605,6 +615,10 @@ public final class CodeStyle {
 
     public boolean wrapBlockBrace() {
         return preferences.getBoolean(WRAP_BLOCK_BRACES, getDefaultAsBoolean(WRAP_BLOCK_BRACES));
+    }
+
+    public boolean wrapGroupUseBraces() {
+        return preferences.getBoolean(WRAP_GROUP_USE_BRACES, getDefaultAsBoolean(WRAP_GROUP_USE_BRACES));
     }
 
     public boolean wrapStatementsOnTheSameLine() {

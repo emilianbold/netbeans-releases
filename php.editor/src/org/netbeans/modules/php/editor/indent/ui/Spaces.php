@@ -1,4 +1,7 @@
 <?php
+namespace ExampleNamespace;
+
+use Some\Classes\{ClassA, ClassB, ClassC as C};
 
 class Example {
 
