@@ -23,10 +23,13 @@
       </ArrayLiteralNode>
     </VarNode>
     <VarNode name='one' start='40' end='44'>
+      <isDestructuring/>
     </VarNode>
     <VarNode name='two' start='40' end='49'>
+      <isDestructuring/>
     </VarNode>
     <VarNode name='three' start='40' end='56'>
+      <isDestructuring/>
     </VarNode>
     <ExpressionStatement start='40' end='63'>
       <BinaryNode type='ASSIGN' start='40' end='63'>
