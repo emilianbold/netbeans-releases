@@ -2235,7 +2235,7 @@ public final class EditorCaret implements Caret {
                                 c.requestFocus();
                             }
                             c.setDragEnabled(true);
-                            if (evt.isAltDown() && evt.isShiftDown()) {
+                            if (evt.isControlDown() && evt.isShiftDown()) {
                                 mouseState = MouseState.CHAR_SELECTION;
                                 try {
                                     Position pos = doc.createPosition(offset);
