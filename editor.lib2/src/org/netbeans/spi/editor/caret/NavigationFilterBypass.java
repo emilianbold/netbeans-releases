@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,73 +37,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.api.editor.caret;
+package org.netbeans.spi.editor.caret;
 
-import org.netbeans.api.annotations.common.CheckForNull;
+import javax.swing.text.NavigationFilter;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.editor.caret.CaretInfo;
+import org.netbeans.api.editor.caret.EditorCaret;
+import org.netbeans.api.editor.caret.MoveCaretsOrigin;
 
 /**
- * Notification event about changes in editor caret.
- *
- * @author Miloslav Metelka
- * @since 2.6
+ * Enhanced FilterBypass which understands multicaret. 
+ * <p>
+ * Implementations of
+ * {@link NavigationFilter} may check if the FilterBypass is instanceof this class,
+ * and if so, they can access extended information.
+ * </p><p>
+ * If the caret move operation is initiated by new caret APIs, the FilterBypass passed
+ * to NavigationFilters always satisfies this interface.
+ * </p>
+ * @author sdedic
+ * @since 2.9
  */
-public final class EditorCaretEvent extends java.util.EventObject {
-    
-    private final int affectedStartOffset;
-    
-    private final int affectedEndOffset;
-    
-    private final MoveCaretsOrigin origin;
-    
-    EditorCaretEvent(EditorCaret source, int affectedStartOffset, int affectedEndOffset, MoveCaretsOrigin origin) {
-        super(source);
-        this.affectedStartOffset = affectedStartOffset;
-        this.affectedEndOffset = affectedEndOffset;
-        this.origin = origin;
-    }
-    
+public abstract class NavigationFilterBypass extends NavigationFilter.FilterBypass {
     /**
-     * Get caret instance to which this event relates.
-     *
-     * @return caret instance.
-     */
-    public @NonNull EditorCaret getCaret() {
-        return (EditorCaret) getSource();
-    }
-
-    /**
-     * Get start of the region that was affected by caret change.
-     * <br>
-     * This offset region will be repainted automatically by the editor infrastructure.
-     *
-     * @return &gt;= 0 offset.
-     */
-    public int getAffectedStartOffset() {
-        return affectedStartOffset;
-    }
-    
-    /**
-     * Get end of the region that was affected by caret change.
-     * <br>
-     * This offset region will be repainted automatically by the editor infrastructure.
-     *
-     * @return &gt;= 0 offset.
-     */
-    public int getAffectedEndOffset() {
-        return affectedEndOffset;
-    }
-    
-    /**
-     * Describes the origin of the movement command. May not be filled, if the movement
-     * does not originate form an user-triggered editor action.
+     * Returns the currently changing CaretItem.
      * 
-     * @return the original reason for caret movement, or {@code null}.
-     * @since 2.9
+     * @return CaretItem the caret instance being changed
      */
-    public @CheckForNull MoveCaretsOrigin getOrigin() {
-        return origin;
-    }
+    public abstract @NonNull CaretInfo           getCaretItem();
+    
+    /**
+     * Access to the entire EditorCaret abstraction
+     * @return the editor caret
+     */
+    public abstract @NonNull EditorCaret         getEditorCaret();
+    
+    /**
+     * Describes the origin / reason of the movement.
+     * @return The origin object provided by the caret movement initiator.
+     */
+    public abstract @NonNull MoveCaretsOrigin    getOrigin();
 }

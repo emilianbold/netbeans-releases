@@ -41,6 +41,7 @@
  */
 package org.netbeans.api.editor.caret;
 
+import org.netbeans.spi.editor.caret.CascadingNavigationFilter;
 import org.netbeans.spi.editor.caret.CaretMoveHandler;
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
@@ -76,7 +77,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -103,10 +106,12 @@ import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.NavigationFilter;
 import javax.swing.text.Position;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.EditorUtilities;
 import org.netbeans.api.editor.document.AtomicLockDocument;
 import org.netbeans.api.editor.document.AtomicLockEvent;
@@ -133,7 +138,9 @@ import org.netbeans.modules.editor.lib2.view.ViewHierarchy;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchyEvent;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchyListener;
 import org.netbeans.modules.editor.lib2.view.ViewUtils;
+import org.netbeans.spi.editor.caret.NavigationFilterBypass;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
 /**
@@ -159,6 +166,8 @@ public final class EditorCaret implements Caret {
     // Temporary until rectangular selection gets ported to multi-caret support
     private static final String RECTANGULAR_SELECTION_PROPERTY = "rectangular-selection"; // NOI18N
     private static final String RECTANGULAR_SELECTION_REGIONS_PROPERTY = "rectangular-selection-regions"; // NOI18N
+    private static final String NAVIGATION_FILTER_PROPERTY = EditorCaret.class.getName() + ".navigationFilters"; // NOI18N
+    private static final String CHAIN_FILTER_PROPERTY = EditorCaret.class.getName() + ".chainFilter"; // NOI18N
     
     // -J-Dorg.netbeans.api.editor.caret.EditorCaret.level=FINEST
     private static final Logger LOG = Logger.getLogger(EditorCaret.class.getName());
@@ -371,7 +380,7 @@ public final class EditorCaret implements Caret {
      * with the same cursor.
      */
     private boolean showingTextCursor = true;
-    
+
     public EditorCaret() {
         caretItems = new GapList<>();
         sortedCaretItems = new GapList<>();
@@ -504,6 +513,28 @@ public final class EditorCaret implements Caret {
      * @see Caret#setDot(int) 
      */
     public @Override void setDot(final int offset) {
+        setDot(offset, MoveCaretsOrigin.DEFAULT);
+    }
+
+    /**
+     * Assign a new offset to the caret and identify the operation which
+     * originated the caret movement. 
+     * <p>
+     * In addition to {@link #setDot(int)},
+     * the caller may identify the operation that originated the caret movement.
+     * This information is received by {@link NavigationFilter}s or {@link ChangeListener}s
+     * and may be used to react or modify the caret movements.
+     * </p><p>
+     * Use {@code null} or {@link MoveCaretsOrigin#DEFAULT} if the operation not known. Use
+     * {@link MoveCaretsOrigin#DIRECT_NAVIGATION} action type to identify simple navigational
+     * actions (pg up, pg down, left, right, ...).
+     * </p>
+     * @param offset new offset for the caret
+     * @param orig specifies the operation which caused the caret to move.
+     * @see #setDot(int) 
+     * @since 2.9
+     */
+    public void setDot(final int offset, MoveCaretsOrigin orig) {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("setDot: offset=" + offset); //NOI18N
             if (LOG.isLoggable(Level.FINEST)) {
@@ -523,7 +554,7 @@ public final class EditorCaret implements Caret {
                     }
                 }
             }
-        });
+        }, orig);
     }
 
     /**
@@ -537,6 +568,29 @@ public final class EditorCaret implements Caret {
      * @see Caret#moveDot(int) 
      */
     public @Override void moveDot(final int offset) {
+        moveDot(offset, MoveCaretsOrigin.DEFAULT);
+    }
+    
+    /**
+     * Moves the caret position (dot) to some other position, leaving behind the
+     * mark. 
+     * <p>
+     * In addition to {@link #setDot(int)},
+     * the caller may identify the operation that originated the caret movement.
+     * This information is received by {@link NavigationFilter}s or {@link EditorCaretListener}s
+     * and may be used to react or modify the caret movements.
+     * </p><p>
+     * Use {@code null} or {@link MoveCaretsOrigin#DEFAULT} if the operation not known. Use
+     * {@link MoveCaretsOrigin#DIRECT_NAVIGATION} action type to identify simple navigational
+     * actions (pg up, pg down, left, right, ...).
+     * </p>
+     * 
+     * @param offset new offset for the caret
+     * @param orig specifies the operation which caused the caret to move.
+     * @see #moveDot(int) 
+     * @since 2.9
+     */
+    public void moveDot(final int offset, MoveCaretsOrigin orig) {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("moveDot: offset=" + offset); //NOI18N
         }
@@ -554,7 +608,7 @@ public final class EditorCaret implements Caret {
                     }
                 }
             }
-        });
+        }, orig);
     }
 
     /**
@@ -593,7 +647,38 @@ public final class EditorCaret implements Caret {
      *  or no document installed in the text component.
      */
     public int moveCarets(@NonNull CaretMoveHandler moveHandler) {
+        Parameters.notNull("moveHandler", moveHandler);
         return runTransaction(CaretTransaction.RemoveType.NO_REMOVE, 0, null, moveHandler);
+    }
+    
+    /**
+     * Move multiple carets or create/modify selections, specifies the originating operation.
+     * <p>
+     * In addition to {@link #moveCarets(org.netbeans.spi.editor.caret.CaretMoveHandler)}, the caller may specify
+     * what operation causes the caret movements in the `origin' parameter, see {@link MoveCaretsOrigin} class. 
+     * This information is received by {@link NavigationFilter}s or {@link EditorCaretListener}s
+     * and may be used to react or modify the caret movements.
+     * </p><p>
+     * Use {@code null} or {@link MoveCaretsOrigin#DEFAULT} if the operation not known. Use
+     * {@link MoveCaretsOrigin#DIRECT_NAVIGATION} action type to identify simple navigational
+     * actions (pg up, pg down, left, right, ...).
+     * </p><p>
+     * See the {@link #moveCarets(org.netbeans.spi.editor.caret.CaretMoveHandler) } for detailed description of
+     * how carets are moved.
+     * </p>
+     * 
+     * @param moveHandler handler which moves individual carets
+     * @param origin description of the originating operation. Use {@code null} or {@link MoveCaretsOrigin#DEFAULT} for default/unspecified operation.
+     * @return difference between number of carets, see {@link #moveCarets(org.netbeans.spi.editor.caret.CaretMoveHandler)}.
+     * @see #moveCarets(org.netbeans.spi.editor.caret.CaretMoveHandler) 
+     * @since 2.9
+     */
+    public int moveCarets(@NonNull CaretMoveHandler moveHandler, MoveCaretsOrigin origin) {
+        Parameters.notNull("moveHandler", moveHandler);
+        if (origin ==  null) {
+            origin = MoveCaretsOrigin.DEFAULT;
+        }
+        return runTransaction(CaretTransaction.RemoveType.NO_REMOVE, 0, null, moveHandler, origin);
     }
 
     /**
@@ -855,12 +940,11 @@ public final class EditorCaret implements Caret {
             }
             listenerImpl.focusGained(null); // emulate focus gained
         }
-
         invalidateCaretBounds(0);
         dispatchUpdate(false);
         resetBlink();
     }
-
+    
     @Override
     public void deinstall(JTextComponent c) {
         if (LOG.isLoggable(Level.FINE)) {
@@ -1036,6 +1120,188 @@ public final class EditorCaret implements Caret {
             }
         }
     }
+    
+    /**
+     * Returns the navigation filter for a certain operation. 
+     * {@link NavigationFilter} can be 
+     * registered to receive only limited set of operations. This method returns the filter 
+     * for the specified operation. Use {@link MoveCaretsOrigin#DEFAULT} to get text 
+     * component's navigation filter (equivalent to {@link JTextComponent#getNavigationFilter() 
+     * JTextComponent.getNavigationFilter()}. That filter receives all caret movements.
+     * @param component the component whose filter should be returned
+     * @param origin the operation description
+     * @return the current navigation filter.
+     * @since 2.9
+     */
+    public static @CheckForNull NavigationFilter getNavigationFilter(@NonNull JTextComponent component, @NonNull MoveCaretsOrigin origin) {
+        Parameters.notNull("origin", origin);
+        if (origin == MoveCaretsOrigin.DEFAULT) {
+            return component.getNavigationFilter();
+        } else if (origin == MoveCaretsOrigin.DISABLE_FILTERS) {
+            return null;
+        }
+        NavigationFilter navi = doGetNavigationFilter(component, origin.getActionType());
+        // Note: a special delegator is returned, since the component's navigation filter queue
+        // can be manipulated after call to getNavigationFilter. So if we would have returned the global filter instance directly,
+        // the calling client may unknowingly bypass certain (global) filters registered after call to this method.
+        // In other words, there are two possible insertion points into the navigation filter chanin
+        return navi != null ? navi : getChainNavigationFilter(component);
+    }
+
+    /**
+     * Variant of {@link #getNavigationFilter}, which does not default to chaining navigation
+     * filter
+     * @param origin operation specifier
+     * @return navigation filter or {@code null}
+     */
+    @CheckForNull NavigationFilter getNavigationFilterNoDefault(@NonNull MoveCaretsOrigin origin) {
+        if (origin == MoveCaretsOrigin.DEFAULT) {
+            return component.getNavigationFilter();
+        } else if (origin == MoveCaretsOrigin.DISABLE_FILTERS) {
+            return null;
+        }
+        NavigationFilter navi2 = doGetNavigationFilter(component, origin.getActionType());
+        return navi2 != null ? navi2 : component.getNavigationFilter();
+    }
+
+    /**
+     * Bottom navigation filter which delegates to the main NavigationFilter in the
+     * Component (if it exists).
+     */
+    private static class ChainNavigationFilter extends NavigationFilter {
+        private final JTextComponent component;
+
+        public ChainNavigationFilter(JTextComponent component) {
+            this.component = component;
+        }
+        
+        @Override
+        public int getNextVisualPositionFrom(JTextComponent text, int pos, Position.Bias bias, int direction, Position.Bias[] biasRet) throws BadLocationException {
+            NavigationFilter chain = component.getNavigationFilter();
+            return chain != null ? chain.getNextVisualPositionFrom(text, pos, bias, direction, biasRet) : super.getNextVisualPositionFrom(text, pos, bias, direction, biasRet);
+        }
+
+        @Override
+        public void moveDot(NavigationFilter.FilterBypass fb, int dot, Position.Bias bias) {
+            NavigationFilter chain = component.getNavigationFilter();
+            if (chain != null) {
+                chain.moveDot(fb, dot, bias);
+            } else {
+                super.moveDot(fb, dot, bias);
+            }
+        }
+
+        @Override
+        public void setDot(NavigationFilter.FilterBypass fb, int dot, Position.Bias bias) {
+            NavigationFilter chain = component.getNavigationFilter();
+            if (chain != null) {
+                chain.setDot(fb, dot, bias);
+            } else {
+                super.setDot(fb, dot, bias);
+            }
+        }
+    }
+    
+    /**
+     * Sets navigation filter for a certain operation type, defined by {@link MoveCaretsOrigin}.
+     * <p>
+     * The registered filter will receive <b>only those caret movements</b>, which correspond to the
+     * passed {@link MoveCaretsOrigin}. To receive all caret movements, register for {@link MoveCaretsOrigin#DEFAULT} 
+     * or use {@link JTextComponent#setNavigationFilter}.
+     * </p><p>
+     * All the key part(s) of MoveCaretOrigin of a caret operation and `origin' parameter in this function must
+     * match in order for the filter to be invoked.
+     * </p><p>
+     * The NavigationFilter implementation <b>may downcast</b> the passed {@link NavigationFilter.FilterBypass FilterBypass}
+     * parameter to {@link NavigationFilterBypass} to get full infomration about the movement. 
+     * </p>
+     * @param component the component which will use the filter
+     * @param origin the origin
+     * @param naviFilter the installed filter
+     * @see JTextComponent#setNavigationFilter
+     * @see NavigationFilterBypass
+     * @since 2.9
+     */
+    public static void setNavigationFilter(JTextComponent component, MoveCaretsOrigin origin, @NullAllowed NavigationFilter naviFilter) {
+        if (origin == null) {
+            origin = MoveCaretsOrigin.DEFAULT;
+        }
+        final NavigationFilter prev = getNavigationFilter(component, origin);
+        if (naviFilter != null) {
+            // Note:
+            // if the caller passes in a non-cascading filter, we would loose the filter chain information.
+            // the alien filter is wrapped by CascadingNavigationFilter delegator, so the previous filter
+            // link is preserved.
+            if (!(naviFilter instanceof CascadingNavigationFilter)) {
+                final NavigationFilter del = naviFilter;
+                naviFilter = new CascadingNavigationFilter() {
+                    @Override
+                    public void setDot(NavigationFilter.FilterBypass fb, int dot, Position.Bias bias) {
+                        del.setDot(fb, dot, bias);
+                    }
+
+                    @Override
+                    public void moveDot(NavigationFilter.FilterBypass fb, int dot, Position.Bias bias) {
+                        del.moveDot(fb, dot, bias);
+                    }
+
+                    @Override
+                    public int getNextVisualPositionFrom(JTextComponent text, int pos, Position.Bias bias, int direction, Position.Bias[] biasRet) throws BadLocationException {
+                        return del.getNextVisualPositionFrom(text, pos, bias, direction, biasRet);
+                    }
+                };
+            }
+            ((CascadingNavigationFilter)naviFilter).setOwnerAndPrevious(component, origin, prev);
+        }
+        if (MoveCaretsOrigin.DEFAULT == origin) {
+            component.setNavigationFilter(naviFilter);
+        } else {
+            doPutNavigationFilter(component, origin.getActionType(), prev);
+        }
+    }
+    
+    private static NavigationFilter getChainNavigationFilter(JTextComponent component) {
+        NavigationFilter chain = (NavigationFilter)component.getClientProperty(CHAIN_FILTER_PROPERTY);
+        if (chain == null) {
+            component.putClientProperty(CHAIN_FILTER_PROPERTY, chain = new ChainNavigationFilter(component));
+        }
+        return chain;
+    }
+    
+    /**
+     * Records the navigation filter. Note that the filter is stored in the JTextComponent rather than
+     * in this Caret. If the Component's UI changes or the caret is recreated for some reason, the 
+     * navigation filters remain registered.
+     * 
+     * @param type type of nav filter
+     * @param n the filter instance
+     */
+    private static void doPutNavigationFilter(JTextComponent component, String type, NavigationFilter n) {
+        if (component == null) {
+            throw new IllegalStateException("Not attached to a Component");
+        }
+        Map<String, NavigationFilter> m = (Map<String, NavigationFilter>)component.getClientProperty(NAVIGATION_FILTER_PROPERTY);
+        if (m == null) {
+            if (n == null) {
+                return;
+            }
+            m = new HashMap<>();
+            component.putClientProperty(NAVIGATION_FILTER_PROPERTY, m);
+        } 
+        if (n == null) {
+            m.remove(type);
+        } else {
+            m.put(type, n);
+        }
+    }
+    
+    private static NavigationFilter doGetNavigationFilter(JTextComponent component, String n) {
+        if (component == null) {
+            throw new IllegalStateException("Not attached to a Component");
+        }
+        Map<String, NavigationFilter> m = (Map<String, NavigationFilter>)component.getClientProperty(NAVIGATION_FILTER_PROPERTY);
+        return m == null ? null : m.get(n);
+    }
 
     @Override
     public int getBlinkRate() {
@@ -1143,7 +1409,7 @@ public final class EditorCaret implements Caret {
                 moveDot(newDotOffset); // updates rs and fires state change
             } else {
                 updateRectangularSelectionPaintRect();
-                fireStateChanged();
+                fireStateChanged(null);
             }
         } catch (BadLocationException ex) {
             // Leave selection as is
@@ -1190,13 +1456,17 @@ public final class EditorCaret implements Caret {
      * @return 
      */
     private int runTransaction(CaretTransaction.RemoveType removeType, int offset, CaretItem[] addCarets, CaretMoveHandler moveHandler) {
+        return runTransaction(removeType, offset, addCarets, moveHandler, MoveCaretsOrigin.DEFAULT);
+    }
+    
+    private int runTransaction(CaretTransaction.RemoveType removeType, int offset, CaretItem[] addCarets, CaretMoveHandler moveHandler, MoveCaretsOrigin org) {
         lock();
         try {
             if (activeTransaction == null) {
                 JTextComponent c = component;
                 Document d = activeDoc;
                 if (c != null && d != null) {
-                    activeTransaction = new CaretTransaction(this, c, d);
+                    activeTransaction = new CaretTransaction(this, c, d, org);
                     if (LOG.isLoggable(Level.FINE)) {
                         StringBuilder msgBuilder = new StringBuilder(200);
                         msgBuilder.append("EditorCaret.runTransaction(): removeType=").append(removeType).
@@ -1276,7 +1546,7 @@ public final class EditorCaret implements Caret {
                         }
                         if (activeTransaction.isAnyChange()) {
                             // For now clear the lists and use old way TODO update to selective updating and rendering
-                            fireStateChanged();
+                            fireStateChanged(activeTransaction.getOrigin());
                             dispatchUpdate(true);
                             resetBlink();
                         }
@@ -1329,14 +1599,14 @@ public final class EditorCaret implements Caret {
     /**
      * Notifies listeners that caret position has changed.
      */
-    private void fireStateChanged() {
+    private void fireStateChanged(final MoveCaretsOrigin origin) {
         Runnable runnable = new Runnable() {
             public @Override void run() {
                 JTextComponent c = component;
                 if (c == null || c.getCaret() != EditorCaret.this) {
                     return;
                 }
-                fireEditorCaretChange(new EditorCaretEvent(EditorCaret.this, 0, Integer.MAX_VALUE)); // [TODO] temp firing without detailed info
+                fireEditorCaretChange(new EditorCaretEvent(EditorCaret.this, 0, Integer.MAX_VALUE, origin)); // [TODO] temp firing without detailed info
                 ChangeEvent evt = new ChangeEvent(EditorCaret.this);
                 List<ChangeListener> listeners = changeListenerList.getListeners();
                 for (ChangeListener l : listeners) {
@@ -1883,7 +2153,7 @@ public final class EditorCaret implements Caret {
             rsDotRect.x = r.x;
             rsDotRect.width = r.width;
             updateRectangularSelectionPaintRect();
-            fireStateChanged();
+            fireStateChanged(null);
         }
     }
     
@@ -2120,7 +2390,7 @@ public final class EditorCaret implements Caret {
                     } else { // No rectangular selection
                         RectangularSelectionTransferHandler.uninstall(component);
                     }
-                    fireStateChanged();
+                    fireStateChanged(null);
                 }
             }
         }
@@ -2132,7 +2402,7 @@ public final class EditorCaret implements Caret {
                 int offset = evt.getOffset();
                 if (offset == 0) {
                     // Manually shift carets at offset zero - do this always even when inside atomic lock
-                    runTransaction(CaretTransaction.RemoveType.DOCUMENT_INSERT_ZERO_OFFSET, evt.getLength(), null, null);
+                    runTransaction(CaretTransaction.RemoveType.DOCUMENT_INSERT_ZERO_OFFSET, evt.getLength(), null, null, MoveCaretsOrigin.DISABLE_FILTERS);
                 }
                 modified = true;
                 modifiedUpdate(true, offset);
@@ -2177,7 +2447,7 @@ public final class EditorCaret implements Caret {
                     invalidateCaretBounds(offset);
                     dispatchUpdate();
                     resetBlink();
-                    fireStateChanged();
+                    fireStateChanged(null);
                     modified = false;
                 }
             } else {
