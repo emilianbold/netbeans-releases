@@ -2123,6 +2123,51 @@ public class MarkOccurrenceTest extends JsTestBase {
 //        checkOccurrences("testfiles/ecmascript6/parser/other/objectPropertyAssignment.js", "console.log(target.prop^erty2);", true);
 //    }
     
+    public void testBlockScope01_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/blockscope/scope01.js", "tes^t();", true);
+    }
+    
+    public void testBlockScope01_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/blockscope/scope01.js", "var te^st = 10;", true);
+    }
+    
+    public void testBlockScope01_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/blockscope/scope01.js", "let te^st = 20;", true);
+    }
+    
+    public void testBlockScope02_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/blockscope/scope02.js", "return getNum^ber();", true);
+    }
+    
+    public void testBlockScope02_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/blockscope/scope02.js", "console.log(getN^umber()); // 2", true);
+    }
+    
+    public void testBlockScope02_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/blockscope/scope02.js", "console.log(getNu^mber()); // 3", true);
+    }
+    
+    public void testBlockScope03_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/blockscope/scope03.js", "console.log(i^);  // object again", true);
+    }
+    
+    public void testBlockScope03_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/blockscope/scope03.js", "console.log(i^); // number", true);
+    }
+    
+    public void testBlockScope04_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/blockscope/scope04.js", "console.log(f^oo());         // 0", true);
+    }
+    
+    public void testBlockScope04_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/blockscope/scope04.js", "console.log(fo^o());     // 1", true);
+    }
+    
+    public void testBlockScope04_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/blockscope/scope04.js", "console.log(f^oo()); // 2", true);
+    }
+    
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
