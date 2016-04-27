@@ -49,11 +49,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import javax.swing.SwingUtilities;
 
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.annotations.common.NonNull;
@@ -172,11 +174,14 @@ public abstract class SelectionAwareJavaSourceTaskFactory extends JavaSourceTask
     private class ChangeListenerImpl implements ChangeListener {
         
         public void stateChanged(ChangeEvent e) {
-            List<JTextComponent> added = new ArrayList<JTextComponent>(OpenedEditors.getDefault().getVisibleEditors());
+            assert SwingUtilities.isEventDispatchThread();
+
+            List<JTextComponent> visible = OpenedEditors.getDefault().getVisibleEditors();
+            List<JTextComponent> added = new ArrayList<JTextComponent>(visible);
             List<JTextComponent> removed = new ArrayList<JTextComponent>(component2Listener.keySet());
             
             added.removeAll(component2Listener.keySet());
-            removed.removeAll(OpenedEditors.getDefault().getVisibleEditors());
+            removed.removeAll(visible);
             
             for (JTextComponent c : removed) {
                 c.removeCaretListener(component2Listener.remove(c));
@@ -188,8 +193,18 @@ public abstract class SelectionAwareJavaSourceTaskFactory extends JavaSourceTask
                 c.addCaretListener(l);
                 component2Listener.put(c, l);
                 
+                int selStart, selEnd;
+                Caret caret = c.getCaret();
+                // possobly the caret is not yet installed ?
+                if (caret != null) {
+                    selStart = c.getSelectionStart();
+                    selEnd = c.getSelectionEnd();
+                } else {
+                    selStart = selEnd = 0;
+                }
+                
                 //TODO: are we in AWT Thread?:
-                setLastSelection(OpenedEditors.getFileObject(c), c.getSelectionStart(), c.getSelectionEnd());
+                setLastSelection(OpenedEditors.getFileObject(c), selStart, selEnd);
             }
             
             fileObjectsChanged();

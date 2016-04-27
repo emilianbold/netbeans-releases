@@ -119,12 +119,14 @@ final class CaretTransaction {
     
     private boolean fullResort;
     
+    private final MoveCaretsOrigin origin;
     
-    CaretTransaction(EditorCaret caret, JTextComponent component, Document doc) {
+    CaretTransaction(EditorCaret caret, JTextComponent component, Document doc, MoveCaretsOrigin origin) {
         this.editorCaret = caret;
         this.component = component;
         this.doc = doc;
         this.origCaretItems = editorCaret.getCaretItems();
+        this.origin = origin;
     }
     
 
@@ -264,6 +266,10 @@ final class CaretTransaction {
     List<CaretInfo> getOriginalSortedCarets() {
         // Current impl ignores possible replaceItems content - see getOriginalCarets()
         return editorCaret.getSortedCarets();
+    }
+    
+    MoveCaretsOrigin getOrigin() {
+        return origin;
     }
 
     void replaceCarets(RemoveType removeType, int offset, CaretItem[] addCaretItems) {
