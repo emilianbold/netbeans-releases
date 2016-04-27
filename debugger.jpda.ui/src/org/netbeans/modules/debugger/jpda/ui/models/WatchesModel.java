@@ -87,6 +87,8 @@ import org.openide.util.WeakListeners;
 @DebuggerServiceRegistration(path="netbeans-JPDASession/WatchesView", types={TreeModel.class}, position=450)
 public class WatchesModel implements TreeModel, JPDAWatchRefreshModel {
 
+    private static final String PROP_SHOW_PINNED_WATCHES = "showPinnedWatches"; // NOI18N
+    private static final org.netbeans.api.debugger.Properties PROPERTIES = org.netbeans.api.debugger.Properties.getDefault().getProperties("debugger").getProperties("watchesProps");
     
     private static boolean verbose = 
         (System.getProperty ("netbeans.debugger.viewrefresh") != null) &&
@@ -127,10 +129,37 @@ public class WatchesModel implements TreeModel, JPDAWatchRefreshModel {
             // 1) get Watches
             Watch[] ws = DebuggerManager.getDebuggerManager ().
                 getWatches ();
-            to = Math.min(ws.length, to);
-            from = Math.min(ws.length, from);
-            Watch[] fws = new Watch [to - from];
-            System.arraycopy (ws, from, fws, 0, to - from);
+            Watch[] fws;
+            if (PROPERTIES.getBoolean(PROP_SHOW_PINNED_WATCHES, false)) {
+                to = Math.min(ws.length, to);
+                from = Math.min(ws.length, from);
+                fws = new Watch [to - from];
+                System.arraycopy (ws, from, fws, 0, to - from);
+            } else {
+                int numwatches = 0;
+                for (Watch w : ws) {
+                    if (w.getPin() == null) {
+                        numwatches++;
+                    }
+                }
+                to = Math.min(numwatches, to);
+                from = Math.min(numwatches, from);
+                fws = new Watch [to - from];
+                numwatches = 0;
+                for (int i = 0; i < ws.length; i++) {
+                    Watch w = ws[i];
+                    if (w.getPin() == null) {
+                        if (numwatches >= from) {
+                            fws[numwatches++] = w;
+                        } else {
+                            numwatches++;
+                        }
+                        if (numwatches >= to) {
+                            break;
+                        }
+                    }
+                }
+            }
             
             // 2) create JPDAWatches for Watches
             int i, k = fws.length;
@@ -572,6 +601,7 @@ public class WatchesModel implements TreeModel, JPDAWatchRefreshModel {
             int i, k = ws.length;
             for (i = 0; i < k; i++)
                 ws [i].addPropertyChangeListener (this);
+            PROPERTIES.addPropertyChangeListener(this);
         }
         
         private WatchesModel getModel () {
@@ -603,33 +633,41 @@ public class WatchesModel implements TreeModel, JPDAWatchRefreshModel {
         @Override
         public void propertyChange (PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
-            // We already have watchAdded & watchRemoved. Ignore PROP_WATCHES:
-            // We care only about the current call stack frame change and watch expression change here...
-            if (!(JPDADebugger.PROP_STATE.equals(propName) || Watch.PROP_EXPRESSION.equals(propName) ||
-                  Watch.PROP_ENABLED.equals(propName) || JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(propName))) return;
-            final WatchesModel m = getModel ();
-            if (m == null) return;
-            if (JPDADebugger.PROP_STATE.equals(propName) &&
-                m.debugger.getState () == JPDADebugger.STATE_DISCONNECTED) {
-                
-                    destroy ();
-                    return;
+            WatchesModel m = getModel ();
+            if (m == null) {
+                return;
             }
-            if (m.debugger.getState () == JPDADebugger.STATE_RUNNING ||
-                 JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(propName) &&
-                 m.debugger.getCurrentCallStackFrame() == null) {
-
+            if (evt.getSource() == PROPERTIES && PROP_SHOW_PINNED_WATCHES.equals(propName)) {
+                // fire the tree change below...
+            } else {
+                // We already have watchAdded & watchRemoved. Ignore PROP_WATCHES:
+                // We care only about the current call stack frame change and watch expression change here...
+                if (!(JPDADebugger.PROP_STATE.equals(propName) || Watch.PROP_EXPRESSION.equals(propName) ||
+                      Watch.PROP_ENABLED.equals(propName) || JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(propName))) {
                     return;
-            }
-            
-            if (evt.getSource () instanceof Watch) {
-                Object node;
-                synchronized (m.watchToValue) {
-                    node = m.watchToValue.get(evt.getSource());
                 }
-                if (node != null) {
-                    m.fireTableValueChangedChanged(node, null);
-                    return ;
+                if (JPDADebugger.PROP_STATE.equals(propName) &&
+                    m.debugger.getState () == JPDADebugger.STATE_DISCONNECTED) {
+
+                        destroy ();
+                        return;
+                }
+                if (m.debugger.getState () == JPDADebugger.STATE_RUNNING ||
+                     JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(propName) &&
+                     m.debugger.getCurrentCallStackFrame() == null) {
+
+                        return;
+                }
+
+                if (evt.getSource () instanceof Watch) {
+                    Object node;
+                    synchronized (m.watchToValue) {
+                        node = m.watchToValue.get(evt.getSource());
+                    }
+                    if (node != null) {
+                        m.fireTableValueChangedChanged(node, null);
+                        return ;
+                    }
                 }
             }
             
@@ -638,7 +676,10 @@ public class WatchesModel implements TreeModel, JPDAWatchRefreshModel {
                     public void run () {
                         if (verbose)
                             System.out.println("WM do task " + task);
-                        m.fireTreeChanged ();
+                        WatchesModel m = getModel ();
+                        if (m != null) {
+                            m.fireTreeChanged ();
+                        }
                     }
                 });
                 if (verbose)

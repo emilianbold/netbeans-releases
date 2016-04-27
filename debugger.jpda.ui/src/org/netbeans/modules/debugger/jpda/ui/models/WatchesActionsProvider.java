@@ -136,6 +136,7 @@ public class WatchesActionsProvider implements NodeActionsProvider {
     
     
     private ContextProvider contextProvider;
+    private Action showPinnedWatchesAction;
     
     public WatchesActionsProvider (ContextProvider contextProvider) {
         this.contextProvider = contextProvider;
@@ -145,12 +146,14 @@ public class WatchesActionsProvider implements NodeActionsProvider {
         if (node == TreeModel.ROOT) 
             return new Action [] {
                 NEW_WATCH_ACTION,
+                getShowPinnedWatchesAction(),
                 null,
                 DELETE_ALL_ACTION
             };
         if (node instanceof JPDAWatch)
             return new Action [] {
                 NEW_WATCH_ACTION,
+                getShowPinnedWatchesAction(),
                 null,
                 DELETE_ACTION,
                 DELETE_ALL_ACTION,
@@ -174,6 +177,24 @@ public class WatchesActionsProvider implements NodeActionsProvider {
     }
 
     public void removeModelListener (ModelListener l) {
+    }
+
+    private Action getShowPinnedWatchesAction() {
+        if (showPinnedWatchesAction == null) {
+            List<? extends NodeActionsProvider> aps = DebuggerManager.getDebuggerManager().lookup("WatchesView", NodeActionsProvider.class);
+            for (NodeActionsProvider ap : aps) {
+                try {
+                    Action[] actions = ap.getActions(TreeModel.ROOT);
+                    for (Action a : actions) {
+                        if ("showPinned".equals(a.getValue("WatchActionId"))) { // NOI18N
+                            showPinnedWatchesAction = a;
+                            break;
+                        }
+                    }
+                } catch (UnknownTypeException ex) {}
+            }
+        }
+        return showPinnedWatchesAction;
     }
 
     private static void customize (JPDAWatch w) {
