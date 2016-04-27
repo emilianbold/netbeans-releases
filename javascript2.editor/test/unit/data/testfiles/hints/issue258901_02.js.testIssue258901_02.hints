@@ -1,3 +1,0 @@
-[,,,] = f(); // <- false warning here
--
-HINT:Expected semicolon ; after "[".

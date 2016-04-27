@@ -57,6 +57,7 @@ import com.oracle.js.parser.ir.WhileNode;
 import static com.oracle.js.parser.TokenType.EQ;
 import static com.oracle.js.parser.TokenType.NE;
 import com.oracle.js.parser.ir.ClassNode;
+import com.oracle.js.parser.ir.Expression;
 import com.oracle.js.parser.ir.ExpressionStatement;
 import com.oracle.js.parser.ir.IdentNode;
 import java.util.ArrayList;
@@ -68,10 +69,12 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Rule;
+import org.netbeans.modules.javascript2.editor.JSPreferences;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.hints.JsHintsProvider.JsRuleContext;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
@@ -103,6 +106,7 @@ public class JsConventionRule extends JsAstRule {
         Rule objectTrailingComma = null;
         Rule arrayTrailingComma = null;
         if (conventionHints != null) {
+            boolean ecma5 = JSPreferences.isECMAScript5(FileOwnerQuery.getOwner(context.getJsParserResult().getSnapshot().getSource().getFileObject()));
             for (AstRule astRule : conventionHints) {
                 if (manager.isEnabled(astRule)) {
                     if (astRule instanceof BetterConditionHint) {
@@ -231,12 +235,22 @@ public class JsConventionRule extends JsAstRule {
                     id = ts.token().id();
                 }
                 if (id == JsTokenId.BLOCK_COMMENT || id == JsTokenId.LINE_COMMENT || id == JsTokenId.WHITESPACE) {
-                    //try to find ; or , after
-                    Token<? extends JsTokenId> next = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
-                    id = next.id();
-                    if (id == JsTokenId.IDENTIFIER || id == JsTokenId.BRACKET_RIGHT_CURLY) {
-                       // probably we are at the beginning of the next expression or at the end of the context
-                       ts.movePrevious();
+                    int position = ts.offset();                    
+                    //try to find ; or , before
+                    Token<? extends JsTokenId> prev = LexUtilities.findPrevious(ts, PREVIOUS_IGNORE);
+                    if (prev != null && (prev.id() == JsTokenId.OPERATOR_SEMICOLON || prev.id() == JsTokenId.OPERATOR_COMMA)) {
+                        id = prev.id();
+                    } else {
+                        ts.move(position);
+                        ts.moveNext();
+
+                        //try to find ; or , after
+                        Token<? extends JsTokenId> next = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
+                        id = next.id();
+                        if (id == JsTokenId.IDENTIFIER || id == JsTokenId.BRACKET_RIGHT_CURLY) {
+                           // probably we are at the beginning of the next expression or at the end of the context
+                           ts.movePrevious();
+                        }
                     }
                 }
                 if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA) {
@@ -463,16 +477,6 @@ public class JsConventionRule extends JsAstRule {
             checkAssignmentInCondition(whileNode.getTest().getExpression());
             return super.enterWhileNode(whileNode);
         }
-        
-
-// TRUFFLE        
-//        @Override
-//        public Node enter(ExecuteNode executeNode) {
-//            if (!(executeNode.getExpression() instanceof Block)) {
-//                checkSemicolon(executeNode.getFinish());
-//            }
-//            return super.enter(executeNode);
-//        }
 
         @Override
         public boolean enterExpressionStatement(ExpressionStatement expressionStatement) {
@@ -530,6 +534,11 @@ public class JsConventionRule extends JsAstRule {
         public boolean enterLiteralNode(LiteralNode literalNode) {
             if (arrayTrailingComma != null) {
                 if (literalNode.getValue() instanceof Node[]) {
+                    Node previous = getPath().get(getPath().size() - 1);
+                    if (previous instanceof BinaryNode && ((BinaryNode) previous).lhs() == literalNode) {
+                        // destructuring assignment
+                        return super.enterLiteralNode(literalNode);
+                    }
                     int offset = context.parserResult.getSnapshot().getOriginalOffset(literalNode.getFinish());
                     if (offset > -1) {
                         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(
