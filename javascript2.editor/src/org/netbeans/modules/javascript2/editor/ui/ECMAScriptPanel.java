@@ -41,12 +41,11 @@
  */
 package org.netbeans.modules.javascript2.editor.ui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript2.editor.JSPreferences;
+import org.netbeans.modules.javascript2.json.spi.support.JsonPreferences;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -75,12 +74,8 @@ public class ECMAScriptPanel extends javax.swing.JPanel  {
         }
         model.setSelectedItem(JSPreferences.getECMAScriptVersion(project));
         cbVersion.setModel(model);
-        category.setStoreListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                save();
-            }
-        } );
+        allowJsonComments.setSelected(JsonPreferences.forProject(project).isCommentSupported());
+        category.setStoreListener((e) -> save());
     }
     /**
      * This method is called from within the constructor to initialize the form.
@@ -93,6 +88,7 @@ public class ECMAScriptPanel extends javax.swing.JPanel  {
 
         cbVersion = new javax.swing.JComboBox();
         lVersion = new javax.swing.JLabel();
+        allowJsonComments = new javax.swing.JCheckBox();
 
         cbVersion.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         cbVersion.addItemListener(new java.awt.event.ItemListener() {
@@ -103,15 +99,22 @@ public class ECMAScriptPanel extends javax.swing.JPanel  {
 
         org.openide.awt.Mnemonics.setLocalizedText(lVersion, org.openide.util.NbBundle.getMessage(ECMAScriptPanel.class, "ECMAScriptPanel.lVersion.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(allowJsonComments, org.openide.util.NbBundle.getMessage(ECMAScriptPanel.class, "ECMAScriptPanel.allowJsonComments.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(lVersion)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(cbVersion, 0, 265, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(lVersion)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cbVersion, 0, 265, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(allowJsonComments)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -121,8 +124,12 @@ public class ECMAScriptPanel extends javax.swing.JPanel  {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cbVersion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lVersion))
-                .addContainerGap(269, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(allowJsonComments)
+                .addContainerGap(240, Short.MAX_VALUE))
         );
+
+        allowJsonComments.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ECMAScriptPanel.class, "ECMAScriptPanel.allowJsonComments.ad")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void cbVersionItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbVersionItemStateChanged
@@ -131,6 +138,7 @@ public class ECMAScriptPanel extends javax.swing.JPanel  {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox allowJsonComments;
     private javax.swing.JComboBox cbVersion;
     private javax.swing.JLabel lVersion;
     // End of variables declaration//GEN-END:variables
@@ -154,5 +162,6 @@ public class ECMAScriptPanel extends javax.swing.JPanel  {
 
     public void save() {
         JSPreferences.putECMAScriptVersion(project, (String)cbVersion.getSelectedItem());
+        JsonPreferences.forProject(project).setCommentSupported(allowJsonComments.isSelected());
     }
 }

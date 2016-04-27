@@ -41,60 +41,53 @@
  */
 package org.netbeans.modules.javascript2.json;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript2.json.spi.JsonOptionsQueryImplementation;
+import org.netbeans.modules.javascript2.json.spi.support.JsonPreferences;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
+ * An implementation of the {@link JsonOptionsQueryImplementation} which delegates
+ * to the {@link Project} lookup.
  * @author Tomas Zezula
  */
-@ServiceProvider(service = JsonOptionsQueryImplementation.class, position = 100_000)
-public class GlobalJsonOptionsQueryImpl implements JsonOptionsQueryImplementation {
-    private static final Logger LOG = Logger.getLogger(GlobalJsonOptionsQueryImpl.class.getName());
-    private static final String PROP_ALLOW_COMMENTS="json.comments";  //NOI18N
-    private static final Pattern FILES;
-    static {
-        Pattern p = null;
-        final String propVal = System.getProperty(PROP_ALLOW_COMMENTS);
-        if (propVal != null) {
-            try {
-                p = Pattern.compile(propVal);
-            } catch (PatternSyntaxException e) {
-                LOG.log(
-                        Level.WARNING,
-                        "Cannot compile: {0}, error: {1}",  //NOI18N
-                        new Object[]{ propVal, e.getMessage()});
-            }
-        }
-        FILES = p;
-    }
+@ServiceProvider(service = JsonOptionsQueryImplementation.class, position = 1_000)
+public final class ProjectJsonOptionsQueryImpl implements JsonOptionsQueryImplementation {
 
-    @Override
     @CheckForNull
-    public Result getOptions(FileObject file) {
-        if (FILES != null && FILES.matcher(file.getNameExt()).matches()) {
-            return new JsonOptionsResult(true);
+    @Override
+    public Result getOptions(@NonNull final FileObject file) {
+        final Project p = FileOwnerQuery.getOwner(file);
+        if (p == null) {
+            return null;
         }
-        return null;
+        final JsonOptionsQueryImplementation impl = p.getLookup().lookup(JsonOptionsQueryImplementation.class);
+        final Result overrideRes = impl == null ?
+                null :
+                impl.getOptions(file);
+        final Result defaultRes = new DefaultProjectResult(p);
+        return overrideRes == null ?
+                defaultRes :
+                new MergedResult(overrideRes, defaultRes);
     }
 
-    private final class JsonOptionsResult implements JsonOptionsQueryImplementation.Result {
-        private final boolean commentSupported;
+    private static final class DefaultProjectResult implements Result {
+        private final Project project;
 
-        JsonOptionsResult(
-            final boolean commentSupported) {
-            this.commentSupported = commentSupported;
+        DefaultProjectResult(@NonNull final Project project) {
+            this.project = project;
         }
 
-        @Override
         @CheckForNull
+        @Override
         public Boolean isCommentSupported() {
-            return commentSupported;
+            return JsonPreferences.forProject(project).isCommentSupported() ?
+                    Boolean.TRUE :
+                    null;
         }
     }
 }
