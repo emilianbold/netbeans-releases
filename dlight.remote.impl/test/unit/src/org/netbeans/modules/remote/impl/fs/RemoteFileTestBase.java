@@ -43,8 +43,10 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -82,7 +84,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         System.setProperty("remote.fs_server.suppress.stderr", "false");
         TestLogHandler.attach(RemoteLogger.getInstance());
     }
-    
+    private static HashMap<ExecutionEnvironment, Exception> deadHosts = new HashMap<ExecutionEnvironment, Exception>();
     protected RemoteFileSystem fs;
     protected RemoteFileObject rootFO;
     protected final ExecutionEnvironment execEnv;
@@ -131,7 +133,16 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         assertNotNull("Null root file object", rootFO);
         assertTrue("Can not create directory " + cache.getAbsolutePath(), cache.exists() || cache.mkdirs());
         ExecutionEnvironment env = getTestExecutionEnvironment();
-        ConnectionManager.getInstance().connectTo(env);
+        if (deadHosts.containsKey(env)) {
+            throw deadHosts.get(env);
+        }
+        try {
+            ConnectionManager.getInstance().connectTo(env);
+        } catch (Exception ex) {
+            Exception wrapper = new IOException("Skip rest tests for dead host "+env.getDisplayName(), ex);
+            deadHosts.put(env, wrapper);
+            throw ex;
+        }
         if (HostInfoUtils.getHostInfo(execEnv).getOSFamily() == OSFamily.MACOSX) {
             sharedLibExt = ".dylib";
         } else {

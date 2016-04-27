@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.java.navigation;
 
+import com.sun.source.tree.Tree;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.util.EnumSet;
 import java.util.Set;
@@ -56,6 +58,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.ui.ElementJavadoc;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -140,7 +143,29 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
                 
         // Find the TreePath for the caret position
         TreePath tp =
-                compilationInfo.getTreeUtilities().pathFor(lastPosition);        
+                compilationInfo.getTreeUtilities().pathFor(lastPosition);  
+        
+        Tree.Kind k = tp.getLeaf().getKind();
+        if (TreeUtilities.CLASS_TREE_KINDS.contains(k) && ts.token() != null && ts.token().length() == 1) {
+            // in case of single-char token, try next position, since e.g. method or a field
+            // can have single-char type declaration.
+            TreePath tp2 = compilationInfo.getTreeUtilities().pathFor(lastPosition + 1);
+            SourcePositions sp = compilationInfo.getTrees().getSourcePositions();
+            long e1 = sp.getEndPosition(compilationInfo.getCompilationUnit(), tp2.getLeaf());
+            long e2 = sp.getEndPosition(compilationInfo.getCompilationUnit(), tp.getLeaf());
+            // the "inner" member does not extend beyond the class
+            if (e2 != -1 && e1 != -1 && e1 <= e2) {
+                TreePath p = tp2;
+                while (p != null && p.getLeaf() != tp.getLeaf() && p.getParentPath() != null) {
+                    if (p.getParentPath().getLeaf() == tp.getLeaf()) {
+                        // class member found in between position+1 and position. Use the class member
+                        tp = tp2;
+                        break;
+                    }
+                    p = p.getParentPath();
+                }
+            }
+        }
         // if cancelled, return
         if (isCancelled()) {
             return;
@@ -190,6 +215,7 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
                 // Different element clear data
                 setJavadoc(null, null); // NOI18N
                 break;
+            case TYPE_PARAMETER:
             case PARAMETER:
                 element = element.getEnclosingElement(); // Take the enclosing method
                 if (element != null && element.asType() != null) {
