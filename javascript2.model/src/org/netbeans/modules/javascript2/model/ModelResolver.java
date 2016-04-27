@@ -47,6 +47,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.javascript2.model.api.JsObject;
 import org.netbeans.modules.javascript2.model.spi.ModelElementFactory;
+import org.netbeans.modules.javascript2.types.api.Identifier;
 import org.netbeans.modules.javascript2.types.api.TypeUsage;
 import org.netbeans.modules.javascript2.types.spi.ParserResult;
 import org.openide.util.Lookup;
@@ -63,6 +64,8 @@ public interface ModelResolver {
     void processCalls(
             ModelElementFactory elementFactory,
             Map<String, Map<Integer, List<TypeUsage>>> returnTypesFromFrameworks);
+    @NonNull
+    List<Identifier> getASTNodeName(Object astNode);
 
     public static interface Provider {
         ModelResolver create(
