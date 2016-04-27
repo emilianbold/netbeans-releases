@@ -66,7 +66,7 @@ import org.openide.filesystems.FileUtil;
 public class RelocatablePathMapperImpl implements RelocatablePathMapper {
 
     public static final Logger LOG = Logger.getLogger(RelocatablePathMapperImpl.class.getName());
-    private static final boolean TEST = true;
+    private static final boolean TEST = false;
     private final List<MapperEntry> mapper = new ArrayList<MapperEntry>();
     private final ProjectProxy project;
     private final Map<String,Boolean> fileCache = new ConcurrentHashMap<String, Boolean>();
