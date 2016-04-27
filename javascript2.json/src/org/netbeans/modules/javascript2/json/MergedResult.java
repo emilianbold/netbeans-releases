@@ -41,60 +41,35 @@
  */
 package org.netbeans.modules.javascript2.json;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
+import java.util.Arrays;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.javascript2.json.spi.JsonOptionsQueryImplementation;
-import org.openide.filesystems.FileObject;
-import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.Parameters;
 
 /**
+ * Merges {@link JsonOptionsQueryImplementation.Result}.
  * @author Tomas Zezula
  */
-@ServiceProvider(service = JsonOptionsQueryImplementation.class, position = 100_000)
-public class GlobalJsonOptionsQueryImpl implements JsonOptionsQueryImplementation {
-    private static final Logger LOG = Logger.getLogger(GlobalJsonOptionsQueryImpl.class.getName());
-    private static final String PROP_ALLOW_COMMENTS="json.comments";  //NOI18N
-    private static final Pattern FILES;
-    static {
-        Pattern p = null;
-        final String propVal = System.getProperty(PROP_ALLOW_COMMENTS);
-        if (propVal != null) {
-            try {
-                p = Pattern.compile(propVal);
-            } catch (PatternSyntaxException e) {
-                LOG.log(
-                        Level.WARNING,
-                        "Cannot compile: {0}, error: {1}",  //NOI18N
-                        new Object[]{ propVal, e.getMessage()});
-            }
-        }
-        FILES = p;
+final class MergedResult implements JsonOptionsQueryImplementation.Result {
+
+    private JsonOptionsQueryImplementation.Result[] delegates;
+
+    MergedResult(@NonNull final JsonOptionsQueryImplementation.Result... delegates) {
+        Parameters.notNull("delegates", delegates); //NOI18N
+        this.delegates = Arrays.copyOf(delegates, delegates.length);
     }
 
-    @Override
     @CheckForNull
-    public Result getOptions(FileObject file) {
-        if (FILES != null && FILES.matcher(file.getNameExt()).matches()) {
-            return new JsonOptionsResult(true);
+    @Override
+    public Boolean isCommentSupported() {
+        for (JsonOptionsQueryImplementation.Result delegate : delegates) {
+            final Boolean res = delegate.isCommentSupported();
+            if (res != null) {
+                return res;
+            }
         }
         return null;
     }
 
-    private final class JsonOptionsResult implements JsonOptionsQueryImplementation.Result {
-        private final boolean commentSupported;
-
-        JsonOptionsResult(
-            final boolean commentSupported) {
-            this.commentSupported = commentSupported;
-        }
-
-        @Override
-        @CheckForNull
-        public Boolean isCommentSupported() {
-            return commentSupported;
-        }
-    }
 }

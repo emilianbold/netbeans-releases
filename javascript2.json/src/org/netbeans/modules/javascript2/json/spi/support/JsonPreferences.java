@@ -39,62 +39,58 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.json;
+package org.netbeans.modules.javascript2.json.spi.support;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.javascript2.json.spi.JsonOptionsQueryImplementation;
-import org.openide.filesystems.FileObject;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.prefs.Preferences;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.openide.util.Parameters;
 
 /**
+ * Json per project settings.
  * @author Tomas Zezula
+ * @since 1.2
  */
-@ServiceProvider(service = JsonOptionsQueryImplementation.class, position = 100_000)
-public class GlobalJsonOptionsQueryImpl implements JsonOptionsQueryImplementation {
-    private static final Logger LOG = Logger.getLogger(GlobalJsonOptionsQueryImpl.class.getName());
-    private static final String PROP_ALLOW_COMMENTS="json.comments";  //NOI18N
-    private static final Pattern FILES;
-    static {
-        Pattern p = null;
-        final String propVal = System.getProperty(PROP_ALLOW_COMMENTS);
-        if (propVal != null) {
-            try {
-                p = Pattern.compile(propVal);
-            } catch (PatternSyntaxException e) {
-                LOG.log(
-                        Level.WARNING,
-                        "Cannot compile: {0}, error: {1}",  //NOI18N
-                        new Object[]{ propVal, e.getMessage()});
-            }
-        }
-        FILES = p;
+public final class JsonPreferences {
+    private static final String PROP_JSON_COMMENTS = "json.comments";   //NOI18N
+
+    private final Project project;
+
+    private JsonPreferences(@NonNull final Project project) {
+        this.project = project;
     }
 
-    @Override
-    @CheckForNull
-    public Result getOptions(FileObject file) {
-        if (FILES != null && FILES.matcher(file.getNameExt()).matches()) {
-            return new JsonOptionsResult(true);
-        }
-        return null;
+    /**
+     * Returns true if comments are allowed for JSON files.
+     * @return the comments status
+     */
+    public boolean isCommentSupported() {
+        final Preferences prefs = ProjectUtils.getPreferences(project, JsonPreferences.class, true);
+        return prefs.getBoolean(PROP_JSON_COMMENTS, false);
     }
 
-    private final class JsonOptionsResult implements JsonOptionsQueryImplementation.Result {
-        private final boolean commentSupported;
-
-        JsonOptionsResult(
-            final boolean commentSupported) {
-            this.commentSupported = commentSupported;
+    /**
+     * Allow comments in JSON files.
+     * @param supported the value to set
+     */
+    public void setCommentSupported(final boolean supported) {
+        final Preferences prefs = ProjectUtils.getPreferences(project, JsonPreferences.class, true);
+        if (supported) {
+            prefs.putBoolean(PROP_JSON_COMMENTS, supported);
+        } else {
+            prefs.remove(PROP_JSON_COMMENTS);
         }
+    }
 
-        @Override
-        @CheckForNull
-        public Boolean isCommentSupported() {
-            return commentSupported;
-        }
+    /**
+     * Returns {@link JsonPreferences} for given {@link Project}.
+     * @param project the {@link Project} to return {@link JsonPreferences} for
+     * @return the {@link JsonPreferences}
+     */
+    @NonNull
+    public static JsonPreferences forProject(@NonNull final Project project) {
+        Parameters.notNull("project", project); //NOI18N
+        return new JsonPreferences(project);
     }
 }
