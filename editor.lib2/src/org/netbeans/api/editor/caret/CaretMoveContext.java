@@ -45,11 +45,12 @@ import java.awt.Point;
 import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.NavigationFilter;
 import javax.swing.text.Position;
 import org.netbeans.api.annotations.common.NonNull;
 
 /**
- * Context for carets moving within {@link CaretMoveHandler}.
+ * Context for carets moving within {@link org.netbeans.spi.editor.caret.CaretMoveHandler}.
  *
  * @author Miloslav Metelka
  * @since 2.6
@@ -113,19 +114,33 @@ public final class CaretMoveContext {
      *  or true otherwise.
      */
     public boolean setDot(@NonNull CaretInfo caret, @NonNull Position dotPos) {
-        return setDotAndMark(caret, dotPos, dotPos);
+        NavigationFilter naviFilter = transaction.getCaret().getNavigationFilterNoDefault(transaction.getOrigin());
+        if (naviFilter != null) {
+            FilterBypassImpl fbi = new FilterBypassImpl(transaction, caret, transaction.getDocument());
+            naviFilter.setDot(fbi, dotPos.getOffset(), Position.Bias.Forward);
+            return fbi.getResult();
+        } else {
+            return setDotAndMark(caret, dotPos, dotPos);
+        }
     }
     
     /**
      * Move dot of the given getCaret so getCaret selection gets created or changed.
      *
-     * @param caret non-null getCaret.
+     * @param caret Nebnon-null getCaret.
      * @param dotPos new dot position.
      * @return false if passed caret is obsolete or invalid (e.g. a member of another {@link EditorCaret})
      *  or true otherwise.
      */
     public boolean moveDot(@NonNull CaretInfo caret, @NonNull Position dotPos) {
-        return transaction.moveDot(caret.getCaretItem(), dotPos);
+        NavigationFilter naviFilter = transaction.getCaret().getNavigationFilterNoDefault(transaction.getOrigin());
+        if (naviFilter != null) {
+            FilterBypassImpl fbi = new FilterBypassImpl(transaction, caret, transaction.getDocument());
+            naviFilter.moveDot(fbi, dotPos.getOffset(), Position.Bias.Forward);
+            return fbi.getResult();
+        } else {
+            return transaction.moveDot(caret.getCaretItem(), dotPos);
+        }
     }
     
     /**
@@ -172,5 +187,5 @@ public final class CaretMoveContext {
     public Document getDocument() {
         return getComponent().getDocument();
     }
-
+    
 }

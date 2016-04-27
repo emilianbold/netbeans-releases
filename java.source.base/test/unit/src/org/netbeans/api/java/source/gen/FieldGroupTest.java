@@ -1549,6 +1549,68 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
+    
+    public void testFieldGroupFirstComment255568() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package test;\n" +
+            "public enum Test {\n" +
+            "    /**\n" +
+            "     * Double\n"
+            + "     */\n"
+            + "    ONE,\n"
+            + "    /**\n"
+            + "     * Javadoc1\n"
+            + "     */\n"
+            + "    TWO,\n"
+            + "    \n"
+            + "    /**\n"
+            + "     * Javadoc2\n"
+            + "     */\n"
+            + "    TRI"
+            + "}\n"            
+        );
+        String golden = "package test;\n" +
+            "public enum Test {\n" +
+            "    /**\n" +
+            "     * Double\n"
+            + "     */\n"
+            + "    ONE,\n"
+            + "    /**\n"
+            + "     * Javadoc1\n"
+            + "     */\n"
+            + "    Dva,\n"
+            + "    \n"
+            + "    /**\n"
+            + "     * Javadoc2\n"
+            + "     */\n"
+            + "    TRI"
+            + "}\n";
+
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            
+            @Override
+            public void run(WorkingCopy wc) throws Exception {
+                wc.toPhase(Phase.RESOLVED);
+                ClassTree ct = (ClassTree)wc.getCompilationUnit().getTypeDecls().get(0);
+                // 0 is the ctor
+                VariableTree twoField = (VariableTree) ct.getMembers().get(2);
+                wc.rewrite(twoField, 
+                        wc.getTreeMaker().Variable(
+                                twoField.getModifiers(), 
+                                "Dva", 
+                                twoField.getType(), 
+                                twoField.getInitializer()
+                        )
+                );
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
 
     public void testMultiFileCopy234570() throws Exception {
         File source = new File(getWorkDir(), "Source.java");

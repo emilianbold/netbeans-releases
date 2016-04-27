@@ -147,6 +147,8 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
 import com.sun.tools.javac.util.Position;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.Map.Entry;
@@ -560,6 +562,21 @@ public class CasualDiff {
             return -1;
         return endPos(trees.get(trees.size()-1));
     }
+    
+    private int checkLocalPointer(JCTree oldT, JCTree newT, int localPointer) {
+        // diagnostics for defect #226498: log the tres iff the localPointer is bad
+        if (localPointer < 0 || localPointer > origText.length()) {
+            LOG.warning("Invalid localPointer (" + localPointer + "), see defect #226498 and report the log to the issue");
+            LOG.warning("OldT:" + oldT);
+            LOG.warning("NewT:" + newT);
+            LOG.warning("CodeStyle: " + printCodeStyle(diffContext.style));
+            LOG.warning("origText(" + origText.length() + "): " + origText);
+            StringWriter sw = new StringWriter();
+            new Throwable().printStackTrace(new PrintWriter(sw));
+            LOG.warning("Stacktrace: " + sw.toString());
+        }
+        return localPointer;
+    }
 
     protected void diffTopLevel(JCCompilationUnit oldT, JCCompilationUnit newT, int[] elementBounds) {
         oldTopLevel = oldT;
@@ -568,14 +585,7 @@ public class CasualDiff {
         localPointer = diffList(oldT.getImports(), newT.getImports(), localPointer, est, Measure.DEFAULT, printer);
         est = EstimatorFactory.toplevel(oldT.getTypeDecls(), newT.getTypeDecls(), diffContext);
         localPointer = diffList(oldT.getTypeDecls(), newT.getTypeDecls(), localPointer, est, Measure.REAL_MEMBER, printer);
-        // diagnostics for defect #226498: log the tres iff the localPointer is bad
-        if (localPointer < 0 || localPointer > origText.length()) {
-            LOG.warning("Invalid localPointer (" + localPointer + "), see defect #226498 and report the log to the issue");
-            LOG.warning("OldT:" + oldT);
-            LOG.warning("NewT:" + newT);
-            LOG.warning("CodeStyle: " + printCodeStyle(diffContext.style));
-            LOG.warning("origText(" + origText.length() + "): " + origText);
-        }
+        checkLocalPointer(oldT, newT, localPointer);
         printer.print(origText.substring(localPointer));
     }
     
@@ -3246,6 +3256,7 @@ public class CasualDiff {
                     } else {
                         end = bounds[1];
                     }
+                    start = Math.max(start, pos);
                     copyTo(start, pos = end, printer);
                     wasLeadingDelete = false;
                     break;
@@ -4777,7 +4788,7 @@ public class CasualDiff {
      * @return position in original source
      */
     protected int diffTree(JCTree oldT, JCTree newT, int[] elementBounds) {
-        return diffTree(oldT, newT, null, elementBounds);
+        return checkLocalPointer(oldT, newT, diffTree(oldT, newT, null, elementBounds));
     }
     
     /**
