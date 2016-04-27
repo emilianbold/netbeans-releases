@@ -55,10 +55,7 @@ import org.netbeans.spi.editor.AbstractEditorAction;
  * @author Ralph Ruijs <ralphbenjamin@netbeans.org>
  */
 @EditorActionRegistrations({
-    @EditorActionRegistration(name = EditorActionNames.removeLastCaret,
-                              menuPath = "Edit",
-                              menuPosition = 840,
-                              menuText = "#" + EditorActionNames.removeLastCaret + "_menu_text")
+    @EditorActionRegistration(name = EditorActionNames.removeLastCaret)
 })
 public class RemoveLastCaretAction extends AbstractEditorAction {
 

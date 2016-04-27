@@ -100,6 +100,13 @@ made subject to such option by the copyright holder.
     <bind actionName="scroll-up" key="C-DOWN"/>
 
     <bind key="O-I" actionName="generate-code"/>
+    
+    <bind key="D-J" remove="true"/>
+    <bind actionName="addCaretSelectNext" key="C-G"/>
+    <bind key="DS-J" remove="true"/>
+    <bind actionName="remove-last-caret" key="CS-G"/>
+    <bind key="DSO-J" remove="true"/>
+    <bind actionName="addCaretSelectAll" key="CM-G"/>
 
     <!-- Move 'copy lines' shortcuts, mac defines selection to begin/end of doc for them -->
         
