@@ -142,7 +142,7 @@ public class ParseTreeToXml extends JsonBaseVisitor<Document> {
 
     @Override
     public Document visitTerminal(TerminalNode node) {
-        final Element e = copyAttrs(
+        copyAttrs(
                 getTerminalNodeElement(node),
                 node);
         super.visitTerminal(node);

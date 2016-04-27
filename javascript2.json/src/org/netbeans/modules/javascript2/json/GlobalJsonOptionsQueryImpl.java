@@ -83,7 +83,7 @@ public class GlobalJsonOptionsQueryImpl implements JsonOptionsQueryImplementatio
         return null;
     }
 
-    private final class JsonOptionsResult implements JsonOptionsQueryImplementation.Result {
+    private static final class JsonOptionsResult implements JsonOptionsQueryImplementation.Result {
         private final boolean commentSupported;
 
         JsonOptionsResult(
