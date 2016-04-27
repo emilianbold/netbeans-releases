@@ -51,7 +51,7 @@ import org.netbeans.modules.javascript2.nodejs.editor.NodeJsUtils;
  */
 @TypeNameConvertor.Registration(priority=200)
 public class NodeJsTypeDisplayNameConvertor implements TypeNameConvertor {
-    private static String REQUIRE_MODULE_NAME = NodeJsUtils.REQUIRE_METHOD_NAME + "." + NodeJsUtils.FAKE_OBJECT_NAME_PREFIX;
+    private static final String REQUIRE_MODULE_NAME = NodeJsUtils.REQUIRE_METHOD_NAME + "." + NodeJsUtils.FAKE_OBJECT_NAME_PREFIX;
     
     @Override
     public String getDisplayName(Type type) {
