@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.javascript2.model.api;
 
-import com.oracle.js.parser.ir.FunctionNode;
 import com.oracle.js.parser.ir.Node;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -83,7 +82,6 @@ import org.netbeans.modules.javascript2.model.JsWithObjectImpl;
 import org.netbeans.modules.javascript2.model.ModelAccessor;
 import org.netbeans.modules.javascript2.model.ModelElementFactoryAccessor;
 import org.netbeans.modules.javascript2.model.ModelExtender;
-import org.netbeans.modules.javascript2.model.ModelVisitor;
 import org.netbeans.modules.javascript2.model.OccurrenceBuilder;
 import org.netbeans.modules.javascript2.model.ParameterObject;
 import org.netbeans.modules.javascript2.model.spi.FunctionInterceptor;
@@ -628,7 +626,11 @@ public final class Model {
      * @return name of the node if it supports it
      */
     public List<Identifier> getNodeName(Node node) {
-        return ModelVisitor.getNodeName(node, parserResult);
+        final ModelResolver resolver = ModelResolver.create(parserResult, occurrenceBuilder);
+        if (resolver == null) {
+            throw new IllegalStateException("No ModelResolver for result: " + parserResult);    //NOI18N
+        }
+        return resolver.getASTNodeName(node);
     }
 
     public void writeModel(Printer printer) {

@@ -208,6 +208,14 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
         }
     }
 
+    @Override
+    public List<Identifier> getASTNodeName(final Object astNode) {
+        if (astNode instanceof Node) {
+            return getNodeName((Node)astNode, parserResult);
+        }
+        return Collections.emptyList();
+    }
+
 
     @Override
     public boolean enterAccessNode(AccessNode accessNode) {

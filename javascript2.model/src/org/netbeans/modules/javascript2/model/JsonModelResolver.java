@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.model;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
@@ -151,6 +152,11 @@ public final class JsonModelResolver extends JsonBaseVisitor<Boolean> implements
     public void processCalls(
             ModelElementFactory elementFactory,
             Map<String, Map<Integer, List<TypeUsage>>> returnTypesFromFrameworks) {
+    }
+
+    @Override
+    public List<Identifier> getASTNodeName(Object astNode) {
+        return Collections.emptyList();
     }
 
     @Override
