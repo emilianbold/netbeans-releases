@@ -156,7 +156,8 @@ public class JsFormatter implements Formatter {
                 final FormatContext formatContext;
                 final JsonParser.JsonContext json = result.getLookup().lookup(JsonParser.JsonContext.class);
                 if (json != null) {
-                    //Todo: JSON
+                    JsonFormatVisitor jsonVisitor = new JsonFormatVisitor(tokenStream, ts, context.endOffset());
+                    json.accept(jsonVisitor);
                     formatContext = new FormatContext(context, provider, compilationInfo.getSnapshot(), language, null);
                 } else {
                     final FunctionNode fun = result.getLookup().lookup(FunctionNode.class);
