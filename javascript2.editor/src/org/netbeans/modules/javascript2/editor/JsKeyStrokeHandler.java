@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.editor;
 import com.oracle.js.parser.ir.Block;
 import com.oracle.js.parser.ir.CallNode;
 import com.oracle.js.parser.ir.FunctionNode;
+import com.oracle.js.parser.ir.IdentNode;
 import com.oracle.js.parser.ir.LexicalContext;
 import com.oracle.js.parser.ir.LiteralNode;
 import com.oracle.js.parser.ir.Node;
@@ -115,10 +116,31 @@ class JsKeyStrokeHandler implements KeystrokeHandler {
 
                     final HashSet<String> referencedFunction = new HashSet();
 
+                    private OffsetRange getOffsetRange(IdentNode node) {
+                        // because the truffle parser doesn't set correctly the finish offset, when there are comments after the indent node
+                        return new OffsetRange(node.getStart(), node.getStart() + node.getName().length());
+                    }
+
+                    private OffsetRange getOffsetRange(Node node) {
+                        if (node instanceof FunctionNode) {
+                            return getOffsetRange((FunctionNode) node);
+                        }
+                        if (node instanceof IdentNode) {
+                            return getOffsetRange((IdentNode)node);
+                        }
+                        return new OffsetRange(node.getStart(), node.getFinish());
+                    }
+
+                    private  OffsetRange getOffsetRange(FunctionNode node) {
+                        return new OffsetRange(com.oracle.js.parser.Token.descPosition(node.getFirstToken()),
+                                com.oracle.js.parser.Token.descPosition(node.getLastToken()) + com.oracle.js.parser.Token.descLength(node.getLastToken()));
+                    }
+                    
                     @Override
                     protected boolean enterDefault(Node node) {
-                        if (node != null && node.getStart() <= caretOffset && caretOffset <= node.getFinish()) {
-                            ranges.add(new OffsetRange(node.getStart(), node.getFinish()));
+                        OffsetRange range = getOffsetRange(node);
+                        if (node != null && range.getStart() <= caretOffset && caretOffset <= range.getEnd()) {
+                            ranges.add(new OffsetRange(range.getStart(),range.getEnd()));
                             return super.enterDefault(node);
                         }
                         return false;
@@ -126,26 +148,27 @@ class JsKeyStrokeHandler implements KeystrokeHandler {
 
                     @Override
                     public boolean enterFunctionNode(FunctionNode node) {
+                        OffsetRange fnRange = getOffsetRange(node);
                         if (node.isProgram()) {
                             ranges.add(new OffsetRange(0, jsParserResult.getSnapshot().getText().length()));
-                            if (node.getStart() <= caretOffset && caretOffset <= node.getFinish()) {
-                                ranges.add(new OffsetRange(node.getStart(), node.getFinish()));
+                            if (fnRange.getStart() <= caretOffset && caretOffset <= fnRange.getEnd()) {
+                                ranges.add(new OffsetRange(fnRange.getStart(), fnRange.getEnd()));
                             }
                             processFunction(node);
                             return false;
                         }
-                        ts.move(node.getStart());
-                        Token<? extends JsTokenId> token = LexUtilities.findPreviousIncluding(ts, Arrays.asList(JsTokenId.KEYWORD_FUNCTION));
-                        if (token != null && ts.offset() <= caretOffset && caretOffset <= node.getFinish()) {
-                            ranges.add(new OffsetRange(ts.offset(), node.getFinish()));
-                            int firstParamOffset = node.getFinish();
+                                                
+                        if (fnRange.getStart() <= caretOffset && caretOffset <= fnRange.getEnd()) {
+                            ranges.add(new OffsetRange(fnRange.getStart(), fnRange.getEnd()));
+                            int firstParamOffset = fnRange.getEnd();
                             int lastParamOffset = -1;
                             for (Node param : node.getParameters()) {
+                                OffsetRange paramRange = getOffsetRange(param);
                                 if (param.getStart() < firstParamOffset) {
-                                    firstParamOffset = param.getStart();
+                                    firstParamOffset = paramRange.getStart();
                                 }
                                 if (param.getFinish() > lastParamOffset) {
-                                    lastParamOffset = param.getFinish();
+                                    lastParamOffset = paramRange.getEnd();
                                 }
                             }
                             if (node.getParameters().size() > 1 && firstParamOffset < lastParamOffset && firstParamOffset <= caretOffset && caretOffset <= lastParamOffset) {
@@ -154,8 +177,8 @@ class JsKeyStrokeHandler implements KeystrokeHandler {
                                     param.accept(this);
                                 }
                             }
-                            if (node.getStart() <= caretOffset && caretOffset <= node.getFinish()) {
-                                ranges.add(new OffsetRange(node.getStart(), node.getFinish()));
+                            if (fnRange.getStart() <= caretOffset && caretOffset <= fnRange.getEnd()) {
+                                ranges.add(new OffsetRange(fnRange.getStart(), fnRange.getEnd()));
                                 processFunction(node);
                             }
                         }
@@ -165,7 +188,10 @@ class JsKeyStrokeHandler implements KeystrokeHandler {
                     private void processFunction(FunctionNode node) {
                         Block body = node.getBody();
                         for (Node statement : body.getStatements()) {
-                            statement.accept(this);
+                            OffsetRange stRange = getOffsetRange(statement);
+                            if (stRange.getStart() <= caretOffset && caretOffset <= stRange.getEnd()) {
+                                statement.accept(this);
+                            }
                         }
 // TRUFFLE                        
 //                        for (Node declaration : node.getDeclarations()) {
@@ -189,10 +215,11 @@ class JsKeyStrokeHandler implements KeystrokeHandler {
 
                     @Override
                     public boolean enterVarNode(VarNode node) {
-                        ts.move(node.getStart());
+                        OffsetRange range = getOffsetRange(node);
+                        ts.move(range.getStart());
                         Token<? extends JsTokenId> token = LexUtilities.findPreviousIncluding(ts, Arrays.asList(JsTokenId.KEYWORD_VAR));
-                        if (token != null && ts.offset() <= caretOffset && caretOffset <= node.getFinish()) {
-                            ranges.add(new OffsetRange(ts.offset(), node.getFinish()));
+                        if (token != null && ts.offset() <= caretOffset && caretOffset <= range.getEnd()) {
+                            ranges.add(new OffsetRange(ts.offset(), range.getEnd()));
                             return enterDefault(node);
                         }
                         return false;
@@ -210,19 +237,21 @@ class JsKeyStrokeHandler implements KeystrokeHandler {
                     @Override
                     public boolean enterCallNode(CallNode node) {
                         if (node.getArgs().size() > 1) {
-                            if (node.getStart() <= caretOffset && caretOffset <= node.getFinish()) {
-                                ranges.add(new OffsetRange(node.getStart(), node.getFinish()));
+                            OffsetRange range = getOffsetRange(node);
+                            if (range.getStart() <= caretOffset && caretOffset <= range.getEnd()) {
+                                ranges.add(range);
                                 int firstArgOffset = node.getFinish();
                                 int lastArgOffset = -1;
                                 for (Node arg : node.getArgs()) {
-                                    if (arg.getStart() < firstArgOffset) {
-                                        firstArgOffset = arg.getStart();
+                                    OffsetRange argRange = getOffsetRange(arg);
+                                    if (argRange.getStart() < firstArgOffset) {
+                                        firstArgOffset = argRange.getStart();
                                         if (arg instanceof LiteralNode && ((LiteralNode)arg).isString()) {
                                             firstArgOffset--;
                                         }
                                     }
-                                    if (arg.getFinish() > lastArgOffset) {
-                                        lastArgOffset = arg.getFinish();
+                                    if (argRange.getEnd() > lastArgOffset) {
+                                        lastArgOffset = argRange.getEnd();
                                         if (arg instanceof LiteralNode && ((LiteralNode)arg).isString()) {
                                             lastArgOffset++;
                                         }
@@ -232,7 +261,10 @@ class JsKeyStrokeHandler implements KeystrokeHandler {
                                     ranges.add(new OffsetRange(firstArgOffset, lastArgOffset));
                                 }
                                 for (Node arg : node.getArgs()) {
-                                    arg.accept(this);
+                                    OffsetRange argRange = getOffsetRange(arg);
+                                    if (argRange.getStart() <= caretOffset && caretOffset <= argRange.getEnd()) {
+                                        arg.accept(this);
+                                    }
                                 }
                             }
                             return false;
