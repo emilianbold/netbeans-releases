@@ -50,11 +50,11 @@ language=Java;
 }
 
 @lexer::header {
-package org.netbeans.modules.javascript2.editor.parser.json;
+package org.netbeans.modules.javascript2.json.parser;
 }
 
 @parser::header {
-package org.netbeans.modules.javascript2.editor.parser.json;
+package org.netbeans.modules.javascript2.json.parser;
 }
 
 @lexer::members {

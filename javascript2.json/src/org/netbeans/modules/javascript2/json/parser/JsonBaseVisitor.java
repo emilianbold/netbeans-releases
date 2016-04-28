@@ -1,4 +1,4 @@
-// Generated from Json.g4 by ANTLR 4.5.1
+// Generated from Json.g4 by ANTLR 4.5.3
 
 package org.netbeans.modules.javascript2.json.parser;
 
