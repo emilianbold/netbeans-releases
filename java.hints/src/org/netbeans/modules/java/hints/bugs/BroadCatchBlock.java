@@ -408,12 +408,12 @@ public class BroadCatchBlock {
                         } else {
                             fixes = new Fix[] {
                                 new UseSpecificCatch.FixImpl(info, getCurrentPath(), handles).toEditorFix(),
-                                new UseSpecificCatch.SplitExceptionInCatches(info, getCurrentPath(), handles).toEditorFix()
+                                new UseSpecificCatch.SplitExceptionInCatches(info, getCurrentPath(), handles, null).toEditorFix()
                             };
                         }
                     } else {
                         fixes = new Fix[] {
-                            new UseSpecificCatch.SplitExceptionInCatches(info, getCurrentPath(), handles).toEditorFix()
+                            new UseSpecificCatch.SplitExceptionInCatches(info, getCurrentPath(), handles, null).toEditorFix()
                         };
                     }
                 }
