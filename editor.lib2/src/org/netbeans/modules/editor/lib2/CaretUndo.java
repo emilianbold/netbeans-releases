@@ -61,17 +61,17 @@ public final class CaretUndo {
     /**
      * Create undoable edit that returns caret to its original state when the edit is undone.
      * <br/>
-     * This edit is typically created both at the begining of an action that does some document modifications
-     * for purpose of undo and at its end for redo purpose.
+     * This edit is typically created both at the begining and end of an action that does some document modifications.
      *
      * @param caret non-null caret.
      * @param doc non-null document to which the undoable edit will be added.
-     * @param forRedo whether the edit is created for undo purpose (at action's begining) or for redo purpose
-     *  (at action's end).
      * @return edit allowing to restore caret state upon undo call on the returned edit or null
      *  if caret is not installed in a valid document.
+     *  <br>
+     *  Future optimizations may return null edit also in case when there was no change in carets
+     *  since the preceding call to this method inside the same atomic transaction over the document.
      */
-    public static UndoableEdit createCaretUndoEdit(@NonNull Caret caret, @NonNull Document doc, boolean forRedo) {
+    public static UndoableEdit createCaretUndoEdit(@NonNull Caret caret, @NonNull Document doc) {
         UndoableEdit ret;
         if (caret instanceof EditorCaret) {
             EditorCaret eCaret = (EditorCaret) caret;
@@ -92,12 +92,12 @@ public final class CaretUndo {
                 if (caretsSize == 1) { // Single-caret case
                     if (!complexPos) { // Regular positions
                         if (dotOffset == markOffset) { // No selection
-                            ret = new CaretUndoEdit(doc, forRedo, dotOffset);
+                            ret = new CaretUndoEdit(doc, dotOffset);
                         } else { // Selection
-                            ret = new CaretUndoEdit.ComplexEdit(doc, forRedo, dotOffset, markOffset, null);
+                            ret = new CaretUndoEdit.ComplexEdit(doc, dotOffset, markOffset, null);
                         }
                     } else { // Complex positions
-                        ret = new CaretUndoEdit.ComplexEdit(doc, forRedo, dotOffset, -1, new int[] {
+                        ret = new CaretUndoEdit.ComplexEdit(doc, dotOffset, -1, new int[] {
                             dotSplitOffset, markOffset, markSplitOffset
                         });
                     }
@@ -155,7 +155,7 @@ public final class CaretUndo {
                         offsets[i++] = ShiftPositions.getShift(dotPos);
                         offsets[i++] = ShiftPositions.getShift(markPos);
                     }
-                    ret = new CaretUndoEdit.ComplexEdit(doc, forRedo, dotOffset, markOffset, offsets);
+                    ret = new CaretUndoEdit.ComplexEdit(doc, dotOffset, markOffset, offsets);
                 }
 
             } else { // dotPos == null => return null edit
@@ -166,9 +166,9 @@ public final class CaretUndo {
             int dotOffset = caret.getDot();
             int markOffset = caret.getMark();
             if (markOffset != dotOffset) {
-                ret = new CaretUndoEdit.ComplexEdit(doc, forRedo, dotOffset, markOffset, null);
+                ret = new CaretUndoEdit.ComplexEdit(doc, dotOffset, markOffset, null);
             } else {
-                ret = new CaretUndoEdit(doc, forRedo, dotOffset);
+                ret = new CaretUndoEdit(doc, dotOffset);
             }
         }
         return ret;

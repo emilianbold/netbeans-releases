@@ -86,6 +86,7 @@ import javax.swing.text.WrappedPlainView;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
+import org.netbeans.api.editor.document.CustomUndoDocument;
 import org.netbeans.api.editor.document.LineDocument;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -130,7 +131,7 @@ import org.openide.util.WeakListeners;
 */
 
 @SuppressWarnings("ClassWithMultipleLoggers")
-public class BaseDocument extends AbstractDocument implements AtomicLockDocument, LineDocument {
+public class BaseDocument extends AbstractDocument implements AtomicLockDocument, LineDocument, CustomUndoDocument {
 
     static {
         EditorPackageAccessor.register(new Accessor());

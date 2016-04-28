@@ -107,6 +107,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="EditorUtilities.addCaretUndoableEdit">
+            <summary>EditorUtilities.addCaretUndoableEdit added</summary>
+            <version major="2" minor="11"/>
+            <date day="19" month="4" year="2016"/>
+            <author login="mmetelka"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no" deletion="no" modification="no" />
+            <description>
+                <p>
+                    EditorUtilities.addCaretUndoableEdit allows actions to remember caret position
+                    during an atomic transaction over a document.
+                </p>
+            </description>
+            <class name="EditorUtilities" package="org.netbeans.api.editor"/>
+            <issue number="258798"/>
+        </change>
         <change id="editor-caret-filters">
             <summary>Support for Navigation Filters, and caret move origins</summary>
             <version major="2" minor="10"/>

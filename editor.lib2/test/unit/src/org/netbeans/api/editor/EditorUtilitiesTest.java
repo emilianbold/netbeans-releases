@@ -43,10 +43,17 @@
 package org.netbeans.api.editor;
 
 import javax.swing.Action;
+import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
+import javax.swing.undo.CompoundEdit;
+import javax.swing.undo.UndoableEdit;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.netbeans.api.editor.caret.EditorCaret;
+import org.netbeans.api.editor.document.CustomUndoDocument;
 
 /**
  *
@@ -69,6 +76,30 @@ public class EditorUtilitiesTest {
             }
         }
         fail("Action " + actionName + " not found.");
+    }
+
+    @Test
+    public void testAddCaretUndoableEdit() throws Exception {
+        final JEditorPane pane = new JEditorPane("text/plain", "Haf");
+        //final CompoundEdit compoundEdit = new CompoundEdit();
+        final boolean[] editAdded = { false };
+        final Document doc = pane.getDocument();
+        doc.putProperty(CustomUndoDocument.class, new CustomUndoDocument() {
+            @Override
+            public void addUndoableEdit(UndoableEdit edit) {
+                editAdded[0] = true;
+            }
+        });
+        final EditorCaret editorCaret = new EditorCaret();
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                pane.setCaret(editorCaret);
+                EditorUtilities.addCaretUndoableEdit(doc, editorCaret);
+            }
+        });
+        
+        assertTrue(editAdded[0]);
     }
 
 }
