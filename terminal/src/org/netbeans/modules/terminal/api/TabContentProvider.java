@@ -39,33 +39,20 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.terminal.actions;
+package org.netbeans.modules.terminal.api;
 
-import javax.swing.Action;
-import org.openide.awt.Actions;
+import java.awt.Component;
+import java.util.List;
+import org.openide.windows.IOContainer;
 
 /**
  *
  * @author igromov
  */
-public class ActionFactory {
+public interface TabContentProvider extends IOContainer.Provider {
 
-    public static final String CATEGORY = "Terminal"; //NOI18N
-    public static final String ACTIONS_PATH = "Actions/Terminal"; //NOI18N
-    public static final String DUMP_SEQUENCE_ACTION_ID = "org.netbeans.modules.terminal.actions.DumpSequenceAction"; //NOI18N
-    public static final String COPY_ACTION_ID = "org.netbeans.modules.terminal.actions.CopyAction"; //NOI18N
-    public static final String CLOSE_ACTION_ID = "org.netbeans.modules.terminal.actions.CloseAction"; //NOI18N
-    public static final String PASTE_ACTION_ID = "org.netbeans.modules.terminal.actions.PasteAction"; //NOI18N
-    public static final String FIND_ACTION_ID = "org.netbeans.modules.terminal.actions.FindAction"; //NOI18N
-    public static final String CLEAR_ACTION_ID = "org.netbeans.modules.terminal.actions.ClearAction"; //NOI18N
-    public static final String LARGER_FONT_ACTION_ID = "org.netbeans.modules.terminal.actions.LargerFontAction"; //NOI18N
-    public static final String SMALLER_FONT_ACTION_ID = "org.netbeans.modules.terminal.actions.SmallerFontAction"; //NOI18N
-    public static final String WRAP_ACTION_ID = "org.netbeans.modules.terminal.actions.WrapAction"; //NOI18N
-    public static final String SET_TITLE_ACTION_ID = "org.netbeans.modules.terminal.actions.SetTitleAction"; //NOI18N
-    public static final String PIN_TAB_ACTION_ID = "org.netbeans.modules.terminal.actions.PinTabAction"; //NOI18N
-    public static final String SWITCH_TAB_ACTION_ID = "org.netbeans.modules.terminal.actions.SwitchTabAction"; //NOI18N
-
-    public static Action forID(String id) {
-	return Actions.forID(CATEGORY, id);
-    }
+    /**
+     * @return all active tab components.
+     */
+    List<? extends Component> getAllTabs();
 }

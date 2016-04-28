@@ -43,7 +43,11 @@ package org.netbeans.modules.terminal.iocontainer;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -117,6 +121,11 @@ final public class TerminalContainerMuxable extends TerminalContainerCommon {
     @Override
     public JComponent getSelected() {
 	return currentComponent;
+    }
+
+    @Override
+    public List<JComponent> getAllTabs() {
+        return new ArrayList<JComponent>(components);
     }
 
     @Override
