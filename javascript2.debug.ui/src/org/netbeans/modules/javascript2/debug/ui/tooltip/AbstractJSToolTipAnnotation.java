@@ -250,6 +250,7 @@ public abstract class AbstractJSToolTipAnnotation<Debugger extends DebuggerToolt
                     public void actionPerformed(ActionEvent e) {
                         EditorUI eui = Utilities.getEditorUI(ep);
                         Point location = et.getLocation();
+                        location = eui.getStickyWindowSupport().convertPoint(location);
                         eui.getToolTipSupport().setToolTipVisible(false);
                         DebuggerManager dbMgr = DebuggerManager.getDebuggerManager();
                         Watch.Pin pin = new EditorPin(fo, line.getLineNumber(), location);

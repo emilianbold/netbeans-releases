@@ -373,6 +373,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                     public void actionPerformed(ActionEvent e) {
                         EditorUI eui = Utilities.getEditorUI(ep);
                         Point location = et.getLocation();
+                        location = eui.getStickyWindowSupport().convertPoint(location);
                         eui.getToolTipSupport().setToolTipVisible(false);
                         DebuggerManager dbMgr = DebuggerManager.getDebuggerManager();
                         Watch.Pin pin = new EditorPin(fo, line.getLineNumber(), location);

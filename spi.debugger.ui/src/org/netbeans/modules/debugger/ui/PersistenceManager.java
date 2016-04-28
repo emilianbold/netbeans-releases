@@ -52,6 +52,7 @@ import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
+import org.netbeans.spi.debugger.ui.EditorPin;
 
 
 /**
@@ -77,6 +78,10 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
         );
         for (Watch watch : watches) {
             watch.addPropertyChangeListener (this);
+            Watch.Pin pin = watch.getPin();
+            if (pin instanceof EditorPin) {
+                ((EditorPin) pin).addPropertyChangeListener(this);
+            }
         }
     }
     
@@ -100,6 +105,10 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
             DebuggerManager.getDebuggerManager ().getWatches ()
         );
         watch.addPropertyChangeListener (this);
+        Watch.Pin pin = watch.getPin();
+        if (pin instanceof EditorPin) {
+            ((EditorPin) pin).addPropertyChangeListener(this);
+        }
     }
     
     public void watchRemoved (Watch watch) {
@@ -109,10 +118,15 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
             DebuggerManager.getDebuggerManager ().getWatches ()
         );
         watch.removePropertyChangeListener(this);
+        Watch.Pin pin = watch.getPin();
+        if (pin instanceof EditorPin) {
+            ((EditorPin) pin).removePropertyChangeListener(this);
+        }
     }
     
     public void propertyChange (PropertyChangeEvent evt) {
-        if (evt.getSource() instanceof Watch) {
+        Object source = evt.getSource();
+        if (source instanceof Watch || source instanceof EditorPin) {
             Properties.getDefault ().getProperties ("debugger").setArray (
                 DebuggerManager.PROP_WATCHES,
                 DebuggerManager.getDebuggerManager ().getWatches ()
