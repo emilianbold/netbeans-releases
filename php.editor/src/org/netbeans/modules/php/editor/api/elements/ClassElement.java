@@ -58,4 +58,5 @@ public interface ClassElement extends TraitedElement {
     Collection<QualifiedName> getPossibleFQSuperClassNames();
     boolean isFinal();
     boolean isAbstract();
+    boolean isAnonymous();
 }

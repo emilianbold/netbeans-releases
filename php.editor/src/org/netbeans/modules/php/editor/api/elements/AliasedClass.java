@@ -71,6 +71,11 @@ public final class AliasedClass extends AliasedType implements ClassElement {
         return getClassElement().isAbstract();
     }
 
+    @Override
+    public boolean isAnonymous() {
+        return getClassElement().isAnonymous();
+    }
+
     private ClassElement getClassElement() {
         return (ClassElement) element;
     }

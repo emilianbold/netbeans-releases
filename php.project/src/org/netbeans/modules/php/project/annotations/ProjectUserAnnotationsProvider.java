@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,34 +37,32 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.project.annotations;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
 import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTagProvider;
 import org.openide.util.NbBundle;
 
 /**
- * Provider for user PHP annotations.
+ * Provider for user project PHP annotations.
  */
-public final class UserAnnotationsProvider extends AnnotationCompletionTagProvider {
+public class ProjectUserAnnotationsProvider extends AnnotationCompletionTagProvider {
 
-    private static final UserAnnotationsProvider INSTANCE = new UserAnnotationsProvider();
+    private final PhpProject project;
 
 
-    @NbBundle.Messages("UserAnnotationsProvider.name=Custom")
-    private UserAnnotationsProvider() {
-        super("User Annotations", // NOI18N
-                Bundle.UserAnnotationsProvider_name(),
+    @NbBundle.Messages("ProjectUserAnnotationsProvider.name=Custom (Project)")
+    public ProjectUserAnnotationsProvider(PhpProject project) {
+        super("Project User Annotations", // NOI18N
+                Bundle.ProjectUserAnnotationsProvider_name(),
                 null);
-    }
-
-    @AnnotationCompletionTagProvider.Registration(position=1000)
-    public static UserAnnotationsProvider getInstance() {
-        return INSTANCE;
+        assert project != null;
+        this.project = project;
     }
 
     @Override
@@ -88,7 +86,7 @@ public final class UserAnnotationsProvider extends AnnotationCompletionTagProvid
     }
 
     private List<AnnotationCompletionTag> getAnnotationsForType(UserAnnotationTag.Type type) {
-        List<UserAnnotationTag> annotations = UserAnnotations.getInstance().getAnnotations();
+        List<UserAnnotationTag> annotations = UserAnnotations.forProject(project).getAnnotations();
         List<AnnotationCompletionTag> result = new ArrayList<>(annotations.size());
         for (UserAnnotationTag userAnnotationTag : annotations) {
             if (userAnnotationTag.getTypes().contains(type)) {

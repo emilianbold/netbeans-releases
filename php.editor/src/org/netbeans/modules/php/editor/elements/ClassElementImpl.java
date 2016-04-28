@@ -50,6 +50,7 @@ import java.util.StringTokenizer;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
@@ -280,6 +281,11 @@ public final class ClassElementImpl extends TypeElementImpl implements ClassElem
     @Override
     public boolean isAbstract() {
         return getPhpModifiers().isAbstract();
+    }
+
+    @Override
+    public boolean isAnonymous() {
+        return CodeUtils.isSyntheticTypeName(getName());
     }
 
     @Override
