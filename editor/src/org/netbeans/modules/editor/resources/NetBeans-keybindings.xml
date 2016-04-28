@@ -129,6 +129,7 @@ made subject to such option by the copyright holder.
     <bind actionName="paste-from-clipboard" key="D-V"/>
     <bind actionName="paste-from-clipboard" key="S-INSERT"/>
     <bind actionName="clipboard-history" key="DS-D"/>
+    <bind actionName="clipboard-lines" key="DS-L"/>
     <bind actionName="add-caret-up" key="OS-OPEN_BRACKET"/>
     <bind actionName="add-caret-down" key="OS-CLOSE_BRACKET"/>
     <bind actionName="remove-last-caret" key="DS-J"/>
