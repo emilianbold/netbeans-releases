@@ -193,25 +193,7 @@ class JsKeyStrokeHandler implements KeystrokeHandler {
                                 statement.accept(this);
                             }
                         }
-// TRUFFLE                        
-//                        for (Node declaration : node.getDeclarations()) {
-//                            declaration.accept(this);
-//                        }
-//                        for (FunctionNode function : node.getFunctions()) {
-//                            if (!referencedFunction.contains(function.getName())) {
-//                                function.accept(this);
-//                            }
-//                        }
                     }
-
-                    // TRUFFLE
-//                    @Override
-//                    public Node enter(ReferenceNode node) {
-//                        FunctionNode fun = node.getReference();
-//                        referencedFunction.add(fun.getName());
-//                        fun.accept(this);
-//                        return null;
-//                    }
 
                     @Override
                     public boolean enterVarNode(VarNode node) {
