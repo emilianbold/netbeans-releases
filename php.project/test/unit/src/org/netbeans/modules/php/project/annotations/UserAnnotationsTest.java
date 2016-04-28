@@ -65,32 +65,32 @@ public class UserAnnotationsTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        UserAnnotations.getInstance().clearAnnotations();
+        UserAnnotations.getGlobal().clearAnnotations();
     }
 
     public void testEmpty() {
-        List<UserAnnotationTag> annotations = UserAnnotations.getInstance().getAnnotations();
+        List<UserAnnotationTag> annotations = UserAnnotations.getGlobal().getAnnotations();
         assertTrue("Annotations should be empty but are not: " + annotations.size(), annotations.isEmpty());
     }
 
     public void testClear() {
         // save
-        UserAnnotations.getInstance().setAnnotations(ANNOTATIONS);
+        UserAnnotations.getGlobal().setAnnotations(ANNOTATIONS);
         // read
-        List<UserAnnotationTag> annotations = UserAnnotations.getInstance().getAnnotations();
+        List<UserAnnotationTag> annotations = UserAnnotations.getGlobal().getAnnotations();
         assertEquals(ANNOTATIONS.size(), annotations.size());
         // clear
-        UserAnnotations.getInstance().clearAnnotations();
+        UserAnnotations.getGlobal().clearAnnotations();
         // read
-        annotations = UserAnnotations.getInstance().getAnnotations();
+        annotations = UserAnnotations.getGlobal().getAnnotations();
         assertTrue("Annotations should be empty but are not: " + annotations.size(), annotations.isEmpty());
     }
 
     public void testSaveAndRead() {
         // save
-        UserAnnotations.getInstance().setAnnotations(ANNOTATIONS);
+        UserAnnotations.getGlobal().setAnnotations(ANNOTATIONS);
         // read
-        List<UserAnnotationTag> annotations = UserAnnotations.getInstance().getAnnotations();
+        List<UserAnnotationTag> annotations = UserAnnotations.getGlobal().getAnnotations();
         assertEquals(ANNOTATIONS.size(), annotations.size());
         assertEquals(ANNOTATIONS, annotations);
     }
@@ -102,11 +102,11 @@ public class UserAnnotationsTest extends NbTestCase {
     }
 
     public void testMarshall() {
-        assertEquals("FUNCTION,METHOD", UserAnnotations.getInstance().marshallTypes(USER_ANNOTATION.getTypes()));
+        assertEquals("FUNCTION,METHOD", UserAnnotations.getGlobal().marshallTypes(USER_ANNOTATION.getTypes()));
     }
 
     public void testUnmarshall() {
-        assertEquals(USER_ANNOTATION.getTypes(), UserAnnotations.getInstance().unmarshallTypes("FUNCTION,METHOD"));
+        assertEquals(USER_ANNOTATION.getTypes(), UserAnnotations.getGlobal().unmarshallTypes("FUNCTION,METHOD"));
     }
 
 }

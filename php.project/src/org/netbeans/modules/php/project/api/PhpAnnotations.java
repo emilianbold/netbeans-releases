@@ -53,6 +53,7 @@ import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.annotations.ProjectUserAnnotationsProvider;
 import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTagProvider;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.openide.filesystems.FileObject;
@@ -165,14 +166,17 @@ public final class PhpAnnotations implements PropertyChangeListener {
         List<AnnotationCompletionTagProvider> result = new ArrayList<>();
         // first, add global providers
         result.addAll(org.netbeans.modules.php.api.annotation.PhpAnnotations.getCompletionTagProviders());
-        // next, add providers from php frameworks
+        // next, add providers from php frameworks and project itself
         PhpProject phpProject = org.netbeans.modules.php.project.util.PhpProjectUtils.getPhpProject(fileObject);
         if (phpProject != null) {
             ProjectPropertiesSupport.addWeakProjectPropertyChangeListener(phpProject, this);
             final PhpModule phpModule = phpProject.getPhpModule();
+            // frameworks
             for (PhpFrameworkProvider provider : phpProject.getFrameworks()) {
                 result.addAll(provider.getAnnotationsCompletionTagProviders(phpModule));
             }
+            // project itself
+            result.add(phpProject.getLookup().lookup(ProjectUserAnnotationsProvider.class));
         }
         return result;
     }

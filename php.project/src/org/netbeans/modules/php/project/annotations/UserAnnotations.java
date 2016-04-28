@@ -46,6 +46,8 @@ import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.prefs.Preferences;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.openide.util.NbPreferences;
 
@@ -55,10 +57,10 @@ public final class UserAnnotations {
     // Path to Preferences node for storing these preferences
     private static final String PREFERENCES_PATH = "annotations"; // NOI18N
 
-    private static final UserAnnotations INSTANCE = new UserAnnotations();
+    private static final UserAnnotations INSTANCE = new UserAnnotations(NbPreferences.forModule(UserAnnotations.class).node(PREFERENCES_PATH), ""); // NOI18N
 
-    // common tag key - tag.<index>.<attribute>
-    private static final String TAG_KEY = "tag.%d.%s"; // NOI18N
+    // common tag key - [<prefix>]tag.<index>.<attribute>
+    private static final String TAG_KEY = "%stag.%d.%s"; // NOI18N
 
     // tag attributes
     private static final String ATTR_TYPES = "types"; // NOI18N
@@ -69,14 +71,26 @@ public final class UserAnnotations {
     // value delimiter
     private static final String DELIMITER = ","; // NOI18N
 
+    private final Preferences preferences;
+    private final String tagKeyPrefix;
 
-    public static UserAnnotations getInstance() {
+
+    public UserAnnotations(Preferences preferences, String tagKeyPrefix) {
+        assert preferences != null;
+        this.preferences = preferences;
+        this.tagKeyPrefix = tagKeyPrefix;
+    }
+
+    public static UserAnnotations getGlobal() {
         return INSTANCE;
+    }
+
+    public static UserAnnotations forProject(Project project) {
+        return new UserAnnotations(ProjectUtils.getPreferences(project, UserAnnotations.class, true), "annotation."); // NOI18N
     }
 
     public List<UserAnnotationTag> getAnnotations() {
         List<UserAnnotationTag> annotations = new LinkedList<>();
-        Preferences preferences = getPreferences();
         int i = 0;
         for (;;) {
             String types = preferences.get(getTypesKey(i), null);
@@ -93,7 +107,6 @@ public final class UserAnnotations {
 
     public void setAnnotations(List<UserAnnotationTag> annotations) {
         clearAnnotations();
-        Preferences preferences = getPreferences();
         int i = 0;
         for (UserAnnotationTag annotation : annotations) {
             preferences.put(getTypesKey(i), marshallTypes(annotation.getTypes()));
@@ -106,7 +119,6 @@ public final class UserAnnotations {
 
     // for unit tests
     void clearAnnotations() {
-        Preferences preferences = getPreferences();
         int i = 0;
         for (;;) {
             String type = preferences.get(getTypesKey(i), null);
@@ -138,7 +150,7 @@ public final class UserAnnotations {
     }
 
     private String getKey(int i, String attr) {
-        return String.format(TAG_KEY, i, attr);
+        return String.format(TAG_KEY, tagKeyPrefix, i, attr);
     }
 
     // for unit tests
@@ -158,10 +170,6 @@ public final class UserAnnotations {
             result.add(UserAnnotationTag.Type.valueOf(type));
         }
         return result;
-    }
-
-    private Preferences getPreferences() {
-        return NbPreferences.forModule(UserAnnotations.class).node(PREFERENCES_PATH);
     }
 
 }
