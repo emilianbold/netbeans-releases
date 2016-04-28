@@ -104,8 +104,6 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public final class ModuleManager extends Modules {
 
-    private static final Logger LOG = Logger.getLogger(ModuleManager.class.getName());
-
     public static final String PROP_MODULES = "modules"; // NOI18N
     public static final String PROP_ENABLED_MODULES = "enabledModules"; // NOI18N
     public static final String PROP_CLASS_LOADER = "classLoader"; // NOI18N
@@ -479,10 +477,9 @@ public final class ModuleManager extends Modules {
                         try {
                             ts[i].setContextClassLoader(l);
                         } catch (SecurityException se) {
-                            LOG.log(
-                                    Level.FINE,
-                                    "Cannot set context ClassLoader to the Thread: {0}",  //NOI18N
-                                    ts[i]);
+                            if (Util.err.isLoggable(Level.FINE)) {
+                                Util.err.fine("Cannot set context ClassLoader to the Thread: "+ts[i]);    // NOI18N
+                            }
                         }
                     } else {
                         if (Util.err.isLoggable(Level.FINE)) {
