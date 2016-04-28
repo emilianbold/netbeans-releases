@@ -337,6 +337,9 @@ public final class ToolTipView extends JComponent implements ExplorerManager.Pro
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     Point location = ExpandableTooltip.this.getLocation();
+                    JEditorPane ep = EditorContextDispatcher.getDefault().getMostRecentEditor();
+                    EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(ep);
+                    location = eui.getStickyWindowSupport().convertPoint(location);
                     DebuggerManager dbMgr = DebuggerManager.getDebuggerManager();
                     Watch.Pin pin = new EditorPin(EditorContextBridge.getMostRecentFileObject(), EditorContextBridge.getMostRecentLineNumber(), location);
                     final Watch w = dbMgr.createPinnedWatch(toolTipExpr, pin);

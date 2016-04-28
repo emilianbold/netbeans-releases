@@ -57,6 +57,8 @@ import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.IdentityHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.Action;
@@ -98,6 +100,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Annotation;
 import org.openide.text.AnnotationProvider;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.text.Line;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -127,26 +130,51 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
     public void annotate(Line.Set lines, Lookup context) {
         DataObject dobj = context.lookup(DataObject.class);
         if(dobj == null) return;
-        // TODO:
-        final JEditorPane ep = EditorContextDispatcher.getDefault().getMostRecentEditor ();
-        if(ep == null) return;
-        EditorUI eui = Utilities.getEditorUI(ep);
-        if(eui == null)  return;
-        
-        synchronized (watchToAnnotation) {
-            Watch[] watches = DebuggerManager.getDebuggerManager().getWatches();
-            for (Watch watch : watches) {
-                Watch.Pin pin = watch.getPin();
-                if (!(pin instanceof EditorPin)) {
-                    continue;
-                }
-                EditorPin epin = (EditorPin) pin;
-                if (!dobj.getPrimaryFile().equals(epin.getFile())) {
-                    continue;
-                }
-                Line line = lines.getOriginal(epin.getLine());
-                pin(watch, eui, line);
+        final CloneableEditorSupport ces = context.lookup(CloneableEditorSupport.class);
+        if (ces == null) {
+            return ;
+        }
+        FileObject file = context.lookup(FileObject.class);
+        if (file == null) {
+            file = dobj.getPrimaryFile();
+        }
+        List<Watch> pinnedWatches = null;
+        Watch[] watches = DebuggerManager.getDebuggerManager().getWatches();
+        for (Watch watch : watches) {
+            Watch.Pin pin = watch.getPin();
+            if (!(pin instanceof EditorPin)) {
+                continue;
             }
+            EditorPin epin = (EditorPin) pin;
+            if (!file.equals(epin.getFile())) {
+                continue;
+            }
+            if (pinnedWatches == null) {
+                pinnedWatches = new LinkedList<>();
+            }
+            pinnedWatches.add(watch);
+        }
+        if (pinnedWatches != null) {
+            final List<Watch> pws = pinnedWatches;
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    JEditorPane[] openedPanes = ces.getOpenedPanes();
+                    for (JEditorPane pane : openedPanes) {
+                        EditorUI eui = Utilities.getEditorUI(pane);
+                        if (eui == null) {
+                            continue;
+                        }
+                        synchronized (watchToAnnotation) {
+                            for (Watch watch : pws) {
+                                EditorPin epin = (EditorPin) watch.getPin();
+                                Line line = lines.getOriginal(epin.getLine());
+                                pin(watch, eui, line);
+                            }
+                        }
+                    }
+                }
+            });
         }
     }
 
@@ -185,7 +213,7 @@ public class WatchAnnotationProvider implements AnnotationProvider, LazyDebugger
         
         JComponent window = new StickyPanel(watch, eui);
         stickyWindowSupport.addWindow(window);
-        window.setLocation(stickyWindowSupport.convertPoint(pin.getLocation()));
+        window.setLocation(pin.getLocation());
         watchToWindow.put(watch, window);
         SwingUtilities.invokeLater(new Runnable() {
             @Override

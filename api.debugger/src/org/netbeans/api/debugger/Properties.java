@@ -896,6 +896,9 @@ public abstract class Properties {
                 }
                 return initialValue;
             }
+            if (value.equals ("# null")) {                                      // NOI18N
+                return null;
+            }
             if (!value.startsWith ("\"")) { // NOI18N
                 LOG.config("Can not read string " + value + ".");               // NOI18N
                 return defaultValue;
@@ -908,7 +911,7 @@ public abstract class Properties {
             if (value != null) {
                 impl.setProperty (propertyName, "\"" + value + "\""); // NOI18N
             } else {
-                impl.setProperty (propertyName, value);
+                impl.setProperty (propertyName, "# null"); // NOI18N
             }
             pcs.firePropertyChange(propertyName, null, value);
         }
@@ -1126,7 +1129,7 @@ public abstract class Properties {
                 typeID = typeID.substring (2);
                 Class c = null;
                 try {
-                    c = Class.forName (typeID);
+                    c = Class.forName (typeID, true, org.openide.util.Lookup.getDefault().lookup(ClassLoader.class));
                 } catch (ClassNotFoundException e) {
                 }
                 if (c != null) {
