@@ -91,7 +91,12 @@ public final class PinWatchUISupport {
                     return null;
                 }
                 synchronized (valueProvidersLock) {
-                    return getValueProviders().get(id);
+                    DelegatingValueProvider vp = getValueProviders().get(id);
+                    if (vp == null) {
+                        vp = new DelegatingValueProvider(id);
+                        valueProviders.put(id, vp);
+                    }
+                    return vp;
                 }
             }
         };

@@ -46,6 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Objects;
 import org.netbeans.api.debugger.Watch;
+import org.netbeans.modules.debugger.ui.WatchesReader;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -76,6 +77,17 @@ public final class EditorPin implements Watch.Pin {
     private volatile Point location;
     private volatile String comment;
     private String vpId;
+    
+    static {
+        WatchesReader.PIN_READER_ACCESS = new WatchesReader.PinReaderAccess() {
+            @Override public String getVpId(EditorPin pin) {
+                return pin.getVpId();
+            }
+            @Override public void setVpId(EditorPin pin, String vpId) {
+                pin.setVpId(vpId);
+            }
+        };
+    }
 
     /**
      * Create a new pin location in editor.
@@ -153,6 +165,7 @@ public final class EditorPin implements Watch.Pin {
     
     void setVpId(String vpId) {
         this.vpId = vpId;
+        pchs.firePropertyChange("valueProviderId", null, vpId);
     }
 
     String getVpId() {
