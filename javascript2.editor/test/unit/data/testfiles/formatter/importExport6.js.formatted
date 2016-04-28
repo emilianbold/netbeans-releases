@@ -1,7 +1,9 @@
 export default class {
+
     constructor() {
 
     }
+
     method(x, y) {
         56
                 + 77;
@@ -9,4 +11,5 @@ export default class {
 }
 
 class X {
+
 }

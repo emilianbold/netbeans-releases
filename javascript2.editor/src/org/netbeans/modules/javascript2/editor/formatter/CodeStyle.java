@@ -668,12 +668,20 @@ public final class CodeStyle {
         return WrapStyle.valueOf(wrap);
     }
 
-    public boolean removeEmptyLinesInObject() {
-        return preferences.getBoolean(removeEmptyLinesInObject, provider.getDefaultAsBoolean(removeEmptyLinesInObject));
+    public int maxPreservedClassLines() {
+        return preferences.getInt(maxPreservedClassLines, provider.getDefaultAsInt(maxPreservedClassLines));
+    }
+
+    public int maxPreservedObjectLines() {
+        return preferences.getInt(maxPreservedObjectLines, provider.getDefaultAsInt(maxPreservedObjectLines));
     }
     
-    public boolean removeEmptyLinesInArray() {
-        return preferences.getBoolean(removeEmptyLinesInArray, provider.getDefaultAsBoolean(removeEmptyLinesInArray));
+    public int maxPreservedArrayLines() {
+        return preferences.getInt(maxPreservedArrayLines, provider.getDefaultAsInt(maxPreservedArrayLines));
+    }
+    
+    public int maxPreservedCodeLines() {
+        return preferences.getInt(maxPreservedCodeLines, provider.getDefaultAsInt(maxPreservedCodeLines));
     }
     
     // Uses
@@ -899,8 +907,10 @@ public final class CodeStyle {
         
         final CodeStyle.WrapStyle wrapClassExtends;
 
-        final boolean removeEmptyLinesInObject;
-        final boolean removeEmptyLinesInArray;
+        final int maxPreservedClassLines;
+        final int maxPreservedObjectLines;
+        final int maxPreservedArrayLines;
+        final int maxPreservedCodeLines;
         
         final boolean placeElseOnNewLine;
         final boolean placeWhileOnNewLine;
@@ -1009,8 +1019,10 @@ public final class CodeStyle {
             wrapElements = style.wrapElements();
             wrapClassExtends = style.wrapClassExtends();
 
-            removeEmptyLinesInObject = style.removeEmptyLinesInObject();
-            removeEmptyLinesInArray = style.removeEmptyLinesInArray();
+            maxPreservedClassLines = style.maxPreservedClassLines();
+            maxPreservedObjectLines = style.maxPreservedObjectLines();
+            maxPreservedArrayLines = style.maxPreservedArrayLines();
+            maxPreservedCodeLines = style.maxPreservedCodeLines();
 
             placeElseOnNewLine = style.placeElseOnNewLine();
             placeWhileOnNewLine = style.placeWhileOnNewLine();
