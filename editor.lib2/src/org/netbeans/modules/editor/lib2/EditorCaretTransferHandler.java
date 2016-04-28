@@ -97,6 +97,9 @@ public class EditorCaretTransferHandler extends TransferHandler {
 
     /** Boolean property defining whether selection is being rectangular in a particular text component. */
     private static final String RECTANGULAR_SELECTION_PROPERTY = "rectangular-selection"; // NOI18N
+    
+    /** Boolean property defining whether paste is being requested to be in lines. */
+    private static final String PASTE_LINES_PROPERTY = "clipboard-lines"; // NOI18N
 
     // -J-Dorg.netbeans.modules.editor.lib2.RectangularSelectionClipboardHandler.level=FINE
     private static final Logger LOG = Logger.getLogger(EditorCaretTransferHandler.class.getName());
@@ -380,21 +383,39 @@ public class EditorCaretTransferHandler extends TransferHandler {
                             Exceptions.printStackTrace(ex);
                         }
                     }
-                    if (multiCaretData != null && multiCaretData.strings().length == editorCaret.getCarets().size()) {
+                    boolean pasteLines = false;
+                    if(Boolean.TRUE.equals(((JTextComponent) c).getClientProperty(PASTE_LINES_PROPERTY))) {
+                        if(multiCaretData != null) {
+                            pasteLines = true;
+                        } else {
+                        try {
+                            String content = (String) t.getTransferData(DataFlavor.stringFlavor); // There should be string flavor
+                            if(content != null && content.length() > 0) {
+                                multiCaretData = new MultiCaretData(content.split("\n", editorCaret.getCarets().size()));
+                                pasteLines = true;
+                            }
+                        } catch (UnsupportedFlavorException | IOException ex) {
+                            LOG.info("Problem getting stringFlavor for paste as Lines."); //NOI18N
+                        }
+                        }
+                    }
+                    if (multiCaretData != null && (pasteLines ||
+                            multiCaretData.strings().length == editorCaret.getCarets().size())) {
                         final MultiCaretData content = multiCaretData;
                         final Document doc = ((JTextComponent) c).getDocument();
                         DocUtils.runAtomicAsUser(doc, new Runnable() {
                             @Override
                             public void run() {
-                                for (int i = 0; i < editorCaret.getSortedCarets().size(); i++) {
-                                    CaretInfo ci = editorCaret.getSortedCarets().get(i);
+                                List<CaretInfo> sortedCarets = editorCaret.getSortedCarets();
+                                for (int i = 0; i < sortedCarets.size(); i++) {
+                                    CaretInfo ci = sortedCarets.get(i);
                                     try {
                                         int startOffset = ci.getSelectionStart();
                                         int endOffset = ci.getSelectionEnd();
                                         if (startOffset != endOffset) {
                                             doc.remove(startOffset, endOffset - startOffset);
                                         }
-                                        if (content.strings()[i] != null && content.strings()[i].length() > 0) {
+                                        if (content.strings().length > i && content.strings()[i] != null && content.strings()[i].length() > 0) {
                                             doc.insertString(startOffset, content.strings()[i], null);
                                         }
                                     } catch (BadLocationException ex) {
