@@ -370,7 +370,7 @@ public final class ToolTipView extends JComponent implements ExplorerManager.Pro
             add(expButton);
             //JLabel l = new JLabel(toolTipText);
             // Multi-line tooltip:
-            JTextArea l = createMultiLineToolTip(toolTipExpr + "=" + toolTipValue, true);
+            JTextArea l = createMultiLineToolTip(toolTipExpr + "=" + toolTipValue, true);    // NOI18N
             if (font != null) {
                 l.setFont(font);
             }

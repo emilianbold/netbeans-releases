@@ -46,6 +46,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -237,6 +242,19 @@ final public class TerminalContainerTabbed extends TerminalContainerCommon {
             return (JComponent) tabbedPane.getSelectedComponent();
     }
 
+    @Override
+    public List<? extends Component> getAllTabs() {
+        if (soleComponent != null) {
+            return Arrays.asList(soleComponent);
+        } else {
+            List<Component> tabs = new ArrayList<Component>();
+            for (int i = 0; i < tabbedPane.getTabCount(); i++) {
+                tabs.add(tabbedPane.getComponentAt(i));
+            }
+            return tabs;
+        }
+    }
+    
     @Override
     public void setTitleWork(JComponent comp, String title) {
 	// pass-through for currently visible component

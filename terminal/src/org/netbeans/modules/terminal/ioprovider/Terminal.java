@@ -404,6 +404,7 @@ public final class Terminal extends JComponent {
 	actions.add(clearAction);
 	actions.add(dumpSequencesAction);
 	actions.add(closeAction);
+        actions.add(switchTabAction);
 	
 	for (Action action : actions) {
 	    if (action instanceof ContextAwareAction) {
@@ -968,6 +969,7 @@ public final class Terminal extends JComponent {
     private Action clearAction = ActionFactory.forID(ActionFactory.CLEAR_ACTION_ID);
     private Action dumpSequencesAction = ActionFactory.forID(ActionFactory.DUMP_SEQUENCE_ACTION_ID);
     private Action closeAction = ActionFactory.forID(ActionFactory.CLOSE_ACTION_ID);
+    private Action switchTabAction = ActionFactory.forID(ActionFactory.SWITCH_TAB_ACTION_ID);
 
     private void setupKeymap(Set<Action> actions) {
 	// We need to do two things.
@@ -986,14 +988,24 @@ public final class Terminal extends JComponent {
 	Set<KeyStroke> passKeystrokes = new HashSet<KeyStroke>();
 
 	for (Action a : actions) {
-	    String n = (String) a.getValue(Action.NAME);
-            KeyStroke accelerator = (KeyStroke) a.getValue(Action.ACCELERATOR_KEY);
-	    if (accelerator == null)
-		continue;
-	    newInputMap.put(accelerator, n);
-	    newActionMap.put(n, a);
-	    passKeystrokes.add(accelerator);
-	}
+            String n = (String) a.getValue(Action.NAME);
+            Object key = a.getValue(Action.ACCELERATOR_KEY);
+            if (key == null) {
+                continue;
+            }
+            if (key instanceof KeyStroke) {
+                KeyStroke accelerator = (KeyStroke) key;
+                newInputMap.put(accelerator, n);
+                newActionMap.put(n, a);
+                passKeystrokes.add(accelerator);
+            } else if (key instanceof KeyStroke[]) {
+                for (KeyStroke accelerator : (KeyStroke[]) key) {
+                    newInputMap.put(accelerator, n);
+                    newActionMap.put(n, a);
+                    passKeystrokes.add(accelerator);
+                }
+            }
+        }
 
 	/* LATER
 	 * unsuccessful attempt at fixing bug #185483

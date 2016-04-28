@@ -66,6 +66,7 @@ import org.netbeans.modules.dlight.terminal.action.TerminalAction;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.terminal.api.TerminalContainer;
+import org.netbeans.modules.terminal.api.TabContentProvider;
 import org.netbeans.modules.terminal.support.TerminalPinSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
@@ -172,17 +173,20 @@ public final class TerminalContainerTopComponent extends TopComponent {
 
     @Override
     public SubComponent[] getSubComponents() {
-        ArrayList<JComponent> terminals = new ArrayList<JComponent>();
-        dfs(terminals, tc);
+        ArrayList<Component> terminalList = new ArrayList<Component>();
+        
+        if (tc instanceof TabContentProvider) {
+            terminalList.addAll(((TabContentProvider) tc).getAllTabs());
+        }
 
-        if (terminals.size() <= 1) {
+        if (terminalList.size() <= 1) {
             return super.getSubComponents();
         }
 
-        SubComponent[] subs = new SubComponent[terminals.size()];
+        SubComponent[] subs = new SubComponent[terminalList.size()];
 
-        for (int i = 0; i < terminals.size(); i++) {
-            final JComponent terminal = terminals.get(i);
+        for (int i = 0; i < terminalList.size(); i++) {
+            final Component terminal = terminalList.get(i);
             String title = terminal.getName();
 
             subs[i] = new SubComponent(
@@ -191,8 +195,10 @@ public final class TerminalContainerTopComponent extends TopComponent {
 
                         @Override
                         public void actionPerformed(ActionEvent e) {
-                            tc.ioContainer().select(terminal);
-                            requestActive();
+                            if (terminal instanceof JComponent) {
+                                tc.ioContainer().select((JComponent) terminal);
+                                requestActive();
+                            }
                         }
 
                     },
@@ -200,18 +206,6 @@ public final class TerminalContainerTopComponent extends TopComponent {
         }
 
         return subs;
-    }
-
-    private void dfs(final List<JComponent> result, final JComponent parent) {
-        for (Component comp : parent.getComponents()) {
-            if (comp instanceof JComponent) {
-                JComponent jcomp = (JComponent) comp;
-                if (comp.getClass().getSimpleName().equals("Terminal")) {             // NOI18N
-                    result.add(jcomp);
-                }
-                dfs(result, jcomp);
-            }
-        }
     }
 
     @Override
