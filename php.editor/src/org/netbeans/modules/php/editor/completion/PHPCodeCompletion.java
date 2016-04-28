@@ -580,7 +580,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         if (classes.size() == 1) {
             ClassElement clazz = (ClassElement) classes.toArray()[0];
             if (!clazz.isAbstract()
-                    && !CodeUtils.isSyntheticTypeName(clazz.getName())) {
+                    && !clazz.isAnonymous()) {
                 // if there is only once class find constructors for it
                 query = isCamelCase ? NameKind.create(prefix.toString(), QuerySupport.Kind.CAMEL_CASE) : NameKind.caseInsensitivePrefix(prefix);
                 autoCompleteConstructors(completionResult, request, model, query);
@@ -588,7 +588,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         } else {
             for (ClassElement clazz : classes) {
                 if (!clazz.isAbstract()
-                        && !CodeUtils.isSyntheticTypeName(clazz.getName())) {
+                        && !clazz.isAnonymous()) {
                     // check whether the prefix is exactly the class
                     NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(request.result.getModel().getFileScope(), request.anchor);
                     String fqPrefixName = VariousUtils.qualifyTypeNames(request.prefix, request.anchor, namespaceScope);
@@ -670,7 +670,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             completionResult.setFilterable(false);
         }
         for (ClassElement clazz : classes) {
-            if (!CodeUtils.isSyntheticTypeName(clazz.getName())) {
+            if (!clazz.isAnonymous()) {
                 completionResult.add(new PHPCompletionItem.ClassItem(clazz, request, endWithDoubleColon, kind));
             }
         }
@@ -805,7 +805,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
             for (PhpElement element : allTopLevel) {
                 if (element instanceof ClassElement) {
                     ClassElement classElement = (ClassElement) element;
-                    if (!CodeUtils.isSyntheticTypeName(classElement.getName())) {
+                    if (!classElement.isAnonymous()) {
                         completionResult.add(new PHPCompletionItem.ClassItem(classElement, request, endWithDoubleColon, kind));
                     }
                 } else if (element instanceof InterfaceElement) {
@@ -1181,7 +1181,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                 }
             } else if (element instanceof ClassElement) {
                 ClassElement classElement = (ClassElement) element;
-                if (!CodeUtils.isSyntheticTypeName(classElement.getName())) {
+                if (!classElement.isAnonymous()) {
                     completionResult.add(new PHPCompletionItem.ClassItem(classElement, request, true, null));
                 }
             } else if (element instanceof InterfaceElement) {
