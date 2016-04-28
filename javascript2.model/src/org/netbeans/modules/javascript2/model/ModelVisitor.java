@@ -876,7 +876,7 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
                 }
             }
         }
-        if (expression != null) {
+        if (expression != null && !exportNode.isDefault()) {
             expression.accept(this);
         }
         return false;
@@ -1507,7 +1507,10 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
         };
         if (inNode.isModule() && inNode.getModule().getExports() != null) {
             for(ExportNode export :inNode.getModule().getExports()) {
-                export.accept(visitor);
+                if (!export.isDefault()) {
+                    // don't go through the default export node, it appears also as *default* varible node
+                    export.accept(visitor); 
+                }
             }
         }
         block.accept(visitor);
