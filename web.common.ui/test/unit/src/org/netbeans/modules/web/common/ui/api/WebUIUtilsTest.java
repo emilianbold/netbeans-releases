@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.common.ui.api;
 
 import java.awt.Color;
@@ -51,13 +50,11 @@ import org.netbeans.modules.csl.api.test.CslTestBase;
  */
 public class WebUIUtilsTest extends CslTestBase {
 
-    private static final String HTML_MIME_TYPE = "text/html";
-
     public WebUIUtilsTest(String testName) {
         super(testName);
     }
 
-    public void toHexColorCode() {
+    public void testToHexColorCode() {
         assertEquals("#ff0000", WebUIUtils.toHexCode(Color.RED));
         assertEquals("#2201aa", WebUIUtils.toHexCode(Color.decode("#2201aa")));
     }

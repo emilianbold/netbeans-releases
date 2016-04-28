@@ -46,8 +46,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.docker.api.DockerAction;
@@ -58,12 +60,19 @@ import org.openide.WizardValidationException;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
-@NbBundle.Messages("MSG_InaccessibleSocket=Socket is not accessible.")
+@NbBundle.Messages({
+    "MSG_ConnectionPassed=Connection sucessfull.",
+    "MSG_CannotConnect=Cannot establish connection.",
+    "MSG_InaccessibleSocket=Socket is not accessible."
+})
 public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchronousValidatingPanel<WizardDescriptor>, ChangeListener {
 
     private static final Pattern REMOTE_HOST_PATTERN = Pattern.compile("^(tcp://)[^/:](:\\d+)($|/.*)"); // NOI18N
+
+    private static final String CONNECTION_TEST = "connection_test";
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -84,7 +93,7 @@ public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchron
     @Override
     public DockerConnectionVisual getComponent() {
         if (component == null) {
-            component = new DockerConnectionVisual();
+            component = new DockerConnectionVisual(this);
             component.addChangeListener(this);
         }
         return component;
@@ -115,6 +124,10 @@ public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchron
         wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
         wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
         wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, null);
+
+        // process the connection test validation
+        Boolean connectioTest = (Boolean) wizard.getProperty(CONNECTION_TEST);
+        wizard.putProperty(CONNECTION_TEST, null);
 
         Configuration panel = component.getConfiguration();
         String displayName = panel.getDisplayName();
@@ -154,6 +167,10 @@ public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchron
                         && !"https".equals(realUrl.getProtocol())) { // NOI18N
                     urlWrong = true;
                 }
+                int port = realUrl.getPort();
+                if (port > 65535) {
+                    urlWrong = true;
+                }
             } catch (MalformedURLException ex) {
                 urlWrong = true;
             }
@@ -191,6 +208,15 @@ public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchron
             }
         }
 
+        if (connectioTest != null) {
+            if (connectioTest) {
+                wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, Bundle.MSG_ConnectionPassed());
+            } else {
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MSG_CannotConnect());
+            }
+            return connectioTest;
+        }
+
         return true;
     }
 
@@ -213,7 +239,6 @@ public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchron
         component.setWaitingState(false);
     }
 
-    @NbBundle.Messages("MSG_CannotConnect=Cannot establish connection.")
     @Override
     public void validate() throws WizardValidationException {
         try {
@@ -251,7 +276,8 @@ public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchron
                 String error = Bundle.MSG_CannotConnect();
                 throw new WizardValidationException(component, error, error);
             }
-        } catch (MalformedURLException ex) {
+        // runtime exception may happen
+        } catch (Exception ex) {
             String error = Bundle.MSG_CannotConnect();
             throw new WizardValidationException(component, error, error);
         }
@@ -328,6 +354,37 @@ public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchron
         changeSupport.fireChange();
     }
 
+    public void testConnection() {
+        assert SwingUtilities.isEventDispatchThread();
+
+        prepareValidation();
+        final AtomicReference<Exception> ref = new AtomicReference<>();
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    validate();
+                } catch (WizardValidationException ex) {
+                    ref.set(ex);
+                } finally {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            finishValidation();
+                            Exception ex = ref.get();
+                            if (ex != null) {
+                                wizard.putProperty(CONNECTION_TEST, false);
+                            } else {
+                                wizard.putProperty(CONNECTION_TEST, true);
+                            }
+                            changeSupport.fireChange();
+                        }
+                    });
+                }
+            }
+        });
+    }
+
     private static File getDefaultSocket() {
         File file = new File("/var/run/docker.sock"); // NOI18N
         if (file.exists()) {
@@ -361,12 +418,23 @@ public class DockerConnectionPanel implements WizardDescriptor.ExtendedAsynchron
 
         if (url == null) {
             if (Utilities.isMac() || Utilities.isWindows()) {
-                if (new File(System.getProperty("user.home"), ".docker").isDirectory()) { // NOI18N
-                    // dockertoolbox
-                    url = "https://192.168.99.100:2376"; // NOI18N
-                } else {
-                    // obsolete boot2docker
-                    url = "https://192.168.59.103:2376"; // NOI18N
+                if (Utilities.isWindows()) {
+                    String appData = System.getenv("APPDATA"); // NOI18N
+                    // docker beta detection
+                    if (appData != null && new File(appData, "Docker" + File.separatorChar + ".trackid").isFile()) { // NOI18N
+                        url = "http://127.0.0.1:2375"; // NOI18N
+                    }
+                } else if (Utilities.isMac()) {
+                    // FIXME beta detection
+                }
+                if (url == null) {
+                    if (new File(System.getProperty("user.home"), ".docker").isDirectory()) { // NOI18N
+                        // dockertoolbox
+                        url = "https://192.168.99.100:2376"; // NOI18N
+                    } else {
+                        // obsolete boot2docker
+                        url = "https://192.168.59.103:2376"; // NOI18N
+                    }
                 }
             } else {
                 url = "http://127.0.0.1:2375"; // NOI18N

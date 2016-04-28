@@ -71,6 +71,8 @@ import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.api.editor.NavigationHistory;
 import org.netbeans.api.editor.EditorActionNames;
+import org.netbeans.api.editor.caret.CaretInfo;
+import org.netbeans.api.editor.caret.EditorCaret;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -571,15 +573,33 @@ public class ExtKit extends BaseKit {
                     return;
                 }
 
-                try {
-                    Caret caret = target.getCaret();
-                    BaseDocument doc = (BaseDocument)target.getDocument();
-                    int[] idBlk = Utilities.getIdentifierBlock(doc, caret.getDot());
-                    if (idBlk != null) {
-                        Utilities.changeCase(doc, idBlk[0], 1, Utilities.CASE_SWITCH);
+                Caret caret = target.getCaret();
+                BaseDocument doc = (BaseDocument) target.getDocument();
+                if(caret instanceof EditorCaret) {
+                    EditorCaret editorCaret = (EditorCaret) caret;
+                    boolean beeped = false;
+                    for (CaretInfo caretInfo : editorCaret.getSortedCarets()) {
+                        try {
+                            int[] idBlk = Utilities.getIdentifierBlock(doc, caretInfo.getDot());
+                            if (idBlk != null) {
+                                Utilities.changeCase(doc, idBlk[0], 1, Utilities.CASE_SWITCH);
+                            }
+                        } catch (BadLocationException e) {
+                            if(!beeped) {
+                                target.getToolkit().beep();
+                                beeped = true;
+                            }
+                        }
                     }
-                } catch (BadLocationException e) {
-                    target.getToolkit().beep();
+                } else {
+                    try {
+                        int[] idBlk = Utilities.getIdentifierBlock(doc, caret.getDot());
+                        if (idBlk != null) {
+                            Utilities.changeCase(doc, idBlk[0], 1, Utilities.CASE_SWITCH);
+                        }
+                    } catch (BadLocationException e) {
+                        target.getToolkit().beep();
+                    }
                 }
             }
         }
@@ -893,33 +913,74 @@ public class ExtKit extends BaseKit {
                 final BaseDocument doc = (BaseDocument)target.getDocument();
                 doc.runAtomicAsUser (new Runnable () {
                     public void run () {
-                        try {
-                            int startPos;
-                            int endPos;
+                        if(caret instanceof EditorCaret) {                            
+                            EditorCaret editorCaret = (EditorCaret) caret;
+                            boolean beeped = false;
+                            for (CaretInfo caretInfo : editorCaret.getSortedCarets()) {
+                                try {
+                                    int startPos;
+                                    int endPos;
 
-                            if (Utilities.isSelectionShowing(caret)) {
-                                startPos = Utilities.getRowStart(doc, target.getSelectionStart());
-                                endPos = target.getSelectionEnd();
-                                if (endPos > 0 && Utilities.getRowStart(doc, endPos) == endPos) {
-                                    endPos--;
+                                    if (caretInfo.isSelectionShowing()) {
+                                        int start = Math.min(caretInfo.getDot(), caretInfo.getMark());
+                                        int end = Math.max(caretInfo.getDot(), caretInfo.getMark());
+                                        startPos = Utilities.getRowStart(doc, start);
+                                        endPos = end;
+                                        if (endPos > 0 && Utilities.getRowStart(doc, endPos) == endPos) {
+                                            endPos--;
+                                        }
+                                        endPos = Utilities.getRowEnd(doc, endPos);
+                                    } else { // selection not visible
+                                        startPos = Utilities.getRowStart(doc, caretInfo.getDot());
+                                        endPos = Utilities.getRowEnd(doc, caretInfo.getDot());
+                                    }
+
+                                    int lineCount = Utilities.getRowCount(doc, startPos, endPos);
+                                    boolean comment = forceComment != null ? forceComment : !allComments(doc, startPos, lineCount);
+
+                                    if (comment) {
+                                        comment(doc, startPos, lineCount);
+                                    } else {
+                                        uncomment(doc, startPos, lineCount);
+                                    }
+                                    // TODO:
+//                                    NavigationHistory.getEdits().markWaypoint(target, startPos, false, true);
+                                } catch (BadLocationException e) {
+                                    if(!beeped) {
+                                        target.getToolkit().beep();
+                                        beeped = true;
+                                    }
                                 }
-                                endPos = Utilities.getRowEnd(doc, endPos);
-                            } else { // selection not visible
-                                startPos = Utilities.getRowStart(doc, caret.getDot());
-                                endPos = Utilities.getRowEnd(doc, caret.getDot());
                             }
+                        } else {
+                            try {
+                                int startPos;
+                                int endPos;
 
-                            int lineCount = Utilities.getRowCount(doc, startPos, endPos);
-                            boolean comment = forceComment != null ? forceComment : !allComments(doc, startPos, lineCount);
+                                if (Utilities.isSelectionShowing(caret)) {
+                                    startPos = Utilities.getRowStart(doc, target.getSelectionStart());
+                                    endPos = target.getSelectionEnd();
+                                    if (endPos > 0 && Utilities.getRowStart(doc, endPos) == endPos) {
+                                        endPos--;
+                                    }
+                                    endPos = Utilities.getRowEnd(doc, endPos);
+                                } else { // selection not visible
+                                    startPos = Utilities.getRowStart(doc, caret.getDot());
+                                    endPos = Utilities.getRowEnd(doc, caret.getDot());
+                                }
 
-                            if (comment) {
-                                comment(doc, startPos, lineCount);
-                            } else {
-                                uncomment(doc, startPos, lineCount);
+                                int lineCount = Utilities.getRowCount(doc, startPos, endPos);
+                                boolean comment = forceComment != null ? forceComment : !allComments(doc, startPos, lineCount);
+
+                                if (comment) {
+                                    comment(doc, startPos, lineCount);
+                                } else {
+                                    uncomment(doc, startPos, lineCount);
+                                }
+                                NavigationHistory.getEdits().markWaypoint(target, startPos, false, true);
+                            } catch (BadLocationException e) {
+                                target.getToolkit().beep();
                             }
-                            NavigationHistory.getEdits().markWaypoint(target, startPos, false, true);
-                        } catch (BadLocationException e) {
-                            target.getToolkit().beep();
                         }
                     }
                 });

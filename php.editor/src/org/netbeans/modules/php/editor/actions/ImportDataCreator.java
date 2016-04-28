@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.actions;
 
@@ -63,6 +63,7 @@ import org.netbeans.modules.php.editor.api.elements.ConstantElement;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
 import org.netbeans.modules.php.editor.api.elements.FunctionElement;
 import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
+import org.netbeans.modules.php.editor.api.elements.TraitElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.openide.util.NbBundle;
 
@@ -149,8 +150,11 @@ public class ImportDataCreator {
         Collection<FullyQualifiedElement> possibleTypes = new HashSet<>();
         Collection<ClassElement> possibleClasses = phpIndex.getClasses(NameKind.prefix(typeName));
         Collection<InterfaceElement> possibleIfaces = phpIndex.getInterfaces(NameKind.prefix(typeName));
+        // XXX only for php 5.4+
+        Collection<TraitElement> possibleTraits = phpIndex.getTraits(NameKind.prefix(typeName));
         possibleTypes.addAll(possibleClasses);
         possibleTypes.addAll(possibleIfaces);
+        possibleTypes.addAll(possibleTraits);
         if (options.isPhp56OrGreater()) {
             Collection<FunctionElement> possibleFunctions = phpIndex.getFunctions(NameKind.prefix(typeName));
             Collection<ConstantElement> possibleConstants = phpIndex.getConstants(NameKind.prefix(typeName));
@@ -176,7 +180,9 @@ public class ImportDataCreator {
     private Collection<FullyQualifiedElement> filterPlatformConstsAndFunctions(final Collection<FullyQualifiedElement> possibleFQElements) {
         Collection<FullyQualifiedElement> result = new HashSet<>();
         for (FullyQualifiedElement fqElement : possibleFQElements) {
-            if (fqElement instanceof ClassElement || fqElement instanceof InterfaceElement) {
+            if (fqElement instanceof ClassElement
+                    || fqElement instanceof InterfaceElement
+                    || fqElement instanceof TraitElement) {
                 result.add(fqElement);
             } else if (!fqElement.isPlatform()) {
                 result.add(fqElement);

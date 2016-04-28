@@ -90,6 +90,21 @@ class TraitScopeImpl extends TypeScopeImpl implements TraitScope, VariableNameFa
     }
 
     @Override
+    void addElement(ModelElementImpl element) {
+        assert element instanceof TypeScope || element instanceof VariableName
+                || element instanceof MethodScope || element instanceof FieldElement
+                || element instanceof ClassConstantElement : element.getPhpElementKind();
+        if (element instanceof TypeScope) {
+            Scope inScope = getInScope();
+            if (inScope instanceof ScopeImpl) {
+                ((ScopeImpl) inScope).addElement(element);
+            }
+        } else {
+            super.addElement(element);
+        }
+    }
+
+    @Override
     public Collection<? extends MethodScope> getInheritedMethods() {
         Set<MethodScope> allMethods = new HashSet<>();
         IndexScope indexScope = ModelUtils.getIndexScope(this);
