@@ -1445,7 +1445,7 @@ public class ModelUtils {
                         name = name.substring(1);
                         nameOffset++;
                     }
-                    name.trim();
+                    name = name.trim();
                     if (name.indexOf('*') > 0) {
                         name = name.substring(0, name.indexOf('*')).trim();
                     }
