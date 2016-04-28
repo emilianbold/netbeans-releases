@@ -1,5 +1,5 @@
 var |>GLOBAL:SeLiteMisc<|= {};
-|>GLOBAL:SeLiteMisc<|.|>METHOD:isInstance<|= function |>METHOD:isPrdca<|( object, classes, className, message ) {
+|>GLOBAL:SeLiteMisc<|.|>METHOD:isInstance<|= function |>METHOD,UNUSED:isPrdca<|( object, classes, className, message ) {
     var |>LOCAL_VARIABLE_DECLARATION,UNUSED:arr<|= [object, classes, message, className ];
     
     if( typeof classes==='function' ) {
