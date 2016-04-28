@@ -72,7 +72,6 @@ import com.oracle.js.parser.TokenType;
 import com.oracle.js.parser.ir.ClassNode;
 import com.oracle.js.parser.ir.ExportNode;
 import com.oracle.js.parser.ir.ImportNode;
-import com.oracle.js.parser.ir.ReturnNode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;

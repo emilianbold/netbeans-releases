@@ -808,8 +808,14 @@ public class JsFormatterTest extends JsTestBase {
     
     public void testObjects14NoEmptyLinesRemoval() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
-        options.put(FmtOptions.removeEmptyLinesInObject, Boolean.FALSE);
+        options.put(FmtOptions.maxPreservedObjectLines, 5);
         reformatFileContents("testfiles/formatter/objects14.js", options, ".noEmptyLinesRemoval.formatted");
+    }
+    
+    public void testObjects14AllEmptyLinesRemoval() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.maxPreservedObjectLines, 0);
+        reformatFileContents("testfiles/formatter/objects14.js", options, ".allEmptyLinesRemoval.formatted");
     }
     
     public void testObjects14Tokens() throws Exception {
@@ -1709,6 +1715,12 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/class3.js",new IndentPrefs(4, 4));
     }
     
+    public void testClass3AllEmptyLinesRemoval() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.maxPreservedClassLines, 0);
+        reformatFileContents("testfiles/formatter/class3.js", options, ".allEmptyLinesRemoval.formatted");
+    }
+
     public void testClass3Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/class3.js");
     }
@@ -1987,8 +1999,14 @@ public class JsFormatterTest extends JsTestBase {
     
     public void testArrays6NoEmptyLinesRemoval() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
-        options.put(FmtOptions.removeEmptyLinesInArray, Boolean.FALSE);
+        options.put(FmtOptions.maxPreservedArrayLines, 5);
         reformatFileContents("testfiles/formatter/arrays6.js", options, ".noEmptyLinesRemoval.formatted");
+    }
+    
+    public void testArrays6AllEmptyLinesRemoval() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.maxPreservedArrayLines, 0);
+        reformatFileContents("testfiles/formatter/arrays6.js", options, ".allEmptyLinesRemoval.formatted");
     }
     
     public void testArrays6Tokens() throws Exception {
