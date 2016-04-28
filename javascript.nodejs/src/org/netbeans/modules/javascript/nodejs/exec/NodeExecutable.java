@@ -336,13 +336,15 @@ public class NodeExecutable {
         assert project != null;
         assert taskRef != null;
         List<URL> sourceRoots = NodeJsSupport.forProject(project).getSourceRoots();
+        final LineConvertorFactoryImpl lineConvertorFactory = new LineConvertorFactoryImpl(sourceRoots, debugInfo);
         return ExternalExecutable.DEFAULT_EXECUTION_DESCRIPTOR
                 .frontWindowOnError(false)
                 .showSuspended(true)
                 .optionsPath(NodeJsOptionsPanelController.OPTIONS_PATH)
                 .outLineBased(true)
                 .errLineBased(true)
-                .outConvertorFactory(new LineConvertorFactoryImpl(sourceRoots, debugInfo))
+                .outConvertorFactory(lineConvertorFactory)
+                .errConvertorFactory(lineConvertorFactory)
                 .rerunCallback(new ExecutionDescriptor.RerunCallback() {
                     @Override
                     public void performed(Future<Integer> task) {
