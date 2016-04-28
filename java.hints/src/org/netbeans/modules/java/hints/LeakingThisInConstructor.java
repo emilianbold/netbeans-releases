@@ -43,13 +43,18 @@
 package org.netbeans.modules.java.hints;
 
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.Map;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.errors.Utilities;
+import org.netbeans.modules.java.hints.introduce.Flow;
+import org.netbeans.modules.java.hints.introduce.Flow.FlowResult;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
@@ -66,6 +71,7 @@ import org.openide.util.NbBundle;
 @Hint(displayName = "#DN_org.netbeans.modules.java.hints.LeakingThisInConstructor", description = "#DESC_org.netbeans.modules.java.hints.LeakingThisInConstructor", category="initialization", suppressWarnings={"LeakingThisInConstructor", "", "ThisEscapedInObjectConstruction"}, options=Options.QUERY)
 public class LeakingThisInConstructor {
     private static final String THIS_KEYWORD = "this"; // NOI18N
+    private static final String SUPER_KEYWORD = "super"; // NOI18N
     public LeakingThisInConstructor() {
     }
 
@@ -101,6 +107,25 @@ public class LeakingThisInConstructor {
             return null;
         }
         if (!Utilities.isInConstructor(ctx)) {
+            return null;
+        }
+        TreePath storePath = variables.get("$v");
+        Tree t = storePath.getLeaf();
+        if (t.getKind() == Tree.Kind.MEMBER_SELECT) {
+            t = ((MemberSelectTree)t).getExpression();
+            while (t != null && t.getKind() == Tree.Kind.PARENTHESIZED) {
+                t = ((ParenthesizedTree)t).getExpression();
+            }
+            if (t == null) {
+                return null;
+            } else if (t.getKind() == Tree.Kind.IDENTIFIER) {
+                IdentifierTree it = (IdentifierTree)t;
+                if (it.getName().contentEquals(THIS_KEYWORD) ||
+                    it.getName().contentEquals(SUPER_KEYWORD)) {
+                    return null;
+                }
+            }
+        } else {
             return null;
         }
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(),
