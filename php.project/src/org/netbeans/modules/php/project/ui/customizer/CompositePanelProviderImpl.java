@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.php.project.ui.customizer;
@@ -89,6 +89,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     public static final String FRAMEWORKS = "Frameworks"; // NOI18N
     public static final String TESTING = PhpTesting.CUSTOMIZER_IDENT;
     public static final String TESTING_SELENIUM = "SeleniumTesting"; // NOI18N
+    public static final String ANNOTATIONS = "Annotations"; // NOI18N
     public static final String LICENSE = "License"; // NOI18N
 
     private final String name;
@@ -114,6 +115,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         "CompositePanelProviderImpl.category.testing.title=Testing",
         "CompositePanelProviderImpl.category.selenium.testing.title=Selenium Testing",
         "CompositePanelProviderImpl.category.browser.title=Browser",
+        "CompositePanelProviderImpl.category.annotations.title=Annotations",
         "CompositePanelProviderImpl.category.licenceHeaders.title=License Headers",
     })
     @Override
@@ -141,6 +143,12 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             toReturn = ProjectCustomizer.Category.create(
                     BROWSER,
                     Bundle.CompositePanelProviderImpl_category_browser_title(),
+                    null,
+                    categories);
+        } else if (ANNOTATIONS.equals(name)) {
+            toReturn = ProjectCustomizer.Category.create(
+                    ANNOTATIONS,
+                    Bundle.CompositePanelProviderImpl_category_annotations_title(),
                     null,
                     categories);
         } else if (PHP_INCLUDE_PATH.equals(name)) {
@@ -198,6 +206,8 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             return new CustomizerRun(uiProps, category);
         } else if (BROWSER.equals(nm)) {
             return new CustomizerBrowser(category, uiProps);
+        } else if (ANNOTATIONS.equals(nm)) {
+            return new CustomizerAnnotations(category, context.lookup(PhpProject.class));
         } else if (PHP_INCLUDE_PATH.equals(nm)) {
             return new CustomizerIncludePath(category, uiProps);
         } else if (IGNORE_PATH.equals(nm)) {
@@ -352,6 +362,13 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             position = 360)
     public static ProjectCustomizer.CompositeCategoryProvider createPhpDocumentation() {
         return PhpDocumentations.createCustomizer();
+    }
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+            projectType = UiUtils.CUSTOMIZER_PATH,
+            position = 370)
+    public static ProjectCustomizer.CompositeCategoryProvider createAnnotations() {
+        return new CompositePanelProviderImpl(ANNOTATIONS);
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(

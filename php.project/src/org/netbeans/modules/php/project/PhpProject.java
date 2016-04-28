@@ -89,6 +89,7 @@ import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.php.api.documentation.PhpDocumentations;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.project.annotations.ProjectUserAnnotationsProvider;
 import org.netbeans.modules.php.project.api.PhpSeleniumProvider;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.classpath.BasePathSupport;
@@ -774,6 +775,7 @@ public final class PhpProject implements Project {
                 new PhpVisibilityQuery.PhpVisibilityQueryImpl(this),
                 new UsageLogging(),
                 new ImportantFilesImpl(this),
+                new ProjectUserAnnotationsProvider(this),
                 // ?? getRefHelper()
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-php-project/Lookup"); // NOI18N

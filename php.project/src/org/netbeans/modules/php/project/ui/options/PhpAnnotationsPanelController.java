@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.annotations.UserAnnotations;
+import org.netbeans.modules.php.project.ui.PhpAnnotationsPanel;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -77,7 +78,8 @@ public class PhpAnnotationsPanelController extends BaseOptionsPanelController {
     @Override
     protected void updateInternal() {
         assert EventQueue.isDispatchThread();
-        panel.setAnnotations(UserAnnotations.getInstance().getAnnotations());
+        getPanel();
+        panel.setAnnotations(UserAnnotations.getGlobal().getAnnotations());
         panel.setResolveDeprecatedElements(PhpOptions.getInstance().isAnnotationsResolveDeprecatedElements());
         panel.setUnknownAsType(PhpOptions.getInstance().isAnnotationsUnknownAnnotationsAsTypeAnnotations());
     }
@@ -85,7 +87,8 @@ public class PhpAnnotationsPanelController extends BaseOptionsPanelController {
     @Override
     protected void applyChangesInternal() {
         assert EventQueue.isDispatchThread();
-        UserAnnotations.getInstance().setAnnotations(panel.getAnnotations());
+        getPanel();
+        UserAnnotations.getGlobal().setAnnotations(panel.getAnnotations());
         boolean resolveDeprecatedElements = panel.isResolveDeprecatedElements();
         LOGGER.log(Level.INFO, "Resolving of deprecated PHP elements: {0}", resolveDeprecatedElements);
         PhpOptions.getInstance().setAnnotationsResolveDeprecatedElements(resolveDeprecatedElements);
@@ -94,24 +97,29 @@ public class PhpAnnotationsPanelController extends BaseOptionsPanelController {
 
     @Override
     protected boolean areOptionsChanged() {
+        getPanel();
         return PhpOptions.getInstance().isAnnotationsResolveDeprecatedElements() != panel.isResolveDeprecatedElements()
                 || PhpOptions.getInstance().isAnnotationsUnknownAnnotationsAsTypeAnnotations() != panel.isUnknownAsType()
-                || !UserAnnotations.getInstance().getAnnotations().equals(panel.getAnnotations());
+                || !UserAnnotations.getGlobal().getAnnotations().equals(panel.getAnnotations());
     }
 
     @Override
     public JComponent getComponent(Lookup masterLookup) {
-        assert EventQueue.isDispatchThread();
-        if (panel == null) {
-            panel = new PhpAnnotationsPanel();
-            panel.addChangeListener(this);
-        }
-        return panel;
+        return getPanel();
     }
 
     @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("org.netbeans.modules.php.project.ui.options.PhpAnnotationsPanelController"); // NOI18N
+    }
+
+    private PhpAnnotationsPanel getPanel() {
+        assert EventQueue.isDispatchThread();
+        if (panel == null) {
+            panel = PhpAnnotationsPanel.forOptions();
+            panel.addChangeListener(this);
+        }
+        return panel;
     }
 
 }

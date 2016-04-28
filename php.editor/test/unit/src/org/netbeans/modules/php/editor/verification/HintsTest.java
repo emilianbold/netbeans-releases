@@ -105,6 +105,14 @@ public class HintsTest extends PHPHintsTestBase {
         applyHint(new ImplementAbstractMethodsHintError(), "testImplementAbstractMethodsHintFix.php", "Implementi^ngClass", "Declare");
     }
 
+    public void testImplementAbstractMethodsHintFix02_01() throws Exception {
+        applyHint(new ImplementAbstractMethodsHintError(), "testImplementAbstractMethodsHintFix02.php", "$a = new cl^ass implements Iface {", "Implement");
+    }
+
+    public void testImplementAbstractMethodsHintFix02_02() throws Exception {
+        checkHints(new ImplementAbstractMethodsHintError(), "testImplementAbstractMethodsHintFix02.php");
+    }
+
     public void testMethodRedeclarationHint() throws Exception {
         checkHints(new MethodRedeclarationHintError(), "testMethodRedeclarationHint.php");
     }

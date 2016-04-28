@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.ui.options;
+package org.netbeans.modules.php.project.ui;
 
 import java.awt.Component;
 import java.awt.EventQueue;
@@ -77,10 +77,8 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
-@OptionsPanelController.Keywords(keywords={"php", "annotations", "#KW_AnnotationsOptions"}, location=UiUtils.OPTIONS_PATH, tabTitle= "#LBL_AnnotationsOptions")
+@OptionsPanelController.Keywords(keywords={"php", "annotations", "#KW_AnnotationsOptions"}, location=UiUtils.OPTIONS_PATH, tabTitle= "#LBL_AnnotationsOptions2")
 public class PhpAnnotationsPanel extends JPanel {
-
-    private static final long serialVersionUID = 89732416546545L;
 
     @NbBundle.Messages({
         "PhpAnnotationsPanel.table.column.name.title=Name",
@@ -98,15 +96,28 @@ public class PhpAnnotationsPanel extends JPanel {
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
 
-    public PhpAnnotationsPanel() {
+    private PhpAnnotationsPanel(boolean forProject) {
         tableModel = new AnnotationsTableModel();
 
         initComponents();
-        init();
+        init(forProject);
     }
 
-    private void init() {
-        resolveDeprecatedCheckBox.addItemListener(new DefaultItemListener());
+    public static PhpAnnotationsPanel forOptions() {
+        return new PhpAnnotationsPanel(false);
+    }
+
+    public static PhpAnnotationsPanel forProject() {
+        return new PhpAnnotationsPanel(true);
+    }
+
+    private void init(boolean forProject) {
+        if (forProject) {
+            globalOptionsPanel.setVisible(false);
+        } else {
+            resolveDeprecatedCheckBox.addItemListener(new DefaultItemListener());
+            unknownAsTypeCheckBox.addItemListener(new DefaultItemListener());
+        }
         initTable();
         initButtons();
     }
@@ -121,12 +132,12 @@ public class PhpAnnotationsPanel extends JPanel {
 
     public List<UserAnnotationTag> getAnnotations() {
         assert EventQueue.isDispatchThread();
-        return annotations;
+        return Collections.unmodifiableList(annotations);
     }
 
     public void setAnnotations(List<UserAnnotationTag> annotations) {
         assert EventQueue.isDispatchThread();
-        this.annotations = annotations;
+        this.annotations = new ArrayList<>(annotations);
         tableModel.fireAnnotationsChange();
     }
 
@@ -257,8 +268,11 @@ public class PhpAnnotationsPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        globalOptionsPanel = new JPanel();
         resolveDeprecatedCheckBox = new JCheckBox();
+        warningLabel = new JLabel();
         unknownAsTypeCheckBox = new JCheckBox();
+        warningText = new JLabel();
         annotationsLabel = new JLabel();
         annotationsScrollPane = new JScrollPane();
         annotationsTable = new JTable();
@@ -267,12 +281,37 @@ public class PhpAnnotationsPanel extends JPanel {
         deleteButton = new JButton();
         noteLabel = new JLabel();
         infoLabel = new JLabel();
-        warningLabel = new JLabel();
-        warningText = new JLabel();
 
         Mnemonics.setLocalizedText(resolveDeprecatedCheckBox, NbBundle.getMessage(PhpAnnotationsPanel.class, "PhpAnnotationsPanel.resolveDeprecatedCheckBox.text")); // NOI18N
 
+        Mnemonics.setLocalizedText(warningLabel, NbBundle.getMessage(PhpAnnotationsPanel.class, "PhpAnnotationsPanel.warningLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(unknownAsTypeCheckBox, NbBundle.getMessage(PhpAnnotationsPanel.class, "PhpAnnotationsPanel.unknownAsTypeCheckBox.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(warningText, NbBundle.getMessage(PhpAnnotationsPanel.class, "PhpAnnotationsPanel.warningText.text")); // NOI18N
+
+        GroupLayout globalOptionsPanelLayout = new GroupLayout(globalOptionsPanel);
+        globalOptionsPanel.setLayout(globalOptionsPanelLayout);
+        globalOptionsPanelLayout.setHorizontalGroup(globalOptionsPanelLayout.createParallelGroup(Alignment.LEADING)
+            .addComponent(resolveDeprecatedCheckBox)
+            .addGroup(globalOptionsPanelLayout.createSequentialGroup()
+                .addGap(21, 21, 21)
+                .addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(warningText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+            .addComponent(unknownAsTypeCheckBox)
+        );
+        globalOptionsPanelLayout.setVerticalGroup(globalOptionsPanelLayout.createParallelGroup(Alignment.LEADING)
+            .addGroup(globalOptionsPanelLayout.createSequentialGroup()
+                .addComponent(resolveDeprecatedCheckBox)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(globalOptionsPanelLayout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(warningText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(unknownAsTypeCheckBox)
+                .addGap(18, 18, 18))
+        );
 
         annotationsLabel.setLabelFor(annotationsTable);
         Mnemonics.setLocalizedText(annotationsLabel, NbBundle.getMessage(PhpAnnotationsPanel.class, "PhpAnnotationsPanel.annotationsLabel.text")); // NOI18N
@@ -291,14 +330,9 @@ public class PhpAnnotationsPanel extends JPanel {
 
         Mnemonics.setLocalizedText(infoLabel, NbBundle.getMessage(PhpAnnotationsPanel.class, "PhpAnnotationsPanel.infoLabel.text")); // NOI18N
 
-        Mnemonics.setLocalizedText(warningLabel, NbBundle.getMessage(PhpAnnotationsPanel.class, "PhpAnnotationsPanel.warningLabel.text")); // NOI18N
-
-        Mnemonics.setLocalizedText(warningText, NbBundle.getMessage(PhpAnnotationsPanel.class, "PhpAnnotationsPanel.warningText.text")); // NOI18N
-
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
+        layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(annotationsScrollPane, GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                 .addPreferredGap(ComponentPlacement.RELATED)
@@ -310,33 +344,17 @@ public class PhpAnnotationsPanel extends JPanel {
                 .addContainerGap()
                 .addComponent(infoLabel)
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(annotationsLabel)
-                    .addComponent(resolveDeprecatedCheckBox)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(21, 21, 21)
-                        .addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(warningText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                    .addComponent(unknownAsTypeCheckBox))
-                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+            .addComponent(annotationsLabel)
+            .addComponent(globalOptionsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {addButton, deleteButton, editButton});
 
-        layout.setVerticalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
+        layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(resolveDeprecatedCheckBox)
-                .addGap(3, 3, 3)
-                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(warningText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(unknownAsTypeCheckBox)
-                .addGap(18, 18, 18)
+                .addComponent(globalOptionsPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
                 .addComponent(annotationsLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
@@ -361,6 +379,7 @@ public class PhpAnnotationsPanel extends JPanel {
     private JTable annotationsTable;
     private JButton deleteButton;
     private JButton editButton;
+    private JPanel globalOptionsPanel;
     private JLabel infoLabel;
     private JLabel noteLabel;
     private JCheckBox resolveDeprecatedCheckBox;
