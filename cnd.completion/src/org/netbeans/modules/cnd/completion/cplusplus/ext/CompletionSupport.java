@@ -612,14 +612,14 @@ public final class CompletionSupport implements DocumentListener {
                 if (CsmBaseUtilities.isPointer(typ1)) {
                     // (pointer + int) case
                     if (!CsmBaseUtilities.isPointer(typ2)) {
-                        CsmClassifier cls2 = CsmBaseUtilities.getClassifier(typ2, ctx.getContextScope(), typ2.getContainingFile(), typ2.getStartOffset(), true);
+                        CsmClassifier cls2 = CsmBaseUtilities.getClassifier(typ2, ctx.getContextScope(), ctx.getContextFile(), ctx.getEndOffset(), true);
                         if (cls2 != null && CsmCompletion.isPrimitiveClass(cls2)) {
                             return typ1;
                         }
                     }
                 } else if (CsmBaseUtilities.isPointer(typ2)) {
                     // (int + pointer) case
-                    CsmClassifier cls1 = CsmBaseUtilities.getClassifier(typ1, ctx.getContextScope(), typ1.getContainingFile(), typ1.getStartOffset(), true);
+                    CsmClassifier cls1 = CsmBaseUtilities.getClassifier(typ1, ctx.getContextScope(), ctx.getContextFile(), ctx.getEndOffset(), true);
                     if (cls1 != null && CsmCompletion.isPrimitiveClass(cls1)) {
                         return typ2;
                     }
@@ -634,14 +634,14 @@ public final class CompletionSupport implements DocumentListener {
                         return CsmCompletion.INT_TYPE;
                     } else {
                         // (pointer - int) case
-                        CsmClassifier cls2 = CsmBaseUtilities.getClassifier(typ2, ctx.getContextScope(), typ2.getContainingFile(), typ2.getStartOffset(), true);
+                        CsmClassifier cls2 = CsmBaseUtilities.getClassifier(typ2, ctx.getContextScope(), ctx.getContextFile(), ctx.getEndOffset(), true);
                         if (cls2 != null && CsmCompletion.isPrimitiveClass(cls2)) {
                             return typ1;
                         }
                     }
                 } else if (CsmBaseUtilities.isPointer(typ2)) {
                     // (int - pointer) case. it is prohibited, but let's treat it as (pointer - int).
-                    CsmClassifier cls1 = CsmBaseUtilities.getClassifier(typ1, ctx.getContextScope(), typ1.getContainingFile(), typ1.getStartOffset(), true);
+                    CsmClassifier cls1 = CsmBaseUtilities.getClassifier(typ1, ctx.getContextScope(), ctx.getContextFile(), ctx.getEndOffset(), true);
                     if (cls1 != null && CsmCompletion.isPrimitiveClass(cls1)) {
                         return typ2;
                     }
