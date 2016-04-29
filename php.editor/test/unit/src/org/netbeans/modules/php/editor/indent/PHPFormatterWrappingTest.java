@@ -761,36 +761,42 @@ public class PHPFormatterWrappingTest extends PHPFormatterTestBase {
     public void testWrapGroupUseList_01() throws Exception {
         HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
         options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_NEVER);
+        options.put(FmtOptions.WRAP_GROUP_USE_BRACES, false);
         reformatFileContents("testfiles/formatting/wrapping/groupUseList01.php", options);
     }
 
     public void testWrapGroupUseList_02() throws Exception {
         HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
         options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        options.put(FmtOptions.WRAP_GROUP_USE_BRACES, false);
         reformatFileContents("testfiles/formatting/wrapping/groupUseList02.php", options);
     }
 
     public void testWrapGroupUseList_03() throws Exception {
         HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
         options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        options.put(FmtOptions.WRAP_GROUP_USE_BRACES, false);
         reformatFileContents("testfiles/formatting/wrapping/groupUseList03.php", options);
     }
 
     public void testWrapGroupUseListWithComments_01() throws Exception {
         HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
         options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_NEVER);
+        options.put(FmtOptions.WRAP_GROUP_USE_BRACES, false);
         reformatFileContents("testfiles/formatting/wrapping/groupUseListWithComments01.php", options);
     }
 
     public void testWrapGroupUseListWithComments_02() throws Exception {
         HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
         options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        options.put(FmtOptions.WRAP_GROUP_USE_BRACES, false);
         reformatFileContents("testfiles/formatting/wrapping/groupUseListWithComments02.php", options);
     }
 
     public void testWrapGroupUseListWithComments_03() throws Exception {
         HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
         options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        options.put(FmtOptions.WRAP_GROUP_USE_BRACES, false);
         reformatFileContents("testfiles/formatting/wrapping/groupUseListWithComments03.php", options);
     }
 

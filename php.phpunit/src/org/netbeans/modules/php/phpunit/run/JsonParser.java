@@ -66,6 +66,8 @@ public final class JsonParser {
     private final JSONParser parser = new JSONParser();
     private final TestSessionVo actualSession;
     private final TestSuiteVo noSuite;
+    // for error reporting
+    private final StringBuilder allData = new StringBuilder();
 
     private TestSuiteVo actualSuite = null;
     private TestCaseVo actualTest = null;
@@ -80,6 +82,7 @@ public final class JsonParser {
     }
 
     public boolean parse(String input) {
+        assert addData(input);
         if (!actualSession.isStarted()) {
             actualSession.setStarted(true);
             handler.onSessionStart(actualSession);
@@ -134,7 +137,7 @@ public final class JsonParser {
             LOGGER.log(Level.INFO, input, ex);
             return false;
         }
-        assert data != null : input;
+        assert data != null : input + dumpAllData();
         String event = (String) data.get("event"); // NOI18N
         switch (event) {
             case "suiteStart": // NOI18N
@@ -148,14 +151,14 @@ public final class JsonParser {
                 testFinish(data);
                 break;
             default:
-                assert false : "Unknown event: " + event + " [" + input + "]";
+                assert false : "Unknown event: " + event + " [" + input + "]" + dumpAllData();
         }
         return true;
     }
 
     private void suiteStart(JSONObject data) {
         String suiteName = (String) data.get("suite"); // NOI18N
-        assert suiteName != null : data;
+        assert suiteName != null : data + dumpAllData();
         if (StringUtils.hasText(suiteName)) {
             actualSuite = new TestSuiteVo(suiteName);
             actualSession.addTestSuite(actualSuite);
@@ -173,8 +176,8 @@ public final class JsonParser {
     }
 
     private void testStart(JSONObject data) {
-        assert actualSuite != null : data;
-        assert actualTest == null : data;
+        assert actualSuite != null : data  + dumpAllData();
+        assert actualTest == null : data  + dumpAllData();
         String suite = (String) data.get("suite"); // NOI18N
         switch (suite) {
             case "": // NOI18N
@@ -185,10 +188,10 @@ public final class JsonParser {
                 }
             break;
             default:
-                assert actualSuite.getName().equals(suite) : actualSuite + " != " + data;
+                assert actualSuite.getName().equals(suite) : actualSuite + " != " + data + dumpAllData();
         }
         String testName = (String) data.get("test"); // NOI18N
-        assert testName != null : data;
+        assert testName != null : data + dumpAllData();
         actualTest = new TestCaseVo(suite, extractTestName(testName));
         actualSuite.addTestCase(actualTest);
         if (!isActualNoSuite()) {
@@ -197,28 +200,28 @@ public final class JsonParser {
     }
 
     private void testFinish(JSONObject data) {
-        assert actualTest != null : data;
+        assert actualTest != null : data + dumpAllData();
         String suite = (String) data.get("suite"); // NOI18N
         switch (suite) {
             case "": // NOI18N
-                assert isActualNoSuite() : actualSuite;
+                assert isActualNoSuite() : actualSuite + dumpAllData();
             break;
             default:
-                assert actualSuite.getName().equals(suite) : actualSuite + " != " + data;
+                assert actualSuite.getName().equals(suite) : actualSuite + " != " + dumpAllData();
         }
         String testName = (String) data.get("test"); // NOI18N
-        assert testName != null : data;
-        assert actualTest.getName().equals(extractTestName(testName)) : data + " != " + actualTest;
+        assert testName != null : data + dumpAllData();
+        assert actualTest.getName().equals(extractTestName(testName)) : data + " != " + actualTest + dumpAllData();
         Number time = (Number) data.get("time"); // NOI18N
         if (time instanceof Double) {
             actualTest.setTime((long) (time.doubleValue() * 1000));
         } else {
-            assert time instanceof Long : time.getClass().getName() + " [" + data + "]";
+            assert time instanceof Long : time.getClass().getName() + " [" + data + "]" + dumpAllData();
             actualTest.setTime(time.longValue() * 1000);
         }
         String message = (String) data.get("message"); // NOI18N
         String status = (String) data.get("status"); // NOI18N
-        assert status != null : data;
+        assert status != null : data + dumpAllData();
         switch (status) {
             case "pass": // NOI18N
                 actualTest.setStatus(TestCase.Status.PASSED);
@@ -243,7 +246,7 @@ public final class JsonParser {
                 actualTest.setStatus(testStatus);
                 break;
             default:
-                assert false : "Unknown status: " + status + " [" + data + "]";
+                assert false : "Unknown status: " + status + " [" + data + "]" + dumpAllData();
         }
         if (message != null) {
             actualTest.addStacktrace(message);
@@ -254,7 +257,7 @@ public final class JsonParser {
             for (Object object : trace) {
                 JSONObject traceData = (JSONObject) object;
                 String file = (String) traceData.get("file"); // NOI18N
-                assert file != null : traceData + " [" + data + "]";
+                assert file != null : traceData + " [" + data + "]" + dumpAllData();
                 Long line = (Long) traceData.get("line"); // NOI18N
                 actualTest.addStacktrace(file + ":" + line); // NOI18N
                 if (first) {
@@ -284,6 +287,15 @@ public final class JsonParser {
 
     private boolean isActualNoSuite() {
         return noSuite == actualSuite;
+    }
+
+    private boolean addData(String data) {
+        allData.append(data);
+        return true;
+    }
+
+    private String dumpAllData() {
+        return " ((:" + allData.toString() + ":))"; // NOI18N
     }
 
     //~ Inner classes

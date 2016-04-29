@@ -2,9 +2,14 @@
 
 namespace GroupUse;
 
-use My\Full\{Classname as Another};
+use My\Full\{
+    Classname as Another
+};
 // this is the same as use My\Full\NSname1 as NSname1
-use My\Full\{NSname1, NSname2};
+use My\Full\{
+    NSname1,
+    NSname2
+};
 // importing a global class
 use \ArrayObject;
 

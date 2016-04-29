@@ -371,7 +371,7 @@ public final class FmtOptions {
 
             {GROUP_ALIGNMENT_ARRAY_INIT, FALSE},
             {GROUP_ALIGNMENT_ASSIGNMENT, FALSE},
-            {WRAP_GROUP_USE_LIST, WRAP_NEVER},
+            {WRAP_GROUP_USE_LIST, WRAP_ALWAYS},
             {WRAP_EXTENDS_IMPLEMENTS_KEYWORD, WRAP_NEVER}, //NOI18N
             {WRAP_EXTENDS_IMPLEMENTS_LIST, WRAP_NEVER}, //NOI18N
             {WRAP_METHOD_PARAMS, WRAP_NEVER}, //NOI18N
@@ -387,7 +387,7 @@ public final class FmtOptions {
             {WRAP_TERNARY_OPS, WRAP_NEVER},
             {WRAP_ASSIGN_OPS, WRAP_NEVER},
             {WRAP_BLOCK_BRACES, TRUE},
-            {WRAP_GROUP_USE_BRACES, FALSE},
+            {WRAP_GROUP_USE_BRACES, TRUE},
             {WRAP_STATEMENTS_ON_THE_LINE, TRUE},
             {WRAP_AFTER_BIN_OPS, FALSE},
             {WRAP_AFTER_ASSIGN_OPS, FALSE},
