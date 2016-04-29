@@ -52,7 +52,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import javax.swing.ImageIcon;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.web.common.ui.api.FileReferenceCompletion;
 import static org.netbeans.modules.web.common.ui.api.FileReferenceCompletion.getIcon;
 import org.openide.filesystems.FileObject;
