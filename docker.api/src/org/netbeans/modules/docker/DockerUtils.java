@@ -59,6 +59,10 @@ public final class DockerUtils {
 
     public static String getShortId(DockerEntity identifiable) {
         String id = identifiable.getId();
+        int index = id.indexOf(':'); // NOI18N
+        if (index >= 0) {
+            id = id.substring(index + 1);
+        }
         if (id.length() > 12) {
             return id.substring(0, 12);
         }
