@@ -50,6 +50,7 @@ import org.netbeans.modules.cloud.oracle.ui.OracleInstanceNode;
 import org.netbeans.modules.cloud.oracle.ui.OracleWizardComponent;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  * Representation of single oracle cloud account under "Cloud" node.
@@ -67,9 +68,10 @@ public class OracleServerInstanceImplementation implements ServerInstanceImpleme
         return ai.getName();
     }
 
+    @NbBundle.Messages("LBL_ServerDisplayName=Oracle JCS with SaaS Extension")
     @Override
     public String getServerDisplayName() {
-        return "Oracle Cloud";
+        return Bundle.LBL_ServerDisplayName();
     }
 
     @Override
