@@ -105,6 +105,7 @@ import javax.swing.undo.UndoableEdit;
 import org.netbeans.api.editor.caret.CaretInfo;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
+import org.netbeans.api.editor.EditorUtilities;
 import org.netbeans.api.editor.caret.EditorCaret;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -1171,11 +1172,7 @@ public class BaseKit extends DefaultEditorKit {
                                         boolean alreadyBeeped = false;
                                         DocumentUtilities.setTypingModification(doc, true);
                                         try {
-                                            // Store current state of caret(s) for undo
-                                            UndoableEdit caretUndoEdit = CaretUndo.createCaretUndoEdit(caret, doc, false);
-                                            if (caretUndoEdit != null) {
-                                                doc.addUndoableEdit(caretUndoEdit);
-                                            }
+                                            EditorUtilities.addCaretUndoableEdit(doc, caret);
                                         for (CaretInfo c : carets) {
                                             if (c.isSelection()) { // valid selection
                                                 int p0 = Math.min(c.getDot(), c.getMark());
@@ -1232,11 +1229,7 @@ public class BaseKit extends DefaultEditorKit {
                                                 }
                                             }
                                         }
-                                            // Store current state of caret(s) for redo
-                                            UndoableEdit caretRedoEdit = CaretUndo.createCaretUndoEdit(caret, doc, true);
-                                            if (caretRedoEdit != null) {
-                                                doc.addUndoableEdit(caretRedoEdit);
-                                            }
+                                            EditorUtilities.addCaretUndoableEdit(doc, caret);
 
                                         } finally {
                                             DocumentUtilities.setTypingModification(doc, false);
@@ -1263,11 +1256,7 @@ public class BaseKit extends DefaultEditorKit {
                                 doc.runAtomicAsUser(new Runnable() {
                                     public void run() {
                                         boolean alreadyBeeped = false;
-                                        // Store current state of caret(s) for undo
-                                        UndoableEdit caretUndoEdit = CaretUndo.createCaretUndoEdit(caret, doc, false);
-                                        if (caretUndoEdit != null) {
-                                            doc.addUndoableEdit(caretUndoEdit);
-                                        }
+                                        EditorUtilities.addCaretUndoableEdit(doc, caret);
                                         if (target.getCaret().isSelectionVisible() && caret.getDot() != caret.getMark()) { // valid selection
                                             EditorUI editorUI = Utilities.getEditorUI(target);
                                             Boolean overwriteMode = (Boolean) editorUI.getProperty(EditorUI.OVERWRITE_MODE_PROPERTY);
@@ -1297,11 +1286,7 @@ public class BaseKit extends DefaultEditorKit {
                                                 target.getToolkit().beep();
                                             }
                                         }
-                                        // Store current state of caret(s) for redo
-                                        UndoableEdit caretRedoEdit = CaretUndo.createCaretUndoEdit(caret, doc, true);
-                                        if (caretRedoEdit != null) {
-                                            doc.addUndoableEdit(caretRedoEdit);
-                                        }
+                                        EditorUtilities.addCaretUndoableEdit(doc, caret);
                                     }
                                 });
 
@@ -1482,11 +1467,7 @@ public class BaseKit extends DefaultEditorKit {
                                     public void moveCarets(CaretMoveContext context) {
                                         boolean beeped = false;
                                         DocumentUtilities.setTypingModification(doc, true);
-                                        // Store current state of caret(s) for undo
-                                        UndoableEdit caretUndoEdit = CaretUndo.createCaretUndoEdit(editorCaret, doc, false);
-                                        if (caretUndoEdit != null) {
-                                            doc.addUndoableEdit(caretUndoEdit);
-                                        }
+                                        EditorUtilities.addCaretUndoableEdit(doc, editorCaret);
                                         for (CaretInfo c : context.getOriginalSortedCarets()) {
                                             try {
                                                 int insertionOffset = computeInsertionOffset(c.getDot(), c.getMark());
@@ -1517,11 +1498,7 @@ public class BaseKit extends DefaultEditorKit {
                                                 }
                                             }
                                         }
-                                        // Store current state of caret(s) for redo
-                                        UndoableEdit caretRedoEdit = CaretUndo.createCaretUndoEdit(editorCaret, doc, true);
-                                        if (caretRedoEdit != null) {
-                                            doc.addUndoableEdit(caretRedoEdit);
-                                        }
+                                        EditorUtilities.addCaretUndoableEdit(doc, editorCaret);
                                     }
                                 });
                             }
@@ -2092,11 +2069,7 @@ public class BaseKit extends DefaultEditorKit {
                             public void run() {
                                     boolean alreadyBeeped = false;
                                     DocumentUtilities.setTypingModification(doc, true);
-                                    // Store current state of caret(s) for undo
-                                    UndoableEdit caretUndoEdit = CaretUndo.createCaretUndoEdit(caret, doc, false);
-                                    if (caretUndoEdit != null) {
-                                        doc.addUndoableEdit(caretUndoEdit);
-                                    }
+                                    EditorUtilities.addCaretUndoableEdit(doc, caret);
                                     try {
                                         for (CaretInfo c : carets) {
                                             if (c.isSelection()) {
@@ -2139,11 +2112,7 @@ public class BaseKit extends DefaultEditorKit {
                                                 }
                                             }
                                         }
-                                        // Store current state of caret(s) for redo
-                                        UndoableEdit caretRedoEdit = CaretUndo.createCaretUndoEdit(caret, doc, true);
-                                        if (caretRedoEdit != null) {
-                                            doc.addUndoableEdit(caretRedoEdit);
-                                        }
+                                        EditorUtilities.addCaretUndoableEdit(doc, caret);
 
                                     } finally {
                                         DocumentUtilities.setTypingModification(doc, false);
@@ -2164,11 +2133,7 @@ public class BaseKit extends DefaultEditorKit {
                     doc.runAtomicAsUser (new Runnable () {
                         public void run () {
                             DocumentUtilities.setTypingModification(doc, true);
-                            // Store current state of caret(s) for undo
-                            UndoableEdit caretUndoEdit = CaretUndo.createCaretUndoEdit(caret, doc, false);
-                            if (caretUndoEdit != null) {
-                                doc.addUndoableEdit(caretUndoEdit);
-                            }
+                            EditorUtilities.addCaretUndoableEdit(doc, caret);
                             try {
                                 List<Position> dotAndMarkPosPairs = new ArrayList<>(2);
                                 dotAndMarkPosPairs.add(doc.createPosition(caret.getDot()));
@@ -2183,11 +2148,7 @@ public class BaseKit extends DefaultEditorKit {
                                 } else {
                                     doc.remove(Math.min(dot, mark), Math.abs(dot - mark));
                                 }
-                                // Store current state of caret(s) for redo
-                                UndoableEdit caretRedoEdit = CaretUndo.createCaretUndoEdit(caret, doc, true);
-                                if (caretRedoEdit != null) {
-                                    doc.addUndoableEdit(caretRedoEdit);
-                                }
+                                EditorUtilities.addCaretUndoableEdit(doc, caret);
                             } catch (BadLocationException e) {
                                 target.getToolkit().beep();
                             } finally {
@@ -2215,11 +2176,7 @@ public class BaseKit extends DefaultEditorKit {
                                 doc.runAtomicAsUser (new Runnable () {
                                     public void run () {
                                         DocumentUtilities.setTypingModification(doc, true);
-                                        // Store current state of caret(s) for undo
-                                        UndoableEdit caretUndoEdit = CaretUndo.createCaretUndoEdit(caret, doc, false);
-                                        if (caretUndoEdit != null) {
-                                            doc.addUndoableEdit(caretUndoEdit);
-                                        }
+                                        EditorUtilities.addCaretUndoableEdit(doc, caret);
                                         try {
                                             if (nextChar) { // remove next char
                                                 doc.remove(dot, 1);
@@ -2241,11 +2198,7 @@ public class BaseKit extends DefaultEditorKit {
                                         } finally {
                                             DocumentUtilities.setTypingModification(doc, false);
                                         }
-                                        // Store current state of caret(s) for redo
-                                        UndoableEdit caretRedoEdit = CaretUndo.createCaretUndoEdit(caret, doc, true);
-                                        if (caretRedoEdit != null) {
-                                            doc.addUndoableEdit(caretRedoEdit);
-                                        }
+                                        EditorUtilities.addCaretUndoableEdit(doc, caret);
                                     }
                                 });
 

@@ -43,9 +43,10 @@ package org.netbeans.modules.maven.indexer.api;
 
 import java.util.Collection;
 import org.apache.maven.artifact.Artifact;
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
+import org.netbeans.modules.maven.indexer.NexusRepositoryIndexerImpl;
+import org.netbeans.modules.maven.indexer.spi.impl.RepositoryIndexerImplementation;
 import org.openide.util.Lookup;
+import org.netbeans.modules.maven.indexer.spi.RepositoryIndexQueryProvider;
 
 /**
  *
@@ -55,7 +56,13 @@ public final class RepositoryIndexer {
 
     public static void indexRepo(RepositoryInfo repo) {
         assert repo != null;
-        findImplementation().indexRepo(repo);
+        RepositoryIndexerImplementation impl = findImplementation(repo);
+        if(impl != null) {
+            // fires 
+            impl.indexRepo(repo);
+        } else {
+            repo.fireIndexChange();
+        }
     }
     
     public static void updateIndexWithArtifacts(RepositoryInfo repo, Collection<Artifact> artifacts) {
@@ -63,7 +70,10 @@ public final class RepositoryIndexer {
         if (artifacts == null || artifacts.isEmpty()) {
             return;
         }
-        findImplementation().updateIndexWithArtifacts(repo, artifacts);
+        RepositoryIndexerImplementation impl = findImplementation(repo);
+        if(impl != null) {
+            impl.updateIndexWithArtifacts(repo, artifacts);
+        }
     }
 
     public static void deleteArtifactFromIndex(RepositoryInfo repo, Artifact artifact) {
@@ -71,11 +81,22 @@ public final class RepositoryIndexer {
         if (artifact == null) {
             return;
         }
-        findImplementation().deleteArtifactFromIndex(repo, artifact);
+        RepositoryIndexerImplementation impl = findImplementation(repo);
+        if(impl != null) {
+            impl.deleteArtifactFromIndex(repo, artifact);
+        }
     }
     
-    static @NonNull RepositoryIndexerImplementation findImplementation() {
-        return Lookup.getDefault().lookup(RepositoryIndexerImplementation.class);
+    static RepositoryIndexerImplementation findImplementation(RepositoryInfo repo) {
+        Lookup l = Lookup.getDefault();
+        Collection<? extends RepositoryIndexQueryProvider> queryProviders = l.lookupAll(RepositoryIndexQueryProvider.class);
+        for (RepositoryIndexQueryProvider queryProvider : queryProviders) {
+            if(!(queryProvider instanceof NexusRepositoryIndexerImpl) && queryProvider.handlesRepository(repo)) {
+                // skip if 
+                return null;
+            }
+        }
+        return l.lookup(RepositoryIndexerImplementation.class);
     }
     
 }

@@ -70,7 +70,7 @@ final class CaretItem implements Comparable {
     private static final int UPDATE_CARET_BOUNDS = 4;
 
     private static final int CARET_PAINTED = 8;
-    
+
     private final EditorCaret editorCaret;
     
     private Position dotPos;

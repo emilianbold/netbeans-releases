@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,19 +37,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.indexer.spi;
+package org.netbeans.api.editor.document;
 
-import java.util.List;
-import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
+import javax.swing.undo.UndoableEdit;
 
 /**
- * Query to find artifacts by MD5, SHA1. 
- * @author Milos Kleint
+ * Document that allows adding of a custom undoable edit during atomic transaction.
+ * <br/>
+ * To obtain CustomUndoDocument instance the {@link LineDocumentUtils#as(javax.swing.text.Document, java.lang.Class) }
+ * or {@link LineDocumentUtils#asRequired(javax.swing.text.Document, java.lang.Class) } may be used:
+ * <code>
+ * <pre>
+ *   Document doc = ...
+ *   CustomUndoDocument customUndoDoc = LineDocumentUtils.asRequired(doc, CustomUndoDocument.class);
+ * </pre>
+ * </code>
+ *
+ * @author Miloslav Metelka
+ * @since 1.8
  */
-public interface ChecksumQueries {
-    ResultImplementation<NBVersionInfo> findBySHA1(String sha1, List<RepositoryInfo> repos);
+public interface CustomUndoDocument {
+    
+    /**
+     * Add a custom undoable edit to the undoable edits being created
+     * during an atomic transaction over the document.
+     * <br/>
+     * For example editor caret may add an undo edit allowing to restore caret(s) positions
+     * before (or after) modifications during the atomic lock.
+     *
+     * @param edit non-null undoable edit.
+     * @throws IllegalStateException if the document is not under atomic lock.
+     * @since 1.8
+     */
+    public void addUndoableEdit(UndoableEdit edit);
+    
 }

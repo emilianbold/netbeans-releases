@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,31 +37,58 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.maven.indexer.spi;
 
-import java.util.Collection;
-import org.apache.maven.artifact.Artifact;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
+import java.util.List;
 
 /**
- * Implementation of repository indexer (repository manager). Apart from basic
- * indexing features also serves as provider of various index queries.
- * There is one implementation based on apache indexer
+ * Implement to provide a maven index query result.
  * 
- * @author Milos Kleint
+ * @author Tomas Stupka
+ * @param <T>
+ * @since 2.38
+ * @see org.netbeans.modules.maven.indexer.api.RepositoryQueries.Result
  */
-public interface RepositoryIndexerImplementation {
+public interface ResultImplementation<T> {
+    /**
+     * Returns true is one or more indexes were skipped, e.g. because the indexing was taking place.
+     * 
+     * @return <code>true</code> if the result is partial, otherwise <code>false</code>
+     * @since 2.38
+     */
+    public boolean isPartial();
     
     /**
-     * Index local repository or retrieve remote prepopulated index for local use.
-     * @param repo
+     * Waits for currently unaccessible indexes to finish, not to be called in AWT thread.
+     * 
+     * @since 2.38
      */
-    void indexRepo(RepositoryInfo repo);
+    public void waitForSkipped();
     
-    void updateIndexWithArtifacts(RepositoryInfo repo, Collection<Artifact> artifacts);
-
-    void deleteArtifactFromIndex(RepositoryInfo repo, Artifact artifact);
-
+    /**
+     * Returns the results.
+     * 
+     * @return a list of results
+     * @since 2.38
+     */
+    public List<T> getResults();
+    
+    /**
+     * Total number of hits.
+     * 
+     * @return the total number of hits
+     * @since 2.38
+     */
+    public int getTotalResultCount();
+    
+    /**
+     * In some cases not entirely accurate number of processed and returned hits, 
+     * typically should be less or equal to {@link #getReturnedResultCount()}.
+     * 
+     * @return the returned result count
+     * @since 2.38
+     */
+    public int getReturnedResultCount();
 }
