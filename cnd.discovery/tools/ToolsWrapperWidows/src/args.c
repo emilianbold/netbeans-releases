@@ -73,6 +73,7 @@ int main(int argc, char**argv) {
         strcmp(key, "icc") == 0 || 
         strcmp(key, "gcc") == 0) {
         tool = getenv("__CND_C_TOOL__");
+        tool_path_variable = "__CND_C_TOOL__";
     } else if (strcmp(key, "CC") == 0 ||
                strcmp(key, "c++") == 0 ||
                strcmp(key, "clang++") == 0 ||
@@ -80,6 +81,7 @@ int main(int argc, char**argv) {
                strcmp(key, "cl") == 0 ||
                strcmp(key, "g++") == 0) {
         tool = getenv("__CND_CPP_TOOL__");
+        tool_path_variable = "__CND_CPP_TOOL__";
     } else {
         printf("Unsupported %s compiler", key);
         return -1;
