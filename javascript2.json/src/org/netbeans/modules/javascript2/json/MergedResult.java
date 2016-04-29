@@ -41,23 +41,31 @@
  */
 package org.netbeans.modules.javascript2.json;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.Arrays;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.javascript2.json.spi.JsonOptionsQueryImplementation;
 import org.openide.util.Parameters;
+import org.openide.util.WeakListeners;
 
 /**
  * Merges {@link JsonOptionsQueryImplementation.Result}.
  * @author Tomas Zezula
  */
-final class MergedResult implements JsonOptionsQueryImplementation.Result {
+final class MergedResult implements JsonOptionsQueryImplementation.Result, PropertyChangeListener {
 
-    private JsonOptionsQueryImplementation.Result[] delegates;
+    private final JsonOptionsQueryImplementation.Result[] delegates;
+    private final PropertyChangeSupport listeners;
 
     MergedResult(@NonNull final JsonOptionsQueryImplementation.Result... delegates) {
         Parameters.notNull("delegates", delegates); //NOI18N
         this.delegates = Arrays.copyOf(delegates, delegates.length);
+        this.listeners = new PropertyChangeSupport(this);
+        Arrays.stream(this.delegates)
+                .forEach((r) -> r.addPropertyChangeListener(WeakListeners.propertyChange(this, r)));
     }
 
     @CheckForNull
@@ -72,4 +80,18 @@ final class MergedResult implements JsonOptionsQueryImplementation.Result {
         return null;
     }
 
+    @Override
+    public void addPropertyChangeListener(@NonNull final PropertyChangeListener listener) {
+        listeners.addPropertyChangeListener(listener);
+    }
+
+    @Override
+    public void removePropertyChangeListener(@NonNull final PropertyChangeListener listener) {
+        listeners.removePropertyChangeListener(listener);
+    }
+
+    @Override
+    public void propertyChange(@NonNull final PropertyChangeEvent evt) {
+        this.listeners.firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+    }
 }

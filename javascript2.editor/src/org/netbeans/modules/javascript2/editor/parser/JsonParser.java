@@ -37,6 +37,10 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.netbeans.api.annotations.common.NonNull;
@@ -44,16 +48,28 @@ import org.netbeans.modules.javascript2.json.api.JsonOptionsQuery;
 import org.netbeans.modules.javascript2.json.parser.JsonLexer;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.spi.lexer.MutableTextInput;
+import org.netbeans.spi.lexer.TokenHierarchyControl;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Pair;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Petr Hejl
  */
-public class JsonParser extends SanitizingParser<JsonParserResult> {
+public class JsonParser extends SanitizingParser<JsonParserResult> implements PropertyChangeListener {
+
+    private static final RequestProcessor LEXER_RP = new RequestProcessor(JsonParser.class);
+    private final AtomicReference<Pair<FileObject,JsonOptionsQuery.Result>> options;
 
     public JsonParser() {
         super(JsTokenId.jsonLanguage());
+        this.options = new AtomicReference<>();
     }
 
     @Override
@@ -66,7 +82,21 @@ public class JsonParser extends SanitizingParser<JsonParserResult> {
         final Snapshot snapshot = ctx.getSnapshot();
         final String text = ctx.getSource();
         final FileObject fo = snapshot.getSource().getFileObject();
-        final boolean allowComments = fo != null && JsonOptionsQuery.getOptions(fo).isCommentSupported();
+        final boolean allowComments;
+        if (fo != null) {
+            JsonOptionsQuery.Result opts = Optional.ofNullable(options.get())
+                    .map((p) -> p.second())
+                    .orElse(null);
+            if (opts == null) {
+                opts = JsonOptionsQuery.getOptions(fo);
+                if (options.compareAndSet(null, Pair.<FileObject,JsonOptionsQuery.Result>of(fo, opts))) {
+                    opts.addPropertyChangeListener(WeakListeners.propertyChange(this, opts));
+                }
+            }
+            allowComments = opts.isCommentSupported();
+        } else {
+            allowComments = false;
+        }
         final JsonLexer lex = new JsonLexer(new ANTLRInputStream(text), allowComments);
         lex.removeErrorListeners(); //Remove default console log listener
 //        lex.addErrorListener(errorManager);
@@ -94,6 +124,36 @@ public class JsonParser extends SanitizingParser<JsonParserResult> {
     @Override
     protected Sanitize getSanitizeStrategy() {
         return Sanitize.NEVER;
+    }
+
+    @Override
+    public void propertyChange(@NonNull final PropertyChangeEvent evt) {
+        if (JsonOptionsQuery.Result.PROP_COMMENT_SUPPORTED.equals(evt.getPropertyName())) {
+            //Refresh parser
+            fireChange();
+            //Refresh lexer.
+            //Is there any better way?
+            Optional.ofNullable(options.get())
+                    .map((p) -> p.first())
+                    .map((fo) -> {
+                        try {
+                            return DataObject.find(fo).getLookup().lookup(EditorCookie.class);
+                        } catch (DataObjectNotFoundException e)  {
+                            return null;
+                        }
+                    })
+                    .map((ec) -> ec.getDocument())
+                    .ifPresent((doc) -> {
+                        Optional.ofNullable((MutableTextInput) doc.getProperty(MutableTextInput.class))
+                                .ifPresent((mti) -> {
+                                    final TokenHierarchyControl control = mti.tokenHierarchyControl();
+                                    //For sure render in worker to prevent deadlocks
+                                    LEXER_RP.execute(()->doc.render(()->{control.rebuild();}));
+                                });
+                    });
+            //Refresh tasklist
+            //Todo
+        }
     }
 
 }

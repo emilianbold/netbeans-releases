@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.javascript2.json.api;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Deque;
@@ -49,6 +51,7 @@ import org.netbeans.modules.javascript2.json.spi.JsonOptionsQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -74,11 +77,19 @@ public class JsonOptionsQuery {
     }
 
     public static final class Result {
+
+        public static final String PROP_COMMENT_SUPPORTED = "commentSupported"; //NOI18N
         private final Collection<? extends JsonOptionsQueryImplementation.Result> delegates;
+        private final PropertyChangeSupport listeners;
+        private final PropertyChangeListener pcl;
 
         private Result(@NonNull final Collection<? extends JsonOptionsQueryImplementation.Result> delegates) {
             Parameters.notNull("delegates", delegates); //NOI18N
             this.delegates = delegates;
+            this.listeners = new PropertyChangeSupport(this);
+            this.pcl = (evt) -> listeners.firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+            this.delegates
+                    .forEach((r) -> r.addPropertyChangeListener(WeakListeners.propertyChange(pcl, r)));
         }
 
         public boolean isCommentSupported() {
@@ -89,6 +100,16 @@ public class JsonOptionsQuery {
                 }
             }
             return false;
+        }
+
+        public void addPropertyChangeListener(@NonNull final PropertyChangeListener listener) {
+            Parameters.notNull("listener", listener);   //NOI18N
+            listeners.addPropertyChangeListener(listener);
+        }
+
+        public void removePropertyChangeListener(@NonNull final PropertyChangeListener listener) {
+            Parameters.notNull("listener", listener);   //NOI18N
+            listeners.removePropertyChangeListener(listener);
         }
     }
 }

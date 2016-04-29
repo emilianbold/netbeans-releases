@@ -41,11 +41,13 @@
  */
 package org.netbeans.modules.javascript2.json;
 
+import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.javascript2.json.spi.JsonOptionsQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
@@ -95,6 +97,16 @@ public class GlobalJsonOptionsQueryImpl implements JsonOptionsQueryImplementatio
         @CheckForNull
         public Boolean isCommentSupported() {
             return commentSupported;
+        }
+
+        @Override
+        public void addPropertyChangeListener(@NonNull final PropertyChangeListener listener) {
+            //Immutable
+        }
+
+        @Override
+        public void removePropertyChangeListener(@NonNull final PropertyChangeListener listener) {
+            //Immutable
         }
     }
 }
