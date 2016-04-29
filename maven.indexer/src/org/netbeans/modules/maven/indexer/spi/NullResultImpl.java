@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,19 +37,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.maven.indexer.spi;
 
+import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 
 /**
- * Query to find artifacts by MD5, SHA1. 
- * @author Milos Kleint
+ * Convenience class.
+ * 
+ * @author Tomas Stupka
+ * @param <T>
  */
-public interface ChecksumQueries {
-    ResultImplementation<NBVersionInfo> findBySHA1(String sha1, List<RepositoryInfo> repos);
+public final class NullResultImpl<T> implements ResultImplementation<T> {        
+
+    @Override
+    public boolean isPartial() {
+        return false;
+    }
+
+    @Override
+    public void waitForSkipped() {
+
+    }
+    
+    @Override
+    public List<T> getResults() {            
+        return Collections.EMPTY_LIST;
+    }
+
+    @Override
+    public int getTotalResultCount() {
+        return 0;
+    }
+    
+    @Override
+    public int getReturnedResultCount() {
+        return 0;
+    }        
 }

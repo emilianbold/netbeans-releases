@@ -49,6 +49,7 @@ import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.openide.modules.api.PlacesTestUtils;
+import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.test.TestFileUtils;
 
@@ -75,7 +76,7 @@ abstract class NexusTestBase extends NbTestCase {
         artifactInstaller = embedder.lookupComponent(ArtifactInstaller.class);
         info = new RepositoryInfo("test", "Test", repo.getAbsolutePath(), null);
         RepositoryPreferences.getInstance().addOrModifyRepositoryInfo(info);
-        nrii = new NexusRepositoryIndexerImpl();
+        nrii = Lookup.getDefault().lookup(NexusRepositoryIndexerImpl.class);
     }
 
     @Override protected Level logLevel() {

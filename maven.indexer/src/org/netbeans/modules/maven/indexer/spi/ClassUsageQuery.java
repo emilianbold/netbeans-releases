@@ -59,6 +59,6 @@ public interface ClassUsageQuery {
      * @param repos repositories of this type to search in
      * @return result object with a list of usages
      */
-    RepositoryQueries.Result<RepositoryQueries.ClassUsage> findClassUsages(String className, List<RepositoryInfo> repos);
+    ResultImplementation<RepositoryQueries.ClassUsage> findClassUsages(String className, List<RepositoryInfo> repos);
 
 }

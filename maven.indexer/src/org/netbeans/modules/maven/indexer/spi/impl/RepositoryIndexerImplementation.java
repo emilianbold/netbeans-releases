@@ -1,3 +1,5 @@
+package org.netbeans.modules.maven.indexer.spi.impl;
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -39,17 +41,32 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.indexer.spi;
 
-import java.util.List;
-import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
+
+import java.util.Collection;
+import org.apache.maven.artifact.Artifact;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 
 /**
- * Query to find artifacts by MD5, SHA1. 
+ * 
+ * Used internally.
+ * 
+ * Implementation of repository indexer (repository manager). Apart from basic
+ * indexing features also serves as provider of various index queries.
+ * There is one implementation based on apache indexer
+ * 
  * @author Milos Kleint
  */
-public interface ChecksumQueries {
-    ResultImplementation<NBVersionInfo> findBySHA1(String sha1, List<RepositoryInfo> repos);
+public interface RepositoryIndexerImplementation {
+    
+    /**
+     * Index local repository or retrieve remote prepopulated index for local use.
+     * @param repo
+     */
+    void indexRepo(RepositoryInfo repo);
+    
+    void updateIndexWithArtifacts(RepositoryInfo repo, Collection<Artifact> artifacts);
+
+    void deleteArtifactFromIndex(RepositoryInfo repo, Artifact artifact);
+
 }

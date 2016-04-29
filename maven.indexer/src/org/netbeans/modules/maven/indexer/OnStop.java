@@ -44,7 +44,7 @@ package org.netbeans.modules.maven.indexer;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
+import org.netbeans.modules.maven.indexer.spi.impl.RepositoryIndexerImplementation;
 import org.openide.util.Lookup;
 
 @org.openide.modules.OnStop

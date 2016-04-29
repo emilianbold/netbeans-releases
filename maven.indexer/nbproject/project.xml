@@ -168,6 +168,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.maven.refactoring</friend>
                 <friend>org.netbeans.modules.maven.repository</friend>
                 <friend>org.netbeans.modules.maven.search</friend>
+                <friend>ro.emilianbold.modules.maven.search.remote</friend>
                 <package>org.apache.lucene</package>
                 <package>org.apache.lucene.analysis</package>
                 <package>org.apache.lucene.analysis.standard</package>
@@ -185,8 +186,7 @@ made subject to such option by the copyright holder.
                 <package>org.apache.lucene.util</package>
                 <package>org.apache.lucene.util.cache</package>
                 <package>org.netbeans.modules.maven.indexer.api</package>
-                <package>org.netbeans.modules.maven.indexer.api.ui</package>
-                <package>org.netbeans.modules.maven.indexer.spi.ui</package>
+                <package>org.netbeans.modules.maven.indexer.spi</package>
                 <package>org.netbeans.modules.maven.indexer.spi.impl</package>
             </friend-packages>
             <class-path-extension>

@@ -39,15 +39,15 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.indexer.spi;
+package org.netbeans.modules.maven.indexer.spi.impl;
 
-import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
+import org.netbeans.modules.maven.indexer.ResultImpl;
 
 /**
  * used internally by the repository indexing/searching engine(s)
  * @author mkleint
  */
 public interface Redo<T> {
-    void run(RepositoryQueries.Result<T> result);
+    void run(ResultImpl<T> result);
 }    
 
