@@ -1574,7 +1574,7 @@ public class FormatVisitor extends DefaultVisitor {
                     && lastIndex < ts.index()) {
                 if (ts.token().id() == PHPTokenId.PHP_CURLY_OPEN) {
                     formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_GROUP_USE_LEFT_BRACE, ts.offset()));
-                    formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.continualIndentSize));
+                    formatTokens.add(new FormatToken.IndentToken(ts.offset(), options.indentSize));
                 }
                 addFormatToken(formatTokens);
             }
@@ -1587,7 +1587,7 @@ public class FormatVisitor extends DefaultVisitor {
                     && ts.offset() < node.getEndOffset()
                     && lastIndex < ts.index()) {
                 if (ts.token().id() == PHPTokenId.PHP_CURLY_CLOSE) {
-                    formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.continualIndentSize));
+                    formatTokens.add(new FormatToken.IndentToken(ts.offset(), -1 * options.indentSize));
                     formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_GROUP_USE_RIGHT_BRACE, ts.offset()));
                 }
                 addFormatToken(formatTokens);

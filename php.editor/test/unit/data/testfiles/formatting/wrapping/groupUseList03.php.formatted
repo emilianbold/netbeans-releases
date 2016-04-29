@@ -3,11 +3,11 @@
 namespace GroupUse;
 
 use Classes\{ClassA, ClassB,
-        ClaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaassC};
+    ClaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaassC};
 use function Functions\{
-        functionA,
-        functioooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooonB,
-        functionC
+    functionA,
+    functioooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooonB,
+    functionC
 };
 use const Constants\{CONSTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANT_A,
-        CONSTANT_B, CONSTANT_C, CONSTANT_D};
+    CONSTANT_B, CONSTANT_C, CONSTANT_D};
