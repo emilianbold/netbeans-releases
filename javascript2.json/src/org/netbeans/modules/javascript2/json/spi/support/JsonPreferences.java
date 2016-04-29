@@ -45,6 +45,7 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.javascript2.json.JsonPreferencesAccessor;
 import org.openide.util.Parameters;
 
 /**
@@ -54,6 +55,9 @@ import org.openide.util.Parameters;
  */
 public final class JsonPreferences {
     private static final String PROP_JSON_COMMENTS = "json.comments";   //NOI18N
+    static {
+        JsonPreferencesAccessor.setInstance(new AccessorImpl());
+    }
 
     private final Project project;
 
@@ -66,7 +70,7 @@ public final class JsonPreferences {
      * @return the comments status
      */
     public boolean isCommentSupported() {
-        final Preferences prefs = ProjectUtils.getPreferences(project, JsonPreferences.class, true);
+        final Preferences prefs = getPreferences();
         return prefs.getBoolean(PROP_JSON_COMMENTS, false);
     }
 
@@ -75,12 +79,16 @@ public final class JsonPreferences {
      * @param supported the value to set
      */
     public void setCommentSupported(final boolean supported) {
-        final Preferences prefs = ProjectUtils.getPreferences(project, JsonPreferences.class, true);
+        final Preferences prefs = getPreferences();
         if (supported) {
             prefs.putBoolean(PROP_JSON_COMMENTS, supported);
         } else {
             prefs.remove(PROP_JSON_COMMENTS);
         }
+    }
+
+    private Preferences getPreferences() {
+        return ProjectUtils.getPreferences(project, JsonPreferences.class, true);
     }
 
     /**
@@ -92,5 +100,13 @@ public final class JsonPreferences {
     public static JsonPreferences forProject(@NonNull final Project project) {
         Parameters.notNull("project", project); //NOI18N
         return new JsonPreferences(project);
+    }
+
+    private static class AccessorImpl extends JsonPreferencesAccessor {
+        @NonNull
+        @Override
+        public Preferences getPreferences(JsonPreferences jsonPrefs) {
+            return jsonPrefs.getPreferences();
+        }
     }
 }

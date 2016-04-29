@@ -39,26 +39,44 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.json.spi;
+package org.netbeans.modules.javascript2.json;
 
-import java.beans.PropertyChangeListener;
-import org.netbeans.api.annotations.common.CheckForNull;
+import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.NonNull;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.javascript2.json.spi.support.JsonPreferences;
 
 /**
  *
  * @author Tomas Zezula
  */
-public interface JsonOptionsQueryImplementation {
-    @CheckForNull
-    Result getOptions(@NonNull FileObject file);
+public abstract class JsonPreferencesAccessor {
+    private static volatile JsonPreferencesAccessor instance;
 
-    public static interface Result {
-        String PROP_COMMENT_SUPPORTED = "commentSupported"; //NOI18N
-        @CheckForNull
-        Boolean isCommentSupported();
-        void addPropertyChangeListener(@NonNull PropertyChangeListener listener);
-        void removePropertyChangeListener(@NonNull PropertyChangeListener listener);
+    @NonNull
+    public static synchronized JsonPreferencesAccessor getInstance() {
+        if (instance == null) {
+            try {
+                Class.forName(JsonPreferences.class.getName(), true, JsonPreferencesAccessor.class.getClassLoader());
+            } catch (ClassNotFoundException ex) {
+                throw new RuntimeException(ex);
+            }
+            assert instance != null;
+        }
+        return instance;
     }
+
+    public static void setInstance(@NonNull JsonPreferencesAccessor _instance) {
+        instance = _instance;
+    }
+
+    /**
+     * Gets {@link Preferences}.
+     * Used only for listening, better to replace by listeners API,
+     * but for now it has single usage in same module, so an accessor
+     * returning {@link Preferences} on which the client can listen is enough.
+     * @param jsonPrefs the {@link JsonPreferences} to return {@link Preferences} for
+     * @return the {@link Preferences}
+     */
+    @NonNull
+    public abstract Preferences getPreferences(@NonNull JsonPreferences jsonPrefs);
 }

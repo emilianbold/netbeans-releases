@@ -41,6 +41,11 @@
  */
 package org.netbeans.modules.javascript2.json;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -48,6 +53,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript2.json.spi.JsonOptionsQueryImplementation;
 import org.netbeans.modules.javascript2.json.spi.support.JsonPreferences;
 import org.openide.filesystems.FileObject;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -75,11 +81,16 @@ public final class ProjectJsonOptionsQueryImpl implements JsonOptionsQueryImplem
                 new MergedResult(overrideRes, defaultRes);
     }
 
-    private static final class DefaultProjectResult implements Result {
+    private static final class DefaultProjectResult implements Result, PreferenceChangeListener {
         private final Project project;
+        private final Preferences prefs;
+        private final PropertyChangeSupport listeners;
 
         DefaultProjectResult(@NonNull final Project project) {
             this.project = project;
+            this.listeners = new PropertyChangeSupport(this);
+            this.prefs = JsonPreferencesAccessor.getInstance().getPreferences(JsonPreferences.forProject(project));
+            prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, this, prefs));
         }
 
         @CheckForNull
@@ -88,6 +99,21 @@ public final class ProjectJsonOptionsQueryImpl implements JsonOptionsQueryImplem
             return JsonPreferences.forProject(project).isCommentSupported() ?
                     Boolean.TRUE :
                     null;
+        }
+
+        @Override
+        public void addPropertyChangeListener(@NonNull final PropertyChangeListener listener) {
+            listeners.addPropertyChangeListener(listener);
+        }
+
+        @Override
+        public void removePropertyChangeListener(@NonNull final PropertyChangeListener listener) {
+            listeners.removePropertyChangeListener(listener);
+        }
+
+        @Override
+        public void preferenceChange(@NonNull final PreferenceChangeEvent evt) {
+            listeners.firePropertyChange(PROP_COMMENT_SUPPORTED, null, null);
         }
     }
 }

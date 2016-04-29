@@ -58,6 +58,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ChangeSupport;
 
 /**
  *
@@ -77,11 +78,13 @@ public abstract class SanitizingParser<R extends BaseParserResult> extends Parse
     private static final int MAX_RIGHT_CURLY_BRACKETS = 30;
 
     private final Language<JsTokenId> language;
+    private final ChangeSupport listeners;
 
     private R lastResult = null;
 
     public SanitizingParser(Language<JsTokenId> language) {
         this.language = language;
+        this.listeners = new ChangeSupport(this);
     }
 
     @Override
@@ -533,13 +536,19 @@ public abstract class SanitizingParser<R extends BaseParserResult> extends Parse
     }
 
     @Override
-    public final void addChangeListener(ChangeListener changeListener) {
+    public final void addChangeListener(@NonNull final ChangeListener changeListener) {
         LOGGER.log(Level.FINE, "Adding changeListener: {0}", changeListener); //NOI18N)
+        listeners.addChangeListener(changeListener);
     }
 
     @Override
-    public final void removeChangeListener(ChangeListener changeListener) {
+    public final void removeChangeListener(@NonNull final ChangeListener changeListener) {
         LOGGER.log(Level.FINE, "Removing changeListener: {0}", changeListener); //NOI18N)
+        listeners.removeChangeListener(changeListener);
+    }
+
+    protected final void fireChange() {
+        listeners.fireChange();
     }
 
     private static void erase(StringBuilder builder, int start, int end) {
