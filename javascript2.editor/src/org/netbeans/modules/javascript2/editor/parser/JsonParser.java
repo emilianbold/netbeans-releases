@@ -54,6 +54,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.NbDocument;
 import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -148,7 +149,7 @@ public class JsonParser extends SanitizingParser<JsonParserResult> implements Pr
                                 .ifPresent((mti) -> {
                                     final TokenHierarchyControl control = mti.tokenHierarchyControl();
                                     //For sure render in worker to prevent deadlocks
-                                    LEXER_RP.execute(()->doc.render(()->{control.rebuild();}));
+                                    LEXER_RP.execute(()->NbDocument.runAtomic(doc,()->{control.rebuild();}));
                                 });
                     });
             //Refresh tasklist
