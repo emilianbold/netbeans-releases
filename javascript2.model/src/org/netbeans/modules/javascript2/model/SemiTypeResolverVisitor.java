@@ -373,7 +373,8 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
             if (tokenType == TokenType.EQ || tokenType == TokenType.EQ_STRICT
                     || tokenType == TokenType.NE || tokenType == TokenType.NE_STRICT
                     || tokenType == TokenType.GE || tokenType == TokenType.GT
-                    || tokenType == TokenType.LE || tokenType == TokenType.LT) {
+                    || tokenType == TokenType.LE || tokenType == TokenType.LT
+                    || tokenType == TokenType.AND || tokenType == TokenType.OR) {
                 if (getPath().isEmpty()) {
                     add(BOOLEAN_TYPE);
                 }
