@@ -1777,7 +1777,7 @@ public final class EditorCaret implements Caret {
              */
             DocumentUtilities.addDocumentListener(
                     newDoc, listenerImpl, DocumentListenerPriority.CARET_UPDATE);
-            AtomicLockDocument newAtomicDoc = LineDocumentUtils.as(oldDoc, AtomicLockDocument.class);
+            AtomicLockDocument newAtomicDoc = LineDocumentUtils.as(newDoc, AtomicLockDocument.class);
             if (newAtomicDoc != null) {
                 newAtomicDoc.addAtomicLockListener(listenerImpl);
             }
