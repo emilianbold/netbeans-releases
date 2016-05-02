@@ -66,6 +66,7 @@ import static com.oracle.js.parser.TokenType.INCPREFIX;
 import static com.oracle.js.parser.TokenType.NEW;
 import static com.oracle.js.parser.TokenType.NOT;
 import static com.oracle.js.parser.TokenType.SUB;
+import com.oracle.js.parser.ir.JoinPredecessorExpression;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -374,7 +375,7 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
                     || tokenType == TokenType.NE || tokenType == TokenType.NE_STRICT
                     || tokenType == TokenType.GE || tokenType == TokenType.GT
                     || tokenType == TokenType.LE || tokenType == TokenType.LT
-                    || tokenType == TokenType.AND || tokenType == TokenType.OR) {
+                    || tokenType == TokenType.AND ) {
                 if (getPath().isEmpty()) {
                     add(BOOLEAN_TYPE);
                 }
@@ -426,6 +427,12 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
                 || (rhs instanceof LiteralNode && ((LiteralNode) rhs).isString()))) {
             bResult = true;
         } else {
+            if (lhs instanceof JoinPredecessorExpression) {
+                lhs = ((JoinPredecessorExpression)lhs).getExpression();
+            }
+            if (rhs instanceof JoinPredecessorExpression) {
+                rhs = ((JoinPredecessorExpression)rhs).getExpression();
+            }
             if (lhs instanceof BinaryNode) {
                 bResult = isResultString((BinaryNode) lhs);
             } else if (rhs instanceof BinaryNode) {
