@@ -101,7 +101,7 @@ public class JsonParser extends SanitizingParser<JsonParserResult> implements Pr
         }
         final JsonLexer lex = new JsonLexer(new ANTLRInputStream(text), allowComments);
         lex.removeErrorListeners(); //Remove default console log listener
-//        lex.addErrorListener(errorManager);
+        lex.addErrorListener(errorManager);
         final CommonTokenStream tokens = new CommonTokenStream(lex);
         org.netbeans.modules.javascript2.json.parser.JsonParser parser =
                 new org.netbeans.modules.javascript2.json.parser.JsonParser(tokens);

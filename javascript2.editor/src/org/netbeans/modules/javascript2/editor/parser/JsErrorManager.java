@@ -89,10 +89,10 @@ public class JsErrorManager extends ErrorManager implements ANTLRErrorListener {
 
         @Override
         public int compare(SimpleError o1, SimpleError o2) {
-            if (o1.getPosition() < o2.getPosition()) {
+            if (o1.getStartPosition() < o2.getStartPosition()) {
                 return -1;
             }
-            if (o1.getPosition() > o2.getPosition()) {
+            if (o1.getStartPosition() > o2.getStartPosition()) {
                 return 1;
             }
             return 0;
@@ -249,11 +249,11 @@ public class JsErrorManager extends ErrorManager implements ANTLRErrorListener {
                 boolean showInEditor = true;
                 // if the error is in embedded code we ignore it
                 // as we don't know what the other language will add
-                int pos = snapshot.getOriginalOffset(error.getPosition());
-                if (pos >= 0 && nextCorrect <= error.getPosition()
+                int pos = snapshot.getOriginalOffset(error.getStartPosition());
+                if (pos >= 0 && nextCorrect <= error.getStartPosition()
                         && !JsEmbeddingProvider.containsGeneratedIdentifier(error.getMessage())) {
                     TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(
-                            snapshot, error.getPosition());
+                            snapshot, error.getStartPosition());
                     if (ts != null && ts.movePrevious()) {
                         // check also a previous token - is it generated ?
                         org.netbeans.api.lexer.Token<? extends JsTokenId> token =
@@ -261,7 +261,7 @@ public class JsErrorManager extends ErrorManager implements ANTLRErrorListener {
                         if (JsEmbeddingProvider.containsGeneratedIdentifier(token.text().toString())) {
                             // usually we may expect a group of errors
                             // so we disable them until next } .... \n
-                            nextCorrect = findNextCorrectOffset(ts, error.getPosition());
+                            nextCorrect = findNextCorrectOffset(ts, error.getStartPosition());
                             showInEditor = false;
                             afterGeneratedIdentifier = true;
                         } else if (afterGeneratedIdentifier && error.getMessage().indexOf(EXPECTED) != -1) {
@@ -346,23 +346,38 @@ public class JsErrorManager extends ErrorManager implements ANTLRErrorListener {
         //Not important
     }
 
-    static class SimpleError {
+    static final class SimpleError {
 
         private final String message;
+        private final boolean lineError;
+        private final int startPosition;
+        private final int endPosition;
 
-        private final int position;
-
-        public SimpleError(String message, int position) {
+        private SimpleError(
+                final String message,
+                final boolean lineError,
+                final int startPosition,
+                final int endPosition) {
             this.message = message;
-            this.position = position;
+            this.lineError = lineError;
+            this.startPosition = startPosition;
+            this.endPosition = endPosition;
         }
 
         public String getMessage() {
             return message;
         }
 
-        public int getPosition() {
-            return position;
+        public boolean isLineError() {
+            return lineError;
+        }
+
+        public int getStartPosition() {
+            return startPosition;
+        }
+
+        public int getEndPosition() {
+            return endPosition;
         }
     }
 
@@ -452,7 +467,7 @@ public class JsErrorManager extends ErrorManager implements ANTLRErrorListener {
                     }
                 }
             }
-            return new SimpleError(message, offset);
+            return new SimpleError(message, true, offset, offset+1);
         }
     }
 
@@ -471,7 +486,7 @@ public class JsErrorManager extends ErrorManager implements ANTLRErrorListener {
             LineDocument doc = (LineDocument)snapshot.getSource().getDocument(false);
             if (doc == null) {
                 LOGGER.log(Level.WARNING, "No document found");
-                return new SimpleError(message, 0);
+                return new SimpleError(message, false, 0, 0);
             }
             int lineOffset = LineDocumentUtils.getLineStartFromIndex((LineDocument)snapshot.getSource().getDocument(false), this.line - 1);
             int offset = lineOffset + this.column;
@@ -492,7 +507,23 @@ public class JsErrorManager extends ErrorManager implements ANTLRErrorListener {
                     offset = realOffset;
                 }
             }
-            return new SimpleError(message, offset);
+            int endOffset = -1;
+            if (offset >= 0) {
+                endOffset = offset + 1;
+                if (token instanceof org.antlr.v4.runtime.Token) {
+                    org.antlr.v4.runtime.Token t = (org.antlr.v4.runtime.Token)token;
+                    int len = t.getStopIndex() - t.getStartIndex();
+                    if (len > 0) {
+                        endOffset = offset + len + 1;
+                    }
+                }
+            }
+
+            return new SimpleError(
+                    message,
+                    false,
+                    offset,
+                    endOffset);
         }
     }
 }

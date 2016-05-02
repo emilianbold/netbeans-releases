@@ -88,7 +88,7 @@ public class JsParserError implements FilterableError, Error.Badging {
 
     @Override
     public String getKey() {
-        int position = error.getPosition();
+        int position = error.getStartPosition();
         return "[" + position + "," + position + "]-" + error.getMessage();
     }
 
@@ -99,17 +99,17 @@ public class JsParserError implements FilterableError, Error.Badging {
 
     @Override
     public int getStartPosition() {
-        return error.getPosition();
+        return error.getStartPosition();
     }
 
     @Override
     public int getEndPosition() {
-        return error.getPosition() + 1;
+        return error.getEndPosition();
     }
 
     @Override
     public boolean isLineError() {
-        return wholeLine;
+        return error.isLineError();
     }
 
     @Override
