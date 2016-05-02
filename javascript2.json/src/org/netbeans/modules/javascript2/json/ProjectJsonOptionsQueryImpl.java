@@ -41,11 +41,14 @@
  */
 package org.netbeans.modules.javascript2.json;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
-import java.util.prefs.Preferences;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.Map;
+import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -53,7 +56,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript2.json.spi.JsonOptionsQueryImplementation;
 import org.netbeans.modules.javascript2.json.spi.support.JsonPreferences;
 import org.openide.filesystems.FileObject;
-import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -63,6 +65,12 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = JsonOptionsQueryImplementation.class, position = 1_000)
 public final class ProjectJsonOptionsQueryImpl implements JsonOptionsQueryImplementation {
+
+    private final Map</*@GuardedBy("normCache")*/Project,Reference<Result>> normCache;
+
+    public ProjectJsonOptionsQueryImpl() {
+        normCache = new WeakHashMap<>();
+    }
 
     @CheckForNull
     @Override
@@ -75,34 +83,47 @@ public final class ProjectJsonOptionsQueryImpl implements JsonOptionsQueryImplem
         final Result overrideRes = impl == null ?
                 null :
                 impl.getOptions(file);
-        final Result defaultRes = new DefaultProjectResult(p);
+        final Result defaultRes = createDefaultResult(p);
         return overrideRes == null ?
                 defaultRes :
                 new MergedResult(overrideRes, defaultRes);
     }
 
-    private static final class DefaultProjectResult implements Result, PreferenceChangeListener {
-        private final Project project;
-        private final Preferences prefs;
+    private Result createDefaultResult(@NonNull final Project p) {
+        synchronized (normCache) {
+            final Reference<Result> ref = normCache.get(p);
+            Result res = ref == null ? null : ref.get();
+            if (res == null) {
+                res = new DefaultProjectResult(p);
+                normCache.put(p, new WeakReference<>(res));
+            }
+            return res;
+        }
+    }
+
+    private static final class DefaultProjectResult implements Result, PropertyChangeListener {
+        private final JsonPreferences jsonPrefs;
         private final PropertyChangeSupport listeners;
+        private final AtomicBoolean listens = new AtomicBoolean();
 
         DefaultProjectResult(@NonNull final Project project) {
-            this.project = project;
+            this.jsonPrefs = JsonPreferences.forProject(project);
             this.listeners = new PropertyChangeSupport(this);
-            this.prefs = JsonPreferencesAccessor.getInstance().getPreferences(JsonPreferences.forProject(project));
-            prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, this, prefs));
         }
 
         @CheckForNull
         @Override
         public Boolean isCommentSupported() {
-            return JsonPreferences.forProject(project).isCommentSupported() ?
+            return jsonPrefs.isCommentSupported() ?
                     Boolean.TRUE :
                     null;
         }
 
         @Override
         public void addPropertyChangeListener(@NonNull final PropertyChangeListener listener) {
+            if (!listens.get() && listens.compareAndSet(false, true)) {
+                jsonPrefs.addPropertyChangeListener(this);
+            }
             listeners.addPropertyChangeListener(listener);
         }
 
@@ -112,7 +133,7 @@ public final class ProjectJsonOptionsQueryImpl implements JsonOptionsQueryImplem
         }
 
         @Override
-        public void preferenceChange(@NonNull final PreferenceChangeEvent evt) {
+        public void propertyChange(PropertyChangeEvent evt) {
             listeners.firePropertyChange(PROP_COMMENT_SUPPORTED, null, null);
         }
     }

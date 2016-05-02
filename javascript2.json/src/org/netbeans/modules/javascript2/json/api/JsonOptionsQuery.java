@@ -46,6 +46,7 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Deque;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.javascript2.json.spi.JsonOptionsQueryImplementation;
 import org.openide.filesystems.FileObject;
@@ -66,7 +67,7 @@ public class JsonOptionsQuery {
     @NonNull
     public static Result getOptions(@NonNull final FileObject file) {
         Parameters.notNull("file", file);
-        final Deque<JsonOptionsQueryImplementation.Result> results = new ArrayDeque<JsonOptionsQueryImplementation.Result>();
+        final Deque<JsonOptionsQueryImplementation.Result> results = new ArrayDeque<>();
         for (JsonOptionsQueryImplementation impl : Lookup.getDefault().lookupAll(JsonOptionsQueryImplementation.class)) {
             final JsonOptionsQueryImplementation.Result res = impl.getOptions(file);
             if (res != null) {
@@ -82,14 +83,13 @@ public class JsonOptionsQuery {
         private final Collection<? extends JsonOptionsQueryImplementation.Result> delegates;
         private final PropertyChangeSupport listeners;
         private final PropertyChangeListener pcl;
+        private final AtomicBoolean listens = new AtomicBoolean();
 
         private Result(@NonNull final Collection<? extends JsonOptionsQueryImplementation.Result> delegates) {
             Parameters.notNull("delegates", delegates); //NOI18N
             this.delegates = delegates;
             this.listeners = new PropertyChangeSupport(this);
             this.pcl = (evt) -> listeners.firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
-            this.delegates
-                    .forEach((r) -> r.addPropertyChangeListener(WeakListeners.propertyChange(pcl, r)));
         }
 
         public boolean isCommentSupported() {
@@ -104,6 +104,10 @@ public class JsonOptionsQuery {
 
         public void addPropertyChangeListener(@NonNull final PropertyChangeListener listener) {
             Parameters.notNull("listener", listener);   //NOI18N
+            if (!listens.get() && listens.compareAndSet(false, true)) {
+                this.delegates
+                    .forEach((r) -> r.addPropertyChangeListener(WeakListeners.propertyChange(pcl, r)));
+            }
             listeners.addPropertyChangeListener(listener);
         }
 
