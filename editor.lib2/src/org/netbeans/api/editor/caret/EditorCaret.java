@@ -2537,7 +2537,17 @@ public final class EditorCaret implements Caret {
         
         private void implicitSetDot(int offset) {
             if (getCarets().size() == 1) { // And if there is just a single caret
-                setDot(offset);
+                boolean inActiveTransaction;
+                synchronized (listenerList) {
+                    inActiveTransaction = (activeTransaction != null);
+                }
+                // Only set the dot implicitly if not already in an active transaction.
+                // Otherwise the caret framework would report illegal nested transaction.
+                // An explicit active transaction uses the new Caret API anyway
+                // so it should also use the proper caret position(s) saving for undo/redo too.
+                if (!inActiveTransaction) {
+                    setDot(offset);
+                }
             }
         }
 
