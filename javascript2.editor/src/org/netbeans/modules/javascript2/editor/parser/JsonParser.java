@@ -44,6 +44,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.javascript2.editor.Utils;
 import org.netbeans.modules.javascript2.json.api.JsonOptionsQuery;
 import org.netbeans.modules.javascript2.json.parser.JsonLexer;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
@@ -134,9 +135,9 @@ public class JsonParser extends SanitizingParser<JsonParserResult> implements Pr
             fireChange();
             //Refresh lexer.
             //Is there any better way?
-            Optional.ofNullable(options.get())
-                    .map((p) -> p.first())
-                    .map((fo) -> {
+            final Optional<FileObject> maybeFile = Optional.ofNullable(options.get())
+                    .map((p) -> p.first());
+            maybeFile.map((fo) -> {
                         try {
                             return DataObject.find(fo).getLookup().lookup(EditorCookie.class);
                         } catch (DataObjectNotFoundException e)  {
@@ -153,7 +154,7 @@ public class JsonParser extends SanitizingParser<JsonParserResult> implements Pr
                                 });
                     });
             //Refresh tasklist
-            //Todo
+            Utils.refreshTaskListIndex(maybeFile.orElse(null));
         }
     }
 
