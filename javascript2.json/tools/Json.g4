@@ -62,6 +62,11 @@ public static final int WHITESPACES = 1;
 public static final int COMMENTS = 2;
 public static final int ERRORS = 3;
 
+private static final Recovery[] RECOVERIES = {
+    Recovery.createLineCommentRecovery(),
+    Recovery.createCommentRecovery()
+};
+
 private boolean isCommentSupported;
 private boolean hasErrorToken;
 
@@ -119,6 +124,27 @@ public  JsonLexer(
     this.hasErrorToken = hasErrorToken;
 }
 
+@Override
+public void recover(LexerNoViableAltException e) {
+    final CharStream in = e.getInputStream();
+    final int current = in.index();
+    final int index = e.getStartIndex();
+    boolean resolved = false;
+    in.seek(index);
+    for (Recovery r : RECOVERIES) {
+        if (r.canRecover(in)) {
+            getInterpreter().setCharPositionInLine(_tokenStartCharPositionInLine);
+            getInterpreter().setLine(_tokenStartLine);
+            r.recover(in, getInterpreter());
+            resolved = true;
+            break;
+        }
+    }
+    if (!resolved) {
+        in.seek(current);
+        super.recover(e);
+    }
+}
 }
 
 
@@ -158,6 +184,6 @@ fragment HEXDIGIT   : [0-9a-fA-F];
 LINE_COMMENT        : '//' .*? '\r'? '\n' {isCommentSupported}? -> channel(COMMENTS);
 COMMENT             : '/*' .*? '*/' {isCommentSupported}? -> channel(COMMENTS);
 WS                  : [ \t\r\n]+ -> channel(WHITESPACES);
-ERROR_COMMENT       : '/*' (~'*' | ('*'+ ~[*/]))*? EOF {hasErrorToken && isCommentSupported}? -> channel(ERRORS);
+ERROR_COMMENT       : '/*' (~'*' | ('*'+ ~'/'))* {hasErrorToken && isCommentSupported}? -> channel(ERRORS);
 ERROR               : . {hasErrorToken}? -> channel(ERRORS);
 
