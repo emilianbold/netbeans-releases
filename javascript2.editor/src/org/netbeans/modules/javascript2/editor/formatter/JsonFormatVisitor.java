@@ -120,7 +120,10 @@ public class JsonFormatVisitor extends JsonBaseVisitor<Void> {
         int objectFinish = getFinish(ctx);
         ctx.pair().stream().forEach((pair) -> {
             // mark property end
-            tokenUtils.markPropertyFinish(getFinish(pair), objectFinish, true);
+            FormatToken nextToken = tokenUtils.getNextToken(getFinish(pair), JsTokenId.OPERATOR_COMMA, objectFinish);
+            if (nextToken != null) {
+                appendTokenAfterLastVirtual(nextToken, FormatToken.forFormat(FormatToken.Kind.AFTER_PROPERTY), true);
+            }
         });
 
         // put indentation mark after non white token preceeding curly bracket

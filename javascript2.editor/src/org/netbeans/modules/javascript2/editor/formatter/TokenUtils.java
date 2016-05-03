@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.formatter;
 
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -63,16 +64,20 @@ final class TokenUtils {
         this.formatFinish = formatFinish;
     }
 
-    public void markPropertyFinish(int finish, int objectFinish, boolean checkDuplicity) {
-        FormatToken formatToken = getNextToken(finish, JsTokenId.OPERATOR_COMMA, objectFinish);
-        if (formatToken != null) {
-            appendTokenAfterLastVirtual(formatToken,
-                    FormatToken.forFormat(FormatToken.Kind.AFTER_PROPERTY), checkDuplicity);
-        }
+    public FormatToken getNextToken(int offset, JsTokenId expected) {
+        return getToken(offset, expected, false, false, null);
     }
 
     public FormatToken getNextToken(int offset, JsTokenId expected, int stop) {
         return getToken(offset, expected, false, false, stop);
+    }
+
+    public FormatToken getNextToken(int offset, JsTokenId expected, boolean startFallback) {
+        return getToken(offset, expected, false, startFallback, null);
+    }
+
+    public FormatToken getPreviousToken(int offset, JsTokenId expected) {
+        return getPreviousToken(offset, expected, false);
     }
 
     public FormatToken getPreviousToken(int offset, JsTokenId expected, int stop) {
@@ -112,6 +117,46 @@ final class TokenUtils {
         return null;
     }
 
+    public Token getPreviousNonEmptyToken(int offset) {
+        ts.move(offset);
+
+        if (!ts.moveNext() && !ts.movePrevious()) {
+            return null;
+        }
+
+        Token ret = null;
+        while (ts.movePrevious()) {
+            Token token = ts.token();
+            if ((token.id() != JsTokenId.BLOCK_COMMENT && token.id() != JsTokenId.DOC_COMMENT
+                && token.id() != JsTokenId.LINE_COMMENT && token.id() != JsTokenId.EOL
+                && token.id() != JsTokenId.WHITESPACE)) {
+                ret = token;
+                break;
+            }
+        }
+        return ret;
+    }
+
+    public Token getNextNonEmptyToken(int offset) {
+        ts.move(offset);
+
+        if (!ts.moveNext() && !ts.movePrevious()) {
+            return null;
+        }
+
+        Token ret = null;
+        while (ts.moveNext()) {
+            Token token = ts.token();
+            if ((token.id() != JsTokenId.BLOCK_COMMENT && token.id() != JsTokenId.DOC_COMMENT
+                && token.id() != JsTokenId.LINE_COMMENT && token.id() != JsTokenId.EOL
+                && token.id() != JsTokenId.WHITESPACE)) {
+                ret = token;
+                break;
+            }
+        }
+        return ret;
+    }
+
     public FormatToken getPreviousNonWhiteToken(int offset, int stop, JsTokenId expected, boolean startFallback) {
         assert stop <= offset;
         FormatToken ret = getPreviousToken(offset, expected, startFallback);
@@ -140,13 +185,28 @@ final class TokenUtils {
         return null;
     }
 
-    private FormatToken getFallback(int offset, boolean fallback) {
+    public FormatToken getFallback(int offset, boolean fallback) {
         FormatToken ret = tokenStream.getToken(offset);
         if (ret == null && fallback && offset < formatFinish) {
             ret = tokenStream.getTokens().get(0);
             assert ret != null && ret.getKind() == FormatToken.Kind.SOURCE_START;
         }
         return ret;
+    }
+
+
+    @CheckForNull
+    public static FormatToken findVirtualToken(FormatToken token, FormatToken.Kind kind,
+            boolean backwards) {
+        FormatToken result = backwards ? token.previous() : token.next();
+        while (result != null && result.isVirtual()
+                && result.getKind() != kind) {
+            result = backwards ? result.previous() : result.next();;
+        }
+        if (result != null && result.getKind() != kind) {
+            return null;
+        }
+        return result;
     }
 
     public static void appendTokenAfterLastVirtual(FormatToken previous,
