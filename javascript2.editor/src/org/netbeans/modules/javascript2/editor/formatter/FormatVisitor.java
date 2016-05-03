@@ -77,8 +77,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
@@ -103,12 +101,15 @@ public class FormatVisitor extends NodeVisitor {
     private final FormatTokenStream tokenStream;
 
     private final int formatFinish;
+    
+    private final TokenUtils tokenUtils;
 
     public FormatVisitor(FormatTokenStream tokenStream, TokenSequence<? extends JsTokenId> ts, int formatFinish) {
         super(new LexicalContext());
         this.ts = ts;
         this.tokenStream = tokenStream;
         this.formatFinish = formatFinish;
+        this.tokenUtils = new TokenUtils(ts, tokenStream, formatFinish);
     }
 
     @Override
@@ -150,15 +151,15 @@ public class FormatVisitor extends NodeVisitor {
 
         if (nodes.size() >= 1) {
             // indentation mark
-            FormatToken formatToken = getPreviousToken(getStart(nodes.get(0)), JsTokenId.OPERATOR_COLON, true);
+            FormatToken formatToken = tokenUtils.getPreviousToken(getStart(nodes.get(0)), JsTokenId.OPERATOR_COLON, true);
             if (formatToken != null) {
-                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+                TokenUtils.appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
             }
 
             // put indentation mark
             formatToken = getCaseEndToken(getStart(nodes.get(0)), getFinish(nodes.get(nodes.size() - 1)));
             if (formatToken != null) {
-                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
+                TokenUtils.appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
             }
 
             handleBlockContent(nodes, true);
@@ -186,11 +187,11 @@ public class FormatVisitor extends NodeVisitor {
             // mark space before left brace
             markSpacesBeforeBrace(whileNode.getBody(), FormatToken.Kind.BEFORE_DO_BRACE);
 
-            FormatToken whileToken = getPreviousToken(getFinish(whileNode), JsTokenId.KEYWORD_WHILE);
+            FormatToken whileToken = tokenUtils.getPreviousToken(getFinish(whileNode), JsTokenId.KEYWORD_WHILE);
             if (whileToken != null) {
                 FormatToken beforeWhile = whileToken.previous();
                 if (beforeWhile != null) {
-                    appendToken(beforeWhile, FormatToken.forFormat(FormatToken.Kind.BEFORE_WHILE_KEYWORD));
+                    tokenUtils.appendToken(beforeWhile, FormatToken.forFormat(FormatToken.Kind.BEFORE_WHILE_KEYWORD));
                 }
             }
             if (handleLoop(whileNode, FormatToken.Kind.AFTER_DO_START)) {
@@ -233,26 +234,26 @@ public class FormatVisitor extends NodeVisitor {
 
             // unfortunately init and test may be null
             if (init != null) {
-                formatToken = getNextToken(getFinish(init), JsTokenId.OPERATOR_SEMICOLON);
+                formatToken = tokenUtils.getNextToken(getFinish(init), JsTokenId.OPERATOR_SEMICOLON);
             } else {
-                formatToken = getNextToken(getStart(forNode), JsTokenId.OPERATOR_SEMICOLON,
+                formatToken = tokenUtils.getNextToken(getStart(forNode), JsTokenId.OPERATOR_SEMICOLON,
                         getStart(forNode.getBody()));
             }
             if (formatToken != null && test != null) {
-                appendTokenAfterLastVirtual(formatToken,
+                TokenUtils.appendTokenAfterLastVirtual(formatToken,
                         FormatToken.forFormat(FormatToken.Kind.BEFORE_FOR_TEST));
             }
 
             if (test != null) {
-                formatToken = getNextToken(getFinish(forNode.getTest()), JsTokenId.OPERATOR_SEMICOLON);
+                formatToken = tokenUtils.getNextToken(getFinish(forNode.getTest()), JsTokenId.OPERATOR_SEMICOLON);
             } else {
                 // we use the position of init semicolon
                 int start = formatToken != null ? formatToken.getOffset() + 1 : getStart(forNode);
-                formatToken = getNextToken(start, JsTokenId.OPERATOR_SEMICOLON,
+                formatToken = tokenUtils.getNextToken(start, JsTokenId.OPERATOR_SEMICOLON,
                                             getStart(forNode.getBody()));
             }
             if (formatToken != null && forNode.getModify() != null) {
-                appendTokenAfterLastVirtual(formatToken,
+                TokenUtils.appendTokenAfterLastVirtual(formatToken,
                         FormatToken.forFormat(FormatToken.Kind.BEFORE_FOR_MODIFY));
             }
         }
@@ -363,21 +364,21 @@ public class FormatVisitor extends NodeVisitor {
             }
         }
         if (isVirtual(body) && functionNode.getKind() == FunctionNode.Kind.ARROW) {
-            Token nonEmpty = getPreviousNonEmptyToken(getStart(body));
+            Token nonEmpty = tokenUtils.getPreviousNonEmptyToken(getStart(body));
             if (nonEmpty != null) {
                 FormatToken token = tokenStream.getToken(ts.offset());
                 if (token != null) {
-                    appendTokenAfterLastVirtual(token, FormatToken.forFormat(FormatToken.Kind.BEFORE_ARROW_BLOCK));
+                    TokenUtils.appendTokenAfterLastVirtual(token, FormatToken.forFormat(FormatToken.Kind.BEFORE_ARROW_BLOCK));
                 }
             }
 
             handleVirtualBlock(body, FormatToken.Kind.INDENTATION_INC, FormatToken.Kind.INDENTATION_DEC, null, false);
 
-            nonEmpty = getPreviousNonEmptyToken(getFinish(body));
+            nonEmpty = tokenUtils.getPreviousNonEmptyToken(getFinish(body));
             if (nonEmpty != null) {
                 FormatToken token = tokenStream.getToken(ts.offset());
                 if (token != null) {
-                    appendTokenAfterLastVirtual(token, FormatToken.forFormat(FormatToken.Kind.AFTER_ARROW_BLOCK));
+                    TokenUtils.appendTokenAfterLastVirtual(token, FormatToken.forFormat(FormatToken.Kind.AFTER_ARROW_BLOCK));
                 }
             }
         } else {
@@ -390,16 +391,16 @@ public class FormatVisitor extends NodeVisitor {
 
         int start = getStart(functionNode);
         if (functionNode.getKind() == FunctionNode.Kind.ARROW) {
-            FormatToken left = getNextToken(start, JsTokenId.BRACKET_LEFT_PAREN, start);
+            FormatToken left = tokenUtils.getNextToken(start, JsTokenId.BRACKET_LEFT_PAREN, start);
             FormatToken leftParen = left;
             if (left == null) {
                 // single parameter arrow without parenthesis
-                left = getNextToken(start, JsTokenId.IDENTIFIER, start);
+                left = tokenUtils.getNextToken(start, JsTokenId.IDENTIFIER, start);
             }
             if (left != null) {
                 FormatToken previous = left.previous();
                 if (previous != null) {
-                    appendToken(previous, FormatToken.forFormat(
+                    TokenUtils.appendToken(previous, FormatToken.forFormat(
                             FormatToken.Kind.BEFORE_ARROW_FUNCTION_DECLARATION));
                 }
             }
@@ -409,7 +410,7 @@ public class FormatVisitor extends NodeVisitor {
             // the star * is not multiplication (binary operator)
             // FIXME should this be solved in lexer?
             if (functionNode.getKind() == FunctionNode.Kind.GENERATOR) {
-                FormatToken star = getNextToken(start, JsTokenId.OPERATOR_MULTIPLICATION);
+                FormatToken star = tokenUtils.getNextToken(start, JsTokenId.OPERATOR_MULTIPLICATION);
                 if (star != null) {
                     FormatToken prev = star.previous();
                     if (prev != null && (prev.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR
@@ -435,11 +436,11 @@ public class FormatVisitor extends NodeVisitor {
                 }
             }
 
-            FormatToken leftParen = getNextToken(start, JsTokenId.BRACKET_LEFT_PAREN, getStart(body));
+            FormatToken leftParen = tokenUtils.getNextToken(start, JsTokenId.BRACKET_LEFT_PAREN, getStart(body));
             if (leftParen != null) {
                 FormatToken previous = leftParen.previous();
                 if (previous != null) {
-                    appendToken(previous, FormatToken.forFormat(
+                    TokenUtils.appendToken(previous, FormatToken.forFormat(
                             functionNode.isAnonymous()
                                     ? FormatToken.Kind.BEFORE_ANONYMOUS_FUNCTION_DECLARATION
                                     : FormatToken.Kind.BEFORE_FUNCTION_DECLARATION));
@@ -449,22 +450,22 @@ public class FormatVisitor extends NodeVisitor {
 
                 // mark left brace of block - this works if function node
                 // start offset is offset of the left brace
-                FormatToken leftBrace = getNextToken(getStart(functionNode),
+                FormatToken leftBrace = tokenUtils.getNextToken(getStart(functionNode),
                         JsTokenId.BRACKET_LEFT_CURLY, getFinish(functionNode));
                 if (leftBrace != null) {
                     previous = leftBrace.previous();
                     if (previous != null) {
-                        appendToken(previous, FormatToken.forFormat(
+                        TokenUtils.appendToken(previous, FormatToken.forFormat(
                                 FormatToken.Kind.BEFORE_FUNCTION_DECLARATION_BRACE));
                     }
                 }
 
                 if (functionNode.isStatement() && !functionNode.isAnonymous()) {
-                    FormatToken rightBrace = getPreviousToken(getFinish(functionNode),
+                    FormatToken rightBrace = tokenUtils.getPreviousToken(getFinish(functionNode),
                             JsTokenId.BRACKET_RIGHT_CURLY,
                             leftBrace != null ? leftBrace.getOffset() : start);
                     if (rightBrace != null) {
-                        appendToken(rightBrace, FormatToken.forFormat(
+                        TokenUtils.appendToken(rightBrace, FormatToken.forFormat(
                                 FormatToken.Kind.AFTER_STATEMENT));
                     }
                 }
@@ -486,10 +487,10 @@ public class FormatVisitor extends NodeVisitor {
     @Override
     public boolean enterImportNode(ImportNode importNode) {
         int finish = getFinish(importNode);
-        FormatToken token = getNextToken(finish, JsTokenId.OPERATOR_SEMICOLON);
+        FormatToken token = tokenUtils.getNextToken(finish, JsTokenId.OPERATOR_SEMICOLON);
         if (token != null) {
             // we treat the import as statement
-            appendTokenAfterLastVirtual(token, FormatToken.forFormat(FormatToken.Kind.AFTER_STATEMENT));
+            TokenUtils.appendTokenAfterLastVirtual(token, FormatToken.forFormat(FormatToken.Kind.AFTER_STATEMENT));
         }
         return false;
     }
@@ -497,10 +498,10 @@ public class FormatVisitor extends NodeVisitor {
     @Override
     public boolean enterExportNode(ExportNode exportNode) {
         int finish = getFinish(exportNode);
-        FormatToken token = getNextToken(finish, JsTokenId.OPERATOR_SEMICOLON);
+        FormatToken token = tokenUtils.getNextToken(finish, JsTokenId.OPERATOR_SEMICOLON);
         if (token != null) {
             // we treat the import as statement
-            appendTokenAfterLastVirtual(token, FormatToken.forFormat(FormatToken.Kind.AFTER_STATEMENT));
+            TokenUtils.appendTokenAfterLastVirtual(token, FormatToken.forFormat(FormatToken.Kind.AFTER_STATEMENT));
         }
         // the complex export nodes are included in top level function body anyway
         // so we do not want to to visit further
@@ -512,12 +513,12 @@ public class FormatVisitor extends NodeVisitor {
 
     @Override
     public boolean enterCallNode(CallNode callNode) {
-        FormatToken leftBrace = getNextToken(getFinish(callNode.getFunction()),
+        FormatToken leftBrace = tokenUtils.getNextToken(getFinish(callNode.getFunction()),
                 JsTokenId.BRACKET_LEFT_PAREN, getFinish(callNode));
         if (leftBrace != null) {
             FormatToken previous = leftBrace.previous();
             if (previous != null) {
-                appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_CALL));
+                TokenUtils.appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_CALL));
             }
 
             // mark the within parenthesis places
@@ -536,10 +537,10 @@ public class FormatVisitor extends NodeVisitor {
             if (!args.isEmpty()) {
                 stopMark = getFinish(args.get(args.size() - 1));
             }
-            FormatToken rightBrace = getPreviousToken(getFinish(callNode) - 1,
+            FormatToken rightBrace = tokenUtils.getPreviousToken(getFinish(callNode) - 1,
                     JsTokenId.BRACKET_RIGHT_PAREN, stopMark);
             if (rightBrace != null) {
-                previous = findVirtualToken(rightBrace,
+                previous = TokenUtils.findVirtualToken(rightBrace,
                         FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS, true);
 
                 // this might happen for sanitization inserted paren
@@ -550,13 +551,13 @@ public class FormatVisitor extends NodeVisitor {
 
             // place the new marks
             if (!callNode.getArgs().isEmpty()) {
-                appendToken(leftBrace, FormatToken.forFormat(
+                TokenUtils.appendToken(leftBrace, FormatToken.forFormat(
                         FormatToken.Kind.AFTER_FUNCTION_CALL_PARENTHESIS));
 
                 if (rightBrace != null) {
                     previous = rightBrace.previous();
                     if (previous != null) {
-                        appendToken(previous, FormatToken.forFormat(
+                        TokenUtils.appendToken(previous, FormatToken.forFormat(
                                 FormatToken.Kind.BEFORE_FUNCTION_CALL_PARENTHESIS));
                     }
                 }
@@ -564,11 +565,11 @@ public class FormatVisitor extends NodeVisitor {
 
             // place function arguments marks
             for (Node arg : callNode.getArgs()) {
-                FormatToken argToken = getNextToken(getStart(arg), null);
+                FormatToken argToken = tokenUtils.getNextToken(getStart(arg), null);
                 if (argToken != null) {
                     FormatToken beforeArg = argToken.previous();
                     if (beforeArg != null) {
-                        appendToken(beforeArg,
+                        TokenUtils.appendToken(beforeArg,
                                 FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_CALL_ARGUMENT));
                     }
                 }
@@ -584,25 +585,25 @@ public class FormatVisitor extends NodeVisitor {
         Expression heritage = classNode.getClassHeritage();
         if (heritage != null) {
             heritage.accept(this);
-            FormatToken extendsToken = getPreviousToken(getStart(heritage), JsTokenId.KEYWORD_EXTENDS, getStart(classNode));
+            FormatToken extendsToken = tokenUtils.getPreviousToken(getStart(heritage), JsTokenId.KEYWORD_EXTENDS, getStart(classNode));
             if (extendsToken != null) {
                 FormatToken token = extendsToken.previous();
                 if (token != null) {
-                    appendToken(token, FormatToken.forFormat(FormatToken.Kind.BEFORE_CLASS_EXTENDS));
+                    TokenUtils.appendToken(token, FormatToken.forFormat(FormatToken.Kind.BEFORE_CLASS_EXTENDS));
                 }
             }
         }
 
         // indentation mark
-        FormatToken formatToken = getNextToken(heritage != null ? getFinish(heritage) : getStart(classNode),
+        FormatToken formatToken = tokenUtils.getNextToken(heritage != null ? getFinish(heritage) : getStart(classNode),
                 JsTokenId.BRACKET_LEFT_CURLY, true);
         if (formatToken != null) {
-            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
-            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_CLASS_START));
+            TokenUtils.appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+            TokenUtils.appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_CLASS_START));
 
             FormatToken previous = formatToken.previous();
             if (previous != null) {
-                appendToken(previous, FormatToken.forFormat(
+                TokenUtils.appendToken(previous, FormatToken.forFormat(
                         FormatToken.Kind.BEFORE_CLASS_DECLARATION_BRACE));
             }
         }
@@ -621,11 +622,11 @@ public class FormatVisitor extends NodeVisitor {
         }
 
         // put indentation mark after non white token preceeding curly bracket
-        formatToken = getPreviousNonWhiteToken(getFinish(classNode) - 1,
+        formatToken = tokenUtils.getPreviousNonWhiteToken(getFinish(classNode) - 1,
                 getStart(classNode), JsTokenId.BRACKET_RIGHT_CURLY, true);
         if (formatToken != null) {
-            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.BEFORE_CLASS_END));
-            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
+            TokenUtils.appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.BEFORE_CLASS_END));
+            TokenUtils.appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
         }
 
         markEndCurlyBrace(classNode);
@@ -636,14 +637,14 @@ public class FormatVisitor extends NodeVisitor {
     @Override
     public boolean enterObjectNode(ObjectNode objectNode) {
         // indentation mark
-        FormatToken formatToken = getPreviousToken(getStart(objectNode), JsTokenId.BRACKET_LEFT_CURLY, true);
+        FormatToken formatToken = tokenUtils.getPreviousToken(getStart(objectNode), JsTokenId.BRACKET_LEFT_CURLY, true);
         if (formatToken != null) {
-            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
-            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_LEFT_BRACE));
-            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_OBJECT_START));
+            TokenUtils.appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+            TokenUtils.appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_LEFT_BRACE));
+            TokenUtils.appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_OBJECT_START));
             FormatToken previous = formatToken.previous();
             if (previous != null) {
-                appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_OBJECT));
+                TokenUtils.appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_OBJECT));
             }
         }
 
@@ -666,12 +667,12 @@ public class FormatVisitor extends NodeVisitor {
         }
 
         // put indentation mark after non white token preceeding curly bracket
-        formatToken = getPreviousNonWhiteToken(getFinish(objectNode) - 1,
+        formatToken = tokenUtils.getPreviousNonWhiteToken(getFinish(objectNode) - 1,
                 getStart(objectNode), JsTokenId.BRACKET_RIGHT_CURLY, true);
         if (formatToken != null) {
-            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.BEFORE_OBJECT_END));
-            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.BEFORE_RIGHT_BRACE));
-            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
+            TokenUtils.appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.BEFORE_OBJECT_END));
+            TokenUtils.appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.BEFORE_RIGHT_BRACE));
+            TokenUtils.appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
         }
 
         return false;
@@ -679,13 +680,13 @@ public class FormatVisitor extends NodeVisitor {
 
     @Override
     public boolean enterPropertyNode(PropertyNode propertyNode) {
-        FormatToken colon = getNextToken(getFinish(propertyNode.getKey()),
+        FormatToken colon = tokenUtils.getNextToken(getFinish(propertyNode.getKey()),
                 JsTokenId.OPERATOR_COLON, getFinish(propertyNode));
         if (colon != null) {
-            appendToken(colon, FormatToken.forFormat(FormatToken.Kind.AFTER_PROPERTY_OPERATOR));
+            TokenUtils.appendToken(colon, FormatToken.forFormat(FormatToken.Kind.AFTER_PROPERTY_OPERATOR));
             FormatToken before = colon.previous();
             if (before != null) {
-                appendTokenAfterLastVirtual(before, FormatToken.forFormat(FormatToken.Kind.BEFORE_PROPERTY_OPERATOR));
+                TokenUtils.appendTokenAfterLastVirtual(before, FormatToken.forFormat(FormatToken.Kind.BEFORE_PROPERTY_OPERATOR));
             }
         }
         return super.enterPropertyNode(propertyNode);
@@ -699,10 +700,10 @@ public class FormatVisitor extends NodeVisitor {
         // mark space before left brace
         markSpacesBeforeBrace(switchNode);
 
-        FormatToken formatToken = getNextToken(getStart(switchNode), JsTokenId.BRACKET_LEFT_CURLY, true);
+        FormatToken formatToken = tokenUtils.getNextToken(getStart(switchNode), JsTokenId.BRACKET_LEFT_CURLY, true);
         if (formatToken != null) {
-            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
-            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_BLOCK_START));
+            TokenUtils.appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+            TokenUtils.appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_BLOCK_START));
         }
 
         List<CaseNode> nodes = new ArrayList<CaseNode>(switchNode.getCases());
@@ -717,17 +718,17 @@ public class FormatVisitor extends NodeVisitor {
                 index = getStart(statements.get(0));
             }
 
-            formatToken = getPreviousToken(index, JsTokenId.OPERATOR_COLON);
+            formatToken = tokenUtils.getPreviousToken(index, JsTokenId.OPERATOR_COLON);
             if (formatToken != null) {
-                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_CASE));
+                TokenUtils.appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_CASE));
             }
         }
 
         // put indentation mark after non white token preceeding curly bracket
-        formatToken = getPreviousNonWhiteToken(getFinish(switchNode),
+        formatToken = tokenUtils.getPreviousNonWhiteToken(getFinish(switchNode),
                 getStart(switchNode), JsTokenId.BRACKET_RIGHT_CURLY, true);
         if (formatToken != null) {
-            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
+            TokenUtils.appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
         }
 
         markEndCurlyBrace(switchNode);
@@ -739,18 +740,18 @@ public class FormatVisitor extends NodeVisitor {
         TokenType type = unaryNode.tokenType();
         if (UNARY_TYPES.contains(type)) {
             if (TokenType.DECPOSTFIX.equals(type) || TokenType.INCPOSTFIX.equals(type)) {
-                FormatToken formatToken = getPreviousToken(getFinish(unaryNode),
+                FormatToken formatToken = tokenUtils.getPreviousToken(getFinish(unaryNode),
                         TokenType.DECPOSTFIX.equals(type) ? JsTokenId.OPERATOR_DECREMENT : JsTokenId.OPERATOR_INCREMENT);
 
                 if (formatToken != null) {
                     formatToken = formatToken.previous();
                     if (formatToken != null) {
-                        appendToken(formatToken,
+                        TokenUtils.appendToken(formatToken,
                                 FormatToken.forFormat(FormatToken.Kind.BEFORE_UNARY_OPERATOR));
                     }
                 }
             } else {
-                FormatToken formatToken = getNextToken(getStart(unaryNode), null);
+                FormatToken formatToken = tokenUtils.getNextToken(getStart(unaryNode), null);
 
                 // may be null when we are out of formatted area
                 if (formatToken != null) {
@@ -760,30 +761,30 @@ public class FormatVisitor extends NodeVisitor {
                         assert formatToken.getId() == JsTokenId.OPERATOR_PLUS
                                     || formatToken.getId() == JsTokenId.OPERATOR_MINUS : formatToken;
                         // we remove blindly inserted binary op markers
-                        FormatToken toRemove = findVirtualToken(formatToken,
+                        FormatToken toRemove = TokenUtils.findVirtualToken(formatToken,
                                 FormatToken.Kind.BEFORE_BINARY_OPERATOR, true);
                         assert toRemove != null
                                 && toRemove.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR : toRemove;
                         tokenStream.removeToken(toRemove);
-                        toRemove = findVirtualToken(formatToken,
+                        toRemove = TokenUtils.findVirtualToken(formatToken,
                                 FormatToken.Kind.BEFORE_BINARY_OPERATOR_WRAP, true);
                         assert toRemove != null
                                 && toRemove.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR_WRAP : toRemove;
                         tokenStream.removeToken(toRemove);
 
-                        toRemove = findVirtualToken(formatToken,
+                        toRemove = TokenUtils.findVirtualToken(formatToken,
                                 FormatToken.Kind.AFTER_BINARY_OPERATOR, false);
                         assert toRemove != null
                                 && toRemove.getKind() == FormatToken.Kind.AFTER_BINARY_OPERATOR : toRemove;
                         tokenStream.removeToken(toRemove);
-                        toRemove = findVirtualToken(formatToken,
+                        toRemove = TokenUtils.findVirtualToken(formatToken,
                                 FormatToken.Kind.AFTER_BINARY_OPERATOR_WRAP, false);
                         assert toRemove != null
                                 && toRemove.getKind() == FormatToken.Kind.AFTER_BINARY_OPERATOR_WRAP : toRemove;
                         tokenStream.removeToken(toRemove);
                     }
 
-                    appendToken(formatToken,
+                    TokenUtils.appendToken(formatToken,
                             FormatToken.forFormat(FormatToken.Kind.AFTER_UNARY_OPERATOR));
                 }
             }
@@ -795,24 +796,24 @@ public class FormatVisitor extends NodeVisitor {
     @Override
     public boolean enterTernaryNode(TernaryNode ternaryNode) {
         int start = getFinish(ternaryNode.getTest());
-        FormatToken question = getNextToken(start, JsTokenId.OPERATOR_TERNARY);
+        FormatToken question = tokenUtils.getNextToken(start, JsTokenId.OPERATOR_TERNARY);
         if (question != null) {
             FormatToken previous = question.previous();
             if (previous != null) {
-                appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_TERNARY_OPERATOR));
-                appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_TERNARY_OPERATOR_WRAP));
+                TokenUtils.appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_TERNARY_OPERATOR));
+                TokenUtils.appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_TERNARY_OPERATOR_WRAP));
             }
-            appendToken(question, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR));
-            appendToken(question, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR_WRAP));
-            FormatToken colon = getPreviousToken(getStart(ternaryNode.getFalseExpression()), JsTokenId.OPERATOR_COLON);
+            TokenUtils.appendToken(question, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR));
+            TokenUtils.appendToken(question, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR_WRAP));
+            FormatToken colon = tokenUtils.getPreviousToken(getStart(ternaryNode.getFalseExpression()), JsTokenId.OPERATOR_COLON);
             if (colon != null) {
                 previous = colon.previous();
                 if (previous != null) {
-                    appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_TERNARY_OPERATOR));
-                    appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_TERNARY_OPERATOR_WRAP));
+                    TokenUtils.appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_TERNARY_OPERATOR));
+                    TokenUtils.appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_TERNARY_OPERATOR_WRAP));
                 }
-                appendToken(colon, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR));
-                appendToken(colon, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR_WRAP));
+                TokenUtils.appendToken(colon, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR));
+                TokenUtils.appendToken(colon, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR_WRAP));
             }
         }
 
@@ -854,22 +855,22 @@ public class FormatVisitor extends NodeVisitor {
         if (value instanceof Node[]) {
             int start = getStart(literalNode);
             int finish = getFinish(literalNode);
-            FormatToken leftBracket = getNextToken(start, JsTokenId.BRACKET_LEFT_BRACKET, finish);            
+            FormatToken leftBracket = tokenUtils.getNextToken(start, JsTokenId.BRACKET_LEFT_BRACKET, finish);            
             if (leftBracket != null) {
                 if (leftBracket.previous() != null) {
                     // mark beginning of the array (see issue #250150)
-                    appendToken(leftBracket.previous(), FormatToken.forFormat(FormatToken.Kind.BEFORE_ARRAY));
+                    TokenUtils.appendToken(leftBracket.previous(), FormatToken.forFormat(FormatToken.Kind.BEFORE_ARRAY));
                 }
-                appendToken(leftBracket, FormatToken.forFormat(FormatToken.Kind.AFTER_ARRAY_LITERAL_START));
-                appendToken(leftBracket, FormatToken.forFormat(FormatToken.Kind.AFTER_ARRAY_LITERAL_BRACKET));
-                appendToken(leftBracket, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
-                FormatToken rightBracket = getPreviousToken(finish - 1, JsTokenId.BRACKET_RIGHT_BRACKET, start + 1);
+                TokenUtils.appendToken(leftBracket, FormatToken.forFormat(FormatToken.Kind.AFTER_ARRAY_LITERAL_START));
+                TokenUtils.appendToken(leftBracket, FormatToken.forFormat(FormatToken.Kind.AFTER_ARRAY_LITERAL_BRACKET));
+                TokenUtils.appendToken(leftBracket, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+                FormatToken rightBracket = tokenUtils.getPreviousToken(finish - 1, JsTokenId.BRACKET_RIGHT_BRACKET, start + 1);
                 if (rightBracket != null) {
                     FormatToken previous = rightBracket.previous();
                     if (previous != null) {
-                        appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_ARRAY_LITERAL_END));
-                        appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_ARRAY_LITERAL_BRACKET));
-                        appendToken(previous, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
+                        TokenUtils.appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_ARRAY_LITERAL_END));
+                        TokenUtils.appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_ARRAY_LITERAL_BRACKET));
+                        TokenUtils.appendToken(previous, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
                     }
                 }
             }
@@ -883,10 +884,10 @@ public class FormatVisitor extends NodeVisitor {
                         if (prevItem != null) {
                             prevItemFinish = getFinish(prevItem);
                         }
-                        FormatToken comma = getNextToken(prevItemFinish, JsTokenId.OPERATOR_COMMA, finish);
+                        FormatToken comma = tokenUtils.getNextToken(prevItemFinish, JsTokenId.OPERATOR_COMMA, finish);
                         if (comma != null) {
                             prevItemFinish = comma.getOffset();
-                            appendTokenAfterLastVirtual(comma,
+                            TokenUtils.appendTokenAfterLastVirtual(comma,
                                     FormatToken.forFormat(FormatToken.Kind.AFTER_ARRAY_LITERAL_ITEM));
                         }
                     }
@@ -903,13 +904,13 @@ public class FormatVisitor extends NodeVisitor {
             return false;
         }
         int finish = getFinish(varNode) - 1;
-        Token nextToken = getNextNonEmptyToken(finish);
+        Token nextToken = tokenUtils.getNextNonEmptyToken(finish);
         if (nextToken != null && nextToken.id() == JsTokenId.OPERATOR_COMMA) {
             FormatToken formatToken = tokenStream.getToken(ts.offset());
             if (formatToken != null) {
                 FormatToken next = formatToken.next();
                 assert next != null && next.getKind() == FormatToken.Kind.AFTER_COMMA : next;
-                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_VAR_DECLARATION));
+                TokenUtils.appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_VAR_DECLARATION));
             }
         }
 
@@ -924,7 +925,7 @@ public class FormatVisitor extends NodeVisitor {
             assert mark != null && mark.getKind() == FormatToken.Kind.AFTER_LEFT_PARENTHESIS : mark;
             tokenStream.removeToken(mark);
 
-            FormatToken rightParen = getPreviousToken(getStart(functionNode.getBody()),
+            FormatToken rightParen = tokenUtils.getPreviousToken(getStart(functionNode.getBody()),
                     JsTokenId.BRACKET_RIGHT_PAREN, leftParen.getOffset());
             if (rightParen != null) {
                 FormatToken previous = rightParen.previous();
@@ -934,13 +935,13 @@ public class FormatVisitor extends NodeVisitor {
 
             // place the new marks
             if (!functionNode.getParameters().isEmpty()) {
-                appendToken(leftParen, FormatToken.forFormat(
+                TokenUtils.appendToken(leftParen, FormatToken.forFormat(
                         FormatToken.Kind.AFTER_FUNCTION_DECLARATION_PARENTHESIS));
 
                 if (rightParen != null) {
                     FormatToken previous = rightParen.previous();
                     if (previous != null) {
-                        appendToken(previous, FormatToken.forFormat(
+                        TokenUtils.appendToken(previous, FormatToken.forFormat(
                                 FormatToken.Kind.BEFORE_FUNCTION_DECLARATION_PARENTHESIS));
                     }
                 }
@@ -949,18 +950,18 @@ public class FormatVisitor extends NodeVisitor {
 
         // place function parameters marks
         for (IdentNode param : functionNode.getParameters()) {
-            FormatToken paramToken = getNextToken(getStart(param), JsTokenId.IDENTIFIER);
+            FormatToken paramToken = tokenUtils.getNextToken(getStart(param), JsTokenId.IDENTIFIER);
             if (paramToken != null) {
                 // there might be "a, ...z" for example so we want the mark before the rest
                 // parameter
-                Token previousNonEmpty = getPreviousNonEmptyToken(paramToken.getOffset());
+                Token previousNonEmpty = tokenUtils.getPreviousNonEmptyToken(paramToken.getOffset());
                 if (previousNonEmpty != null && previousNonEmpty.id() == JsTokenId.OPERATOR_REST) {
                     paramToken = tokenStream.getToken(ts.offset());
                 }
 
                 FormatToken beforeIdent = paramToken.previous();
                 if (beforeIdent != null) {
-                    appendToken(beforeIdent,
+                    TokenUtils.appendToken(beforeIdent,
                             FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_DECLARATION_PARAMETER));
                 }
             }
@@ -974,13 +975,13 @@ public class FormatVisitor extends NodeVisitor {
             if (base instanceof CallNode) {
                 CallNode chained = (CallNode) base;
                 int finish = getFinish(chained);
-                FormatToken formatToken = getNextToken(finish, JsTokenId.OPERATOR_DOT);
+                FormatToken formatToken = tokenUtils.getNextToken(finish, JsTokenId.OPERATOR_DOT);
                 if (formatToken != null) {
-                    appendTokenAfterLastVirtual(formatToken,
+                    TokenUtils.appendTokenAfterLastVirtual(formatToken,
                             FormatToken.forFormat(FormatToken.Kind.AFTER_CHAIN_CALL_DOT));
                     formatToken = formatToken.previous();
                     if (formatToken != null) {
-                        appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.BEFORE_CHAIN_CALL_DOT));
+                        TokenUtils.appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.BEFORE_CHAIN_CALL_DOT));
                     }
                 }
             }
@@ -1000,20 +1001,20 @@ public class FormatVisitor extends NodeVisitor {
         handleBlockContent(block, true);
 
         // indentation mark & block start
-        FormatToken formatToken = getPreviousToken(getStart(block), JsTokenId.BRACKET_LEFT_CURLY, true);
+        FormatToken formatToken = tokenUtils.getPreviousToken(getStart(block), JsTokenId.BRACKET_LEFT_CURLY, true);
         if (formatToken != null && !isScript(block)) {
-            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
-            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_BLOCK_START));
+            TokenUtils.appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+            TokenUtils.appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_BLOCK_START));
         }
 
         // put indentation mark after non white token preceeding curly bracket
         // XXX optimize ?
-        formatToken = getNextToken(getFinish(block) - 1, JsTokenId.BRACKET_RIGHT_CURLY);
+        formatToken = tokenUtils.getNextToken(getFinish(block) - 1, JsTokenId.BRACKET_RIGHT_CURLY);
         if (formatToken != null) {
-            formatToken = getPreviousNonWhiteToken(formatToken.getOffset(),
+            formatToken = tokenUtils.getPreviousNonWhiteToken(formatToken.getOffset(),
                     getStart(block), JsTokenId.BRACKET_RIGHT_CURLY, true);
             if (formatToken != null && !isScript(block)) {
-                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
+                TokenUtils.appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
             }
         }
     }
@@ -1053,7 +1054,7 @@ public class FormatVisitor extends NodeVisitor {
         //Node statement = block.getStatements().get(0);
 
         // indentation mark & block start
-        Token token = getPreviousNonEmptyToken(getStart(block));
+        Token token = tokenUtils.getPreviousNonEmptyToken(getStart(block));
 
         if (token != null) {
             FormatToken formatToken = tokenStream.getToken(ts.offset());
@@ -1062,9 +1063,9 @@ public class FormatVisitor extends NodeVisitor {
                     formatToken = tokenStream.getTokens().get(0);
                 }
                 if (formatToken != null) {
-                    appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(indentationInc));
+                    TokenUtils.appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(indentationInc));
                     if (afterBlock != null) {
-                        appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(afterBlock));
+                        TokenUtils.appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(afterBlock));
                     }
                 }
             }
@@ -1073,7 +1074,7 @@ public class FormatVisitor extends NodeVisitor {
         // put indentation mark after non white token
         int finish = getFinish(block);
         // empty statement has start == finish
-        FormatToken formatToken = getPreviousToken(
+        FormatToken formatToken = tokenUtils.getPreviousToken(
                 block.getStart() < finish ? finish - 1 : finish, null, true);
         if (formatToken != null && !isScript(block)) {
             while (formatToken != null && (formatToken.getKind() == FormatToken.Kind.EOL
@@ -1083,9 +1084,9 @@ public class FormatVisitor extends NodeVisitor {
                 formatToken = formatToken.previous();
             }
             if (block.getStatementCount() == 0 && block.getStart() < block.getFinish()) {
-                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_STATEMENT));
+                TokenUtils.appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_STATEMENT));
             }
-            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(indentationDec));
+            TokenUtils.appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(indentationDec));
         }
     }
 
@@ -1122,7 +1123,7 @@ public class FormatVisitor extends NodeVisitor {
                                 i--;
                                 break;
                             } else {
-                                Token token = getPreviousNonEmptyToken(getStart(next));
+                                Token token = tokenUtils.getPreviousNonEmptyToken(getStart(next));
                                 if (token != null && (JsTokenId.KEYWORD_VAR == token.id()
                                         || JsTokenId.KEYWORD_CONST == token.id()
                                         || JsTokenId.RESERVED_LET == token.id())) {
@@ -1142,7 +1143,7 @@ public class FormatVisitor extends NodeVisitor {
                     }
                 }
 
-                FormatToken formatToken = getPreviousToken(start < finish ? finish - 1 : finish, null);
+                FormatToken formatToken = tokenUtils.getPreviousToken(start < finish ? finish - 1 : finish, null);
                 while (formatToken != null && (formatToken.getKind() == FormatToken.Kind.EOL
                         || formatToken.getKind() == FormatToken.Kind.WHITESPACE
                         || formatToken.getKind() == FormatToken.Kind.LINE_COMMENT
@@ -1150,7 +1151,7 @@ public class FormatVisitor extends NodeVisitor {
                     formatToken = formatToken.previous();
                 }
                 if (formatToken != null) {
-                    appendTokenAfterLastVirtual(formatToken,
+                    TokenUtils.appendTokenAfterLastVirtual(formatToken,
                             FormatToken.forFormat(FormatToken.Kind.AFTER_STATEMENT), true);
                 }
             }
@@ -1178,7 +1179,7 @@ public class FormatVisitor extends NodeVisitor {
         int leftStart = getStart(node);
 
         // the { has to be there for switch
-        FormatToken token = getNextToken(leftStart, JsTokenId.BRACKET_LEFT_CURLY, getFinish(node));
+        FormatToken token = tokenUtils.getNextToken(leftStart, JsTokenId.BRACKET_LEFT_CURLY, getFinish(node));
         if (token != null) {
             markSpacesWithinParentheses(node, leftStart, token.getOffset(),
                     FormatToken.Kind.AFTER_SWITCH_PARENTHESIS, FormatToken.Kind.BEFORE_SWITCH_PARENTHESIS);
@@ -1189,11 +1190,11 @@ public class FormatVisitor extends NodeVisitor {
         int leftStart = getStart(node);
 
         // the { has to be there for switch
-        FormatToken token = getNextToken(leftStart, JsTokenId.BRACKET_LEFT_CURLY, getFinish(node));
+        FormatToken token = tokenUtils.getNextToken(leftStart, JsTokenId.BRACKET_LEFT_CURLY, getFinish(node));
         if (token != null) {
             FormatToken previous = token.previous();
             if (previous != null) {
-                appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_SWITCH_BRACE));
+                TokenUtils.appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_SWITCH_BRACE));
             }
         }
     }
@@ -1213,7 +1214,7 @@ public class FormatVisitor extends NodeVisitor {
     private void markSpacesWithinParentheses(Node outerNode, int leftStart,
             int rightStart, FormatToken.Kind leftMark, FormatToken.Kind rightMark) {
 
-        FormatToken leftParen = getNextToken(leftStart,
+        FormatToken leftParen = tokenUtils.getNextToken(leftStart,
                 JsTokenId.BRACKET_LEFT_PAREN, getFinish(outerNode));
         if (leftParen != null) {
             FormatToken mark = leftParen.next();
@@ -1222,8 +1223,8 @@ public class FormatVisitor extends NodeVisitor {
                 tokenStream.removeToken(mark);
             }
 
-            appendToken(leftParen, FormatToken.forFormat(leftMark));
-            FormatToken rightParen = getPreviousToken(rightStart,
+            TokenUtils.appendToken(leftParen, FormatToken.forFormat(leftMark));
+            FormatToken rightParen = tokenUtils.getPreviousToken(rightStart,
                     JsTokenId.BRACKET_RIGHT_PAREN, getStart(outerNode));
             if (rightParen != null) {
                 FormatToken previous = rightParen.previous();
@@ -1234,35 +1235,35 @@ public class FormatVisitor extends NodeVisitor {
 
                 previous = rightParen.previous();
                 if (previous != null) {
-                    appendToken(previous, FormatToken.forFormat(rightMark));
+                    TokenUtils.appendToken(previous, FormatToken.forFormat(rightMark));
                 }
             }
         }
     }
 
     private void markSpacesBeforeBrace(Block block, FormatToken.Kind mark) {
-        FormatToken brace = getPreviousToken(getStart(block), null,
+        FormatToken brace = tokenUtils.getPreviousToken(getStart(block), null,
                 getStart(block) - 1);
         if (brace != null) {
             FormatToken previous = brace.previous();
             if (previous != null) {
-                appendToken(previous, FormatToken.forFormat(mark));
+                TokenUtils.appendToken(previous, FormatToken.forFormat(mark));
             }
         }
     }
 
     private void markPropertyFinish(int finish, int objectFinish, boolean checkDuplicity) {
-        FormatToken formatToken = getNextToken(finish, JsTokenId.OPERATOR_COMMA, objectFinish);
+        FormatToken formatToken = tokenUtils.getNextToken(finish, JsTokenId.OPERATOR_COMMA, objectFinish);
         if (formatToken != null) {
-            appendTokenAfterLastVirtual(formatToken,
+            TokenUtils.appendTokenAfterLastVirtual(formatToken,
                     FormatToken.forFormat(FormatToken.Kind.AFTER_PROPERTY), checkDuplicity);
         }
     }
 
     private void markClassElementFinish(int finish, int classFinish, boolean checkDuplicity) {
-        FormatToken formatToken = getPreviousToken(finish, JsTokenId.BRACKET_RIGHT_CURLY, classFinish);
+        FormatToken formatToken = tokenUtils.getPreviousToken(finish, JsTokenId.BRACKET_RIGHT_CURLY, classFinish);
         if (formatToken != null) {
-            appendTokenAfterLastVirtual(formatToken,
+            TokenUtils.appendTokenAfterLastVirtual(formatToken,
                     FormatToken.forFormat(FormatToken.Kind.AFTER_ELEMENT), checkDuplicity);
         }
     }
@@ -1278,131 +1279,10 @@ public class FormatVisitor extends NodeVisitor {
                     }
                 }
                 if (formatToken.getId() == JsTokenId.BRACKET_RIGHT_CURLY) {
-                    appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_END_BRACE));
+                    TokenUtils.appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_END_BRACE));
                 }
             }
         }
-    }
-
-    private FormatToken getNextToken(int offset, JsTokenId expected) {
-        return getToken(offset, expected, false, false, null);
-    }
-
-    private FormatToken getNextToken(int offset, JsTokenId expected, int stop) {
-        return getToken(offset, expected, false, false, stop);
-    }
-
-    private FormatToken getNextToken(int offset, JsTokenId expected, boolean startFallback) {
-        return getToken(offset, expected, false, startFallback, null);
-    }
-
-    private FormatToken getPreviousToken(int offset, JsTokenId expected) {
-        return getPreviousToken(offset, expected, false);
-    }
-
-    private FormatToken getPreviousToken(int offset, JsTokenId expected, int stop) {
-        return getToken(offset, expected, true, false, stop);
-    }
-
-    private FormatToken getPreviousToken(int offset, JsTokenId expected, boolean startFallback) {
-        return getToken(offset, expected, true, startFallback, null);
-    }
-
-    private FormatToken getToken(int offset, JsTokenId expected, boolean backward,
-            boolean startFallback, Integer stopMark) {
-
-        ts.move(offset);
-
-        if (!ts.moveNext() && !ts.movePrevious()) {
-            return null;
-        }
-
-        Token<? extends JsTokenId> token = ts.token();
-        if (expected != null) {
-            while (expected != token.id()
-                    && (stopMark == null || ((stopMark >= ts.offset() && !backward) || (stopMark <=ts.offset() && backward)))
-                    && ((backward && ts.movePrevious()) || (!backward && ts.moveNext()))) {
-                token = ts.token();
-            }
-            if (expected != token.id()) {
-                return null;
-            }
-        }
-        if (stopMark != null && ((ts.offset() > stopMark && !backward) || (ts.offset() < stopMark && backward))) {
-            return null;
-        }
-        if (token != null) {
-            return getFallback(ts.offset(), startFallback);
-        }
-        return null;
-    }
-
-    private Token getPreviousNonEmptyToken(int offset) {
-        ts.move(offset);
-
-        if (!ts.moveNext() && !ts.movePrevious()) {
-            return null;
-        }
-
-        Token ret = null;
-        while (ts.movePrevious()) {
-            Token token = ts.token();
-            if ((token.id() != JsTokenId.BLOCK_COMMENT && token.id() != JsTokenId.DOC_COMMENT
-                && token.id() != JsTokenId.LINE_COMMENT && token.id() != JsTokenId.EOL
-                && token.id() != JsTokenId.WHITESPACE)) {
-                ret = token;
-                break;
-            }
-        }
-        return ret;
-    }
-
-    private Token getNextNonEmptyToken(int offset) {
-        ts.move(offset);
-
-        if (!ts.moveNext() && !ts.movePrevious()) {
-            return null;
-        }
-
-        Token ret = null;
-        while (ts.moveNext()) {
-            Token token = ts.token();
-            if ((token.id() != JsTokenId.BLOCK_COMMENT && token.id() != JsTokenId.DOC_COMMENT
-                && token.id() != JsTokenId.LINE_COMMENT && token.id() != JsTokenId.EOL
-                && token.id() != JsTokenId.WHITESPACE)) {
-                ret = token;
-                break;
-            }
-        }
-        return ret;
-    }
-
-    private FormatToken getPreviousNonWhiteToken(int offset, int stop, JsTokenId expected, boolean startFallback) {
-        assert stop <= offset;
-        FormatToken ret = getPreviousToken(offset, expected, startFallback);
-        if (startFallback && ret != null && ret.getKind() == FormatToken.Kind.SOURCE_START) {
-            return ret;
-        }
-
-        if (ret != null) {
-            if (expected == null) {
-                return ret;
-            }
-
-            Token token = null;
-            while (ts.movePrevious() && ts.offset() >= stop) {
-                Token current = ts.token();
-                if (current.id() != JsTokenId.WHITESPACE) {
-                    token = current;
-                    break;
-                }
-            }
-
-            if (token != null) {
-                return getFallback(ts.offset(), startFallback);
-            }
-        }
-        return null;
     }
 
     /**
@@ -1440,19 +1320,10 @@ public class FormatVisitor extends NodeVisitor {
             }
 
             if (ret != null) {
-                return getFallback(ts.offset(), true);
+                return tokenUtils.getFallback(ts.offset(), true);
             }
         }
         return null;
-    }
-
-    private FormatToken getFallback(int offset, boolean fallback) {
-        FormatToken ret = tokenStream.getToken(offset);
-        if (ret == null && fallback && offset < formatFinish) {
-            ret = tokenStream.getTokens().get(0);
-            assert ret != null && ret.getKind() == FormatToken.Kind.SOURCE_START;
-        }
-        return ret;
     }
 
     private int getStart(Node node) {
@@ -1528,7 +1399,7 @@ public class FormatVisitor extends NodeVisitor {
             if (var.getInit() != null && (var.getInit() instanceof ClassNode)) {
                 return getFinish(var.getInit());
             }
-            Token token = getNextNonEmptyToken(getFinishFixed(node) - 1);
+            Token token = tokenUtils.getNextNonEmptyToken(getFinishFixed(node) - 1);
             if (token != null && JsTokenId.OPERATOR_SEMICOLON == token.id()) {
                 return ts.offset() + 1;
             } else {
@@ -1586,53 +1457,4 @@ public class FormatVisitor extends NodeVisitor {
         }
         return false;
     }
-
-    @CheckForNull
-    private static FormatToken findVirtualToken(FormatToken token, FormatToken.Kind kind,
-            boolean backwards) {
-        FormatToken result = backwards ? token.previous() : token.next();
-        while (result != null && result.isVirtual()
-                && result.getKind() != kind) {
-            result = backwards ? result.previous() : result.next();;
-        }
-        if (result != null && result.getKind() != kind) {
-            return null;
-        }
-        return result;
-    }
-
-    private static void appendTokenAfterLastVirtual(FormatToken previous,
-            FormatToken token) {
-        appendTokenAfterLastVirtual(previous, token, false);
-    }
-
-    private static void appendTokenAfterLastVirtual(FormatToken previous,
-            FormatToken token, boolean checkDuplicity) {
-
-        assert previous != null;
-
-        @NonNull
-        FormatToken current = previous;
-        FormatToken next = current.next();
-
-        while (next != null && next.isVirtual()) {
-            current = next;
-            next = next.next();
-        }
-        if (!checkDuplicity || !current.isVirtual() || !token.isVirtual()
-                || current.getKind() != token.getKind()) {
-            appendToken(current, token);
-        }
-    }
-
-    private static void appendToken(FormatToken previous, FormatToken token) {
-        FormatToken original = previous.next();
-        previous.setNext(token);
-        token.setPrevious(previous);
-        token.setNext(original);
-        if (original != null) {
-            original.setPrevious(token);
-        }
-    }
-
 }
