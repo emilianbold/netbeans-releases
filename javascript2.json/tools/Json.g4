@@ -148,7 +148,7 @@ public void recover(LexerNoViableAltException e) {
 }
 
 
-json                : value?;
+json                : value?EOF;
 value               : (STRING | NUMBER | TRUE | FALSE | NULL | array | object);
 object              : LBRACE (pair (COMMA pair)*)? RBRACE;
 pair               : key COLON value;
