@@ -49,12 +49,13 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.javascript2.editor.api.FrameworksUtils;
-import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
-import org.netbeans.modules.javascript2.editor.model.JsFunction;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.TypeUsage;
-import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
-import org.netbeans.modules.javascript2.editor.spi.model.ObjectInterceptor;
+import org.netbeans.modules.javascript2.types.api.DeclarationScope;
+import org.netbeans.modules.javascript2.model.api.JsFunction;
+import org.netbeans.modules.javascript2.model.api.JsObject;
+import org.netbeans.modules.javascript2.model.api.ModelUtils;
+import org.netbeans.modules.javascript2.types.api.TypeUsage;
+import org.netbeans.modules.javascript2.model.spi.ModelElementFactory;
+import org.netbeans.modules.javascript2.model.spi.ObjectInterceptor;
 import org.netbeans.modules.javascript2.nodejs.editor.NodeJsUtils;
 
 /**
@@ -124,7 +125,7 @@ public class NodeJsObjectInterceptor implements ObjectInterceptor {
             
             for(DeclarationScope movedScope: childrenScopesCopy) {
                 if (!movedScope.equals(module)) {
-                    FrameworksUtils.changeDeclarationScope((JsObject)movedScope, module);
+                    ModelUtils.changeDeclarationScope((JsObject)movedScope, module);
                 }
             }
         }

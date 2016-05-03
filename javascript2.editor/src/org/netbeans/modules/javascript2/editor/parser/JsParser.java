@@ -37,12 +37,11 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
-import jdk.nashorn.internal.codegen.CompilerConstants;
-import jdk.nashorn.internal.ir.FunctionNode;
-import jdk.nashorn.internal.parser.Parser;
-import jdk.nashorn.internal.runtime.Source;
-import jdk.nashorn.internal.runtime.options.Options;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import com.oracle.js.parser.ir.FunctionNode;
+import com.oracle.js.parser.Parser;
+import com.oracle.js.parser.ScriptEnvironment;
+import com.oracle.js.parser.Source;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -50,7 +49,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
  * @author Petr Pisl
  * @author Petr Hejl
  */
-public class JsParser extends SanitizingParser {
+public class JsParser extends SanitizingParser<JsParserResult> {
 
     public JsParser() {
         super(JsTokenId.javascriptLanguage());
@@ -62,7 +61,12 @@ public class JsParser extends SanitizingParser {
     }
 
     @Override
-    protected FunctionNode parseSource(Snapshot snapshot, String name, String text, int caretOffset, JsErrorManager errorManager) throws Exception {
+    protected JsParserResult parseSource(SanitizingParser.Context context, JsErrorManager errorManager) throws Exception {
+        final Snapshot snapshot = context.getSnapshot();
+        final String name = context.getName();
+        final String text = context.getSource();
+        final int caretOffset = context.getCaretOffset();
+        final boolean isModule = context.isModule();
         String parsableText = text;
 //        System.out.println(text);
 //        System.out.println("----------------");
@@ -91,22 +95,24 @@ public class JsParser extends SanitizingParser {
             parsableText = sb.toString();
         }
         
-        Source source = new Source(name, parsableText);
-        Options options = new Options("nashorn"); // NOI18N
-        options.process(new String[] {
-            "--parse-only=true", // NOI18N
-            "--empty-statements=true", // NOI18N
-            "--debug-lines=false"}); // NOI18N
-
+        Source source = Source.sourceFor(name, parsableText);
         errorManager.setLimit(0);
-        jdk.nashorn.internal.runtime.Context nashornContext = new jdk.nashorn.internal.runtime.Context(options, errorManager, JsParser.class.getClassLoader());
-        // XXX
-        //jdk.nashorn.internal.runtime.Context.setContext(contextN);
-        jdk.nashorn.internal.codegen.Compiler compiler = jdk.nashorn.internal.codegen.Compiler.compiler(source, nashornContext);
-        Parser parser = new Parser(compiler);
-        FunctionNode node = parser.parse(CompilerConstants.RUN_SCRIPT.tag());
-        return node;
+
+        ScriptEnvironment.Builder builder = ScriptEnvironment.builder();
+        Parser parser = new Parser(builder.emptyStatements(true).build(), source, errorManager);
+        FunctionNode node = null;
+        if (isModule) {
+            node = parser.parseModule(name);
+        } else {
+            node = parser.parse();
+        }
+        return new JsParserResult(snapshot, node);
     }
+
+    @Override
+    protected JsParserResult createErrorResult(Snapshot snapshot) {
+        return new JsParserResult(snapshot, null);
+     }
 
     @Override
     protected String getMimeType() {

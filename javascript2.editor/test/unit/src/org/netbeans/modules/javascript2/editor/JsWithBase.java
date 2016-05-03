@@ -58,6 +58,7 @@ import static org.netbeans.modules.csl.api.test.CslTestBase.getCaretOffset;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.javascript2.model.api.Model;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -88,7 +89,7 @@ public class JsWithBase extends JsCodeCompletionBase{
                 Parser.Result r = resultIterator.getParserResult();
                 assertTrue(r instanceof JsParserResult);
                 JsParserResult pr = (JsParserResult) r;
-                pr.getModel().getGlobalObject();
+                Model.getModel(pr, false).getGlobalObject();
                 DeclarationFinder finder = getFinder();
                 location[0] = finder.findDeclaration(pr, caretOffset);
             }
@@ -118,7 +119,7 @@ public class JsWithBase extends JsCodeCompletionBase{
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result r = resultIterator.getParserResult(caretOffset);
                 if (r instanceof JsParserResult) {
-                    ((JsParserResult)r).getModel().getGlobalObject();
+                    Model.getModel(((JsParserResult)r), false).getGlobalObject();
                     finder.run((ParserResult) r, null);
                     Map<OffsetRange, ColoringAttributes> occurrences = finder.getOccurrences();
                     if (occurrences == null) {
@@ -159,7 +160,7 @@ public class JsWithBase extends JsCodeCompletionBase{
                 assertTrue(r instanceof ParserResult);
                 JsParserResult pr = (JsParserResult) r;
                 
-                pr.getModel().getGlobalObject();
+                Model.getModel(pr, false).getGlobalObject();
                 
                 SemanticAnalyzer analyzer = getSemanticAnalyzer();
                 assertNotNull("getSemanticAnalyzer must be implemented", analyzer);
