@@ -435,7 +435,7 @@ public class FormatVisitor extends NodeVisitor {
                 }
             }
 
-            FormatToken leftParen = getNextToken(start, JsTokenId.BRACKET_LEFT_PAREN);
+            FormatToken leftParen = getNextToken(start, JsTokenId.BRACKET_LEFT_PAREN, getStart(body));
             if (leftParen != null) {
                 FormatToken previous = leftParen.previous();
                 if (previous != null) {
