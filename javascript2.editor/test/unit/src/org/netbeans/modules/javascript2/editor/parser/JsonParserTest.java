@@ -136,15 +136,15 @@ public class JsonParserTest extends JsonTestBase {
     }
 
     public void testTrailingComma3() throws Exception {
-        parse("{ \"a\" : \"test\", }", false, Collections.singletonList("Expected object member but found }"));
+        parse("{ \"a\" : \"test\", }", false, Collections.singletonList("mismatched input '}' expecting STRING"));
     }
 
     public void testTrailingComma4() throws Exception {
-        parse("{ \"a\" : [1, 2,] }", false, Collections.singletonList("Expected array element but found ]"));
+        parse("{ \"a\" : [1, 2,] }", false, Collections.singletonList("no viable alternative at input ']'"));
     }
 
     public void testTrailingComma5() throws Exception {
-        parse("{ \"a\" : [{\"w\":1}, {\"e\":2},] }", false, Collections.singletonList("Expected array element but found ]"));
+        parse("{ \"a\" : [{\"w\":1}, {\"e\":2},] }", false, Collections.singletonList("no viable alternative at input ']'"));
     }
 
     private void parse(
