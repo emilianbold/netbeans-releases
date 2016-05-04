@@ -250,7 +250,7 @@ public final class ProcessUtils {
                     } catch (IOException ex) {
                     }
                 }
-            }, "Reading process error" + p); // NOI18N
+            }, "Reading process error " + p); // NOI18N
         }
     }
 
@@ -270,7 +270,7 @@ public final class ProcessUtils {
                     } catch (IOException ex) {
                     }
                 }
-            }, "Reading process error" + p); // NOI18N
+            }, "Reading process output " + p); // NOI18N
         }
     }
 
