@@ -41,9 +41,13 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
+import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.api.editor.document.EditorDocumentUtils;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
@@ -59,6 +63,7 @@ import org.netbeans.modules.csl.api.EditorOptions;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.javascript2.editor.doc.JsDocumentationCompleter;
+import org.netbeans.modules.javascript2.json.api.JsonOptionsQuery;
 import org.netbeans.modules.javascript2.lexer.api.JsDocumentationTokenId;
 import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
@@ -84,13 +89,17 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
 
     private final Language<JsTokenId> language;
 
-    private final boolean comments;
+    private final Predicate<Document> comments;
 
     private final boolean multiLineLiterals;
 
     private CommentGenerator commentGenerator = null;
 
     public JsTypedBreakInterceptor(Language<JsTokenId> language, boolean comments, boolean multiLineLiterals) {
+        this(language, (doc) -> comments, multiLineLiterals);
+    }
+
+    public JsTypedBreakInterceptor(Language<JsTokenId> language, Predicate<Document> comments, boolean multiLineLiterals) {
         this.language = language;
         this.comments = comments;
         this.multiLineLiterals = multiLineLiterals;
@@ -193,7 +202,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         if (id.isError()) {
             // See if it's a block comment opener
             String text = token.text().toString();
-            if (comments && text.startsWith("/*") && ts.offset() == Utilities.getRowFirstNonWhite(doc, offset)) {
+            if (comments.test(doc) && text.startsWith("/*") && ts.offset() == Utilities.getRowFirstNonWhite(doc, offset)) {
                 int indent = GsfUtilities.getLineIndent(doc, offset);
                 StringBuilder sb = new StringBuilder();
                 sb.append("\n"); // NOI18N
@@ -258,6 +267,14 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                 context.setText(str, -1, str.length());
                 return;
             }
+        } else {
+            final int indent = GsfUtilities.getLineIndent(doc, offset);
+            final StringBuilder sb = new StringBuilder();
+            sb.append("\n"); // NOI18N
+            sb.append(IndentUtils.createIndentString(doc, indent + IndentUtils.indentLevelSize(doc)));
+            final int carretOffset = sb.length();
+            context.setText(sb.toString(), 0, carretOffset);
+            return;
         }
 
         // Special case: since I do hash completion, if you try to type
@@ -295,7 +312,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             }
         }
 
-        if (!comments) {
+        if (!comments.test(doc)) {
             return;
         }
         if (id == JsTokenId.WHITESPACE) {
@@ -881,7 +898,14 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
 
         @Override
         public TypedBreakInterceptor createTypedBreakInterceptor(MimePath mimePath) {
-            return new JsTypedBreakInterceptor(JsTokenId.jsonLanguage(), false, false);
+            return new JsTypedBreakInterceptor(
+                    JsTokenId.jsonLanguage(),
+                    (doc) -> {
+                        return Optional.ofNullable(EditorDocumentUtils.getFileObject(doc))
+                                .map((fo) -> JsonOptionsQuery.getOptions(fo).isCommentSupported())
+                                .orElse(false);
+                    },
+                    false);
         }
 
     }
