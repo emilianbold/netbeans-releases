@@ -347,7 +347,13 @@ public class LaunchersConfig {
         }
         BufferedWriter bw = null;
         try {
-            bw = new BufferedWriter(new OutputStreamWriter(config.getOutputStream(), "UTF-8")); //NOI18N
+            bw = new BufferedWriter(new OutputStreamWriter(config.getOutputStream(), "UTF-8")) { //NOI18N
+                @Override
+                public void newLine() throws IOException {
+                    write("\n"); //NOI18N
+                }
+                
+            };
             ArrayList<String> c = pub ? commentsPublic : commentsPrivate;
             for (String s : c) {
                 bw.write(s);
