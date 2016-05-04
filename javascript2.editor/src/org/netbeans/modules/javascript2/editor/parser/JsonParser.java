@@ -68,10 +68,17 @@ public class JsonParser extends SanitizingParser<JsonParserResult> implements Pr
 
     private static final RequestProcessor LEXER_RP = new RequestProcessor(JsonParser.class);
     private final AtomicReference<Pair<FileObject,JsonOptionsQuery.Result>> options;
+    private final Boolean enforcedAllowComments;
 
     public JsonParser() {
+        this(null);
+    }
+
+    /*test*/
+    JsonParser(Boolean enforcedAllowComments) {
         super(JsTokenId.jsonLanguage());
         this.options = new AtomicReference<>();
+        this.enforcedAllowComments = enforcedAllowComments;
     }
 
     @Override
@@ -85,7 +92,9 @@ public class JsonParser extends SanitizingParser<JsonParserResult> implements Pr
         final String text = ctx.getSource();
         final FileObject fo = snapshot.getSource().getFileObject();
         final boolean allowComments;
-        if (fo != null) {
+        if (enforcedAllowComments != null) {
+            allowComments = enforcedAllowComments;
+        } else if (fo != null) {
             JsonOptionsQuery.Result opts = Optional.ofNullable(options.get())
                     .map((p) -> p.second())
                     .orElse(null);
