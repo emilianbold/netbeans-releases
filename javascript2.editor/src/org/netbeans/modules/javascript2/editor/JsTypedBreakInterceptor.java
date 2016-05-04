@@ -258,6 +258,14 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                 context.setText(str, -1, str.length());
                 return;
             }
+        } else {
+            final int indent = GsfUtilities.getLineIndent(doc, offset);
+            final StringBuilder sb = new StringBuilder();
+            sb.append("\n"); // NOI18N
+            sb.append(IndentUtils.createIndentString(doc, indent + IndentUtils.indentLevelSize(doc)));
+            final int carretOffset = sb.length();
+            context.setText(sb.toString(), 0, carretOffset);
+            return;
         }
 
         // Special case: since I do hash completion, if you try to type
