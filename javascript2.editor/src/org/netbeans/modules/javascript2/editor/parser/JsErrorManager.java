@@ -147,7 +147,7 @@ public class JsErrorManager extends ErrorManager implements ANTLRErrorListener {
                     && (error.message.contains("Expected }") || error.message.contains("but found }"))) { // NOI18N
                 return new JsParserError(error.toSimpleError(snapshot, language),
                         snapshot != null ? snapshot.getSource().getFileObject() : null,
-                        Severity.ERROR, null, true, false, false, 
+                        Severity.ERROR, null, false, false, 
                         enableFilterAction, disableFilterAction);
             }
         }
@@ -166,7 +166,7 @@ public class JsErrorManager extends ErrorManager implements ANTLRErrorListener {
                     && error.message.contains("Expected ;")) { // NOI18N
                 return new JsParserError(error.toSimpleError(snapshot, language),
                         snapshot != null ? snapshot.getSource().getFileObject() : null,
-                        Severity.ERROR, null, true, false, false,
+                        Severity.ERROR, null, false, false,
                         enableFilterAction, disableFilterAction);
             }
         }
@@ -284,11 +284,11 @@ public class JsErrorManager extends ErrorManager implements ANTLRErrorListener {
                 } else {
                     showInEditor = false;
                 }
-                ret.add(new JsParserError(error, file, Severity.ERROR, null, true, SHOW_BADGES_EMBEDDED, showInEditor, enableFilterAction, disableFilterAction));
+                ret.add(new JsParserError(error, file, Severity.ERROR, null, SHOW_BADGES_EMBEDDED, showInEditor, enableFilterAction, disableFilterAction));
             }
         } else {
             for (SimpleError error : errors) {
-                ret.add(new JsParserError(error, file, Severity.ERROR, null, true, true, true, enableFilterAction, disableFilterAction));
+                ret.add(new JsParserError(error, file, Severity.ERROR, null, true, true, enableFilterAction, disableFilterAction));
             }
         }
         return ret;
