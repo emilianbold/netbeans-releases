@@ -7,7 +7,7 @@
 # Macros
 TOP=`pwd`
 CND_PLATFORM=OracleDeveloperStudio-Solaris-x86
-CND_CONF=Debug
+CND_CONF=Unix_64
 CND_DISTDIR=dist
 CND_BUILDDIR=build
 CND_DLIB_EXT=so

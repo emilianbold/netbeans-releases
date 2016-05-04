@@ -23,7 +23,7 @@ AS=as
 # Macros
 CND_PLATFORM=OracleDeveloperStudio-Solaris-x86
 CND_DLIB_EXT=so
-CND_CONF=Release
+CND_CONF=Unix_64
 CND_DISTDIR=dist
 CND_BUILDDIR=build
 
@@ -39,7 +39,7 @@ OBJECTFILES= \
 
 
 # C Compiler Flags
-CFLAGS=
+CFLAGS=-m64
 
 # CC Compiler Flags
 CCFLAGS=
@@ -60,11 +60,11 @@ LDLIBSOPTIONS=-Wl,-rpath,'.'
 
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/toolswrapperwidows: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/toolswrapperwidows ${OBJECTFILES} ${LDLIBSOPTIONS}
+	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/toolswrapperwidows ${OBJECTFILES} ${LDLIBSOPTIONS} -s
 
 ${OBJECTDIR}/src/args.o: src/args.c 
 	${MKDIR} -p ${OBJECTDIR}/src
-	$(COMPILE.c) -fast -g -o ${OBJECTDIR}/src/args.o src/args.c
+	$(COMPILE.c) -fast -g -s -o ${OBJECTDIR}/src/args.o src/args.c
 
 # Subprojects
 .build-subprojects:

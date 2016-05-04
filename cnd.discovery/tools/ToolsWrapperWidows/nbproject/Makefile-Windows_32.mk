@@ -14,16 +14,16 @@ GREP=grep
 NM=nm
 CCADMIN=CCadmin
 RANLIB=ranlib
-CC=cc
-CCC=CC
-CXX=CC
-FC=f95
+CC=i686-w64-mingw32-gcc
+CCC=i686-w64-mingw32-g++
+CXX=i686-w64-mingw32-g++
+FC=gfortran
 AS=as
 
 # Macros
-CND_PLATFORM=OracleDeveloperStudio-Solaris-x86
-CND_DLIB_EXT=so
-CND_CONF=Debug
+CND_PLATFORM=Cygwin_32-Windows
+CND_DLIB_EXT=dll
+CND_CONF=Windows_32
 CND_DISTDIR=dist
 CND_BUILDDIR=build
 
@@ -39,7 +39,7 @@ OBJECTFILES= \
 
 
 # C Compiler Flags
-CFLAGS=
+CFLAGS=-m32
 
 # CC Compiler Flags
 CCFLAGS=
@@ -56,15 +56,16 @@ LDLIBSOPTIONS=-Wl,-rpath,'.'
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/toolswrapperwidows
+	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/toolswrapperwidows.exe
 
-${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/toolswrapperwidows: ${OBJECTFILES}
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/toolswrapperwidows.exe: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/toolswrapperwidows ${OBJECTFILES} ${LDLIBSOPTIONS}
+	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/toolswrapperwidows ${OBJECTFILES} ${LDLIBSOPTIONS} -static-libgcc -s
 
 ${OBJECTDIR}/src/args.o: src/args.c 
 	${MKDIR} -p ${OBJECTDIR}/src
-	$(COMPILE.c) -g -o ${OBJECTDIR}/src/args.o src/args.c
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -s -DMINGW -DWINDOWS -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/args.o src/args.c
 
 # Subprojects
 .build-subprojects:
