@@ -2,7 +2,6 @@ Code completion result for source line:
 '|',
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-OTHER      text!                                      
 FILE       api                                        
 FILE       config                                     
 FILE       fileCC                                     
