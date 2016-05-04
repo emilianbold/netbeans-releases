@@ -50,6 +50,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
+import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -222,7 +223,7 @@ public abstract class AbstractServiceProviderProcessor extends AbstractProcessor
                     // at com.sun.tools.javac.processing.JavacFiler.getResource(JavacFiler.java:434)
                     // at org.netbeans.modules.openide.util.AbstractServiceProviderProcessor.register(AbstractServiceProviderProcessor.java:163)
                     // at org.netbeans.modules.openide.util.ServiceProviderProcessor.register(ServiceProviderProcessor.java:99)
-                } catch (FileNotFoundException x) {
+                } catch (FileNotFoundException | NoSuchFileException x) {
                     // Good.
                 }
                 try {
@@ -233,7 +234,7 @@ public abstract class AbstractServiceProviderProcessor extends AbstractProcessor
                     } finally {
                         is.close();
                     }
-                } catch (FileNotFoundException x) {
+                } catch (FileNotFoundException | NoSuchFileException x) {
                     // OK, created for the first time
                 }
             } catch (IOException x) {
