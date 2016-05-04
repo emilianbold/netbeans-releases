@@ -88,6 +88,7 @@ public class JsonParser extends Parser {
 		_interp = new ParserATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
 	}
 	public static class JsonContext extends ParserRuleContext {
+		public TerminalNode EOF() { return getToken(JsonParser.EOF, 0); }
 		public ValueContext value() {
 			return getRuleContext(ValueContext.class,0);
 		}
@@ -126,6 +127,8 @@ public class JsonParser extends Parser {
 				}
 			}
 
+			setState(15);
+			match(EOF);
 			}
 		}
 		catch (RecognitionException re) {
@@ -176,47 +179,47 @@ public class JsonParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(22);
+			setState(24);
 			switch (_input.LA(1)) {
 			case STRING:
 				{
-				setState(15);
+				setState(17);
 				match(STRING);
 				}
 				break;
 			case NUMBER:
 				{
-				setState(16);
+				setState(18);
 				match(NUMBER);
 				}
 				break;
 			case TRUE:
 				{
-				setState(17);
+				setState(19);
 				match(TRUE);
 				}
 				break;
 			case FALSE:
 				{
-				setState(18);
+				setState(20);
 				match(FALSE);
 				}
 				break;
 			case NULL:
 				{
-				setState(19);
+				setState(21);
 				match(NULL);
 				}
 				break;
 			case LBRACKET:
 				{
-				setState(20);
+				setState(22);
 				array();
 				}
 				break;
 			case LBRACE:
 				{
-				setState(21);
+				setState(23);
 				object();
 				}
 				break;
@@ -275,34 +278,34 @@ public class JsonParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(24);
+			setState(26);
 			match(LBRACE);
-			setState(33);
+			setState(35);
 			_la = _input.LA(1);
 			if (_la==STRING) {
 				{
-				setState(25);
+				setState(27);
 				pair();
-				setState(30);
+				setState(32);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 				while (_la==COMMA) {
 					{
 					{
-					setState(26);
+					setState(28);
 					match(COMMA);
-					setState(27);
+					setState(29);
 					pair();
 					}
 					}
-					setState(32);
+					setState(34);
 					_errHandler.sync(this);
 					_la = _input.LA(1);
 				}
 				}
 			}
 
-			setState(35);
+			setState(37);
 			match(RBRACE);
 			}
 		}
@@ -350,11 +353,11 @@ public class JsonParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(37);
-			key();
-			setState(38);
-			match(COLON);
 			setState(39);
+			key();
+			setState(40);
+			match(COLON);
+			setState(41);
 			value();
 			}
 		}
@@ -396,7 +399,7 @@ public class JsonParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(41);
+			setState(43);
 			match(STRING);
 			}
 		}
@@ -450,34 +453,34 @@ public class JsonParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(43);
+			setState(45);
 			match(LBRACKET);
-			setState(52);
+			setState(54);
 			_la = _input.LA(1);
 			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << LBRACE) | (1L << LBRACKET) | (1L << TRUE) | (1L << FALSE) | (1L << NULL) | (1L << NUMBER) | (1L << STRING))) != 0)) {
 				{
-				setState(44);
+				setState(46);
 				value();
-				setState(49);
+				setState(51);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 				while (_la==COMMA) {
 					{
 					{
-					setState(45);
+					setState(47);
 					match(COMMA);
-					setState(46);
+					setState(48);
 					value();
 					}
 					}
-					setState(51);
+					setState(53);
 					_errHandler.sync(this);
 					_la = _input.LA(1);
 				}
 				}
 			}
 
-			setState(54);
+			setState(56);
 			match(RBRACKET);
 			}
 		}
@@ -493,23 +496,23 @@ public class JsonParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\25;\4\2\t\2\4\3\t"+
-		"\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\3\2\5\2\20\n\2\3\3\3\3\3\3\3\3\3\3"+
-		"\3\3\3\3\5\3\31\n\3\3\4\3\4\3\4\3\4\7\4\37\n\4\f\4\16\4\"\13\4\5\4$\n"+
-		"\4\3\4\3\4\3\5\3\5\3\5\3\5\3\6\3\6\3\7\3\7\3\7\3\7\7\7\62\n\7\f\7\16\7"+
-		"\65\13\7\5\7\67\n\7\3\7\3\7\3\7\2\2\b\2\4\6\b\n\f\2\2?\2\17\3\2\2\2\4"+
-		"\30\3\2\2\2\6\32\3\2\2\2\b\'\3\2\2\2\n+\3\2\2\2\f-\3\2\2\2\16\20\5\4\3"+
-		"\2\17\16\3\2\2\2\17\20\3\2\2\2\20\3\3\2\2\2\21\31\7\20\2\2\22\31\7\17"+
-		"\2\2\23\31\7\f\2\2\24\31\7\r\2\2\25\31\7\16\2\2\26\31\5\f\7\2\27\31\5"+
-		"\6\4\2\30\21\3\2\2\2\30\22\3\2\2\2\30\23\3\2\2\2\30\24\3\2\2\2\30\25\3"+
-		"\2\2\2\30\26\3\2\2\2\30\27\3\2\2\2\31\5\3\2\2\2\32#\7\b\2\2\33 \5\b\5"+
-		"\2\34\35\7\4\2\2\35\37\5\b\5\2\36\34\3\2\2\2\37\"\3\2\2\2 \36\3\2\2\2"+
-		" !\3\2\2\2!$\3\2\2\2\" \3\2\2\2#\33\3\2\2\2#$\3\2\2\2$%\3\2\2\2%&\7\t"+
-		"\2\2&\7\3\2\2\2\'(\5\n\6\2()\7\3\2\2)*\5\4\3\2*\t\3\2\2\2+,\7\20\2\2,"+
-		"\13\3\2\2\2-\66\7\n\2\2.\63\5\4\3\2/\60\7\4\2\2\60\62\5\4\3\2\61/\3\2"+
-		"\2\2\62\65\3\2\2\2\63\61\3\2\2\2\63\64\3\2\2\2\64\67\3\2\2\2\65\63\3\2"+
-		"\2\2\66.\3\2\2\2\66\67\3\2\2\2\678\3\2\2\289\7\13\2\29\r\3\2\2\2\b\17"+
-		"\30 #\63\66";
+		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\25=\4\2\t\2\4\3\t"+
+		"\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\3\2\5\2\20\n\2\3\2\3\2\3\3\3\3\3\3"+
+		"\3\3\3\3\3\3\3\3\5\3\33\n\3\3\4\3\4\3\4\3\4\7\4!\n\4\f\4\16\4$\13\4\5"+
+		"\4&\n\4\3\4\3\4\3\5\3\5\3\5\3\5\3\6\3\6\3\7\3\7\3\7\3\7\7\7\64\n\7\f\7"+
+		"\16\7\67\13\7\5\79\n\7\3\7\3\7\3\7\2\2\b\2\4\6\b\n\f\2\2A\2\17\3\2\2\2"+
+		"\4\32\3\2\2\2\6\34\3\2\2\2\b)\3\2\2\2\n-\3\2\2\2\f/\3\2\2\2\16\20\5\4"+
+		"\3\2\17\16\3\2\2\2\17\20\3\2\2\2\20\21\3\2\2\2\21\22\7\2\2\3\22\3\3\2"+
+		"\2\2\23\33\7\20\2\2\24\33\7\17\2\2\25\33\7\f\2\2\26\33\7\r\2\2\27\33\7"+
+		"\16\2\2\30\33\5\f\7\2\31\33\5\6\4\2\32\23\3\2\2\2\32\24\3\2\2\2\32\25"+
+		"\3\2\2\2\32\26\3\2\2\2\32\27\3\2\2\2\32\30\3\2\2\2\32\31\3\2\2\2\33\5"+
+		"\3\2\2\2\34%\7\b\2\2\35\"\5\b\5\2\36\37\7\4\2\2\37!\5\b\5\2 \36\3\2\2"+
+		"\2!$\3\2\2\2\" \3\2\2\2\"#\3\2\2\2#&\3\2\2\2$\"\3\2\2\2%\35\3\2\2\2%&"+
+		"\3\2\2\2&\'\3\2\2\2\'(\7\t\2\2(\7\3\2\2\2)*\5\n\6\2*+\7\3\2\2+,\5\4\3"+
+		"\2,\t\3\2\2\2-.\7\20\2\2.\13\3\2\2\2/8\7\n\2\2\60\65\5\4\3\2\61\62\7\4"+
+		"\2\2\62\64\5\4\3\2\63\61\3\2\2\2\64\67\3\2\2\2\65\63\3\2\2\2\65\66\3\2"+
+		"\2\2\669\3\2\2\2\67\65\3\2\2\28\60\3\2\2\289\3\2\2\29:\3\2\2\2:;\7\13"+
+		"\2\2;\r\3\2\2\2\b\17\32\"%\658";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {
