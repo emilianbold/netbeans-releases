@@ -104,11 +104,24 @@ public class JsonParserTest extends JsonTestBase {
     }
 
     public void testStringLiteral2() throws Exception {
-        parse("{ \"a\" : \"test\\xw\" }", false, Collections.singletonList("Unexpected token: test\\xw"));
+        parse("{ \"a\" : \"test\\xw\" }",
+                false,
+                //Todo: Consider to join antlr errors in String token
+                Arrays.asList(
+                        "token recognition error at: '\"test\\x'",
+                        "token recognition error at: 'w'",
+                        "token recognition error at: '\" }'",
+                        "no viable alternative at input '<EOF>'"));
     }
 
     public void testStringLiteral3() throws Exception {
-        parse("{ \"a\" : \"test\\\nw\" }", false, Collections.singletonList("Unexpected token: test\\\nw"));
+        parse("{ \"a\" : \"test\\\nw\" }",
+                false,
+                Arrays.asList(
+                        "token recognition error at: '\"test\\\\n'",
+                        "token recognition error at: 'w'",
+                        "token recognition error at: '\" }'",
+                        "no viable alternative at input '<EOF>'"));
     }
 
     public void testStringLiteral4() throws Exception {
@@ -116,7 +129,15 @@ public class JsonParserTest extends JsonTestBase {
     }
 
     public void testStringLiteral5() throws Exception {
-        parse("{ \"a\" : \"test\\u000gw\" }", false, Collections.singletonList("Unexpected token: test\\u000gw"));
+        parse("{ \"a\" : \"test\\u000gw\" }",
+                false,
+                //Todo: Consider to join antlr errors in String token
+                Arrays.asList(
+                        "token recognition error at: '\"test\\u000g'",
+                        "token recognition error at: 'w'",
+                        "token recognition error at: '\" }'",
+                        "no viable alternative at input '<EOF>'"
+                ));
     }
 
     public void testStringLiteral6() throws Exception {
@@ -124,7 +145,16 @@ public class JsonParserTest extends JsonTestBase {
     }
 
     public void testStringLiteral7() throws Exception {
-        parse("{ \"a\" : \"t\\'est\" }", false, Collections.singletonList("Unexpected token: t\\'est"));
+        parse("{ \"a\" : \"t\\'est\" }",
+                false,
+                //Todo: Consider to join antlr errors in String token
+                Arrays.asList(
+                    "token recognition error at: '\"t\\''",
+                    "token recognition error at: 'e'",
+                    "token recognition error at: 's'",
+                    "token recognition error at: 't\"'",
+                    "no viable alternative at input '}'"
+                ));
     }
 
     public void testTrailingComma1() throws Exception {
