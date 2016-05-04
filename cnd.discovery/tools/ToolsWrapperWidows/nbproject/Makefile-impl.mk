@@ -27,11 +27,11 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 PROJECTNAME=ToolsWrapperWidows
 
 # Active Configuration
-DEFAULTCONF=Debug
+DEFAULTCONF=Unix_64
 CONF=${DEFAULTCONF}
 
 # All Configurations
-ALLCONFS=Debug Release 
+ALLCONFS=Unix_64 Windows_32 
 
 
 # build

@@ -32,54 +32,101 @@
 #include <string.h>
 #include <stdlib.h>
 #define MY_MAX_PATH (1024)
-#ifdef WIN32
-    #include <process.h>
+#ifdef MINGW
+#include <process.h>
 #else
-    #include <spawn.h>
+#include <spawn.h>
+#include <sys/wait.h>
 #endif
 #include <unistd.h>
 #include <limits.h>
 
 extern char **environ;
 
+void prependPath(char* path) {
+    char** e = environ;
+    while (e) {
+        char *buf = malloc(strlen(*e) + 1);
+        strcpy(buf, *e);
+        char* eq = strchr(buf, '=');
+        if (eq != NULL) {
+            *eq = 0;
+            if (strcasecmp("PATH", buf) == 0) {
+                char* old_path = getenv(buf);
+                char *tool_path = malloc(strlen(path) + 1);
+                strcpy(tool_path, path);
+                char* key;
+#ifdef WINDOWS
+                key = strrchr(tool_path, '\\');
+#else
+                key = strrchr(tool_path, '/');
+#endif
+                if (key != NULL) {
+                    *key = 0;
+                }
+                char *new_path = malloc(strlen(tool_path) + 1 + strlen(old_path) + 1);
+#ifdef WINDOWS
+                sprintf(new_path, "%s;%s", tool_path, old_path); 
+#else
+                sprintf(new_path, "%s:%s", tool_path, old_path); 
+#endif
+#ifdef MINGW
+                char *path_macro = malloc(strlen(buf) + 1 + strlen(new_path) + 1);
+                sprintf(path_macro, "%s=%s", buf, new_path); 
+                putenv(path_macro);
+                free(path_macro);
+#else
+                setenv(buf, new_path, 1);
+#endif
+                free(new_path);
+                free(tool_path);
+                free(buf);
+                break;
+            }
+        }
+        free(buf);
+        e++;
+    }
+}
+
 int main(int argc, char**argv) {
     const char* key;
-    #ifdef WIN32
-        key = strrchr(argv[0], '\\');
-    #else
-        key = strrchr(argv[0], '/');
-    #endif
+#ifdef WINDOWS
+    key = strrchr(argv[0], '\\');
+#else
+    key = strrchr(argv[0], '/');
+#endif
     if (key == NULL) {
         key = argv[0];
     } else {
         key++;
     }
-    #ifdef WIN32
-        char* dot = strrchr(key, '.');
-        if (dot != NULL) {
-            char *buf = malloc(strlen(key)+1);
-            strcpy(buf, key);
-            dot = strrchr(buf, '.');
-            *dot = 0;
-            key = buf;
-        }
-    #endif
-    
+#ifdef WINDOWS
+    char* dot = strrchr(key, '.');
+    if (dot != NULL) {
+        char *buf = malloc(strlen(key) + 1);
+        strcpy(buf, key);
+        dot = strrchr(buf, '.');
+        *dot = 0;
+        key = buf;
+    }
+#endif
+
     char* tool = NULL;
     char* tool_path_variable = NULL;
     if (strcmp(key, "cc") == 0 ||
-        strcmp(key, "xgcc") == 0 ||
-        strcmp(key, "clang") == 0 ||
-        strcmp(key, "icc") == 0 || 
-        strcmp(key, "gcc") == 0) {
+            strcmp(key, "xgcc") == 0 ||
+            strcmp(key, "clang") == 0 ||
+            strcmp(key, "icc") == 0 ||
+            strcmp(key, "gcc") == 0) {
         tool = getenv("__CND_C_TOOL__");
         tool_path_variable = "__CND_C_TOOL__";
     } else if (strcmp(key, "CC") == 0 ||
-               strcmp(key, "c++") == 0 ||
-               strcmp(key, "clang++") == 0 ||
-               strcmp(key, "icpc") == 0 ||
-               strcmp(key, "cl") == 0 ||
-               strcmp(key, "g++") == 0) {
+            strcmp(key, "c++") == 0 ||
+            strcmp(key, "clang++") == 0 ||
+            strcmp(key, "icpc") == 0 ||
+            strcmp(key, "cl") == 0 ||
+            strcmp(key, "g++") == 0) {
         tool = getenv("__CND_CPP_TOOL__");
         tool_path_variable = "__CND_CPP_TOOL__";
     } else {
@@ -92,25 +139,25 @@ int main(int argc, char**argv) {
     }
     argv[0] = tool;
     char* log = getenv("__CND_BUILD_LOG__");
-    FILE* flog;
     if (log != NULL) {
-        flog = fopen(log, "a");
-    }
-    if (flog != NULL) {
-        fprintf(flog, "called: %s\n", tool);
-        char *buf = malloc(MY_MAX_PATH+1);
-        getcwd(buf, MY_MAX_PATH);
-        fprintf(flog, "\t%s\n", buf);
-        char** par = (char**) argv;
-        for (; *par != 0; par++) {
-            fprintf(flog, "\t%s\n", *par);
+        FILE* flog = fopen(log, "a");
+        if (flog != NULL) {
+            fprintf(flog, "called: %s\n", tool);
+            char *buf = malloc(MY_MAX_PATH + 1);
+            getcwd(buf, MY_MAX_PATH);
+            fprintf(flog, "\t%s\n", buf);
+            char** par = (char**) argv;
+            for (; *par != 0; par++) {
+                fprintf(flog, "\t%s\n", *par);
+            }
+            fprintf(flog, "\n");
+            fflush(flog);
+            fclose(flog);
         }
-        fprintf(flog, "\n");
-        fflush(flog);
-        fclose(flog);
     }
-#ifdef WIN32
-    return spawnv(P_WAIT,tool, argv);
+    prependPath(tool);
+#ifdef MINGW
+    return spawnv(P_WAIT, tool, argv);
 #else
     pid_t pid;
     int status;
@@ -123,6 +170,6 @@ int main(int argc, char**argv) {
         }
     } else {
         return status;
-    }    
+    }
 #endif
 }
