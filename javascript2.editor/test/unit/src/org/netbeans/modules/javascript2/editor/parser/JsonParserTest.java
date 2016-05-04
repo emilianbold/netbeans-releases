@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.text.Document;
@@ -65,14 +66,17 @@ public class JsonParserTest extends JsonTestBase {
             + "\"name\": \"test\"  //line comment\n"
             + "/*comment*/\n"
             + "}\n",
-            Collections.singletonList("Expected , or } but found /"));
+            Arrays.asList(
+                    "token recognition error at: '//line comment",
+                    "token recognition error at: '/*comment"
+                    ));
     }
 
     public void testComments2() throws Exception {
         parse("{\n"
             + "\"name\": \"test\"  //line comment\n"
             + "}\n",
-            Collections.singletonList("Expected , or } but found /"));
+            Collections.singletonList("token recognition error at: '//line comment"));
     }
 
     public void testComments3() throws Exception {
@@ -80,7 +84,7 @@ public class JsonParserTest extends JsonTestBase {
             + "\"name\": \"test\"\n"
             + "/*comment*/\n"
             + "}\n",
-            Collections.singletonList("Expected , or } but found /"));
+            Collections.singletonList("token recognition error at: '/*comment"));
     }
 
     public void testStringLiteral1() throws Exception {
