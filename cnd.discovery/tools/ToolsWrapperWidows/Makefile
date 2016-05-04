@@ -91,8 +91,8 @@ build: .build-post
 # Add your pre 'build' code here...
 
 .build-post: .build-impl
-	@cp ${CND_ARTIFACT_PATH_Debug} g++
-	@cp ${CND_ARTIFACT_PATH_Debug} gcc
+	@cp ${CND_ARTIFACT_PATH_Unix_64} g++
+	@cp ${CND_ARTIFACT_PATH_Unix_64} gcc
 
 
 # clean

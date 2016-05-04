@@ -13,11 +13,11 @@
             <sourceRootList/>
             <confList>
                 <confElem>
-                    <name>Debug</name>
+                    <name>Unix_64</name>
                     <type>1</type>
                 </confElem>
                 <confElem>
-                    <name>Release</name>
+                    <name>Windows_32</name>
                     <type>1</type>
                 </confElem>
             </confList>
