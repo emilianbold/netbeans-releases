@@ -456,7 +456,7 @@ public final class DocumentUtilities {
             }
         } else if (evt.getType() == DocumentEvent.EventType.REMOVE) {
             if (offset > modOffset) {
-                offset = Math.min(offset - evt.getLength(), modOffset);
+                offset = Math.max(offset - evt.getLength(), modOffset);
             }
         }
         return offset;
