@@ -42,6 +42,10 @@
 package org.netbeans.modules.editor.lib2.document;
 
 import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.PlainDocument;
+import javax.swing.undo.UndoManager;
 
 /**
  * Resolver for whether the given document event is currently being undone/redone.
@@ -68,11 +72,59 @@ public abstract class UndoRedoDocumentEventResolver {
         resolverChain = resolver;
     }
     
+    static {
+        // Register default resolver for swing actions
+        register(new SwingUndoRedoResolver());
+    }
+    
     private UndoRedoDocumentEventResolver next;
     
     public UndoRedoDocumentEventResolver() {
     }
     
     public abstract boolean isUndoRedo(DocumentEvent evt);
+    
+    
+    private static final class SwingUndoRedoResolver extends UndoRedoDocumentEventResolver {
+        
+        private final Class swingUndoRedoDocEventClass;
+
+        SwingUndoRedoResolver() {
+            PlainDocument doc = new PlainDocument();
+            final Class[] urCls = new Class[1];
+            try {
+                UndoManager um = new UndoManager();
+                doc.addUndoableEditListener(um);
+                doc.insertString(0, "a", null);
+                doc.addDocumentListener(new DocumentListener() {
+                    @Override
+                    public void insertUpdate(DocumentEvent e) {
+                    }
+
+                    @Override
+                    public void removeUpdate(DocumentEvent e) {
+                        // Swing impls wrap the original events into an extra pkg-private AbstractDocument.UndoRedoDocumentEvent class
+                        urCls[0] = e.getClass();
+                    }
+
+                    @Override
+                    public void changedUpdate(DocumentEvent e) {
+                        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                    }
+                });
+                um.undo();
+                
+            } catch (BadLocationException ex) {
+                throw new IllegalStateException(ex);
+            }
+            swingUndoRedoDocEventClass = urCls[0];
+            assert (swingUndoRedoDocEventClass != null);
+        }
+
+        @Override
+        public boolean isUndoRedo(DocumentEvent evt) {
+            return (evt.getClass() == swingUndoRedoDocEventClass);
+        }
+    }
     
 }
