@@ -72,6 +72,7 @@ public class MavenShellLauncher implements PrerequisitesChecker, LateBoundPrereq
     private static final String PLACEHOLDER_JSHELL_ARGS = "${jshell.args}"; // NOI18N
     private static final String PROPERTY_EXEC_ARGS = "exec.args"; // NOI18N
     private static final String PROPERTY_JSHELL_KEY = "jshell.authKey"; // NOI18N
+    private static final String PROPERTY_JSHELL_AGENT = "jshell.agent"; // NOI18N
     
     @Override
     public boolean checkRunConfig(RunConfig config) {
@@ -119,25 +120,23 @@ public class MavenShellLauncher implements PrerequisitesChecker, LateBoundPrereq
                 config.getProperties()::get
         );
         String execArgs = config.getProperties().get(PROPERTY_EXEC_ARGS);
-        StringBuilder sb = new StringBuilder();
-        for (String a : args) {
-            if (sb.length() > 0) {
-                sb.append(" "); // NOI18N
-            }
-            sb.append(a);
-        }
-        String newArgs;
-        
         if (execArgs != null) {
+            StringBuilder sb = new StringBuilder();
+            for (String a : args) {
+                if (sb.length() > 0) {
+                    sb.append(" "); // NOI18N
+                }
+                sb.append(a);
+            }
+            String newArgs;
+
             if (execArgs.contains(PLACEHOLDER_JSHELL_ARGS)) {
                 newArgs = execArgs.replace(PLACEHOLDER_JSHELL_ARGS, sb.toString());
             } else {
                 newArgs = sb.append(" ").append(execArgs).toString(); // NOI18N
             }
-        } else {
-            newArgs = sb.toString();
-        }
-        config.setProperty(PROPERTY_EXEC_ARGS, newArgs);
+        }        
+        config.setProperty(PROPERTY_JSHELL_AGENT, args.get(args.size() -1));
         config.setProperty(PROPERTY_JSHELL_KEY, agent.getAuthorizationKey());
         return true;
     }

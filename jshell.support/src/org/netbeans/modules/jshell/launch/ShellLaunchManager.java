@@ -606,9 +606,6 @@ public final class ShellLaunchManager {
         if (executor != null) {
             args.add("-Dorg.netbeans.lib.jshell.agent.AgentWorker.executor=" + executor);
         }
-        if (LOG.isLoggable(Level.FINE)) {
-            args.add("-Dorg.netbeans.lib.jshell.agent.level=400");
-        }
         args.add(arg);
         
         return args;

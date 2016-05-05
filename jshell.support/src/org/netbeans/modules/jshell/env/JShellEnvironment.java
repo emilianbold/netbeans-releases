@@ -241,7 +241,10 @@ public class JShellEnvironment {
             ClasspathInfo projectInfo = ClasspathInfo.create(root);
             cpi = ClasspathInfo.create(
                     projectInfo.getClassPath(ClasspathInfo.PathKind.BOOT),
-                    ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()])),
+                    ClassPathSupport.createProxyClassPath(
+                        ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()])),
+                        projectInfo.getClassPath(ClasspathInfo.PathKind.COMPILE)
+                    ),
                     projectInfo.getClassPath(ClasspathInfo.PathKind.SOURCE)
             );
         } else {
