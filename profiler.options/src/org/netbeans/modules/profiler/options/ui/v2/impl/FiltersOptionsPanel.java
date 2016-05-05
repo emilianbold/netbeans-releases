@@ -57,6 +57,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -253,11 +254,8 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
         c.insets = new Insets(0, htab, 0, 0);
         add(addButton, c);
         
-        final JButton editButton = new SmallButton(Icons.getIcon(GeneralIcons.EDIT)) {
-            {
-                setToolTipText(Bundle.FiltersOptionsPanel_EditFilter());
-            }
-            protected void fireActionPerformed(ActionEvent e) {
+        final Runnable editPerformer = new Runnable() {
+            public void run() {
                 int row = colorsTable.getSelectedRow();
                 if (row == -1) return;
                 ColoredFilter selected = colors.get(row);
@@ -270,6 +268,17 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
                 }
             }
         };
+        final JButton editButton = new SmallButton(Icons.getIcon(GeneralIcons.EDIT)) {
+            {
+                setToolTipText(Bundle.FiltersOptionsPanel_EditFilter());
+            }
+            protected void fireActionPerformed(ActionEvent e) {
+                editPerformer.run();
+            }
+        };
+        colorsTable.setDefaultAction(new AbstractAction() {
+            public void actionPerformed(ActionEvent e) { editPerformer.run(); }
+        });
         c = new GridBagConstraints();
         c.gridx = 1;
         c.gridy = y++;
