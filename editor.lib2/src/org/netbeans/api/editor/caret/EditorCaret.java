@@ -2998,7 +2998,16 @@ public final class EditorCaret implements Caret {
 
         @Override
         public void viewHierarchyChanged(ViewHierarchyEvent evt) {
-            dispatchUpdate(true); // Schedule an update later
+            if (evt.isChangeY()) {
+                int changeStartOffset = evt.changeStartOffset();
+                // Doc should be read/write-locked here => do no sync for inAtomicSection
+                if (inAtomicSection) {
+                    atomicSectionLowestModOffset = Math.min(atomicSectionLowestModOffset, changeStartOffset);
+                } else {
+                    invalidateCaretBounds(changeStartOffset);
+                }
+                dispatchUpdate(true); // Schedule an update later
+            }
         }
 
         @Override
