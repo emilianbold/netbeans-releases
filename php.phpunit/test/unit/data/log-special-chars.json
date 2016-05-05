@@ -1,0 +1,54 @@
+{
+    "event": "suiteStart",
+    "suite": "",
+    "tests": 3
+}{
+    "event": "suiteStart",
+    "suite": "Util_XMLTest::testPrepareString",
+    "tests": 3
+}{
+    "event": "testStart",
+    "suite": "Util_XMLTest::testPrepareString",
+    "test": "Util_XMLTest::testPrepareString with data set #123 ('{')"
+}{
+    "event": "test",
+    "suite": "Util_XMLTest::testPrepareString",
+    "test": "Util_XMLTest::testPrepareString with data set #123 ('{')",
+    "status": "pass",
+    "time": 0.00028610229492188,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "Util_XMLTest::testPrepareString",
+    "test": "Util_XMLTest::testPrepareString with data set #124 ('|')"
+}{
+    "event": "test",
+    "suite": "Util_XMLTest::testPrepareString",
+    "test": "Util_XMLTest::testPrepareString with data set #124 ('|')",
+    "status": "pass",
+    "time": 0.00028705596923828,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "Util_XMLTest::testPrepareString",
+    "test": "Util_XMLTest::testPrepareString with data set #125 ('}')"
+}{
+    "event": "test",
+    "suite": "Util_XMLTest::testPrepareString",
+    "test": "Util_XMLTest::testPrepareString with data set #125 ('}')",
+    "status": "pass",
+    "time": 0.0002739429473877,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}

@@ -964,32 +964,45 @@ public class TokenFormatter {
                                         break;
                                     case WHITESPACE_IN_GROUP_USE_LIST:
                                         indentRule = true;
-                                        switch (docOptions.wrapGroupUseList) {
-                                            case WRAP_ALWAYS:
-                                                newLines = 1;
-                                                countSpaces = indent;
-                                                break;
-                                            case WRAP_NEVER:
-                                                if (isAfterLineComment(formatTokens, index)) {
+                                        if (formatToken.getOffset() <= formatContext.startOffset()) {
+                                            // #259031 keep existing whitespaces
+                                            // if template is inserted (using CC) or some characters are selected
+                                            if (oldText != null) {
+                                                ws = countExistingWS(oldText);
+                                                newLines = ws.lines;
+                                                countSpaces = ws.spaces;
+                                            } else {
+                                                newLines = 0;
+                                                countSpaces = 0;
+                                            }
+                                        } else {
+                                            switch (docOptions.wrapGroupUseList) {
+                                                case WRAP_ALWAYS:
                                                     newLines = 1;
                                                     countSpaces = indent;
-                                                } else {
-                                                    newLines = 0;
-                                                    countSpaces = docOptions.spaceAfterComma ? 1 : 0;
-                                                }
-                                                break;
-                                            case WRAP_IF_LONG:
-                                                if (isAfterLineComment(formatTokens, index)
-                                                        || column + 1 + countLengthOfNextSequence(formatTokens, index + 1) > docOptions.margin) {
-                                                    newLines = 1;
-                                                    countSpaces = indent;
-                                                } else {
-                                                    newLines = 0;
-                                                    countSpaces = 1;
-                                                }
-                                                break;
-                                            default:
-                                                assert false : docOptions.wrapGroupUseList;
+                                                    break;
+                                                case WRAP_NEVER:
+                                                    if (isAfterLineComment(formatTokens, index)) {
+                                                        newLines = 1;
+                                                        countSpaces = indent;
+                                                    } else {
+                                                        newLines = 0;
+                                                        countSpaces = docOptions.spaceAfterComma ? 1 : 0;
+                                                    }
+                                                    break;
+                                                case WRAP_IF_LONG:
+                                                    if (isAfterLineComment(formatTokens, index)
+                                                            || column + 1 + countLengthOfNextSequence(formatTokens, index + 1) > docOptions.margin) {
+                                                        newLines = 1;
+                                                        countSpaces = indent;
+                                                    } else {
+                                                        newLines = 0;
+                                                        countSpaces = 1;
+                                                    }
+                                                    break;
+                                                default:
+                                                    assert false : docOptions.wrapGroupUseList;
+                                            }
                                         }
                                         break;
                                     case WHITESPACE_AROUND_OBJECT_OP:
@@ -2139,6 +2152,17 @@ public class TokenFormatter {
                     lines = 0;
                     spaces = placeSpaceBefore ? 1 : 0;
                 }
+                return new Whitespace(lines, spaces);
+            }
+
+            private Whitespace countExistingWS(String whitespace) {
+                int lines = countOfNewLines(whitespace);
+                String ws = whitespace;
+                if (lines > 0) {
+                    int lastIndexOfNewLine = whitespace.lastIndexOf('\n');
+                    ws = whitespace.substring(lastIndexOfNewLine + 1);
+                }
+                int spaces = countOfSpaces(ws, docOptions.tabSize);
                 return new Whitespace(lines, spaces);
             }
 

@@ -1,0 +1,22 @@
+"event": "testStart",
+    "suite": "Calculator2Test",
+    "test": "Calculator2Test::testMultiply"
+}{
+    "event": "test",
+    "suite": "Calculator2Test",
+    "test": "Calculator2Test::testMultiply",
+    "status": "pass",
+    "time": 0.010519981384277,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "Calculator2Test",
+    "test": "Calculator2Test::testMultiply2"
+}{
+    "event": "test",
+    "suite": "Calculator2Test",
+    "test": "Calculator2Test::testMulti

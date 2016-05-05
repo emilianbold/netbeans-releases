@@ -41,9 +41,11 @@
  */
 package org.netbeans.modules.php.phpunit.run;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -58,60 +60,70 @@ public final class JsonParser {
 
     private static final Logger LOGGER = Logger.getLogger(JsonParser.class.getName());
 
-    private static final Pattern SPLIT_PATTERN = Pattern.compile("\\}\\{"); // NOI18N
     private static final String INCOMPLETE_TEST_PREFIX = "Incomplete Test: "; // NOI18N
     private static final String SKIPPED_TEST_PREFIX = "Skipped Test: "; // NOI18N
 
+    private final File logFile;
     private final Handler handler;
     private final JSONParser parser = new JSONParser();
     private final TestSessionVo actualSession;
     private final TestSuiteVo noSuite;
-    // for error reporting
-    private final StringBuilder allData = new StringBuilder();
+    private final StringBuilder inputData = new StringBuilder();
 
     private TestSuiteVo actualSuite = null;
     private TestCaseVo actualTest = null;
+    private int curlyBalance = 0;
+    private int inputIndex = 0;
+    private boolean inString = false;
 
 
     @NbBundle.Messages("JsonParser.suite.none=&lt;no suite>")
-    public JsonParser(@NonNull Handler handler, @NullAllowed String customSuitePath) {
+    public JsonParser(@NonNull File logFile, @NonNull Handler handler, @NullAllowed String customSuitePath) {
+        assert logFile != null;
         assert handler != null;
+        this.logFile = logFile;
         this.handler = handler;
         actualSession = new TestSessionVo(customSuitePath);
         noSuite = new TestSuiteVo(Bundle.JsonParser_suite_none());
     }
 
-    public boolean parse(String input) {
-        assert addData(input);
+    public void parse(String input) {
+        if (StringUtils.isEmpty(input)) {
+            return;
+        }
         if (!actualSession.isStarted()) {
             actualSession.setStarted(true);
             handler.onSessionStart(actualSession);
         }
-        String data = input;
-        if (StringUtils.isEmpty(data)) {
-            return true;
+        inputData.append(input);
+        int i = inputIndex;
+        char prevCh = ' ';
+        while (i < inputData.length()) {
+            char ch = inputData.charAt(i);
+            if (ch == '"' // NOI18N
+                    && prevCh != '\\') { // NOI18N
+                inString = !inString;
+            }
+            if (!inString) {
+                if (ch == '{') { // NOI18N
+                    curlyBalance++;
+                } else if (ch == '}') { // NOI18N
+                    curlyBalance--;
+                    if (curlyBalance == 0) {
+                        parseJson(inputData.substring(0, i + 1));
+                        inputData.delete(0, i + 1);
+                        i = -1;
+                    }
+                }
+            }
+            prevCh = ch;
+            i++;
         }
-        String[] parts = SPLIT_PATTERN.split(data);
-        int count = parts.length;
-        boolean result = true;
-        for (int i = 0; i < count; i++) {
-            String part = parts[i];
-            StringBuilder buffer = new StringBuilder(part.length() + 2);
-            if (i != 0) {
-                buffer.append('{'); // NOI18N
-            }
-            buffer.append(part);
-            if (i != count - 1) {
-                buffer.append('}'); // NOI18N
-            }
-            if (!parseJson(buffer.toString())) {
-                result = false;
-            }
-        }
-        return result;
+        inputIndex = inputData.length();
     }
 
     public void finish() {
+        assert !StringUtils.hasText(inputData.toString()) : inputData + dumpAllData();
         LOGGER.log(Level.FINE, "Parse finish");
         // finish last suite, if any exists
         suiteFinish();
@@ -128,14 +140,14 @@ public final class JsonParser {
         handler.onSessionFinish(actualSession);
     }
 
-    private boolean parseJson(String input) {
+    private void parseJson(String input) {
         LOGGER.log(Level.FINE, "JSON: {0}", input);
         JSONObject data;
         try {
             data = (JSONObject) parser.parse(input);
         } catch (ParseException ex) {
-            LOGGER.log(Level.INFO, input, ex);
-            return false;
+            LOGGER.log(Level.WARNING, input, ex);
+            return;
         }
         assert data != null : input + dumpAllData();
         String event = (String) data.get("event"); // NOI18N
@@ -153,7 +165,6 @@ public final class JsonParser {
             default:
                 assert false : "Unknown event: " + event + " [" + input + "]" + dumpAllData();
         }
-        return true;
     }
 
     private void suiteStart(JSONObject data) {
@@ -177,7 +188,7 @@ public final class JsonParser {
 
     private void testStart(JSONObject data) {
         assert actualSuite != null : data  + dumpAllData();
-        assert actualTest == null : data  + dumpAllData();
+        assert actualTest == null : actualTest + " :: " + data  + dumpAllData();
         String suite = (String) data.get("suite"); // NOI18N
         switch (suite) {
             case "": // NOI18N
@@ -289,13 +300,15 @@ public final class JsonParser {
         return noSuite == actualSuite;
     }
 
-    private boolean addData(String data) {
-        allData.append(data);
-        return true;
-    }
-
     private String dumpAllData() {
-        return " ((:" + allData.toString() + ":))"; // NOI18N
+        String content;
+        try {
+            content = new String(Files.readAllBytes(logFile.toPath()));
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "Cannot read PHPUnit log file " + logFile, ex);
+            content = "???"; // NOI18N
+        }
+        return " ((:" + content + ":))"; // NOI18N
     }
 
     //~ Inner classes

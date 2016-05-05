@@ -65,7 +65,7 @@ public class JsonParserTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         handler = new HandlerImpl();
-        jsonParser = new JsonParser(handler, null);
+        jsonParser = new JsonParser(new File("non-existing.json"), handler, null);
     }
 
     public void testParseLogWithOneSuite() throws Exception {
@@ -125,6 +125,80 @@ public class JsonParserTest extends NbTestCase {
         assertEquals("Framework_BaseTestListenerTest", test.getClassName());
         assertEquals(TestCase.Status.PASSED, test.getStatus());
         assertEquals(5L, test.getTime());
+    }
+
+    public void testParseMoreChunks() throws Exception {
+        for (int i = 1; i <= 14; i++) {
+            jsonParser.parse(readContent("log-chunk-" + i + ".json"));
+        }
+        jsonParser.finish();
+        TestSessionVo session = handler.getSession();
+        assertNotNull(session);
+        List<TestSuiteVo> suites = session.getTestSuites();
+        assertEquals(1, suites.size());
+        TestSuiteVo suite = suites.get(0);
+        assertEquals("Calculator2Test", suite.getName());
+        List<TestCaseVo> tests = suite.getPureTestCases();
+        assertEquals(17, tests.size());
+        TestCaseVo test = tests.get(0);
+        assertEquals("testPlus", test.getName());
+        assertEquals(TestCase.Status.PASSED, test.getStatus());
+        test = tests.get(16);
+        assertEquals("testModulo", test.getName());
+        assertEquals(TestCase.Status.PENDING, test.getStatus());
+        assertEquals("/home/gapon/NetBeansProjects/Calculator-PHPUnit8/test/src/Calculator2Test.php", test.getFile());
+        assertEquals(214, test.getLine().intValue());
+        assertEquals(11, test.getTime());
+        assertEquals(Arrays.asList(
+                "This test has not been implemented yet.",
+                "/home/gapon/NetBeansProjects/Calculator-PHPUnit8/test/src/Calculator2Test.php:214"
+        ), Arrays.asList(test.getStackTrace()));
+    }
+
+    public void testParseSpecialChars() throws Exception {
+        jsonParser.parse(readContent("log-special-chars.json"));
+        jsonParser.finish();
+        TestSessionVo session = handler.getSession();
+        assertNotNull(session);
+        List<TestSuiteVo> suites = session.getTestSuites();
+        assertEquals(1, suites.size());
+        TestSuiteVo suite = suites.get(0);
+        assertEquals("Util_XMLTest::testPrepareString", suite.getName());
+        List<TestCaseVo> tests = suite.getPureTestCases();
+        assertEquals(3, tests.size());
+        TestCaseVo test = tests.get(0);
+        assertEquals("testPrepareString with data set #123 ('{')", test.getName());
+        assertEquals(TestCase.Status.PASSED, test.getStatus());
+        test = tests.get(2);
+        assertEquals("testPrepareString with data set #125 ('}')", test.getName());
+        assertEquals(TestCase.Status.PASSED, test.getStatus());
+    }
+
+    public void testParseSpecialChars2() throws Exception {
+        jsonParser.parse(readContent("log-special-chars-2.json"));
+        jsonParser.finish();
+        TestSessionVo session = handler.getSession();
+        assertNotNull(session);
+        List<TestSuiteVo> suites = session.getTestSuites();
+        assertEquals(2, suites.size());
+        TestSuiteVo suite = suites.get(0);
+        assertEquals("StringsTest", suite.getName());
+        suite = suites.get(1);
+        assertEquals("StringsTest::testPrepareString", suite.getName());
+        List<TestCaseVo> tests = suite.getPureTestCases();
+        assertEquals(256, tests.size());
+        TestCaseVo test = tests.get(34);
+        assertEquals("testPrepareString with data set #34 ('\"')", test.getName());
+        assertEquals(TestCase.Status.PASSED, test.getStatus());
+        test = tests.get(39);
+        assertEquals("testPrepareString with data set #39 (''')", test.getName());
+        assertEquals(TestCase.Status.PASSED, test.getStatus());
+        test = tests.get(123);
+        assertEquals("testPrepareString with data set #123 ('{')", test.getName());
+        assertEquals(TestCase.Status.PASSED, test.getStatus());
+        test = tests.get(125);
+        assertEquals("testPrepareString with data set #125 ('}')", test.getName());
+        assertEquals(TestCase.Status.PASSED, test.getStatus());
     }
 
     public void testIssue258312() throws Exception {
