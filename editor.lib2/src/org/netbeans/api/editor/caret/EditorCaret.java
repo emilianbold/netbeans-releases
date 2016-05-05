@@ -134,6 +134,7 @@ import org.netbeans.modules.editor.lib2.RectangularSelectionCaretAccessor;
 import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
 import org.netbeans.modules.editor.lib2.actions.EditorActionUtilities;
 import org.netbeans.modules.editor.lib2.document.DocumentPostModificationUtils;
+import org.netbeans.modules.editor.lib2.document.UndoRedoDocumentEventResolver;
 import org.netbeans.modules.editor.lib2.highlighting.CaretOverwriteModeHighlighting;
 import org.netbeans.modules.editor.lib2.view.LockedViewHierarchy;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchy;
@@ -2511,8 +2512,12 @@ public final class EditorCaret implements Caret {
                         change = true;
                     }
                 }
+                if (atomicSectionLowestModOffset != Integer.MAX_VALUE) {
+                    invalidateCaretBounds(atomicSectionLowestModOffset);
+                    change = true;
+                }
                 if (change) {
-                    modifiedOffsetUpdate(atomicSectionLowestModOffset);
+                    updateAndFireChange();
                 }
             } finally {
                 inAtomicUnlock = false;
@@ -2532,12 +2537,12 @@ public final class EditorCaret implements Caret {
             if (inAtomicSection) {
                 atomicSectionLowestModOffset = Math.min(atomicSectionLowestModOffset, offset);
             } else { // Not in atomic section
-                modifiedOffsetUpdate(offset);
+                invalidateCaretBounds(offset);
+                updateAndFireChange();
             }
         }
         
-        private void modifiedOffsetUpdate(int offset) {
-            invalidateCaretBounds(offset);
+        private void updateAndFireChange() {
             dispatchUpdate(false);
             resetBlink();
             fireStateChanged(null);
@@ -2553,25 +2558,27 @@ public final class EditorCaret implements Caret {
          * @return true if the given offset was used or false if not.
          */
         private boolean implicitSetDot(DocumentEvent evt, int offset) {
-            if (getCarets().size() == 1) { // And if there is just a single caret
-                boolean inActiveTransaction;
-                synchronized (listenerList) {
-                    inActiveTransaction = (activeTransaction != null);
-                }
-                // Only set the dot implicitly if not already in an active transaction.
-                // Otherwise the caret framework would report illegal nested transaction.
-                // An explicit active transaction uses the new Caret API anyway
-                // so it should also use the proper caret position(s) saving for undo/redo too.
-                if (!inActiveTransaction) {
-                    // Ensure no implicit setDot() for post-modification events
-                    // (evt == null) for call within atomic unlock
-                    if (evt == null || !DocumentPostModificationUtils.isPostModification(evt)) {
-                        if (inAtomicSection) {
-                            atomicSectionImplicitSetDotOffset = offset;
-                        } else {
-                            setDot(offset);
+            if (UndoRedoDocumentEventResolver.isUndoRedoEvent(evt)) {
+                if (getCarets().size() == 1) { // And if there is just a single caret
+                    boolean inActiveTransaction;
+                    synchronized (listenerList) {
+                        inActiveTransaction = (activeTransaction != null);
+                    }
+                    // Only set the dot implicitly if not already in an active transaction.
+                    // Otherwise the caret framework would report illegal nested transaction.
+                    // An explicit active transaction uses the new Caret API anyway
+                    // so it should also use the proper caret position(s) saving for undo/redo too.
+                    if (!inActiveTransaction) {
+                        // Ensure no implicit setDot() for post-modification events
+                        // (evt == null) for call within atomic unlock
+                        if (evt == null || !DocumentPostModificationUtils.isPostModification(evt)) {
+                            if (inAtomicSection) {
+                                atomicSectionImplicitSetDotOffset = offset;
+                            } else {
+                                setDot(offset);
+                            }
+                            return true;
                         }
-                        return true;
                     }
                 }
             }

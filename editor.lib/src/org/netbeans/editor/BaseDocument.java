@@ -118,6 +118,7 @@ import org.netbeans.modules.editor.lib2.document.DocumentPostModificationUtils;
 import org.netbeans.modules.editor.lib2.document.ReadWriteBuffer;
 import org.netbeans.modules.editor.lib2.document.ReadWriteUtils;
 import org.netbeans.modules.editor.lib2.document.StableCompoundEdit;
+import org.netbeans.modules.editor.lib2.document.UndoRedoDocumentEventResolver;
 import org.netbeans.spi.editor.document.UndoableEditWrapper;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.netbeans.spi.lexer.TokenHierarchyControl;
@@ -137,6 +138,16 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     static {
         EditorPackageAccessor.register(new Accessor());
         EditorDocumentHandler.setEditorDocumentServices(BaseDocument.class, BaseDocumentServices.INSTANCE);
+        UndoRedoDocumentEventResolver.register(new UndoRedoDocumentEventResolver() {
+            @Override
+            public boolean isUndoRedo(DocumentEvent evt) {
+                if (evt instanceof BaseDocumentEvent) {
+                    BaseDocumentEvent bevt = (BaseDocumentEvent) evt;
+                    return bevt.isInUndo() || bevt.isInRedo();
+                }
+                return false;
+            }
+        });
     }
 
     // -J-Dorg.netbeans.editor.BaseDocument.level=FINE
