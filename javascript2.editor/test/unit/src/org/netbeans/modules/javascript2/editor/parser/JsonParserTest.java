@@ -41,11 +41,12 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.modules.javascript2.editor.JsonTestBase;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 import org.netbeans.modules.javascript2.editor.parser.SanitizingParser.Context;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
@@ -65,14 +66,19 @@ public class JsonParserTest extends JsonTestBase {
             + "\"name\": \"test\"  //line comment\n"
             + "/*comment*/\n"
             + "}\n",
-            Collections.singletonList("Expected , or } but found /"));
+            false,
+            Arrays.asList(
+                    "token recognition error at: '//line comment",
+                    "token recognition error at: '/*comment"
+                    ));
     }
 
     public void testComments2() throws Exception {
         parse("{\n"
             + "\"name\": \"test\"  //line comment\n"
             + "}\n",
-            Collections.singletonList("Expected , or } but found /"));
+            false,
+            Collections.singletonList("token recognition error at: '//line comment"));
     }
 
     public void testComments3() throws Exception {
@@ -80,63 +86,105 @@ public class JsonParserTest extends JsonTestBase {
             + "\"name\": \"test\"\n"
             + "/*comment*/\n"
             + "}\n",
-            Collections.singletonList("Expected , or } but found /"));
+            false,
+            Collections.singletonList("token recognition error at: '/*comment"));
+    }
+
+    public void testComments4() throws Exception {
+        parse("{\n"
+            + "\"name\": \"test\"  //line comment\n"
+            + "/*comment*/\n"
+            + "}\n",
+            true,
+            Collections.emptyList());
     }
 
     public void testStringLiteral1() throws Exception {
-        parse("{ \"a\" : \"test\\tw\" }", Collections.<String>emptyList());
+        parse("{ \"a\" : \"test\\tw\" }", false, Collections.<String>emptyList());
     }
 
     public void testStringLiteral2() throws Exception {
-        parse("{ \"a\" : \"test\\xw\" }", Collections.singletonList("Unexpected token: test\\xw"));
+        parse("{ \"a\" : \"test\\xw\" }",
+                false,
+                //Todo: Consider to join antlr errors in String token
+                Arrays.asList(
+                        "token recognition error at: '\"test\\x'",
+                        "token recognition error at: 'w'",
+                        "token recognition error at: '\" }'",
+                        "no viable alternative at input '<EOF>'"));
     }
 
     public void testStringLiteral3() throws Exception {
-        parse("{ \"a\" : \"test\\\nw\" }", Collections.singletonList("Unexpected token: test\\\nw"));
+        parse("{ \"a\" : \"test\\\nw\" }",
+                false,
+                Arrays.asList(
+                        "token recognition error at: '\"test\\\\n'",
+                        "token recognition error at: 'w'",
+                        "token recognition error at: '\" }'",
+                        "no viable alternative at input '<EOF>'"));
     }
 
     public void testStringLiteral4() throws Exception {
-        parse("{ \"a\" : \"test\\u000fw\" }", Collections.<String>emptyList());
+        parse("{ \"a\" : \"test\\u000fw\" }", false, Collections.<String>emptyList());
     }
 
     public void testStringLiteral5() throws Exception {
-        parse("{ \"a\" : \"test\\u000gw\" }", Collections.singletonList("Unexpected token: test\\u000gw"));
+        parse("{ \"a\" : \"test\\u000gw\" }",
+                false,
+                //Todo: Consider to join antlr errors in String token
+                Arrays.asList(
+                        "token recognition error at: '\"test\\u000g'",
+                        "token recognition error at: 'w'",
+                        "token recognition error at: '\" }'",
+                        "no viable alternative at input '<EOF>'"
+                ));
     }
 
     public void testStringLiteral6() throws Exception {
-        parse("{ \"a\" : \"t'est\" }", Collections.<String>emptyList());
+        parse("{ \"a\" : \"t'est\" }", false, Collections.<String>emptyList());
     }
 
     public void testStringLiteral7() throws Exception {
-        parse("{ \"a\" : \"t\\'est\" }", Collections.singletonList("Unexpected token: t\\'est"));
+        parse("{ \"a\" : \"t\\'est\" }",
+                false,
+                //Todo: Consider to join antlr errors in String token
+                Arrays.asList(
+                    "token recognition error at: '\"t\\''",
+                    "token recognition error at: 'e'",
+                    "token recognition error at: 's'",
+                    "token recognition error at: 't\"'",
+                    "no viable alternative at input '}'"
+                ));
     }
 
     public void testTrailingComma1() throws Exception {
-        parse("{ \"a\" : \"test\" }", Collections.<String>emptyList());
+        parse("{ \"a\" : \"test\" }", false, Collections.<String>emptyList());
     }
 
     public void testTrailingComma2() throws Exception {
-        parse("{ \"a\" : [1, 2] }", Collections.<String>emptyList());
+        parse("{ \"a\" : [1, 2] }", false, Collections.<String>emptyList());
     }
 
     public void testTrailingComma3() throws Exception {
-        parse("{ \"a\" : \"test\", }", Collections.singletonList("Expected object member but found }"));
+        parse("{ \"a\" : \"test\", }", false, Collections.singletonList("mismatched input '}' expecting STRING"));
     }
 
     public void testTrailingComma4() throws Exception {
-        parse("{ \"a\" : [1, 2,] }", Collections.singletonList("Expected array element but found ]"));
+        parse("{ \"a\" : [1, 2,] }", false, Collections.singletonList("no viable alternative at input ']'"));
     }
 
     public void testTrailingComma5() throws Exception {
-        parse("{ \"a\" : [{\"w\":1}, {\"e\":2},] }", Collections.singletonList("Expected array element but found ]"));
+        parse("{ \"a\" : [{\"w\":1}, {\"e\":2},] }", false, Collections.singletonList("no viable alternative at input ']'"));
     }
 
-    private void parse(String original, List<String> errors) throws Exception {
-
-        JsonParser parser = new JsonParser();
+    private void parse(
+            String original,
+            boolean allowComments,
+            List<String> errors) throws Exception {
+        JsonParser parser = new JsonParser(allowComments);
         Document doc = getDocument(original);
         Snapshot snapshot = Source.create(doc).createSnapshot();
-        Context context = new JsParser.Context("test.json", snapshot, -1);
+        Context context = new JsParser.Context("test.json", snapshot, -1, JsTokenId.jsonLanguage());
         JsErrorManager manager = new JsErrorManager(snapshot, JsTokenId.jsonLanguage());
         parser.parseContext(context, JsParser.Sanitize.NEVER, manager);
 
