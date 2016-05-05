@@ -177,7 +177,7 @@ fragment FRACTION   : DOT DIGIT+;
 fragment EXPONENT   : ('e'|'E')(PLUS | MINUS)? DIGIT+;
 STRING              : QUOTE (CHAR)* QUOTE;
 fragment QUOTE      : '"';
-fragment CHAR       : ~["\\] | CONTROL;
+fragment CHAR       : ~[\u0000-\u001F"\\] | CONTROL;
 fragment CONTROL    : '\\' (["\\/bfnrt] | UNICODE);
 fragment UNICODE    : 'u' HEXDIGIT HEXDIGIT HEXDIGIT HEXDIGIT;
 fragment HEXDIGIT   : [0-9a-fA-F];
