@@ -51,12 +51,16 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
@@ -69,6 +73,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -125,7 +130,7 @@ public class UseSpecificCatch implements CustomizerProvider {
         TypeMirror throwableType = throwableEl.asType();
         TryTree tt = (TryTree) ctx.getPath().getLeaf();
         Queue<TypeMirror> process = new ArrayDeque<>(ctx.getInfo().getTreeUtilities().getUncaughtExceptions(new TreePath(ctx.getPath(), tt.getBlock())));
-        Set<TypeMirror> exceptions = new HashSet<>(process.size());
+        Map<String, TypeMirror> declExceptions = new HashMap<>(process.size());
         
         while (!process.isEmpty()) {
             TypeMirror e = process.poll();
@@ -153,9 +158,20 @@ public class UseSpecificCatch implements CustomizerProvider {
                 }
                 
                 case DECLARED:
-                    exceptions.add(e);
+                    DeclaredType decl = (DeclaredType)e;
+                    Element el = decl.asElement();
+                    if (el.getKind() == ElementKind.CLASS) {
+                        declExceptions.putIfAbsent(((TypeElement)el).getQualifiedName().toString(), decl);
+                    }
                     break;
             }
+        }
+        // sort declExceptions to get consistent behaviour
+        List<String> fqns = new ArrayList<>(declExceptions.keySet());
+        fqns.sort(null);
+        List<TypeMirror> exceptions = new ArrayList<>(declExceptions.size());
+        for (String s : fqns) {
+            exceptions.add(declExceptions.get(s));
         }
         
         StringTokenizer tukac = new StringTokenizer(
@@ -209,41 +225,46 @@ public class UseSpecificCatch implements CustomizerProvider {
                     }
                 }
                 Set<TypeMirrorHandle<TypeMirror>> exceptionHandles = new LinkedHashSet<TypeMirrorHandle<TypeMirror>>();
+                TypeMirror single = null;
                 for (TypeMirror tm : exceptions) {
                     if (ctx.getInfo().getTypes().isSubtype(tm, t)) {
+                        single = tm;
                         exceptionHandles.add(TypeMirrorHandle.create(tm));
                     }
                 }
                 boolean source17 = ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_7) >= 0;
                 Fix f;
                 
-                if (source17 && exceptionHandles.size() > 1) {
-                    f = new FixImpl(ctx.getInfo(), 
-                                p,
-                                exceptionHandles
-                            ).toEditorFix();
-                } else if (exceptionHandles.size() > 1) {
-                    f = new SplitExceptionInCatches(
-                                ctx.getInfo(),
-                                p,
-                                exceptionHandles,
-                                null
-                            ).toEditorFix();
-                } else {
-                    TypeMirror single = exceptions.iterator().next();
-                    f = new SplitExceptionInCatches(
-                                ctx.getInfo(),
-                                p,
-                                exceptionHandles,
-                                ctx.getInfo().getTypeUtilities().getTypeName(single).toString()
-                            ).toEditorFix();
+                if (!exceptionHandles.isEmpty()) {
+                    if (exceptionHandles.size() > 1) {
+                        if (source17) {
+                            f = new FixImpl(ctx.getInfo(), 
+                                        p,
+                                        exceptionHandles
+                                    ).toEditorFix();
+                        } else {
+                            f = new SplitExceptionInCatches(
+                                        ctx.getInfo(),
+                                        p,
+                                        exceptionHandles,
+                                        null
+                                    ).toEditorFix();
+                        }
+                    } else {
+                        f = new SplitExceptionInCatches(
+                                    ctx.getInfo(),
+                                    p,
+                                    exceptionHandles,
+                                    ctx.getInfo().getTypeUtilities().getTypeName(single).toString()
+                                ).toEditorFix();
+                    }
+                    descs.add(ErrorDescriptionFactory.forName(
+                            ctx, 
+                            kec.getParameter().getType(), 
+                            displayName, 
+                            f
+                    ));
                 }
-                descs.add(ErrorDescriptionFactory.forName(
-                        ctx, 
-                        kec.getParameter().getType(), 
-                        displayName, 
-                        f
-                ));
             }
         }
         return descs;
