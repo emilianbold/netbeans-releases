@@ -41,10 +41,20 @@
  */
 package org.netbeans.modules.javascript2.json.parser;
 
+import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.List;
+import java.util.Queue;
 import java.util.stream.Collectors;
+import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.BaseErrorListener;
+import org.antlr.v4.runtime.Parser;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.atn.ATNConfigSet;
+import org.antlr.v4.runtime.dfa.DFA;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.junit.NbTestCase;
 
@@ -89,29 +99,39 @@ public class JsonLexerTest extends NbTestCase {
         assertEquals(expected, result);
     }
 
-    public static void test1() throws Exception {
-        final String str = "{\n" +
-            "    \"cloud\" : \"my-cloud\",\n" +
-            "    \"net\" : {\n" +
-            "        \"vlan\" : \"my-id\", /* vlan tag \n" +
-            "        \"subnet\" : 3,\n" +
-            "        \"private\" : true\n" +
-            "    },\n" +
-            "    \"nodes\" : [   \n" +
-            "        {\n" +
-            "            \"name\" : \"storage\",\n" +
-            "            \"ip\" : \"10.0.0.10\",\n" +
-            "            \"image\" : \"ubuntu\"\n" +
-            "        },\n" +
-            "        {\n" +
-            "            \"name\" : \"web\",\n" +
-            "            \"ip\" : \"10.0.0.11\",\n" +
-            "            \"image\" : \"ubuntu\"\n" +
-            "        }\n" +
-            "    ]\n" +
-            "}";
-        final ANTLRInputStream in = new ANTLRInputStream(str);
-        final JsonLexer lexer = new JsonLexer(in, true, true);
-        lexer.getAllTokens().stream().forEach((t)->System.out.println(t));
+    public void testMultiLineString() throws Exception {
+        final String testCase = "{\"a\":\"1\n2\"}"; //NOI18N
+        final ANTLRInputStream in = new ANTLRInputStream(testCase);
+        final JsonLexer lexer = new JsonLexer(in, false, false);
+        final MockErrorListener ml = new MockErrorListener();
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(ml);
+        lexer.getAllTokens();
+        ml.assertErrorCount(2);
+    }
+
+    private static final class MockErrorListener extends BaseErrorListener {
+        private final Queue<RecognitionException> errors;
+
+        MockErrorListener() {
+            errors = new ArrayDeque<>();
+        }
+
+        @Override
+        public void syntaxError(
+                Recognizer<?, ?> rcgnzr,
+                Object o,
+                int i,
+                int i1,
+                String string,
+                RecognitionException re) {
+            errors.offer(re);
+        }
+
+        void assertErrorCount(int expectedCount) {
+            final int errCount = errors.size();
+            errors.clear();
+            assertEquals(expectedCount, errCount);
+        }
     }
 }

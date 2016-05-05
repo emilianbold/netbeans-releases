@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.Parameters;
@@ -142,9 +143,11 @@ public class ParseTreeToXml extends JsonBaseVisitor<Document> {
 
     @Override
     public Document visitTerminal(TerminalNode node) {
-        copyAttrs(
-                getTerminalNodeElement(node),
-                node);
+        if (node.getSymbol().getType() != Token.EOF) {
+            copyAttrs(
+                    getTerminalNodeElement(node),
+                    node);
+        }
         super.visitTerminal(node);
         return doc;
     }
