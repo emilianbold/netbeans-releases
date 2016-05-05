@@ -155,6 +155,52 @@ public class JsonParserTest extends NbTestCase {
         ), Arrays.asList(test.getStackTrace()));
     }
 
+    public void testParseSpecialChars() throws Exception {
+        jsonParser.parse(readContent("log-special-chars.json"));
+        jsonParser.finish();
+        TestSessionVo session = handler.getSession();
+        assertNotNull(session);
+        List<TestSuiteVo> suites = session.getTestSuites();
+        assertEquals(1, suites.size());
+        TestSuiteVo suite = suites.get(0);
+        assertEquals("Util_XMLTest::testPrepareString", suite.getName());
+        List<TestCaseVo> tests = suite.getPureTestCases();
+        assertEquals(3, tests.size());
+        TestCaseVo test = tests.get(0);
+        assertEquals("testPrepareString with data set #123 ('{')", test.getName());
+        assertEquals(TestCase.Status.PASSED, test.getStatus());
+        test = tests.get(2);
+        assertEquals("testPrepareString with data set #125 ('}')", test.getName());
+        assertEquals(TestCase.Status.PASSED, test.getStatus());
+    }
+
+    public void testParseSpecialChars2() throws Exception {
+        jsonParser.parse(readContent("log-special-chars-2.json"));
+        jsonParser.finish();
+        TestSessionVo session = handler.getSession();
+        assertNotNull(session);
+        List<TestSuiteVo> suites = session.getTestSuites();
+        assertEquals(2, suites.size());
+        TestSuiteVo suite = suites.get(0);
+        assertEquals("StringsTest", suite.getName());
+        suite = suites.get(1);
+        assertEquals("StringsTest::testPrepareString", suite.getName());
+        List<TestCaseVo> tests = suite.getPureTestCases();
+        assertEquals(256, tests.size());
+        TestCaseVo test = tests.get(34);
+        assertEquals("testPrepareString with data set #34 ('\"')", test.getName());
+        assertEquals(TestCase.Status.PASSED, test.getStatus());
+        test = tests.get(39);
+        assertEquals("testPrepareString with data set #39 (''')", test.getName());
+        assertEquals(TestCase.Status.PASSED, test.getStatus());
+        test = tests.get(123);
+        assertEquals("testPrepareString with data set #123 ('{')", test.getName());
+        assertEquals(TestCase.Status.PASSED, test.getStatus());
+        test = tests.get(125);
+        assertEquals("testPrepareString with data set #125 ('}')", test.getName());
+        assertEquals(TestCase.Status.PASSED, test.getStatus());
+    }
+
     public void testIssue258312() throws Exception {
         // log file created manually (project from report does not exist anymore)
         jsonParser.parse(readContent("issue258312.json"));

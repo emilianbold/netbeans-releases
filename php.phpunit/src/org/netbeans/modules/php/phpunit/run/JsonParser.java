@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -61,7 +60,6 @@ public final class JsonParser {
 
     private static final Logger LOGGER = Logger.getLogger(JsonParser.class.getName());
 
-    private static final Pattern SPLIT_PATTERN = Pattern.compile("\\}\\{"); // NOI18N
     private static final String INCOMPLETE_TEST_PREFIX = "Incomplete Test: "; // NOI18N
     private static final String SKIPPED_TEST_PREFIX = "Skipped Test: "; // NOI18N
 
@@ -76,6 +74,7 @@ public final class JsonParser {
     private TestCaseVo actualTest = null;
     private int curlyBalance = 0;
     private int inputIndex = 0;
+    private boolean inString = false;
 
 
     @NbBundle.Messages("JsonParser.suite.none=&lt;no suite>")
@@ -98,18 +97,26 @@ public final class JsonParser {
         }
         inputData.append(input);
         int i = inputIndex;
+        char prevCh = ' ';
         while (i < inputData.length()) {
             char ch = inputData.charAt(i);
-            if (ch == '{') { // NOI18N
-                curlyBalance++;
-            } else if (ch == '}') { // NOI18N
-                curlyBalance--;
-                if (curlyBalance == 0) {
-                    parseJson(inputData.substring(0, i + 1));
-                    inputData.delete(0, i + 1);
-                    i = -1;
+            if (ch == '"' // NOI18N
+                    && prevCh != '\\') { // NOI18N
+                inString = !inString;
+            }
+            if (!inString) {
+                if (ch == '{') { // NOI18N
+                    curlyBalance++;
+                } else if (ch == '}') { // NOI18N
+                    curlyBalance--;
+                    if (curlyBalance == 0) {
+                        parseJson(inputData.substring(0, i + 1));
+                        inputData.delete(0, i + 1);
+                        i = -1;
+                    }
                 }
             }
+            prevCh = ch;
             i++;
         }
         inputIndex = inputData.length();
@@ -139,7 +146,7 @@ public final class JsonParser {
         try {
             data = (JSONObject) parser.parse(input);
         } catch (ParseException ex) {
-            LOGGER.log(Level.INFO, input, ex);
+            LOGGER.log(Level.WARNING, input, ex);
             return;
         }
         assert data != null : input + dumpAllData();
