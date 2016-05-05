@@ -126,6 +126,7 @@ public class DockerContainersChildFactory extends NodeClosingFactory<StatefulDoc
         List<DockerContainer> containers = new ArrayList<>(facade.getContainers());
         Collections.sort(containers, COMPARATOR);
         synchronized (cache) {
+            List<StatefulDockerContainer> fresh = new ArrayList<>(containers.size());
             for (DockerContainer c : containers) {
                 StatefulDockerContainer cached = null;
                 WeakReference<StatefulDockerContainer> ref = cache.get(c);
@@ -136,10 +137,14 @@ public class DockerContainersChildFactory extends NodeClosingFactory<StatefulDoc
                     cached = new StatefulDockerContainer(c);
                     cache.put(c, new WeakReference<>(cached));
                 } else {
+                    cached.attach();
                     cached.refresh();
                 }
-                toPopulate.add(cached);
+                fresh.add(cached);
             }
+            // we add it all at once to prevent remove-add cycle for existing
+            // containers
+            toPopulate.addAll(fresh);
         }
         return true;
     }
@@ -159,6 +164,7 @@ public class DockerContainersChildFactory extends NodeClosingFactory<StatefulDoc
                     c.close();
                 }
             }
+            cache.clear();
         }
     }
 

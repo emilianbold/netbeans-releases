@@ -288,10 +288,12 @@ public final class JsonParser {
         if (isActualNoSuite()) {
             return testName;
         }
-        String[] parts = testName.split("::", 2); // NOI18N
-        if (parts.length == 2
-                && StringUtils.hasText(parts[1])) {
-            return parts[1];
+        int idx = testName.indexOf("::"); // NOI18N
+        if (idx != -1) {
+            String name = testName.substring(idx + 2);
+            if (StringUtils.hasText(name)) {
+                return name;
+            }
         }
         return testName;
     }
