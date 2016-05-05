@@ -73,7 +73,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
-import org.netbeans.lib.profiler.ui.results.PackageColor;
+import org.netbeans.lib.profiler.ui.results.ColoredFilter;
 import org.netbeans.lib.profiler.ui.results.PackageColorer;
 import org.netbeans.lib.profiler.ui.swing.ProfilerTable;
 import org.netbeans.lib.profiler.ui.swing.ProfilerTableContainer;
@@ -97,7 +97,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider( service = ProfilerOptionsPanel.class, position = 15 )
 public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
     
-    private final List<PackageColor> colors = new ArrayList();
+    private final List<ColoredFilter> colors = new ArrayList();
     private final ColorsTableModel colorsModel = new ColorsTableModel();
     
     
@@ -188,7 +188,7 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
                 setToolTipText("Add new filter");
             }
             protected void fireActionPerformed(ActionEvent e) {
-                PackageColor newColor = ColorCustomizer.customize(new PackageColor("", "", null), true); // NOI18N
+                ColoredFilter newColor = ColorCustomizer.customize(new ColoredFilter("", "", null), true); // NOI18N
                 if (newColor != null) {
                     colors.add(newColor);
                     colorsModel.fireTableDataChanged();
@@ -210,8 +210,8 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
             protected void fireActionPerformed(ActionEvent e) {
                 int row = colorsTable.getSelectedRow();
                 if (row == -1) return;
-                PackageColor selected = colors.get(row);
-                PackageColor edited = ColorCustomizer.customize(selected, false);
+                ColoredFilter selected = colors.get(row);
+                ColoredFilter edited = ColorCustomizer.customize(selected, false);
                 if (edited != null) {
                     selected.setName(edited.getName());
                     selected.setValue(edited.getValue());
@@ -254,7 +254,7 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
             protected void fireActionPerformed(ActionEvent e) {
                 int row = colorsTable.getSelectedRow();
                 if (row < 1) return;
-                PackageColor color = colors.remove(row);
+                ColoredFilter color = colors.remove(row);
                 colors.add(row - 1, color);
                 colorsModel.fireTableDataChanged();
             }
@@ -274,7 +274,7 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
             protected void fireActionPerformed(ActionEvent e) {
                 int row = colorsTable.getSelectedRow();
                 if (row == -1 || row > colorsTable.getRowCount() - 2) return;
-                PackageColor color = colors.remove(row);
+                ColoredFilter color = colors.remove(row);
                 colors.add(row + 1, color);
                 colorsModel.fireTableDataChanged();
             }
@@ -341,8 +341,8 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
     
     private static class ColorCustomizer {
         
-        static PackageColor customize(PackageColor color, boolean newFilter) {
-            final PackageColor customized = new PackageColor(color);
+        static ColoredFilter customize(ColoredFilter color, boolean newFilter) {
+            final ColoredFilter customized = new ColoredFilter(color);
             JTextField nameF = new JTextField(customized.getName());
             JTextArea valueA = new JTextArea(customized.getValue());
             valueA.setRows(8);
