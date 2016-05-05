@@ -87,13 +87,37 @@ import org.netbeans.modules.profiler.api.icons.ProfilerIcons;
 import org.netbeans.modules.profiler.options.ui.v2.ProfilerOptionsPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Jiri Sedlacek
  */
+@NbBundle.Messages({
+    "FiltersOptionsPanel_Name=Filters",
+    "FiltersOptionsPanel_ColoringResults=&Use defined filters for coloring results",
+    "FiltersOptionsPanel_DefinedFilters=Defined &Filters:",
+    "FiltersOptionsPanel_AddFilter=Add new filter",
+    "FiltersOptionsPanel_EditFilter=Edit selected filter",
+    "FiltersOptionsPanel_DeleteFilter=Delete selected filter",
+    "FiltersOptionsPanel_MoveUp=Move selected filter up",
+    "FiltersOptionsPanel_MoveDown=Move selected filter down",
+    "FiltersOptionsPanel_ColumnFilter=Filter",
+    "FiltersOptionsPanel_ColumnPackages=Packages",
+    "FiltersOptionsPanel_ColumnColor=Color",
+    "ColorCustomizer_DefaultColor=Default color",
+    "ColorCustomizer_CustomColor=Custom color [{0},{1},{2}]",
+    "ColorCustomizer_Name=Name:",
+    "ColorCustomizer_Color=Color:",
+    "ColorCustomizer_ColorHint=Select to define custom color, unselect to use the default color",
+    "ColorCustomizer_Value=Value:",
+    "ColorCustomizer_AddCaption=Add Filter",
+    "ColorCustomizer_EditCaption=EditFilter",
+    "ColorCustomizer_ColorCaption=Choose Filter Color"
+})
 @ServiceProvider( service = ProfilerOptionsPanel.class, position = 15 )
 public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
     
@@ -109,7 +133,7 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
 
     
     public String getDisplayName() {
-        return "Filters";
+        return Bundle.FiltersOptionsPanel_Name();
     }
 
     public void storeTo(ProfilerIDESettings settings) {
@@ -139,7 +163,7 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
         int htab = 8;
         int vgap = 5;
         
-        Separator dataTransferSeparator = new Separator("Filters");
+        Separator dataTransferSeparator = new Separator(Bundle.FiltersOptionsPanel_Name());
         c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = y++;
@@ -148,7 +172,8 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
         c.insets = new Insets(0, 0, vgap * 2, 0);
         add(dataTransferSeparator, c);
         
-        coloringChoice = new JCheckBox("Use defined filters for coloring results");
+        coloringChoice = new JCheckBox();
+        Mnemonics.setLocalizedText(coloringChoice, Bundle.FiltersOptionsPanel_ColoringResults());
         c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = y++;
@@ -157,7 +182,8 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
         c.insets = new Insets(0, htab, vgap * 3, 0);
         add(coloringChoice, c);
         
-        JLabel tableCaption = new JLabel("Defined Filters:");
+        JLabel tableCaption = new JLabel();
+        Mnemonics.setLocalizedText(tableCaption, Bundle.FiltersOptionsPanel_DefinedFilters());
         c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = y++;
@@ -195,6 +221,7 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
         colorsTable.setDefaultColumnWidth(2, stringRenderer.getPreferredSize().width + 10);
         ProfilerTableContainer colorsContainer = new ProfilerTableContainer(colorsTable, true, null);
         colorsContainer.setPreferredSize(new Dimension(1, 1));
+        tableCaption.setLabelFor(colorsTable);
         c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = y;
@@ -208,7 +235,7 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
         
         JButton addButton = new SmallButton(Icons.getIcon(GeneralIcons.ADD)) {
             {
-                setToolTipText("Add new filter");
+                setToolTipText(Bundle.FiltersOptionsPanel_AddFilter());
             }
             protected void fireActionPerformed(ActionEvent e) {
                 ColoredFilter newColor = ColorCustomizer.customize(new ColoredFilter("", "", null), true); // NOI18N
@@ -228,7 +255,7 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
         
         final JButton editButton = new SmallButton(Icons.getIcon(GeneralIcons.EDIT)) {
             {
-                setToolTipText("Edit selected filter");
+                setToolTipText(Bundle.FiltersOptionsPanel_EditFilter());
             }
             protected void fireActionPerformed(ActionEvent e) {
                 int row = colorsTable.getSelectedRow();
@@ -253,7 +280,7 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
         
         final JButton removeButton = new SmallButton(Icons.getIcon(GeneralIcons.REMOVE)) {
             {
-                setToolTipText("Delete selected filter");
+                setToolTipText(Bundle.FiltersOptionsPanel_DeleteFilter());
             }
             protected void fireActionPerformed(ActionEvent e) {
                 int row = colorsTable.getSelectedRow();
@@ -272,7 +299,7 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
         
         final JButton upButton = new SmallButton(Icons.getIcon(GeneralIcons.UP)) {
             {
-                setToolTipText("Move selected filter up");
+                setToolTipText(Bundle.FiltersOptionsPanel_MoveUp());
             }
             protected void fireActionPerformed(ActionEvent e) {
                 int row = colorsTable.getSelectedRow();
@@ -292,7 +319,7 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
         
         final JButton downButton = new SmallButton(Icons.getIcon(GeneralIcons.DOWN)) {
             {
-                setToolTipText("Move selected filter down");
+                setToolTipText(Bundle.FiltersOptionsPanel_MoveDown());
             }
             protected void fireActionPerformed(ActionEvent e) {
                 int row = colorsTable.getSelectedRow();
@@ -335,9 +362,9 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
         
         public String getColumnName(int column) {
             switch (column) {
-                case 0: return "Filter";
-                case 1: return "Packages";
-                case 2: return "Color";
+                case 0: return Bundle.FiltersOptionsPanel_ColumnFilter();
+                case 1: return Bundle.FiltersOptionsPanel_ColumnPackages();
+                case 2: return Bundle.FiltersOptionsPanel_ColumnColor();
                 default: return null;
             }
         }
@@ -375,7 +402,7 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
             final JButton colorB = new JButton() {
                 {
                     setIcon(customized.getIcon(16, 12));
-                    setToolTipText("");
+                    setToolTipText(""); // NOI18N // register with ToolTipManager
                 }
                 protected void fireActionPerformed(ActionEvent e) {
                     Color c = selectColor(this, customized.getColor());
@@ -386,8 +413,8 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
                 }
                 public String getToolTipText(MouseEvent e) {
                     Color col = customized.getColor();
-                    return col == null ? "Default color" : "Custom color [" + col.getRed() + "," +
-                                                           col.getGreen() + "," + col.getBlue() + "]";
+                    return col == null ? Bundle.ColorCustomizer_DefaultColor() :
+                           Bundle.ColorCustomizer_CustomColor(col.getRed(), col.getGreen(), col.getBlue());
                 }
             };
             
@@ -402,7 +429,7 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
             c.gridx = 0;
             c.gridy = y;
             c.insets = new Insets(vgap * 2, hgap, 0, 0);
-            p.add(new JLabel("Name:"), c);
+            p.add(new JLabel(Bundle.ColorCustomizer_Name()), c);
             
             c = new GridBagConstraints();
             c.gridx = 1;
@@ -412,7 +439,7 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
             c.insets = new Insets(vgap * 2, htab, 0, 0);
             p.add(nameF, c);
             
-            JCheckBox colorC = new JCheckBox("Color:", customized.getColor() != null) {
+            JCheckBox colorC = new JCheckBox(Bundle.ColorCustomizer_Color(), customized.getColor() != null) {
                 private Color bkpC;
                 protected void fireActionPerformed(ActionEvent e) {
                     super.fireActionPerformed(e);
@@ -427,7 +454,7 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
                 }
             };
             colorC.setOpaque(false);
-            colorC.setToolTipText("Select to define custom color, unselect to use the default color");
+            colorC.setToolTipText(Bundle.ColorCustomizer_ColorHint());
             colorB.setEnabled(colorC.isSelected());
             c = new GridBagConstraints();
             c.gridx = 2;
@@ -446,7 +473,7 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
             c.gridy = y;
             c.anchor = GridBagConstraints.NORTHWEST;
             c.insets = new Insets(vgap * 2, hgap, 0, 0);
-            p.add(new JLabel("Value:"), c);
+            p.add(new JLabel(Bundle.ColorCustomizer_Value()), c);
             
             c = new GridBagConstraints();
             c.gridx = 1;
@@ -460,7 +487,9 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
             p.add(new JScrollPane(valueA), c);
             
             HelpCtx helpCtx = new HelpCtx("PackageColorCustomizer.HelpCtx"); // NOI18N
-            DialogDescriptor dd = new DialogDescriptor(p, newFilter ? "Add Filter" : "Edit Filter", true,
+            String dialogCaption = newFilter ? Bundle.ColorCustomizer_AddCaption() :
+                                               Bundle.ColorCustomizer_EditCaption();
+            DialogDescriptor dd = new DialogDescriptor(p, dialogCaption, true,
                                   new Object[] { DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION }, 
                                   DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN,
                                   helpCtx, null);
@@ -507,7 +536,7 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
             }
             Ret ret = new Ret();
 
-            JDialog dialog = JColorChooser.createDialog(comp, "Choose Filter Color", true, pane, ret, null);
+            JDialog dialog = JColorChooser.createDialog(comp, Bundle.ColorCustomizer_ColorCaption(), true, pane, ret, null);
 
             dialog.addComponentListener(new ComponentAdapter() {
                 public void componentHidden(ComponentEvent e) {
