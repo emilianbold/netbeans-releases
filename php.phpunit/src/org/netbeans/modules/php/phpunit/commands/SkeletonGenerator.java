@@ -61,6 +61,7 @@ import org.netbeans.modules.php.phpunit.options.PhpUnitOptions;
 import org.netbeans.modules.php.phpunit.preferences.PhpUnitPreferences;
 import org.netbeans.modules.php.phpunit.ui.UiUtils;
 import org.netbeans.modules.php.phpunit.ui.options.PhpUnitOptionsPanelController;
+import org.netbeans.modules.php.phpunit.util.PhpUnitUtils;
 import org.netbeans.modules.php.phpunit.util.VersionOutputProcessorFactory;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
@@ -78,8 +79,6 @@ public final class SkeletonGenerator {
     public static final String SCRIPT_NAME = "phpunit-skelgen"; // NOI18N
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
     public static final String SCRIPT_NAME_PHAR = SCRIPT_NAME + ".phar"; // NOI18N
-
-    private static final File TMP_DIR = new File(System.getProperty("java.io.tmpdir")); // NOI18N
 
     // version
     static final String VERSION_PATTERN = "(?:phpunit\\-skelgen|PHPUnit\\s+Skeleton\\s+Generator)\\s+(\\d+(?:\\.\\d+)*)"; // NOI18N
@@ -136,7 +135,7 @@ public final class SkeletonGenerator {
         VersionOutputProcessorFactory versionOutputProcessorFactory = new VersionOutputProcessorFactory(VERSION_PATTERN);
         try {
             SkeletonGenerator skeletonGenerator = getDefault();
-            skeletonGenerator.getExecutable("Skeleton Generator version", TMP_DIR) // NOI18N
+            skeletonGenerator.getExecutable("Skeleton Generator version", PhpUnitUtils.TMP_DIR) // NOI18N
                     .additionalParameters(Collections.singletonList(VERSION_PARAM))
                     .runAndWait(getSilentDescriptor(), versionOutputProcessorFactory, "Detecting Skeleton Generator version..."); // NOI18N
             String detectedVersion = versionOutputProcessorFactory.getVersion();
