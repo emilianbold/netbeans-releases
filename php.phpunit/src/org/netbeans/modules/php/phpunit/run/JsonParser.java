@@ -41,9 +41,11 @@
  */
 package org.netbeans.modules.php.phpunit.run;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -58,57 +60,70 @@ public final class JsonParser {
 
     private static final Logger LOGGER = Logger.getLogger(JsonParser.class.getName());
 
-    private static final Pattern SPLIT_PATTERN = Pattern.compile("\\}\\{"); // NOI18N
     private static final String INCOMPLETE_TEST_PREFIX = "Incomplete Test: "; // NOI18N
     private static final String SKIPPED_TEST_PREFIX = "Skipped Test: "; // NOI18N
 
+    private final File logFile;
     private final Handler handler;
     private final JSONParser parser = new JSONParser();
     private final TestSessionVo actualSession;
     private final TestSuiteVo noSuite;
+    private final StringBuilder inputData = new StringBuilder();
 
     private TestSuiteVo actualSuite = null;
     private TestCaseVo actualTest = null;
+    private int curlyBalance = 0;
+    private int inputIndex = 0;
+    private boolean inString = false;
 
 
     @NbBundle.Messages("JsonParser.suite.none=&lt;no suite>")
-    public JsonParser(@NonNull Handler handler, @NullAllowed String customSuitePath) {
+    public JsonParser(@NonNull File logFile, @NonNull Handler handler, @NullAllowed String customSuitePath) {
+        assert logFile != null;
         assert handler != null;
+        this.logFile = logFile;
         this.handler = handler;
         actualSession = new TestSessionVo(customSuitePath);
         noSuite = new TestSuiteVo(Bundle.JsonParser_suite_none());
     }
 
-    public boolean parse(String input) {
+    public void parse(String input) {
+        if (StringUtils.isEmpty(input)) {
+            return;
+        }
         if (!actualSession.isStarted()) {
             actualSession.setStarted(true);
             handler.onSessionStart(actualSession);
         }
-        String data = input;
-        if (StringUtils.isEmpty(data)) {
-            return true;
+        inputData.append(input);
+        int i = inputIndex;
+        char prevCh = ' ';
+        while (i < inputData.length()) {
+            char ch = inputData.charAt(i);
+            if (ch == '"' // NOI18N
+                    && prevCh != '\\') { // NOI18N
+                inString = !inString;
+            }
+            if (!inString) {
+                if (ch == '{') { // NOI18N
+                    curlyBalance++;
+                } else if (ch == '}') { // NOI18N
+                    curlyBalance--;
+                    if (curlyBalance == 0) {
+                        parseJson(inputData.substring(0, i + 1));
+                        inputData.delete(0, i + 1);
+                        i = -1;
+                    }
+                }
+            }
+            prevCh = ch;
+            i++;
         }
-        String[] parts = SPLIT_PATTERN.split(data);
-        int count = parts.length;
-        boolean result = true;
-        for (int i = 0; i < count; i++) {
-            String part = parts[i];
-            StringBuilder buffer = new StringBuilder(part.length() + 2);
-            if (i != 0) {
-                buffer.append('{'); // NOI18N
-            }
-            buffer.append(part);
-            if (i != count - 1) {
-                buffer.append('}'); // NOI18N
-            }
-            if (!parseJson(buffer.toString())) {
-                result = false;
-            }
-        }
-        return result;
+        inputIndex = inputData.length();
     }
 
     public void finish() {
+        assert !StringUtils.hasText(inputData.toString()) : inputData + dumpAllData();
         LOGGER.log(Level.FINE, "Parse finish");
         // finish last suite, if any exists
         suiteFinish();
@@ -125,16 +140,16 @@ public final class JsonParser {
         handler.onSessionFinish(actualSession);
     }
 
-    private boolean parseJson(String input) {
+    private void parseJson(String input) {
         LOGGER.log(Level.FINE, "JSON: {0}", input);
         JSONObject data;
         try {
             data = (JSONObject) parser.parse(input);
         } catch (ParseException ex) {
-            LOGGER.log(Level.INFO, input, ex);
-            return false;
+            LOGGER.log(Level.WARNING, input, ex);
+            return;
         }
-        assert data != null : input;
+        assert data != null : input + dumpAllData();
         String event = (String) data.get("event"); // NOI18N
         switch (event) {
             case "suiteStart": // NOI18N
@@ -148,14 +163,13 @@ public final class JsonParser {
                 testFinish(data);
                 break;
             default:
-                assert false : "Unknown event: " + event + " [" + input + "]";
+                assert false : "Unknown event: " + event + " [" + input + "]" + dumpAllData();
         }
-        return true;
     }
 
     private void suiteStart(JSONObject data) {
         String suiteName = (String) data.get("suite"); // NOI18N
-        assert suiteName != null : data;
+        assert suiteName != null : data + dumpAllData();
         if (StringUtils.hasText(suiteName)) {
             actualSuite = new TestSuiteVo(suiteName);
             actualSession.addTestSuite(actualSuite);
@@ -173,8 +187,8 @@ public final class JsonParser {
     }
 
     private void testStart(JSONObject data) {
-        assert actualSuite != null : data;
-        assert actualTest == null : data;
+        assert actualSuite != null : data  + dumpAllData();
+        assert actualTest == null : actualTest + " :: " + data  + dumpAllData();
         String suite = (String) data.get("suite"); // NOI18N
         switch (suite) {
             case "": // NOI18N
@@ -185,10 +199,10 @@ public final class JsonParser {
                 }
             break;
             default:
-                assert actualSuite.getName().equals(suite) : actualSuite + " != " + data;
+                assert actualSuite.getName().equals(suite) : actualSuite + " != " + data + dumpAllData();
         }
         String testName = (String) data.get("test"); // NOI18N
-        assert testName != null : data;
+        assert testName != null : data + dumpAllData();
         actualTest = new TestCaseVo(suite, extractTestName(testName));
         actualSuite.addTestCase(actualTest);
         if (!isActualNoSuite()) {
@@ -197,28 +211,28 @@ public final class JsonParser {
     }
 
     private void testFinish(JSONObject data) {
-        assert actualTest != null : data;
+        assert actualTest != null : data + dumpAllData();
         String suite = (String) data.get("suite"); // NOI18N
         switch (suite) {
             case "": // NOI18N
-                assert isActualNoSuite() : actualSuite;
+                assert isActualNoSuite() : actualSuite + dumpAllData();
             break;
             default:
-                assert actualSuite.getName().equals(suite) : actualSuite + " != " + data;
+                assert actualSuite.getName().equals(suite) : actualSuite + " != " + dumpAllData();
         }
         String testName = (String) data.get("test"); // NOI18N
-        assert testName != null : data;
-        assert actualTest.getName().equals(extractTestName(testName)) : data + " != " + actualTest;
+        assert testName != null : data + dumpAllData();
+        assert actualTest.getName().equals(extractTestName(testName)) : data + " != " + actualTest + dumpAllData();
         Number time = (Number) data.get("time"); // NOI18N
         if (time instanceof Double) {
             actualTest.setTime((long) (time.doubleValue() * 1000));
         } else {
-            assert time instanceof Long : time.getClass().getName() + " [" + data + "]";
+            assert time instanceof Long : time.getClass().getName() + " [" + data + "]" + dumpAllData();
             actualTest.setTime(time.longValue() * 1000);
         }
         String message = (String) data.get("message"); // NOI18N
         String status = (String) data.get("status"); // NOI18N
-        assert status != null : data;
+        assert status != null : data + dumpAllData();
         switch (status) {
             case "pass": // NOI18N
                 actualTest.setStatus(TestCase.Status.PASSED);
@@ -243,7 +257,7 @@ public final class JsonParser {
                 actualTest.setStatus(testStatus);
                 break;
             default:
-                assert false : "Unknown status: " + status + " [" + data + "]";
+                assert false : "Unknown status: " + status + " [" + data + "]" + dumpAllData();
         }
         if (message != null) {
             actualTest.addStacktrace(message);
@@ -254,7 +268,7 @@ public final class JsonParser {
             for (Object object : trace) {
                 JSONObject traceData = (JSONObject) object;
                 String file = (String) traceData.get("file"); // NOI18N
-                assert file != null : traceData + " [" + data + "]";
+                assert file != null : traceData + " [" + data + "]" + dumpAllData();
                 Long line = (Long) traceData.get("line"); // NOI18N
                 actualTest.addStacktrace(file + ":" + line); // NOI18N
                 if (first) {
@@ -274,16 +288,29 @@ public final class JsonParser {
         if (isActualNoSuite()) {
             return testName;
         }
-        String[] parts = testName.split("::", 2); // NOI18N
-        if (parts.length == 2
-                && StringUtils.hasText(parts[1])) {
-            return parts[1];
+        int idx = testName.indexOf("::"); // NOI18N
+        if (idx != -1) {
+            String name = testName.substring(idx + 2);
+            if (StringUtils.hasText(name)) {
+                return name;
+            }
         }
         return testName;
     }
 
     private boolean isActualNoSuite() {
         return noSuite == actualSuite;
+    }
+
+    private String dumpAllData() {
+        String content;
+        try {
+            content = new String(Files.readAllBytes(logFile.toPath()));
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "Cannot read PHPUnit log file " + logFile, ex);
+            content = "???"; // NOI18N
+        }
+        return " ((:" + content + ":))"; // NOI18N
     }
 
     //~ Inner classes

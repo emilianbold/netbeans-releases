@@ -462,6 +462,17 @@ public abstract class Properties {
             save ();
         }
 
+        void removeProperty(String propertyName) {
+            synchronized (this) {
+                if (!isInitialized) {
+                    load ();
+                    isInitialized = true;
+                }
+                properties.remove (propertyName);
+            }
+            save ();
+        }
+
         private synchronized ReentrantReadWriteLock getRWLock(String propertyName) {
             ReentrantReadWriteLock rwl = propertyRWLocks.get(propertyName);
             if (rwl == null) {
@@ -885,6 +896,9 @@ public abstract class Properties {
                 }
                 return initialValue;
             }
+            if (value.equals ("# null")) {                                      // NOI18N
+                return null;
+            }
             if (!value.startsWith ("\"")) { // NOI18N
                 LOG.config("Can not read string " + value + ".");               // NOI18N
                 return defaultValue;
@@ -897,7 +911,7 @@ public abstract class Properties {
             if (value != null) {
                 impl.setProperty (propertyName, "\"" + value + "\""); // NOI18N
             } else {
-                impl.setProperty (propertyName, value);
+                impl.setProperty (propertyName, "# null"); // NOI18N
             }
             pcs.firePropertyChange(propertyName, null, value);
         }
@@ -1115,7 +1129,7 @@ public abstract class Properties {
                 typeID = typeID.substring (2);
                 Class c = null;
                 try {
-                    c = Class.forName (typeID);
+                    c = Class.forName (typeID, true, org.openide.util.Lookup.getDefault().lookup(ClassLoader.class));
                 } catch (ClassNotFoundException e) {
                 }
                 if (c != null) {
@@ -1404,6 +1418,11 @@ public abstract class Properties {
             pcs.firePropertyChange(propertyName, null, value);
         }
 
+        public void unset (String propertyName) {
+            impl.removeProperty (propertyName);
+            pcs.firePropertyChange(propertyName, null, null);
+        }
+
         @Override
         public Properties getProperties (String propertyName) {
             synchronized (childProperties) {
@@ -1518,7 +1537,7 @@ public abstract class Properties {
 
     private static class DelegatingProperties extends Properties {
 
-        private Properties delegatingProperties;
+        private PropertiesImpl delegatingProperties;
         private String root;
         private final Map<String, Reference<Properties>> childProperties =
                 new HashMap<String, Reference<Properties>>();
@@ -1526,7 +1545,7 @@ public abstract class Properties {
                 new WeakHashMap<PropertyChangeListener, PropertyChangeListener>();
 
 
-        DelegatingProperties (Properties properties, String root) {
+        DelegatingProperties (PropertiesImpl properties, String root) {
             delegatingProperties = properties;
             this.root = root;
         }
@@ -1659,6 +1678,10 @@ public abstract class Properties {
         @Override
         public void setMap (String propertyName, Map value) {
             delegatingProperties.setMap (root + '.' + propertyName, value);
+        }
+
+        public void unset (String propertyName) {
+            delegatingProperties.unset (root + '.' + propertyName);
         }
 
         @Override

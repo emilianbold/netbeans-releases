@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="100">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="ResourceFiles"
+                   displayName="Resource Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <itemPath>src/args.c</itemPath>
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Unix_64" type="1">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+          <stripSymbols>true</stripSymbols>
+          <architecture>2</architecture>
+        </cTool>
+        <linkerTool>
+          <stripSymbols>true</stripSymbols>
+        </linkerTool>
+      </compileType>
+      <item path="src/args.c" ex="false" tool="0" flavor2="9">
+      </item>
+    </conf>
+    <conf name="Windows_32" type="1" platformSpecific="true">
+      <toolsSet>
+        <compilerSet>Cygwin_32|Cygwin</compilerSet>
+        <platform>3</platform>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+          <stripSymbols>true</stripSymbols>
+          <architecture>1</architecture>
+          <preprocessorList>
+            <Elem>MINGW</Elem>
+            <Elem>WINDOWS</Elem>
+          </preprocessorList>
+        </cTool>
+        <linkerTool>
+          <stripSymbols>true</stripSymbols>
+          <commandLine>-static-libgcc</commandLine>
+        </linkerTool>
+      </compileType>
+      <item path="src/args.c" ex="false" tool="0" flavor2="9">
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>

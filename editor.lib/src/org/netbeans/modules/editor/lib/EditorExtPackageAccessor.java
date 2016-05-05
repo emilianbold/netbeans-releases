@@ -45,6 +45,7 @@
 package org.netbeans.modules.editor.lib;
 
 import org.netbeans.editor.EditorUI;
+import org.netbeans.api.editor.StickyWindowSupport;
 import org.netbeans.editor.ext.ToolTipSupport;
 
 

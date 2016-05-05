@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -55,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 import org.netbeans.modules.cnd.callgraph.api.Call;
 import org.netbeans.modules.cnd.callgraph.api.Function;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.openide.text.PositionBounds;
 
 /**
  *
@@ -65,7 +65,7 @@ public class CallImpl implements Call {
     private final Function owner;
     private final Function callee;
     private final boolean nameOrder;
-    private final CsmReference firstOccurrence;
+    private final int firstOccurrenceOffset;
     private final ArrayList<Occurrence> occurrences;
     private final CharSequence description;
     private final CharSequence htmlName;
@@ -75,25 +75,17 @@ public class CallImpl implements Call {
         this.owner = implementationResolver(owner);
         this.callee = implementationResolver(callee);
         this.occurrences = initOccurrences(references);
-        this.firstOccurrence = (!references.isEmpty()) ? references.get(0) : null;
-        this.description = initDescription(firstOccurrence);
-        this.htmlName = initHtmlDisplayName(firstOccurrence);
-    }
-    
-    public Object getReferencedCall() {
-        return firstOccurrence;
+        this.firstOccurrenceOffset = references.get(0).getStartOffset();
+        this.description = initDescription(references.get(0));
+        this.htmlName = initHtmlDisplayName(references.get(0));
     }
     
     @Override
     public void open() {
-        final String taskName = "Open function call"; //NOI18N
-        Runnable run = new Runnable() {
-            @Override
-            public void run() {
-                CsmUtilities.openSource(firstOccurrence);
-            }
-        };
-        CsmModelAccessor.getModel().enqueue(run, taskName);
+        if (occurrences.isEmpty()) {
+            return;
+        }
+        occurrences.get(0).open();
     }
     
     @Override
@@ -141,7 +133,7 @@ public class CallImpl implements Call {
         if (nameOrder) {
             return getCaller().getName().compareTo(o.getCaller().getName());
         }
-        int diff = firstOccurrence.getStartOffset() - ((CallImpl)o).firstOccurrence.getStartOffset();
+        int diff = firstOccurrenceOffset - ((CallImpl)o).firstOccurrenceOffset;
         if (diff == 0) {
             return getCallee().getName().compareTo(o.getCallee().getName());
         }
@@ -177,26 +169,19 @@ public class CallImpl implements Call {
     }
     
     private static class OccurrenceImpl implements Call.Occurrence {
-        private final CsmReference reference;
+        private final PositionBounds positions;
         private final CharSequence description;
         private final CharSequence htmlName;
     
         private OccurrenceImpl(CsmReference reference) {
-            this.reference = reference;
+            positions = CsmUtilities.createPositionBounds(reference);
             description = initDescription(reference);
             htmlName = initHtmlDisplayName(reference);
         }
         
         @Override
         public void open() {
-            final String taskName = "Open function call"; //NOI18N
-            Runnable run = new Runnable() {
-                @Override
-                public void run() {
-                    CsmUtilities.openSource(reference);
-                }
-            };
-            CsmModelAccessor.getModel().enqueue(run, taskName);
+            CsmUtilities.openSource(positions);
         }
         
         @Override

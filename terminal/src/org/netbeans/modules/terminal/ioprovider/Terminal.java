@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.terminal.ioprovider;
 
+import org.netbeans.modules.terminal.support.OpenInEditorAction;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -78,6 +79,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -128,6 +131,7 @@ import org.netbeans.lib.terminalemulator.TermStream;
 import org.netbeans.modules.terminal.actions.ActionFactory;
 import org.netbeans.modules.terminal.actions.PinTabAction;
 import org.netbeans.modules.terminal.api.IOResizable;
+import org.netbeans.modules.terminal.spi.ExternalCommandActionProvider;
 import org.netbeans.modules.terminal.support.TerminalPinSupport;
 import org.netbeans.modules.terminal.support.TerminalPinSupport.DetailsStateListener;
 import org.openide.DialogDescriptor;
@@ -176,7 +180,6 @@ import org.openide.windows.OutputListener;
  */
 public final class Terminal extends JComponent {
 
-    private final RequestProcessor RP = new RequestProcessor("Open Terminal hyperlink"); //NOI18N
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     private final IOContainer ioContainer;
@@ -284,45 +287,58 @@ public final class Terminal extends JComponent {
     /**
      * Adapter to forward Term size change events as property changes.
      */
-    private class MyTermListener implements TermListener {
+    private class MyTermListener extends TermListener {
 
-	private final static int MAX_TITLE_LENGTH = 35;
-	private final static String PREFIX = "..."; // NOI18N
-	private final static String INFIX = " - "; // NOI18N
+        private final static int MAX_TITLE_LENGTH = 35;
+        private final static String PREFIX = "..."; // NOI18N
+        private final static String INFIX = " - "; // NOI18N
 
-	@Override
-	public void sizeChanged(Dimension cells, Dimension pixels) {
-	    IOResizable.Size size = new IOResizable.Size(cells, pixels);
-	    tio.pcs().firePropertyChange(IOResizable.PROP_SIZE, null, size);
-	}
+        @Override
+        public void sizeChanged(Dimension cells, Dimension pixels) {
+            IOResizable.Size size = new IOResizable.Size(cells, pixels);
+            tio.pcs().firePropertyChange(IOResizable.PROP_SIZE, null, size);
+        }
 
-	@Override
-	public void cwdChanged(String cwd) {
-	    if (!customTitle) {
-		int newLength = PREFIX.length() + INFIX.length() + cwd.length();
-		String newTitle = name.concat(INFIX).concat(cwd);
-		updateTooltopText(newTitle);
-		if (newLength > MAX_TITLE_LENGTH) {
-		    newTitle = name
-			    .concat(INFIX)
-			    .concat(PREFIX)
-			    .concat(cwd.substring(newLength - MAX_TITLE_LENGTH));
-		}
-		updateName(newTitle);
-	    }
-	}
+        @Override
+        public void cwdChanged(String cwd) {
+            if (!customTitle) {
+                int newLength = PREFIX.length() + INFIX.length() + cwd.length();
+                String newTitle = name.concat(INFIX).concat(cwd);
+                updateTooltopText(newTitle);
+                if (newLength > MAX_TITLE_LENGTH) {
+                    newTitle = name
+                            .concat(INFIX)
+                            .concat(PREFIX)
+                            .concat(cwd.substring(newLength - MAX_TITLE_LENGTH));
+                }
+                updateName(newTitle);
+            }
+        }
 
-	@Override
-	public void titleChanged(String title) {
-	    if (!customTitle) {
-		String newTitle = title;
-		updateTooltopText(newTitle);
-		if (title.length() > MAX_TITLE_LENGTH) {
-		    newTitle = PREFIX.concat(title.substring(title.length() - MAX_TITLE_LENGTH));
-		}
-		updateName(newTitle);
-	    }
-	}
+        @Override
+        public void titleChanged(String title) {
+            if (!customTitle) {
+                String newTitle = title;
+                updateTooltopText(newTitle);
+                if (title.length() > MAX_TITLE_LENGTH) {
+                    newTitle = PREFIX.concat(title.substring(title.length() - MAX_TITLE_LENGTH));
+                }
+                updateName(newTitle);
+            }
+        }
+
+        @Override
+        public void externalToolCalled(String command) {
+            if (!command.startsWith(Term.ExternalCommandsConstants.COMMAND_PREFIX)) {
+                return;
+            }
+            command = command.substring(Term.ExternalCommandsConstants.COMMAND_PREFIX.length());
+            if (!command.startsWith(Term.ExternalCommandsConstants.IDE_OPEN)) {
+                return;
+            }
+            
+            ExternalCommandActionProvider.getProvider(command).handle(command, Lookups.fixed(getCwd(), term));
+        }
     }
 
     private static class TerminalOutputEvent extends OutputEvent {
@@ -363,23 +379,14 @@ public final class Terminal extends JComponent {
         term .setBackground(Color.white);
         term.setHistorySize(4000);
         term.setRenderingHints(getRenderingHints());
-	
-		term.addListener(new TermListener() {
 
-	    @Override
-	    public void sizeChanged(Dimension cells, Dimension pixels) {
-	    }
+        term.addListener(new TermListener() {
+            @Override
+            public void cwdChanged(String aCwd) {
+                cwd = aCwd;
+            }
+        });
 
-	    @Override
-	    public void titleChanged(String title) {
-	    }
-
-	    @Override
-	    public void cwdChanged(String aCwd) {
-		cwd = aCwd;
-	    }
-	});
-	
 	shortcutsDir.addFileChangeListener(shortcutsListener);
         termOptions.addPropertyChangeListener(termOptionsPCL);
         applyTermOptions(true);
@@ -397,6 +404,7 @@ public final class Terminal extends JComponent {
 	actions.add(clearAction);
 	actions.add(dumpSequencesAction);
 	actions.add(closeAction);
+        actions.add(switchTabAction);
 	
 	for (Action action : actions) {
 	    if (action instanceof ContextAwareAction) {
@@ -509,7 +517,7 @@ public final class Terminal extends JComponent {
                         } catch (NumberFormatException x) {
                         }
                     }
-                    RP.post(new OpenInEditorAction(filePath, lineNumber));
+                    OpenInEditorAction.post(FileUtil.toFileObject(new File(filePath)), lineNumber);
                 } 
                 else if (userObject instanceof OutputListener) {
                     OutputListener ol = (OutputListener) r.getUserObject();
@@ -961,6 +969,7 @@ public final class Terminal extends JComponent {
     private Action clearAction = ActionFactory.forID(ActionFactory.CLEAR_ACTION_ID);
     private Action dumpSequencesAction = ActionFactory.forID(ActionFactory.DUMP_SEQUENCE_ACTION_ID);
     private Action closeAction = ActionFactory.forID(ActionFactory.CLOSE_ACTION_ID);
+    private Action switchTabAction = ActionFactory.forID(ActionFactory.SWITCH_TAB_ACTION_ID);
 
     private void setupKeymap(Set<Action> actions) {
 	// We need to do two things.
@@ -979,14 +988,24 @@ public final class Terminal extends JComponent {
 	Set<KeyStroke> passKeystrokes = new HashSet<KeyStroke>();
 
 	for (Action a : actions) {
-	    String n = (String) a.getValue(Action.NAME);
-            KeyStroke accelerator = (KeyStroke) a.getValue(Action.ACCELERATOR_KEY);
-	    if (accelerator == null)
-		continue;
-	    newInputMap.put(accelerator, n);
-	    newActionMap.put(n, a);
-	    passKeystrokes.add(accelerator);
-	}
+            String n = (String) a.getValue(Action.NAME);
+            Object key = a.getValue(Action.ACCELERATOR_KEY);
+            if (key == null) {
+                continue;
+            }
+            if (key instanceof KeyStroke) {
+                KeyStroke accelerator = (KeyStroke) key;
+                newInputMap.put(accelerator, n);
+                newActionMap.put(n, a);
+                passKeystrokes.add(accelerator);
+            } else if (key instanceof KeyStroke[]) {
+                for (KeyStroke accelerator : (KeyStroke[]) key) {
+                    newInputMap.put(accelerator, n);
+                    newActionMap.put(n, a);
+                    passKeystrokes.add(accelerator);
+                }
+            }
+        }
 
 	/* LATER
 	 * unsuccessful attempt at fixing bug #185483
@@ -1203,59 +1222,6 @@ public final class Terminal extends JComponent {
 	}
     }
 
-    private static class OpenInEditorAction implements Runnable {
-
-        private final String file;
-        private final int lineNumber;
-
-        private LineCookie lc;
-
-        public OpenInEditorAction(String file, int lineNumber) {
-            this.file = file;
-            this.lineNumber = lineNumber;
-        }
-
-        public @Override
-        void run() {
-            if (SwingUtilities.isEventDispatchThread()) {
-                doEDT();
-            } else {
-                doWork();
-            }
-        }
-
-        private void doEDT() {
-            if (lc != null) {
-                Line l = lc.getLineSet().getOriginal(lineNumber);
-                l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
-            }
-        }
-
-        private void doWork() {
-            FileObject fobj = FileUtil.toFileObject(new File(file));
-
-            if (fobj == null) {
-                return;
-            }
-
-            try {
-                DataObject dobj = DataObject.find(fobj);
-                EditorCookie ed = dobj.getLookup().lookup(EditorCookie.class);
-                if (ed != null && fobj == dobj.getPrimaryFile()) {
-                    if (lineNumber == -1) {
-                        ed.open();
-                    } else {
-                        lc = (LineCookie) dobj.getLookup().lookup(LineCookie.class);
-                        SwingUtilities.invokeLater(this);
-                    }
-                } else {
-                    Toolkit.getDefaultToolkit().beep();
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-    }
 
     private static class SupportStream extends TermStream {
 

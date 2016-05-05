@@ -238,6 +238,9 @@ public final class ImportClass implements ErrorRule<Void> {
                 if (!uniq.add(fqn)) {
                     continue;
                 }
+                if (org.netbeans.modules.java.completion.Utilities.isExcluded(fqn)) {
+                    continue;
+                }
                 StringBuilder sort = new StringBuilder();
                 
                 sort.append("0001#");

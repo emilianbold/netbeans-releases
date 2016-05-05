@@ -336,13 +336,17 @@ public class NodeExecutable {
         assert project != null;
         assert taskRef != null;
         List<URL> sourceRoots = NodeJsSupport.forProject(project).getSourceRoots();
+        final LineConvertorFactoryImpl lineConvertorFactory = new LineConvertorFactoryImpl(sourceRoots, debugInfo);
         return ExternalExecutable.DEFAULT_EXECUTION_DESCRIPTOR
                 .frontWindowOnError(false)
                 .showSuspended(true)
                 .optionsPath(NodeJsOptionsPanelController.OPTIONS_PATH)
                 .outLineBased(true)
                 .errLineBased(true)
-                .outConvertorFactory(new LineConvertorFactoryImpl(sourceRoots, debugInfo))
+                .outConvertorFactory(lineConvertorFactory)
+                .errConvertorFactory(lineConvertorFactory)
+                .preExecution(lineConvertorFactory.getPreExecution())
+                .postExecution(lineConvertorFactory.getPostExecution())
                 .rerunCallback(new ExecutionDescriptor.RerunCallback() {
                     @Override
                     public void performed(Future<Integer> task) {
@@ -501,18 +505,33 @@ public class NodeExecutable {
     private static final class LineConvertorFactoryImpl implements ExecutionDescriptor.LineConvertorFactory {
 
         private final List<File> files;
-        private final DebugInfo debugInfo;
+        private final Runnable preExecution;
+        private final Runnable postExecution;
+        private LineConvertorImpl executionLineConvertor;
 
 
         public LineConvertorFactoryImpl(List<URL> sourceRoots, @NullAllowed DebugInfo debugInfo) {
             assert sourceRoots != null;
             files = new CopyOnWriteArrayList<>(toFiles(sourceRoots));
-            this.debugInfo = debugInfo;
+            this.preExecution = () -> {
+                executionLineConvertor = new LineConvertorImpl(new FileLineParser(files), debugInfo);
+            };
+            this.postExecution = () -> {
+                executionLineConvertor = null;
+            };
+        }
+
+        Runnable getPreExecution() {
+            return preExecution;
+        }
+
+        Runnable getPostExecution() {
+            return postExecution;
         }
 
         @Override
         public LineConvertor newLineConvertor() {
-            return new LineConvertorImpl(new FileLineParser(files), debugInfo);
+            return executionLineConvertor;
         }
 
         private List<File> toFiles(List<URL> sourceRoots) {

@@ -49,13 +49,20 @@ import com.sun.source.tree.TryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
@@ -66,8 +73,11 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.swing.JComponent;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.GeneratorUtilities;
@@ -82,6 +92,7 @@ import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.CustomizerProvider;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
@@ -112,10 +123,56 @@ public class UseSpecificCatch implements CustomizerProvider {
         if (ctx.getPath().getLeaf().getKind() != Tree.Kind.TRY) {
             return null;
         }
+        TypeElement throwableEl = ctx.getInfo().getElements().getTypeElement("java.lang.Throwable");
+        if (throwableEl == null) {
+            return null;
+        }
+        TypeMirror throwableType = throwableEl.asType();
         TryTree tt = (TryTree) ctx.getPath().getLeaf();
-        Set<TypeMirror> exceptions = ctx.getInfo().getTreeUtilities().getUncaughtExceptions(new TreePath(ctx.getPath(), tt.getBlock()));
-
-        if (exceptions.size() <= 1) return null; //was catching the generic exception intentional?
+        Queue<TypeMirror> process = new ArrayDeque<>(ctx.getInfo().getTreeUtilities().getUncaughtExceptions(new TreePath(ctx.getPath(), tt.getBlock())));
+        Map<String, TypeMirror> declExceptions = new HashMap<>(process.size());
+        
+        while (!process.isEmpty()) {
+            TypeMirror e = process.poll();
+            switch (e.getKind()) {
+                case INTERSECTION: {
+                    IntersectionType itt = (IntersectionType)e;
+                    for (TypeMirror t : itt.getBounds()) {
+                        if (ctx.getInfo().getTypes().isAssignable(t, throwableType)) {
+                            process.add(t);
+                            break;
+                        }
+                    }
+                }
+                break;
+                
+                case TYPEVAR: {
+                    TypeVariable tv = (TypeVariable)e;
+                    if (tv.getUpperBound() != null) {
+                     process.offer(tv.getUpperBound());   
+                    }
+                    if (tv.getLowerBound() != null) {
+                        process.offer(tv.getLowerBound());
+                    }
+                    break;
+                }
+                
+                case DECLARED:
+                    DeclaredType decl = (DeclaredType)e;
+                    Element el = decl.asElement();
+                    if (el.getKind() == ElementKind.CLASS) {
+                        declExceptions.putIfAbsent(((TypeElement)el).getQualifiedName().toString(), decl);
+                    }
+                    break;
+            }
+        }
+        // sort declExceptions to get consistent behaviour
+        List<String> fqns = new ArrayList<>(declExceptions.keySet());
+        fqns.sort(null);
+        List<TypeMirror> exceptions = new ArrayList<>(declExceptions.size());
+        for (String s : fqns) {
+            exceptions.add(declExceptions.get(s));
+        }
         
         StringTokenizer tukac = new StringTokenizer(
             ctx.getPreferences().get(OPTION_EXCEPTION_LIST, DEFAULT_EXCEPTION_LIST), ", " // NOI18N
@@ -168,28 +225,46 @@ public class UseSpecificCatch implements CustomizerProvider {
                     }
                 }
                 Set<TypeMirrorHandle<TypeMirror>> exceptionHandles = new LinkedHashSet<TypeMirrorHandle<TypeMirror>>();
+                TypeMirror single = null;
                 for (TypeMirror tm : exceptions) {
                     if (ctx.getInfo().getTypes().isSubtype(tm, t)) {
+                        single = tm;
                         exceptionHandles.add(TypeMirrorHandle.create(tm));
                     }
                 }
                 boolean source17 = ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_7) >= 0;
-                descs.add(ErrorDescriptionFactory.forName(
-                        ctx, 
-                        kec.getParameter().getType(), 
-                        displayName, 
-                        source17 ? 
-                            new FixImpl(ctx.getInfo(), 
-                                p,
-                                exceptionHandles
-                            ).toEditorFix()
-                        :
-                            new SplitExceptionInCatches(
-                                ctx.getInfo(),
-                                p,
-                                exceptionHandles
-                            ).toEditorFix()
-                ));
+                Fix f;
+                
+                if (!exceptionHandles.isEmpty()) {
+                    if (exceptionHandles.size() > 1) {
+                        if (source17) {
+                            f = new FixImpl(ctx.getInfo(), 
+                                        p,
+                                        exceptionHandles
+                                    ).toEditorFix();
+                        } else {
+                            f = new SplitExceptionInCatches(
+                                        ctx.getInfo(),
+                                        p,
+                                        exceptionHandles,
+                                        null
+                                    ).toEditorFix();
+                        }
+                    } else {
+                        f = new SplitExceptionInCatches(
+                                    ctx.getInfo(),
+                                    p,
+                                    exceptionHandles,
+                                    ctx.getInfo().getTypeUtilities().getTypeName(single).toString()
+                                ).toEditorFix();
+                    }
+                    descs.add(ErrorDescriptionFactory.forName(
+                            ctx, 
+                            kec.getParameter().getType(), 
+                            displayName, 
+                            f
+                    ));
+                }
             }
         }
         return descs;
@@ -269,15 +344,20 @@ public class UseSpecificCatch implements CustomizerProvider {
      */
     public static class SplitExceptionInCatches extends JavaFix {
         private Collection<TypeMirrorHandle<TypeMirror>> newTypes;
+        private final String singleName;
 
-        public SplitExceptionInCatches(CompilationInfo info, TreePath tp, Collection<TypeMirrorHandle<TypeMirror>> newTypes) {
+        public SplitExceptionInCatches(CompilationInfo info, TreePath tp, Collection<TypeMirrorHandle<TypeMirror>> newTypes, String singleName) {
             super(info, tp);
             this.newTypes = newTypes;
+            this.singleName = singleName;
         }
 
         @Override
         protected String getText() {
-            return NbBundle.getMessage(UseSpecificCatch.class, "FIX_UseSpecificCatchSplit"); // NOI18N
+            return NbBundle.getMessage(UseSpecificCatch.class, 
+                    singleName != null ? 
+                    "FIX_UseSpecificCatchSingle" : 
+                    "FIX_UseSpecificCatchSplit", singleName); // NOI18N
         }
 
         @Override

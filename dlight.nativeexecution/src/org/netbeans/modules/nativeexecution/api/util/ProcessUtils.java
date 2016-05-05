@@ -223,6 +223,57 @@ public final class ProcessUtils {
         return result.toString();
     }
 
+    /**
+     * Just a conveniency shortcut for calling both methods
+     * ignoreProcessOutput()
+     * ignoreProcessError()
+     * @param p
+     */
+    public static void ignoreProcessOutputAndError(final Process p) {
+        ignoreProcessOutput(p);
+        ignoreProcessError(p);
+    }
+
+    /**
+     * Even if you ignore process error stream, it should be read,
+     * otherwise other processes can hang - this is a jsch related issue.
+     * This method reads and ignores process error stream
+     * @param p process
+     */
+    public static void ignoreProcessError(final Process p) {
+        if (p != null) {
+            NativeTaskExecutorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        readProcessStream(p.getErrorStream(), isRemote(p));
+                    } catch (IOException ex) {
+                    }
+                }
+            }, "Reading process error " + p); // NOI18N
+        }
+    }
+
+    /**
+     * Even if you ignore process output stream, it should be read,
+     * otherwise other processes can hang - this is a jsch related issue.
+     * This method reads and ignores process output stream
+     * @param p process
+     */
+    public static void ignoreProcessOutput(final Process p) {
+        if (p != null) {
+            NativeTaskExecutorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        readProcessStream(p.getInputStream(), isRemote(p));
+                    } catch (IOException ex) {
+                    }
+                }
+            }, "Reading process output " + p); // NOI18N
+        }
+    }
+
     public static void writeError(Writer error, Process p) throws IOException {
         List<String> err = readProcessError(p);
         for (String line : err) {

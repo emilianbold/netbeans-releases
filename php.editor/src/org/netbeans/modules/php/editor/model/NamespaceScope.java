@@ -51,8 +51,25 @@ import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
 public interface NamespaceScope extends VariableScope, FullyQualifiedElement {
 
     QualifiedName getQualifiedName();
-    Collection<? extends UseScope> getDeclaredUses();
-    // currently unused since registration of group use registers individual parts as single uses (@see getDeclaredUses())
+    /**
+     * Gets all 'use's, included the ones from 'group use's.
+     * <p>
+     * The 'use's from 'group use's return complete namespace name
+     * (including the prefix, the common part). It means that this
+     * method is suitable for most of the situations.
+     * @return all 'use's, included the ones from 'group use's
+     */
+    Collection<? extends UseScope> getAllDeclaredSingleUses();
+    /**
+     * @return all single 'use's (not 'group use's)
+     */
+    Collection<? extends UseScope> getDeclaredSingleUses();
+    /**
+     * Basically no need to use this method since registration of 'group use' registers
+     * individual parts as single uses.
+     * @return all 'group use's
+     * @see #getAllDeclaredSingleUses()
+     */
     Collection<? extends GroupUseScope> getDeclaredGroupUses();
     Collection<? extends TypeScope> getDeclaredTypes();
     Collection<? extends ClassScope> getDeclaredClasses();

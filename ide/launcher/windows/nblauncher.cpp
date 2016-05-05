@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -548,27 +548,6 @@ void NbLauncher::adjustHeapAndPermGenSize() {
         char tmp[32];
         snprintf(tmp, 32, " -J-Xmx%dm", memory);
         logMsg("Memory settings: -J-Xmx%dm", memory);
-        nbOptions += tmp;
-    }
-    // -XX:MaxPermSize and -XX:PermSize are passed to nbexec as
-    // launcher options, to apply them only for JDK 7. JDK 8 and
-    // newer do not support these arguments.
-    if (nbOptions.find("-J-XX:MaxPermSize") == string::npos) {
-        int memory;
-        if (areWeOn32bits())
-            memory = 256;
-        else
-            memory = 384;
-        char tmp[32];
-        logMsg("Memory settings: -L-XX:MaxPermSize=%dm", memory);
-        snprintf(tmp, 32, " -L-XX:MaxPermSize=%dm", memory);
-        nbOptions += tmp;
-    }
-    if (nbOptions.find("-J-XX:PermSize") == string::npos) {
-        int memory = 32;
-        char tmp[32];
-        logMsg("Memory settings: -L-XX:PermSize=%dm", memory);
-        snprintf(tmp, 32, " -L-XX:PermSize=%dm", memory);
         nbOptions += tmp;
     }
 }

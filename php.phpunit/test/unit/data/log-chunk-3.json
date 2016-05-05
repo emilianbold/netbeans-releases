@@ -1,0 +1,17 @@
+{
+    "event": "test",
+    "suite": "Calculator2Test",
+    "test": "Calculator2Test::testPlus2",
+    "status": "fail",
+    "time": 0.035938024520874,
+    "trace": [
+        {
+            "file": "\/home\/gapon\/NetBeansProjects\/Calculator-PHPUnit8\/test\/src\/Calculator2Test.php",
+            "line": 48,
+            "function": "assertEquals",
+            "class": "PHPUnit_Framework_Assert",
+            "type": "::"
+        }
+    ],
+    "message": "Failed asserting that 2 matches expected 1.",
+    "output"

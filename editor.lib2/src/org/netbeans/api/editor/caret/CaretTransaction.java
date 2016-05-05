@@ -100,6 +100,8 @@ final class CaretTransaction {
 
     private boolean anyMarkChanged;
     
+    private boolean scrollToLastCaret;
+    
     private GapList<CaretItem> replaceItems;
     
     private GapList<CaretItem> replaceSortedItems;
@@ -119,12 +121,14 @@ final class CaretTransaction {
     
     private boolean fullResort;
     
+    private final MoveCaretsOrigin origin;
     
-    CaretTransaction(EditorCaret caret, JTextComponent component, Document doc) {
+    CaretTransaction(EditorCaret caret, JTextComponent component, Document doc, MoveCaretsOrigin origin) {
         this.editorCaret = caret;
         this.component = component;
         this.doc = doc;
         this.origCaretItems = editorCaret.getCaretItems();
+        this.origin = origin;
     }
     
 
@@ -169,6 +173,7 @@ final class CaretTransaction {
             Position origMarkPos = caretItem.getMarkPosition();
             boolean dotChanged = origDotPos == null || ShiftPositions.compare(dotPos, origDotPos) != 0;
             boolean markChanged = origMarkPos == null || ShiftPositions.compare(markPos, origMarkPos) != 0;
+            scrollToLastCaret = true; // Scroll even if setDot() to same offset
             if (dotChanged || markChanged) {
                 editorCaret.ensureValidInfo(caretItem);
                 if (dotChanged) {
@@ -253,6 +258,10 @@ final class CaretTransaction {
     GapList<CaretItem> getSortedCaretItems() {
         return replaceSortedItems;
     }
+
+    public boolean isScrollToLastCaret() {
+        return scrollToLastCaret;
+    }
     
     List<CaretInfo> getOriginalCarets() {
         // Current impl ignores possible replaceItems content since client transactions only operate over
@@ -264,6 +273,10 @@ final class CaretTransaction {
     List<CaretInfo> getOriginalSortedCarets() {
         // Current impl ignores possible replaceItems content - see getOriginalCarets()
         return editorCaret.getSortedCarets();
+    }
+    
+    MoveCaretsOrigin getOrigin() {
+        return origin;
     }
 
     void replaceCarets(RemoveType removeType, int offset, CaretItem[] addCaretItems) {

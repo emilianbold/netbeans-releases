@@ -46,8 +46,11 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import org.apache.maven.index.ArtifactInfo;
+import org.netbeans.junit.MockServices;
+import org.netbeans.modules.maven.indexer.api.AbstractTestQueryProvider.TestIndexer1;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.QueryField;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.openide.util.test.TestFileUtils;
 
 public class NexusRepositoryIndexerImplTest extends NexusTestBase {
@@ -56,10 +59,15 @@ public class NexusRepositoryIndexerImplTest extends NexusTestBase {
         super(n);
     }
     
-    public void testFilterGroupIds() throws Exception {
+    public void testFilterPluginGroupIdsRepositoryQueries() throws Exception {
+        // add an alternative QueryProvider _not_ handlig our request
+        MockServices.setServices(TestIndexer1.class); 
+        
         install(File.createTempFile("whatever", ".txt", getWorkDir()), "test", "spin", "1.1", "txt");
         nrii.indexRepo(info);
-        assertEquals("[test]", nrii.filterGroupIds("", Collections.singletonList(info)).getResults().toString());
+        // RepositoryQueries should handle the query via our NexusRepositoryIndexerImpl
+        RepositoryQueries.Result<String> res = RepositoryQueries.getArtifactsResult("test", Collections.singletonList(info));        
+        assertEquals("[spin]", res.getResults().toString());
     }
 
     public void testFind() throws Exception {

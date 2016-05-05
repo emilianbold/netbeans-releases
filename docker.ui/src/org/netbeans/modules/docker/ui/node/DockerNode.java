@@ -45,23 +45,14 @@
 package org.netbeans.modules.docker.ui.node;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.logging.Logger;
 import javax.swing.Action;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
-import org.netbeans.modules.docker.api.DockerInstance;
 import org.netbeans.modules.docker.api.DockerSupport;
-import org.netbeans.modules.docker.ui.UiUtils;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
 
 public final class DockerNode extends AbstractNode {
 

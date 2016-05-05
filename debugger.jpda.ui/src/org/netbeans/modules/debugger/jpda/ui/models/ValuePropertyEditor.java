@@ -279,6 +279,28 @@ class ValuePropertyEditor implements ExPropertyEditor {
         }*/
     }
 
+    boolean setValueWithMirror(Object value, Object valueMirror) {
+        this.currentValue = value;
+        Class clazz = valueMirror.getClass();
+        PropertyEditor propertyEditor = findPropertyEditor(clazz);
+        propertyEditor = testPropertyEditorOnValue(propertyEditor, valueMirror);
+        if (propertyEditor == null) {
+            return false;
+        }
+        boolean doAttach = false;
+        mirrorClass = clazz;
+        delegatePropertyEditor = propertyEditor;
+        if (env != null && propertyEditor instanceof ExPropertyEditor) {
+            doAttach = true;
+        }
+        delegateValue = valueMirror;
+        delegatePropertyEditor.setValue(valueMirror);
+        if (doAttach) {
+            ((ExPropertyEditor) delegatePropertyEditor).attachEnv(env);
+        }
+        return doAttach;
+    }
+
     @Override
     public Object getValue() {
         if (delegatePropertyEditor == null) {

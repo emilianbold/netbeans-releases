@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.makeproject.launchers;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import static org.netbeans.modules.cnd.makeproject.launchers.actions.ui.LaunchersConfig.COMMON_LAUNCHER_INDEX;
 
 /**
  *
@@ -60,11 +61,12 @@ public final class Launcher {
     private String runDir;
     private final Map<String, String> env = new HashMap<>();
     private String symbolFiles;
+    private boolean hide = false;
     //can not be set after the creation
     private final Launcher common;
 
     public Launcher(String command, Launcher common) {
-        this(-1, command, common);
+        this(COMMON_LAUNCHER_INDEX, command, common);
     }
     
     public Launcher(int index, String command, Launcher common) {
@@ -138,6 +140,14 @@ public final class Launcher {
 
     /*package*/ void setSymbolFiles(String symbolFiles) {
         this.symbolFiles = symbolFiles;
+    }
+
+    public boolean isHide() {
+        return hide;
+    }
+
+    /*package*/ void setHide(boolean isHide) {
+        this.hide = isHide;
     }
 
     public String getDisplayedName() {

@@ -1,0 +1,3853 @@
+{
+    "event": "suiteStart",
+    "suite": "",
+    "tests": 256
+}{
+    "event": "suiteStart",
+    "suite": "StringsTest",
+    "tests": 256
+}{
+    "event": "suiteStart",
+    "suite": "StringsTest::testPrepareString",
+    "tests": 256
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #0 (Binary String: 0x00)"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #0 (Binary String: 0x00)",
+    "status": "pass",
+    "time": 0.011925220489502,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #1 (Binary String: 0x01)"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #1 (Binary String: 0x01)",
+    "status": "pass",
+    "time": 0.010529041290283,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #2 (Binary String: 0x02)"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #2 (Binary String: 0x02)",
+    "status": "pass",
+    "time": 0.0095620155334473,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #3 (Binary String: 0x03)"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #3 (Binary String: 0x03)",
+    "status": "pass",
+    "time": 0.0098509788513184,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #4 (Binary String: 0x04)"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #4 (Binary String: 0x04)",
+    "status": "pass",
+    "time": 0.0096390247344971,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #5 (Binary String: 0x05)"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #5 (Binary String: 0x05)",
+    "status": "pass",
+    "time": 0.0099329948425293,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #6 (Binary String: 0x06)"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #6 (Binary String: 0x06)",
+    "status": "pass",
+    "time": 0.0098991394042969,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #7 (Binary String: 0x07)"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #7 (Binary String: 0x07)",
+    "status": "pass",
+    "time": 0.010036945343018,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #8 (Binary String: 0x08)"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #8 (Binary String: 0x08)",
+    "status": "pass",
+    "time": 0.0098409652709961,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #9 ('\t')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #9 ('\t')",
+    "status": "pass",
+    "time": 0.0095818042755127,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #10 ('\\n')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #10 ('\\n')",
+    "status": "pass",
+    "time": 0.0098209381103516,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #11 ('\u000b')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #11 ('\u000b')",
+    "status": "pass",
+    "time": 0.01103687286377,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #12 ('\f')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #12 ('\f')",
+    "status": "pass",
+    "time": 0.010025024414062,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #13 ('\\n')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #13 ('\\n')",
+    "status": "pass",
+    "time": 0.010065078735352,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #14 (Binary String: 0x0e)"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #14 (Binary String: 0x0e)",
+    "status": "pass",
+    "time": 0.010293006896973,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #15 (Binary String: 0x0f)"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #15 (Binary String: 0x0f)",
+    "status": "pass",
+    "time": 0.0096449851989746,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #16 (Binary String: 0x10)"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #16 (Binary String: 0x10)",
+    "status": "pass",
+    "time": 0.0095930099487305,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #17 (Binary String: 0x11)"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #17 (Binary String: 0x11)",
+    "status": "pass",
+    "time": 0.01042103767395,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #18 (Binary String: 0x12)"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #18 (Binary String: 0x12)",
+    "status": "pass",
+    "time": 0.018975019454956,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #19 (Binary String: 0x13)"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #19 (Binary String: 0x13)",
+    "status": "pass",
+    "time": 0.018571138381958,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #20 (Binary String: 0x14)"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #20 (Binary String: 0x14)",
+    "status": "pass",
+    "time": 0.013129949569702,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #21 (Binary String: 0x15)"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #21 (Binary String: 0x15)",
+    "status": "pass",
+    "time": 0.011862993240356,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #22 (Binary String: 0x16)"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #22 (Binary String: 0x16)",
+    "status": "pass",
+    "time": 0.0090031623840332,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #23 (Binary String: 0x17)"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #23 (Binary String: 0x17)",
+    "status": "pass",
+    "time": 0.0085389614105225,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #24 (Binary String: 0x18)"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #24 (Binary String: 0x18)",
+    "status": "pass",
+    "time": 0.0082099437713623,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #25 (Binary String: 0x19)"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #25 (Binary String: 0x19)",
+    "status": "pass",
+    "time": 0.0082128047943115,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #26 (Binary String: 0x1a)"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #26 (Binary String: 0x1a)",
+    "status": "pass",
+    "time": 0.0085411071777344,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #27 (Binary String: 0x1b)"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #27 (Binary String: 0x1b)",
+    "status": "pass",
+    "time": 0.0083198547363281,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #28 (Binary String: 0x1c)"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #28 (Binary String: 0x1c)",
+    "status": "pass",
+    "time": 0.0082170963287354,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #29 (Binary String: 0x1d)"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #29 (Binary String: 0x1d)",
+    "status": "pass",
+    "time": 0.0085909366607666,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #30 (Binary String: 0x1e)"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #30 (Binary String: 0x1e)",
+    "status": "pass",
+    "time": 0.0084750652313232,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #31 (Binary String: 0x1f)"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #31 (Binary String: 0x1f)",
+    "status": "pass",
+    "time": 0.0082108974456787,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #32 (' ')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #32 (' ')",
+    "status": "pass",
+    "time": 0.0082840919494629,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #33 ('!')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #33 ('!')",
+    "status": "pass",
+    "time": 0.0089690685272217,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #34 ('\"')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #34 ('\"')",
+    "status": "pass",
+    "time": 0.0082170963287354,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #35 ('#')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #35 ('#')",
+    "status": "pass",
+    "time": 0.0082590579986572,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #36 ('$')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #36 ('$')",
+    "status": "pass",
+    "time": 0.0082111358642578,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #37 ('%')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #37 ('%')",
+    "status": "pass",
+    "time": 0.0095491409301758,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #38 ('&')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #38 ('&')",
+    "status": "pass",
+    "time": 0.0082499980926514,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #39 (''')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #39 (''')",
+    "status": "pass",
+    "time": 0.0081760883331299,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #40 ('(')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #40 ('(')",
+    "status": "pass",
+    "time": 0.0082509517669678,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #41 (')')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #41 (')')",
+    "status": "pass",
+    "time": 0.010042905807495,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #42 ('*')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #42 ('*')",
+    "status": "pass",
+    "time": 0.0083250999450684,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #43 ('+')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #43 ('+')",
+    "status": "pass",
+    "time": 0.0083098411560059,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #44 (',')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #44 (',')",
+    "status": "pass",
+    "time": 0.0096831321716309,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #45 ('-')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #45 ('-')",
+    "status": "pass",
+    "time": 0.0091221332550049,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #46 ('.')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #46 ('.')",
+    "status": "pass",
+    "time": 0.011491775512695,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #47 ('\/')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #47 ('\/')",
+    "status": "pass",
+    "time": 0.0093529224395752,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #48 ('0')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #48 ('0')",
+    "status": "pass",
+    "time": 0.0091280937194824,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #49 ('1')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #49 ('1')",
+    "status": "pass",
+    "time": 0.0082218647003174,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #50 ('2')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #50 ('2')",
+    "status": "pass",
+    "time": 0.00832200050354,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #51 ('3')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #51 ('3')",
+    "status": "pass",
+    "time": 0.0081651210784912,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #52 ('4')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #52 ('4')",
+    "status": "pass",
+    "time": 0.0096390247344971,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #53 ('5')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #53 ('5')",
+    "status": "pass",
+    "time": 0.0091781616210938,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #54 ('6')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #54 ('6')",
+    "status": "pass",
+    "time": 0.0093691349029541,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #55 ('7')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #55 ('7')",
+    "status": "pass",
+    "time": 0.0092511177062988,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #56 ('8')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #56 ('8')",
+    "status": "pass",
+    "time": 0.0082309246063232,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #57 ('9')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #57 ('9')",
+    "status": "pass",
+    "time": 0.0089578628540039,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #58 (':')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #58 (':')",
+    "status": "pass",
+    "time": 0.0094740390777588,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #59 (';')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #59 (';')",
+    "status": "pass",
+    "time": 0.0093019008636475,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #60 ('<')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #60 ('<')",
+    "status": "pass",
+    "time": 0.0081920623779297,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #61 ('=')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #61 ('=')",
+    "status": "pass",
+    "time": 0.0081369876861572,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #62 ('>')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #62 ('>')",
+    "status": "pass",
+    "time": 0.0084769725799561,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #63 ('?')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #63 ('?')",
+    "status": "pass",
+    "time": 0.0091540813446045,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #64 ('@')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #64 ('@')",
+    "status": "pass",
+    "time": 0.0082528591156006,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #65 ('A')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #65 ('A')",
+    "status": "pass",
+    "time": 0.0085010528564453,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #66 ('B')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #66 ('B')",
+    "status": "pass",
+    "time": 0.0081100463867188,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #67 ('C')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #67 ('C')",
+    "status": "pass",
+    "time": 0.01073694229126,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #68 ('D')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #68 ('D')",
+    "status": "pass",
+    "time": 0.0082271099090576,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #69 ('E')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #69 ('E')",
+    "status": "pass",
+    "time": 0.0082359313964844,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #70 ('F')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #70 ('F')",
+    "status": "pass",
+    "time": 0.008213996887207,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #71 ('G')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #71 ('G')",
+    "status": "pass",
+    "time": 0.0094189643859863,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #72 ('H')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #72 ('H')",
+    "status": "pass",
+    "time": 0.0087509155273438,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #73 ('I')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #73 ('I')",
+    "status": "pass",
+    "time": 0.0082340240478516,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #74 ('J')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #74 ('J')",
+    "status": "pass",
+    "time": 0.0090601444244385,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #75 ('K')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #75 ('K')",
+    "status": "pass",
+    "time": 0.0082650184631348,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #76 ('L')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #76 ('L')",
+    "status": "pass",
+    "time": 0.0082550048828125,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #77 ('M')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #77 ('M')",
+    "status": "pass",
+    "time": 0.0082569122314453,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #78 ('N')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #78 ('N')",
+    "status": "pass",
+    "time": 0.0091819763183594,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #79 ('O')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #79 ('O')",
+    "status": "pass",
+    "time": 0.008803129196167,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #80 ('P')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #80 ('P')",
+    "status": "pass",
+    "time": 0.0083940029144287,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #81 ('Q')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #81 ('Q')",
+    "status": "pass",
+    "time": 0.0083160400390625,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #82 ('R')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #82 ('R')",
+    "status": "pass",
+    "time": 0.016524076461792,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #83 ('S')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #83 ('S')",
+    "status": "pass",
+    "time": 0.0086300373077393,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #84 ('T')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #84 ('T')",
+    "status": "pass",
+    "time": 0.0083768367767334,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #85 ('U')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #85 ('U')",
+    "status": "pass",
+    "time": 0.0094139575958252,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #86 ('V')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #86 ('V')",
+    "status": "pass",
+    "time": 0.0082199573516846,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #87 ('W')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #87 ('W')",
+    "status": "pass",
+    "time": 0.0082180500030518,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #88 ('X')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #88 ('X')",
+    "status": "pass",
+    "time": 0.0083279609680176,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #89 ('Y')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #89 ('Y')",
+    "status": "pass",
+    "time": 0.0099761486053467,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #90 ('Z')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #90 ('Z')",
+    "status": "pass",
+    "time": 0.0084261894226074,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #91 ('[')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #91 ('[')",
+    "status": "pass",
+    "time": 0.0086710453033447,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #92 ('\\')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #92 ('\\')",
+    "status": "pass",
+    "time": 0.0084309577941895,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #93 (']')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #93 (']')",
+    "status": "pass",
+    "time": 0.0084159374237061,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #94 ('^')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #94 ('^')",
+    "status": "pass",
+    "time": 0.0083029270172119,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #95 ('_')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #95 ('_')",
+    "status": "pass",
+    "time": 0.0085649490356445,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #96 ('`')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #96 ('`')",
+    "status": "pass",
+    "time": 0.008695125579834,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #97 ('a')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #97 ('a')",
+    "status": "pass",
+    "time": 0.009962797164917,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #98 ('b')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #98 ('b')",
+    "status": "pass",
+    "time": 0.0094120502471924,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #99 ('c')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #99 ('c')",
+    "status": "pass",
+    "time": 0.010785102844238,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #100 ('d')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #100 ('d')",
+    "status": "pass",
+    "time": 0.0099129676818848,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #101 ('e')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #101 ('e')",
+    "status": "pass",
+    "time": 0.010058879852295,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #102 ('f')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #102 ('f')",
+    "status": "pass",
+    "time": 0.010021924972534,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #103 ('g')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #103 ('g')",
+    "status": "pass",
+    "time": 0.012514114379883,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #104 ('h')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #104 ('h')",
+    "status": "pass",
+    "time": 0.012686014175415,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #105 ('i')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #105 ('i')",
+    "status": "pass",
+    "time": 0.015131950378418,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #106 ('j')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #106 ('j')",
+    "status": "pass",
+    "time": 0.015044212341309,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #107 ('k')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #107 ('k')",
+    "status": "pass",
+    "time": 0.0091798305511475,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #108 ('l')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #108 ('l')",
+    "status": "pass",
+    "time": 0.0094978809356689,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #109 ('m')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #109 ('m')",
+    "status": "pass",
+    "time": 0.0083489418029785,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #110 ('n')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #110 ('n')",
+    "status": "pass",
+    "time": 0.0085411071777344,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #111 ('o')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #111 ('o')",
+    "status": "pass",
+    "time": 0.011778116226196,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #112 ('p')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #112 ('p')",
+    "status": "pass",
+    "time": 0.009965181350708,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #113 ('q')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #113 ('q')",
+    "status": "pass",
+    "time": 0.0087120532989502,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #114 ('r')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #114 ('r')",
+    "status": "pass",
+    "time": 0.0084969997406006,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #115 ('s')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #115 ('s')",
+    "status": "pass",
+    "time": 0.009166955947876,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #116 ('t')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #116 ('t')",
+    "status": "pass",
+    "time": 0.01230788230896,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #117 ('u')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #117 ('u')",
+    "status": "pass",
+    "time": 0.0093770027160645,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #118 ('v')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #118 ('v')",
+    "status": "pass",
+    "time": 0.0087840557098389,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #119 ('w')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #119 ('w')",
+    "status": "pass",
+    "time": 0.008674144744873,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #120 ('x')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #120 ('x')",
+    "status": "pass",
+    "time": 0.0085361003875732,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #121 ('y')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #121 ('y')",
+    "status": "pass",
+    "time": 0.0086100101470947,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #122 ('z')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #122 ('z')",
+    "status": "pass",
+    "time": 0.00901198387146,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #123 ('{')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #123 ('{')",
+    "status": "pass",
+    "time": 0.0085499286651611,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #124 ('|')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #124 ('|')",
+    "status": "pass",
+    "time": 0.0084660053253174,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #125 ('}')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #125 ('}')",
+    "status": "pass",
+    "time": 0.0083692073822021,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #126 ('~')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #126 ('~')",
+    "status": "pass",
+    "time": 0.0089240074157715,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #127 ('')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #127 ('')",
+    "status": "pass",
+    "time": 0.010347127914429,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #128 ('\u0080')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #128 ('\u0080')",
+    "status": "pass",
+    "time": 0.0084481239318848,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #129 ('\u0081')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #129 ('\u0081')",
+    "status": "pass",
+    "time": 0.0088369846343994,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #130 ('\u0082')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #130 ('\u0082')",
+    "status": "pass",
+    "time": 0.0085921287536621,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #131 ('\u0083')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #131 ('\u0083')",
+    "status": "pass",
+    "time": 0.0087189674377441,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #132 ('\u0084')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #132 ('\u0084')",
+    "status": "pass",
+    "time": 0.0087349414825439,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #133 ('\u0085')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #133 ('\u0085')",
+    "status": "pass",
+    "time": 0.009350061416626,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #134 ('\u0086')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #134 ('\u0086')",
+    "status": "pass",
+    "time": 0.0097780227661133,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #135 ('\u0087')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #135 ('\u0087')",
+    "status": "pass",
+    "time": 0.0092649459838867,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #136 ('\u0088')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #136 ('\u0088')",
+    "status": "pass",
+    "time": 0.0089099407196045,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #137 ('\u0089')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #137 ('\u0089')",
+    "status": "pass",
+    "time": 0.0087759494781494,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #138 ('\u008a')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #138 ('\u008a')",
+    "status": "pass",
+    "time": 0.0086419582366943,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #139 ('\u008b')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #139 ('\u008b')",
+    "status": "pass",
+    "time": 0.0084738731384277,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #140 ('\u008c')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #140 ('\u008c')",
+    "status": "pass",
+    "time": 0.0088238716125488,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #141 ('\u008d')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #141 ('\u008d')",
+    "status": "pass",
+    "time": 0.0087940692901611,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #142 ('\u008e')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #142 ('\u008e')",
+    "status": "pass",
+    "time": 0.0088379383087158,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #143 ('\u008f')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #143 ('\u008f')",
+    "status": "pass",
+    "time": 0.008519172668457,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #144 ('\u0090')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #144 ('\u0090')",
+    "status": "pass",
+    "time": 0.010542154312134,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #145 ('\u0091')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #145 ('\u0091')",
+    "status": "pass",
+    "time": 0.0085411071777344,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #146 ('\u0092')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #146 ('\u0092')",
+    "status": "pass",
+    "time": 0.0085930824279785,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #147 ('\u0093')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #147 ('\u0093')",
+    "status": "pass",
+    "time": 0.0087890625,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #148 ('\u0094')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #148 ('\u0094')",
+    "status": "pass",
+    "time": 0.0086719989776611,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #149 ('\u0095')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #149 ('\u0095')",
+    "status": "pass",
+    "time": 0.0093648433685303,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #150 ('\u0096')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #150 ('\u0096')",
+    "status": "pass",
+    "time": 0.0084981918334961,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #151 ('\u0097')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #151 ('\u0097')",
+    "status": "pass",
+    "time": 0.0099680423736572,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #152 ('\u0098')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #152 ('\u0098')",
+    "status": "pass",
+    "time": 0.0087780952453613,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #153 ('\u0099')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #153 ('\u0099')",
+    "status": "pass",
+    "time": 0.0085380077362061,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #154 ('\u009a')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #154 ('\u009a')",
+    "status": "pass",
+    "time": 0.008699893951416,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #155 ('\u009b')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #155 ('\u009b')",
+    "status": "pass",
+    "time": 0.010659217834473,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #156 ('\u009c')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #156 ('\u009c')",
+    "status": "pass",
+    "time": 0.010881185531616,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #157 ('\u009d')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #157 ('\u009d')",
+    "status": "pass",
+    "time": 0.012573003768921,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #158 ('\u009e')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #158 ('\u009e')",
+    "status": "pass",
+    "time": 0.013640880584717,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #159 ('\u009f')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #159 ('\u009f')",
+    "status": "pass",
+    "time": 0.014400005340576,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #160 ('\u00a0')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #160 ('\u00a0')",
+    "status": "pass",
+    "time": 0.0095798969268799,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #161 ('\u00a1')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #161 ('\u00a1')",
+    "status": "pass",
+    "time": 0.0087440013885498,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #162 ('\u00a2')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #162 ('\u00a2')",
+    "status": "pass",
+    "time": 0.0089478492736816,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #163 ('\u00a3')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #163 ('\u00a3')",
+    "status": "pass",
+    "time": 0.0091509819030762,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #164 ('\u00a4')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #164 ('\u00a4')",
+    "status": "pass",
+    "time": 0.010179996490479,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #165 ('\u00a5')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #165 ('\u00a5')",
+    "status": "pass",
+    "time": 0.0089058876037598,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #166 ('\u00a6')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #166 ('\u00a6')",
+    "status": "pass",
+    "time": 0.0086979866027832,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #167 ('\u00a7')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #167 ('\u00a7')",
+    "status": "pass",
+    "time": 0.0087580680847168,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #168 ('\u00a8')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #168 ('\u00a8')",
+    "status": "pass",
+    "time": 0.0085921287536621,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #169 ('\u00a9')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #169 ('\u00a9')",
+    "status": "pass",
+    "time": 0.0085330009460449,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #170 ('\u00aa')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #170 ('\u00aa')",
+    "status": "pass",
+    "time": 0.009411096572876,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #171 ('\u00ab')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #171 ('\u00ab')",
+    "status": "pass",
+    "time": 0.0089170932769775,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #172 ('\u00ac')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #172 ('\u00ac')",
+    "status": "pass",
+    "time": 0.0091609954833984,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #173 ('\u00ad')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #173 ('\u00ad')",
+    "status": "pass",
+    "time": 0.0088150501251221,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #174 ('\u00ae')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #174 ('\u00ae')",
+    "status": "pass",
+    "time": 0.0087440013885498,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #175 ('\u00af')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #175 ('\u00af')",
+    "status": "pass",
+    "time": 0.0094859600067139,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #176 ('\u00b0')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #176 ('\u00b0')",
+    "status": "pass",
+    "time": 0.0084059238433838,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #177 ('\u00b1')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #177 ('\u00b1')",
+    "status": "pass",
+    "time": 0.0085129737854004,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #178 ('\u00b2')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #178 ('\u00b2')",
+    "status": "pass",
+    "time": 0.0084700584411621,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #179 ('\u00b3')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #179 ('\u00b3')",
+    "status": "pass",
+    "time": 0.0089221000671387,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #180 ('\u00b4')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #180 ('\u00b4')",
+    "status": "pass",
+    "time": 0.0084939002990723,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #181 ('\u00b5')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #181 ('\u00b5')",
+    "status": "pass",
+    "time": 0.0092859268188477,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #182 ('\u00b6')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #182 ('\u00b6')",
+    "status": "pass",
+    "time": 0.0089001655578613,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #183 ('\u00b7')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #183 ('\u00b7')",
+    "status": "pass",
+    "time": 0.009084939956665,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #184 ('\u00b8')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #184 ('\u00b8')",
+    "status": "pass",
+    "time": 0.0088229179382324,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #185 ('\u00b9')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #185 ('\u00b9')",
+    "status": "pass",
+    "time": 0.0095400810241699,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #186 ('\u00ba')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #186 ('\u00ba')",
+    "status": "pass",
+    "time": 0.010492086410522,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #187 ('\u00bb')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #187 ('\u00bb')",
+    "status": "pass",
+    "time": 0.010244846343994,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #188 ('\u00bc')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #188 ('\u00bc')",
+    "status": "pass",
+    "time": 0.0093691349029541,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #189 ('\u00bd')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #189 ('\u00bd')",
+    "status": "pass",
+    "time": 0.0096220970153809,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #190 ('\u00be')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #190 ('\u00be')",
+    "status": "pass",
+    "time": 0.0086510181427002,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #191 ('\u00bf')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #191 ('\u00bf')",
+    "status": "pass",
+    "time": 0.008652925491333,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #192 ('\u00c0')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #192 ('\u00c0')",
+    "status": "pass",
+    "time": 0.009796142578125,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #193 ('\u00c1')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #193 ('\u00c1')",
+    "status": "pass",
+    "time": 0.0093789100646973,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #194 ('\u00c2')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #194 ('\u00c2')",
+    "status": "pass",
+    "time": 0.0084769725799561,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #195 ('\u00c3')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #195 ('\u00c3')",
+    "status": "pass",
+    "time": 0.0085580348968506,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #196 ('\u00c4')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #196 ('\u00c4')",
+    "status": "pass",
+    "time": 0.0093550682067871,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #197 ('\u00c5')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #197 ('\u00c5')",
+    "status": "pass",
+    "time": 0.010887861251831,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #198 ('\u00c6')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #198 ('\u00c6')",
+    "status": "pass",
+    "time": 0.0088589191436768,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #199 ('\u00c7')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #199 ('\u00c7')",
+    "status": "pass",
+    "time": 0.0087571144104004,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #200 ('\u00c8')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #200 ('\u00c8')",
+    "status": "pass",
+    "time": 0.0084948539733887,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #201 ('\u00c9')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #201 ('\u00c9')",
+    "status": "pass",
+    "time": 0.0087881088256836,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #202 ('\u00ca')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #202 ('\u00ca')",
+    "status": "pass",
+    "time": 0.0090599060058594,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #203 ('\u00cb')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #203 ('\u00cb')",
+    "status": "pass",
+    "time": 0.0087778568267822,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #204 ('\u00cc')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #204 ('\u00cc')",
+    "status": "pass",
+    "time": 0.0083119869232178,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #205 ('\u00cd')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #205 ('\u00cd')",
+    "status": "pass",
+    "time": 0.0082859992980957,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #206 ('\u00ce')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #206 ('\u00ce')",
+    "status": "pass",
+    "time": 0.0085740089416504,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #207 ('\u00cf')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #207 ('\u00cf')",
+    "status": "pass",
+    "time": 0.0086429119110107,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #208 ('\u00d0')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #208 ('\u00d0')",
+    "status": "pass",
+    "time": 0.0084550380706787,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #209 ('\u00d1')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #209 ('\u00d1')",
+    "status": "pass",
+    "time": 0.0082540512084961,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #210 ('\u00d2')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #210 ('\u00d2')",
+    "status": "pass",
+    "time": 0.0084390640258789,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #211 ('\u00d3')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #211 ('\u00d3')",
+    "status": "pass",
+    "time": 0.0093948841094971,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #212 ('\u00d4')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #212 ('\u00d4')",
+    "status": "pass",
+    "time": 0.0094959735870361,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #213 ('\u00d5')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #213 ('\u00d5')",
+    "status": "pass",
+    "time": 0.0096268653869629,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #214 ('\u00d6')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #214 ('\u00d6')",
+    "status": "pass",
+    "time": 0.0083129405975342,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #215 ('\u00d7')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #215 ('\u00d7')",
+    "status": "pass",
+    "time": 0.0086228847503662,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #216 ('\u00d8')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #216 ('\u00d8')",
+    "status": "pass",
+    "time": 0.0084009170532227,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #217 ('\u00d9')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #217 ('\u00d9')",
+    "status": "pass",
+    "time": 0.0087289810180664,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #218 ('\u00da')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #218 ('\u00da')",
+    "status": "pass",
+    "time": 0.0087521076202393,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #219 ('\u00db')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #219 ('\u00db')",
+    "status": "pass",
+    "time": 0.008814811706543,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #220 ('\u00dc')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #220 ('\u00dc')",
+    "status": "pass",
+    "time": 0.0084271430969238,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #221 ('\u00dd')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #221 ('\u00dd')",
+    "status": "pass",
+    "time": 0.008368968963623,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #222 ('\u00de')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #222 ('\u00de')",
+    "status": "pass",
+    "time": 0.0096039772033691,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #223 ('\u00df')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #223 ('\u00df')",
+    "status": "pass",
+    "time": 0.008713960647583,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #224 ('\u00e0')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #224 ('\u00e0')",
+    "status": "pass",
+    "time": 0.0083479881286621,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #225 ('\u00e1')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #225 ('\u00e1')",
+    "status": "pass",
+    "time": 0.0084428787231445,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #226 ('\u00e2')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #226 ('\u00e2')",
+    "status": "pass",
+    "time": 0.0095999240875244,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #227 ('\u00e3')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #227 ('\u00e3')",
+    "status": "pass",
+    "time": 0.0095698833465576,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #228 ('\u00e4')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #228 ('\u00e4')",
+    "status": "pass",
+    "time": 0.0089061260223389,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #229 ('\u00e5')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #229 ('\u00e5')",
+    "status": "pass",
+    "time": 0.0087141990661621,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #230 ('\u00e6')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #230 ('\u00e6')",
+    "status": "pass",
+    "time": 0.0086171627044678,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #231 ('\u00e7')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #231 ('\u00e7')",
+    "status": "pass",
+    "time": 0.0083749294281006,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #232 ('\u00e8')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #232 ('\u00e8')",
+    "status": "pass",
+    "time": 0.008450984954834,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #233 ('\u00e9')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #233 ('\u00e9')",
+    "status": "pass",
+    "time": 0.0093739032745361,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #234 ('\u00ea')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #234 ('\u00ea')",
+    "status": "pass",
+    "time": 0.0095188617706299,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #235 ('\u00eb')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #235 ('\u00eb')",
+    "status": "pass",
+    "time": 0.009519100189209,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #236 ('\u00ec')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #236 ('\u00ec')",
+    "status": "pass",
+    "time": 0.0084190368652344,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #237 ('\u00ed')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #237 ('\u00ed')",
+    "status": "pass",
+    "time": 0.0083591938018799,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #238 ('\u00ee')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #238 ('\u00ee')",
+    "status": "pass",
+    "time": 0.0085649490356445,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #239 ('\u00ef')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #239 ('\u00ef')",
+    "status": "pass",
+    "time": 0.0087900161743164,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #240 ('\u00f0')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #240 ('\u00f0')",
+    "status": "pass",
+    "time": 0.0084781646728516,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #241 ('\u00f1')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #241 ('\u00f1')",
+    "status": "pass",
+    "time": 0.0086591243743896,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #242 ('\u00f2')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #242 ('\u00f2')",
+    "status": "pass",
+    "time": 0.008624792098999,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #243 ('\u00f3')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #243 ('\u00f3')",
+    "status": "pass",
+    "time": 0.0084960460662842,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #244 ('\u00f4')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #244 ('\u00f4')",
+    "status": "pass",
+    "time": 0.0095219612121582,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #245 ('\u00f5')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #245 ('\u00f5')",
+    "status": "pass",
+    "time": 0.0086240768432617,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #246 ('\u00f6')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #246 ('\u00f6')",
+    "status": "pass",
+    "time": 0.0084829330444336,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #247 ('\u00f7')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #247 ('\u00f7')",
+    "status": "pass",
+    "time": 0.0084528923034668,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #248 ('\u00f8')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #248 ('\u00f8')",
+    "status": "pass",
+    "time": 0.0087871551513672,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #249 ('\u00f9')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #249 ('\u00f9')",
+    "status": "pass",
+    "time": 0.0085039138793945,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #250 ('\u00fa')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #250 ('\u00fa')",
+    "status": "pass",
+    "time": 0.0087687969207764,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #251 ('\u00fb')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #251 ('\u00fb')",
+    "status": "pass",
+    "time": 0.0084471702575684,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #252 ('\u00fc')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #252 ('\u00fc')",
+    "status": "pass",
+    "time": 0.0085079669952393,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #253 ('\u00fd')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #253 ('\u00fd')",
+    "status": "pass",
+    "time": 0.0085430145263672,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #254 ('\u00fe')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #254 ('\u00fe')",
+    "status": "pass",
+    "time": 0.0086469650268555,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #255 ('\u00ff')"
+}{
+    "event": "test",
+    "suite": "StringsTest::testPrepareString",
+    "test": "StringsTest::testPrepareString with data set #255 ('\u00ff')",
+    "status": "pass",
+    "time": 0.0087459087371826,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}

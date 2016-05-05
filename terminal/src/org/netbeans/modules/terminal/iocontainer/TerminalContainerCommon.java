@@ -43,11 +43,13 @@ package org.netbeans.modules.terminal.iocontainer;
 
 
 
+import org.netbeans.modules.terminal.api.TabContentProvider;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
+import java.util.List;
 import javax.swing.Action;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
@@ -65,7 +67,7 @@ import org.netbeans.lib.terminalemulator.support.FindState;
 import org.netbeans.modules.terminal.api.IOVisibilityControl;
 import org.netbeans.modules.terminal.api.TerminalContainer;
 
-abstract class TerminalContainerCommon extends TerminalContainer implements IOContainer.Provider {
+abstract class TerminalContainerCommon extends TerminalContainer implements IOContainer.Provider, TabContentProvider {
 
     private final static String PROP_ATTRIBUTES =
 	    "TerminalContainerCommonImpl.ATTRIBUTES";	// NOI18N
@@ -327,6 +329,9 @@ abstract class TerminalContainerCommon extends TerminalContainer implements IOCo
 
     @Override
     abstract public JComponent getSelected();
+    
+    @Override
+    public abstract List<? extends Component> getAllTabs();
 
     //
     // Implementation support

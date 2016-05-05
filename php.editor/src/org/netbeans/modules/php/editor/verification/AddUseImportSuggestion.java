@@ -231,7 +231,12 @@ public class AddUseImportSuggestion extends SuggestionRule {
                 NamespaceScope currentScope = ModelUtils.getNamespaceScope(currenNamespace, context.fileScope);
 
                 if (currentScope != null) {
-                    Collection<? extends UseScope> declaredUses = currentScope.getDeclaredUses();
+                    // #258480 - check if element is not from the current namespace
+                    if (indexedName.getNamespaceName().equals(currentScope.getNamespaceName().toString())) {
+                        return;
+                    }
+
+                    Collection<? extends UseScope> declaredUses = currentScope.getAllDeclaredSingleUses();
                     List<? extends UseScope> suitableUses = ModelUtils.filter(declaredUses, new ModelUtils.ElementFilter<UseScope>() {
 
                         @Override
@@ -324,7 +329,7 @@ public class AddUseImportSuggestion extends SuggestionRule {
 
         private ModelElement getReferenceElement() {
             ModelElement offsetElement = null;
-            Collection<? extends UseScope> declaredUses = scope.getDeclaredUses();
+            Collection<? extends UseScope> declaredUses = scope.getAllDeclaredSingleUses();
             for (UseScope useElement : declaredUses) {
                 if (offsetElement == null || offsetElement.getOffset() < useElement.getOffset()) {
                     offsetElement = useElement;

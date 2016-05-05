@@ -92,12 +92,14 @@ public class TokenFormatter {
         public int tabSize;
         public boolean expandTabsToSpaces;
         public CodeStyle.BracePlacement classDeclBracePlacement;
+        public CodeStyle.BracePlacement anonymousClassBracePlacement;
         public CodeStyle.BracePlacement methodDeclBracePlacement;
         public CodeStyle.BracePlacement ifBracePlacement;
         public CodeStyle.BracePlacement forBracePlacement;
         public CodeStyle.BracePlacement whileBracePlacement;
         public CodeStyle.BracePlacement switchBracePlacement;
         public CodeStyle.BracePlacement useTraitBodyBracePlacement;
+        public CodeStyle.BracePlacement groupUseBracePlacement;
         public CodeStyle.BracePlacement catchBracePlacement;
         public CodeStyle.BracePlacement otherBracePlacement;
         public boolean spaceBeforeClassDeclLeftBrace;
@@ -112,6 +114,7 @@ public class TokenFormatter {
         public boolean spaceBeforeCatchLeftBrace;
         public boolean spaceBeforeFinallyLeftBrace;
         public boolean spaceBeforeUseTraitBodyLeftBrace;
+        public boolean spaceBeforeAnonymousClassParen;
         public boolean spaceBeforeMethodDeclParen;
         public boolean spaceBeforeMethodCallParen;
         public boolean spaceBeforeIfParen;
@@ -132,6 +135,7 @@ public class TokenFormatter {
         public boolean spaceAroundAssignOps;
         public boolean spaceAroundKeyValueOps;
         public boolean spaceWithinArrayDeclParens;
+        public boolean spaceWithinAnonymousClassParens;
         public boolean spaceWithinMethodDeclParens;
         public boolean spaceWithinMethodCallParens;
         public boolean spaceWithinIfParens;
@@ -173,6 +177,7 @@ public class TokenFormatter {
         public int blankLinesAfterOpenPHPTag;
         public int blankLinesAfterOpenPHPTagInHTML;
         public int blankLinesBeforeClosePHPTag;
+        public CodeStyle.WrapStyle wrapGroupUseList;
         public CodeStyle.WrapStyle wrapExtendsImplementsKeyword;
         public CodeStyle.WrapStyle wrapExtendsImplementsList;
         public CodeStyle.WrapStyle wrapMethodParams;
@@ -188,6 +193,7 @@ public class TokenFormatter {
         public CodeStyle.WrapStyle wrapTernaryOps;
         public CodeStyle.WrapStyle wrapAssignOps;
         public boolean wrapBlockBrace;
+        public boolean wrapGroupUseBraces;
         public boolean wrapStatementsOnTheSameLine;
         public boolean wrapAfterBinOps;
         public boolean wrapAfterAssignOps;
@@ -220,6 +226,7 @@ public class TokenFormatter {
             expandTabsToSpaces = codeStyle.expandTabToSpaces();
 
             classDeclBracePlacement = codeStyle.getClassDeclBracePlacement();
+            anonymousClassBracePlacement = codeStyle.getAnonymousClassBracePlacement();
             methodDeclBracePlacement = codeStyle.getMethodDeclBracePlacement();
             ifBracePlacement = codeStyle.getIfBracePlacement();
             forBracePlacement = codeStyle.getForBracePlacement();
@@ -227,6 +234,7 @@ public class TokenFormatter {
             switchBracePlacement = codeStyle.getSwitchBracePlacement();
             catchBracePlacement = codeStyle.getCatchBracePlacement();
             useTraitBodyBracePlacement = codeStyle.getUseTraitBodyBracePlacement();
+            groupUseBracePlacement = codeStyle.getGroupUseBracePlacement();
             otherBracePlacement = codeStyle.getOtherBracePlacement();
 
             spaceBeforeClassDeclLeftBrace = codeStyle.spaceBeforeClassDeclLeftBrace();
@@ -242,6 +250,7 @@ public class TokenFormatter {
             spaceBeforeFinallyLeftBrace = codeStyle.spaceBeforeFinallyLeftBrace();
             spaceBeforeUseTraitBodyLeftBrace = codeStyle.spaceBeforeUseTraitBodyLeftBrace();
 
+            spaceBeforeAnonymousClassParen = codeStyle.spaceBeforeAnonymousClassParen();
             spaceBeforeMethodDeclParen = codeStyle.spaceBeforeMethodDeclParen();
             spaceBeforeMethodCallParen = codeStyle.spaceBeforeMethodCallParen();
             spaceBeforeIfParen = codeStyle.spaceBeforeIfParen();
@@ -265,6 +274,7 @@ public class TokenFormatter {
             spaceAroundKeyValueOps = codeStyle.spaceAroundKeyValueOps();
 
             spaceWithinArrayDeclParens = codeStyle.spaceWithinArrayDeclParens();
+            spaceWithinAnonymousClassParens = codeStyle.spaceWithinAnonymousClassParens();
             spaceWithinMethodDeclParens = codeStyle.spaceWithinMethodDeclParens();
             spaceWithinMethodCallParens = codeStyle.spaceWithinMethodCallParens();
             spaceWithinIfParens = codeStyle.spaceWithinIfParens();
@@ -310,6 +320,7 @@ public class TokenFormatter {
             blankLinesAfterOpenPHPTagInHTML = codeStyle.getBlankLinesAfterOpenPHPTagInHTML();
             blankLinesBeforeClosePHPTag = codeStyle.getBlankLinesBeforeClosePHPTag();
 
+            wrapGroupUseList = codeStyle.wrapGroupUseList();
             wrapExtendsImplementsKeyword = codeStyle.wrapExtendsImplementsKeyword();
             wrapExtendsImplementsList = codeStyle.wrapExtendsImplementsList();
             wrapMethodParams = codeStyle.wrapMethodParams();
@@ -325,6 +336,7 @@ public class TokenFormatter {
             wrapTernaryOps = codeStyle.wrapTernaryOps();
             wrapAssignOps = codeStyle.wrapAssignOps();
             wrapBlockBrace = codeStyle.wrapBlockBrace();
+            wrapGroupUseBraces = codeStyle.wrapGroupUseBraces();
             wrapStatementsOnTheSameLine = codeStyle.wrapStatementsOnTheSameLine();
             wrapAfterBinOps = codeStyle.wrapAfterBinOps();
             wrapAfterAssignOps = codeStyle.wrapAfterAssignOps();
@@ -462,6 +474,16 @@ public class TokenFormatter {
                                         newLines = ws.lines;
                                         countSpaces = ws.spaces;
                                         break;
+                                    case WHITESPACE_BEFORE_ANONYMOUS_CLASS_LEFT_BRACE:
+                                        indentRule = true;
+                                        ws = countWhiteSpaceBeforeLeftBrace(docOptions.anonymousClassBracePlacement,
+                                                docOptions.spaceBeforeClassDeclLeftBrace, // use the same option as class decl
+                                                oldText,
+                                                indent,
+                                                peekLastBracedIndent(lastBracedBlockIndent));
+                                        newLines = ws.lines;
+                                        countSpaces = ws.spaces;
+                                        break;
                                     case WHITESPACE_BEFORE_FUNCTION_LEFT_BRACE:
                                         indentRule = true;
                                         ws = countWhiteSpaceBeforeLeftBrace(
@@ -538,6 +560,19 @@ public class TokenFormatter {
                                         newLines = ws.lines;
                                         countSpaces = ws.spaces;
                                         break;
+                                    case WHITESPACE_BEFORE_GROUP_USE_LEFT_BRACE:
+                                        indentRule = true;
+                                        ws = countWhiteSpaceBeforeLeftBrace(docOptions.groupUseBracePlacement, false, oldText, indent, 0);
+                                        newLines = ws.lines;
+                                        countSpaces = ws.spaces;
+                                        break;
+                                    case WHITESPACE_AFTER_GROUP_USE_LEFT_BRACE:
+                                        indentRule = docOptions.wrapGroupUseBraces;
+                                        if (docOptions.wrapGroupUseBraces) {
+                                            newLines = 1;
+                                            countSpaces = indent;
+                                        }
+                                        break;
                                     case WHITESPACE_BEFORE_OTHER_LEFT_BRACE:
                                         indentRule = true;
                                         ws = countWhiteSpaceBeforeLeftBrace(docOptions.otherBracePlacement, docOptions.spaceBeforeTryLeftBrace, oldText, indent, 0, isAfterLineComment(formatTokens, index));
@@ -599,6 +634,16 @@ public class TokenFormatter {
                                         countSpaces = indentRule ? ws.spaces : 1;
                                         lastBracePlacement = docOptions.useTraitBodyBracePlacement;
                                         break;
+                                    case WHITESPACE_BEFORE_GROUP_USE_RIGHT_BRACE:
+                                        indentRule = oldText != null && countOfNewLines(oldText) > 0
+                                                ? true
+                                                : docOptions.wrapGroupUseBraces;
+                                        ws = countWhiteSpaceBeforeRightBrace(docOptions.groupUseBracePlacement, newLines, 0, indent, formatTokens, index - 1, oldText, popLastBracedIndent(lastBracedBlockIndent));
+                                        indentLine = indentRule;
+                                        newLines = ws.lines;
+                                        countSpaces = indentRule ? ws.spaces : 0;
+                                        lastBracePlacement = docOptions.groupUseBracePlacement;
+                                        break;
                                     case WHITESPACE_BEFORE_OTHER_RIGHT_BRACE:
                                         indentRule = oldText != null && countOfNewLines(oldText) > 0 ? true : docOptions.wrapBlockBrace;
                                         indentLine = indentRule;
@@ -621,6 +666,11 @@ public class TokenFormatter {
                                         newLines = docOptions.blankLinesAfterClassHeader + 1 > newLines ? docOptions.blankLinesAfterClassHeader + 1 : newLines;
                                         countSpaces = indent;
                                         break;
+                                    case WHITESPACE_AFTER_ANONYMOUS_CLASS_LEFT_BRACE:
+                                        indentRule = true;
+                                        newLines = docOptions.blankLinesAfterClassHeader + 1;
+                                        countSpaces = indent;
+                                        break;
                                     case WHITESPACE_AFTER_CLASS:
                                         indentRule = true;
                                         // If there is some another visible token after this one, add an extra line,
@@ -630,6 +680,11 @@ public class TokenFormatter {
                                         extraLines = isPenultimateTokenBeforeWhitespace(index, formatTokens) ? 0 : 1;
                                         newLines = docOptions.blankLinesAfterClass + extraLines > newLines ? docOptions.blankLinesAfterClass + extraLines : newLines;
                                         countSpaces = indent;
+                                        break;
+                                    case WHITESPACE_AFTER_ANONYMOUS_CLASS:
+                                        indentRule = true;
+                                        newLines = 0;
+                                        countSpaces = 0;
                                         break;
                                     case WHITESPACE_BEFORE_CLASS_RIGHT_BRACE:
                                         indentRule = true;
@@ -645,6 +700,19 @@ public class TokenFormatter {
                                         newLines = ws.lines;
                                         countSpaces = ws.spaces;
                                         lastBracePlacement = docOptions.classDeclBracePlacement;
+                                        break;
+                                    case WHITESPACE_BEFORE_ANONYMOUS_CLASS_RIGHT_BRACE:
+                                        indentRule = true;
+                                        if (docOptions.anonymousClassBracePlacement == CodeStyle.BracePlacement.PRESERVE_EXISTING) {
+                                            ws = countWhiteSpaceForPreserveExistingBracePlacement(oldText, popLastBracedIndent(lastBracedBlockIndent));
+                                        } else {
+                                            int lines = docOptions.blankLinesBeforeClassEnd + 1;
+                                            int spaces = docOptions.anonymousClassBracePlacement == CodeStyle.BracePlacement.NEW_LINE_INDENTED ? indent + docOptions.indentSize : indent;
+                                            ws = new Whitespace(lines, spaces);
+                                        }
+                                        newLines = ws.lines;
+                                        countSpaces = ws.spaces;
+                                        lastBracePlacement = docOptions.anonymousClassBracePlacement;
                                         break;
                                     case WHITESPACE_BEFORE_FUNCTION:
                                         indentRule = true;
@@ -894,6 +962,49 @@ public class TokenFormatter {
                                                 assert false : docOptions.wrapArrayInit;
                                         }
                                         break;
+                                    case WHITESPACE_IN_GROUP_USE_LIST:
+                                        indentRule = true;
+                                        if (formatToken.getOffset() <= formatContext.startOffset()) {
+                                            // #259031 keep existing whitespaces
+                                            // if template is inserted (using CC) or some characters are selected
+                                            if (oldText != null) {
+                                                ws = countExistingWS(oldText);
+                                                newLines = ws.lines;
+                                                countSpaces = ws.spaces;
+                                            } else {
+                                                newLines = 0;
+                                                countSpaces = 0;
+                                            }
+                                        } else {
+                                            switch (docOptions.wrapGroupUseList) {
+                                                case WRAP_ALWAYS:
+                                                    newLines = 1;
+                                                    countSpaces = indent;
+                                                    break;
+                                                case WRAP_NEVER:
+                                                    if (isAfterLineComment(formatTokens, index)) {
+                                                        newLines = 1;
+                                                        countSpaces = indent;
+                                                    } else {
+                                                        newLines = 0;
+                                                        countSpaces = docOptions.spaceAfterComma ? 1 : 0;
+                                                    }
+                                                    break;
+                                                case WRAP_IF_LONG:
+                                                    if (isAfterLineComment(formatTokens, index)
+                                                            || column + 1 + countLengthOfNextSequence(formatTokens, index + 1) > docOptions.margin) {
+                                                        newLines = 1;
+                                                        countSpaces = indent;
+                                                    } else {
+                                                        newLines = 0;
+                                                        countSpaces = 1;
+                                                    }
+                                                    break;
+                                                default:
+                                                    assert false : docOptions.wrapGroupUseList;
+                                            }
+                                        }
+                                        break;
                                     case WHITESPACE_AROUND_OBJECT_OP:
                                         countSpaces = docOptions.spaceAroundObjectOp ? 1 : 0;
                                         break;
@@ -1056,6 +1167,9 @@ public class TokenFormatter {
                                         }
                                         countSpaces = countSpaces + (docOptions.spaceAroundKeyValueOps ? 1 : 0);
                                         break;
+                                    case WHITESPACE_BEFORE_ANONYMOUS_CLASS_PAREN:
+                                        countSpaces = docOptions.spaceBeforeAnonymousClassParen ? 1 : 0;
+                                        break;
                                     case WHITESPACE_BEFORE_METHOD_DEC_PAREN:
                                         countSpaces = docOptions.spaceBeforeMethodDeclParen ? 1 : 0;
                                         break;
@@ -1136,8 +1250,21 @@ public class TokenFormatter {
                                     case WHITESPACE_BEFORE_ARRAY_DECL_RIGHT_PAREN:
                                         countSpaces = countSpacesForArrayDeclParens(index, indent, formatTokens);
                                         break;
-                                    case WHITESPACE_WITHIN_METHOD_DECL_PARENS:
+                                    case WHITESPACE_WITHIN_ANONYMOUS_CLASS_PARENS:
                                         int helpIndex = index - 1;
+                                        while (helpIndex > 0
+                                                && formatTokens.get(helpIndex).getId() != FormatToken.Kind.WHITESPACE_WITHIN_ANONYMOUS_CLASS_PARENS
+                                                && (formatTokens.get(helpIndex).getId() == FormatToken.Kind.WHITESPACE)) {
+                                            helpIndex--;
+                                        }
+                                        if (helpIndex > 0 && formatTokens.get(helpIndex).getId() == FormatToken.Kind.WHITESPACE_WITHIN_ANONYMOUS_CLASS_PARENS) {
+                                            countSpaces = 0;
+                                        } else {
+                                            countSpaces = docOptions.spaceWithinAnonymousClassParens ? 1 : 0;
+                                        }
+                                        break;
+                                    case WHITESPACE_WITHIN_METHOD_DECL_PARENS:
+                                        helpIndex = index - 1;
                                         while (helpIndex > 0
                                                 && formatTokens.get(helpIndex).getId() != FormatToken.Kind.WHITESPACE_WITHIN_METHOD_DECL_PARENS
                                                 && (formatTokens.get(helpIndex).getId() == FormatToken.Kind.WHITESPACE /*
@@ -2025,6 +2152,17 @@ public class TokenFormatter {
                     lines = 0;
                     spaces = placeSpaceBefore ? 1 : 0;
                 }
+                return new Whitespace(lines, spaces);
+            }
+
+            private Whitespace countExistingWS(String whitespace) {
+                int lines = countOfNewLines(whitespace);
+                String ws = whitespace;
+                if (lines > 0) {
+                    int lastIndexOfNewLine = whitespace.lastIndexOf('\n');
+                    ws = whitespace.substring(lastIndexOfNewLine + 1);
+                }
+                int spaces = countOfSpaces(ws, docOptions.tabSize);
                 return new Whitespace(lines, spaces);
             }
 

@@ -46,14 +46,19 @@ package org.netbeans.api.java.source.support;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
+import javax.swing.SwingUtilities;
 
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.annotations.common.NonNull;
@@ -138,7 +143,6 @@ public abstract class SelectionAwareJavaSourceTaskFactory extends JavaSourceTask
         return files;
     }
 
-    private Map<JTextComponent, ComponentListener> component2Listener = new WeakHashMap<JTextComponent, SelectionAwareJavaSourceTaskFactory.ComponentListener>();
     private static Map<FileObject, Integer> file2SelectionStartPosition = new WeakHashMap<FileObject, Integer>();
     private static Map<FileObject, Integer> file2SelectionEndPosition = new WeakHashMap<FileObject, Integer>();
     
@@ -169,32 +173,69 @@ public abstract class SelectionAwareJavaSourceTaskFactory extends JavaSourceTask
         file2SelectionEndPosition.put(file, endPosition);
     }
     
-    private class ChangeListenerImpl implements ChangeListener {
+    /**
+     * The listener is called from EditorRegistry under locked OpenedEditors instance in EDT, but it is
+     * also called by Prop changes on DataObject in any thread. Selections must be read from components from
+     * EDT, otherwise see issue #258581.
+     */
+    private class ChangeListenerImpl implements ChangeListener, Runnable {
+        // @GuardedBy(this)
+        private Map<JTextComponent, ComponentListener> component2Listener = new WeakHashMap<JTextComponent, SelectionAwareJavaSourceTaskFactory.ComponentListener>();
+        // @GuardedBy(this) just carry-over between stateChanged and EDT
+        private Set<JTextComponent>    updateSelection = new HashSet<>();
         
-        public void stateChanged(ChangeEvent e) {
-            List<JTextComponent> added = new ArrayList<JTextComponent>(OpenedEditors.getDefault().getVisibleEditors());
+        public void run() {
+            Collection<JTextComponent> update;
+            
+            synchronized (this) {
+                update = updateSelection;
+                updateSelection = new HashSet<>();
+            }
+            for (JTextComponent c : update) {
+                int selStart, selEnd;
+                Caret caret = c.getCaret();
+                // possobly the caret is not yet installed ?
+                if (caret != null) {
+                    selStart = c.getSelectionStart();
+                    selEnd = c.getSelectionEnd();
+                } else {
+                    selStart = selEnd = 0;
+                }
+
+                //TODO: are we in AWT Thread?:
+                setLastSelection(OpenedEditors.getFileObject(c), selStart, selEnd);
+            }
+        }
+            
+        
+        // called under locked OpenedEditors. Do not extend the lock. Lock ordering
+        // is always the same.
+        public synchronized void stateChanged(ChangeEvent e) {
+            List<JTextComponent> visible = OpenedEditors.getDefault().getVisibleEditors();
+            List<JTextComponent> added = new ArrayList<JTextComponent>(visible);
             List<JTextComponent> removed = new ArrayList<JTextComponent>(component2Listener.keySet());
-            
+
             added.removeAll(component2Listener.keySet());
-            removed.removeAll(OpenedEditors.getDefault().getVisibleEditors());
-            
+            removed.removeAll(visible);
+
             for (JTextComponent c : removed) {
                 c.removeCaretListener(component2Listener.remove(c));
             }
-            
+
             for (JTextComponent c : added) {
                 ComponentListener l = new ComponentListener(c);
-                
+
                 c.addCaretListener(l);
                 component2Listener.put(c, l);
-                
-                //TODO: are we in AWT Thread?:
-                setLastSelection(OpenedEditors.getFileObject(c), c.getSelectionStart(), c.getSelectionEnd());
             }
             
-            fileObjectsChanged();
+            if (added.isEmpty()) {
+                return;
+            }
+            updateSelection.addAll(added);
+            // invokelater even though we could be in EDT - do not extend OpenedEditors lock.
+            SwingUtilities.invokeLater(this);
         }
-        
     }
     
     private class ComponentListener implements CaretListener {

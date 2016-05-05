@@ -348,7 +348,13 @@ public class IfToSwitchSupport {
         }
         if (e != null) {
             // the default statement
-            literal2Statement.add(new BranchDescription(null, TreePathHandle.create(new TreePath(ifPath, e), ci)));
+            TreePath defPath = new TreePath(ifPath, e);
+            literal2Statement.add(new BranchDescription(null, TreePathHandle.create(defPath, ci)));
+            
+            if (!controlTypeMirror.getKind().isPrimitive() && nullBranch == null) {
+                // the default branch may also trigger for null value - issue #259071
+                nullBranch = defPath;
+            }
         }
         return true;
     }

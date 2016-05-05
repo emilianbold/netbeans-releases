@@ -1,0 +1,16 @@
+art",
+    "suite": "Calculator2Test",
+    "test": "Calculator2Test::testModulo"
+}{
+    "event": "test",
+    "suite": "Calculator2Test",
+    "test": "Calculator2Test::testModulo",
+    "status": "error",
+    "time": 0.011719942092896,
+    "trace": [
+        {
+            "file": "\/home\/gapon\/NetBeansProjects\/Calculator-PHPUnit8\/test\/src\/Calculator2Test.php",
+            "line": 214,
+            "function": "markTestIncomplete",
+            "class": "PHPUnit_Framework_Assert",
+            "type": "::"

@@ -52,6 +52,7 @@ import java.util.Vector;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.debugger.Properties;
 import org.netbeans.spi.viewmodel.ReorderableTreeModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
@@ -64,9 +65,13 @@ import org.openide.util.NbBundle;
  */
 public class WatchesTreeModel implements ReorderableTreeModel {
     
+    private static final String PROP_SHOW_PINNED_WATCHES = "showPinnedWatches"; // NOI18N
+    private static final Properties PROPERTIES = Properties.getDefault().getProperties("debugger").getProperties("watchesProps");    // NOI18N
+
     private Listener listener;
     private Vector listeners = new Vector ();
     private final EmptyWatch EMPTY_WATCH = new EmptyWatch();
+    static final ShowPinnedWatches showPinnedWatches = new ShowPinnedWatches();
     
     /** 
      *
@@ -83,18 +88,40 @@ public class WatchesTreeModel implements ReorderableTreeModel {
     public Object[] getChildren (Object parent, int from, int to) 
     throws UnknownTypeException {
         if (parent == ROOT) {
-            Object[] wsTemp = DebuggerManager.getDebuggerManager ().
+            Watch[] wsTemp = DebuggerManager.getDebuggerManager ().
                 getWatches ();
-            Object[] ws = new Object[wsTemp.length + 1];
-            System.arraycopy(wsTemp, 0, ws, 0, wsTemp.length);
+            Object[] ws;
+            if (showPinnedWatches.isShowPinnedWatches()) {
+                ws = new Object[wsTemp.length + 1];
+                System.arraycopy(wsTemp, 0, ws, 0, wsTemp.length);
+            } else {
+                int numwatches = 0;
+                for (Watch w : wsTemp) {
+                    if (w.getPin() == null) {
+                        numwatches++;
+                    }
+                }
+                ws = new Object[numwatches + 1];
+                numwatches = 0;
+                for (Watch w : wsTemp) {
+                    if (w.getPin() == null) {
+                        ws[numwatches++] = w;
+                    }
+                }
+                //showPinnedWatches.areAnyPinnedWatches = numwatches < wsTemp.length;
+            }
             ws[ws.length - 1] = EMPTY_WATCH;
             if (listener == null)
                 listener = new Listener (this);
             to = Math.min(ws.length, to);
             from = Math.min(ws.length, from);
-            Object[] fws = new Object [to - from];
-            System.arraycopy (ws, from, fws, 0, to - from);
-            return fws;
+            if (from > 0 || to < ws.length) {
+                Object[] fws = new Object [to - from];
+                System.arraycopy (ws, from, fws, 0, to - from);
+                return fws;
+            } else {
+                return ws;
+            }
         } else
         throw new UnknownTypeException (parent);
     }
@@ -209,6 +236,7 @@ public class WatchesTreeModel implements ReorderableTreeModel {
             int i, k = ws.length;
             for (i = 0; i < k; i++)
                 ws [i].addPropertyChangeListener (this);
+            PROPERTIES.addPropertyChangeListener(this);
         }
         
         private WatchesTreeModel getModel () {
@@ -244,11 +272,32 @@ public class WatchesTreeModel implements ReorderableTreeModel {
         public void propertyChange (PropertyChangeEvent evt) {
             WatchesTreeModel m = getModel ();
             if (m == null) return;
-            if (! (evt.getSource () instanceof Watch))
+            Object source = evt.getSource();
+            if (source == PROPERTIES && PROP_SHOW_PINNED_WATCHES.equals(evt.getPropertyName())) {
+                m.fireTreeChanged();
+                return ;
+            }
+            if (!(source instanceof Watch))
                 return;
             Watch w = (Watch) evt.getSource ();
             m.fireWatchPropertyChanged (w, evt.getPropertyName ());
         }
+    }
+
+    static class ShowPinnedWatches {
+
+        boolean isShowPinnedWatches() {
+            return PROPERTIES.getBoolean(PROP_SHOW_PINNED_WATCHES, false);
+        }
+
+        boolean isShowPinnedWatchesEnabled() {
+            return true;//areAnyPinnedWatches;
+        }
+
+        void setShowPinnedWatches(boolean showPinnedWatches) {
+            PROPERTIES.setBoolean(PROP_SHOW_PINNED_WATCHES, showPinnedWatches);
+        }
+
     }
 
     /**

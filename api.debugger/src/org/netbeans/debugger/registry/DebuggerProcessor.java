@@ -268,6 +268,7 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
         String className = instantiableClassOrMethod(e);
         //System.err.println("icm = "+className);
 
+        boolean isActionThere = false;
         StringBuilder classNamesBuilder = new StringBuilder();
         for (TypeMirror tm : typeMirrors) {
             TypeElement te = (TypeElement) processingEnv.getTypeUtils().asElement(tm);
@@ -281,6 +282,9 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
                 classNamesBuilder.append(", ");
             }
             classNamesBuilder.append(cn);
+            if ("javax.swing.Action".equals(cn)) {
+                isActionThere = true;
+            }
         }
 
         if (path != null && path.length() > 0) {
@@ -292,6 +296,9 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
         String basename = className.replace('.', '-');
         LayerBuilder.File f = lb.file(path + "/" + basename + ".instance");
         //LayerBuilder.File f = lb.instanceFile(path, null, Evaluator.class);
+        if (isActionThere) {
+            f.boolvalue("misplaced.action.allowed", true);
+        }
         f.stringvalue(ContextAwareServiceHandler.SERVICE_NAME, className).
           //stringvalue("serviceClass", Evaluator.class.getName()).
           stringvalue("instanceOf", classNamesBuilder.toString()).

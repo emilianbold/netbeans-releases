@@ -1177,6 +1177,20 @@ public final class CodeStyle {
                 });
             }
         }
+        
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("ImportGroups[\n");
+            for (Info i : infos) {
+                sb.append("\t").append(i.prefix).append(": ");
+                if (i.isStatic) {
+                    sb.append("static");
+                }
+                sb.append("\n");
+            }
+            sb.append("]");
+            return sb.toString();
+        }
 
         /**
          * Returns the group number of the imported element. Imports with the same
@@ -1315,6 +1329,25 @@ public final class CodeStyle {
                     return info.groupId;
             }
             return infos.length;
+        }
+        
+        /** 
+         * Pretty-prints the group info
+         * @return 
+         */
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("MemberGroups[\n");
+            for (Info i : infos) {
+                sb.append("\t").append(i.kind.toString()).append(": ");
+                sb.append(i.mods);
+                if (i.ignoreVisibility) {
+                    sb.append(", ignore");
+                }
+                sb.append("\n");
+            }
+            sb.append("]");
+            return sb.toString();
         }
 
         private static final class Info {

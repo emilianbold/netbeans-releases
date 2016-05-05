@@ -103,6 +103,7 @@ public final class FmtOptions {
     public static final String RIGHT_MARGIN = SimpleValueNames.TEXT_LIMIT_WIDTH;
     public static final String INITIAL_INDENT = "init.indent"; //NOI18N
     public static final String CLASS_DECL_BRACE_PLACEMENT = "classDeclBracePlacement"; //NOI18N
+    public static final String ANONYMOUS_CLASS_BRACE_PLACEMENT = "anonymousClassBracePlacement"; //NOI18N
     public static final String METHOD_DECL_BRACE_PLACEMENT = "methodDeclBracePlacement"; //NOI18N
     public static final String IF_BRACE_PLACEMENT = "ifBracePlacement"; //NOI18N
     public static final String FOR_BRACE_PLACEMENT = "forBracePlacement"; //NOI18N
@@ -110,6 +111,7 @@ public final class FmtOptions {
     public static final String SWITCH_BRACE_PLACEMENT = "switchBracePlacement"; //NOI18N
     public static final String CATCH_BRACE_PLACEMENT = "catchBracePlacement"; //NOI18N
     public static final String USE_TRAIT_BODY_BRACE_PLACEMENT = "useTraitBodyBracePlacement"; //NOI18N
+    public static final String GROUP_USE_BRACE_PLACEMENT = "groupUseBracePlacement"; //NOI18N
     public static final String OTHER_BRACE_PLACEMENT = "otherBracePlacement"; //NOI18N
     public static final String BLANK_LINES_BEFORE_NAMESPACE = "blankLinesBeforeNamespace"; //NOI18N
     public static final String BLANK_LINES_AFTER_NAMESPACE = "blankLinesAfterNamespace"; //NOI18N
@@ -134,6 +136,7 @@ public final class FmtOptions {
     public static final String SPACE_BEFORE_ELSE = "spaceBeforeElse"; //NOI18N
     public static final String SPACE_BEFORE_CATCH = "spaceBeforeCatch"; //NOI18N
     public static final String SPACE_BEFORE_FINALLY = "spaceBeforeFinally"; //NOI18N
+    public static final String SPACE_BEFORE_ANONYMOUS_CLASS_PAREN = "spaceBeforeAnonymousClassParen"; //NOI18N
     public static final String SPACE_BEFORE_METHOD_DECL_PAREN = "spaceBeforeMethodDeclParen"; //NOI18N
     public static final String SPACE_BEFORE_METHOD_CALL_PAREN = "spaceBeforeMethodCallParen"; //NOI18N
     public static final String SPACE_BEFORE_IF_PAREN = "spaceBeforeIfParen"; //NOI18N
@@ -150,6 +153,7 @@ public final class FmtOptions {
     public static final String SPACE_AROUND_KEY_VALUE_OPS = "spaceAroundKeyValueOps"; //NOI18N
     public static final String SPACE_AROUND_OBJECT_OPS = "spaceAroundObjectOps"; //NOI18N
     public static final String SPACE_BEFORE_CLASS_DECL_LEFT_BRACE = "spaceBeforeClassDeclLeftBrace"; //NOI18N
+    public static final String SPACE_BEFORE_ANONYMOUS_CLASS_LEFT_BRACE = "spaceBeforeAnonymousClassLeftBrace"; //NOI18N
     public static final String SPACE_BEFORE_METHOD_DECL_LEFT_BRACE = "spaceBeforeMethodDeclLeftBrace"; //NOI18N
     public static final String SPACE_BEFORE_IF_LEFT_BRACE = "spaceBeforeIfLeftBrace"; //NOI18N
     public static final String SPACE_BEFORE_ELSE_LEFT_BRACE = "spaceBeforeElseLeftBrace"; //NOI18N
@@ -162,6 +166,7 @@ public final class FmtOptions {
     public static final String SPACE_BEFORE_FINALLY_LEFT_BRACE = "spaceBeforeFinallyLeftBrace"; //NOI18N
     public static final String SPACE_BEFORE_USE_TRAIT_BODY_LEFT_BRACE = "spaceBeforeUseTraitBodyLeftBrace"; //NOI18N
     public static final String SPACE_WITHIN_ARRAY_DECL_PARENS = "spaceWithinArrayDeclParens"; //NOI18N
+    public static final String SPACE_WITHIN_ANONYMOUS_CLASS_PARENS = "spaceWithinAnonymousClassParens"; //NOI18N
     public static final String SPACE_WITHIN_METHOD_DECL_PARENS = "spaceWithinMethodDeclParens"; //NOI18N
     public static final String SPACE_WITHIN_METHOD_CALL_PARENS = "spaceWithinMethodCallParens"; //NOI18N
     public static final String SPACE_WITHIN_IF_PARENS = "spaceWithinIfParens"; //NOI18N
@@ -196,6 +201,7 @@ public final class FmtOptions {
     public static final String ALIGN_MULTILINE_ARRAY_INIT = "alignMultilineArrayInit"; //NOI18N
     public static final String GROUP_ALIGNMENT_ASSIGNMENT = "groupAlignmentAssignment"; //NOI18N
     public static final String GROUP_ALIGNMENT_ARRAY_INIT = "groupAlignmentArrayInit"; //NOI18N
+    public static final String WRAP_GROUP_USE_LIST = "wrapGroupUseList"; //NOI18N
     public static final String WRAP_EXTENDS_IMPLEMENTS_KEYWORD = "wrapExtendsImplementsKeyword"; //NOI18N
     public static final String WRAP_EXTENDS_IMPLEMENTS_LIST = "wrapExtendsImplementsList"; //NOI18N
     public static final String WRAP_METHOD_PARAMS = "wrapMethodParams"; //NOI18N
@@ -211,11 +217,13 @@ public final class FmtOptions {
     public static final String WRAP_TERNARY_OPS = "wrapTernaryOps"; //NOI18N
     public static final String WRAP_ASSIGN_OPS = "wrapAssignOps"; //NOI18N
     public static final String WRAP_BLOCK_BRACES = "wrapBlockBraces";  //NOI18N
+    public static final String WRAP_GROUP_USE_BRACES = "wrapGroupUseBraces"; // NOI18N
     public static final String WRAP_STATEMENTS_ON_THE_LINE = "wrapStateMentsOnTheLine"; // NOI18N
     public static final String WRAP_AFTER_BIN_OPS = "wrapAfterBinOps"; // NOI18N
     public static final String WRAP_AFTER_ASSIGN_OPS = "wrapAfterAssignOps"; // NOI18N
     public static final String PREFER_FULLY_QUALIFIED_NAMES = "preferFullyQualifiedNames"; //NOI18N
     public static final String PREFER_MULTIPLE_USE_STATEMENTS_COMBINED = "preferMultipleUseStatementsCombined"; //NOI18N
+    public static final String PREFER_GROUP_USES = "preferGroupUses"; // NOI18N
     public static final String START_USE_WITH_NAMESPACE_SEPARATOR = "startUseWithNamespaceSeparator"; //NOI18N
     public static final String ALIASES_CAPITALS_OF_NAMESPACES = "aliasesCapitalsOfNamespacesNames"; //NOI18N
     public static CodeStyleProducer codeStyleProducer;
@@ -264,6 +272,7 @@ public final class FmtOptions {
             {INITIAL_INDENT, "0"}, //NOI18N
 
             {CLASS_DECL_BRACE_PLACEMENT, OBRACE_SAMELINE},
+            {ANONYMOUS_CLASS_BRACE_PLACEMENT, OBRACE_SAMELINE},
             {METHOD_DECL_BRACE_PLACEMENT, OBRACE_SAMELINE},
             {IF_BRACE_PLACEMENT, OBRACE_SAMELINE},
             {FOR_BRACE_PLACEMENT, OBRACE_SAMELINE},
@@ -271,6 +280,7 @@ public final class FmtOptions {
             {SWITCH_BRACE_PLACEMENT, OBRACE_SAMELINE},
             {CATCH_BRACE_PLACEMENT, OBRACE_SAMELINE},
             {USE_TRAIT_BODY_BRACE_PLACEMENT, OBRACE_SAMELINE},
+            {GROUP_USE_BRACE_PLACEMENT, OBRACE_SAMELINE},
             {OTHER_BRACE_PLACEMENT, OBRACE_SAMELINE},
             {BLANK_LINES_BEFORE_NAMESPACE, "1"}, //NOI18N
             {BLANK_LINES_AFTER_NAMESPACE, "1"}, //NOI18N
@@ -296,6 +306,7 @@ public final class FmtOptions {
             {SPACE_BEFORE_ELSE, TRUE},
             {SPACE_BEFORE_CATCH, TRUE},
             {SPACE_BEFORE_FINALLY, TRUE},
+            {SPACE_BEFORE_ANONYMOUS_CLASS_PAREN, FALSE},
             {SPACE_BEFORE_METHOD_DECL_PAREN, FALSE},
             {SPACE_BEFORE_METHOD_CALL_PAREN, FALSE},
             {SPACE_BEFORE_IF_PAREN, TRUE},
@@ -324,6 +335,7 @@ public final class FmtOptions {
             {SPACE_BEFORE_FINALLY_LEFT_BRACE, TRUE},
             {SPACE_BEFORE_USE_TRAIT_BODY_LEFT_BRACE, TRUE},
             {SPACE_WITHIN_ARRAY_DECL_PARENS, FALSE},
+            {SPACE_WITHIN_ANONYMOUS_CLASS_PARENS, FALSE},
             {SPACE_WITHIN_METHOD_DECL_PARENS, FALSE},
             {SPACE_WITHIN_METHOD_CALL_PARENS, FALSE},
             {SPACE_WITHIN_IF_PARENS, FALSE},
@@ -359,6 +371,7 @@ public final class FmtOptions {
 
             {GROUP_ALIGNMENT_ARRAY_INIT, FALSE},
             {GROUP_ALIGNMENT_ASSIGNMENT, FALSE},
+            {WRAP_GROUP_USE_LIST, WRAP_ALWAYS},
             {WRAP_EXTENDS_IMPLEMENTS_KEYWORD, WRAP_NEVER}, //NOI18N
             {WRAP_EXTENDS_IMPLEMENTS_LIST, WRAP_NEVER}, //NOI18N
             {WRAP_METHOD_PARAMS, WRAP_NEVER}, //NOI18N
@@ -374,11 +387,13 @@ public final class FmtOptions {
             {WRAP_TERNARY_OPS, WRAP_NEVER},
             {WRAP_ASSIGN_OPS, WRAP_NEVER},
             {WRAP_BLOCK_BRACES, TRUE},
+            {WRAP_GROUP_USE_BRACES, TRUE},
             {WRAP_STATEMENTS_ON_THE_LINE, TRUE},
             {WRAP_AFTER_BIN_OPS, FALSE},
             {WRAP_AFTER_ASSIGN_OPS, FALSE},
             {PREFER_FULLY_QUALIFIED_NAMES, FALSE},
             {PREFER_MULTIPLE_USE_STATEMENTS_COMBINED, FALSE},
+            {PREFER_GROUP_USES, FALSE},
             {START_USE_WITH_NAMESPACE_SEPARATOR, FALSE},
             {ALIASES_CAPITALS_OF_NAMESPACES, FALSE}
         };

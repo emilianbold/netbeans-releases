@@ -57,11 +57,13 @@ import java.awt.Dimension;
  * Listener for Miscelaneous events.
  */
 
-public interface TermListener {
-    public void sizeChanged(Dimension cells, Dimension pixels);
+public class TermListener {
+    public void sizeChanged(Dimension cells, Dimension pixels) {}
 
-    public void titleChanged(String title);
+    public void titleChanged(String title) {}
     
-    public void cwdChanged(String cwd);
+    public void cwdChanged(String cwd) {}
+
+    public void externalToolCalled(String command) {}
 } 
 

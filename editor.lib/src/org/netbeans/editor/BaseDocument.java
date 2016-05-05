@@ -86,6 +86,7 @@ import javax.swing.text.WrappedPlainView;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
+import org.netbeans.api.editor.document.CustomUndoDocument;
 import org.netbeans.api.editor.document.LineDocument;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -113,9 +114,11 @@ import org.netbeans.modules.editor.lib2.document.EditorDocumentServices;
 import org.netbeans.modules.editor.lib2.document.LineRootElement;
 import org.netbeans.modules.editor.lib2.document.ListUndoableEdit;
 import org.netbeans.modules.editor.lib2.document.ModRootElement;
+import org.netbeans.modules.editor.lib2.document.DocumentPostModificationUtils;
 import org.netbeans.modules.editor.lib2.document.ReadWriteBuffer;
 import org.netbeans.modules.editor.lib2.document.ReadWriteUtils;
 import org.netbeans.modules.editor.lib2.document.StableCompoundEdit;
+import org.netbeans.modules.editor.lib2.document.UndoRedoDocumentEventResolver;
 import org.netbeans.spi.editor.document.UndoableEditWrapper;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.netbeans.spi.lexer.TokenHierarchyControl;
@@ -130,11 +133,21 @@ import org.openide.util.WeakListeners;
 */
 
 @SuppressWarnings("ClassWithMultipleLoggers")
-public class BaseDocument extends AbstractDocument implements AtomicLockDocument, LineDocument {
+public class BaseDocument extends AbstractDocument implements AtomicLockDocument, LineDocument, CustomUndoDocument {
 
     static {
         EditorPackageAccessor.register(new Accessor());
         EditorDocumentHandler.setEditorDocumentServices(BaseDocument.class, BaseDocumentServices.INSTANCE);
+        UndoRedoDocumentEventResolver.register(new UndoRedoDocumentEventResolver() {
+            @Override
+            public boolean isUndoRedo(DocumentEvent evt) {
+                if (evt instanceof BaseDocumentEvent) {
+                    BaseDocumentEvent bevt = (BaseDocumentEvent) evt;
+                    return bevt.isInUndo() || bevt.isInRedo();
+                }
+                return false;
+            }
+        });
     }
 
     // -J-Dorg.netbeans.editor.BaseDocument.level=FINE
@@ -327,6 +340,8 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     private FixLineSyntaxState fixLineSyntaxState;
 
     private Object[] atomicLockListenerList;
+    
+    private int postModificationDepth;
 
     private DocumentListener postModificationDocumentListener;
 
@@ -803,6 +818,13 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
         preInsertUpdate(evt, attrs);
 
+        // Store modification text as an event's property
+        org.netbeans.lib.editor.util.swing.DocumentUtilities.addEventPropertyStorage(evt);
+        org.netbeans.lib.editor.util.swing.DocumentUtilities.putEventProperty(evt, String.class, text);
+        if (postModificationDepth > 0) {
+            DocumentPostModificationUtils.markPostModification(evt);
+        }
+
         if (edit != null) {
             evt.addEdit(edit);
 
@@ -836,13 +858,18 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             fireUndoableEditUpdate(new UndoableEditEvent(this, evt));
         }
 
-        if (postModificationDocumentListener != null) {
-            postModificationDocumentListener.insertUpdate(evt);
-        }
-        if (postModificationDocumentListenerList.getListenerCount() > 0) {
-            for (DocumentListener listener : postModificationDocumentListenerList.getListeners()) {
-                listener.insertUpdate(evt);
+        postModificationDepth++;
+        try {
+            if (postModificationDocumentListener != null) {
+                postModificationDocumentListener.insertUpdate(evt);
             }
+            if (postModificationDocumentListenerList.getListenerCount() > 0) {
+                for (DocumentListener listener : postModificationDocumentListenerList.getListeners()) {
+                    listener.insertUpdate(evt);
+                }
+            }
+        } finally {
+            postModificationDepth--;
         }
     }
     
@@ -971,6 +998,9 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         org.netbeans.lib.editor.util.swing.DocumentUtilities.addEventPropertyStorage(evt);
         String removedText = getText(offset, length);
         org.netbeans.lib.editor.util.swing.DocumentUtilities.putEventProperty(evt, String.class, removedText);
+        if (postModificationDepth > 0) {
+            DocumentPostModificationUtils.markPostModification(evt);
+        }
 
         removeUpdate(evt);
 
@@ -1013,16 +1043,23 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         evt.end();
 
         fireRemoveUpdate(evt);
+
+        postModificationDepth++;
+        try {
+            if (postModificationDocumentListener != null) {
+                postModificationDocumentListener.removeUpdate(evt);
+            }
+            if (postModificationDocumentListenerList.getListenerCount() > 0) {
+                for (DocumentListener listener : postModificationDocumentListenerList.getListeners()) {
+                    listener.removeUpdate(evt);
+                }
+            }
+        } finally {
+            postModificationDepth--;
+        }
+
         if (atomicDepth == 0 && !composedText) {
             fireUndoableEditUpdate(new UndoableEditEvent(this, evt));
-        }
-        if (postModificationDocumentListener != null) {
-            postModificationDocumentListener.removeUpdate(evt);
-        }
-        if (postModificationDocumentListenerList.getListenerCount() > 0) {
-            for (DocumentListener listener : postModificationDocumentListenerList.getListeners()) {
-                listener.removeUpdate(evt);
-            }
         }
     }
 
@@ -1081,10 +1118,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         super.insertUpdate(chng, attr);
 
         BaseDocumentEvent baseE = (BaseDocumentEvent)chng;
-        // Store modification text as an event's property
-        org.netbeans.lib.editor.util.swing.DocumentUtilities.addEventPropertyStorage(chng);
-        org.netbeans.lib.editor.util.swing.DocumentUtilities.putEventProperty(chng, String.class,
-                baseE.getText());
 
         lineRootElement.insertUpdate(baseE, baseE, attr);
 

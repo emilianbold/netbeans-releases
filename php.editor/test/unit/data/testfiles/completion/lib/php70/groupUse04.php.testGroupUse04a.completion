@@ -1,0 +1,10 @@
+Code completion result for source line:
+use A\ {|
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+CLASS      ClsA                            [PUBLIC]   A
+CLASS      ClsAB                           [PUBLIC]   A
+CLASS      ClsUnused                       [PUBLIC]   A
+CLASS      MyCls                           [PUBLIC]   A
+------------------------------------
+PACKAGE    B                               [PUBLIC]   A
+CLASS      ClsA                            [PUBLIC]   A

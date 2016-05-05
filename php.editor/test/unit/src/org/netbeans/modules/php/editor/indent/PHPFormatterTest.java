@@ -671,4 +671,66 @@ public class PHPFormatterTest extends PHPFormatterTestBase {
         HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/issue247047.php", options);
     }
+
+    public void testAnonymousClass() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/anonymousClass.php", options);
+    }
+
+    public void testAnonymousClassBracePlacement_01() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.ANONYMOUS_CLASS_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        reformatFileContents("testfiles/formatting/anonymousClassBP_01.php", options);
+    }
+
+    public void testAnonymousClassBracePlacement_02() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.ANONYMOUS_CLASS_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        reformatFileContents("testfiles/formatting/anonymousClassBP_02.php", options);
+    }
+
+    public void testAnonymousClassBracePlacement_03() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.ANONYMOUS_CLASS_BRACE_PLACEMENT, CodeStyle.BracePlacement.SAME_LINE);
+        reformatFileContents("testfiles/formatting/anonymousClassBP_03.php", options);
+    }
+
+    public void testAnonymousClassBracePlacement_04() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.ANONYMOUS_CLASS_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        reformatFileContents("testfiles/formatting/anonymousClassBP_04.php", options);
+    }
+
+    public void testGroupUseBracePlacement_01() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.GROUP_USE_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.WRAP_GROUP_USE_BRACES, true);
+        reformatFileContents("testfiles/formatting/groupUseBP_01.php", options);
+    }
+
+    public void testGroupUseBracePlacement_02() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.GROUP_USE_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.WRAP_GROUP_USE_BRACES, true);
+        reformatFileContents("testfiles/formatting/groupUseBP_02.php", options);
+    }
+
+    public void testGroupUseBracePlacement_03() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.GROUP_USE_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.WRAP_GROUP_USE_BRACES, true);
+        reformatFileContents("testfiles/formatting/groupUseBP_03.php", options);
+    }
+
+    public void testGroupUseBracePlacement_04() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.GROUP_USE_BRACE_PLACEMENT, CodeStyle.BracePlacement.SAME_LINE);
+        options.put(FmtOptions.WRAP_GROUP_USE_BRACES, true);
+        reformatFileContents("testfiles/formatting/groupUseBP_04.php", options);
+    }
+
+    public void testGroupUseInNamespaceBlock() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/groupUseInNamespaceBlock.php", options);
+    }
 }

@@ -41,6 +41,7 @@
  */
 package org.netbeans.api.editor.caret;
 
+import org.netbeans.spi.editor.caret.CascadingNavigationFilter;
 import org.netbeans.spi.editor.caret.CaretMoveHandler;
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
@@ -76,7 +77,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -85,6 +88,7 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JLayeredPane;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
@@ -103,10 +107,12 @@ import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.NavigationFilter;
 import javax.swing.text.Position;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.EditorUtilities;
 import org.netbeans.api.editor.document.AtomicLockDocument;
 import org.netbeans.api.editor.document.AtomicLockEvent;
@@ -127,13 +133,17 @@ import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib2.RectangularSelectionCaretAccessor;
 import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
 import org.netbeans.modules.editor.lib2.actions.EditorActionUtilities;
+import org.netbeans.modules.editor.lib2.document.DocumentPostModificationUtils;
+import org.netbeans.modules.editor.lib2.document.UndoRedoDocumentEventResolver;
 import org.netbeans.modules.editor.lib2.highlighting.CaretOverwriteModeHighlighting;
 import org.netbeans.modules.editor.lib2.view.LockedViewHierarchy;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchy;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchyEvent;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchyListener;
 import org.netbeans.modules.editor.lib2.view.ViewUtils;
+import org.netbeans.spi.editor.caret.NavigationFilterBypass;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
 /**
@@ -159,6 +169,8 @@ public final class EditorCaret implements Caret {
     // Temporary until rectangular selection gets ported to multi-caret support
     private static final String RECTANGULAR_SELECTION_PROPERTY = "rectangular-selection"; // NOI18N
     private static final String RECTANGULAR_SELECTION_REGIONS_PROPERTY = "rectangular-selection-regions"; // NOI18N
+    private static final String NAVIGATION_FILTER_PROPERTY = EditorCaret.class.getName() + ".navigationFilters"; // NOI18N
+    private static final String CHAIN_FILTER_PROPERTY = EditorCaret.class.getName() + ".chainFilter"; // NOI18N
     
     // -J-Dorg.netbeans.api.editor.caret.EditorCaret.level=FINEST
     private static final Logger LOG = Logger.getLogger(EditorCaret.class.getName());
@@ -295,25 +307,40 @@ public final class EditorCaret implements Caret {
     /**
      * Caret item to which the view should scroll or null for no scrolling.
      */
-    private CaretItem scrollToItem;
+    private boolean scrollToLastCaret;
 
     /**
      * Whether the text is being modified under atomic lock.
      * If so just one caret change is fired at the end of all modifications.
      */
-    private transient boolean inAtomicLock = false;
+    private transient boolean inAtomicSection = false;
     private transient boolean inAtomicUnlock = false;
+
+    /**
+     * Offset to which the caret should be relocated if there's no explicit request
+     * for caret placement and there were some modifications performed.
+     */
+    private int atomicSectionImplicitSetDotOffset;
     
     /**
-     * Helps to check whether there was modification performed
-     * and so the caret change needs to be fired.
+     * Whether there was an explicit request to place the caret during the atomic section or not.
+     * If not explicit request was done then use atomicSectionSetDotOffset and place the caret there.
      */
-    private transient boolean modified;
+    private boolean atomicSectionAnyCaretChange;
     
+    /**
+     * Whether a (visual) caret update needs to be done at the end of the document atomic section.
+     * This is an optimization to only do a single visual update for the whole atomic transaction
+     * rather than several individual ones for each caret change.
+     */
+    private boolean atomicSectionUpdateNeeded;
+
     /**
      * Lowest offset where modification was performed during atomic lock.
+     * <br>
+     * Set to Integer.MAX_VALUE if no modification was done during atomic section yet.
      */
-    private transient int modifiedOffset;
+    private transient int atomicSectionLowestModOffset;
     
     /**
      * Set to true once the folds have changed. The caret should retain
@@ -321,11 +348,6 @@ public final class EditorCaret implements Caret {
      */
     private boolean updateAfterFoldHierarchyChange;
     
-    /**
-     * Whether at least one typing change occurred during possibly several atomic operations.
-     */
-    private boolean typingModificationOccurred;
-
     private Preferences prefs = null;
 
     private PreferenceChangeListener weakPrefsListener = null;
@@ -334,10 +356,9 @@ public final class EditorCaret implements Caret {
     
     /**
      * If the component is invalid upon call to update() method
-     * then request a non-scrolling update by setting the variable to 1
-     * or request a scrolling update by setting it to 2.
+     * then request a non-scrolling update by setting the variable true.
      */
-    private int updateLaterDuringPaint;
+    private boolean updateLaterDuringPaint;
     
     /**
      * Minimum selection start for word and line selections.
@@ -378,7 +399,7 @@ public final class EditorCaret implements Caret {
      * with the same cursor.
      */
     private boolean showingTextCursor = true;
-    
+
     public EditorCaret() {
         caretItems = new GapList<>();
         sortedCaretItems = new GapList<>();
@@ -511,6 +532,28 @@ public final class EditorCaret implements Caret {
      * @see Caret#setDot(int) 
      */
     public @Override void setDot(final int offset) {
+        setDot(offset, MoveCaretsOrigin.DEFAULT);
+    }
+
+    /**
+     * Assign a new offset to the caret and identify the operation which
+     * originated the caret movement. 
+     * <p>
+     * In addition to {@link #setDot(int)},
+     * the caller may identify the operation that originated the caret movement.
+     * This information is received by {@link NavigationFilter}s or {@link ChangeListener}s
+     * and may be used to react or modify the caret movements.
+     * </p><p>
+     * Use {@code null} or {@link MoveCaretsOrigin#DEFAULT} if the operation not known. Use
+     * {@link MoveCaretsOrigin#DIRECT_NAVIGATION} action type to identify simple navigational
+     * actions (pg up, pg down, left, right, ...).
+     * </p>
+     * @param offset new offset for the caret
+     * @param orig specifies the operation which caused the caret to move.
+     * @see #setDot(int) 
+     * @since 2.10
+     */
+    public void setDot(final int offset, MoveCaretsOrigin orig) {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("setDot: offset=" + offset); //NOI18N
             if (LOG.isLoggable(Level.FINEST)) {
@@ -530,7 +573,7 @@ public final class EditorCaret implements Caret {
                     }
                 }
             }
-        });
+        }, orig);
     }
 
     /**
@@ -544,6 +587,29 @@ public final class EditorCaret implements Caret {
      * @see Caret#moveDot(int) 
      */
     public @Override void moveDot(final int offset) {
+        moveDot(offset, MoveCaretsOrigin.DEFAULT);
+    }
+    
+    /**
+     * Moves the caret position (dot) to some other position, leaving behind the
+     * mark. 
+     * <p>
+     * In addition to {@link #setDot(int)},
+     * the caller may identify the operation that originated the caret movement.
+     * This information is received by {@link NavigationFilter}s or {@link EditorCaretListener}s
+     * and may be used to react or modify the caret movements.
+     * </p><p>
+     * Use {@code null} or {@link MoveCaretsOrigin#DEFAULT} if the operation not known. Use
+     * {@link MoveCaretsOrigin#DIRECT_NAVIGATION} action type to identify simple navigational
+     * actions (pg up, pg down, left, right, ...).
+     * </p>
+     * 
+     * @param offset new offset for the caret
+     * @param orig specifies the operation which caused the caret to move.
+     * @see #moveDot(int) 
+     * @since 2.10
+     */
+    public void moveDot(final int offset, MoveCaretsOrigin orig) {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("moveDot: offset=" + offset); //NOI18N
         }
@@ -561,7 +627,7 @@ public final class EditorCaret implements Caret {
                     }
                 }
             }
-        });
+        }, orig);
     }
 
     /**
@@ -600,7 +666,38 @@ public final class EditorCaret implements Caret {
      *  or no document installed in the text component.
      */
     public int moveCarets(@NonNull CaretMoveHandler moveHandler) {
+        Parameters.notNull("moveHandler", moveHandler);
         return runTransaction(CaretTransaction.RemoveType.NO_REMOVE, 0, null, moveHandler);
+    }
+    
+    /**
+     * Move multiple carets or create/modify selections, specifies the originating operation.
+     * <p>
+     * In addition to {@link #moveCarets(org.netbeans.spi.editor.caret.CaretMoveHandler)}, the caller may specify
+     * what operation causes the caret movements in the `origin' parameter, see {@link MoveCaretsOrigin} class. 
+     * This information is received by {@link NavigationFilter}s or {@link EditorCaretListener}s
+     * and may be used to react or modify the caret movements.
+     * </p><p>
+     * Use {@code null} or {@link MoveCaretsOrigin#DEFAULT} if the operation not known. Use
+     * {@link MoveCaretsOrigin#DIRECT_NAVIGATION} action type to identify simple navigational
+     * actions (pg up, pg down, left, right, ...).
+     * </p><p>
+     * See the {@link #moveCarets(org.netbeans.spi.editor.caret.CaretMoveHandler) } for detailed description of
+     * how carets are moved.
+     * </p>
+     * 
+     * @param moveHandler handler which moves individual carets
+     * @param origin description of the originating operation. Use {@code null} or {@link MoveCaretsOrigin#DEFAULT} for default/unspecified operation.
+     * @return difference between number of carets, see {@link #moveCarets(org.netbeans.spi.editor.caret.CaretMoveHandler)}.
+     * @see #moveCarets(org.netbeans.spi.editor.caret.CaretMoveHandler) 
+     * @since 2.10
+     */
+    public int moveCarets(@NonNull CaretMoveHandler moveHandler, MoveCaretsOrigin origin) {
+        Parameters.notNull("moveHandler", moveHandler);
+        if (origin ==  null) {
+            origin = MoveCaretsOrigin.DEFAULT;
+        }
+        return runTransaction(CaretTransaction.RemoveType.NO_REMOVE, 0, null, moveHandler, origin);
     }
 
     /**
@@ -864,12 +961,11 @@ public final class EditorCaret implements Caret {
             }
             listenerImpl.focusGained(null); // emulate focus gained
         }
-
         invalidateCaretBounds(0);
         dispatchUpdate(false);
         resetBlink();
     }
-
+    
     @Override
     public void deinstall(JTextComponent c) {
         if (LOG.isLoggable(Level.FINE)) {
@@ -899,10 +995,9 @@ public final class EditorCaret implements Caret {
         if (c == null || !isShowing()) {
             return;
         }
-        if (updateLaterDuringPaint != 0) {
-            boolean scroll = updateLaterDuringPaint == 2;
-            updateLaterDuringPaint = 0;
-            update(scroll, true);
+        if (updateLaterDuringPaint) {
+            updateLaterDuringPaint = false;
+            update(true);
         }
         Color origColor = g.getColor();
         try {
@@ -1050,6 +1145,188 @@ public final class EditorCaret implements Caret {
             }
         }
     }
+    
+    /**
+     * Returns the navigation filter for a certain operation. 
+     * {@link NavigationFilter} can be 
+     * registered to receive only limited set of operations. This method returns the filter 
+     * for the specified operation. Use {@link MoveCaretsOrigin#DEFAULT} to get text 
+     * component's navigation filter (equivalent to {@link JTextComponent#getNavigationFilter() 
+     * JTextComponent.getNavigationFilter()}. That filter receives all caret movements.
+     * @param component the component whose filter should be returned
+     * @param origin the operation description
+     * @return the current navigation filter.
+     * @since 2.10
+     */
+    public static @CheckForNull NavigationFilter getNavigationFilter(@NonNull JTextComponent component, @NonNull MoveCaretsOrigin origin) {
+        Parameters.notNull("origin", origin);
+        if (origin == MoveCaretsOrigin.DEFAULT) {
+            return component.getNavigationFilter();
+        } else if (origin == MoveCaretsOrigin.DISABLE_FILTERS) {
+            return null;
+        }
+        NavigationFilter navi = doGetNavigationFilter(component, origin.getActionType());
+        // Note: a special delegator is returned, since the component's navigation filter queue
+        // can be manipulated after call to getNavigationFilter. So if we would have returned the global filter instance directly,
+        // the calling client may unknowingly bypass certain (global) filters registered after call to this method.
+        // In other words, there are two possible insertion points into the navigation filter chanin
+        return navi != null ? navi : getChainNavigationFilter(component);
+    }
+
+    /**
+     * Variant of {@link #getNavigationFilter}, which does not default to chaining navigation
+     * filter
+     * @param origin operation specifier
+     * @return navigation filter or {@code null}
+     */
+    @CheckForNull NavigationFilter getNavigationFilterNoDefault(@NonNull MoveCaretsOrigin origin) {
+        if (origin == MoveCaretsOrigin.DEFAULT) {
+            return component.getNavigationFilter();
+        } else if (origin == MoveCaretsOrigin.DISABLE_FILTERS) {
+            return null;
+        }
+        NavigationFilter navi2 = doGetNavigationFilter(component, origin.getActionType());
+        return navi2 != null ? navi2 : component.getNavigationFilter();
+    }
+
+    /**
+     * Bottom navigation filter which delegates to the main NavigationFilter in the
+     * Component (if it exists).
+     */
+    private static class ChainNavigationFilter extends NavigationFilter {
+        private final JTextComponent component;
+
+        public ChainNavigationFilter(JTextComponent component) {
+            this.component = component;
+        }
+        
+        @Override
+        public int getNextVisualPositionFrom(JTextComponent text, int pos, Position.Bias bias, int direction, Position.Bias[] biasRet) throws BadLocationException {
+            NavigationFilter chain = component.getNavigationFilter();
+            return chain != null ? chain.getNextVisualPositionFrom(text, pos, bias, direction, biasRet) : super.getNextVisualPositionFrom(text, pos, bias, direction, biasRet);
+        }
+
+        @Override
+        public void moveDot(NavigationFilter.FilterBypass fb, int dot, Position.Bias bias) {
+            NavigationFilter chain = component.getNavigationFilter();
+            if (chain != null) {
+                chain.moveDot(fb, dot, bias);
+            } else {
+                super.moveDot(fb, dot, bias);
+            }
+        }
+
+        @Override
+        public void setDot(NavigationFilter.FilterBypass fb, int dot, Position.Bias bias) {
+            NavigationFilter chain = component.getNavigationFilter();
+            if (chain != null) {
+                chain.setDot(fb, dot, bias);
+            } else {
+                super.setDot(fb, dot, bias);
+            }
+        }
+    }
+    
+    /**
+     * Sets navigation filter for a certain operation type, defined by {@link MoveCaretsOrigin}.
+     * <p>
+     * The registered filter will receive <b>only those caret movements</b>, which correspond to the
+     * passed {@link MoveCaretsOrigin}. To receive all caret movements, register for {@link MoveCaretsOrigin#DEFAULT} 
+     * or use {@link JTextComponent#setNavigationFilter}.
+     * </p><p>
+     * All the key part(s) of MoveCaretOrigin of a caret operation and `origin' parameter in this function must
+     * match in order for the filter to be invoked.
+     * </p><p>
+     * The NavigationFilter implementation <b>may downcast</b> the passed {@link NavigationFilter.FilterBypass FilterBypass}
+     * parameter to {@link NavigationFilterBypass} to get full infomration about the movement. 
+     * </p>
+     * @param component the component which will use the filter
+     * @param origin the origin
+     * @param naviFilter the installed filter
+     * @see JTextComponent#setNavigationFilter
+     * @see NavigationFilterBypass
+     * @since 2.10
+     */
+    public static void setNavigationFilter(JTextComponent component, MoveCaretsOrigin origin, @NullAllowed NavigationFilter naviFilter) {
+        if (origin == null) {
+            origin = MoveCaretsOrigin.DEFAULT;
+        }
+        final NavigationFilter prev = getNavigationFilter(component, origin);
+        if (naviFilter != null) {
+            // Note:
+            // if the caller passes in a non-cascading filter, we would loose the filter chain information.
+            // the alien filter is wrapped by CascadingNavigationFilter delegator, so the previous filter
+            // link is preserved.
+            if (!(naviFilter instanceof CascadingNavigationFilter)) {
+                final NavigationFilter del = naviFilter;
+                naviFilter = new CascadingNavigationFilter() {
+                    @Override
+                    public void setDot(NavigationFilter.FilterBypass fb, int dot, Position.Bias bias) {
+                        del.setDot(fb, dot, bias);
+                    }
+
+                    @Override
+                    public void moveDot(NavigationFilter.FilterBypass fb, int dot, Position.Bias bias) {
+                        del.moveDot(fb, dot, bias);
+                    }
+
+                    @Override
+                    public int getNextVisualPositionFrom(JTextComponent text, int pos, Position.Bias bias, int direction, Position.Bias[] biasRet) throws BadLocationException {
+                        return del.getNextVisualPositionFrom(text, pos, bias, direction, biasRet);
+                    }
+                };
+            }
+            ((CascadingNavigationFilter)naviFilter).setOwnerAndPrevious(component, origin, prev);
+        }
+        if (MoveCaretsOrigin.DEFAULT == origin) {
+            component.setNavigationFilter(naviFilter);
+        } else {
+            doPutNavigationFilter(component, origin.getActionType(), prev);
+        }
+    }
+    
+    private static NavigationFilter getChainNavigationFilter(JTextComponent component) {
+        NavigationFilter chain = (NavigationFilter)component.getClientProperty(CHAIN_FILTER_PROPERTY);
+        if (chain == null) {
+            component.putClientProperty(CHAIN_FILTER_PROPERTY, chain = new ChainNavigationFilter(component));
+        }
+        return chain;
+    }
+    
+    /**
+     * Records the navigation filter. Note that the filter is stored in the JTextComponent rather than
+     * in this Caret. If the Component's UI changes or the caret is recreated for some reason, the 
+     * navigation filters remain registered.
+     * 
+     * @param type type of nav filter
+     * @param n the filter instance
+     */
+    private static void doPutNavigationFilter(JTextComponent component, String type, NavigationFilter n) {
+        if (component == null) {
+            throw new IllegalStateException("Not attached to a Component");
+        }
+        Map<String, NavigationFilter> m = (Map<String, NavigationFilter>)component.getClientProperty(NAVIGATION_FILTER_PROPERTY);
+        if (m == null) {
+            if (n == null) {
+                return;
+            }
+            m = new HashMap<>();
+            component.putClientProperty(NAVIGATION_FILTER_PROPERTY, m);
+        } 
+        if (n == null) {
+            m.remove(type);
+        } else {
+            m.put(type, n);
+        }
+    }
+    
+    private static NavigationFilter doGetNavigationFilter(JTextComponent component, String n) {
+        if (component == null) {
+            throw new IllegalStateException("Not attached to a Component");
+        }
+        Map<String, NavigationFilter> m = (Map<String, NavigationFilter>)component.getClientProperty(NAVIGATION_FILTER_PROPERTY);
+        return m == null ? null : m.get(n);
+    }
 
     @Override
     public int getBlinkRate() {
@@ -1157,7 +1434,7 @@ public final class EditorCaret implements Caret {
                 moveDot(newDotOffset); // updates rs and fires state change
             } else {
                 updateRectangularSelectionPaintRect();
-                fireStateChanged();
+                fireStateChanged(null);
             }
         } catch (BadLocationException ex) {
             // Leave selection as is
@@ -1204,13 +1481,17 @@ public final class EditorCaret implements Caret {
      * @return 
      */
     private int runTransaction(CaretTransaction.RemoveType removeType, int offset, CaretItem[] addCarets, CaretMoveHandler moveHandler) {
+        return runTransaction(removeType, offset, addCarets, moveHandler, MoveCaretsOrigin.DEFAULT);
+    }
+    
+    private int runTransaction(CaretTransaction.RemoveType removeType, int offset, CaretItem[] addCarets, CaretMoveHandler moveHandler, MoveCaretsOrigin org) {
         lock();
         try {
             if (activeTransaction == null) {
                 JTextComponent c = component;
                 Document d = activeDoc;
                 if (c != null && d != null) {
-                    activeTransaction = new CaretTransaction(this, c, d);
+                    activeTransaction = new CaretTransaction(this, c, d, org);
                     if (LOG.isLoggable(Level.FINE)) {
                         StringBuilder msgBuilder = new StringBuilder(200);
                         msgBuilder.append("EditorCaret.runTransaction(): removeType=").append(removeType).
@@ -1235,7 +1516,9 @@ public final class EditorCaret implements Caret {
                         }
                         activeTransaction.removeOverlappingRegions();
                         int diffCount = 0;
+                        boolean inAtomicSectionL;
                         synchronized (listenerList) {
+                            inAtomicSectionL = inAtomicSection;
                             GapList<CaretItem> replaceItems = activeTransaction.getReplaceItems();
                             if (replaceItems != null) {
                                 caretItems = replaceItems;
@@ -1248,10 +1531,14 @@ public final class EditorCaret implements Caret {
                                sortedCaretItems = activeTransaction.getSortedCaretItems();
                                assert (sortedCaretItems != null) : "Null sortedCaretItems! removeType=" + removeType; // NOI18N
                             }
-                        }
-                        if (activeTransaction.isAnyChange()) {
-                            caretInfos = null;
-                            sortedCaretInfos = null;
+                            if (activeTransaction.isAnyChange()) {
+                                caretInfos = null;
+                                sortedCaretInfos = null;
+                                if (inAtomicSectionL) {
+                                    atomicSectionAnyCaretChange = true;
+                                }
+                            }
+                            scrollToLastCaret |= activeTransaction.isScrollToLastCaret();
                         }
                         // Repaint bounds of removed items
                         GapList<CaretItem> removedItems = activeTransaction.allRemovedItems();
@@ -1289,12 +1576,14 @@ public final class EditorCaret implements Caret {
                             }
                         }
                         if (activeTransaction.isAnyChange()) {
-                            // For now clear the lists and use old way TODO update to selective updating and rendering
-                            fireStateChanged();
-                            dispatchUpdate(true);
-                            resetBlink();
+                            if (!inAtomicSectionL) {
+                                // For now clear the lists and use old way TODO update to selective updating and rendering
+                                fireStateChanged(activeTransaction.getOrigin());
+                                dispatchUpdate(false);
+                                resetBlink();
+                            }
                         }
-                    return diffCount;
+                        return diffCount;
                     } finally {
                         activeTransaction = null;
                     }
@@ -1343,14 +1632,14 @@ public final class EditorCaret implements Caret {
     /**
      * Notifies listeners that caret position has changed.
      */
-    private void fireStateChanged() {
+    private void fireStateChanged(final MoveCaretsOrigin origin) {
         Runnable runnable = new Runnable() {
             public @Override void run() {
                 JTextComponent c = component;
                 if (c == null || c.getCaret() != EditorCaret.this) {
                     return;
                 }
-                fireEditorCaretChange(new EditorCaretEvent(EditorCaret.this, 0, Integer.MAX_VALUE)); // [TODO] temp firing without detailed info
+                fireEditorCaretChange(new EditorCaretEvent(EditorCaret.this, 0, Integer.MAX_VALUE, origin)); // [TODO] temp firing without detailed info
                 ChangeEvent evt = new ChangeEvent(EditorCaret.this);
                 List<ChangeListener> listeners = changeListenerList.getListeners();
                 for (ChangeListener l : listeners) {
@@ -1483,9 +1772,14 @@ public final class EditorCaret implements Caret {
         if (newDoc instanceof AbstractDocument) {
             String mimeType = DocumentUtilities.getMimeType(newDoc);
             activeDoc = (AbstractDocument) newDoc;
+            /* Ensure that the caret's document listener will be fired AFTER the views hierarchy's
+             * document listener so the views update prior the caret and the caret has correct modelToView information.
+             * If the document is modified from non-EDT then the caret updating
+             * will be done asynchronously from EDT.
+             */
             DocumentUtilities.addDocumentListener(
                     newDoc, listenerImpl, DocumentListenerPriority.CARET_UPDATE);
-            AtomicLockDocument newAtomicDoc = LineDocumentUtils.as(oldDoc, AtomicLockDocument.class);
+            AtomicLockDocument newAtomicDoc = LineDocumentUtils.as(newDoc, AtomicLockDocument.class);
             if (newAtomicDoc != null) {
                 newAtomicDoc.addAtomicLockListener(listenerImpl);
             }
@@ -1505,36 +1799,34 @@ public final class EditorCaret implements Caret {
         }
     }
     
-    void dispatchUpdate() {
-        JTextComponent c = component;
-        if (c != null) {
-            dispatchUpdate(c.hasFocus()); // Scroll to caret only for component with focus
-        }
-    }
     /** Update visual position of caret(s) */
-    private void dispatchUpdate(final boolean scrollViewToCaret) {
-        /* Ensure that the caret's document listener will be added AFTER the views hierarchy's
-         * document listener so the code can run synchronously again
-         * which should eliminate the problem with caret lag.
-         * However the document can be modified from non-AWT thread
-         * which is the case in #57316 and in that case the code
-         * must run asynchronously in AWT thread.
-         */
-        ViewUtils.runInEDT(
-            new Runnable() {
+    private void dispatchUpdate(boolean forceInvokeLater) {
+        boolean alreadyPending;
+        synchronized (listenerList) {
+            alreadyPending = caretUpdatePending;
+            caretUpdatePending = true;
+        }
+        if (!alreadyPending) {
+            Runnable updateRunnable = new Runnable() {
                 public @Override void run() {
                     AbstractDocument doc = activeDoc;
                     if (doc != null) {
                         doc.readLock();
                         try {
-                            update(scrollViewToCaret, false);
+                            update(false);
                         } finally {
                             doc.readUnlock();
                         }
                     }
                 }
+            };
+
+            if (!forceInvokeLater && SwingUtilities.isEventDispatchThread()) {
+                updateRunnable.run();
+            } else {
+                SwingUtilities.invokeLater(updateRunnable);
             }
-        );
+        }
     }
 
     /**
@@ -1542,24 +1834,26 @@ public final class EditorCaret implements Caret {
      * <br>
      * The document is read-locked while calling this method.
      *
-     * @param scrollViewToCaret whether the view of the text component should be
-     *  scrolled to the position of the caret.
      * @param calledFromPaint whether update was called from {@link #paint(java.awt.Graphics) } method
      *  which means that it does not check component validity because the component might still
      *  not be valid but its bounds are already set properly.
      */
-    private void update(boolean scrollViewToCaret, boolean calledFromPaint) {
-        caretUpdatePending = false;
+    private void update(boolean calledFromPaint) {
+        synchronized (listenerList) {
+            caretUpdatePending = false;
+        }
         JTextComponent c = component;
         if (c != null) {
             if (!calledFromPaint && !c.isValid()) {
-                updateLaterDuringPaint = Math.max(updateLaterDuringPaint,
-                        scrollViewToCaret ? 2 : 1);
+                updateLaterDuringPaint = true;
                 return;
             }
             boolean log = LOG.isLoggable(Level.FINE);
             Component parent = c.getParent();
             Rectangle editorRect;
+            if (parent instanceof JLayeredPane) {
+                parent = parent.getParent();
+            }
             if (parent instanceof JViewport) {
                 JViewport viewport = (JViewport) parent;
                 editorRect = viewport.getViewRect();
@@ -1577,13 +1871,70 @@ public final class EditorCaret implements Caret {
                 // in paint() method once a request for their painting arrives.
                 LockedViewHierarchy lvh = ViewHierarchy.get(c).lock();
                 try {
+                    CaretItem lastCaretItem;
+                    List<CaretInfo> sortedCarets;
+                    boolean scroll;
+                    synchronized (listenerList) {
+                        lastCaretItem = getLastCaretItem();
+                        sortedCarets = getSortedCarets();
+                        scroll = scrollToLastCaret;
+                        scrollToLastCaret = false;
+                    }
+                    if (scroll) {
+                        Rectangle caretBounds;
+                        Rectangle oldCaretBounds;
+                        if (lastCaretItem.getAndClearUpdateCaretBounds()) {
+                            caretBounds = lvh.modelToViewBounds(lastCaretItem.getDot(), Position.Bias.Forward);
+                            oldCaretBounds = lastCaretItem.setCaretBoundsWithRepaint(caretBounds, c);
+                        } else {
+                            caretBounds = lastCaretItem.getCaretBounds();
+                            oldCaretBounds = caretBounds;
+                        }
+                        if (caretBounds != null) {
+                            Rectangle scrollBounds = caretBounds; // Must possibly be cloned upon change
+                            // Only scroll the view for the LAST caret to be visible
+                            // For null old bounds (likely at begining of component displayment) ensure that a possible
+                            // horizontal scrollbar would not hide the caret so enlarge the scroll bounds by hscrollbar height.
+                            if (oldCaretBounds == null) {
+                                Component viewport = c.getParent();
+                                if (viewport instanceof JLayeredPane) {
+                                    viewport = viewport.getParent();
+                                }
+                                if (viewport instanceof JViewport) {
+                                    Component scrollPane = viewport.getParent();
+                                    if (scrollPane instanceof JScrollPane) {
+                                        JScrollBar hScrollBar = ((JScrollPane) scrollPane).getHorizontalScrollBar();
+                                        if (hScrollBar != null) {
+                                            int hScrollBarHeight = hScrollBar.getPreferredSize().height;
+                                            Dimension extentSize = ((JViewport) viewport).getExtentSize();
+                                            // If the extent size is high enough then extend
+                                            // the scroll region by extra vertical space
+                                            if (extentSize.height >= caretBounds.height + hScrollBarHeight) {
+                                                scrollBounds = new Rectangle(scrollBounds); // Clone
+                                                scrollBounds.height += hScrollBarHeight;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if (editorRect == null || !editorRect.contains(scrollBounds)) {
+                                c.scrollRectToVisible(scrollBounds);
+                                // Schedule another update that will read the updated editorRect
+                                dispatchUpdate(true);
+                                return;
+                            }
+                            if (LOG.isLoggable(Level.FINER)) {
+                                LOG.finer("Scrolling to: " + scrollBounds);
+                            }
+                        }
+                    }
+
                     int editorRectStartOffset = lvh.yToParagraphStartOffset((editorRect != null) ? editorRect.y : 0);
                     int editorRectEndY = (editorRect != null)
                             ? (editorRect.y + editorRect.height)
                             : Integer.MAX_VALUE;
                     // Find the first caret to be painted
                     // Only paint carets that are part of the clip - use sorted carets
-                    List<CaretInfo> sortedCarets = getSortedCarets();
                     int low = 0;
                     int caretsSize = sortedCarets.size();
                     if (caretsSize > 1) {
@@ -1603,54 +1954,16 @@ public final class EditorCaret implements Caret {
                             }
                         }
                     }
-                    CaretItem lastCaretItem = getLastCaretItem();
                     // Use "low" index (which is higher than "high" at end of binary-search)
-                    // If scrolling the view to caret's position start with the last caret at least.
-                    if (scrollViewToCaret && low >= caretsSize) {
-                        low = caretsSize - 1;
-                    }
                     for (int i = low; i < caretsSize; i++) {
                         CaretInfo caretInfo = sortedCarets.get(i);
                         CaretItem caretItem = caretInfo.getCaretItem();
                         Rectangle caretBounds = null;
                         if (caretItem.getAndClearUpdateCaretBounds()) {
                             caretBounds = lvh.modelToViewBounds(caretItem.getDot(), Position.Bias.Forward);
+                            lastCaretItem.setCaretBoundsWithRepaint(caretBounds, c);                            
                             if (log) {
                                 LOG.fine("  [" + i + "] new caretBounds=" + caretBounds + " for caretItem=" + caretItem + "\n"); // NOI18N
-                            }
-                            if (caretBounds != null) {
-                                Rectangle oldCaretBounds = caretItem.setCaretBoundsWithRepaint(caretBounds, c);
-                                // Only scroll the view for the LAST caret to be visible
-                                if (scrollViewToCaret && caretItem == lastCaretItem) {
-                                    Rectangle scrollBounds = caretBounds; // Must possibly be cloned upon change
-                                    
-                                    // For null old bounds (likely at begining of component displayment) ensure that a possible
-                                    // horizontal scrollbar would hide the caret so enlarge the scroll bounds by hscrollbar height.
-                                    if (oldCaretBounds == null) {
-                                        Component viewport = c.getParent();
-                                        if (viewport instanceof JViewport) {
-                                            Component scrollPane = viewport.getParent();
-                                            if (scrollPane instanceof JScrollPane) {
-                                                JScrollBar hScrollBar = ((JScrollPane) scrollPane).getHorizontalScrollBar();
-                                                if (hScrollBar != null) {
-                                                    int hScrollBarHeight = hScrollBar.getPreferredSize().height;
-                                                    Dimension extentSize = ((JViewport) viewport).getExtentSize();
-                                                    // If the extent size is high enough then extend
-                                                    // the scroll region by extra vertical space
-                                                    if (extentSize.height >= caretItem.getCaretBounds().height + hScrollBarHeight) {
-                                                        scrollBounds = new Rectangle(scrollBounds); // Clone
-                                                        scrollBounds.height += hScrollBarHeight;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                    
-                                    if (LOG.isLoggable(Level.FINER)) {
-                                        LOG.finer("Scrolling to: " + scrollBounds);
-                                    }
-                                    c.scrollRectToVisible(scrollBounds);
-                                }
                             }
                         }
                         if (i > 0) {
@@ -1902,7 +2215,7 @@ public final class EditorCaret implements Caret {
             rsDotRect.x = r.x;
             rsDotRect.width = r.width;
             updateRectangularSelectionPaintRect();
-            fireStateChanged();
+            fireStateChanged(null);
         }
     }
     
@@ -2101,6 +2414,9 @@ public final class EditorCaret implements Caret {
                 // they intersect with the horizontal scrollbar
                 // and if so the view will be scrolled.
                 Container parent = component.getParent();
+                if(parent instanceof JLayeredPane) {
+                    parent = parent.getParent();
+                }
                 if (parent instanceof JViewport) {
                     parent = parent.getParent(); // parent of viewport
                     if (parent instanceof JScrollPane) {
@@ -2139,7 +2455,7 @@ public final class EditorCaret implements Caret {
                     } else { // No rectangular selection
 //                        RectangularSelectionTransferHandler.uninstall(component);
                     }
-                    fireStateChanged();
+                    fireStateChanged(null);
                 }
             }
         }
@@ -2149,12 +2465,12 @@ public final class EditorCaret implements Caret {
             JTextComponent c = component;
             if (c != null) {
                 int offset = evt.getOffset();
+                int length = evt.getLength();
                 if (offset == 0) {
                     // Manually shift carets at offset zero - do this always even when inside atomic lock
-                    runTransaction(CaretTransaction.RemoveType.DOCUMENT_INSERT_ZERO_OFFSET, evt.getLength(), null, null);
+                    runTransaction(CaretTransaction.RemoveType.DOCUMENT_INSERT_ZERO_OFFSET, evt.getLength(), null, null, MoveCaretsOrigin.DISABLE_FILTERS);
                 }
-                modified = true;
-                modifiedUpdate(true, offset);
+                modifiedUpdate(evt, offset, offset + length);
                 
             }
         }
@@ -2162,10 +2478,9 @@ public final class EditorCaret implements Caret {
         public @Override void removeUpdate(DocumentEvent evt) {
             JTextComponent c = component;
             if (c != null) {
-                modified = true;
                 int offset = evt.getOffset();
                 runTransaction(CaretTransaction.RemoveType.DOCUMENT_REMOVE, offset, null, null);
-                modifiedUpdate(true, offset);
+                modifiedUpdate(evt, offset, offset);
             }
         }
 
@@ -2174,35 +2489,100 @@ public final class EditorCaret implements Caret {
 
         public @Override
         void atomicLock(AtomicLockEvent evt) {
-            inAtomicLock = true;
+            synchronized (listenerList) {
+                inAtomicSection = true;
+                atomicSectionLowestModOffset = Integer.MAX_VALUE;
+                atomicSectionImplicitSetDotOffset = Integer.MAX_VALUE;
+                atomicSectionAnyCaretChange = false;
+                atomicSectionUpdateNeeded = false;
+            }
         }
 
         public @Override
         void atomicUnlock(AtomicLockEvent evt) {
-            inAtomicLock = false;
             inAtomicUnlock = true;
+            synchronized (listenerList) {
+                inAtomicSection = false;
+            }
             try {
-                modifiedUpdate(typingModificationOccurred, modifiedOffset);
+                boolean change = atomicSectionAnyCaretChange;
+                if (!change) { // For no explicit caret placement requests during the atomic transaction
+                    if (atomicSectionImplicitSetDotOffset != Integer.MAX_VALUE) { // And if there were any modifications
+                        implicitSetDot(null, atomicSectionImplicitSetDotOffset); // Request a setDot() on modification's boundary
+                        change = true;
+                    }
+                }
+                if (atomicSectionLowestModOffset != Integer.MAX_VALUE) {
+                    invalidateCaretBounds(atomicSectionLowestModOffset);
+                    change = true;
+                }
+                if (change) {
+                    updateAndFireChange();
+                }
             } finally {
                 inAtomicUnlock = false;
-                typingModificationOccurred = false;
             }
         }
 
-        private void modifiedUpdate(boolean typingModification, int offset) {
-            if (!inAtomicLock) {
-                JTextComponent c = component;
-                if (modified && c != null) {
-                    invalidateCaretBounds(offset);
-                    dispatchUpdate();
-                    resetBlink();
-                    fireStateChanged();
-                    modified = false;
+        private void modifiedUpdate(DocumentEvent evt, int offset, int setDotOffset) {
+            if (!implicitSetDot(evt, setDotOffset)) {
+                // Ensure that a valid atomicSectionImplicitSetDotOffset value
+                // will be updated by the just performed document modification
+                if (atomicSectionImplicitSetDotOffset != Integer.MAX_VALUE) {
+                    atomicSectionImplicitSetDotOffset = DocumentUtilities.fixOffset(
+                            atomicSectionImplicitSetDotOffset, evt);
                 }
-            } else {
-                typingModificationOccurred |= typingModification;
-                modifiedOffset = Math.min(modifiedOffset, offset);
             }
+
+            if (inAtomicSection) {
+                atomicSectionLowestModOffset = Math.min(atomicSectionLowestModOffset, offset);
+            } else { // Not in atomic section
+                invalidateCaretBounds(offset);
+                updateAndFireChange();
+            }
+        }
+        
+        private void updateAndFireChange() {
+            dispatchUpdate(false);
+            resetBlink();
+            fireStateChanged(null);
+        }
+
+        /**
+         * Either set the dot to the given or remember it later setting (when in atomic section).
+         * Impose additional restrictions on whether the the given offset will be used as an implicit
+         * dot or not.
+         * 
+         * @param evt document event or null when called in atomic-unlock.
+         * @param offset offset to be used for implicit dot setting.
+         * @return true if the given offset was used or false if not.
+         */
+        private boolean implicitSetDot(DocumentEvent evt, int offset) {
+            if (UndoRedoDocumentEventResolver.isUndoRedoEvent(evt)) {
+                if (getCarets().size() == 1) { // And if there is just a single caret
+                    boolean inActiveTransaction;
+                    synchronized (listenerList) {
+                        inActiveTransaction = (activeTransaction != null);
+                    }
+                    // Only set the dot implicitly if not already in an active transaction.
+                    // Otherwise the caret framework would report illegal nested transaction.
+                    // An explicit active transaction uses the new Caret API anyway
+                    // so it should also use the proper caret position(s) saving for undo/redo too.
+                    if (!inActiveTransaction) {
+                        // Ensure no implicit setDot() for post-modification events
+                        // (evt == null) for call within atomic unlock
+                        if (evt == null || !DocumentPostModificationUtils.isPostModification(evt)) {
+                            if (inAtomicSection) {
+                                atomicSectionImplicitSetDotOffset = offset;
+                            } else {
+                                setDot(offset);
+                            }
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
         }
 
         // MouseListener methods
@@ -2225,7 +2605,7 @@ public final class EditorCaret implements Caret {
                                 c.requestFocus();
                             }
                             c.setDragEnabled(true);
-                            if (evt.isAltDown() && evt.isShiftDown()) {
+                            if (evt.isControlDown() && evt.isShiftDown()) {
                                 mouseState = MouseState.CHAR_SELECTION;
                                 try {
                                     Position pos = doc.createPosition(offset);
@@ -2567,6 +2947,7 @@ public final class EditorCaret implements Caret {
             // Check whether present caret position will not get hidden
             // under horizontal scrollbar and if so scroll the view
             Component hScrollBar = e.getComponent();
+/* The following should already be handled in update()            
             if (hScrollBar != component) { // really called for horizontal scrollbar
                 Component scrollPane = hScrollBar.getParent();
                 boolean needsScroll = false;
@@ -2588,10 +2969,11 @@ public final class EditorCaret implements Caret {
                     }
                 }
                 if (needsScroll) {
-                    dispatchUpdate(true); // should be visible so scroll the view
                     resetBlink();
+                    dispatchUpdate(false);
                 }
             }
+*/
         }
         
         /**
@@ -2605,7 +2987,7 @@ public final class EditorCaret implements Caret {
                 // so the modelToView() returned null) re-attempt to compute the bounds.
                 CaretItem caret = getLastCaretItem();
                 if (caret.getCaretBounds() == null) {
-                    dispatchUpdate(true);
+                    dispatchUpdate(false);
                     resetBlink();
                     if (caret.getCaretBounds() != null) { // detach the listener - no longer necessary
                         c.removeComponentListener(this);
@@ -2616,22 +2998,15 @@ public final class EditorCaret implements Caret {
 
         @Override
         public void viewHierarchyChanged(ViewHierarchyEvent evt) {
-            if (!caretUpdatePending) {
-                caretUpdatePending = true;
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        AbstractDocument doc = activeDoc;
-                        if (doc != null) {
-                            doc.readLock();
-                            try {
-                                update(false, false);
-                            } finally {
-                                doc.readUnlock();
-                            }
-                        }
-                    }
-                });
+            if (evt.isChangeY()) {
+                int changeStartOffset = evt.changeStartOffset();
+                // Doc should be read/write-locked here => do no sync for inAtomicSection
+                if (inAtomicSection) {
+                    atomicSectionLowestModOffset = Math.min(atomicSectionLowestModOffset, changeStartOffset);
+                } else {
+                    invalidateCaretBounds(changeStartOffset);
+                }
+                dispatchUpdate(true); // Schedule an update later
             }
         }
 
@@ -2652,33 +3027,6 @@ public final class EditorCaret implements Caret {
         }
 
     } // End of ListenerImpl class
-    
-    private final class Blinker implements Runnable {
-        
-        /**
-         * Fired when blink task gets executed.
-         */
-        @Override
-        public void run() {
-            JTextComponent c = component;
-            if (c != null) {
-                setShowing(!showing);
-                // Repaint all carets
-                List<CaretInfo> sortedCarets = getSortedCarets(); // TODO only repaint carets showing on screen
-                for (CaretInfo caret : sortedCarets) {
-                    CaretItem caretItem = caret.getCaretItem();
-                    if (caretItem.getCaretBounds() != null) {
-                        Rectangle repaintRect = caretItem.getCaretBounds();
-                        if (repaintRect != null) {
-                            c.repaint(repaintRect);
-                        }
-                    }
-                }
-            }
-        }
-
-    }
-    
     
     private enum CaretType {
         

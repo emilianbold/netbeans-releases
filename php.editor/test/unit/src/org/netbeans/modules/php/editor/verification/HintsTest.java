@@ -105,6 +105,14 @@ public class HintsTest extends PHPHintsTestBase {
         applyHint(new ImplementAbstractMethodsHintError(), "testImplementAbstractMethodsHintFix.php", "Implementi^ngClass", "Declare");
     }
 
+    public void testImplementAbstractMethodsHintFix02_01() throws Exception {
+        applyHint(new ImplementAbstractMethodsHintError(), "testImplementAbstractMethodsHintFix02.php", "$a = new cl^ass implements Iface {", "Implement");
+    }
+
+    public void testImplementAbstractMethodsHintFix02_02() throws Exception {
+        checkHints(new ImplementAbstractMethodsHintError(), "testImplementAbstractMethodsHintFix02.php");
+    }
+
     public void testMethodRedeclarationHint() throws Exception {
         checkHints(new MethodRedeclarationHintError(), "testMethodRedeclarationHint.php");
     }
@@ -287,6 +295,14 @@ public class HintsTest extends PHPHintsTestBase {
 
     public void testAddUseImportSuggestion_02() throws Exception {
         checkHints(new AddUseImportSuggestion(), "testAddUseImportSuggestion_02.php", "new Foox\\Barx();^");
+    }
+
+    public void testIssue258480_1() throws Exception {
+        checkHints(new AddUseImportSuggestion(), "testIssue258480_1.php", "$x = date2();^");
+    }
+
+    public void testIssue258480_2() throws Exception {
+        checkHints(new AddUseImportSuggestion(), "testIssue258480_2.php", "$x = date2();^");
     }
 
     public void testIssue223842() throws Exception {

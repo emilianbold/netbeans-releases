@@ -1,0 +1,27 @@
+st",
+    "suite": "Calculator2Test",
+    "test": "Calculator2Test::testMinus3",
+    "status": "pass",
+    "time": 0.01270604133606,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "Calculator2Test",
+    "test": "Calculator2Test::testMinus4"
+}{
+    "event": "test",
+    "suite": "Calculator2Test",
+    "test": "Calculator2Test::testMinus4",
+    "status": "pass",
+    "time": 0.012238025665283,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    

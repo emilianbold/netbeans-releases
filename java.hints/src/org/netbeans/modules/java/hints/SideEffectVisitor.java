@@ -44,8 +44,6 @@ package org.netbeans.modules.java.hints;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
-import com.sun.source.tree.LambdaExpressionTree;
-import com.sun.source.tree.LambdaExpressionTree.BodyKind;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
@@ -61,7 +59,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.StopProcessing;
 
 /**
  * If not in method or a lambda, it detects all assignments/compound assignments
@@ -165,7 +162,12 @@ public class SideEffectVisitor extends TreePathScanner {
 
     @Override
     public Object visitNewClass(NewClassTree node, Object p) {
-        Element e = ci.getTrees().getElement(getCurrentPath()).getEnclosingElement();
+        Element e = ci.getTrees().getElement(getCurrentPath());
+        if (e == null) {
+            return super.visitNewClass(node, p);
+        } else {
+            e = e.getEnclosingElement();
+        }
         if (e != null && e.getKind().isClass()) {
             Object r = scan(node.getEnclosingExpression(), p);
             r = scanAndReduce(node.getIdentifier(), p, r);

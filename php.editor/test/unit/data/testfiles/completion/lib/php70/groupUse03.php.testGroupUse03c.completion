@@ -3,3 +3,4 @@ B\Cls|AB,
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CLASS      ClsAB                           [PUBLIC]   A\B
+CLASS      ClsAB                           [PUBLIC]   A\B

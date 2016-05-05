@@ -67,8 +67,12 @@ public class MakeProjectManageLaunchersAction  extends NodeAction {
         Node n = activatedNodes[0];
         Project project = (Project) n.getValue("Project"); // NOI18N
         if (project == null) {
+            project = activatedNodes[0].getLookup().lookup(Project.class);
+        }
+        if (project == null) {
             return;
         }
+
         ManageLaunchers.invoke(project);
     }
 

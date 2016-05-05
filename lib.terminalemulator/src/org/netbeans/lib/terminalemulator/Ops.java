@@ -107,6 +107,7 @@ interface Ops {
     public void op_icon_name(String iconName);
     public void op_win_title(String winTitle);
     public void op_cwd(String currentWorkingDirectory);
+    public void op_ext(String command);
 
     // font mgmt
     public void op_setG(int gx, int font);

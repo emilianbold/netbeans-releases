@@ -53,12 +53,12 @@ import org.openide.util.NbBundle;
 public class ManageLaunchers {
 
     public static void invoke(Project p) {
-        LaunchersPanel panel = new LaunchersPanel(p);
+        LaunchersPanel panel = new LaunchersPanel(p, true);
         String title = NbBundle.getMessage(ManageLaunchers.class, "Launchers_Title"); // NOI18N
         DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, title);
         DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
-            panel.saveConfigs();
+            panel.save();
         }
     }
 }

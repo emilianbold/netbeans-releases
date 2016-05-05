@@ -124,6 +124,11 @@ public final class CodeStyle {
         return BracePlacement.valueOf(placement);
     }
 
+    public BracePlacement getAnonymousClassBracePlacement() {
+        String placement = preferences.get(ANONYMOUS_CLASS_BRACE_PLACEMENT, getDefaultAsString(ANONYMOUS_CLASS_BRACE_PLACEMENT));
+        return BracePlacement.valueOf(placement);
+    }
+
     public BracePlacement getMethodDeclBracePlacement() {
         String placement = preferences.get(METHOD_DECL_BRACE_PLACEMENT, getDefaultAsString(METHOD_DECL_BRACE_PLACEMENT));
         return BracePlacement.valueOf(placement);
@@ -156,6 +161,11 @@ public final class CodeStyle {
 
     public BracePlacement getUseTraitBodyBracePlacement() {
         String placement = preferences.get(USE_TRAIT_BODY_BRACE_PLACEMENT, getDefaultAsString(USE_TRAIT_BODY_BRACE_PLACEMENT));
+        return BracePlacement.valueOf(placement);
+    }
+
+    public BracePlacement getGroupUseBracePlacement() {
+        String placement = preferences.get(GROUP_USE_BRACE_PLACEMENT, getDefaultAsString(GROUP_USE_BRACE_PLACEMENT));
         return BracePlacement.valueOf(placement);
     }
 
@@ -264,6 +274,10 @@ public final class CodeStyle {
         return preferences.getBoolean(SPACE_BEFORE_FINALLY, getDefaultAsBoolean(SPACE_BEFORE_FINALLY));
     }
 
+    public boolean spaceBeforeAnonymousClassParen() {
+        return preferences.getBoolean(SPACE_BEFORE_ANONYMOUS_CLASS_PAREN, getDefaultAsBoolean(SPACE_BEFORE_ANONYMOUS_CLASS_PAREN));
+    }
+
     public boolean spaceBeforeMethodDeclParen() {
         return preferences.getBoolean(SPACE_BEFORE_METHOD_DECL_PAREN, getDefaultAsBoolean(SPACE_BEFORE_METHOD_DECL_PAREN));
     }
@@ -328,6 +342,10 @@ public final class CodeStyle {
         return preferences.getBoolean(SPACE_BEFORE_CLASS_DECL_LEFT_BRACE, getDefaultAsBoolean(SPACE_BEFORE_CLASS_DECL_LEFT_BRACE));
     }
 
+    public boolean spaceBeforeAnonymousClassLeftBrace() {
+        return preferences.getBoolean(SPACE_BEFORE_ANONYMOUS_CLASS_LEFT_BRACE, getDefaultAsBoolean(SPACE_BEFORE_ANONYMOUS_CLASS_LEFT_BRACE));
+    }
+
     public boolean spaceBeforeMethodDeclLeftBrace() {
         return preferences.getBoolean(SPACE_BEFORE_METHOD_DECL_LEFT_BRACE, getDefaultAsBoolean(SPACE_BEFORE_METHOD_DECL_LEFT_BRACE));
     }
@@ -370,6 +388,10 @@ public final class CodeStyle {
 
     public boolean spaceBeforeUseTraitBodyLeftBrace() {
         return preferences.getBoolean(SPACE_BEFORE_USE_TRAIT_BODY_LEFT_BRACE, getDefaultAsBoolean(SPACE_BEFORE_USE_TRAIT_BODY_LEFT_BRACE));
+    }
+
+    public boolean spaceWithinAnonymousClassParens() {
+        return preferences.getBoolean(SPACE_WITHIN_ANONYMOUS_CLASS_PARENS, getDefaultAsBoolean(SPACE_WITHIN_ANONYMOUS_CLASS_PARENS));
     }
 
     public boolean spaceWithinMethodDeclParens() {
@@ -516,6 +538,11 @@ public final class CodeStyle {
 
     // Wrapping ----------------------------------------------------------------
 
+    public WrapStyle wrapGroupUseList() {
+        String wrap = preferences.get(WRAP_GROUP_USE_LIST, getDefaultAsString(WRAP_GROUP_USE_LIST));
+        return WrapStyle.valueOf(wrap);
+    }
+
     public WrapStyle wrapExtendsImplementsKeyword() {
         String wrap = preferences.get(WRAP_EXTENDS_IMPLEMENTS_KEYWORD, getDefaultAsString(WRAP_EXTENDS_IMPLEMENTS_KEYWORD));
         return WrapStyle.valueOf(wrap);
@@ -590,6 +617,10 @@ public final class CodeStyle {
         return preferences.getBoolean(WRAP_BLOCK_BRACES, getDefaultAsBoolean(WRAP_BLOCK_BRACES));
     }
 
+    public boolean wrapGroupUseBraces() {
+        return preferences.getBoolean(WRAP_GROUP_USE_BRACES, getDefaultAsBoolean(WRAP_GROUP_USE_BRACES));
+    }
+
     public boolean wrapStatementsOnTheSameLine() {
         return preferences.getBoolean(WRAP_STATEMENTS_ON_THE_LINE, getDefaultAsBoolean(WRAP_STATEMENTS_ON_THE_LINE));
     }
@@ -610,6 +641,10 @@ public final class CodeStyle {
 
     public boolean preferMultipleUseStatementsCombined() {
         return preferences.getBoolean(PREFER_MULTIPLE_USE_STATEMENTS_COMBINED, getDefaultAsBoolean(PREFER_MULTIPLE_USE_STATEMENTS_COMBINED));
+    }
+
+    public boolean preferGroupUses() {
+        return preferences.getBoolean(PREFER_GROUP_USES, getDefaultAsBoolean(PREFER_GROUP_USES));
     }
 
     public boolean startUseWithNamespaceSeparator() {

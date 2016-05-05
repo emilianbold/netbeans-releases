@@ -45,7 +45,14 @@
 package org.netbeans.api.editor;
 
 import javax.swing.Action;
+import javax.swing.text.Caret;
+import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
+import javax.swing.undo.UndoableEdit;
+import org.netbeans.api.editor.document.AtomicLockDocument;
+import org.netbeans.api.editor.document.CustomUndoDocument;
+import org.netbeans.api.editor.document.LineDocumentUtils;
+import org.netbeans.modules.editor.lib2.CaretUndo;
 import org.netbeans.modules.editor.lib2.actions.EditorActionUtilities;
 
 
@@ -81,6 +88,39 @@ public final class EditorUtilities {
     public static Action getAction(EditorKit editorKit, String actionName) {
         return EditorActionUtilities.getAction(editorKit, actionName);
     }
+
+    /**
+     * Add an undoable edit describing current state of caret(s) during document's atomic section.
+     * <br>
+     * This method is typically called at the beginning of the atomic section over the document
+     * so that a subsequent undo would restore original caret offsets that were not yet modified
+     * by the actual changes performed during the atomic section.
+     * <br>
+     * The method may also be called at the end of the atomic section
+     * in case the atomic section performed explicit caret movements.
+     * <br>
+     * The created undoable edit will be added to document's compound undoable edit created for the atomic section.
+     * That edit will be fired by the document to an undo manager's listener upon completion of the atomic section.
+     * Therefore the document should adhere to {@link CustomUndoDocument} otherwise the method would do nothing.
+     *
+     * @param doc document to which the created undoable edit will be added.
+     *   Null may be passed then the method has no effect.
+     * @param caret non-null caret which state should be stored
+     * @see CustomUndoDocument
+     * @see AtomicLockDocument
+     * @throws IllegalStateException if this method is called outside of an atomic section.
+     * @since 2.11
+     */
+    public static void addCaretUndoableEdit(Document doc, Caret caret) {
+        CustomUndoDocument customUndoDocument = LineDocumentUtils.as(doc, CustomUndoDocument.class);
+        if (customUndoDocument != null) {
+            UndoableEdit caretUndoEdit = CaretUndo.createCaretUndoEdit(caret, doc);
+            if (caretUndoEdit != null) {
+                customUndoDocument.addUndoableEdit(caretUndoEdit);
+            } // Might be null if caret is not installed in a text component and its document
+        }
+    }
+    
 
 //    /**
 //     * Reset caret's magic position.

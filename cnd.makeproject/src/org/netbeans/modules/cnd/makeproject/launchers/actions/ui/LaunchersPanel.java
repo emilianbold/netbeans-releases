@@ -42,42 +42,49 @@
 package org.netbeans.modules.cnd.makeproject.launchers.actions.ui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.RenderingHints;
-import java.awt.image.BufferedImage;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.prefs.Preferences;
+import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableCellEditor;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.launchers.actions.ui.LaunchersConfig.LauncherConfig;
 import org.netbeans.modules.cnd.makeproject.runprofiles.ui.ListTableModel;
+import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeContext;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.ListView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Alexander Simon
  */
-public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Provider {
+public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, MakeContext.Savable {
 
     private final ExplorerManager manager = new ExplorerManager();
     private final SelectionChangeListener listener = new SelectionChangeListener();
@@ -89,15 +96,39 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
     private final JTable envVarTable;
     final ListView h_list;
     private boolean modified = false;
+    private volatile boolean resetFields = true;
+    private final Preferences panelPreferences = NbPreferences.forModule(getClass()).node("launchers"); // NOI18N
+
 
     /**
      * Creates new form LaunchersPanel
      */
-    public LaunchersPanel(Project project) {
-        setPreferredSize(new Dimension(600, 400));
+    public LaunchersPanel(Project project, final boolean standAloneDialog) {
+        if (standAloneDialog) {
+            setPreferredSize(new Dimension(panelPreferences.getInt("dialogSizeW", 640), // NOI18N
+                                           panelPreferences.getInt("dialogSizeH", 450))); // NOI18N
+        } else {
+            setPreferredSize(new Dimension(640, 450));
+        }
         setMinimumSize(new Dimension(400, 200));
         initComponents();
-        
+        addHierarchyListener(new HierarchyListener() {
+            @Override
+            public void hierarchyChanged(HierarchyEvent e) {
+                if (e.getChangeFlags() == HierarchyEvent.SHOWING_CHANGED) {
+                    if (!e.getChanged().isVisible()){
+                        if (standAloneDialog) {
+                            panelPreferences.putInt("dialogSizeW", getSize().width); // NOI18N
+                            panelPreferences.putInt("dialogSizeH", getSize().height); // NOI18N
+                        }
+                        if (selectedConfiguration != null) {
+                            int index = launchers.indexOf(selectedConfiguration);
+                            panelPreferences.putInt("lastSelecion", index); // NOI18N
+                        }
+                    }
+                }
+            }
+        });
         envVarModel = new ListTableModel(NbBundle.getMessage(LaunchersPanel.class, "EnvName"),
                                  NbBundle.getMessage(LaunchersPanel.class, "EnvValue"));
 	envVarTable = new JTable(envVarModel);
@@ -113,17 +144,50 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
         manager.addPropertyChangeListener(listener);
         instance = new LaunchersConfig(project);
         instance.load();
-        for(Map.Entry<Integer, LauncherConfig> e : instance.getLoanchers().entrySet()) {
-            launchers.add(e.getValue());
-        }
+        launchers.addAll(instance.getLaunchers());
         nodes = new LaunchersNodes(launchers);
         h_list = new ListView();
         h_list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         LauncersListPanel.add(h_list, BorderLayout.CENTER);
         update();
+        final ActionListener actionListener = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!resetFields) {
+                    updateListViewItem();
+                }
+            }
+        };
+        publicCheckBox.addActionListener(actionListener);
+        hideCheckBox.addActionListener(actionListener);
+        final DocumentListener documentListener = new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                if (!resetFields) {
+                    updateListViewItem();
+                }
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                if (!resetFields) {
+                    updateListViewItem();
+                }
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                if (!resetFields) {
+                    updateListViewItem();
+                }
+            }
+        };
+        launcherNameTextField.getDocument().addDocumentListener(documentListener);
+        runTextField.getDocument().addDocumentListener(documentListener);
     }
 
-    public void saveConfigs() {
+    @Override
+    public void save() {
         updateSelectedConfiguration();
         if (modified) {
             instance.save(launchers);
@@ -142,8 +206,16 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
 
         if (sc == null) {
             if (nodes.getNodesCount() > 0) {
+                int index = panelPreferences.getInt("lastSelecion", -1); // NOI18N
+                if (index < 0) {
+                    index = 0;
+                } else {
+                    if (index >= nodes.getNodesCount()) {
+                        index = 0;
+                    }
+                }
                 try {
-                    manager.setSelectedNodes(new Node[]{nodes.getNodeAt(0)});
+                    manager.setSelectedNodes(new Node[]{nodes.getNodeAt(index)});
                 } catch (PropertyVetoException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -181,14 +253,19 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
         }
     }
 
+    private String getString(String s) {
+        return s.trim().replace('\n', ' ').replace('\t', ' ');
+    }
+
     private void updateSelectedConfiguration() {
         if (selectedConfiguration != null) {
             selectedConfiguration.setName(launcherNameTextField.getText().trim());
-            selectedConfiguration.setCommand(runTextField.getText().trim());
+            selectedConfiguration.setCommand(getString(runTextField.getText()));
             selectedConfiguration.setBuildCommand(buildTextField.getText().trim());
             selectedConfiguration.setRunDir(runDirTextField.getText().trim());
             selectedConfiguration.setSymbolFiles(symbolsTextField.getText().trim());
             selectedConfiguration.setPublic(publicCheckBox.isSelected());
+            selectedConfiguration.setHide(hideCheckBox.isSelected());
             if (envVarTable.isEditing()) {
                 TableCellEditor cellEditor = envVarTable.getCellEditor();
                 if (cellEditor != null) {
@@ -212,26 +289,34 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
             if ( selectedConfiguration.getEnv().size() != newContent.size()) {
                modified = true;
             } else {
-                modified |= selectedConfiguration.getEnv().equals(newContent);
+                modified |= !selectedConfiguration.getEnv().equals(newContent);
             }
             selectedConfiguration.getEnv().clear();
             selectedConfiguration.getEnv().putAll(newContent);
             modified |= selectedConfiguration.isModified();
-            Node[] selectedNodes = manager.getSelectedNodes();
-            if (selectedNodes.length == 1 && selectedNodes[0] instanceof LauncherNode) {
-               LauncherNode node = ((LauncherNode) selectedNodes[0]);
-               node.updateNode();
-            }
+            updateListViewItem();
         }
     }
 
+    private void updateListViewItem() {
+        if (selectedConfiguration != null) {
+            Node[] selectedNodes = manager.getSelectedNodes();
+            if (selectedNodes.length == 1 && selectedNodes[0] instanceof LauncherNode) {
+                LauncherNode node = ((LauncherNode) selectedNodes[0]);
+                if (selectedConfiguration == node.getConfiguration()) {
+                    node.updateNode(launcherNameTextField.getText().trim(), getString(runTextField.getText()),
+                            publicCheckBox.isSelected(), hideCheckBox.isSelected());
+                }
+            }
+        }
+    }
     private void enableControls() {
         boolean b = selectedConfiguration != null;
         boolean c = true;
         boolean top = true;
         boolean bottom = true;
         if (b) {
-            c = selectedConfiguration.getID() > 0;
+            c = selectedConfiguration.getID() >= 0;
             int index = launchers.indexOf(selectedConfiguration);
             if (index > 1) {
                 bottom = index == launchers.size()-1;
@@ -246,6 +331,7 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
         runTextField.setEnabled(b && c);
         buildTextField.setEnabled(b && c);
         publicCheckBox.setEnabled(b && c);
+        hideCheckBox.setEnabled(b && c);
         runDirTextField.setEnabled(b);
         symbolsTextField.setEnabled(b);
         addEnvButton.setEnabled(b);
@@ -272,7 +358,6 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
         launcherNameLabel = new javax.swing.JLabel();
         launcherNameTextField = new javax.swing.JTextField();
         runLabel = new javax.swing.JLabel();
-        runTextField = new javax.swing.JTextField();
         buildLabel = new javax.swing.JLabel();
         buildTextField = new javax.swing.JTextField();
         runDirLabel = new javax.swing.JLabel();
@@ -284,7 +369,11 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
         addEnvButton = new javax.swing.JButton();
         removeEnvButton = new javax.swing.JButton();
         publicCheckBox = new javax.swing.JCheckBox();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        runTextField = new javax.swing.JTextArea();
+        hideCheckBox = new javax.swing.JCheckBox();
 
+        launchersListLabel.setLabelFor(LauncersListPanel);
         org.openide.awt.Mnemonics.setLocalizedText(launchersListLabel, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.launchersListLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.addButton.text")); // NOI18N
@@ -370,26 +459,34 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
 
         launcherNameLabel.setLabelFor(launcherNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(launcherNameLabel, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.launcherNameLabel.text")); // NOI18N
+        launcherNameLabel.setToolTipText(org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LauncherDisplayNameToolTip")); // NOI18N
 
         launcherNameTextField.setMaximumSize(new java.awt.Dimension(300, 2147483647));
 
+        runLabel.setLabelFor(runTextField);
         org.openide.awt.Mnemonics.setLocalizedText(runLabel, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.runLabel.text")); // NOI18N
 
-        runTextField.setMaximumSize(new java.awt.Dimension(300, 2147483647));
-
+        buildLabel.setLabelFor(buildTextField);
         org.openide.awt.Mnemonics.setLocalizedText(buildLabel, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.buildLabel.text")); // NOI18N
+        buildLabel.setToolTipText(org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "BuildCommandToolTip")); // NOI18N
 
         buildTextField.setMaximumSize(new java.awt.Dimension(300, 2147483647));
 
+        runDirLabel.setLabelFor(runDirTextField);
         org.openide.awt.Mnemonics.setLocalizedText(runDirLabel, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.runDirLabel.text")); // NOI18N
+        runDirLabel.setToolTipText(org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "RunDirectoryToolTip")); // NOI18N
 
         runDirTextField.setMaximumSize(new java.awt.Dimension(300, 2147483647));
 
+        symbolLabel.setLabelFor(symbolsTextField);
         org.openide.awt.Mnemonics.setLocalizedText(symbolLabel, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.symbolLabel.text")); // NOI18N
+        symbolLabel.setToolTipText(org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "SymbolFilesToolTip")); // NOI18N
 
         symbolsTextField.setMaximumSize(new java.awt.Dimension(300, 2147483647));
 
+        envLabel.setLabelFor(envVarScrollPane);
         org.openide.awt.Mnemonics.setLocalizedText(envLabel, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.envLabel.text")); // NOI18N
+        envLabel.setToolTipText(org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "EnvToolTip")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(addEnvButton, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.addEnvButton.text")); // NOI18N
         addEnvButton.addActionListener(new java.awt.event.ActionListener() {
@@ -406,6 +503,17 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(publicCheckBox, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.publicCheckBox.text")); // NOI18N
+        publicCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "PublicToolTip")); // NOI18N
+
+        runTextField.setColumns(20);
+        runTextField.setLineWrap(true);
+        runTextField.setRows(5);
+        runTextField.setWrapStyleWord(true);
+        runTextField.setMinimumSize(new java.awt.Dimension(360, 17));
+        jScrollPane1.setViewportView(runTextField);
+
+        org.openide.awt.Mnemonics.setLocalizedText(hideCheckBox, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.hideCheckBox.text")); // NOI18N
+        hideCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "HideTooltip")); // NOI18N
 
         javax.swing.GroupLayout rightPanelLayout = new javax.swing.GroupLayout(rightPanel);
         rightPanel.setLayout(rightPanelLayout);
@@ -414,6 +522,7 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
             .addGroup(rightPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 603, Short.MAX_VALUE)
                     .addComponent(envVarScrollPane, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(rightPanelLayout.createSequentialGroup()
                         .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -422,22 +531,23 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
                             .addComponent(runDirLabel)
                             .addComponent(symbolLabel)
                             .addComponent(launcherNameLabel))
-                        .addGap(21, 21, 21)
-                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(runDirTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(buildTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(runTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(launcherNameTextField, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(symbolsTextField, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(launcherNameTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addGroup(rightPanelLayout.createSequentialGroup()
-                        .addComponent(envLabel)
-                        .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(runDirTextField, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(buildTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(rightPanelLayout.createSequentialGroup()
                         .addComponent(publicCheckBox)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 240, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(addEnvButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(removeEnvButton)))
+                        .addComponent(removeEnvButton))
+                    .addGroup(rightPanelLayout.createSequentialGroup()
+                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(hideCheckBox)
+                            .addComponent(envLabel))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         rightPanelLayout.setVerticalGroup(
@@ -448,9 +558,9 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
                     .addComponent(launcherNameLabel)
                     .addComponent(launcherNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(runTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(runLabel))
+                .addComponent(runLabel)
+                .addGap(3, 3, 3)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(buildLabel)
@@ -459,19 +569,22 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
                 .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(runDirLabel)
                     .addComponent(runDirTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(10, 10, 10)
                 .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(symbolLabel)
                     .addComponent(symbolsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(envLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(envVarScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 245, Short.MAX_VALUE)
+                .addComponent(envVarScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(addEnvButton)
                     .addComponent(removeEnvButton)
-                    .addComponent(publicCheckBox)))
+                    .addComponent(publicCheckBox))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(hideCheckBox)
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -492,7 +605,14 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         updateSelectedConfiguration();
-        LauncherConfig newConfiguration = new LauncherConfig(1000, true);
+        int max = 1000;
+        for(LauncherConfig cfg : launchers) {
+            if (cfg.getID() >= max) {
+                max = (cfg.getID() + 1000) / 1000;
+                max = max *1000;
+            }
+        }
+        LauncherConfig newConfiguration = new LauncherConfig(max, true);
         launchers.add(newConfiguration);
         nodes.restKeys();
         selectNode(newConfiguration);
@@ -541,7 +661,14 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
 
     private void copyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_copyButtonActionPerformed
         updateSelectedConfiguration();
-        LauncherConfig newConfiguration = getSelectedConfiguration().copy();
+        int max = 1000;
+        for(LauncherConfig cfg : launchers) {
+            if (cfg.getID() >= max) {
+                max = (cfg.getID() + 1000) / 1000;
+                max = max *1000;
+            }
+        }
+        LauncherConfig newConfiguration = getSelectedConfiguration().copy(max);
         launchers.add(newConfiguration);
         nodes.restKeys();
         selectNode(newConfiguration);
@@ -555,6 +682,18 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
             final LauncherConfig current = getSelectedConfiguration();
             int curIndex = launchers.indexOf(current);
             LauncherConfig prev = launchers.get(curIndex-1);
+            if (curIndex-2 > 0) {
+                 LauncherConfig prevPrev = launchers.get(curIndex-2);
+                 int prevIndex = prev.getID();
+                 int prevPrevIndex = prevPrev.getID();
+                 if (prevPrevIndex < prevIndex) {
+                     int candidate = (prevPrevIndex + prevIndex) / 2;
+                     if (prevPrevIndex < candidate && candidate < prevIndex) {
+                         // set middle index to avoid full renumeration
+                         current.setID(candidate);
+                     }
+                 }
+            }
             launchers.set(curIndex, prev);
             launchers.set(curIndex-1, current);
             nodes.restKeys();
@@ -595,6 +734,21 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
             final LauncherConfig current = getSelectedConfiguration();
             int curIndex = launchers.indexOf(current);
             LauncherConfig next = launchers.get(curIndex+1);
+            if (curIndex+2 < launchers.size()) {
+                LauncherConfig nextNext = launchers.get(curIndex+2);
+                int nextIndex = next.getID();
+                int nextNextIndex = nextNext.getID();
+                if (nextIndex < nextNextIndex) {
+                    int catndidate = (nextIndex + nextNextIndex) / 2;
+                    if (nextIndex < catndidate && catndidate  < nextNextIndex) {
+                        current.setID(catndidate);
+                    }
+                }
+            } else {
+                int candidate = (next.getID()+1000) / 1000;
+
+                current.setID(candidate * 1000);
+            }
             launchers.set(curIndex, next);
             launchers.set(curIndex+1, current);
             nodes.restKeys();
@@ -654,6 +808,8 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
     private javax.swing.JButton downButton;
     private javax.swing.JLabel envLabel;
     private javax.swing.JScrollPane envVarScrollPane;
+    private javax.swing.JCheckBox hideCheckBox;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel launcherNameLabel;
     private javax.swing.JTextField launcherNameTextField;
     private javax.swing.JLabel launchersListLabel;
@@ -665,12 +821,13 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
     private javax.swing.JLabel runDirLabel;
     private javax.swing.JTextField runDirTextField;
     private javax.swing.JLabel runLabel;
-    private javax.swing.JTextField runTextField;
+    private javax.swing.JTextArea runTextField;
     private javax.swing.JLabel symbolLabel;
     private javax.swing.JTextField symbolsTextField;
     private javax.swing.JButton upButton;
     // End of variables declaration//GEN-END:variables
 
+    
     private final class SelectionChangeListener implements PropertyChangeListener {
 
         @Override
@@ -678,7 +835,9 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
             if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
                 updateSelectedConfiguration();
                 selectedConfiguration = getSelectedConfiguration();
+                resetFields = true;
                 setContent(selectedConfiguration);
+                resetFields = false;
                 enableControls();
             }
         }
@@ -686,10 +845,12 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
         private void setContent(LauncherConfig cfg) {
             launcherNameTextField.setText(cfg == null ? null : cfg.getName());
             runTextField.setText(cfg == null ? null : cfg.getCommand());
+            runTextField.setCaretPosition(0);
             runDirTextField.setText(cfg == null ? null : cfg.getRunDir());
             buildTextField.setText(cfg == null ? null : cfg.getBuildCommand());
             symbolsTextField.setText(cfg == null ? null : cfg.getSymbolFiles());
             publicCheckBox.setSelected(cfg == null ? false : cfg.getPublic());
+            hideCheckBox.setSelected(cfg == null ? false : (cfg.isHide() || (cfg.getID() < 0)));
 	    ArrayList<String> col0 = new ArrayList<>();
 	    ArrayList<String> col1 = new ArrayList<>();
             int n;
@@ -727,31 +888,34 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
 
     public static class LauncherNode extends AbstractNode {
 
-        private BufferedImage icon;
+        private Image icon;
         private static JTextField test = new JTextField();
+        private String name;
+        private String command;
+        private boolean pub;
+        private boolean hide;
+        private int id;
+
 
         public LauncherNode(LauncherConfig cfg) {
             super(Children.LEAF, Lookups.fixed(cfg));
-            updateIcon(cfg);
+            name = cfg.getDisplayedName();
+            hide = cfg.isHide();
+            command = cfg.getCommand();
+            pub = cfg.getPublic();
+            id = cfg.getID();
+            updateIcon();
         }
 
-        private void updateIcon(LauncherConfig cfg) {
-            icon = new BufferedImage(15, 15, BufferedImage.TYPE_INT_ARGB);
-
-            Graphics2D g = (Graphics2D) icon.getGraphics();
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            if (cfg.getPublic()) {
-                g.setColor(Color.RED);
+        private void updateIcon() {
+            final String resources = "org/netbeans/modules/cnd/makeproject/launchers/resources/"; // NOI18N
+            String iconFile;
+            if (id >= 0) {
+                iconFile = pub ? "launcher_public.png" : "launcher_private.png"; // NOI18N
             } else {
-                g.setColor(Color.BLUE);
+                iconFile = pub ? "common_public.png" : "common_private.png"; // NOI18N
             }
-            if (cfg.getID() > 0) {
-                g.fillOval(7, 4, 5, 5);
-            } else {
-                g.fillOval(4, 1, 11, 11);
-                g.setColor(test.getBackground());
-                g.fillOval(7, 4, 5, 5);
-            }
+            icon = ImageUtilities.icon2Image(ImageUtilities.loadImageIcon(resources + iconFile, false));
         }
 
         public LauncherConfig getConfiguration() {
@@ -764,9 +928,13 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
         }
 
         // TODO: How to make this correctly?
-        public void updateNode() {
+        public void updateNode(String name, String command, boolean pub, boolean hide) {
+            this.name = name;
+            this.command = command;
+            this.pub = pub;
+            this.hide = hide;
             fireDisplayNameChange(null, getDisplayName());
-            updateIcon(getConfiguration());
+            updateIcon();
             fireIconChange();
         }
 
@@ -776,15 +944,23 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
         }
 
         @Override
+        public String getHtmlDisplayName() {
+            if (hide || id < 0) {
+                return "<font color='!textInactiveText'>" + getDisplayName()+"</font>"; // NOI18N
+            }
+            return super.getHtmlDisplayName();
+        }
+
+        @Override
         public String getDisplayName() {
-            if (getConfiguration().getID() <= 0) {
+            if (id < 0) {
                 return NbBundle.getMessage(LaunchersPanel.class, "COMMON_PROPERTIES");
             } else {
-                String name = getConfiguration().getName();
-                if (name == null || name.isEmpty()) {
-                    name = getConfiguration().getCommand();
+                String res = name;
+                if (res == null || res.isEmpty()) {
+                    res = command;
                 }
-                return name;
+                return res;
             }
         }
 
@@ -793,4 +969,5 @@ public class LaunchersPanel extends java.awt.Panel implements ExplorerManager.Pr
             return getDisplayName();
         }
     }
+    
 }

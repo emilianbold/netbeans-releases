@@ -247,6 +247,12 @@ import javax.swing.text.Keymap;
  * </ul>
  */
 public class Term extends JComponent implements Accessible {
+    public static class ExternalCommandsConstants {
+        public static final String EXECUTION_ENV_PROPERTY_KEY = "ExecutionEnvironment_KEY"; //NOI18N
+
+        public static final String COMMAND_PREFIX = "ext[::] "; //NOI18N
+        public static final String IDE_OPEN = "ideopen"; //NOI18N
+    }
 
     private State st = new State();
     private Sel sel = new Sel(this, st);
@@ -659,6 +665,12 @@ public class Term extends JComponent implements Accessible {
     private void fireCwdChanged(String cwd) {
         for (TermListener l : listeners) {
             l.cwdChanged(cwd);
+        }
+    }
+    
+    private void fireExternalCommand(String command) {
+        for (TermListener l : listeners) {
+            l.externalToolCalled(command);
         }
     }
     
@@ -4098,6 +4110,15 @@ public class Term extends JComponent implements Accessible {
                 System.out.println("op_cwd(" + currentWorkingDirectory + ")"); // NOI18N
             }
         }
+        
+        @Override
+        public void op_ext(String command) {
+            fireExternalCommand(command);
+            if (debugOps()) {
+                System.out.println("op_ext(" + command + ")"); // NOI18N
+            }
+        }
+
 
         @Override
         public void op_setG(int gx, int fx) {

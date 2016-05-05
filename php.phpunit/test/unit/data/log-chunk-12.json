@@ -1,0 +1,26 @@
+alculator2Test",
+    "test": "Calculator2Test::testDivide2",
+    "status": "pass",
+    "time": 0.010080099105835,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testStart",
+    "suite": "Calculator2Test",
+    "test": "Calculator2Test::testDivide3"
+}{
+    "event": "test",
+    "suite": "Calculator2Test",
+    "test": "Calculator2Test::testDivide3",
+    "status": "pass",
+    "time": 0.010259866714478,
+    "trace": [
+
+    ],
+    "message": "",
+    "output": ""
+}{
+    "event": "testSt

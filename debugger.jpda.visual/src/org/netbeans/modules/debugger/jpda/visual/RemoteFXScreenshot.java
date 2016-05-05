@@ -78,6 +78,13 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ClassTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.visual.RemoteServices.ServiceType;
 import org.netbeans.modules.debugger.jpda.visual.actions.ComponentBreakpointActionProvider;
@@ -452,31 +459,29 @@ public class RemoteFXScreenshot {
 
     
     private static ReferenceType getType(VirtualMachine vm, ThreadReference tr, String name) {
-        List<ReferenceType> classList = vm.classesByName(name);
+        List<ReferenceType> classList = VirtualMachineWrapper.classesByName0(vm, name);
         if (!classList.isEmpty()) {
             return classList.iterator().next();
         }
-        List<ReferenceType> classClassList = vm.classesByName("java.lang.Class"); // NOI18N
+        List<ReferenceType> classClassList = VirtualMachineWrapper.classesByName0(vm, "java.lang.Class"); // NOI18N
         if (classClassList.isEmpty()) {
             throw new IllegalStateException("Cannot load class Class"); // NOI18N
         }
 
         ClassType cls = (ClassType) classClassList.iterator().next();
-        Method m = cls.concreteMethodByName("forName", "(Ljava/lang/String;)Ljava/lang/Class;"); // NOI18N
-        StringReference mirrorOfName = vm.mirrorOf(name);
         try {
-            cls.invokeMethod(tr, m, Collections.singletonList(mirrorOfName), ObjectReference.INVOKE_SINGLE_THREADED);
-            List<ReferenceType> classList2 = vm.classesByName(name);
+            Method m = ClassTypeWrapper.concreteMethodByName(cls, "forName", "(Ljava/lang/String;)Ljava/lang/Class;"); // NOI18N
+            StringReference mirrorOfName = VirtualMachineWrapper.mirrorOf(vm, name);
+            ClassTypeWrapper.invokeMethod(cls, tr, m, Collections.singletonList(mirrorOfName), ObjectReference.INVOKE_SINGLE_THREADED);
+            List<ReferenceType> classList2 = VirtualMachineWrapper.classesByName0(vm, name);
             if (!classList2.isEmpty()) {
                 return classList2.iterator().next();
             }
-        } catch (InvalidTypeException ex) {
-            logger.log(Level.FINE, "Cannot load class " + name, ex); // NOI18N
-        } catch (ClassNotLoadedException ex) {
-            logger.log(Level.FINE, "Cannot load class " + name, ex); // NOI18N
-        } catch (IncompatibleThreadStateException ex) {
-            logger.log(Level.FINE, "Cannot load class " + name, ex); // NOI18N
-        } catch (InvocationException ex) {
+        } catch (ClassNotLoadedException | ClassNotPreparedExceptionWrapper |
+                 IncompatibleThreadStateException | InvalidTypeException |
+                 InvocationException | InternalExceptionWrapper |
+                 ObjectCollectedExceptionWrapper | UnsupportedOperationExceptionWrapper |
+                 VMDisconnectedExceptionWrapper ex) {
             logger.log(Level.FINE, "Cannot load class " + name, ex); // NOI18N
         }
         

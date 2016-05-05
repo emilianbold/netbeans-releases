@@ -78,6 +78,18 @@ public class PHPFormatterWrappingTest extends PHPFormatterTestBase {
         reformatFileContents("testfiles/formatting/wrapping/methodCallArg05.php", options);
     }
 
+    public void testWrapMethodCallArgWithAnonymousClass01() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_METHOD_CALL_ARGS, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatting/wrapping/methodCallArgWithAnonymousClass01.php", options);
+    }
+
+    public void testWrapMethodCallArgWithAnonymousClass02() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_METHOD_CALL_ARGS, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatting/wrapping/methodCallArgWithAnonymousClass02.php", options);
+    }
+
     public void testWrapMethodParams01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.WRAP_METHOD_PARAMS, CodeStyle.WrapStyle.WRAP_ALWAYS);
@@ -744,5 +756,195 @@ public class PHPFormatterWrappingTest extends PHPFormatterTestBase {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.WRAP_ARRAY_INIT, CodeStyle.WrapStyle.WRAP_ALWAYS);
         reformatFileContents("testfiles/formatting/wrapping/issue233527_04.php", options);
+    }
+
+    public void testWrapGroupUseList_01() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_NEVER);
+        options.put(FmtOptions.WRAP_GROUP_USE_BRACES, false);
+        reformatFileContents("testfiles/formatting/wrapping/groupUseList01.php", options);
+    }
+
+    public void testWrapGroupUseList_02() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        options.put(FmtOptions.WRAP_GROUP_USE_BRACES, false);
+        reformatFileContents("testfiles/formatting/wrapping/groupUseList02.php", options);
+    }
+
+    public void testWrapGroupUseList_03() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        options.put(FmtOptions.WRAP_GROUP_USE_BRACES, false);
+        reformatFileContents("testfiles/formatting/wrapping/groupUseList03.php", options);
+    }
+
+    public void testWrapGroupUseListWithComments_01() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_NEVER);
+        options.put(FmtOptions.WRAP_GROUP_USE_BRACES, false);
+        reformatFileContents("testfiles/formatting/wrapping/groupUseListWithComments01.php", options);
+    }
+
+    public void testWrapGroupUseListWithComments_02() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        options.put(FmtOptions.WRAP_GROUP_USE_BRACES, false);
+        reformatFileContents("testfiles/formatting/wrapping/groupUseListWithComments02.php", options);
+    }
+
+    public void testWrapGroupUseListWithComments_03() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        options.put(FmtOptions.WRAP_GROUP_USE_BRACES, false);
+        reformatFileContents("testfiles/formatting/wrapping/groupUseListWithComments03.php", options);
+    }
+
+    public void testWrapGroupUseBraces_01() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_NEVER);
+        options.put(FmtOptions.WRAP_GROUP_USE_BRACES, true);
+        reformatFileContents("testfiles/formatting/wrapping/groupUseBraces01.php", options);
+    }
+
+    public void testWrapGroupUseBraces_02() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        options.put(FmtOptions.WRAP_GROUP_USE_BRACES, true);
+        reformatFileContents("testfiles/formatting/wrapping/groupUseBraces02.php", options);
+    }
+
+    public void testWrapGroupUseBraces_03() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        options.put(FmtOptions.WRAP_GROUP_USE_BRACES, true);
+        reformatFileContents("testfiles/formatting/wrapping/groupUseBraces03.php", options);
+    }
+
+    // #259031
+    public void testWrapSelectedGroupUseListNever_01() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatting/wrapping/selectedGroupUseListNever01.php", options);
+    }
+
+    public void testWrapSelectedGroupUseListNever_02() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatting/wrapping/selectedGroupUseListNever02.php", options);
+    }
+
+    public void testWrapSelectedGroupUseListNever_03() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatting/wrapping/selectedGroupUseListNever03.php", options);
+    }
+
+    public void testWrapSelectedGroupUseListNever_04() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatting/wrapping/selectedGroupUseListNever04.php", options);
+    }
+
+    public void testWrapSelectedGroupUseListNever_05() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatting/wrapping/selectedGroupUseListNever05.php", options);
+    }
+
+    public void testWrapSelectedGroupUseListNever_06() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatting/wrapping/selectedGroupUseListNever06.php", options);
+    }
+
+    public void testWrapSelectedGroupUseListNever_07() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatting/wrapping/selectedGroupUseListNever07.php", options);
+    }
+
+    public void testWrapSelectedGroupUseListIfLong_01() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatting/wrapping/selectedGroupUseListIfLong01.php", options);
+    }
+
+    public void testWrapSelectedGroupUseListIfLong_02() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatting/wrapping/selectedGroupUseListIfLong02.php", options);
+    }
+
+    public void testWrapSelectedGroupUseListIfLong_03() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatting/wrapping/selectedGroupUseListIfLong03.php", options);
+    }
+
+    public void testWrapSelectedGroupUseListIfLong_04() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatting/wrapping/selectedGroupUseListIfLong04.php", options);
+    }
+
+    public void testWrapSelectedGroupUseListIfLong_05() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatting/wrapping/selectedGroupUseListIfLong05.php", options);
+    }
+
+    public void testWrapSelectedGroupUseListIfLong_06() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatting/wrapping/selectedGroupUseListIfLong06.php", options);
+    }
+
+    public void testWrapSelectedGroupUseListIfLong_07() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatting/wrapping/selectedGroupUseListIfLong07.php", options);
+    }
+
+    public void testWrapSelectedGroupUseListAlways_01() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatting/wrapping/selectedGroupUseListAlways01.php", options);
+    }
+
+    public void testWrapSelectedGroupUseListAlways_02() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatting/wrapping/selectedGroupUseListAlways02.php", options);
+    }
+
+    public void testWrapSelectedGroupUseListAlways_03() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatting/wrapping/selectedGroupUseListAlways03.php", options);
+    }
+
+    public void testWrapSelectedGroupUseListAlways_04() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatting/wrapping/selectedGroupUseListAlways04.php", options);
+    }
+
+    public void testWrapSelectedGroupUseListAlways_05() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatting/wrapping/selectedGroupUseListAlways05.php", options);
+    }
+
+    public void testWrapSelectedGroupUseListAlways_06() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatting/wrapping/selectedGroupUseListAlways06.php", options);
+    }
+
+    public void testWrapSelectedGroupUseListAlways_07() throws Exception {
+        HashMap<String, Object> options = new HashMap<>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_GROUP_USE_LIST, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatting/wrapping/selectedGroupUseListAlways07.php", options);
     }
 }

@@ -4,3 +4,7 @@ use \A\{|
 ------------------------------------
 PACKAGE    B                               [PUBLIC]   A
 CLASS      ClsA                            [PUBLIC]   A
+CLASS      ClsA                            [PUBLIC]   A
+CLASS      ClsAB                           [PUBLIC]   A
+CLASS      ClsUnused                       [PUBLIC]   A
+CLASS      MyCls                           [PUBLIC]   A
