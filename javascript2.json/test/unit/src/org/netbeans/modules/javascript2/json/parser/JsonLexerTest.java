@@ -110,6 +110,19 @@ public class JsonLexerTest extends NbTestCase {
         ml.assertErrorCount(2);
     }
 
+    public void testMultiLineString2() throws Exception {
+        final String testCase = "{\"a\":\"1\\g2\"}"; //NOI18N
+        final List<String> expected = Arrays.asList("{","\"a\"",":","}");   //NOI18N
+        final ANTLRInputStream in = new ANTLRInputStream(testCase);
+        final JsonLexer lexer = new JsonLexer(in, false, false);
+        final MockErrorListener ml = new MockErrorListener();
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(ml);
+        final List<String> result = lexer.getAllTokens().stream().map((t)->t.getText()).collect(Collectors.toList());
+        ml.assertErrorCount(1);
+        assertEquals(expected, result);
+    }
+
     private static final class MockErrorListener extends BaseErrorListener {
         private final Queue<RecognitionException> errors;
 

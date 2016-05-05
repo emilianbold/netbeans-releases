@@ -127,4 +127,26 @@ interface Recovery {
             }
         };
     }
+
+    @NonNull
+    public static Recovery createStringRecovery() {
+        return new Recovery() {
+            @Override
+            public boolean canRecover(CharStream in) {
+                return (in.LA(1) == '"');
+            }
+
+            @Override
+            public void recover(CharStream in, LexerATNSimulator interpreter) {
+                interpreter.consume(in);
+                int input;
+                do {
+                    input = in.LA(1);
+                    if (!isEOF(input)) {
+                        interpreter.consume(in);
+                    }
+                } while (input != '"' && input != '\n' && !isEOF(input));                //NOI18N
+            }
+        };
+    }
 }

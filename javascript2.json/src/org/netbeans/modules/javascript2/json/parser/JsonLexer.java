@@ -83,7 +83,8 @@ public class JsonLexer extends Lexer {
 
 	private static final Recovery[] RECOVERIES = {
 	    Recovery.createLineCommentRecovery(),
-	    Recovery.createCommentRecovery()
+	    Recovery.createCommentRecovery(),
+	    Recovery.createStringRecovery()
 	};
 
 	private boolean isCommentSupported;

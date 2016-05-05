@@ -109,9 +109,7 @@ public class JsonParserTest extends JsonTestBase {
                 //Todo: Consider to join antlr errors in String token
                 Arrays.asList(
                         "token recognition error at: '\"test\\x'",
-                        "token recognition error at: 'w'",
-                        "token recognition error at: '\" }'",
-                        "no viable alternative at input '<EOF>'"));
+                        "no viable alternative at input '}'"));
     }
 
     public void testStringLiteral3() throws Exception {
@@ -134,9 +132,7 @@ public class JsonParserTest extends JsonTestBase {
                 //Todo: Consider to join antlr errors in String token
                 Arrays.asList(
                         "token recognition error at: '\"test\\u000g'",
-                        "token recognition error at: 'w'",
-                        "token recognition error at: '\" }'",
-                        "no viable alternative at input '<EOF>'"
+                        "no viable alternative at input '}'"
                 ));
     }
 
@@ -150,9 +146,6 @@ public class JsonParserTest extends JsonTestBase {
                 //Todo: Consider to join antlr errors in String token
                 Arrays.asList(
                     "token recognition error at: '\"t\\''",
-                    "token recognition error at: 'e'",
-                    "token recognition error at: 's'",
-                    "token recognition error at: 't\"'",
                     "no viable alternative at input '}'"
                 ));
     }

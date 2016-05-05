@@ -64,7 +64,8 @@ public static final int ERRORS = 3;
 
 private static final Recovery[] RECOVERIES = {
     Recovery.createLineCommentRecovery(),
-    Recovery.createCommentRecovery()
+    Recovery.createCommentRecovery(),
+    Recovery.createStringRecovery()
 };
 
 private boolean isCommentSupported;
