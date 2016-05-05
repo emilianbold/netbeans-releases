@@ -59,13 +59,16 @@ public class DockerConnectionVisual extends javax.swing.JPanel implements Change
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
+    private final DockerConnectionPanel panel;
+
     private final Configuration configPanel;
 
     /**
      * Creates new form DockerWizardVisual
      */
-    public DockerConnectionVisual() {
+    public DockerConnectionVisual(DockerConnectionPanel panel) {
         initComponents();
+        this.panel = panel;
 
         if (DockerSupport.getDefault().isSocketSupported()) {
             configPanel = new ConfigurationLinuxPanel();
@@ -101,6 +104,8 @@ public class DockerConnectionVisual extends javax.swing.JPanel implements Change
 
     public void setWaitingState(boolean wait) {
         Component rootPane = getRootPane();
+        configPanel.setInputEnabled(!wait);
+        testButton.setEnabled(!wait);
         if (rootPane != null) {
             rootPane.setCursor(wait ? Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR) : null);
         }
@@ -124,22 +129,35 @@ public class DockerConnectionVisual extends javax.swing.JPanel implements Change
         mainPanel = new javax.swing.JPanel();
         southPanel = new javax.swing.JPanel();
         explanationLabel = new javax.swing.JLabel();
+        testButton = new javax.swing.JButton();
 
         mainPanel.setLayout(new java.awt.BorderLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(explanationLabel, org.openide.util.NbBundle.getMessage(DockerConnectionVisual.class, "DockerConnectionVisual.explanationLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(testButton, org.openide.util.NbBundle.getMessage(DockerConnectionVisual.class, "DockerConnectionVisual.testButton.text")); // NOI18N
+        testButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                testButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout southPanelLayout = new javax.swing.GroupLayout(southPanel);
         southPanel.setLayout(southPanelLayout);
         southPanelLayout.setHorizontalGroup(
             southPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(explanationLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
+            .addGroup(southPanelLayout.createSequentialGroup()
+                .addComponent(testButton)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         southPanelLayout.setVerticalGroup(
             southPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, southPanelLayout.createSequentialGroup()
-                .addComponent(explanationLabel)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addComponent(explanationLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(testButton)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -158,10 +176,15 @@ public class DockerConnectionVisual extends javax.swing.JPanel implements Change
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void testButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testButtonActionPerformed
+        panel.testConnection();
+    }//GEN-LAST:event_testButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel explanationLabel;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JPanel southPanel;
+    private javax.swing.JButton testButton;
     // End of variables declaration//GEN-END:variables
 }

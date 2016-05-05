@@ -196,7 +196,11 @@ class InterpProtoANSIX extends InterpProtoANSI {
                             return null;
                         String p3 = p2.substring(semix2+1);
                         p2 = p2.substring(0, semix2);
-                        ai.ops.op_hyperlink(p2, p3);
+                        if (p3.isEmpty() && p2.startsWith(Term.ExternalCommandsConstants.COMMAND_PREFIX)) { //NOI18N
+                            ai.ops.op_ext(p2);
+                        } else {
+                            ai.ops.op_hyperlink(p2, p3);
+                        }
                     }
                 }
 		return null;

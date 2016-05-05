@@ -390,16 +390,18 @@ public abstract class BaseDwarfProvider extends BaseProvider {
     }
     
     @Override
-    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage) {
+    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls,
+            List<String> buildArtifacts, Map<ItemProperties.LanguageKind,Map<String,Integer>> buildTools, CompileLineStorage storage) {
         FileSystem fs = BYNARY_FILESYSTEM_PROPERTY.getValue();
         if (fs == null || CndFileUtils.isLocalFileSystem(fs)) {
-            return getSourceFilePropertiesLocal(objFileName, map, project, dlls, buildArtifacts, storage);
+            return getSourceFilePropertiesLocal(objFileName, map, project, dlls, buildArtifacts, buildTools, storage);
         } else {
-            return getSourceFilePropertiesRemote(objFileName, map, project, dlls, buildArtifacts, storage);
+            return getSourceFilePropertiesRemote(objFileName, map, project, dlls, buildArtifacts, buildTools, storage);
         }
     }
 
-    private List<SourceFileProperties> getSourceFilePropertiesRemote(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage) {
+    private List<SourceFileProperties> getSourceFilePropertiesRemote(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls,
+            List<String> buildArtifacts, Map<ItemProperties.LanguageKind,Map<String,Integer>> buildTools, CompileLineStorage storage) {
         List<SourceFileProperties> list = new ArrayList<SourceFileProperties>();
         FileSystem fs = BYNARY_FILESYSTEM_PROPERTY.getValue();
         ExecutionEnvironment ee = FileSystemProvider.getExecutionEnvironment(fs);
@@ -429,7 +431,8 @@ public abstract class BaseDwarfProvider extends BaseProvider {
     }
     
     
-    private List<SourceFileProperties> getSourceFilePropertiesLocal(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls, List<String> buildArtifacts, CompileLineStorage storage) {
+    private List<SourceFileProperties> getSourceFilePropertiesLocal(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls,
+            List<String> buildArtifacts, Map<ItemProperties.LanguageKind,Map<String,Integer>> buildTools, CompileLineStorage storage) {
         List<SourceFileProperties> list = new ArrayList<SourceFileProperties>();
         Dwarf dump = null;
         try {

@@ -46,18 +46,32 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.lucene.search.BooleanQuery;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.maven.indexer.NexusRepositoryIndexerImpl;
-import org.netbeans.modules.maven.indexer.spi.*;
+import org.netbeans.modules.maven.indexer.ResultImpl;
+import org.netbeans.modules.maven.indexer.spi.ArchetypeQueries;
+import org.netbeans.modules.maven.indexer.spi.BaseQueries;
+import org.netbeans.modules.maven.indexer.spi.ChecksumQueries;
+import org.netbeans.modules.maven.indexer.spi.ClassUsageQuery;
+import org.netbeans.modules.maven.indexer.spi.ClassesQuery;
+import org.netbeans.modules.maven.indexer.spi.ContextLoadedQuery;
+import org.netbeans.modules.maven.indexer.spi.DependencyInfoQueries;
+import org.netbeans.modules.maven.indexer.spi.GenericFindQuery;
+import org.netbeans.modules.maven.indexer.spi.NullResultImpl;
+import org.netbeans.modules.maven.indexer.spi.ResultImplementation;
 import org.netbeans.modules.project.spi.intern.ProjectIDEServices;
 import org.openide.util.Lookup;
+import org.netbeans.modules.maven.indexer.spi.RepositoryIndexQueryProvider;
 
 /**
  * Searches Maven repositories in various ways.
@@ -71,176 +85,116 @@ public final class RepositoryQueries {
 
     /**
      * query result set
+     * @param <T>
      * @since 2.9
      */
     public final static class Result<T> {
-        private final List<RepositoryInfo> skipped = new ArrayList<RepositoryInfo>();
-        private List<T> results = new ArrayList<T>();
-        private final Redo<T> redoAction;
-        int totalResults = 0;
-        int returnedResults = 0;
+        private final ResultImplementation<T> impl;
         
         /**
-         * used internally by the repository indexing/searching engine(s)
+         * Creates a Result instance.
+         * @param impl 
          */
-        Result(Redo<T> redo) {
-            redoAction = redo;
+        public Result(ResultImplementation<T> impl) {
+            this.impl = impl;
         }
         
         /**
-         * returns true is one or more indexes were skipped, eg because the indexing was taking place.
+         * Returns true is one or more indexes were skipped, e.g. because the indexing was taking place.
          * @return 
          */
         public synchronized boolean isPartial() {
-            return !skipped.isEmpty();
+            return impl.isPartial();
         }
         
         /**
-         * used internally by the repository indexing/searching engine(s) to mark the result as partially skipped
-         */
-        synchronized void addSkipped(RepositoryInfo info) {
-            skipped.add(info);
-        }
-        
-        /**
-         * waits for currently unaccessible indexes to finish, not to be called in AWT thread.
+         * Waits for currently unaccessible indexes to finish, not to be called in AWT thread.
          */
         public void waitForSkipped() {
             assert !ProjectIDEServices.isEventDispatchThread();
-            redoAction.run(this);
-            synchronized (this) {
-                skipped.clear();
-            }
+            impl.waitForSkipped();
         }
         
-        synchronized void setResults(Collection<T> newResults) {
-            results.clear();
-            results.addAll(newResults);
-        }
-        
+        /**
+         * Returns a list of results
+         * @return 
+         */
         public synchronized List<T> getResults() {
-            return Collections.unmodifiableList(results);
-        }
-        
-        
-        /**
-         * used internally by the repository indexing/searching engine(s) to mark the result as partially skipped
-         */
-        synchronized void addSkipped(Collection<RepositoryInfo> infos) {
-            skipped.addAll(infos);
+            return impl.getResults();
         }
         
         /**
-         * used internally by the repository indexing/searching engine(s) to mark the result as partially skipped
-         */
-        synchronized List<RepositoryInfo> getSkipped() {
-            return Collections.unmodifiableList(skipped);
-        }
-        /**
-         * total number of hits
+         * Total number of hits
          * @return
          * @since 2.20
          */
         public int getTotalResultCount() {
-            return totalResults;
+            return impl.getTotalResultCount();
         }
 
-        void addTotalResultCount(int moreTotalResults) {
-            totalResults = totalResults + moreTotalResults;
-        }
         /**
          * in some cases not entirely accurate number of processed and returned hits, typically should be less or equals to totalResultCount
          * @return 
          * @since 2.20
          */
         public int getReturnedResultCount() {
-            return returnedResults;
-        }
-
-        void addReturnedResultCount(int moreReturnedResults) {
-            returnedResults = returnedResults + moreReturnedResults;
-        }
-        
-        
-        
-    } 
-    
-    
-    static {
-        new AccessorImpl();       
-    }
-    
-    
-    
-    static class AccessorImpl extends NexusRepositoryIndexerImpl.Accessor {
-
-        @Override
-        public void addSkipped(Result<?> result, Collection<RepositoryInfo> infos) {
-            result.addSkipped(infos);
-        }
-
-        @Override
-        public List<RepositoryInfo> getSkipped(Result<?> result) {
-            return result.getSkipped();
-        }
-
-        @Override
-        public void addSkipped(Result<?> result, RepositoryInfo info) {
-            result.addSkipped(info);
-        }
-
-        @Override
-        public Result<String> createStringResult(Redo<String> redo) {
-            return new Result<String>(redo);
-        }
-
-        @Override
-        public Result<NBVersionInfo> createVersionResult(Redo<NBVersionInfo> redo) {
-            return new Result<NBVersionInfo>(redo);
-        }
-
-        @Override
-        public void setStringResults(Result<String> result, Collection<String> newResults) {
-            result.setResults(newResults);
-        }
-
-        @Override
-        public void setVersionResults(Result<NBVersionInfo> result, Collection<NBVersionInfo> newResults) {
-            result.setResults(newResults);
-        }
-
-        @Override
-        public Result<NBGroupInfo> createGroupResult(Redo<NBGroupInfo> redo) {
-            return new Result<NBGroupInfo>(redo);
-        }
-
-        @Override
-        public void setGroupResults(Result<NBGroupInfo> result, Collection<NBGroupInfo> newResults) {
-            result.setResults(newResults);
-        }
-
-        @Override
-        public Result<ClassUsage> createClassResult(Redo<ClassUsage> redo) {
-            return new Result<ClassUsage>(redo);
-        }
-
-        @Override
-        public void setClassResults(Result<ClassUsage> result, Collection<ClassUsage> newResults) {
-            result.setResults(newResults);
-        }
-
-        @Override
-        public void addTotalResults(Result<?> result, int moreResults) {
-            result.addTotalResultCount(moreResults);
-        }
-
-        @Override
-        public void addReturnedResults(Result<?> result, int moreResults) {
-            result.addReturnedResultCount(moreResults);
+            return impl.getReturnedResultCount();
         }
     }
+        
+    private final static class CompositeResult<T> implements ResultImplementation {
+        
+        private final List<ResultImplementation<T>> results;
+        
+        public CompositeResult(List<ResultImplementation<T>> results) {
+            this.results = results;
+        }
     
-    
+        @Override
+        public boolean isPartial() {
+            for (ResultImplementation<T> result : results) {
+                if(result.isPartial()) {
+                    return true;
+            }
+        }
+            return false;
+        }
+
+        @Override
+        public void waitForSkipped() {
+            for (ResultImplementation<T> result : results) {
+                result.waitForSkipped();
+            }
+        }
+
+        @Override
+        public List<T> getResults() {
+            List<T> ret = new LinkedList<>();
+            for (ResultImplementation<T> result : results) {
+                ret.addAll(result.getResults());
+            }
+            return ret;
+        }
+
+        @Override
+        public int getTotalResultCount() {
+            int ret = 0;
+            for (ResultImplementation<T> result : results) {
+                ret += result.getTotalResultCount();
+            }
+            return ret;
+        }
+
+        @Override
+        public int getReturnedResultCount() {
+            int ret = 0;
+            for (ResultImplementation<T> result : results) {
+                ret += result.getReturnedResultCount();
+            }
+            return ret;
+        }
+    }
+
    /**
      * One usage result.
      */
@@ -268,11 +222,41 @@ public final class RepositoryQueries {
         }
     }
     
+    private static interface QueryCall<T> {
+        ResultImplementation<T> call(RepositoryIndexQueryProvider queryProvider, List<RepositoryInfo> providerRepos);
+    }
     
-    private static @NonNull BaseQueries findBaseQueries() {
-        return Lookup.getDefault().lookup(BaseQueries.class);
+    private static <T> Result<T> getQueryResult(List<RepositoryInfo> repos, QueryCall<T> c) {
+        List<ResultImplementation<T>> results = new LinkedList<>();
+        if (repos == null) {
+            repos = RepositoryPreferences.getInstance().getRepositoryInfos();
+        }
+        Map<RepositoryIndexQueryProvider, List<RepositoryInfo>> qp2Repo = getQueryProvider2Repo(repos);
+        for(Map.Entry<RepositoryIndexQueryProvider, List<RepositoryInfo>> e : qp2Repo.entrySet()) {
+            results.add(c.call(e.getKey(), e.getValue()));
+        }
+        return new Result<>(new CompositeResult<>(results));
     }
 
+    private static Map<RepositoryIndexQueryProvider, List<RepositoryInfo>> getQueryProvider2Repo(List<RepositoryInfo> repos) {
+        Collection<? extends RepositoryIndexQueryProvider> idxs = Lookup.getDefault().lookupAll(RepositoryIndexQueryProvider.class);
+        Map<RepositoryIndexQueryProvider, List<RepositoryInfo>> qp2Repo = new HashMap<>();
+        for (RepositoryInfo repo : repos) {
+            for (RepositoryIndexQueryProvider idx : idxs) {
+                if(idx.handlesRepository(repo)) {
+                    List<RepositoryInfo> mappedRepos = qp2Repo.get(idx);
+                    if(mappedRepos == null) {
+                        mappedRepos = new LinkedList<>();
+                        qp2Repo.put(idx, mappedRepos);
+                    }
+                    mappedRepos.add(repo);
+                    break;
+                }
+            }
+        }
+        return qp2Repo;
+    }
+    
     /**
      * 
      * @param repos
@@ -280,20 +264,12 @@ public final class RepositoryQueries {
      * @since 2.9
      */
     public static Result<String> getGroupsResult(@NullAllowed List<RepositoryInfo> repos) {
-        return findBaseQueries().getGroups(repos);
+        return getQueryResult(repos, (RepositoryIndexQueryProvider queryProvider, List<RepositoryInfo> providerRepos) -> {
+            BaseQueries baseQueries = queryProvider.getBaseQueries();
+            assert baseQueries != null: "RepositoryIndexQueryProvider.getBaseQueries not allowed to return null";
+            return baseQueries.getGroups(providerRepos);
+        });
     }
-    
-    /**
-     * 
-     * @param prefix
-     * @param repos
-     * @return 
-     * @since 2.9
-     */
-    public static Result<String> filterGroupIdsResult(String prefix, @NullAllowed List<RepositoryInfo> repos) {
-        return findBaseQueries().filterGroupIds(prefix, repos);
-    }
-
     
     /**
      * 
@@ -305,7 +281,11 @@ public final class RepositoryQueries {
      * @since 2.9
      */
     public static Result<NBVersionInfo> getRecordsResult(String groupId, String artifactId, String version, @NullAllowed List<RepositoryInfo> repos) {
-        return findBaseQueries().getRecords(groupId, artifactId, version, repos);
+        return getQueryResult(repos, (RepositoryIndexQueryProvider queryProvider, List<RepositoryInfo> providerRepos) -> {
+            BaseQueries baseQueries = queryProvider.getBaseQueries();
+            assert baseQueries != null: "RepositoryIndexQueryProvider.getBaseQueries not allowed to return null";
+            return baseQueries.getRecords(groupId, artifactId, version, providerRepos);
+        });
     }
     
     /**
@@ -316,10 +296,13 @@ public final class RepositoryQueries {
      * @since 2.28
      */
     public static Result<String> getGAVsForPackaging(String packaging, @NullAllowed List<RepositoryInfo> repos) {
-        return findBaseQueries().getGAVsForPackaging(packaging, repos);
+        return getQueryResult(repos, (RepositoryIndexQueryProvider queryProvider, List<RepositoryInfo> providerRepos) -> {
+            BaseQueries baseQueries = queryProvider.getBaseQueries();
+            assert baseQueries != null: "RepositoryIndexQueryProvider.getBaseQueries not allowed to return null";
+            return baseQueries.getGAVsForPackaging(packaging, providerRepos);
+        });
     }    
 
-    
     /**
      * 
      * @param groupId
@@ -328,10 +311,13 @@ public final class RepositoryQueries {
      * @since 2.9
      */
     public static Result<String> getArtifactsResult(String groupId, @NullAllowed List<RepositoryInfo> repos) {
-        return findBaseQueries().getArtifacts(groupId, repos);
+        return getQueryResult(repos, (RepositoryIndexQueryProvider queryProvider, List<RepositoryInfo> providerRepos) -> {
+            BaseQueries baseQueries = queryProvider.getBaseQueries();
+            assert baseQueries != null: "RepositoryIndexQueryProvider.getBaseQueries not allowed to return null";
+            return baseQueries.getArtifacts(groupId, providerRepos);
+        });
     }
 
-    
     /**
      * 
      * @param groupId
@@ -341,14 +327,13 @@ public final class RepositoryQueries {
      * @since 2.9
      */
     public static Result<NBVersionInfo> getVersionsResult(String groupId, String artifactId, @NullAllowed List<RepositoryInfo> repos) {
-        return findBaseQueries().getVersions(groupId, artifactId, repos);
+        return getQueryResult(repos, (RepositoryIndexQueryProvider queryProvider, List<RepositoryInfo> providerRepos) -> {
+            BaseQueries baseQueries = queryProvider.getBaseQueries();
+            assert baseQueries != null: "RepositoryIndexQueryProvider.getBaseQueries not allowed to return null";
+            return baseQueries.getVersions(groupId, artifactId, providerRepos);
+        });
     }
 
-    
-    private static @NonNull DependencyInfoQueries findDIQ() {
-        return Lookup.getDefault().lookup(DependencyInfoQueries.class);
-    }
-    
     /**
      * 
      * @param groupId
@@ -359,9 +344,13 @@ public final class RepositoryQueries {
      * @since 2.9
      */
     public static Result<NBGroupInfo> findDependencyUsageResult(String groupId, String artifactId, String version, @NullAllowed List<RepositoryInfo> repos) {
-        return findDIQ().findDependencyUsageGroups(groupId, artifactId, version, repos);
+        return getQueryResult(repos, (RepositoryIndexQueryProvider queryProvider, List<RepositoryInfo> providerRepos) -> {
+            DependencyInfoQueries dependencyInfoQueries = queryProvider.getDependencyInfoQueries();
+            return dependencyInfoQueries != null ? 
+                    dependencyInfoQueries.findDependencyUsageGroups(groupId, artifactId, version, providerRepos) :
+                    new NullResultImpl<>();
+        });        
     }
-    
     
     /**
      * 
@@ -377,26 +366,18 @@ public final class RepositoryQueries {
         } catch (IOException ex) {
             Logger.getLogger(RepositoryQueries.class.getName()).log(Level.INFO, "Could not determine SHA-1 of " + file, ex);
         }
-        return NexusRepositoryIndexerImpl.Accessor.ACCESSOR.createVersionResult(new Redo<NBVersionInfo>() {
-            @Override
-            public void run(Result<NBVersionInfo> result) {
-                //noop
-            }
-        });
+        return new Result<>(new NullResultImpl<>());
+    }
         
-    }
-    
-    private static ChecksumQueries findChecksumQueries() {
-        return Lookup.getDefault().lookup(ChecksumQueries.class);
-    }    
-
     private static Result<NBVersionInfo> findBySHA1(String sha1, @NullAllowed List<RepositoryInfo> repos) {
-        return findChecksumQueries().findBySHA1(sha1, repos);
+        return getQueryResult(repos, (RepositoryIndexQueryProvider queryProvider, List<RepositoryInfo> providerRepos) -> {
+            ChecksumQueries checksumQueries = queryProvider.getChecksumQueries();
+            return checksumQueries != null ? 
+                    checksumQueries.findBySHA1(sha1, providerRepos) : 
+                    new NullResultImpl<>();
+        });
     }
     
-    private static @NonNull ClassesQuery findClassesQueries() {
-        return Lookup.getDefault().lookup(ClassesQuery.class);
-    }    
     /**
      * 
      * @param className
@@ -411,7 +392,12 @@ public final class RepositoryQueries {
      * @since 2.9
      */
     public static Result<NBVersionInfo> findVersionsByClassResult(final String className, @NullAllowed List<RepositoryInfo> repos) {
-        return findClassesQueries().findVersionsByClass(className, repos);
+        return getQueryResult(repos, (RepositoryIndexQueryProvider queryProvider, List<RepositoryInfo> providerRepos) -> {
+            ClassesQuery classesQuery = queryProvider.getClassesQuery();
+            return classesQuery != null ? 
+                    classesQuery.findVersionsByClass(className, providerRepos) : 
+                    new NullResultImpl<>();
+        });
     }
 
     /**
@@ -438,9 +424,15 @@ public final class RepositoryQueries {
         //TODO first process the loaded ones, index and wait for finish of indexing of the unloaded ones..
         for (Iterator<RepositoryInfo> it1 = query.getRepositories().iterator(); it1.hasNext();) {
             RepositoryInfo repositoryInfo = it1.next();
-            List<RepositoryInfo> repositoryInfoL = new ArrayList<RepositoryInfo>(1);
+            List<RepositoryInfo> repositoryInfoL = new ArrayList<>(1);
             repositoryInfoL.add(repositoryInfo);
-            query.addResults(findClassesQueries().findVersionsByClass(query.getClassName(), repositoryInfoL).getResults(), !it1.hasNext());
+            Result<NBVersionInfo> queryResult = getQueryResult(repositoryInfoL, (RepositoryIndexQueryProvider queryProvider, List<RepositoryInfo> providerRepos) -> {
+                ClassesQuery classesQuery = queryProvider.getClassesQuery();
+                return classesQuery != null ? 
+                        classesQuery.findVersionsByClass(query.getClassName(), providerRepos) : 
+                        new NullResultImpl<>();
+            });
+            query.addResults(queryResult.getResults(), !it1.hasNext());
             // still someone waiting for results?
             if (query.countObservers() == 0)
                 return;
@@ -449,10 +441,6 @@ public final class RepositoryQueries {
             query.addResults(null, true);
     }
     
-    private static @NonNull ClassUsageQuery findClassUsageQuery() {
-        return Lookup.getDefault().lookup(ClassUsageQuery.class);
-    }
-
     /**
      * Finds all usages of a given class.
      * The implementation may not provide results within the same artifact, or on classes in the JRE.
@@ -462,14 +450,14 @@ public final class RepositoryQueries {
      * @since 2.9
      */
     public static Result<ClassUsage> findClassUsagesResult(String className, @NullAllowed List<RepositoryInfo> repos) {
-        return findClassUsageQuery().findClassUsages(className, repos);
+        return getQueryResult(repos, (RepositoryIndexQueryProvider queryProvider, List<RepositoryInfo> providerRepos) -> {
+            ClassUsageQuery classUsageQuery = queryProvider.getClassUsageQuery();
+            return classUsageQuery != null ? 
+                    classUsageQuery.findClassUsages(className, repos) :
+                    new NullResultImpl<>();
+        });
     }
 
-    
-    private static @NonNull ArchetypeQueries findArchetypeQueries() {
-        return Lookup.getDefault().lookup(ArchetypeQueries.class);
-    }
-    
     /**
      * 
      * @param repos
@@ -477,10 +465,13 @@ public final class RepositoryQueries {
      * @since 2.9
      */
     public static Result<NBVersionInfo> findArchetypesResult(@NullAllowed List<RepositoryInfo> repos) {
-        return findArchetypeQueries().findArchetypes(repos);
+        return getQueryResult(repos, (RepositoryIndexQueryProvider queryProvider, List<RepositoryInfo> providerRepos) -> {
+            ArchetypeQueries archetypeQueries = queryProvider.getArchetypeQueries();
+            return archetypeQueries != null ? 
+                    archetypeQueries.findArchetypes(repos) : 
+                    new NullResultImpl<>();
+        });
     }
-    
-
     
     /**
      * 
@@ -491,10 +482,13 @@ public final class RepositoryQueries {
      * @since 2.9
      */
     public static Result<String> filterPluginArtifactIdsResult(String groupId, String prefix, @NullAllowed List<RepositoryInfo> repos) {
-        return findBaseQueries().filterPluginArtifactIds(groupId, prefix, repos);
+        return getQueryResult(repos, (RepositoryIndexQueryProvider queryProvider, List<RepositoryInfo> providerRepos) -> {
+            BaseQueries baseQueries = queryProvider.getBaseQueries();
+            assert baseQueries != null: "RepositoryIndexQueryProvider.getBaseQueries not allowed to return null";
+            return baseQueries.filterPluginArtifactIds(groupId, prefix, providerRepos);
+        });
     }
 
-    
     /**
      * 
      * @param prefix
@@ -503,14 +497,13 @@ public final class RepositoryQueries {
      * @since 2.9
      */
     public static Result<String> filterPluginGroupIdsResult(String prefix, @NullAllowed List<RepositoryInfo> repos) {
-        return findBaseQueries().filterPluginGroupIds(prefix, repos);
+        return getQueryResult(repos, (RepositoryIndexQueryProvider queryProvider, List<RepositoryInfo> providerRepos) -> {
+            BaseQueries baseQueries = queryProvider.getBaseQueries();
+            assert baseQueries != null: "RepositoryIndexQueryProvider.getBaseQueries not allowed to return null";
+            return baseQueries.filterPluginGroupIds(prefix, providerRepos);
+        });
     }
 
-
-    private static @NonNull GenericFindQuery findFindQuery() {
-        return Lookup.getDefault().lookup(GenericFindQuery.class);
-    }
-    
     /**
      * @throws BooleanQuery.TooManyClauses This runtime exception can be thrown if given query is too
      * general and such search can't be executed as it would probably end with
@@ -525,7 +518,12 @@ public final class RepositoryQueries {
      * @since 2.9
      */
     public static Result<NBVersionInfo> findResult(List<QueryField> fields, @NullAllowed List<RepositoryInfo> repos) {
-        return findFindQuery().find(fields, repos);
+        return getQueryResult(repos, (RepositoryIndexQueryProvider queryProvider, List<RepositoryInfo> providerRepos) -> {
+            GenericFindQuery genericFindQuery = queryProvider.getGenericFindQuery();
+            return genericFindQuery != null ? 
+                    genericFindQuery.find(fields, providerRepos) : 
+                    new NullResultImpl<>();
+        });
     }
 
     /**
@@ -551,9 +549,16 @@ public final class RepositoryQueries {
     public static void find(QueryRequest query) {
         for (Iterator<RepositoryInfo> it1 = query.getRepositories().iterator(); it1.hasNext();) {
             RepositoryInfo repositoryInfo = it1.next();
-            List<RepositoryInfo> repositoryInfoL = new ArrayList<RepositoryInfo>(1);
+            List<RepositoryInfo> repositoryInfoL = new ArrayList<>(1);
             repositoryInfoL.add(repositoryInfo);
-            query.addResults(findFindQuery().find(query.getQueryFields(), repositoryInfoL).getResults(), !it1.hasNext());
+            Result<NBVersionInfo> qeuryResult = 
+                getQueryResult(repositoryInfoL, (RepositoryIndexQueryProvider queryProvider, List<RepositoryInfo> providerRepos) -> {
+                    GenericFindQuery genericFindQuery = queryProvider.getGenericFindQuery();
+                    return genericFindQuery != null ? 
+                            genericFindQuery.find(query.getQueryFields(), providerRepos) : 
+                            new NullResultImpl<>();
+            });
+            query.addResults(qeuryResult.getResults(), !it1.hasNext());
             // still someone waiting for results?
             if (query.countObservers() == 0)
                 return;
@@ -563,16 +568,15 @@ public final class RepositoryQueries {
     }
     
     public static @NonNull List<RepositoryInfo> getLoadedContexts() {
-        List<RepositoryInfo> toRet = new ArrayList<RepositoryInfo>();
-        ContextLoadedQuery clq = Lookup.getDefault().lookup(ContextLoadedQuery.class);
-        assert clq != null;
-        toRet.addAll(clq.getLoaded(RepositoryPreferences.getInstance().getRepositoryInfos()));
+        List<RepositoryInfo> toRet = new ArrayList<>();
+        List<RepositoryInfo> repos = RepositoryPreferences.getInstance().getRepositoryInfos();
+        Map<RepositoryIndexQueryProvider, List<RepositoryInfo>> i2r = getQueryProvider2Repo(repos);
+        for(Entry<RepositoryIndexQueryProvider, List<RepositoryInfo>> e : i2r.entrySet()) {
+            ContextLoadedQuery clq = e.getKey().getContextLoadedQuery();
+            assert clq != null;
+            toRet.addAll(clq.getLoaded(repos));
+        }
         return toRet;
-    }
-
-    
-    public static Result<String> filterArtifactIdForGroupIdResult(String groupId, String prefix, @NullAllowed List<RepositoryInfo> repos) {
-        return findBaseQueries().filterArtifactIdForGroupId(groupId, prefix, repos);
     }
 
 }

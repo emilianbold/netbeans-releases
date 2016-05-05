@@ -379,15 +379,15 @@ public final class ClankPPCallback extends FileInfoCallback {
             if (exitedFrom.isFile()) {
                 traceOS.$out(exitedFrom.getName());
             } else {
-                traceOS.$out(exitedFrom.getFileID());
+                traceOS.$out_int(exitedFrom.getFileID());
             }
-            traceOS.$out(" with #Token: ").$out(exitedFrom.getNrTokens()).$out("\n"); // NOI18N
+            traceOS.$out(" with #Token: ").$out_int(exitedFrom.getNrTokens()).$out("\n"); // NOI18N
             int[] offs = exitedFrom.getSkippedRanges();
             if (offs.length > 0) {
                 for (int i = 0; i < offs.length; i += 2) {
                     int st = offs[i];
                     int end = offs[i + 1];
-                    traceOS.$out("[").$out(st).$out("-").$out(end).$out("] "); // NOI18N
+                    traceOS.$out("[").$out_int(st).$out("-").$out_int(end).$out("] "); // NOI18N
                 }
                 traceOS.$out("\n"); // NOI18N
             }

@@ -41,7 +41,6 @@
  */
 package org.netbeans.api.editor.caret;
 
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 
 /**
@@ -94,16 +93,5 @@ public final class EditorCaretEvent extends java.util.EventObject {
      */
     public int getAffectedEndOffset() {
         return affectedEndOffset;
-    }
-    
-    /**
-     * Describes the origin of the movement command. May not be filled, if the movement
-     * does not originate form an user-triggered editor action.
-     * 
-     * @return the original reason for caret movement, or {@code null}.
-     * @since 2.9
-     */
-    public @CheckForNull MoveCaretsOrigin getOrigin() {
-        return origin;
     }
 }

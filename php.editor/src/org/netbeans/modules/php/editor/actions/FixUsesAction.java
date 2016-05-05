@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.actions;
 
@@ -66,7 +66,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.php.api.PhpVersion;
-import static org.netbeans.modules.php.api.util.FileUtils.PHP_MIME_TYPE;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.actions.ImportData.ItemVariant;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
@@ -92,7 +92,7 @@ import org.openide.util.RequestProcessor;
 })
 @EditorActionRegistration(
     name = FixUsesAction.ACTION_NAME,
-    mimeType = PHP_MIME_TYPE,
+    mimeType = FileUtils.PHP_MIME_TYPE,
     shortDescription = "Fixes use statements.",
     popupText = "#FixUsesLabel"
 )
@@ -301,29 +301,57 @@ public class FixUsesAction extends BaseAction {
 
         private final boolean preferFullyQualifiedNames;
         private final boolean preferMultipleUseStatementsCombined;
+        private final boolean preferGroupUses;
         private final boolean startUseWithNamespaceSeparator;
         private final boolean aliasesCapitalsOfNamespaces;
-        private final boolean isPhp56OrGreater;
+        private final PhpVersion phpVersion;
 
-        public Options(
+        // for unit tests
+        Options(
+                boolean preferFullyQualifiedNames,
+                boolean preferMultipleUseStatementsCombined,
+                boolean preferGroupUses,
+                boolean startUseWithNamespaceSeparator,
+                boolean aliasesCapitalsOfNamespaces,
+                PhpVersion phpVersion) {
+            this.preferFullyQualifiedNames = preferFullyQualifiedNames;
+            this.preferMultipleUseStatementsCombined = preferMultipleUseStatementsCombined;
+            this.preferGroupUses = preferGroupUses;
+            this.startUseWithNamespaceSeparator = startUseWithNamespaceSeparator;
+            this.aliasesCapitalsOfNamespaces = aliasesCapitalsOfNamespaces;
+            this.phpVersion = phpVersion;
+        }
+
+        // legacy, for unit tests
+        Options(
                 boolean preferFullyQualifiedNames,
                 boolean preferMultipleUseStatementsCombined,
                 boolean startUseWithNamespaceSeparator,
                 boolean aliasesCapitalsOfNamespaces,
                 boolean isPhp56OrGreater) {
-            this.preferFullyQualifiedNames = preferFullyQualifiedNames;
-            this.preferMultipleUseStatementsCombined = preferMultipleUseStatementsCombined;
-            this.startUseWithNamespaceSeparator = startUseWithNamespaceSeparator;
-            this.aliasesCapitalsOfNamespaces = aliasesCapitalsOfNamespaces;
-            this.isPhp56OrGreater = isPhp56OrGreater;
+            this(preferFullyQualifiedNames, preferMultipleUseStatementsCombined, false, startUseWithNamespaceSeparator, aliasesCapitalsOfNamespaces,
+                    isPhp56OrGreater ? PhpVersion.PHP_56 : PhpVersion.PHP_5);
+        }
+
+        // legacy, for unit tests
+        Options(
+                boolean preferFullyQualifiedNames,
+                boolean preferMultipleUseStatementsCombined,
+                boolean preferGroupUses,
+                boolean startUseWithNamespaceSeparator,
+                boolean aliasesCapitalsOfNamespaces,
+                boolean isPhp56OrGreater) {
+            this(preferFullyQualifiedNames, preferMultipleUseStatementsCombined, preferGroupUses, startUseWithNamespaceSeparator, aliasesCapitalsOfNamespaces,
+                    isPhp56OrGreater ? PhpVersion.PHP_56 : PhpVersion.PHP_5);
         }
 
         public Options(CodeStyle codeStyle, FileObject fileObject) {
             this.preferFullyQualifiedNames = codeStyle.preferFullyQualifiedNames();
             this.preferMultipleUseStatementsCombined = codeStyle.preferMultipleUseStatementsCombined();
+            this.preferGroupUses = codeStyle.preferGroupUses();
             this.startUseWithNamespaceSeparator = codeStyle.startUseWithNamespaceSeparator();
             this.aliasesCapitalsOfNamespaces = codeStyle.aliasesFromCapitalsOfNamespaces();
-            this.isPhp56OrGreater = CodeUtils.isPhpVersionGreaterThan(fileObject, PhpVersion.PHP_55);
+            this.phpVersion = CodeUtils.getPhpVersion(fileObject);
         }
 
         public boolean preferFullyQualifiedNames() {
@@ -334,6 +362,10 @@ public class FixUsesAction extends BaseAction {
             return preferMultipleUseStatementsCombined;
         }
 
+        public boolean preferGroupUses() {
+            return preferGroupUses;
+        }
+
         public boolean startUseWithNamespaceSeparator() {
             return startUseWithNamespaceSeparator;
         }
@@ -342,9 +374,10 @@ public class FixUsesAction extends BaseAction {
             return aliasesCapitalsOfNamespaces;
         }
 
-        public boolean isPhp56OrGreater() {
-            return isPhp56OrGreater;
+        public PhpVersion getPhpVersion() {
+            return phpVersion;
         }
 
     }
+
 }

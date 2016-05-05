@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
+import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
@@ -188,6 +189,11 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                 public List<String> getBuildArtifacts() {
                     return null;
                 }
+
+                @Override
+                public Map<ItemProperties.LanguageKind, Map<String, Integer>> getBuildTools() {
+                    return null;
+                }
                 
                 @Override
                 public List<SourceFileProperties> getSourcesConfiguration() {
@@ -201,7 +207,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                                 progress.start(set.size());
                             }
                             if (set.size() > 0) {
-                                myFileProperties = getSourceFileProperties(set.toArray(new String[set.size()]), progress, project, null, null, new CompileLineStorage());
+                                myFileProperties = getSourceFileProperties(set.toArray(new String[set.size()]), progress, project, null, null, null, new CompileLineStorage());
                                 store(project);
                             } else {
                                 myFileProperties = new ArrayList<SourceFileProperties>();

@@ -51,5 +51,5 @@ import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
  * @author Milos Kleint
  */
 public interface ChecksumQueries {
-    RepositoryQueries.Result<NBVersionInfo> findBySHA1(String sha1, List<RepositoryInfo> repos);
+    ResultImplementation<NBVersionInfo> findBySHA1(String sha1, List<RepositoryInfo> repos);
 }

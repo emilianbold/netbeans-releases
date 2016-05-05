@@ -815,5 +815,9 @@ public final class EditorRegistry {
             EditorRegistry.notifyClose(c);
         }
         
+        @Override
+        public StickyWindowSupport createStickyWindowSupport(JTextComponent jtc) {
+            return new StickyWindowSupport(jtc);
+        }
     }
 }

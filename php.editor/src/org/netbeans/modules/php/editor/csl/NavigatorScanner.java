@@ -124,7 +124,7 @@ public final class NavigatorScanner {
             if (!nameScope.isDefaultNamespace()) {
                 items.add(new PHPNamespaceStructureItem(nameScope, namespaceChildren));
             }
-            Collection<? extends UseScope> declaredUses = nameScope.getDeclaredUses();
+            Collection<? extends UseScope> declaredUses = nameScope.getAllDeclaredSingleUses();
             for (UseScope useElement : declaredUses) {
                 namespaceChildren.add(new PHPUseStructureItem(useElement));
             }

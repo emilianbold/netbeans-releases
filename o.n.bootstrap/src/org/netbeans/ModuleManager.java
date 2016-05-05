@@ -79,6 +79,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.Modules;
@@ -473,7 +474,13 @@ public final class ModuleManager extends Modules {
                     // has not been called with some other special classloader.
                     if (force || (ts[i].getContextClassLoader() instanceof SystemClassLoader)) {
                         //Util.err.fine("Setting ctxt CL on " + ts[i].getName() + " to " + l);
-                        ts[i].setContextClassLoader(l);
+                        try {
+                            ts[i].setContextClassLoader(l);
+                        } catch (SecurityException se) {
+                            if (Util.err.isLoggable(Level.FINE)) {
+                                Util.err.fine("Cannot set context ClassLoader to the Thread: "+ts[i]);    // NOI18N
+                            }
+                        }
                     } else {
                         if (Util.err.isLoggable(Level.FINE)) {
                             Util.err.fine("Not touching context class loader " + ts[i].getContextClassLoader() + " on thread " + ts[i].getName());

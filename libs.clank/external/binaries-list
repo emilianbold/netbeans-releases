@@ -1,6 +1,6 @@
-#changeset:   17314:3f81f6453a4c
+#changeset:   17350:bccc5ec75432
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Wed Apr 06 23:47:36 2016 +0300
-#summary:     fixed #258692: [newcodemodel] a lot of PTH files remains in TMP on windows
-5BCBF262BE818340875EEBBAE1D1EF4F949DB8E3 clank_0.3.6.zip
+#date:        Fri Apr 08 21:26:43 2016 +0300
+#summary:     MANUAL: fix usage of raw_stream.$out(Object v)
+85FD13415B0553D6421F4BBA5FE0F587B9748B20 clank_0.3.6.zip

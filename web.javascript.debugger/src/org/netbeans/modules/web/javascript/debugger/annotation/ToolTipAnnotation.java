@@ -116,26 +116,11 @@ public class ToolTipAnnotation extends AbstractJSToolTipAnnotation<WebJSDebugger
         String tooltipText;
         if (sv != null) {
             RemoteObject var = sv.getRemoteObject();
-            String value = var.getValueAsString();
+            String value = getStringValue(var);
             Type type = var.getType();
-            switch (type) {
-                case STRING:
-                    value = "\"" + value + "\"";
-                    break;
-                case FUNCTION:
-                    value = var.getDescription();
-                    break;
-                case OBJECT:
-                    String clazz = var.getClassName();
-                    if (clazz == null) {
-                        clazz = type.getName();
-                    }
-                    if (value.isEmpty()) {
-                        value = var.getDescription();
-                    }
-                    value = "("+clazz+") "+value;
-                    tooltipVariable = sv;
-                    // TODO: add obj ID
+            if (type == Type.OBJECT) {
+                tooltipVariable = sv;
+                // TODO: add obj ID
             }
             if (type != Type.UNDEFINED) {
                 tooltipText = expression + " = " + value;
@@ -149,6 +134,30 @@ public class ToolTipAnnotation extends AbstractJSToolTipAnnotation<WebJSDebugger
             throw new CancellationException();
         }
         return Pair.of(tooltipText, tooltipVariable);
+    }
+    
+    static String getStringValue(RemoteObject var) {
+        String value = var.getValueAsString();
+        Type type = var.getType();
+        switch (type) {
+            case STRING:
+                value = "\"" + value + "\"";
+                break;
+            case FUNCTION:
+                value = var.getDescription();
+                break;
+            case OBJECT:
+                String clazz = var.getClassName();
+                if (clazz == null) {
+                    clazz = type.getName();
+                }
+                if (value.isEmpty()) {
+                    value = var.getDescription();
+                }
+                value = "("+clazz+") "+value;
+                break;
+        }
+        return value;
     }
 
 }

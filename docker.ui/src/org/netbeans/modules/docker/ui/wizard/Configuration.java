@@ -73,4 +73,7 @@ public interface Configuration {
     String getCertPath();
 
     void setCertPath(String path);
+
+    void setInputEnabled(boolean enabled);
+
 }

@@ -80,6 +80,8 @@ public class DeleteInterceptorTest extends  RemoteVersioningTestBase {
         }
         VCSFileProxy repo = VCSFileProxy.createFileProxy(getWorkTreeDir().getParentFile(), String.valueOf(System.currentTimeMillis()));
         VCSFileProxySupport.mkdir(repo);
+        HgCommand.doCreate(repo, NULL_LOGGER);
+
         VCSFileProxy folderA = VCSFileProxy.createFileProxy(repo, "folderA");
         VCSFileProxy fileA1 = VCSFileProxy.createFileProxy(folderA, "file1");
         VCSFileProxy fileA2 = VCSFileProxy.createFileProxy(folderA, "file2");
@@ -98,8 +100,6 @@ public class DeleteInterceptorTest extends  RemoteVersioningTestBase {
         VCSFileProxySupport.mkdirs(folderC);
         VCSFileProxySupport.createNew(fileC1);
         VCSFileProxySupport.createNew(fileC2);
-
-        HgCommand.doCreate(repo, NULL_LOGGER);
 
         MercurialInterceptor interceptor = Mercurial.getInstance().getMercurialInterceptor();
         Field f = MercurialInterceptor.class.getDeclaredField("hgFolderEventsHandler");

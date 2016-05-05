@@ -64,6 +64,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -88,12 +89,17 @@ import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.builds.CMakeExecSupport;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.builds.QMakeExecSupport;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.BuildTraceSupport;
+import org.netbeans.modules.cnd.discovery.api.ItemProperties.LanguageKind;
 import org.netbeans.modules.cnd.discovery.api.ProviderPropertyType;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
@@ -106,6 +112,7 @@ import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.SnapShot;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
@@ -120,6 +127,7 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.remote.api.RfsListenerSupport;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -132,6 +140,8 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -1409,6 +1419,7 @@ public class ImportProject implements PropertyChangeListener {
                     done = true;
                     extension.apply(map, makeProject, interrupter);
                     setBuildResults(DiscoveryDescriptor.BUILD_ARTIFACTS.fromMap(map));
+                    validateBuildTools(DiscoveryDescriptor.BUILD_TOOLS.fromMap(map));
                     DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(makeProject, null);
                     importResult.put(Step.DiscoveryLog, State.Successful);
                 } catch (IOException ex) {
@@ -1448,6 +1459,142 @@ public class ImportProject implements PropertyChangeListener {
         //}
      }
 
+    private void validateBuildTools(Map<LanguageKind, Map<String, Integer>> buildTools) {
+        if (buildTools == null || buildTools.isEmpty()) {
+            return;
+        }
+        String cToolPath = coutPath(buildTools.get(LanguageKind.C));
+        String cppToolPath = coutPath(buildTools.get(LanguageKind.CPP));
+        String fortranToolPath = coutPath(buildTools.get(LanguageKind.CPP));
+        if (cToolPath == null && cppToolPath == null) {
+            return;
+        }
+        ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
+        MakeConfiguration activeConfiguration = makeConfigurationDescriptor.getActiveConfiguration();
+        if (activeConfiguration == null) {
+            return;
+        }
+        String cProjectToolPath = null;
+        String cppProjectToolPath = null;
+        String fortranProjectToolPath = null;
+        CompilerSet2Configuration compilerSet = activeConfiguration.getCompilerSet();
+        CompilerSet cs = compilerSet.getCompilerSet();
+        if (cs != null) {
+            Tool tool = cs.getTool(PredefinedToolKind.CCompiler);
+            if (tool != null) {
+                cProjectToolPath = tool.getPath().replace('\\', '/'); //NOI18N
+            }
+            tool = cs.getTool(PredefinedToolKind.CCCompiler);
+            if (tool != null) {
+                cppProjectToolPath = tool.getPath().replace('\\', '/'); //NOI18N
+            }
+            tool = cs.getTool(PredefinedToolKind.FortranCompiler);
+            if (tool != null) {
+                fortranProjectToolPath = tool.getPath().replace('\\', '/'); //NOI18N
+            }
+        }
+        
+        CompilerSetManager csm = CompilerSetManager.get(executionEnvironment);
+        if (cToolPath != null) {
+            if (!cToolPath.equals(cProjectToolPath)) {
+                for(CompilerSet c : csm.getCompilerSets()) {
+                    Tool tool = c.getTool(PredefinedToolKind.CCompiler);
+                    if (tool != null) {
+                        String path = tool.getPath().replace('\\', '/'); //NOI18N
+                        if (cToolPath.equals(path)) {
+                            // change tool collection in project
+                            activeConfiguration.getCompilerSet().setValue(c.getName());
+                            return;
+                        }
+                    }
+                }
+                if (cProjectToolPath == null) {
+                    // add path to compiler in tool collection ?
+                } else {
+                    // create new tool collection
+                    newToolColletionDialog(activeConfiguration, cToolPath);
+                    return;
+                }
+            }
+        }
+        if (cppToolPath != null) {
+            if (!cppToolPath.equals(cppProjectToolPath)) {
+                for(CompilerSet c : csm.getCompilerSets()) {
+                    Tool tool = c.getTool(PredefinedToolKind.CCCompiler);
+                    if (tool != null) {
+                        String path = tool.getPath().replace('\\', '/'); //NOI18N
+                        if (cppToolPath.equals(path)) {
+                            // change tool collection in project
+                            activeConfiguration.getCompilerSet().setValue(c.getName());
+                            return;
+                        }
+                    }
+                }
+                if (cppProjectToolPath == null) {
+                    // add path to compiler in tool collection ?
+                } else {
+                    // create new tool collection
+                    newToolColletionDialog(activeConfiguration, cppToolPath);
+                    return;
+                }
+            }
+        }
+    }
+
+    private void newToolColletionDialog(final MakeConfiguration activeConfiguration, String toolPath) {
+        int i = toolPath.lastIndexOf('/');
+        if (i > 0) {
+            final String basePath = toolPath.substring(0, i);
+            if (CndUtils.isUnitTestMode() || CndUtils.isStandalone()) {
+                logger.log(Level.INFO, NbBundle.getMessage(ImportProject.class, "TOOL_COLLECTION_MISMATCH_EXPLANATION", toolPath));
+                logger.log(Level.INFO, "Confirm - No");
+                return;
+            } else {
+                if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
+                    NbBundle.getMessage(ImportProject.class, "TOOL_COLLECTION_MISMATCH_EXPLANATION", toolPath), // NOI18N    
+                    NbBundle.getMessage(ImportProject.class, "TOOL_COLLECTION_MISMATCH_TITLE"), // NOI18N
+                    NotifyDescriptor.YES_NO_OPTION)) != NotifyDescriptor.YES_OPTION){
+                    return;
+                }
+            }
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
+                    public void run() {
+                        Future<CompilerSet> future = ToolsPanelSupport.invokeNewCompilerSetWizard(executionEnvironment, basePath);
+                        if (future != null) {
+                            try {
+                                CompilerSet cs = future.get();
+                                if (cs != null) {
+                                    activeConfiguration.getCompilerSet().setValue(cs.getName());
+                                }
+                            } catch (InterruptedException ex) {
+                            } catch (ExecutionException ex) {
+                            }
+                        }
+                    }
+                });
+            } catch (InterruptedException ex) {
+            } catch (InvocationTargetException ex) {
+            }
+        }
+    }
+    
+    
+    private String coutPath(Map<String, Integer> tools) {
+        String toolPath = null;
+        if (tools != null) {
+            int max = -1;
+            for(Map.Entry<String, Integer> e : tools.entrySet()) {
+                if (e.getValue() > max) {
+                    toolPath = e.getKey();
+                    max = e.getValue();
+                }
+            }
+        }
+        return toolPath;
+    }
 
     private boolean discoveryByDwarfOrBuildLog(boolean done) {
         final DiscoveryExtensionInterface extension = (DiscoveryExtensionInterface) Lookup.getDefault().lookup(IteratorExtension.class);

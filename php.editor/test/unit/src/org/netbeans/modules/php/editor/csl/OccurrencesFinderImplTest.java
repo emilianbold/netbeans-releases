@@ -1651,6 +1651,78 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
         checkOccurrences(getTestPath(), "$x->lo^g('');", true);
     }
 
+    public void testUniformVariableSyntax01_01() throws Exception {
+        checkOccurrences(getTestPath(), "UV^S3::myStatic3()::myStatic2()::myStatic1()::MAX;", true);
+    }
+
+    public void testUniformVariableSyntax01_02() throws Exception {
+        checkOccurrences(getTestPath(), "UVS3::mySta^tic3()::myStatic2()::myStatic1()::MAX;", true);
+    }
+
+    public void testUniformVariableSyntax01_03() throws Exception {
+        checkOccurrences(getTestPath(), "UVS3::myStatic3()::mySt^atic2()::myStatic1()::MAX;", true);
+    }
+
+    public void testUniformVariableSyntax01_04() throws Exception {
+        checkOccurrences(getTestPath(), "UVS3::myStatic3()::myStatic2()::mySta^tic1()::MAX;", true);
+    }
+
+    public void testUniformVariableSyntax01_05() throws Exception {
+        checkOccurrences(getTestPath(), "UVS3::myStatic3()::myStatic2()::myStatic1()::MA^X;", true);
+    }
+
+    public void testUniformVariableSyntax01_06() throws Exception {
+        checkOccurrences(getTestPath(), "UVS3::myStatic3()::myStatic2()::myStatic1()::AV^G;", true);
+    }
+
+    public void testUniformVariableSyntax01_07() throws Exception {
+        checkOccurrences(getTestPath(), "UVS3::myStatic3()::myStatic2()::myStatic1()::mySt^atic2();", true);
+    }
+
+    public void testUniformVariableSyntax01_08() throws Exception {
+        checkOccurrences(getTestPath(), "UVS3::myStatic3()->myStat^ic2()::myStatic1()->myStatic2();", true);
+    }
+
+    public void testUniformVariableSyntax01_09() throws Exception {
+        checkOccurrences(getTestPath(), "UVS3::myStatic3()->myStatic2()::my^Static1()->myStatic2();", true);
+    }
+
+    public void testUniformVariableSyntax01_10() throws Exception {
+        checkOccurrences(getTestPath(), "UVS3::myStatic3()->myStatic2()::myStatic1()->myS^tatic2();", true);
+    }
+
+    public void testUniformVariableSyntax01_11() throws Exception {
+        checkOccurrences(getTestPath(), "UVS3::myStatic3()::myStatic2()::myStatic1()::$M^IN;", true);
+    }
+
+    public void testUniformVariableSyntax01_12() throws Exception {
+        checkOccurrences(getTestPath(), "UVS3::myStatic3()->myStatic2()::myStatic1()->te^st;", true);
+    }
+
+    public void testUniformVariableSyntax01_13() throws Exception {
+        checkOccurrences(getTestPath(), "UVS3::myStatic3()::myStatic2()::myStatic1()::$INSTANCE::mySt^atic1();", true);
+    }
+
+    public void testUniformVariableSyntax02_01() throws Exception {
+        checkOccurrences(getTestPath(), "UV^S3::myStatic3()->my2()::myStatic1()->my1();", true);
+    }
+
+    public void testUniformVariableSyntax02_02() throws Exception {
+        checkOccurrences(getTestPath(), "UVS3::mySt^atic3()->my2()::myStatic1()->my1();", true);
+    }
+
+    public void testUniformVariableSyntax02_03() throws Exception {
+        checkOccurrences(getTestPath(), "UVS3::myStatic3()->m^y2()::myStatic1()->my1();", true);
+    }
+
+    public void testUniformVariableSyntax02_04() throws Exception {
+        checkOccurrences(getTestPath(), "UVS3::myStatic3()->my2()::myS^tatic1()->my1();", true);
+    }
+
+    public void testUniformVariableSyntax02_05() throws Exception {
+        checkOccurrences(getTestPath(), "UVS3::myStatic3()->my2()::myStatic1()->my^1();", true);
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};

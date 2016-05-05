@@ -108,6 +108,7 @@ public interface NativeDebugger extends BreakpointProvider {
     public void postVarContinuation(VarContinuation vc);
 
     public void balloonEvaluate(int pos, String expr);
+    public void evaluateInOutline(String expr);
     public void postExprQualify(String expr, QualifiedExprListener listener);
     
     public void registerLocalModel(LocalModel model);

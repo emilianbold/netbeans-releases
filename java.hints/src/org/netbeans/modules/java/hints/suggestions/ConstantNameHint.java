@@ -203,6 +203,9 @@ public class ConstantNameHint {
     }
     
     private static boolean isImmutableType(CompilationInfo info, TypeMirror m, Preferences p) {
+        if (m == null) {
+            return false;
+        }
         if (m.getKind().isPrimitive() || !isValidType(m)) {
             return true;
         }

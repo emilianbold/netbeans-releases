@@ -75,6 +75,22 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="Watch_Pin">
+        <api name="DebuggerCoreAPI"/>
+        <summary>API for pinned Watches</summary>
+        <version major="1" minor="54"/>
+        <date day="18" month="4" year="2016"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" addition="yes" deletion="no"/>
+        <description>
+            A <code>Watch.Pin</code> base interface introduced as a basis
+            for specific platform-dependent and location-dependent implementations.
+            <code>DebuggerManager.createPinnedwatch()</code> introduced.
+        </description>
+        <class package="org.netbeans.api.debugger" name="DebuggerManager"/>
+        <class package="org.netbeans.api.debugger" name="Watch"/>
+        <issue number="258651"/>
+    </change>
     <change id="Watch_disableable">
         <api name="DebuggerCoreAPI"/>
         <summary>API for changing enabled state of a Watch</summary>

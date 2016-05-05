@@ -67,7 +67,7 @@ import org.openide.util.Parameters;
  * </p>
  * 
  * @author sdedic
- * @since 2.9
+ * @since 2.10
  */
 public abstract class CascadingNavigationFilter extends NavigationFilter {
     private NavigationFilter    previous;
@@ -151,7 +151,7 @@ public abstract class CascadingNavigationFilter extends NavigationFilter {
      * the filter for that case.
      * </p>
      * 
-     * @param caret where this Filter should be registered.
+     * @param component where this Filter should be registered.
      * @param origin operation specifier
      */
     public final void register(

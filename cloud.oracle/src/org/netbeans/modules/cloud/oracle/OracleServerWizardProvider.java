@@ -43,15 +43,17 @@ package org.netbeans.modules.cloud.oracle;
 
 import org.netbeans.modules.cloud.oracle.ui.OracleWizardIterator;
 import org.netbeans.spi.server.ServerWizardProvider;
+import org.openide.util.NbBundle;
 
 /**
  *
  */
 public class OracleServerWizardProvider implements ServerWizardProvider {
 
+    @NbBundle.Messages("LBL_DisplayName=Oracle JCS with SaaS Extension")
     @Override
     public String getDisplayName() {
-        return "Oracle Cloud";
+        return Bundle.LBL_DisplayName();
     }
 
     @Override

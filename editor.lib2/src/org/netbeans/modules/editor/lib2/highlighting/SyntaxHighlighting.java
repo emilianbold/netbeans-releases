@@ -323,18 +323,6 @@ implements TokenHierarchyListener, ChangeListener {
         return sb.toString();
     }
     
-    /**
-     * Checks if the token should be treated as a block. Returns true if the token
-     * does NOT representa a block. Blocks are highlighted as a whole, including
-     * free space after the trailing whitespaces on the line.
-     * 
-     * @param t token to check
-     * @return true, if token is normal text; false if block.
-     */
-    private static boolean noBlock(Token t) {
-        return t.getProperty("highliht.block") != Boolean.TRUE; // NOI18N
-    }
-    
     private final class HSImpl implements HighlightsSequence {
         
         private static final int S_INIT = 0;
@@ -434,8 +422,6 @@ implements TokenHierarchyListener, ChangeListener {
                             ", pEOffset=" + partsEndOffset + ", seq#=" + sequences.size() + "\n"); // NOI18N
                 }
                 return true;
-            } else if (hiEndOffset >= newlineOffset) {
-                updateNewlineOffset(hiEndOffset);
             }
 
             return moveTheSequence();
@@ -469,7 +455,7 @@ implements TokenHierarchyListener, ChangeListener {
                                 int headLen = embeddedTSInfo.tokenOffset - hiEndOffset;
                                 if (headLen > 0) {
                                     state = S_EMBEDDED_HEAD;
-                                    done = assignHighlightOrPart(embeddedTSInfo.tokenOffset, tsInfo.tokenAttrs, noBlock(tsInfo.ts.token()));
+                                    done = assignHighlightOrPart(embeddedTSInfo.tokenOffset, tsInfo.tokenAttrs);
                                     if (log) {
                                         LOG.fine(" S_TOKEN -> S_EMBEDDED_HEAD, token<" + tsInfo.tokenOffset + // NOI18N
                                                 "," + tsInfo.tokenEndOffset + "> headLen=" + headLen + "\n"); // NOI18N
@@ -546,7 +532,7 @@ implements TokenHierarchyListener, ChangeListener {
         }
         
         private boolean assignHighlightOrPart(TSInfo<?> tsInfo) {
-            return assignHighlightOrPart(tsInfo.tokenEndOffset, tsInfo.tokenAttrs, noBlock(tsInfo.ts.token()));
+            return assignHighlightOrPart(tsInfo.tokenEndOffset, tsInfo.tokenAttrs);
         }
 
         /**
@@ -557,22 +543,16 @@ implements TokenHierarchyListener, ChangeListener {
          * @return true if highlight was assigned successfully or false if it could not be assigned
          *  due to token consisting of all newlines.
          */
-        private boolean assignHighlightOrPart(int tokenEndOffset, AttributeSet attrs, boolean noBlock) {
-            if (noBlock) {
-                while (hiEndOffset == newlineOffset) { // Newline at highlight start
-                    hiEndOffset++; // Skip newline
-                    if (updateNewlineOffset(hiEndOffset) || hiEndOffset >= tokenEndOffset) { // Reached endOffset
-                        hiStartOffset = hiEndOffset;
-                        return false;
-                    }
+        private boolean assignHighlightOrPart(int tokenEndOffset, AttributeSet attrs) {
+            while (hiEndOffset == newlineOffset) { // Newline at highlight start
+                hiEndOffset++; // Skip newline
+                if (updateNewlineOffset(hiEndOffset) || hiEndOffset >= tokenEndOffset) { // Reached endOffset
+                    hiStartOffset = hiEndOffset;
+                    return false;
                 }
-            } 
-            hiStartOffset = hiEndOffset;
-            if (hiEndOffset >= tokenEndOffset) {
-                hiStartOffset = hiEndOffset;
-                return false;
             }
-            if (noBlock && newlineOffset >= hiStartOffset && newlineOffset < tokenEndOffset) {
+            hiStartOffset = hiEndOffset;
+            if (newlineOffset < tokenEndOffset) {
                 hiEndOffset = newlineOffset;
                 partsEndOffset = tokenEndOffset;
             } else {
@@ -767,7 +747,7 @@ implements TokenHierarchyListener, ChangeListener {
         int tokenEndOffset;
         
         AttributeSet tokenAttrs;
-        
+
         /**
          * @param ts
          */

@@ -43,7 +43,6 @@ package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.Collection;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
@@ -55,15 +54,15 @@ import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.SingleUseStatementPartInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Union2;
 
 class UseScopeImpl extends ScopeImpl implements UseScope {
+
+    private final boolean partOfGroupUse;
     private AliasedName aliasName;
-    private UseScope.Type type;
+    private final UseScope.Type type;
 
     UseScopeImpl(NamespaceScopeImpl inScope, SingleUseStatementPartInfo nodeInfo) {
-        this(inScope, nodeInfo.getName(), inScope.getFile(), nodeInfo.getRange());
+        super(inScope, nodeInfo.getName(), inScope.getFile(), nodeInfo.getRange(), PhpElementKind.USE_STATEMENT, false);
         final Identifier alias = nodeInfo.getOriginalNode().getAlias();
         this.aliasName = alias != null ? new AliasedName(alias.getName(), QualifiedName.create(getName())) : null;
         AliasedName aliasedName = null;
@@ -74,11 +73,7 @@ class UseScopeImpl extends ScopeImpl implements UseScope {
         }
         this.aliasName = aliasedName;
         type = CodeUtils.mapType(nodeInfo.getType());
-    }
-
-    private UseScopeImpl(ScopeImpl inScope, String name,
-            Union2<String, FileObject> file, OffsetRange offsetRange) {
-        super(inScope, name, file, offsetRange, PhpElementKind.USE_STATEMENT, false);
+        partOfGroupUse = nodeInfo.isPartOfGroupUse();
     }
 
     @Override
@@ -89,6 +84,10 @@ class UseScopeImpl extends ScopeImpl implements UseScope {
     @Override
     public UseScope.Type getType() {
         return type;
+    }
+
+    public boolean isPartOfGroupUse() {
+        return partOfGroupUse;
     }
 
     @CheckForNull

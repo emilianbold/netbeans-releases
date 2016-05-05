@@ -76,6 +76,12 @@ public final class ScmActivityDisplayer extends ActivityDisplayer implements Act
     private final String scmUrl;
     private final ProjectHandle<ODCSProject> projectHandle;
 
+    private static final String PROP_TYPE = "type"; // NOI18N
+    private static final String OPERATION_CREATE = "CREATE"; // NOI18N
+    private static final String OPERATION_UPDATE = "UPDATE"; // NOI18N
+    private static final String OPERATION_DELETE = "DELETE"; // NOI18N
+    private static final String OPERATION_UPDATE_NONFASTFORWARD = "UPDATE_NONFASTFORWARD"; // NOI18N
+
     private static final String PROP_COMMIT_REPOSITORY = "repository"; // NOI18N
     private static final String PROP_COMMITS_SIZE = "commits.size"; // NOI18N
     private static final String PROP_SIZE = "size"; // NOI18N
@@ -85,10 +91,11 @@ public final class ScmActivityDisplayer extends ActivityDisplayer implements Act
     private static final String PROP_BRANCH = "branch"; // NOI18N
     private static final String PROP_BASE = "base"; // NOI18N
     private static final String PROP_HEAD = "head"; // NOI18N
+    private static final String PROP_TAG = "tag"; // NOI18N
+    private static final String PROP_TRUNCATED = "truncated"; // NOI18N
 
     private static final String PROP_REPO_NAME = "repoName"; // NOI18N
     private static final String PROP_REPO_DESC = "repoDescription"; // NOI18N
-    private static final String PROP_REPO_OPERATION_TYPE = "type"; // NOI18N
     private static final String REPO_CREATED = "CREATED"; // NOI18N
     private static final String REPO_DELETED = "DELETED"; // NOI18N
 
@@ -109,21 +116,60 @@ public final class ScmActivityDisplayer extends ActivityDisplayer implements Act
         if (isRepoActivity()) {
             return titlePanel;
         }
-        // This is a SCM commit activity
+        // This is a SCM push activity
+        Component[] components = null;
         String repository = activity.getProperty(PROP_COMMIT_REPOSITORY);
-        Component[] components;
         if (repository != null) {
-            String cs = activity.getProperties().get(PROP_SIZE);
-            int commitsSize = Integer.parseInt(cs);
-            LinkLabel linkBranch = getBranchLink();
-            if(commitsSize == 1) {
-                LinkLabel linkCommit = getCommitLink(0);
-                components = createMultipartTextComponents("FMT_PushedOne", linkCommit, linkBranch, repository); // NOI18N
-            } else {
-                components = createMultipartTextComponents("FMT_PushedMore", commitsSize, linkBranch, repository); // NOI18N 
+            String type = activity.getProperty(PROP_TYPE);
+            int size = Integer.parseInt(activity.getProperty(PROP_SIZE));
+            boolean tag = Boolean.parseBoolean(activity.getProperty(PROP_TAG));
+            switch (type) {
+            case OPERATION_UPDATE:
+            case OPERATION_UPDATE_NONFASTFORWARD:
+                if (tag) { // tag forced update
+                    LinkLabel linkCommit = getCommitLink(0);
+                    components = createMultipartTextComponents("FMT_AddedTag", getBoldLabel(activity.getProperty(PROP_BRANCH)), linkCommit, repository); // NOI18N
+                } else { // regular commits
+                    LinkLabel linkBranch = getBranchLink();
+                    if (size == 1) {
+                        LinkLabel linkCommit = getCommitLink(0);
+                        components = createMultipartTextComponents("FMT_PushedOne", linkCommit, linkBranch, repository); // NOI18N
+                    } else {
+                        boolean truncated = Boolean.parseBoolean(activity.getProperty(PROP_TRUNCATED));
+                        components = createMultipartTextComponents(truncated ? "FMT_PushedMoreThan" : "FMT_PushedMore", // NOI18N
+                                                                   size, linkBranch, repository);
+                    }
+                }
+                break;
+            case OPERATION_CREATE:
+                if (tag) { // tag added
+                    LinkLabel linkCommit = getCommitLink(0);
+                    components = createMultipartTextComponents("FMT_AddedTag", getBoldLabel(activity.getProperty(PROP_BRANCH)), linkCommit, repository); // NOI18N
+                } else { // branch created
+                    LinkLabel linkBranch = getBranchLink();
+                    if (size == 1) {
+                        LinkLabel linkCommit = getCommitLink(0);
+                        components = createMultipartTextComponents("FMT_AddedBranchOneCommit", linkBranch, repository, linkCommit); // NOI18N
+                    } else {
+                        boolean truncated = Boolean.parseBoolean(activity.getProperty(PROP_TRUNCATED));
+                        components = createMultipartTextComponents(truncated ? "FMT_AddedBranchMoreCommitsThan" : "FMT_AddedBranchMoreCommits", // NOI18N 
+                                                                   linkBranch, repository, size);
+                    }
+                }
+                break;
+            case OPERATION_DELETE:
+                if (tag) { // tag deleted
+                    components = createMultipartTextComponents("FMT_DeletedTag", getBoldLabel(activity.getProperty(PROP_BRANCH)), repository);
+                } else { // branch deleted
+                    components = createMultipartTextComponents("FMT_DeletedBranch", getBoldLabel(activity.getProperty(PROP_BRANCH)), repository);
+                }
+                break;
+            }
+            if (components == null) {
+                components = new Component[] { new JLabel(NbBundle.getMessage(ScmActivityDisplayer.class, "FMT_PushedUnknown", repository)) }; // NOI18N
             }
         } else { // the commit activity may come with null repository (perhaps when the repository is later deleted)
-            components = new Component[] { new JLabel(NbBundle.getMessage(ScmActivityDisplayer.class, "FMT_PushedOne", getMinimizedCommitId(0))) }; // NOI18N
+            components = new Component[] { new JLabel(NbBundle.getMessage(ScmActivityDisplayer.class, "FMT_PushedNoRepo", getMinimizedCommitId(0))) }; // NOI18N
         }
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.LINE_START;
@@ -135,7 +181,7 @@ public final class ScmActivityDisplayer extends ActivityDisplayer implements Act
         return titlePanel;
     }
 
-    protected LinkLabel getCommitLink(final int idx) {
+    private LinkLabel getCommitLink(final int idx) {
         final String commitUrl = getCommitUrl(idx);
         final Action action = new OpenCommitAction(NbBundle.getMessage(ScmActivityDisplayer.class, "LBL_OpenIDE"), idx); // NOI18N
         LinkLabel linkCommit = new LinkLabel(getMinimizedCommitId(idx)) {
@@ -168,7 +214,7 @@ public final class ScmActivityDisplayer extends ActivityDisplayer implements Act
         }
     }
     
-    protected LinkLabel getBranchLink() {
+    private LinkLabel getBranchLink() {
         final String branch = activity.getProperty(PROP_BRANCH);
         final String branchUrl = getBranchUrl(branch);
         final Action action = new OpenBranchAction(NbBundle.getMessage(ScmActivityDisplayer.class, "LBL_OpenIDE")); // NOI18N
@@ -186,10 +232,14 @@ public final class ScmActivityDisplayer extends ActivityDisplayer implements Act
         return linkBranch;
     }
 
+    private JLabel getBoldLabel(String text) {
+        return new JLabel("<html><b>" + text + "</b>");
+    }
+
     @Override
     public JComponent getShortDescriptionComponent() {
         if (isRepoActivity()) {
-            String type = activity.getProperty(PROP_REPO_OPERATION_TYPE);
+            String type = activity.getProperty(PROP_TYPE);
             final String repoName = activity.getProperty(PROP_REPO_NAME);
             if (REPO_DELETED.equals(type)) {
                 return createMultipartTextComponent("FMT_RepositoryDeleted", repoName); // NOI18N
@@ -212,6 +262,16 @@ public final class ScmActivityDisplayer extends ActivityDisplayer implements Act
                 }
             }
         } else { // SCM push
+            int size = Integer.parseInt(activity.getProperty(PROP_SIZE));
+            boolean tag = Boolean.parseBoolean(activity.getProperty(PROP_TAG));
+            if (size == 1 && !tag) {
+                String commentFull = activity.getProperty(String.format(PROP_COMMITS_COMMENT, 0));
+                String comment = skipLineBreaks(commentFull);    
+
+                JLabel commentLabel = new JLabel(comment);
+                commentLabel.setToolTipText(toHtml(commentFull));
+                return commentLabel;
+            }
             return new JLabel();
         }
     }
@@ -277,7 +337,7 @@ public final class ScmActivityDisplayer extends ActivityDisplayer implements Act
                     final Action action = new OpenCommitIntervalAction(NbBundle.getMessage(ScmActivityDisplayer.class, "LBL_OpenIDE")); // NOI18N
                     final String compareUrl = getCompareUrl();
         
-                    LinkLabel showAll = new LinkLabel(NbBundle.getMessage(ScmActivityDisplayer.class, "LBL_ShowAllCommits", fullSize)) { // NOI18N
+                    LinkLabel showAll = new LinkLabel(NbBundle.getMessage(ScmActivityDisplayer.class, "LBL_ShowAllCommits")) { // NOI18N
                         @Override
                         public void mouseClicked(MouseEvent e) {
                             Action a = action;

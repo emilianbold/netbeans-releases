@@ -60,8 +60,10 @@ import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.DialogDisplayer;
+import org.openide.awt.Actions;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
+import org.openide.util.actions.Presenter;
 
 
 /**
@@ -73,6 +75,17 @@ public class WatchesActionsProvider implements NodeActionsProvider {
         (NbBundle.getBundle(WatchesActionsProvider.class).getString("CTL_WatchAction_AddNew")) {
             public void actionPerformed (ActionEvent e) {
                 ((AddWatchAction) AddWatchAction.findObject(AddWatchAction.class, true)).actionPerformed(null);
+            }
+    };
+    private static final Action SHOW_PINNED_WATCHES_ACTION = new CheckBoxAction
+        (NbBundle.getBundle(WatchesActionsProvider.class).getString("CTL_WatchAction_ShowPinned"),
+         "showPinned") {
+            @Override protected boolean isSelected() {
+                return WatchesTreeModel.showPinnedWatches.isShowPinnedWatches();
+            }
+
+            @Override protected void setSelected(boolean selected) {
+                WatchesTreeModel.showPinnedWatches.setShowPinnedWatches(selected);
             }
     };
     private static final Action DELETE_ALL_ACTION = new AbstractAction 
@@ -122,12 +135,14 @@ public class WatchesActionsProvider implements NodeActionsProvider {
         if (node == TreeModel.ROOT) 
             return new Action [] {
                 NEW_WATCH_ACTION,
+                SHOW_PINNED_WATCHES_ACTION,
                 null,
                 DELETE_ALL_ACTION
             };
         if (node instanceof Watch)
             return new Action [] {
                 NEW_WATCH_ACTION,
+                SHOW_PINNED_WATCHES_ACTION,
                 null,
                 DELETE_ACTION,
                 DELETE_ALL_ACTION,
@@ -197,6 +212,36 @@ public class WatchesActionsProvider implements NodeActionsProvider {
 
         if (dd.getValue() != org.openide.DialogDescriptor.OK_OPTION) return;
         w.setExpression(wp.getExpression());
+    }
+
+    private static abstract class CheckBoxAction extends AbstractAction implements Presenter.Popup {
+
+        private JCheckBoxMenuItem popupItem;
+
+        CheckBoxAction(String name, String id) {
+            super(name);
+            putValue("WatchActionId", id);  // NOI18N
+        }
+
+        @Override
+        public final void actionPerformed(ActionEvent e) {
+            setSelected(!isSelected());
+        }
+
+        @Override
+        public JMenuItem getPopupPresenter() {
+            if (popupItem == null) {
+                popupItem = new JCheckBoxMenuItem();
+                popupItem.setSelected(isSelected());
+                Actions.connect(popupItem, this, true);
+            }
+            return popupItem;
+        }
+
+        protected abstract boolean isSelected();
+
+        protected abstract void setSelected(boolean selected);
+
     }
 
 }

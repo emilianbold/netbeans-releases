@@ -136,6 +136,12 @@ public final class Icons {
         if ( modifiers.contains( Modifier.STATIC ) ) {
             fileName.append( "Static" );                        //NOI18N
         }
+        if ( modifiers.contains( Modifier.ABSTRACT ) ) {
+            fileName.append( "Abstract" );                        //NOI18N
+        }
+        if ( modifiers.contains( Modifier.DEFAULT ) ) {
+            fileName.append( "Default" );                        //NOI18N
+        }
         if (kind == ElementKind.STATIC_INIT || kind == ElementKind.INSTANCE_INIT) {
             return fileName.append(extension).toString();
         }

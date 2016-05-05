@@ -87,7 +87,7 @@ public class Utilities {
         PROJECTS.put("jEdit", "http://hg.netbeans.org/binaries/BBD005CDF8785223376257BD3E211C7C51A821E7-jEdit41.zip");
         PROJECTS.put("mediawiki-1.14.0", "https://netbeans.org/projects/performance/downloads/download/Mediawiki-1_FitnessViaSamples.14.0-nbproject.zip");
         PROJECTS.put("tomcat6", "http://hg.netbeans.org/binaries/70CE8459CA39C3A49A2722C449117CE5DCFBA56A-tomcat6.zip");
-        PROJECTS.put("FrankioskiProject", "http://jupiter.cz.oracle.com/wiki/pub/NbQE/TestingProjects/BigWebProject.zip");
+        PROJECTS.put("FrankioskiProject", "http://jupiter.uk.oracle.com/wiki/pub/NbQE/TestingProjects/BigWebProject.zip");
     }
 
     /**

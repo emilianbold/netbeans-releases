@@ -300,7 +300,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         }
 
         boolean oldHostValid = ToolsUtils.isDevHostValid(execEnv);
-        final CompilerSet cs = AddCompilerSetPanel.invokeMe(csm);
+        final CompilerSet cs = AddCompilerSetPanel.invokeMe(csm, null);
         if (cs == null) {
             boolean newHostValid = ToolsUtils.isDevHostValid(execEnv);
             if (oldHostValid != newHostValid) {
@@ -345,7 +345,8 @@ public final class ToolsPanel extends JPanel implements ActionListener,
             @Override
             public void run() {
                 final CompilerSetImpl cs = ((CompilerSetImpl) selectedCompilerSet)
-                        .createCopy(selectedCompilerSet.getCompilerFlavor(), selectedCompilerSet.getDirectory(), compilerSetName, null, false, true);
+                        .createCopy(csm.getExecutionEnvironment(), selectedCompilerSet.getCompilerFlavor(), selectedCompilerSet.getDirectory(), compilerSetName, null,
+                                false, true, selectedCompilerSet.getModifyBuildPath(), selectedCompilerSet.getModifyRunPath());
                 csm.add(cs);
                 changed = areToolsOptionsChanged();
                 SwingUtilities.invokeLater(new Runnable(){

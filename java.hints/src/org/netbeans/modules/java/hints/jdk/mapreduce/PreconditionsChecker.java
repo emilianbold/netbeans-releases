@@ -226,13 +226,10 @@ public class PreconditionsChecker {
         public Set<Name> getAllLocalVariablesUsed() {
             return this.allLocalVariables;
         }
-        private HashMap<Name, TypeMirror> varToType = new HashMap<Name, TypeMirror>();
-
         @Override
         public Tree visitVariable(VariableTree that, Trees trees) {
             this.innerVariables.add(that.getName());
             this.allLocalVariables.add(that.getName());
-            this.varToType.put(that.getName(), trees.getTypeMirror(TreePath.getPath(treePath, that.getType())));
             return super.visitVariable(that, trees);
         }
 

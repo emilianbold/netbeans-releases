@@ -15,8 +15,14 @@ CLASS      BoolClass                       [PUBLIC]   scalarTypeHints.php
 CLASS      Cls                             [PUBLIC]   uniformVariableSyntax01.php
 CLASS      Cls                             [PUBLIC]   uniformVariableSyntax02.php
 CLASS      ClsA                            [PUBLIC]   A
+CLASS      ClsA                            [PUBLIC]   A
+CLASS      ClsAB                           [PUBLIC]   A
+CLASS      ClsAB                           [PUBLIC]   A\B
 CLASS      ClsAB                           [PUBLIC]   A\B
 CLASS      ClsABC                          [PUBLIC]   A\B\C
+CLASS      ClsABC                          [PUBLIC]   A\B\C
+CLASS      ClsABC2                         [PUBLIC]   A\B\C
+CLASS      ClsUnused                       [PUBLIC]   A
 CLASS      Comment                         [PUBLIC]   My\Firm
 CLASS      Comment                         [PUBLIC]   returnTypesTyping05.php
 CLASS      Comment                         [PUBLIC]   returnTypesTyping06.php
@@ -29,6 +35,7 @@ CLASS      Comment                         [PUBLIC]   returnTypesTyping12.php
 CLASS      CommentsIterator                [PUBLIC]   My\Firm
 CLASS      FloatClass                      [PUBLIC]   scalarTypeHints.php
 CLASS      IntClass                        [PUBLIC]   scalarTypeHints.php
+CLASS      MyCls                           [PUBLIC]   A
 CLASS      Numbers                         [PUBLIC]   uniformVariableSyntax01.php
 CLASS      Numbers                         [PUBLIC]   uniformVariableSyntax02.php
 CLASS      Outer                           [PUBLIC]   My
@@ -43,6 +50,9 @@ METHOD     bazz()                          [PUBLIC]   My\Firm
 METHOD     bazz()                          [PUBLIC]   My\Firm
 METHOD     bazz(...$data)                  [PUBLIC]   My\Firm
 METHOD     boolTypeHint(bool $arg)         [PUBLIC]   scalarTypeHints.php
+METHOD     fa()                            [PUBLIC]   A
+METHOD     fb()                            [PUBLIC]   A\B
+METHOD     fc()                            [PUBLIC]   A\B\C
 METHOD     floatTypeHint(float $arg)       [PUBLIC]   scalarTypeHints.php
 METHOD     fnc()                           [PUBLIC]   uniformVariableSyntax01.php
 METHOD     fnc()                           [PUBLIC]   uniformVariableSyntax02.php
@@ -66,6 +76,9 @@ VARIABLE   $argc                                      PHP Platform
 VARIABLE   $argv                                      PHP Platform
 VARIABLE   $http_response_header                      PHP Platform
 VARIABLE   $php_errormsg                              PHP Platform
+CONSTANT   C_A 'C-A'                       [PUBLIC]   A
+CONSTANT   C_B 'C-B'                       [PUBLIC]   A\B
+CONSTANT   C_C 'C-C'                       [PUBLIC]   A\B\C
 KEYWORD    abstract                                   null
 KEYWORD    and                                        null
 KEYWORD    array                                      null

@@ -4,3 +4,4 @@ B\|ClsAB,
 ------------------------------------
 PACKAGE    C                               [PUBLIC]   A\B
 CLASS      ClsAB                           [PUBLIC]   A\B
+CLASS      ClsAB                           [PUBLIC]   A\B

@@ -158,6 +158,7 @@ ide/modules/org-eclipse-mylyn-commons-xmlrpc.jar                      EPL-v10
 ide/modules/org-eclipse-mylyn-tasks-core.jar                          EPL-v10
 ide/modules/org-eclipse-mylyn-wikitext-confluence-core.jar            EPL-v10
 ide/modules/org-eclipse-mylyn-wikitext-core.jar                       EPL-v10 (see also about.html inside this JAR file)
+ide/modules/org-eclipse-mylyn-wikitext-markdown-core.jar              EPL-v10
 ide/modules/org-eclipse-mylyn-wikitext-textile-core.jar               EPL-v10
 ide/modules/org-netbeans-modules-xml-catalog.jar!org/netbeans/modules/xml/catalog/resources/Transform.xsd  W3C (the original at http://www.w3.org/TR/xslt20/)
 ide/modules/org-netbeans-modules-xml-catalog.jar!org/netbeans/modules/xml/catalog/resources/XMLNamespace.xsd  W3C (the original at http://www.w3.org/2001/xml.xsd)
@@ -239,8 +240,8 @@ platform/docs/swing-layout-1.0.4-src.zip                              LGPL-2.1
 platform/docs/testng-6.8.1-javadoc.zip                                Apache-2.0
 platform/modules/ext/felix-4.2.1.jar                                  Apache-2.0
 platform/modules/ext/hamcrest-core-1.3.jar                            BSD-hamcrest
-platform/modules/ext/jna-4.2.1.jar                                    Apache-2.0-JNA
-platform/modules/ext/jna-platform-4.2.1.jar                           Apache-2.0-JNA
+platform/modules/ext/jna-4.2.2.jar                                    Apache-2.0-JNA
+platform/modules/ext/jna-platform-4.2.2.jar                           Apache-2.0-JNA
 platform/modules/ext/junit-4.12.jar                                   EPL-v10
 platform/modules/ext/nsProxyAutoConfig.js                             LGPL-2.1
 platform/modules/ext/org.eclipse.osgi_3.9.1.v20140110-1610.jar        OSGi-LICENSE

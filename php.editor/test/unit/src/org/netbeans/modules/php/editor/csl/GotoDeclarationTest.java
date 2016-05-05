@@ -1045,6 +1045,271 @@ public class GotoDeclarationTest extends PHPNavTestBase {
         checkDeclaration(getTestPath(), "echo self::testCon^stant;", "const ^testConstant = \"test\";");
     }
 
+    public void testReturnType_01() throws Exception {
+        checkDeclaration(getTestPath(), "    public function getLogger(): Lo^gger {", "interface ^Logger {");
+    }
+
+    public void testReturnType_02() throws Exception {
+        checkDeclaration(getTestPath(), "function foo(): Log^ger {", "interface ^Logger {");
+    }
+
+    public void testAnonymousClass01_01() throws Exception {
+        checkDeclaration(getTestPath(), "$anonCls = new class implements Lo^gger {", "interface ^Logger {");
+    }
+
+    public void testAnonymousClass01_02() throws Exception {
+        checkDeclaration(getTestPath(), "        echo $m^sg; // 1", "    public function log(string $^msg) { // 1");
+    }
+
+    public void testAnonymousClass01_03() throws Exception {
+        checkDeclaration(getTestPath(), "var_dump($ano^nCls);", "$^anonCls = new class implements Logger {");
+    }
+
+    public void testAnonymousClass01_04() throws Exception {
+        checkDeclaration(getTestPath(), "$app->setLogger(new class implements Lo^gger {", "interface ^Logger {");
+    }
+
+    public void testAnonymousClass01_05() throws Exception {
+        checkDeclaration(getTestPath(), "        echo $m^sg; // 2", "    public function log(string $^msg) { // 2");
+    }
+
+    public void testAnonymousClass01_06() throws Exception {
+        checkDeclaration(getTestPath(), "(new class implements Logg^er {", "interface ^Logger {");
+    }
+
+    public void testAnonymousClass01_07() throws Exception {
+        checkDeclaration(getTestPath(), "        echo $ms^g; // 3", "    public function log(string $^msg) { // 3");
+    }
+
+    public void testAnonymousClass01_08() throws Exception {
+        checkDeclaration(getTestPath(), "})->l^og('hello world');", "    public function ^log(string $msg) { // 3");
+    }
+
+    public void testAnonymousClass02() throws Exception {
+        checkDeclaration(getTestPath(), "        $this->tes^tB();", "    private function ^testB() {");
+    }
+
+    public void testAnonymousClass03_01() throws Exception {
+        checkDeclaration(getTestPath(), "        return new class($this->pr^op) extends Outer {", "    private $^prop = 1;");
+    }
+
+    public void testAnonymousClass03_02() throws Exception {
+        checkDeclaration(getTestPath(), "        return new class($this->prop) extends Ou^ter {", "class ^Outer {");
+    }
+
+    public void testAnonymousClass03_03() throws Exception {
+        checkDeclaration(getTestPath(), "                $this->pr^op3 = $prop;", "            private $^prop3;");
+    }
+
+    // XXX
+//    public void testAnonymousClass03_04() throws Exception {
+//        checkDeclaration(getTestPath(), "                $this->prop3 = $p^rop;", "            public function __construct($^prop) {");
+//    }
+
+    public void testAnonymousClass03_05() throws Exception {
+        checkDeclaration(getTestPath(), "                return $this->pr^op2 + $this->prop3 + $this->func1();", "    protected $^prop2 = 2;");
+    }
+
+    public void testAnonymousClass03_06() throws Exception {
+        checkDeclaration(getTestPath(), "                return $this->prop2 + $this->prop^3 + $this->func1();", "            private $^prop3;");
+    }
+
+    public void testAnonymousClass03_07() throws Exception {
+        checkDeclaration(getTestPath(), "                return $this->prop2 + $this->prop3 + $this->fun^c1();", "    protected function ^func1() {");
+    }
+
+    public void testAnonymousClass03_08() throws Exception {
+        checkDeclaration(getTestPath(), "echo (new Ou^ter)->func2()->func3() . PHP_EOL;", "class ^Outer {");
+    }
+
+    public void testAnonymousClass03_09() throws Exception {
+        checkDeclaration(getTestPath(), "echo (new Outer)->fun^c2()->func3() . PHP_EOL;", "    public function ^func2() {");
+    }
+
+    public void testAnonymousClass03_10() throws Exception {
+        checkDeclaration(getTestPath(), "echo (new Outer)->func2()->fun^c3() . PHP_EOL;", "            public function ^func3() {");
+    }
+
+    public void testAnonymousClass04_01() throws Exception {
+        checkDeclaration(getTestPath(), "var_dump(new class(10) extends Som^eClass implements SomeInterface {", "class ^SomeClass {");
+    }
+
+    public void testAnonymousClass04_02() throws Exception {
+        checkDeclaration(getTestPath(), "var_dump(new class(10) extends SomeClass implements SomeInt^erface {", "interface ^SomeInterface {");
+    }
+
+    public void testAnonymousClass04_03() throws Exception {
+        checkDeclaration(getTestPath(), "    use Some^Trait;", "trait ^SomeTrait {");
+    }
+
+    public void testAnonymousClass05() throws Exception {
+        checkDeclaration(getTestPath(), "$anon = new class($int, fo^o()) {", "function ^foo() {");
+    }
+
+    public void testAnonymousClass06_01() throws Exception {
+        checkDeclaration(getTestPath(), "        $this->used^Field = 10;", "    private $^usedField;");
+    }
+
+    public void testAnonymousClass06_02() throws Exception {
+        checkDeclaration(getTestPath(), "        self::$usedS^taticField = 20;", "    private static $^usedStaticField;");
+    }
+
+    public void testAnonymousClass06_03() throws Exception {
+        checkDeclaration(getTestPath(), "        $this->usedPrivat^eMethod();", "    private function ^usedPrivateMethod() {");
+    }
+
+    public void testAnonymousClass06_04() throws Exception {
+        checkDeclaration(getTestPath(), "        self::usedStaticP^rivateMethod();", "    private static function ^usedStaticPrivateMethod() {");
+    }
+
+    public void testAnonymousClass07_01() throws Exception {
+        checkDeclaration(getTestPath(), "$x = new class implements MyL^ogger {", "use api\\Logger as ^MyLogger;");
+    }
+
+    public void testAnonymousClass07_02() throws Exception {
+        checkDeclaration(getTestPath(), "$x->l^og('');", "    public function ^log($msg) {");
+    }
+
+    public void testGroupUse_01() throws Exception {
+        checkDeclaration(getTestPath(), "    B\\C\\Cls^ABC2 AS MyCls", "class ^ClsABC2 {");
+    }
+
+    public void testGroupUse_02() throws Exception {
+        checkDeclaration(getTestPath(), "$a = new Cl^sA();", "class ^ClsA {");
+    }
+
+    public void testGroupUse_03() throws Exception {
+        checkDeclaration(getTestPath(), "$a->te^st();", "    public function ^test() { // ClsA");
+    }
+
+    public void testGroupUse_04() throws Exception {
+        checkDeclaration(getTestPath(), "$ab = new Cl^sAB();", "class ^ClsAB {");
+    }
+
+    public void testGroupUse_05() throws Exception {
+        checkDeclaration(getTestPath(), "$ab->te^st();", "    public function ^test() { // ClsAB");
+    }
+
+    public void testGroupUse_06() throws Exception {
+        checkDeclaration(getTestPath(), "$abc = new Cls^ABC();", "class ^ClsABC {");
+    }
+
+    public void testGroupUse_07() throws Exception {
+        checkDeclaration(getTestPath(), "$abc->tes^t();", "    public function ^test() { // ClsABC");
+    }
+
+    public void testGroupUse_08() throws Exception {
+        checkDeclaration(getTestPath(), "$mycls = new MyC^ls();", "    B\\C\\ClsABC2 AS ^MyCls");
+    }
+
+    public void testGroupUse_09() throws Exception {
+        checkDeclaration(getTestPath(), "$mycls->te^st();", "    public function ^test() { // ClsABC2");
+    }
+
+    public void testGroupUseConst_01() throws Exception {
+        checkDeclaration(getTestPath(), "    B\\C\\CA^BC AS MyCABC", "const ^CABC = 'CABC';");
+    }
+
+    public void testGroupUseConst_02() throws Exception {
+        checkDeclaration(getTestPath(), "echo C^A . PHP_EOL;", "const ^CA = 'CA';");
+    }
+
+    public void testGroupUseConst_03() throws Exception {
+        checkDeclaration(getTestPath(), "echo C^AB . PHP_EOL;", "const ^CAB = 'CAB';");
+    }
+
+    public void testGroupUseConst_04() throws Exception {
+        checkDeclaration(getTestPath(), "echo CA^BC . PHP_EOL;", "const ^CABC = 'CABC';");
+    }
+
+    public void testGroupUseConst_05() throws Exception {
+        checkDeclaration(getTestPath(), "echo MyC^ABC . PHP_EOL;", "    B\\C\\CABC AS ^MyCABC");
+    }
+
+    public void testGroupUseFunc_01() throws Exception {
+        checkDeclaration(getTestPath(), "    B\\C\\f^abc AS MyFabc", "function ^fabc() {");
+    }
+
+    public void testGroupUseFunc_02() throws Exception {
+        checkDeclaration(getTestPath(), "echo f^a();", "function ^fa() {");
+    }
+
+    public void testGroupUseFunc_03() throws Exception {
+        checkDeclaration(getTestPath(), "echo fa^b();", "function ^fab() {");
+    }
+
+    public void testGroupUseFunc_04() throws Exception {
+        checkDeclaration(getTestPath(), "echo fa^bc();", "function ^fabc() {");
+    }
+
+    public void testGroupUseFunc_05() throws Exception {
+        checkDeclaration(getTestPath(), "echo MyFa^bc();", "    B\\C\\fabc AS ^MyFabc");
+    }
+
+    public void testUniformVariableSyntax_01() throws Exception {
+        checkDeclaration(getTestPath(), "UV^S3::myStatic3()::myStatic2();", "class ^UVS3 {");
+    }
+
+    public void testUniformVariableSyntax_02() throws Exception {
+        checkDeclaration(getTestPath(), "UVS3::mySt^atic3()::myStatic2();", "    public static function ^myStatic3(): UVS2 {");
+    }
+
+    public void testUniformVariableSyntax_03() throws Exception {
+        checkDeclaration(getTestPath(), "UVS3::myStatic3()::mySt^atic2();", "    public static function ^myStatic2(): UVS1 {");
+    }
+
+    public void testUniformVariableSyntax_04() throws Exception {
+        checkDeclaration(getTestPath(), "UVS3::myStatic3()::myStatic2()::mySt^atic1()::MAX;", "    public static function ^myStatic1() {");
+    }
+
+    public void testUniformVariableSyntax_05() throws Exception {
+        checkDeclaration(getTestPath(), "UVS3::myStatic3()::myStatic2()::myStatic1()::M^AX;", "    const ^MAX = 99;");
+    }
+
+    public void testUniformVariableSyntax_06() throws Exception {
+        checkDeclaration(getTestPath(), "UVS3::myStatic3()::myStatic2()::myStatic1()::A^VG;", "    const ^AVG = 50;");
+    }
+
+    public void testUniformVariableSyntax_07() throws Exception {
+        checkDeclaration(getTestPath(), "UVS3::myStatic3()::myStatic2()::myStatic1()::$M^IN;", "    static $^MIN = \"MIN\";");
+    }
+
+    public void testUniformVariableSyntax_08() throws Exception {
+        checkDeclaration(getTestPath(), "UVS3::myStatic3()::myStatic2()::myStatic1()::$TO^TAL;", "    static $^TOTAL = \"TOTAL\";");
+    }
+
+    public void testUniformVariableSyntax_09() throws Exception {
+        checkDeclaration(getTestPath(), "UVS3::myStatic3()::myStatic2()::myStatic1()::$INST^ANCE::myStatic1();", "    static $^INSTANCE;");
+    }
+
+    public void testUniformVariableSyntax_10() throws Exception {
+        checkDeclaration(getTestPath(), "UVS3::myStatic3()::myStatic2()::myStatic1()::$INSTANCE::myStati^c1();", "    public static function ^myStatic1() {");
+    }
+
+    public void testUniformVariableSyntax_11() throws Exception {
+        checkDeclaration(getTestPath(), "UVS3::myStatic3()::myStatic2()::myStatic1()::mySt^atic2();", "    public static function ^myStatic2() { // UVS1");
+    }
+
+    public void testUniformVariableSyntax_12() throws Exception {
+        checkDeclaration(getTestPath(), "UVS3::myStatic3()->myStatic2()::myStatic1()->mySt^atic2();", "    public static function ^myStatic2() { // UVS1");
+    }
+
+    public void testUniformVariableSyntax_13() throws Exception {
+        checkDeclaration(getTestPath(), "UVS3::myStatic3()->myStatic2()::myStatic1()->te^st;", "    public $^test = null;");
+    }
+
+    public void testUniformVariableSyntax_14() throws Exception {
+        checkDeclaration(getTestPath(), "f^oo()::myStatic2();", "function ^foo(): UVS2 {");
+    }
+
+    public void testUniformVariableSyntax_15() throws Exception {
+        checkDeclaration(getTestPath(), "foo()::mySta^tic2();", "    public static function ^myStatic2(): UVS1 {");
+    }
+
+    public void testUniformVariableSyntax_16() throws Exception {
+        checkDeclaration(getTestPath(), "foo()::myStatic2()::myStati^c2();", "    public static function ^myStatic2() { // UVS1");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //    public void testGotoTypeClsIface6() throws Exception {
 //        String gotoTest = prepareTestFile(

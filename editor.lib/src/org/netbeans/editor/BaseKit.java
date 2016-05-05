@@ -105,6 +105,7 @@ import javax.swing.undo.UndoableEdit;
 import org.netbeans.api.editor.caret.CaretInfo;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
+import org.netbeans.api.editor.EditorUtilities;
 import org.netbeans.api.editor.caret.EditorCaret;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -1171,11 +1172,7 @@ public class BaseKit extends DefaultEditorKit {
                                         boolean alreadyBeeped = false;
                                         DocumentUtilities.setTypingModification(doc, true);
                                         try {
-                                            // Store current state of caret(s) for undo
-                                            UndoableEdit caretUndoEdit = CaretUndo.createCaretUndoEdit(caret, doc, false);
-                                            if (caretUndoEdit != null) {
-                                                doc.addUndoableEdit(caretUndoEdit);
-                                            }
+                                            EditorUtilities.addCaretUndoableEdit(doc, caret);
                                         for (CaretInfo c : carets) {
                                             if (c.isSelection()) { // valid selection
                                                 int p0 = Math.min(c.getDot(), c.getMark());
@@ -1232,11 +1229,7 @@ public class BaseKit extends DefaultEditorKit {
                                                 }
                                             }
                                         }
-                                            // Store current state of caret(s) for redo
-                                            UndoableEdit caretRedoEdit = CaretUndo.createCaretUndoEdit(caret, doc, true);
-                                            if (caretRedoEdit != null) {
-                                                doc.addUndoableEdit(caretRedoEdit);
-                                            }
+                                            EditorUtilities.addCaretUndoableEdit(doc, caret);
 
                                         } finally {
                                             DocumentUtilities.setTypingModification(doc, false);
@@ -1263,6 +1256,7 @@ public class BaseKit extends DefaultEditorKit {
                                 doc.runAtomicAsUser(new Runnable() {
                                     public void run() {
                                         boolean alreadyBeeped = false;
+                                        EditorUtilities.addCaretUndoableEdit(doc, caret);
                                         if (target.getCaret().isSelectionVisible() && caret.getDot() != caret.getMark()) { // valid selection
                                             EditorUI editorUI = Utilities.getEditorUI(target);
                                             Boolean overwriteMode = (Boolean) editorUI.getProperty(EditorUI.OVERWRITE_MODE_PROPERTY);
@@ -1292,6 +1286,7 @@ public class BaseKit extends DefaultEditorKit {
                                                 target.getToolkit().beep();
                                             }
                                         }
+                                        EditorUtilities.addCaretUndoableEdit(doc, caret);
                                     }
                                 });
 
@@ -1458,7 +1453,62 @@ public class BaseKit extends DefaultEditorKit {
                 }
 
                 final BaseDocument doc = (BaseDocument)target.getDocument();
-                final int insertionOffset = computeInsertionOffset(target.getCaret());
+                Caret caret = target.getCaret();
+                if(caret instanceof EditorCaret && ((EditorCaret)caret).getCarets().size() > 1) {
+                    final EditorCaret editorCaret = (EditorCaret) caret;
+                    final Indent indenter = Indent.get(doc);
+                    indenter.lock();
+                    try {
+                        doc.runAtomicAsUser(new Runnable() {
+                            @Override
+                            public void run() {
+                                editorCaret.moveCarets(new CaretMoveHandler() {
+                                    @Override
+                                    public void moveCarets(CaretMoveContext context) {
+                                        boolean beeped = false;
+                                        DocumentUtilities.setTypingModification(doc, true);
+                                        EditorUtilities.addCaretUndoableEdit(doc, editorCaret);
+                                        for (CaretInfo c : context.getOriginalSortedCarets()) {
+                                            try {
+                                                int insertionOffset = computeInsertionOffset(c.getDot(), c.getMark());
+                                                int insertionLength = computeInsertionLength(c.getDot(), c.getMark());
+                                                String insertionText = "\n"; //NOI18N
+                                                try {
+                                                    doc.remove(insertionOffset, insertionLength);
+                                                    // insert new line, caret moves to the new line
+                                                    int dotPos = insertionOffset;
+
+                                                    doc.insertString(insertionOffset, insertionText, null);
+                                                    dotPos += insertionText.indexOf('\n') + 1; //NOI18N
+
+                                                    // reindent the new line
+                                                    Position newDotPos = doc.createPosition(dotPos);
+                                                    indenter.reindent(dotPos);
+
+                                                    // adjust the caret
+                                                    context.setDot(c, newDotPos);
+                                                } finally {
+                                                    DocumentUtilities.setTypingModification(doc, false);
+                                                }
+                                            } catch (BadLocationException ble) {
+                                                LOG.log(Level.FINE, null, ble);
+                                                if(!beeped) {
+                                                    target.getToolkit().beep();
+                                                    beeped = true;
+                                                }
+                                            }
+                                        }
+                                        EditorUtilities.addCaretUndoableEdit(doc, editorCaret);
+                                    }
+                                });
+                            }
+                        });
+                    } finally {
+                        indenter.unlock();
+                    }
+                        
+                } else {
+                final int insertionOffset = computeInsertionOffset(caret);
                 final TypedBreakInterceptorsManager.Transaction transaction = TypedBreakInterceptorsManager.getInstance().openTransaction(
                         target, insertionOffset, insertionOffset);
                 
@@ -1497,7 +1547,7 @@ public class BaseKit extends DefaultEditorKit {
                 } finally {
                     transaction.close();
                 }
-                
+                }                
             }
         }
 
@@ -1585,14 +1635,21 @@ public class BaseKit extends DefaultEditorKit {
         }
         
         private int computeInsertionOffset(Caret caret) {
+            return computeInsertionOffset(caret.getMark(), caret.getDot());
+        }
+     
+        private int computeInsertionOffset(int dot, int mark) {
             // If selection is present return begining of selection
-            return Math.min(caret.getMark(), caret.getDot());
+            return Math.min(mark, dot);
         }
         
         private int computeInsertionLength(Caret caret) {
-            return 
-                    Math.max(caret.getMark(), caret.getDot()) -
-                    Math.min(caret.getMark(), caret.getDot());
+            return computeInsertionLength(caret.getDot(), caret.getMark());
+        }
+        
+        private int computeInsertionLength(int dot, int mark) {
+            return Math.max(mark, dot) -
+                   Math.min(mark, dot);
         }
     } // End of InsertBreakAction class
 
@@ -1696,7 +1753,9 @@ public class BaseKit extends DefaultEditorKit {
                                                                 int newSelectionStartOffset = start;
                                                                 int lineStartOffset = Utilities.getRowStart(doc, start);
                                                                 if (lineStartOffset != newSelectionStartOffset) {
-                                                                    target.select(lineStartOffset, end);
+                                                                    context.setDotAndMark(caretInfo,
+                                                                                            doc.createPosition(lineStartOffset),
+                                                                                            doc.createPosition(end));
                                                                 }
                                                             }
                                                         }
@@ -2010,11 +2069,7 @@ public class BaseKit extends DefaultEditorKit {
                             public void run() {
                                     boolean alreadyBeeped = false;
                                     DocumentUtilities.setTypingModification(doc, true);
-                                    // Store current state of caret(s) for undo
-                                    UndoableEdit caretUndoEdit = CaretUndo.createCaretUndoEdit(caret, doc, false);
-                                    if (caretUndoEdit != null) {
-                                        doc.addUndoableEdit(caretUndoEdit);
-                                    }
+                                    EditorUtilities.addCaretUndoableEdit(doc, caret);
                                     try {
                                         for (CaretInfo c : carets) {
                                             if (c.isSelection()) {
@@ -2057,11 +2112,7 @@ public class BaseKit extends DefaultEditorKit {
                                                 }
                                             }
                                         }
-                                        // Store current state of caret(s) for redo
-                                        UndoableEdit caretRedoEdit = CaretUndo.createCaretUndoEdit(caret, doc, true);
-                                        if (caretRedoEdit != null) {
-                                            doc.addUndoableEdit(caretRedoEdit);
-                                        }
+                                        EditorUtilities.addCaretUndoableEdit(doc, caret);
 
                                     } finally {
                                         DocumentUtilities.setTypingModification(doc, false);
@@ -2082,11 +2133,7 @@ public class BaseKit extends DefaultEditorKit {
                     doc.runAtomicAsUser (new Runnable () {
                         public void run () {
                             DocumentUtilities.setTypingModification(doc, true);
-                            // Store current state of caret(s) for undo
-                            UndoableEdit caretUndoEdit = CaretUndo.createCaretUndoEdit(caret, doc, false);
-                            if (caretUndoEdit != null) {
-                                doc.addUndoableEdit(caretUndoEdit);
-                            }
+                            EditorUtilities.addCaretUndoableEdit(doc, caret);
                             try {
                                 List<Position> dotAndMarkPosPairs = new ArrayList<>(2);
                                 dotAndMarkPosPairs.add(doc.createPosition(caret.getDot()));
@@ -2101,11 +2148,7 @@ public class BaseKit extends DefaultEditorKit {
                                 } else {
                                     doc.remove(Math.min(dot, mark), Math.abs(dot - mark));
                                 }
-                                // Store current state of caret(s) for redo
-                                UndoableEdit caretRedoEdit = CaretUndo.createCaretUndoEdit(caret, doc, true);
-                                if (caretRedoEdit != null) {
-                                    doc.addUndoableEdit(caretRedoEdit);
-                                }
+                                EditorUtilities.addCaretUndoableEdit(doc, caret);
                             } catch (BadLocationException e) {
                                 target.getToolkit().beep();
                             } finally {
@@ -2133,6 +2176,7 @@ public class BaseKit extends DefaultEditorKit {
                                 doc.runAtomicAsUser (new Runnable () {
                                     public void run () {
                                         DocumentUtilities.setTypingModification(doc, true);
+                                        EditorUtilities.addCaretUndoableEdit(doc, caret);
                                         try {
                                             if (nextChar) { // remove next char
                                                 doc.remove(dot, 1);
@@ -2154,6 +2198,7 @@ public class BaseKit extends DefaultEditorKit {
                                         } finally {
                                             DocumentUtilities.setTypingModification(doc, false);
                                         }
+                                        EditorUtilities.addCaretUndoableEdit(doc, caret);
                                     }
                                 });
 
@@ -2569,7 +2614,6 @@ public class BaseKit extends DefaultEditorKit {
                         }
                     }
                     try {
-                        int oldDot = dot;
                         dot = Utilities.getPositionAbove(target, dot, p.x);
                         boolean select = selectionUpAction.equals(getValue(Action.NAME));
                         if (select) {
@@ -2580,20 +2624,6 @@ public class BaseKit extends DefaultEditorKit {
                                 }
                             }
                         } else {
-                            // special case (used in refactoring, in-place rename, javashell)
-                            // 1. if there's an editable region && 
-                            // 2. the region starts at the same visual line as caret &&
-                            // 3. the dot precedes the caret
-                            // THEN update the dot to be the start of editable region.
-                            Object o = target.getClientProperty(PROP_NAVIGATE_BOUNDARIES);
-                            PositionRegion bounds = null;
-                            if (o instanceof PositionRegion) {
-                                bounds = (PositionRegion)o;
-                                int so = bounds.getStartOffset();
-                                if (oldDot > so && dot < so) {
-                                    dot = so;
-                                }
-                            }
                             caret.setDot(dot);
                         }
                     } catch (BadLocationException e) {
@@ -2678,7 +2708,6 @@ public class BaseKit extends DefaultEditorKit {
                         }
                     }
                     try {
-                        int oldDot = dot;
                         dot = Utilities.getPositionBelow(target, dot, p.x);
                         boolean select = selectionDownAction.equals(getValue(Action.NAME));
                         if (select) {
@@ -2689,21 +2718,6 @@ public class BaseKit extends DefaultEditorKit {
                                 }
                             }
                         } else {
-                            // special case (used in refactoring, in-place rename, javashell)
-                            // 1. if there's an editable region && 
-                            // 2. the region starts at the same visual line as caret &&
-                            // 3. the dot precedes the caret
-                            // THEN update the dot to be the start of editable region.
-                            Object o = target.getClientProperty(PROP_NAVIGATE_BOUNDARIES);
-                            PositionRegion bounds = null;
-                            if (o instanceof PositionRegion) {
-                                bounds = (PositionRegion)o;
-                                int so = bounds.getStartOffset();
-                                if (oldDot > so && dot < so) {
-                                    dot = so;
-                                }
-                            }
-
                             caret.setDot(dot);
                         }
                     } catch (BadLocationException e) {
@@ -2990,7 +3004,6 @@ public class BaseKit extends DefaultEditorKit {
                         pos = caret.getDot();
                     int dot = target.getUI().getNextVisualPositionFrom(target,
                               pos, Position.Bias.Forward, SwingConstants.EAST, null);
-                    target.putClientProperty("navigational.action", SwingConstants.NORTH);
                     if (select) {
                         if (caret instanceof BaseCaret && RectangularSelectionUtils.isRectangularSelection(target)) {
                             ((BaseCaret) caret).extendRectangularSelection(true, false);
@@ -3003,7 +3016,6 @@ public class BaseKit extends DefaultEditorKit {
                 } catch (BadLocationException ex) {
                     target.getToolkit().beep();
                 }
-                target.putClientProperty("navigational.action", null);
             }
             }
         }
@@ -3109,7 +3121,6 @@ public class BaseKit extends DefaultEditorKit {
                                         }
 
                                         // Update magic caret position
-                                        newCaretBounds = target.modelToView(caretInfo.getDot());
                                         magicCaretPosition.y = newCaretBounds.y;
                                         context.setMagicCaretPosition(caretInfo, magicCaretPosition);
                                     }
@@ -3444,7 +3455,7 @@ public class BaseKit extends DefaultEditorKit {
                         r.x = 0;
                         target.scrollRectToVisible(r);
                     }
-                    target.putClientProperty("navigational.action", SwingConstants.NORTH);
+
                     if (select) {
                         caret.moveDot(dot);
                     } else {
@@ -3453,7 +3464,6 @@ public class BaseKit extends DefaultEditorKit {
                 } catch (BadLocationException e) {
                     target.getToolkit().beep();
                 }
-                target.putClientProperty("navigational.action", null);
             }
             }
         }
@@ -3621,13 +3631,11 @@ public class BaseKit extends DefaultEditorKit {
                 Caret caret = target.getCaret();
                 int dot = target.getDocument().getLength(); // end of document
                 boolean select = selectionEndAction.equals(getValue(Action.NAME));
-                target.putClientProperty("navigational.action", SwingConstants.SOUTH_EAST);
                 if (select) {
                     caret.moveDot(dot);
                 } else {
                     caret.setDot(dot);
                 }
-                target.putClientProperty("navigational.action", null);
             }
         }
     }
@@ -3735,7 +3743,6 @@ public class BaseKit extends DefaultEditorKit {
                 try {
                     int dot = Utilities.getWordStart(target, caret.getDot());
                     boolean select = selectionBeginWordAction.equals(getValue(Action.NAME));
-                    target.putClientProperty("navigational.action", SwingConstants.NORTH);
                     if (select) {
                         caret.moveDot(dot);
                     } else {
@@ -3744,7 +3751,6 @@ public class BaseKit extends DefaultEditorKit {
                 } catch (BadLocationException ex) {
                     target.getToolkit().beep();
                 }
-                target.putClientProperty("navigational.action", null);
             }
         }
     }

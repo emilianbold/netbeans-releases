@@ -64,6 +64,7 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JLayeredPane;
 import javax.swing.JViewport;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -73,7 +74,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.UndoableEditListener;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Caret;
 import javax.swing.text.BadLocationException;
@@ -90,6 +90,7 @@ import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.ext.ExtKit;
+import org.netbeans.api.editor.StickyWindowSupport;
 import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.modules.editor.lib.ColoringMap;
 import org.netbeans.modules.editor.lib.EditorExtPackageAccessor;
@@ -98,7 +99,7 @@ import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.netbeans.modules.editor.lib.drawing.EditorUiAccessor;
-import org.openide.util.Lookup;
+import org.netbeans.modules.editor.lib2.EditorApiPackageAccessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -274,6 +275,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     private PreferenceChangeListener weakPrefsListener = null;
 
     private final DrawLayerList drawLayerList = new DrawLayerList();
+    private StickyWindowSupport stickyWindowSupport;
 
     /** Construct extended UI for the use with a text component */
     public EditorUI() {
@@ -1105,6 +1107,9 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     /** Is the parent of some editor component a viewport */
     private JViewport getParentViewport() {
         Component pc = component.getParent();
+        if (pc instanceof JLayeredPane) {
+            pc = pc.getParent();
+        }
         return (pc instanceof JViewport) ? (JViewport)pc : null;
     }
 
@@ -1774,6 +1779,17 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
             toolTipSupport = EditorExtPackageAccessor.get().createToolTipSupport(this);
         }
         return toolTipSupport;
+    }
+    
+    /**
+     * @see StickyWindowSupport 
+     * @since 4.6
+     */
+    public StickyWindowSupport getStickyWindowSupport() {
+        if(stickyWindowSupport == null) {
+            stickyWindowSupport = EditorApiPackageAccessor.get().createStickyWindowSupport(this.getComponent());
+        }
+        return stickyWindowSupport;
     }
 
     public PopupManager getPopupManager() {

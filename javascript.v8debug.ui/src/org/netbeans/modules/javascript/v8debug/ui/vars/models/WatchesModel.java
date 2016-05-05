@@ -345,7 +345,7 @@ public class WatchesModel extends VariablesModel implements TreeModelFilter {
         });
     }
     
-    private static final class WatchCB implements V8Debugger.CommandResponseCallback {
+    static final class WatchCB implements V8Debugger.CommandResponseCallback {
         
         private boolean responded;
         private V8Value value;

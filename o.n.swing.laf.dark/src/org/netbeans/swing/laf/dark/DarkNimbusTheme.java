@@ -144,11 +144,11 @@ public class DarkNimbusTheme {
 
         //diff & diff sidebar
         UIManager.put( "nb.diff.added.color", new Color(36, 52, 36) ); //NOI18N
-        UIManager.put( "nb.diff.changed.color", new Color(32, 40, 51) ); //NOI18N
-        UIManager.put( "nb.diff.deleted.color", new Color(51, 32, 36) ); //NOI18N
+        UIManager.put( "nb.diff.changed.color", new Color(36, 47, 101) ); //NOI18N
+        UIManager.put( "nb.diff.deleted.color", new Color(56, 30, 30) ); //NOI18N
         UIManager.put( "nb.diff.applied.color", new Color(36, 52, 36) ); //NOI18N
-        UIManager.put( "nb.diff.notapplied.color", new Color(32, 40, 51) ); //NOI18N
-        UIManager.put( "nb.diff.unresolved.color", new Color(51, 32, 36) ); //NOI18N
+        UIManager.put( "nb.diff.notapplied.color", new Color(36, 47, 101) ); //NOI18N
+        UIManager.put( "nb.diff.unresolved.color", new Color(56, 30, 30) ); //NOI18N
 
         UIManager.put( "nb.diff.sidebar.changed.color", new Color(18, 30, 74) ); //NOI18N
         UIManager.put( "nb.diff.sidebar.deleted.color", new Color(66, 30, 49) ); //NOI18N

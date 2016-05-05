@@ -100,6 +100,8 @@ final class CaretTransaction {
 
     private boolean anyMarkChanged;
     
+    private boolean scrollToLastCaret;
+    
     private GapList<CaretItem> replaceItems;
     
     private GapList<CaretItem> replaceSortedItems;
@@ -171,6 +173,7 @@ final class CaretTransaction {
             Position origMarkPos = caretItem.getMarkPosition();
             boolean dotChanged = origDotPos == null || ShiftPositions.compare(dotPos, origDotPos) != 0;
             boolean markChanged = origMarkPos == null || ShiftPositions.compare(markPos, origMarkPos) != 0;
+            scrollToLastCaret = true; // Scroll even if setDot() to same offset
             if (dotChanged || markChanged) {
                 editorCaret.ensureValidInfo(caretItem);
                 if (dotChanged) {
@@ -254,6 +257,10 @@ final class CaretTransaction {
     
     GapList<CaretItem> getSortedCaretItems() {
         return replaceSortedItems;
+    }
+
+    public boolean isScrollToLastCaret() {
+        return scrollToLastCaret;
     }
     
     List<CaretInfo> getOriginalCarets() {

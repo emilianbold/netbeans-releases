@@ -51,6 +51,16 @@ import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetImpl;
  * @author Alexander Simon
  */
 public abstract class CompilerSet {
+    /**
+     * Environment variable will be expanded to tool collection base directory path
+     */
+    public static final String TOOLS_PATH = "TOOLS_PATH"; // NOI18N
+    
+    /**
+     * Environment variable will be expanded to path to command folder (folder which contains utility like rm, mkdir, ...)
+     */
+    public static final String UTILITIES_PATH = "UTILITIES_PATH"; // NOI18N
+    
     public static final String None = "None"; // NOI18N
     public static final String UNKNOWN = "Unknown"; // NOI18N
 
@@ -73,6 +83,18 @@ public abstract class CompilerSet {
      * @return The path to binaries of compilers
      */
     public abstract String getDirectory();
+
+    /**
+     *
+     * @return Modify path for Build, Compile, ..  commands
+     */
+    public abstract String getModifyBuildPath();
+
+    /**
+     *
+     * @return Modify path for Run command
+     */
+    public abstract String getModifyRunPath();
 
     /**
      *

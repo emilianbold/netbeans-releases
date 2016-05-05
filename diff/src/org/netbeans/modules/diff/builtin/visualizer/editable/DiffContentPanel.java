@@ -242,20 +242,30 @@ class DiffContentPanel extends JPanel implements HighlightsContainer,Lookup.Prov
         remove(scrollPane);
         // The present editorPane will already be wrapped with the new custom editor
         // including the new scrollpane that needs to be re-assigned
-        Component viewPort = editorPane.getParent();
+        Component viewPort = findViewPort(editorPane);
         if (viewPort instanceof JViewport) {
             viewPort = viewPort.getParent();
             if (viewPort instanceof JScrollPane) {
                 scrollPane = (JScrollPane)viewPort;
-                add(c);
-                c.setFocusTraversalKeysEnabled(false);
-                c.setFocusTraversalPolicyProvider(true);
             }
         }
+        add(c);
+        c.setFocusTraversalKeysEnabled(false);
+        c.setFocusTraversalPolicyProvider(true);
     }
 
     public Lookup getLookup() {
         return Lookups.singleton(getActionMap());
+    }
+
+    private Component findViewPort (Container container) {
+        if (container == null) {
+            return null;
+        } else if (container instanceof JViewport) {
+            return container;
+        } else {
+            return findViewPort(container.getParent());
+        }
     }
 
     /**

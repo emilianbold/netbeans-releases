@@ -48,14 +48,17 @@ import org.netbeans.api.editor.caret.EditorCaret;
 import org.netbeans.api.editor.caret.MoveCaretsOrigin;
 
 /**
- * Enhanced FilterBypass which understands multicaret. Implementations of
+ * Enhanced FilterBypass which understands multicaret. 
+ * <p>
+ * Implementations of
  * {@link NavigationFilter} may check if the FilterBypass is instanceof this class,
  * and if so, they can access extended information.
- * <p/>
- * If the caret move operation is initiated by new caret APIs, the FilterBypass is
- * always of this instance.
- * 
+ * </p><p>
+ * If the caret move operation is initiated by new caret APIs, the FilterBypass passed
+ * to NavigationFilters always satisfies this interface.
+ * </p>
  * @author sdedic
+ * @since 2.10
  */
 public abstract class NavigationFilterBypass extends NavigationFilter.FilterBypass {
     /**

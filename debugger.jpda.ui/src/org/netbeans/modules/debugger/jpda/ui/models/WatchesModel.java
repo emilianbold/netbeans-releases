@@ -52,6 +52,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.InvalidObjectException;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
 import java.util.*;
 import javax.security.auth.RefreshFailedException;
 import javax.security.auth.Refreshable;
@@ -84,8 +85,10 @@ import org.openide.util.WeakListeners;
  * @author   Jan Jancura
  */
 @DebuggerServiceRegistration(path="netbeans-JPDASession/WatchesView", types={TreeModel.class}, position=450)
-public class WatchesModel implements TreeModel {
+public class WatchesModel implements TreeModel, JPDAWatchRefreshModel {
 
+    private static final String PROP_SHOW_PINNED_WATCHES = "showPinnedWatches"; // NOI18N
+    private static final org.netbeans.api.debugger.Properties PROPERTIES = org.netbeans.api.debugger.Properties.getDefault().getProperties("debugger").getProperties("watchesProps");
     
     private static boolean verbose = 
         (System.getProperty ("netbeans.debugger.viewrefresh") != null) &&
@@ -126,10 +129,37 @@ public class WatchesModel implements TreeModel {
             // 1) get Watches
             Watch[] ws = DebuggerManager.getDebuggerManager ().
                 getWatches ();
-            to = Math.min(ws.length, to);
-            from = Math.min(ws.length, from);
-            Watch[] fws = new Watch [to - from];
-            System.arraycopy (ws, from, fws, 0, to - from);
+            Watch[] fws;
+            if (PROPERTIES.getBoolean(PROP_SHOW_PINNED_WATCHES, false)) {
+                to = Math.min(ws.length, to);
+                from = Math.min(ws.length, from);
+                fws = new Watch [to - from];
+                System.arraycopy (ws, from, fws, 0, to - from);
+            } else {
+                int numwatches = 0;
+                for (Watch w : ws) {
+                    if (w.getPin() == null) {
+                        numwatches++;
+                    }
+                }
+                to = Math.min(numwatches, to);
+                from = Math.min(numwatches, from);
+                fws = new Watch [to - from];
+                numwatches = 0;
+                for (int i = 0; i < ws.length; i++) {
+                    Watch w = ws[i];
+                    if (w.getPin() == null) {
+                        if (numwatches >= from) {
+                            fws[numwatches++] = w;
+                        } else {
+                            numwatches++;
+                        }
+                        if (numwatches >= to) {
+                            break;
+                        }
+                    }
+                }
+            }
             
             // 2) create JPDAWatches for Watches
             int i, k = fws.length;
@@ -222,7 +252,7 @@ public class WatchesModel implements TreeModel {
             ((ModelListener) v.get (i)).modelChanged (event);
     }
     
-    void fireTableValueChangedChanged (Object node, String propertyName) {
+    public void fireTableValueChangedChanged (Object node, String propertyName) {
         ((JPDAWatchEvaluating) node).setEvaluated(null);
         fireTableValueChangedComputed(node, propertyName);
     }
@@ -236,7 +266,7 @@ public class WatchesModel implements TreeModel {
             );
     }
 
-    private void fireChildrenChanged(Object node) {
+    public void fireChildrenChanged(Object node) {
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
         for (i = 0; i < k; i++)
@@ -271,18 +301,18 @@ public class WatchesModel implements TreeModel {
                                                         PropertyChangeListener/*,
                                                         Watch.Provider*/ {
         
-        private WatchesModel model;
+        private JPDAWatchRefreshModel model;
         private Watch w;
         private JPDADebuggerImpl debugger;
         private JPDAWatch evaluatedWatch;
         private EvaluatorExpression expression;
         private final boolean[] evaluating = new boolean[] { false };
         
-        public JPDAWatchEvaluating(WatchesModel model, Watch w, JPDADebuggerImpl debugger) {
+        public JPDAWatchEvaluating(JPDAWatchRefreshModel model, Watch w, JPDADebuggerImpl debugger) {
             this(model, w, debugger, 0);
         }
         
-        private JPDAWatchEvaluating(WatchesModel model, Watch w, JPDADebuggerImpl debugger, int cloneNumber) {
+        private JPDAWatchEvaluating(JPDAWatchRefreshModel model, Watch w, JPDADebuggerImpl debugger, int cloneNumber) {
             super(debugger, null, (cloneNumber > 0) ? w + "_clone" + cloneNumber : "" + w);
             this.model = model;
             this.w = w;
@@ -485,6 +515,22 @@ public class WatchesModel implements TreeModel {
                 throw new InvalidExpressionException("Can not set value while evaluating.");
             }
         }
+
+        @Override
+        protected synchronized void setValue(Value value) throws InvalidExpressionException {
+            if (evaluatedWatch != null) {
+                // need to delegate to evaluatedWatch.setValue(value);
+                try {
+                    Method setValueMethod = evaluatedWatch.getClass().getDeclaredMethod("setValue", Value.class);
+                    setValueMethod.setAccessible(true);
+                    setValueMethod.invoke(evaluatedWatch, value);
+                } catch (Exception ex) {
+                    throw new InvalidExpressionException(ex);
+                }
+            } else {
+                throw new InvalidExpressionException("Can not set value while evaluating.");
+            }
+        }
         
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getSource() instanceof JPDAWatchEvaluating) {
@@ -555,6 +601,7 @@ public class WatchesModel implements TreeModel {
             int i, k = ws.length;
             for (i = 0; i < k; i++)
                 ws [i].addPropertyChangeListener (this);
+            PROPERTIES.addPropertyChangeListener(this);
         }
         
         private WatchesModel getModel () {
@@ -586,33 +633,41 @@ public class WatchesModel implements TreeModel {
         @Override
         public void propertyChange (PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
-            // We already have watchAdded & watchRemoved. Ignore PROP_WATCHES:
-            // We care only about the current call stack frame change and watch expression change here...
-            if (!(JPDADebugger.PROP_STATE.equals(propName) || Watch.PROP_EXPRESSION.equals(propName) ||
-                  Watch.PROP_ENABLED.equals(propName) || JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(propName))) return;
-            final WatchesModel m = getModel ();
-            if (m == null) return;
-            if (JPDADebugger.PROP_STATE.equals(propName) &&
-                m.debugger.getState () == JPDADebugger.STATE_DISCONNECTED) {
-                
-                    destroy ();
-                    return;
+            WatchesModel m = getModel ();
+            if (m == null) {
+                return;
             }
-            if (m.debugger.getState () == JPDADebugger.STATE_RUNNING ||
-                 JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(propName) &&
-                 m.debugger.getCurrentCallStackFrame() == null) {
-
+            if (evt.getSource() == PROPERTIES && PROP_SHOW_PINNED_WATCHES.equals(propName)) {
+                // fire the tree change below...
+            } else {
+                // We already have watchAdded & watchRemoved. Ignore PROP_WATCHES:
+                // We care only about the current call stack frame change and watch expression change here...
+                if (!(JPDADebugger.PROP_STATE.equals(propName) || Watch.PROP_EXPRESSION.equals(propName) ||
+                      Watch.PROP_ENABLED.equals(propName) || JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(propName))) {
                     return;
-            }
-            
-            if (evt.getSource () instanceof Watch) {
-                Object node;
-                synchronized (m.watchToValue) {
-                    node = m.watchToValue.get(evt.getSource());
                 }
-                if (node != null) {
-                    m.fireTableValueChangedChanged(node, null);
-                    return ;
+                if (JPDADebugger.PROP_STATE.equals(propName) &&
+                    m.debugger.getState () == JPDADebugger.STATE_DISCONNECTED) {
+
+                        destroy ();
+                        return;
+                }
+                if (m.debugger.getState () == JPDADebugger.STATE_RUNNING ||
+                     JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(propName) &&
+                     m.debugger.getCurrentCallStackFrame() == null) {
+
+                        return;
+                }
+
+                if (evt.getSource () instanceof Watch) {
+                    Object node;
+                    synchronized (m.watchToValue) {
+                        node = m.watchToValue.get(evt.getSource());
+                    }
+                    if (node != null) {
+                        m.fireTableValueChangedChanged(node, null);
+                        return ;
+                    }
                 }
             }
             
@@ -621,7 +676,10 @@ public class WatchesModel implements TreeModel {
                     public void run () {
                         if (verbose)
                             System.out.println("WM do task " + task);
-                        m.fireTreeChanged ();
+                        WatchesModel m = getModel ();
+                        if (m != null) {
+                            m.fireTreeChanged ();
+                        }
                     }
                 });
                 if (verbose)

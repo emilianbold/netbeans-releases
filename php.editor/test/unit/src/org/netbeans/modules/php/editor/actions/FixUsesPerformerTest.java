@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.actions;
 
@@ -48,12 +48,14 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.PHPTestBase;
 import org.netbeans.modules.php.editor.actions.FixUsesAction.Options;
 import org.netbeans.modules.php.editor.actions.ImportData.ItemVariant;
@@ -73,6 +75,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
+@RandomlyFails
 public class FixUsesPerformerTest extends PHPTestBase {
     private static final String CAN_NOT_BE_RESOLVED = "<CAN-NOT-BE-RRESOLVED>"; //NOI18N
 
@@ -230,6 +233,96 @@ public class FixUsesPerformerTest extends PHPTestBase {
         List<Selection> selections = new ArrayList<>();
         Options options = new Options(false, false, false, false, false);
         performTest("public function getSomething(SomeClassAlias $someClass) {}^", selections, false, options);
+    }
+
+    public void testGroupUse_01() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(false, false, false, false, false, PhpVersion.PHP_70);
+        performTest("$a = new ClsA();^", selections, false, options);
+    }
+
+    public void testGroupUse_02() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(false, false, false, false, false, PhpVersion.PHP_70);
+        performTest("$a = new ClsA();^", selections, true, options);
+    }
+
+    public void testGroupUse_03() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(false, false, false, false, false, PhpVersion.PHP_70);
+        performTest("$a = new ClsA();^", selections, true, options);
+    }
+
+    public void testGroupUse_04() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(false, false, false, false, false, PhpVersion.PHP_70);
+        performTest("$a = new ClsA();^", selections, true, options);
+    }
+
+    public void testGroupUse_05() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(false, true, true, false, false);
+        performTest("$a = new ClsA();^", selections, true, options);
+    }
+
+    public void testGroupUse_06() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(false, true, true, true, false, PhpVersion.PHP_70);
+        performTest("$a = new ClsA();^", selections, true, options);
+    }
+
+    public void testGroupUse_07() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(true, true, true, true, false, PhpVersion.PHP_70);
+        performTest("fa();^", selections, true, options);
+    }
+
+    public void testGroupUse_08() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(true, false, true, true, false, PhpVersion.PHP_70);
+        performTest("fa();^", selections, true, options);
+    }
+
+    public void testGroupUse_09() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(true, true, true, false, false, PhpVersion.PHP_70);
+        performTest("fa();^", selections, true, options);
+    }
+
+    public void testGroupUse_10() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(true, true, true, true, false, PhpVersion.PHP_70);
+        performTest("fa();^", selections, true, options);
+    }
+
+    public void testGroupUse_11() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(true, true, true, true, false, PhpVersion.PHP_70);
+        performTest("fa();^", selections, true, options);
+    }
+
+    public void testGroupUse_12() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(true, true, true, true, false, PhpVersion.PHP_70);
+        performTest("fa();^", selections, true, options);
+    }
+
+    public void testGroupUse_13() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(true, true, true, true, false, PhpVersion.PHP_70);
+        performTest("fa();^", selections, true, options);
+    }
+
+    public void testGroupUse_14() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(true, true, true, true, false, PhpVersion.PHP_70);
+        performTest("fa();^", selections, false, options);
+    }
+
+    public void testGroupUseComplex_01() throws Exception {
+        List<Selection> selections = new ArrayList<>();
+        Options options = new Options(false, true, true, true, false, PhpVersion.PHP_70);
+        performTest("$a = new ClsA();^", selections, true, options);
     }
 
     private String getTestResult(final String fileName, final String caretLine, final List<Selection> selections, final boolean removeUnusedUses, final Options options) throws Exception {

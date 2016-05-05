@@ -69,10 +69,14 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import static javax.swing.text.JTextComponent.addKeymap;
 import javax.swing.text.Keymap;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Watch;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.PopupManager;
 import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+import org.netbeans.spi.debugger.ui.EditorPin;
+import org.netbeans.spi.debugger.ui.PinWatchUISupport;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.OutlineView;
@@ -80,6 +84,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -128,6 +133,7 @@ public final class ToolTipView extends JComponent implements ExplorerManager.Pro
         final JEditorPane ep = EditorContextDispatcher.getDefault().getMostRecentEditor();
         final EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(ep);
         final ToolTipSupport toolTipSupport = eui.getToolTipSupport();
+        toolTipSupport.setToolTipVisible(true);
         toolTipSupport.setToolTip(this, PopupManager.ViewPortBounds, PopupManager.AbovePreferred, 0, 0, ToolTipSupport.FLAGS_HEAVYWEIGHT_TOOLTIP);
     }
 
@@ -293,8 +299,8 @@ public final class ToolTipView extends JComponent implements ExplorerManager.Pro
         }
     }
     
-    public static ExpandableTooltip getExpTooltipForText(String toolTipText) {
-         return new ExpandableTooltip(toolTipText);
+    public static ExpandableTooltip getExpTooltipForText(NativeDebugger debugger, String toolTipExpr, String toolTipValue) {
+         return new ExpandableTooltip(debugger, toolTipExpr, toolTipValue); // NOI18N
     }
     
     public static class ExpandableTooltip extends JPanel {
@@ -302,11 +308,12 @@ public final class ToolTipView extends JComponent implements ExplorerManager.Pro
         private static final String UI_PREFIX = "ToolTip"; // NOI18N
         
         private JButton expButton;
+        private JButton pinButton;
         private JComponent textToolTip;
         private boolean widthCheck = true;
         private boolean sizeSet = false;
 
-        public ExpandableTooltip(String toolTipText) {
+        public ExpandableTooltip(final NativeDebugger debugger, final String toolTipExpr, String toolTipValue) {
             Font font = UIManager.getFont(UI_PREFIX + ".font"); // NOI18N
             Color backColor = UIManager.getColor(UI_PREFIX + ".background"); // NOI18N
             Color foreColor = UIManager.getColor(UI_PREFIX + ".foreground"); // NOI18N
@@ -321,15 +328,52 @@ public final class ToolTipView extends JComponent implements ExplorerManager.Pro
             ));
 
             setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+            Icon pinIcon = ImageUtilities.loadImageIcon("org/netbeans/editor/resources/pin.png", false);    // NOI18N
+            pinButton = new JButton(pinIcon);
+            pinButton.setBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 5));
+            pinButton.setBorderPainted(false);
+            pinButton.setContentAreaFilled(false);
+            pinButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Point location = ExpandableTooltip.this.getLocation();
+                    JEditorPane ep = EditorContextDispatcher.getDefault().getMostRecentEditor();
+                    EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(ep);
+                    location = eui.getStickyWindowSupport().convertPoint(location);
+                    DebuggerManager dbMgr = DebuggerManager.getDebuggerManager();
+                    Watch.Pin pin = new EditorPin(EditorContextBridge.getMostRecentFileObject(), EditorContextBridge.getMostRecentLineNumber(), location);
+                    final Watch w = dbMgr.createPinnedWatch(toolTipExpr, pin);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            String valueProviderId = NativePinWatchValueProvider.ID;
+                            try {
+                                PinWatchUISupport.getDefault().pin(w, valueProviderId);
+                            } catch (IllegalArgumentException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    });
+                }
+            });
+            add(pinButton);
+            
             Icon expIcon = UIManager.getIcon ("Tree.collapsedIcon");    // NOI18N
             expButton = new JButton(expIcon);
             expButton.setBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 5));
             expButton.setBorderPainted(false);
             expButton.setContentAreaFilled(false);
+            expButton.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    debugger.evaluateInOutline(toolTipExpr);
+                }
+            });
             add(expButton);
             //JLabel l = new JLabel(toolTipText);
             // Multi-line tooltip:
-            JTextArea l = createMultiLineToolTip(toolTipText, true);
+            JTextArea l = createMultiLineToolTip(toolTipExpr + "=" + toolTipValue, true);    // NOI18N
             if (font != null) {
                 l.setFont(font);
             }
@@ -342,11 +386,7 @@ public final class ToolTipView extends JComponent implements ExplorerManager.Pro
             textToolTip = l;
             add(l);
         }
-
-        public void addExpansionListener(ActionListener treeExpansionListener) {
-            expButton.addActionListener(treeExpansionListener);
-        }
-
+        
         void setWidthCheck(boolean widthCheck) {
             this.widthCheck = widthCheck;
         }
@@ -363,16 +403,17 @@ public final class ToolTipView extends JComponent implements ExplorerManager.Pro
         @Override
         public void setSize(int width, int height) {
             Dimension prefSize = getPreferredSize();
-            Dimension buttonSize = expButton.getPreferredSize();
+            Dimension expButtonSize = expButton.getPreferredSize();
+            Dimension pinButtonSize = pinButton.getPreferredSize();
             if (widthCheck) {
                 Insets insets = getInsets();
-                int textWidth = width - insets.left - buttonSize.width - insets.right;
-                height = Math.max(height, buttonSize.height);
+                int textWidth = width - insets.left - expButtonSize.width - pinButtonSize.width - insets.right;
+                height = Math.max(height, Math.max(expButtonSize.height, pinButtonSize.height));
                 textToolTip.setSize(textWidth, height);
                 Dimension textPreferredSize = textToolTip.getPreferredSize();
                 super.setSize(
-                        insets.left + buttonSize.width + textPreferredSize.width + insets.right,
-                        insets.top + Math.max(buttonSize.height, textPreferredSize.height) + insets.bottom);
+                        insets.left + expButtonSize.width + pinButtonSize.width + textPreferredSize.width + insets.right,
+                        insets.top + Math.max(Math.max(expButtonSize.height, pinButtonSize.height), textPreferredSize.height) + insets.bottom);
             } else {
                 if (height >= prefSize.height) { // enough height
                     height = prefSize.height;

@@ -105,6 +105,7 @@ public class MakeLogReader {
     private final FileObject logFileObject;
     private List<SourceFileProperties> result;
     private List<String> buildArtifacts;
+    private Map<LanguageKind,Map<String,Integer>> buildTools;
     private final PathMap pathMapper;
     private final ProjectProxy project;
     private final CompilerSettings compilerSettings;
@@ -237,6 +238,11 @@ public class MakeLogReader {
         Pattern pattern = Pattern.compile(";|\\|\\||&&"); // ;, ||, && //NOI18N
         result = new ArrayList<SourceFileProperties>();
         buildArtifacts = new ArrayList<String>();
+        buildTools = new HashMap<LanguageKind,Map<String,Integer>>();
+        buildTools.put(LanguageKind.C, new HashMap<String,Integer>());
+        buildTools.put(LanguageKind.CPP, new HashMap<String,Integer>());
+        buildTools.put(LanguageKind.Fortran, new HashMap<String,Integer>());
+        buildTools.put(LanguageKind.Unknown, new HashMap<String,Integer>());
         if (logFileObject != null && logFileObject.isValid() && logFileObject.canRead()) {
             try {
                 MakeConfiguration conf = getConfiguration(this.project);
@@ -320,6 +326,13 @@ public class MakeLogReader {
             run(isStoped, progress, storage);
         }
         return buildArtifacts;
+    }
+    
+    public Map<LanguageKind,Map<String,Integer>> getTools(Progress progress, Interrupter isStoped, CompileLineStorage storage) {
+        if (buildTools == null) {
+            run(isStoped, progress, storage);
+        }
+        return buildTools;
     }
 
     private Interrupter isStoped;

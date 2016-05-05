@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2015 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.actions;
 
@@ -51,6 +51,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.actions.FixUsesAction.Options;
 import org.netbeans.modules.php.editor.actions.ImportData.DataItem;
 import org.netbeans.modules.php.editor.actions.ImportData.ItemVariant;
@@ -63,6 +64,7 @@ import org.netbeans.modules.php.editor.api.elements.ConstantElement;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
 import org.netbeans.modules.php.editor.api.elements.FunctionElement;
 import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
+import org.netbeans.modules.php.editor.api.elements.TraitElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.openide.util.NbBundle;
 
@@ -111,7 +113,7 @@ public class ImportDataCreator {
         Collection<FullyQualifiedElement> filteredDuplicates = filterDuplicates(filteredPlatformConstsAndFunctions);
         Collection<FullyQualifiedElement> filteredExactUnqualifiedNames = filterExactUnqualifiedName(filteredDuplicates, fqElementName);
         if (filteredExactUnqualifiedNames.isEmpty()) {
-            if (options.isPhp56OrGreater()) {
+            if (options.getPhpVersion().compareTo(PhpVersion.PHP_56) >= 0) {
                 possibleItems.add(new EmptyItem(fqElementName));
             } else {
                 if (!isConstOrFunction(fqElementName)) {
@@ -147,11 +149,12 @@ public class ImportDataCreator {
 
     private Collection<FullyQualifiedElement> fetchPossibleFQElements(final String typeName) {
         Collection<FullyQualifiedElement> possibleTypes = new HashSet<>();
-        Collection<ClassElement> possibleClasses = phpIndex.getClasses(NameKind.prefix(typeName));
-        Collection<InterfaceElement> possibleIfaces = phpIndex.getInterfaces(NameKind.prefix(typeName));
-        possibleTypes.addAll(possibleClasses);
-        possibleTypes.addAll(possibleIfaces);
-        if (options.isPhp56OrGreater()) {
+        possibleTypes.addAll(phpIndex.getClasses(NameKind.prefix(typeName)));
+        possibleTypes.addAll(phpIndex.getInterfaces(NameKind.prefix(typeName)));
+        if (options.getPhpVersion().compareTo(PhpVersion.PHP_54) >= 0) {
+            possibleTypes.addAll(phpIndex.getTraits(NameKind.prefix(typeName)));
+        }
+        if (options.getPhpVersion().compareTo(PhpVersion.PHP_56) >= 0) {
             Collection<FunctionElement> possibleFunctions = phpIndex.getFunctions(NameKind.prefix(typeName));
             Collection<ConstantElement> possibleConstants = phpIndex.getConstants(NameKind.prefix(typeName));
             possibleTypes.addAll(possibleFunctions);
@@ -176,7 +179,9 @@ public class ImportDataCreator {
     private Collection<FullyQualifiedElement> filterPlatformConstsAndFunctions(final Collection<FullyQualifiedElement> possibleFQElements) {
         Collection<FullyQualifiedElement> result = new HashSet<>();
         for (FullyQualifiedElement fqElement : possibleFQElements) {
-            if (fqElement instanceof ClassElement || fqElement instanceof InterfaceElement) {
+            if (fqElement instanceof ClassElement
+                    || fqElement instanceof InterfaceElement
+                    || fqElement instanceof TraitElement) {
                 result.add(fqElement);
             } else if (!fqElement.isPlatform()) {
                 result.add(fqElement);

@@ -438,9 +438,9 @@ public class SourceUtils {
             } else {
                 NamedImportScope importScope = new NamedImportScope(unit.packge, unit.toplevelScope);
                 for (Symbol symbol : unit.namedImportScope.getSymbols()) {
-                    importScope.importType(symbol.members(), symbol.members(), symbol);
+                    importScope.importType(symbol.owner.members(), symbol.owner.members(), symbol);
                 }
-                importScope.importType(((Symbol)toImport).members(), ((Symbol)toImport).members(), (Symbol) toImport);
+                importScope.importType(((Symbol)toImport).owner.members(), ((Symbol)toImport).owner.members(), (Symbol) toImport);
                 unit.namedImportScope = importScope;
             }
         } else { // embedded java, look up the handler for the top level language

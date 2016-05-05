@@ -45,14 +45,10 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.terminal.ioprovider.Terminal;
 import org.openide.util.ContextAwareAction;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-import org.openide.windows.TopComponent;
 
 /**
  *
@@ -61,50 +57,56 @@ import org.openide.windows.TopComponent;
 public abstract class TerminalAction extends AbstractAction implements ContextAwareAction {
 
     private Terminal context;
+    private ActionEvent event;
 
     public TerminalAction(Terminal context) {
-	this.context = context;
+        this.context = context;
     }
 
     protected Terminal getTerminal() {
-	return context;
+        return context;
     }
 
     @Override
     public final void actionPerformed(ActionEvent e) {
-	if (context == null) {
-	    Object source = e.getSource();
-	    /*
+        if (context == null) {
+            Object source = e.getSource();
+            /*
 	    Kind of a hack, but I can't think up a better way to get a current
 	    terminal when Action is performed with the shortcut. Thus it's context
 	    independent and we need to find an active Terminal. Getting it from TC
 	    won't work because we can have multiple active Terminals on screen
 	    (debugger console and terminalemulator, for example).
 	    Luckily, we can get some useful information from the caller`s source
-	     */
-	    if (source instanceof Component) {
-		Container container = SwingUtilities.getAncestorOfClass(Terminal.class, (Component) source);
-		if (container != null && container instanceof Terminal) {
-		    this.context = (Terminal) container;
-		}
-	    }
-	}
+             */
+            if (source instanceof Component) {
+                Container container = SwingUtilities.getAncestorOfClass(Terminal.class, (Component) source);
+                if (container != null && container instanceof Terminal) {
+                    this.context = (Terminal) container;
+                }
+            }
+        }
 
-	if (getTerminal() == null) {
-	    throw new IllegalStateException("No valid terminal component was provided"); // NOI18N
-	}
+        if (getTerminal() == null) {
+            throw new IllegalStateException("No valid terminal component was provided"); // NOI18N
+        }
 
-	performAction();
+        this.event = e;
+        performAction();
     }
 
     protected abstract void performAction();
 
     protected static String getMessage(String key) {
-	return NbBundle.getMessage(TerminalAction.class, key);
+        return NbBundle.getMessage(TerminalAction.class, key);
+    }
+
+    protected ActionEvent getEvent() {
+        return event;
     }
 
     @Override
     public boolean isEnabled() {
-	return true;
+        return true;
     }
 }

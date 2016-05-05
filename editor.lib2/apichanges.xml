@@ -105,11 +105,26 @@ is the proper place.
     </apidefs>
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
-    
+
     <changes>
+        <change id="EditorUtilities.addCaretUndoableEdit">
+            <summary>EditorUtilities.addCaretUndoableEdit added</summary>
+            <version major="2" minor="11"/>
+            <date day="19" month="4" year="2016"/>
+            <author login="mmetelka"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no" deletion="no" modification="no" />
+            <description>
+                <p>
+                    EditorUtilities.addCaretUndoableEdit allows actions to remember caret position
+                    during an atomic transaction over a document.
+                </p>
+            </description>
+            <class name="EditorUtilities" package="org.netbeans.api.editor"/>
+            <issue number="258798"/>
+        </change>
         <change id="editor-caret-filters">
             <summary>Support for Navigation Filters, and caret move origins</summary>
-            <version major="2" minor="9"/>
+            <version major="2" minor="10"/>
             <date day="14" month="4" year="2016"/>
             <author login="sdedic"/>
             <compatibility binary="compatible" semantic="compatible" source="compatible" addition="yes" deprecation="no" deletion="no"/>
@@ -129,7 +144,23 @@ is the proper place.
             <class name="NavigationFilterBypass" package="org.netbeans.spi.editor.caret"/>
             <class name="CascadingNavigationFilter" package="org.netbeans.spi.editor.caret"/>
             
-            <issue number="555555555"/>
+            <issue number="258824"/>
+        </change>
+        <change id="StickyWindowSupport">
+            <summary>Support for sticky windows in the editor</summary>
+            <version major="2" minor="9"/>
+            <date day="18" month="4" year="2016"/>
+            <author login="ralphbenjamin"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no" deletion="no" modification="no" />
+            <description>
+                <p>
+                    Support for Sticky Windows in the editor. JComponents can be
+                    added to a layer on top of the editor. Components will
+                    update their vertical position on editor changes.
+                </p>
+            </description>
+            <class name="StickyWindowSupport" package="org.netbeans.api.editor"/>
+            <issue number="258764"/>
         </change>
         <change id="editor-registry-find-component">
             <summary>Added EditorRegistry.findComponent</summary>

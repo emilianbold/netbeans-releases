@@ -63,8 +63,6 @@ import org.netbeans.api.editor.document.ShiftPositions;
  */
 class CaretUndoEdit extends AbstractUndoableEdit {
     
-    private static final int FOR_REDO_BIT = (1 << 31);
-
     final Document doc; // (16=super)+4=20 bytes
     
     /**
@@ -72,7 +70,7 @@ class CaretUndoEdit extends AbstractUndoableEdit {
      */
     private int dotOffset; // 24 bytes
     
-    CaretUndoEdit(Document doc, boolean forRedo, int dotOffset) {
+    CaretUndoEdit(Document doc, int dotOffset) {
         if (doc == null) {
             throw new IllegalArgumentException("doc parameter must not be null"); // NOI18N
         }
@@ -80,54 +78,42 @@ class CaretUndoEdit extends AbstractUndoableEdit {
             throw new IllegalStateException("Negative dotOffset=" + dotOffset + " not supported here"); // NOI18N
         }
         this.doc = doc;
-        this.dotOffset = forRedo ? (FOR_REDO_BIT | dotOffset) : dotOffset;
+        this.dotOffset = dotOffset;
     }
 
     @Override
     public void undo() throws CannotUndoException {
         super.undo();
-        if (!isForRedo()) {
-            JTextComponent c = EditorRegistry.findComponent(doc);
-            if (c != null) {
-                Caret caret = c.getCaret();
-                if (caret instanceof EditorCaret) {
-                    try {
-                        restoreEditorCaret((EditorCaret) caret);
-                    } catch (BadLocationException ex) {
-                        // Ignore caret restoration
-                    }
-                } else {
-                    restoreLegacyCaret(caret);
-                }
-            }
-        }
+        restoreCaret();
     }
     
     @Override
     public void redo() throws CannotRedoException {
         super.redo();
-        if (isForRedo()) {
-            JTextComponent c = EditorRegistry.findComponent(doc);
-            if (c != null) {
-                Caret caret = c.getCaret();
-                if (caret instanceof EditorCaret) {
-                    try {
-                        restoreEditorCaret((EditorCaret) caret);
-                    } catch (BadLocationException ex) {
-                        // Ignore caret restoration
-                    }
-                } else {
-                    restoreLegacyCaret(caret);
-                }
-            }
-        }
+        restoreCaret();
     }
-
+    
     @Override
     public boolean isSignificant() {
         return super.isSignificant();
     }
     
+    private void restoreCaret() {
+        JTextComponent c = EditorRegistry.findComponent(doc);
+        if (c != null) {
+            Caret caret = c.getCaret();
+            if (caret instanceof EditorCaret) {
+                try {
+                    restoreEditorCaret((EditorCaret) caret);
+                } catch (BadLocationException ex) {
+                    // Ignore caret restoration
+                }
+            } else {
+                restoreLegacyCaret(caret);
+            }
+        }
+    }
+
     protected void restoreEditorCaret(EditorCaret caret) throws BadLocationException {
         Position dotPos = doc.createPosition(getDotOffset());
         caret.replaceCarets(Arrays.asList(dotPos, dotPos));
@@ -137,12 +123,8 @@ class CaretUndoEdit extends AbstractUndoableEdit {
         caret.setDot(getDotOffset());
     }
 
-    boolean isForRedo() {
-        return (dotOffset & FOR_REDO_BIT) != 0;
-    }
-    
     int getDotOffset() {
-        return (dotOffset & ~FOR_REDO_BIT);
+        return dotOffset;
     }
 
     static final class ComplexEdit extends CaretUndoEdit {
@@ -157,8 +139,8 @@ class CaretUndoEdit extends AbstractUndoableEdit {
         
         int[] extraDotAndMarkOffsets; // 32 bytes
         
-        ComplexEdit(Document doc, boolean forRedo, int dotOffset, int markOffset, int[] extraDotAndMarkOffsets) {
-            super(doc, forRedo, dotOffset);
+        ComplexEdit(Document doc, int dotOffset, int markOffset, int[] extraDotAndMarkOffsets) {
+            super(doc, dotOffset);
             this.markOffset = markOffset;
             this.extraDotAndMarkOffsets = extraDotAndMarkOffsets;
         }

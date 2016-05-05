@@ -88,7 +88,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.34.1</specification-version>
+                        <specification-version>1.34.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -96,7 +96,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.45.8</specification-version>
+                        <specification-version>1.48.5</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -460,6 +460,8 @@
                 <friend>org.netbeans.modules.cnd.makeproject.source.bridge</friend>
                 <friend>org.netbeans.modules.cnd.mixeddev</friend>
                 <friend>org.netbeans.modules.cnd.modeldiscovery</friend>
+                <friend>org.netbeans.modules.cnd.otool.debugger.api</friend>
+                <friend>org.netbeans.modules.cnd.otool.debugger.gdb</friend>
                 <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.cnd.parfait</friend>
                 <friend>org.netbeans.modules.cnd.remote</friend>

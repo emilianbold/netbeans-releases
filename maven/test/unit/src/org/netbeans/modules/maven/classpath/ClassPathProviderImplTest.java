@@ -54,23 +54,29 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
-import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
-import org.netbeans.modules.maven.indexer.NexusRepositoryIndexerImpl;
+import org.netbeans.modules.maven.indexer.ResultImpl;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryQueries.Result;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
+import org.netbeans.modules.maven.indexer.spi.ArchetypeQueries;
+import org.netbeans.modules.maven.indexer.spi.BaseQueries;
 import org.netbeans.modules.maven.indexer.spi.ChecksumQueries;
-import org.netbeans.modules.maven.indexer.spi.Redo;
+import org.netbeans.modules.maven.indexer.spi.ClassUsageQuery;
+import org.netbeans.modules.maven.indexer.spi.ClassesQuery;
+import org.netbeans.modules.maven.indexer.spi.ContextLoadedQuery;
+import org.netbeans.modules.maven.indexer.spi.DependencyInfoQueries;
+import org.netbeans.modules.maven.indexer.spi.GenericFindQuery;
+import org.netbeans.modules.maven.indexer.spi.RepositoryIndexQueryProvider;
+import org.netbeans.modules.maven.indexer.spi.ResultImplementation;
+import org.netbeans.modules.maven.indexer.spi.impl.Redo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
 import org.openide.util.test.MockLookup;
 import org.openide.util.test.MockPropertyChangeListener;
-import sun.tools.jar.resources.jar;
 
 public class ClassPathProviderImplTest extends NbTestCase {
 
@@ -140,17 +146,33 @@ public class ClassPathProviderImplTest extends NbTestCase {
     }
 
     public void testEndorsedClassPath() throws Exception {
-        MockLookup.setInstances(new ChecksumQueries() {
-
+        MockLookup.setInstances(new RepositoryIndexQueryProvider() {
             @Override
-            public Result<NBVersionInfo> findBySHA1(String sha1, List<RepositoryInfo> repos) {
-                return NexusRepositoryIndexerImpl.Accessor.ACCESSOR.createVersionResult(new Redo<NBVersionInfo>() {
-
-                    @Override
-                    public void run(Result<NBVersionInfo> result) {
-                    }
-                });
+            public boolean handlesRepository(RepositoryInfo repo) {
+                return true;
             }
+            @Override
+            public ChecksumQueries getChecksumQueries() {
+                return new ChecksumQueries() {
+                    @Override
+                    public ResultImplementation<NBVersionInfo> findBySHA1(String sha1, List<RepositoryInfo> repos) {
+                        return new ResultImpl<>(new Redo<NBVersionInfo>() {
+                            @Override
+                            public void run(ResultImpl<NBVersionInfo> result) {
+                            }
+                        });
+                    }
+                };
+            }
+            @Override public ArchetypeQueries getArchetypeQueries() { 
+                return null; 
+            }
+            @Override public BaseQueries getBaseQueries() { return null; }
+            @Override public ClassUsageQuery getClassUsageQuery() { return null; }
+            @Override public ClassesQuery getClassesQuery() { return null; }
+            @Override public ContextLoadedQuery getContextLoadedQuery() { return null; }
+            @Override public DependencyInfoQueries getDependencyInfoQueries() { return null; }
+            @Override public GenericFindQuery getGenericFindQuery() { return null; }
         });
         TestFileUtils.writeFile(d,
                 "pom.xml",

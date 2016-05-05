@@ -77,6 +77,10 @@ public final class SingleUseStatementPartInfo extends ASTNodeInfo<SingleUseState
         return type;
     }
 
+    public boolean isPartOfGroupUse() {
+        return groupUseStatementPartInfo != null;
+    }
+
     @Override
     public String getName() {
         if (groupUseStatementPartInfo == null) {

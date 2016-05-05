@@ -112,6 +112,22 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+        <change id="CustomUndoDocument">
+            <api name="api"/>
+            <summary>CustomUndoDocument added</summary>
+            <version major="1" minor="8"/>
+            <date day="19" month="4" year="2016"/>
+            <author login="mmetelka"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no" deletion="no" modification="no" />
+            <description>
+                <p>
+                    CustomUndoDocument allows to add extra undoable edits during atomic transactions
+                    over a document.
+                </p>
+            </description>
+            <class name="CustomUndoDocument" package="org.netbeans.api.editor.document"/>
+            <issue number="258798"/>
+        </change>
       <change id="ShiftPositions">
           <api name="api"/>
           <summary>Added ShiftPositions</summary>

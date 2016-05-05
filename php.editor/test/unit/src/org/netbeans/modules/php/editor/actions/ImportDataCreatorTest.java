@@ -120,6 +120,14 @@ public class ImportDataCreatorTest extends PHPTestBase {
         performTest("class Your^Class extends MyClass {");
     }
 
+    public void testImportData_issue246537a() throws Exception {
+        performTest("class My^Class {");
+    }
+
+    public void testImportData_issue246537b() throws Exception {
+        performTest("class My^Class {");
+    }
+
     private void performTest(String caretLine) throws Exception {
         performTest(caretLine, null);
     }

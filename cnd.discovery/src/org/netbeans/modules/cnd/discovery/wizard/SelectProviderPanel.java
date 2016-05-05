@@ -43,18 +43,15 @@
  */
 package org.netbeans.modules.cnd.discovery.wizard;
 
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.prefs.Preferences;
-import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -71,7 +68,6 @@ import org.netbeans.modules.cnd.discovery.api.ProviderPropertyType;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.netbeans.modules.cnd.utils.ui.EditableComboBox;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.WizardDescriptor;
@@ -103,7 +99,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     }
     
     private void addListeners(){
-        ((EditableComboBox)rootFolder).addChangeListener(new ActionListener() {
+        ((ExpandableEditableComboBox)rootFolder).addChangeListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 update();
@@ -122,7 +118,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         java.awt.GridBagConstraints gridBagConstraints;
 
         labelForRoot = new javax.swing.JLabel();
-        rootFolder = new org.netbeans.modules.cnd.utils.ui.EditableComboBox();
+        rootFolder = new ExpandableEditableComboBox();
         rootFolderButton = new javax.swing.JButton();
         labelForProviders = new javax.swing.JLabel();
         prividersComboBox = new javax.swing.JComboBox();
@@ -368,8 +364,9 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
             prividersComboBox.setSelectedItem(def);
         }
         String path = wizardDescriptor.getRootFolder();
+        FileSystem fileSystem = null;
         try {
-            FileSystem fileSystem = wizard.getWizardDescriptor().getProject().getProjectDirectory().getFileSystem();
+            fileSystem = wizard.getWizardDescriptor().getProject().getProjectDirectory().getFileSystem();
             if (CndFileUtils.isLocalFileSystem(fileSystem) && Utilities.isWindows()) {
                 path = path.replace('/', CndFileUtils.getFileSeparatorChar(fileSystem));
             }
@@ -381,22 +378,15 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         } else {
             preferences = NbPreferences.forModule(SelectProviderPanel.class);
         }
-        ((EditableComboBox)rootFolder).setStorage(ROOT_PROPERTY_KEY, preferences);
-        ((EditableComboBox)rootFolder).read(path);
+        ((ExpandableEditableComboBox)rootFolder).setStorage(ROOT_PROPERTY_KEY, preferences);
+        if (fileSystem != null) {
+            ((ExpandableEditableComboBox)rootFolder).setEnv(FileSystemProvider.getExecutionEnvironment(fileSystem));
+        }
+        ((ExpandableEditableComboBox)rootFolder).read(path);
     }
     
     private String getRootText() {
-        ComboBoxEditor editor = rootFolder.getEditor();
-        if (editor != null) {
-            Component component = editor.getEditorComponent();
-            if (component instanceof JTextField) {
-                return ((JTextField)component).getText();
-            }
-        }
-        if (rootFolder.getSelectedItem() != null) {
-            return rootFolder.getSelectedItem().toString();
-        }
-        return null;
+        return ((ExpandableEditableComboBox)rootFolder).getText();
     }
 
     void store(DiscoveryDescriptor wizardDescriptor) {
@@ -409,8 +399,8 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         } else {
             preferences = NbPreferences.forModule(SelectProviderPanel.class);
         }
-        ((EditableComboBox)rootFolder).setStorage(ROOT_PROPERTY_KEY, preferences);
-        ((EditableComboBox)rootFolder).store();
+        ((ExpandableEditableComboBox)rootFolder).setStorage(ROOT_PROPERTY_KEY, preferences);
+        ((ExpandableEditableComboBox)rootFolder).store();
         ProviderProperty p = provider.getProvider().getProperty(ProviderPropertyType.RestrictSourceRootPropertyType.key());
         if (p != null) {
             if (restrictSources.isSelected()){

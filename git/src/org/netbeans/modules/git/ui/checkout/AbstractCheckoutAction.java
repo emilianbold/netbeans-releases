@@ -108,6 +108,11 @@ public abstract class AbstractCheckoutAction extends SingleRepositoryAction {
 
             @Override
             protected void perform () {
+                RepositoryInfo info = RepositoryInfo.getInstance(repository);
+                if (!canCheckout(info)) {
+                    return;
+                }
+                
                 Collection<File> seenRoots = Git.getInstance().getSeenRoots(repository);
                 final Set<String> seenPaths = new HashSet<String>(GitUtils.getRelativePaths(repository, seenRoots.toArray(new File[seenRoots.size()])));
                 try {

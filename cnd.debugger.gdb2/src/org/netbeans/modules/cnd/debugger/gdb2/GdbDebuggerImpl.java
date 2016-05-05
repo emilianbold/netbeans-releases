@@ -149,7 +149,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     static final Logger LOG = Logger.getLogger(GdbDebuggerImpl.class.toString());
 
     private final GdbHandlerExpert handlerExpert;
-    private MILocation homeLoc;
+    private volatile MILocation homeLoc;
     private boolean dynamicType;
 
     private DisModel disModel = new DisModel();
@@ -205,11 +205,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             //20^done,stack=[frame={level="0",addr="<unavailable>",func="??"}] - exception, see bz#247777
             try {
                 if (frameTuple != null) {
-                    pc = Address.parseAddr(frameTuple.getConstValue("addr", "0")); // NOI18N
                     func = frameTuple.getConstValue("func"); // NOI18N
                     src = frameTuple.getConstValue("fullname", srcTuple != null ? srcTuple.getConstValue("fullname", null) : null); //NOI18N
                     level = Integer.parseInt(frameTuple.getConstValue("level", "0")); // NOI18N
                     line = Integer.parseInt(frameTuple.getConstValue("line", "0")); //NOI18N
+                    pc = Address.parseAddr(frameTuple.getConstValue("addr", "0")); // NOI18N
                 } else if (srcTuple != null){
                     // use srcTuple
                     src = srcTuple.getConstValue("fullname", null); // NOI18N
@@ -218,7 +218,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             }catch (NumberFormatException ex) {
                 //log exception
                 LOG.log(Level.WARNING, "NumberFormatException occurred while parsing  " + (frameTuple != null ? "frameTuple " + frameTuple : //NOI18N
-                        (srcTuple != null ? "srcTuple " + srcTuple : "")), ex);//NOI18N
+                        (srcTuple != null ? "srcTuple " + srcTuple : "")));//NOI18N
             }
 
 	    src = debugger.remoteToLocal("MILocation", src); // NOI18N
@@ -2554,7 +2554,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
 
         stackUpdater.treeChanged();     // causes a pull
-        disassembly.stateUpdated();
     }
 
     /*
@@ -2712,7 +2711,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         send("-gdb-set unwindonsignal off"); //NOI18N
     }
 
-//    @Override
+    @Override
     public void evaluateInOutline(String expr) {
         // balloonEvaluate() requests come from the editor completely
         // independently of debugger startup and shutdown.
@@ -2824,14 +2823,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
                         @Override
                         public void run() {
-                            final ToolTipView.ExpandableTooltip expTooltip = ToolTipView.getExpTooltipForText(expr + "=" + finalVal); //NOI18N
-                            expTooltip.addExpansionListener(new ActionListener() {
-
-                                @Override
-                                public void actionPerformed(ActionEvent e) {
-                                    evaluateInOutline(expr);
-                                }
-                            });
+                            final ToolTipView.ExpandableTooltip expTooltip = ToolTipView.getExpTooltipForText(GdbDebuggerImpl.this, expr, finalVal);
                             expTooltip.showTooltip();
                         }
                     });
@@ -3749,7 +3741,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             MIValue frameValue = (results != null) ? results.valueOf(MI_FRAME) : null;
             MITList frameTuple;
             MITList stack;
-            boolean visited = false;
 	    // Mac 10.4 gdb provides no "frame" attribute
 
             // For the scenario that stack view is closed and local view
@@ -3761,19 +3752,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             }
 
 	    if (srcResults != null) {
+                boolean visited = false;
                 stack = srcResults.valueOf("stack").asList(); // NOI18N
-		if (false) {
-		    // We have information about what src location we're
-		    // stopped in.
-		    if (frameValue != null)
-			frameTuple = frameValue.asTuple();
-		    homeLoc = MILocation.make(this, frameTuple, srcResults, false, stack.size(), breakpoint);
-
-		} else {
-                    frameValue = ((MIResult)stack.asList().get(0)).value();
-		    frameTuple = frameValue.asTuple();
-		    homeLoc = MILocation.make(this, frameTuple, null, false, stack.size(), breakpoint);
-                }
+                frameValue = ((MIResult) stack.asList().get(0)).value();
+                frameTuple = frameValue.asTuple();
 
                 // find the first frame with source info if dis was not requested
                 for (MITListItem stf : stack.asList()) {
@@ -3783,16 +3765,17 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                     }
                     visited = true;
                 }
-
+                homeLoc = MILocation.make(this, frameTuple, srcResults, visited, stack.size(), breakpoint);
                 state().isUpAllowed = !homeLoc.bottomframe();
                 state().isDownAllowed = !homeLoc.topframe();
                 setStack(srcRecord);
 	    } else {
                 frameTuple = ( frameValue == null ? null : frameValue.asTuple() );
                 stack = null;
+                homeLoc = MILocation.make(this, frameTuple, null, false, 0, breakpoint);
             }
-
-            setVisitedLocation(MILocation.make(this, frameTuple, null, visited, (stack == null ? 0 :stack.size()), breakpoint));
+            
+            setVisitedLocation(homeLoc);
 
 //            if (get_frames || get_locals) {
 //                showStackFrames();

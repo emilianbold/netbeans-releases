@@ -47,7 +47,11 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Position;
 import org.netbeans.api.editor.EditorActionRegistration;
+import org.netbeans.api.editor.caret.CaretInfo;
+import org.netbeans.api.editor.caret.CaretMoveContext;
+import org.netbeans.api.editor.caret.EditorCaret;
 import org.netbeans.editor.BaseCaret;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
@@ -56,6 +60,7 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
 import org.netbeans.modules.editor.lib2.typinghooks.CamelCaseInterceptorsManager;
 import org.netbeans.spi.editor.AbstractEditorAction;
+import org.netbeans.spi.editor.caret.CaretMoveHandler;
 
 
 public class CamelCaseActions {
@@ -82,58 +87,120 @@ public class CamelCaseActions {
 
                 final Caret caret = target.getCaret();
                 final BaseDocument doc = (BaseDocument)target.getDocument();
-                final CamelCaseInterceptorsManager.Transaction t = CamelCaseInterceptorsManager.getInstance().openTransaction(target, caret.getDot(), !isForward());
-                try {
-                    if (!t.beforeChange()) {
-                        final Boolean [] result = new Boolean [] { Boolean.FALSE };
-                        doc.runAtomicAsUser(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (doesTypingModification()) {
-                                    DocumentUtilities.setTypingModification(doc, true);
-                                }
-                                Object[] r = t.change();
-                                try {
-                                    int dotPos = caret.getDot();
-                                    int wsPos;
-                                    if (r == null) {
-                                        if (isForward()) {
-                                            int eolPos = Utilities.getRowEnd(doc, dotPos);
-                                            wsPos = Utilities.getNextWord(target, dotPos);
-                                            wsPos = (dotPos == eolPos) ? wsPos : Math.min(eolPos, wsPos);
-                                        } else {
-                                            int bolPos = Utilities.getRowStart(doc, dotPos);
-                                            wsPos = Utilities.getPreviousWord(target, dotPos);
-                                            wsPos = (dotPos == bolPos) ? wsPos : Math.max(bolPos, wsPos);
+                
+                if(caret instanceof EditorCaret) {
+                    final EditorCaret editorCaret = (EditorCaret) caret;
+                    editorCaret.moveCarets(new CaretMoveHandler() {
+                        @Override
+                        public void moveCarets(final CaretMoveContext context) {
+                            for (final CaretInfo caretInfo : editorCaret.getSortedCarets()) {
+                        final CamelCaseInterceptorsManager.Transaction t = CamelCaseInterceptorsManager.getInstance().openTransaction(target, caretInfo.getDot(), !isForward());
+                        try {
+                            if (!t.beforeChange()) {
+                                final Boolean[] result = new Boolean[]{Boolean.FALSE};
+                                doc.runAtomicAsUser(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (doesTypingModification()) {
+                                            DocumentUtilities.setTypingModification(doc, true);
                                         }
-                                    } else  {
-                                        wsPos = (Integer) r[0];
-                                    }
+                                        Object[] r = t.change();
+                                        try {
+                                            int dotPos = caretInfo.getDot();
+                                            int wsPos;
+                                            if (r == null) {
+                                                if (isForward()) {
+                                                    int eolPos = Utilities.getRowEnd(doc, dotPos);
+                                                    wsPos = Utilities.getNextWord(target, dotPos);
+                                                    wsPos = (dotPos == eolPos) ? wsPos : Math.min(eolPos, wsPos);
+                                                } else {
+                                                    int bolPos = Utilities.getRowStart(doc, dotPos);
+                                                    wsPos = Utilities.getPreviousWord(target, dotPos);
+                                                    wsPos = (dotPos == bolPos) ? wsPos : Math.max(bolPos, wsPos);
+                                                }
+                                            } else {
+                                                wsPos = (Integer) r[0];
+                                            }
 
-                                    if (isForward()) {
-                                        moveToNewOffset(target, dotPos, wsPos - dotPos);
-                                    } else {
-                                        moveToNewOffset(target, wsPos, dotPos - wsPos);
+                                            if (isForward()) {
+                                                moveToNewOffset(context, caretInfo, dotPos, wsPos - dotPos);
+                                            } else {
+                                                moveToNewOffset(context, caretInfo, wsPos, dotPos - wsPos);
+                                            }
+                                            result[0] = Boolean.TRUE;
+                                        } catch (BadLocationException e) {
+                                            target.getToolkit().beep();
+                                        } finally {
+                                            if (doesTypingModification()) {
+                                                DocumentUtilities.setTypingModification(doc, false);
+                                            }
+                                        }
                                     }
-                                    result[0] = Boolean.TRUE;
-                                } catch (BadLocationException e) {
-                                    target.getToolkit().beep();
-                                } finally {
-                                    if (doesTypingModification()) {
-                                        DocumentUtilities.setTypingModification(doc, false);
-                                    }
+                                });
+
+                                if (result[0].booleanValue()) {
+                                    t.afterChange();
                                 }
                             }
-                        });
-
-                        if(result[0].booleanValue()) {
-                            t.afterChange();
+                        } finally {
+                            t.close();
                         }
-                    }
-                } finally {
-                    t.close();
-                }
+                        }
+                        }
+                    });
+                } else {
+                    final CamelCaseInterceptorsManager.Transaction t = CamelCaseInterceptorsManager.getInstance().openTransaction(target, caret.getDot(), !isForward());
+                    try {
+                        if (!t.beforeChange()) {
+                            final Boolean [] result = new Boolean [] { Boolean.FALSE };
+                            doc.runAtomicAsUser(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (doesTypingModification()) {
+                                        DocumentUtilities.setTypingModification(doc, true);
+                                    }
+                                    Object[] r = t.change();
+                                    try {
+                                        int dotPos = caret.getDot();
+                                        int wsPos;
+                                        if (r == null) {
+                                            if (isForward()) {
+                                                int eolPos = Utilities.getRowEnd(doc, dotPos);
+                                                wsPos = Utilities.getNextWord(target, dotPos);
+                                                wsPos = (dotPos == eolPos) ? wsPos : Math.min(eolPos, wsPos);
+                                            } else {
+                                                int bolPos = Utilities.getRowStart(doc, dotPos);
+                                                wsPos = Utilities.getPreviousWord(target, dotPos);
+                                                wsPos = (dotPos == bolPos) ? wsPos : Math.max(bolPos, wsPos);
+                                            }
+                                        } else  {
+                                            wsPos = (Integer) r[0];
+                                        }
 
+                                        if (isForward()) {
+                                            moveToNewOffset(target, dotPos, wsPos - dotPos);
+                                        } else {
+                                            moveToNewOffset(target, wsPos, dotPos - wsPos);
+                                        }
+                                        result[0] = Boolean.TRUE;
+                                    } catch (BadLocationException e) {
+                                        target.getToolkit().beep();
+                                    } finally {
+                                        if (doesTypingModification()) {
+                                            DocumentUtilities.setTypingModification(doc, false);
+                                        }
+                                    }
+                                }
+                            });
+
+                            if(result[0].booleanValue()) {
+                                t.afterChange();
+                            }
+                        }
+                    } finally {
+                        t.close();
+                    }
+                }
             }
         }
 
@@ -142,6 +209,7 @@ public class CamelCaseActions {
             return false;
         }
         protected abstract void moveToNewOffset(JTextComponent target, int offset, int length) throws BadLocationException;
+        protected abstract void moveToNewOffset(CaretMoveContext context, CaretInfo caretInfo, int offset, int length) throws BadLocationException;
     }
 
     @EditorActionRegistration(name = BaseKit.removeNextWordAction)
@@ -155,6 +223,11 @@ public class CamelCaseActions {
         @Override
         protected void moveToNewOffset(JTextComponent target, int offset, int length) throws BadLocationException {
             target.getDocument().remove(offset, length);
+        }
+
+        @Override
+        protected void moveToNewOffset(CaretMoveContext context, CaretInfo caretInfo, int offset, int length) throws BadLocationException {
+            context.getDocument().remove(offset, length);
         }
 
         @Override
@@ -177,6 +250,11 @@ public class CamelCaseActions {
         }
         
         @Override
+        protected void moveToNewOffset(CaretMoveContext context, CaretInfo caretInfo, int offset, int length) throws BadLocationException {            
+            context.getDocument().remove(offset, length);
+        }
+        
+        @Override
         protected boolean doesTypingModification() {
             return true;
         }
@@ -194,6 +272,12 @@ public class CamelCaseActions {
         protected void moveToNewOffset(JTextComponent target, int offset, int length) throws BadLocationException {
             target.setCaretPosition(offset+length);
         }
+        
+        @Override
+        protected void moveToNewOffset(CaretMoveContext context, CaretInfo caretInfo, int offset, int length) throws BadLocationException {            
+            Position pos = context.getDocument().createPosition(offset + length);
+            context.setDot(caretInfo, pos);
+        }
     }
 
 
@@ -208,6 +292,12 @@ public class CamelCaseActions {
         @Override
         protected void moveToNewOffset(JTextComponent target, int offset, int length) throws BadLocationException {
             target.setCaretPosition(offset);
+        }
+        
+        @Override
+        protected void moveToNewOffset(CaretMoveContext context, CaretInfo caretInfo, int offset, int length) throws BadLocationException {            
+            Position pos = context.getDocument().createPosition(offset);
+            context.setDot(caretInfo, pos);
         }
     }
 
@@ -227,6 +317,12 @@ public class CamelCaseActions {
                 target.getCaret().moveDot(offset + length);
             }
         }
+
+        @Override
+        protected void moveToNewOffset(CaretMoveContext context, CaretInfo caretInfo, int offset, int length) throws BadLocationException {            
+            Position pos = context.getDocument().createPosition(offset + length);
+            context.moveDot(caretInfo, pos);
+        }
     }
 
     @EditorActionRegistration(name = DefaultEditorKit.selectionPreviousWordAction)
@@ -243,6 +339,12 @@ public class CamelCaseActions {
             } else {
                 target.getCaret().moveDot(offset);
             }
+        }
+        
+        @Override
+        protected void moveToNewOffset(CaretMoveContext context, CaretInfo caretInfo, int offset, int length) throws BadLocationException {            
+            Position pos = context.getDocument().createPosition(offset);
+            context.moveDot(caretInfo, pos);
         }
     }
 

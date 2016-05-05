@@ -106,9 +106,11 @@ final class CompletionContextFinder {
             new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN, GROUP_USE_STATEMENT_TOKENS},
             new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN, PHPTokenId.WHITESPACE, GROUP_USE_STATEMENT_TOKENS});
     private static final List<Object[]> GROUP_USE_CONST_KEYWORD_TOKENS = Arrays.<Object[]>asList(
-            new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_CONST, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN, GROUP_USE_STATEMENT_TOKENS});
+            new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_CONST, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN, GROUP_USE_STATEMENT_TOKENS},
+            new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_CONST, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN, PHPTokenId.WHITESPACE, GROUP_USE_STATEMENT_TOKENS});
     private static final List<Object[]> GROUP_USE_FUNCTION_KEYWORD_TOKENS = Arrays.<Object[]>asList(
-            new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN, GROUP_USE_STATEMENT_TOKENS});
+            new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN, GROUP_USE_STATEMENT_TOKENS},
+            new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, NAMESPACE_FALSE_TOKEN, PHPTokenId.WHITESPACE, GROUP_USE_STATEMENT_TOKENS});
     private static final List<Object[]> USE_KEYWORD_TOKENS = Arrays.asList(
             new Object[]{PHPTokenId.PHP_USE},
             new Object[]{PHPTokenId.PHP_USE, PHPTokenId.WHITESPACE},
@@ -287,6 +289,12 @@ final class CompletionContextFinder {
             return CompletionContext.NAMESPACE_KEYWORD;
         } else if (acceptTokenChains(tokenSequence, INSTANCEOF_TOKENCHAINS, moveNextSucces)) {
             return CompletionContext.TYPE_NAME;
+        } else if (acceptTokenChains(tokenSequence, GROUP_USE_KEYWORD_TOKENS, moveNextSucces)) {
+            return CompletionContext.GROUP_USE_KEYWORD;
+        } else if (acceptTokenChains(tokenSequence, GROUP_USE_CONST_KEYWORD_TOKENS, moveNextSucces)) {
+            return CompletionContext.GROUP_USE_CONST_KEYWORD;
+        } else if (acceptTokenChains(tokenSequence, GROUP_USE_FUNCTION_KEYWORD_TOKENS, moveNextSucces)) {
+            return CompletionContext.GROUP_USE_FUNCTION_KEYWORD;
         } else if (isInsideInterfaceDeclarationBlock(info, caretOffset, tokenSequence)) {
             CompletionContext paramContext = getParamaterContext(token, caretOffset, tokenSequence);
             if (paramContext != null) {
@@ -307,12 +315,6 @@ final class CompletionContextFinder {
                 }
                 return CompletionContext.NONE;
             }
-        } else if (acceptTokenChains(tokenSequence, GROUP_USE_KEYWORD_TOKENS, moveNextSucces)) {
-            return CompletionContext.GROUP_USE_KEYWORD;
-        } else if (acceptTokenChains(tokenSequence, GROUP_USE_CONST_KEYWORD_TOKENS, moveNextSucces)) {
-            return CompletionContext.GROUP_USE_CONST_KEYWORD;
-        } else if (acceptTokenChains(tokenSequence, GROUP_USE_FUNCTION_KEYWORD_TOKENS, moveNextSucces)) {
-            return CompletionContext.GROUP_USE_FUNCTION_KEYWORD;
         } else if (acceptTokenChains(tokenSequence, USE_KEYWORD_TOKENS, moveNextSucces)) {
             return CompletionContext.USE_KEYWORD;
         } else if (acceptTokenChains(tokenSequence, USE_CONST_KEYWORD_TOKENS, moveNextSucces)) {

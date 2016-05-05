@@ -49,12 +49,14 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.NavigationFilter;
 import javax.swing.text.Position;
 import org.openide.util.Exceptions;
 
 /**
  * Implementation of the FilterBypass suitable for multi-caret environment.
+ * Provides a special {@link Caret} implementatio, which works with the current
+ * {@link CaretItem} being manipulated, so that if client calls {@link Caret#setDot}
+ * or the like, the instruction will be executed and bypasses all NavigationFilters.
  * 
  * @author sdedic
  */
@@ -100,9 +102,6 @@ class FilterBypassImpl extends NavigationFilterBypass {
     
     @Override
     public void setDot(final int dot, Position.Bias bias) {
-        // FIXME: bias is not used. LineDocument should be used
-        // in preference to document to create biased positions.
-        // bypass handlers
         Position dotPos = createPosition(dot, bias);
         result = transaction.setDotAndMark(item.getCaretItem(),
                 dotPos, dotPos);
@@ -121,6 +120,9 @@ class FilterBypassImpl extends NavigationFilterBypass {
     
     private Position createPosition0(int dot, Position.Bias bias) {
         try {
+            // FIXME: bias is not used. LineDocument should be used
+            // in preference to document to create biased positions.
+            // bypass handlers
             if (dot < 0) {
                 return doc.createPosition(0);
             } else if (dot > doc.getLength()) {
@@ -151,7 +153,7 @@ class FilterBypassImpl extends NavigationFilterBypass {
      */
     private class ItemCaret implements Caret {
         private void notPermitted() {
-            throw new UnsupportedOperationException("Disallowed in NavigationFilter");
+            throw new UnsupportedOperationException("Disallowed in NavigationFilter"); // NOI18N
         }
         @Override
         public void install(JTextComponent c) {
@@ -238,30 +240,5 @@ class FilterBypassImpl extends NavigationFilterBypass {
             FilterBypassImpl.this.moveDot(dot, Position.Bias.Forward);
         }
         
-    }
-    
-    /**
-     * Special FilterBypass, which delegates to the default filter instead of
-     * direct operation.
-     */
-    static class Chained extends FilterBypassImpl {
-        private final FilterBypassImpl chainedBypass;
-        private final NavigationFilter naviChain;
-
-        Chained(FilterBypassImpl chainedBypass, NavigationFilter naviChain, CaretTransaction transaction, CaretInfo item, Document doc) {
-            super(transaction, item, doc);
-            this.chainedBypass = chainedBypass;
-            this.naviChain = naviChain;
-        }
-
-        @Override
-        public void moveDot(int dot, Position.Bias bias) {
-            naviChain.moveDot(chainedBypass, dot, bias);
-        }
-
-        @Override
-        public void setDot(int dot, Position.Bias bias) {
-            naviChain.setDot(chainedBypass, dot, bias);
-        }
     }
 }

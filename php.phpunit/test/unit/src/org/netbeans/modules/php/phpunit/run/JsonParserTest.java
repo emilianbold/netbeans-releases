@@ -144,6 +144,22 @@ public class JsonParserTest extends NbTestCase {
         assertEquals(TestCase.Status.PASSEDWITHERRORS, test.getStatus());
     }
 
+    public void testIssue259044() throws Exception {
+        jsonParser.parse(readContent("issue259044.json"));
+        jsonParser.finish();
+        TestSessionVo session = handler.getSession();
+        assertNotNull(session);
+        List<TestSuiteVo> suites = session.getTestSuites();
+        assertEquals(12, suites.size());
+        TestSuiteVo suite = suites.get(0);
+        assertEquals("Test\\FlexiPeeHP\\AdresarTest", suite.getName());
+        List<TestCaseVo> tests = suite.getPureTestCases();
+        assertEquals(85, tests.size());
+        TestCaseVo test = tests.get(0);
+        assertEquals("testSetAgenda", test.getName());
+        assertEquals(TestCase.Status.PASSED, test.getStatus());
+    }
+
     private String readContent(String filename) throws IOException {
         byte[] bytes = Files.readAllBytes(getPath(filename));
         return new String(bytes, StandardCharsets.UTF_8);

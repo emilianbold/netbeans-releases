@@ -250,11 +250,12 @@ public class ToolsPanelSupport {
      * This method must be called from EDT.
      *
      * @param env execution environment
+     * @param predefinedPath if is not null, IDE will search tool collection in this path
      * @return created toolchain, or <code>null</code> if the wizard was canceled
      */
-    public static Future<CompilerSet> invokeNewCompilerSetWizard(final ExecutionEnvironment env) {
+    public static Future<CompilerSet> invokeNewCompilerSetWizard(final ExecutionEnvironment env, String predefinedPath) {
         final CompilerSetManagerImpl csm = (CompilerSetManagerImpl) cacheManager.getCompilerSetManagerCopy(env, true);
-        final CompilerSet cs = AddCompilerSetPanel.invokeMe(csm);
+        final CompilerSet cs = AddCompilerSetPanel.invokeMe(csm, predefinedPath);
         if (cs != null) {
             return RP.submit(
                     new CompilerSetAction(csm, cs, CompilerSetActionType.ADD), cs);

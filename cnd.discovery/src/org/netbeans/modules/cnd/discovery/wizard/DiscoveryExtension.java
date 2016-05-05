@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProviderFactory;
+import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
@@ -404,6 +405,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
             Map<String, AtomicInteger> compilers = new HashMap<>();
             Set<String> dep = new HashSet<>();
             Set<String> buildArtifacts = new HashSet<>();
+            Map<ItemProperties.LanguageKind, Map<String, Integer>> buildTools = new HashMap<ItemProperties.LanguageKind, Map<String, Integer>>();
             for (Iterator<Configuration> it = configs.iterator(); it.hasNext();) {
                 Configuration conf = it.next();
                 includedFiles.addAll(conf.getIncludedFiles());
@@ -430,10 +432,30 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
                 if (conf.getBuildArtifacts() != null) {
                     buildArtifacts.addAll(conf.getBuildArtifacts());
                 }
+                if (conf.getBuildTools() != null) {
+                    Map<ItemProperties.LanguageKind, Map<String, Integer>> tools = conf.getBuildTools();
+                    for(Map.Entry<ItemProperties.LanguageKind, Map<String, Integer>> entry : tools.entrySet()) {
+                        Map<String, Integer> old = buildTools.get(entry.getKey());
+                        if (old == null) {
+                            buildTools.put(entry.getKey(), entry.getValue());
+                        } else {
+                            //merge maps
+                            for (Map.Entry<String, Integer> e : entry.getValue().entrySet()) {
+                                Integer count = old.get(e.getKey());
+                                if (count == null) {
+                                    old.put(e.getKey(), e.getValue());
+                                } else {
+                                    old.put(e.getKey(), count + e.getValue());
+                                }
+                            }
+                        }
+                    }
+                }
             }
             wizardDescriptor.setInvokeProvider(false);
             wizardDescriptor.setDependencies(new ArrayList<>(dep));
             wizardDescriptor.setBuildArtifacts(new ArrayList<>(buildArtifacts));
+            wizardDescriptor.setBuildTools(buildTools);
             wizardDescriptor.setConfigurations(projectConfigurations);
             int max = 0;
             String top = "";

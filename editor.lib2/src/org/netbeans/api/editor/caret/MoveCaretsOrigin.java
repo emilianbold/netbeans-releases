@@ -42,6 +42,7 @@
 package org.netbeans.api.editor.caret;
 
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.spi.editor.caret.NavigationFilterBypass;
 import org.openide.util.Parameters;
 
 /**
@@ -61,7 +62,7 @@ import org.openide.util.Parameters;
  * hints that describes the intended caret move ({@link #getDirection() getDirection()}).
  * </li>
  * <li>
- * When {@link EditorCaret#setNavigationFilter(org.netbeans.api.editor.caret.MoveCaretsOrigin, javax.swing.text.NavigationFilter) registering a NavigationFilter}
+ * When {@link EditorCaret#setNavigationFilter(javax.swing.text.JTextComponent, org.netbeans.api.editor.caret.MoveCaretsOrigin, javax.swing.text.NavigationFilter)  registering a NavigationFilter}
  * as a filtering template. 
  * </li>
  * </ol>
@@ -70,7 +71,7 @@ import org.openide.util.Parameters;
  * <p>
  * The intended usage in caret moving code (actions) is as follows:
  * </p>
- * <code><pre>
+ * <pre><code>
  * // Action perform method
  * editorCaret.moveCarets(new CaretMoveHandler() {
  *      &#64;Override
@@ -83,11 +84,11 @@ import org.openide.util.Parameters;
  *          // The approximate direction of the movement; can be 0.
  *          SwingConstants.NORTH)
  *  );
- * </pre></code>
+ * </code></pre>
  * <p>
  * If a {@link javax.swing.text.NavigationFilter} only wants to intercept certain type of moevements, it can register as follows:
  * </p>
- * <code><pre>
+ * <pre><code>
  * EditorCaret eCaret = .... ; // obtain EditorCaret
  * eCaret.setNavigationFilter(
  *   new NavigationFilter() {
@@ -95,12 +96,12 @@ import org.openide.util.Parameters;
  *   }, 
  *   new MoveCaretsOrigin(MoveCaretsOrigin.DIRECT_NAVIGATION)
  * );
- * </pre></code>
+ * </code></pre>
  * <p>
  * If the NavigationFilter implementation wants to obtain the extended information for the caret movement,
  * it can downcast the received FilterBypass:
  * </p>
- * <code><pre>
+ * <pre><code>
  *  public void setDot(FilterBypass fb, int dot, Position.Bias bias) {
  *    if (fb instanceof NavigationFilterBypass) {
  *      NavigationFilterBypass nfb = (NavigationFilterBypass)fb;
@@ -115,10 +116,10 @@ import org.openide.util.Parameters;
  *      EditorCaret eCaret = nfb.getEditorCaret();
  *    }
  *  }
- * </pre></code>
+ * </code></pre>
  * </div>
  * @see NavigationFilterBypass
- * @since 2.9
+ * @since 2.10
  */
 public final class MoveCaretsOrigin {
     /**

@@ -107,6 +107,7 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
 
     @Override
     @Messages({
+        "ImplementAbstractMethodsHintError.class.anonymous=Anonymous class",
         "# {0} - Class name",
         "# {1} - Abstract method name",
         "# {2} - Owner (class) of abstract method",
@@ -118,9 +119,15 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
         if (fileScope != null && fileObject != null) {
             Collection<? extends ClassScope> allClasses = ModelUtils.getDeclaredClasses(fileScope);
             for (FixInfo fixInfo : checkHints(allClasses, context)) {
+                final String className;
+                if (fixInfo.anonymousClass) {
+                    className = Bundle.ImplementAbstractMethodsHintError_class_anonymous();
+                } else {
+                    className = fixInfo.className;
+                }
                 hints.add(new Hint(
                         ImplementAbstractMethodsHintError.this,
-                        Bundle.ImplementAbstractMethodsHintDesc(fixInfo.className, fixInfo.lastMethodDeclaration, fixInfo.lastMethodOwnerName),
+                        Bundle.ImplementAbstractMethodsHintDesc(className, fixInfo.lastMethodDeclaration, fixInfo.lastMethodOwnerName),
                         fileObject,
                         fixInfo.classNameRange,
                         createHintFixes(context.doc, fixInfo),
@@ -132,7 +139,9 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
     private List<HintFix> createHintFixes(BaseDocument doc, FixInfo fixInfo) {
         List<HintFix> hintFixes = new ArrayList<>();
         hintFixes.add(new ImplementAllFix(doc, fixInfo));
-        hintFixes.add(new AbstractClassFix(doc, fixInfo));
+        if (!fixInfo.anonymousClass) {
+            hintFixes.add(new AbstractClassFix(doc, fixInfo));
+        }
         return Collections.unmodifiableList(hintFixes);
     }
 
@@ -180,7 +189,7 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
                     int classDeclarationOffset = getClassDeclarationOffset(context.parserResult.getSnapshot().getTokenHierarchy(), classScope.getOffset());
                     int newMethodsOffset = getNewMethodsOffset(classScope, context.doc, classDeclarationOffset);
                     if (newMethodsOffset != -1 && classDeclarationOffset != -1) {
-                        retval.add(new FixInfo(classScope, methodSkeletons, lastMethodElement, newMethodsOffset, classDeclarationOffset));
+                        retval.add(new FixInfo(classScope, methodSkeletons, lastMethodElement, newMethodsOffset, classDeclarationOffset, classScope.isAnonymous()));
                     }
                 }
             }
@@ -374,8 +383,9 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
         private final String lastMethodDeclaration;
         private final String lastMethodOwnerName;
         private final int classDeclarationOffset;
+        private final boolean anonymousClass;
 
-        FixInfo(ClassScope classScope, Set<String> methodSkeletons, MethodElement lastMethodElement, int newMethodsOffset, int classDeclarationOffset) {
+        FixInfo(ClassScope classScope, Set<String> methodSkeletons, MethodElement lastMethodElement, int newMethodsOffset, int classDeclarationOffset, boolean anonymousClass) {
             this.methodSkeletons = new ArrayList<>(methodSkeletons);
             className = classScope.getFullyQualifiedName().toString();
             Collections.sort(this.methodSkeletons);
@@ -384,6 +394,7 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
             this.newMethodsOffset = newMethodsOffset;
             lastMethodDeclaration = lastMethodElement.asString(PrintAs.NameAndParamsDeclaration);
             lastMethodOwnerName = lastMethodElement.getType().getFullyQualifiedName().toString();
+            this.anonymousClass = anonymousClass;
         }
     }
 }

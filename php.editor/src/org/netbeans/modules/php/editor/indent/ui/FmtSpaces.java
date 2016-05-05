@@ -267,6 +267,7 @@ public final class FmtSpaces extends JPanel implements TreeCellRenderer, MouseLi
                 new Item(SPACE_BEFORE_FINALLY)),
 
             new Item("BeforeParentheses",                       // NOI18N
+                new Item(SPACE_BEFORE_ANONYMOUS_CLASS_PAREN),
                 new Item(SPACE_BEFORE_METHOD_DECL_PAREN),
                 new Item(SPACE_BEFORE_METHOD_CALL_PAREN),
                 new Item(SPACE_BEFORE_IF_PAREN),
@@ -302,6 +303,7 @@ public final class FmtSpaces extends JPanel implements TreeCellRenderer, MouseLi
                 ),
 
             new Item("WithinParentheses",                       // NOI18N
+                new Item(SPACE_WITHIN_ANONYMOUS_CLASS_PARENS),
                 new Item(SPACE_WITHIN_METHOD_DECL_PARENS),
                 new Item(SPACE_WITHIN_METHOD_CALL_PARENS),
                 new Item(SPACE_WITHIN_IF_PARENS),

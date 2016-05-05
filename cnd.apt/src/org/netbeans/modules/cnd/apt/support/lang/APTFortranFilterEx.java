@@ -98,7 +98,7 @@ final class APTFortranFilterEx implements APTLanguageFilter {
             }
             Token newToken = orig.nextToken();
             int column = newToken.getColumn();
-            char first = newToken.getText().charAt(0);
+            char first = newToken.getText().length() > 0 ? newToken.getText().charAt(0) : 0;
             if (column == 1 || first == '!') {
                 boolean isComment = false;
                 if (filterContinueChar) {

@@ -151,6 +151,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
     private DevelopmentHostConfiguration developmentHost;
     private BooleanConfiguration dependencyChecking;
     private BooleanConfiguration rebuildPropChanged;
+    private BooleanConfiguration prependToolCollectionPath;
     private CCompilerConfiguration cCompilerConfiguration;
     private CCCompilerConfiguration ccCompilerConfiguration;
     private FortranCompilerConfiguration fortranCompilerConfiguration;
@@ -209,6 +210,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
             dependencyChecking.setValue(MakeProjectOptions.getDepencyChecking());
         }
         rebuildPropChanged = new BooleanConfiguration(false);
+        prependToolCollectionPath = new BooleanConfiguration(true);
         if (!isMakefileConfiguration()) {
             rebuildPropChanged.setValue(MakeProjectOptions.getRebuildPropChanged());
         }
@@ -331,6 +333,14 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
 
     public void setRebuildPropChanged(BooleanConfiguration rebuildPropChanged) {
         this.rebuildPropChanged = rebuildPropChanged;
+    }
+
+    public BooleanConfiguration getPrependToolCollectionPath() {
+        return prependToolCollectionPath;
+    }
+
+    public void setPrependToolCollectionPath(BooleanConfiguration prependToolCollectionPath) {
+        this.prependToolCollectionPath = prependToolCollectionPath;
     }
 
     public CompilerSet2Configuration getCompilerSet() {
@@ -616,7 +626,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
         getAssemblerRequired().assign(makeConf.getAssemblerRequired());
         getDependencyChecking().assign(makeConf.getDependencyChecking());
         getRebuildPropChanged().assign(makeConf.getRebuildPropChanged());
-
+        getPrependToolCollectionPath().assign(makeConf.getPrependToolCollectionPath());
         getPreBuildConfiguration().assign(makeConf.getPreBuildConfiguration());
         getMakefileConfiguration().assign(makeConf.getMakefileConfiguration());
         getCompileConfiguration().assign(makeConf.getCompileConfiguration());
@@ -774,6 +784,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
         clone.setCompileConfiguration(getCompileConfiguration().clone());
         clone.setDependencyChecking(getDependencyChecking().clone());
         clone.setRebuildPropChanged(getRebuildPropChanged().clone());
+        clone.setPrependToolCollectionPath(getPrependToolCollectionPath().clone());
         clone.setCCompilerConfiguration(getCCompilerConfiguration().clone());
         clone.getCCompilerConfiguration().setOwner(clone);
         clone.setCCCompilerConfiguration(getCCCompilerConfiguration().clone());
@@ -832,6 +843,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
             set.put(new BooleanNodeProp(getRebuildPropChanged(), true, "RebuildPropChanged", getString("RebuildPropChangedTxt"), getString("RebuildPropChangedHint"))); // NOI18N
         }
         set.put(new PlatformSpecificProp(this, getPlatformSpecific(), true, "PlatformSpecific", getString("PlatformSpecificTxt"), getString("PlatformSpecificHint"))); // NOI18N
+        set.put(new BooleanNodeProp(getPrependToolCollectionPath(), true, "PrependToolCollectionPath", getString("PrependToolCollectionPathTxt"), getString("PrependToolCollectionPathHint"))); // NOI18N
         sheet.put(set);
 
         return sheet;

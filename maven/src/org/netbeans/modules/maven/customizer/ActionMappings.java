@@ -125,7 +125,7 @@ import org.openide.util.RequestProcessor;
  * @author  mkleint
  */
 public class ActionMappings extends javax.swing.JPanel implements HelpCtx.Provider {
-    private static final String CUSTOM_ACTION_PREFIX = "CUSTOM-"; //NOI18N
+    public static final String CUSTOM_ACTION_PREFIX = "CUSTOM-"; //NOI18N
 
     private static final RequestProcessor RP = new RequestProcessor(ActionMappings.class);
     private NbMavenProjectImpl project;

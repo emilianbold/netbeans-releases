@@ -142,7 +142,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     private void initAliases(final Model model) {
         for (final NamespaceScope namespaceScope : model.getFileScope().getDeclaredNamespaces()) {
             if (namespaceScope != null) {
-                for (UseScope useElement : namespaceScope.getDeclaredUses()) {
+                for (UseScope useElement : namespaceScope.getAllDeclaredSingleUses()) {
                     AliasedName aliasedName = useElement.getAliasedName();
                     if (aliasedName != null) {
                         aliases.add(aliasedName);

@@ -69,6 +69,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
+import javax.swing.JLayeredPane;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.event.AncestorEvent;
@@ -216,6 +217,10 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
 
     private int[] computeVisibleSpan() {
         Component parent = pane.getParent();
+        
+        if (parent instanceof JLayeredPane) {
+            parent = parent.getParent();
+        }
 
         if (parent instanceof JViewport) {
             JViewport vp = (JViewport) parent;

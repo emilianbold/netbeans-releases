@@ -42,7 +42,9 @@
 package org.netbeans.modules.php.editor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -174,22 +176,45 @@ public final class CodeUtils {
                 && name.charAt(0) == '#'; // NOI18N
     }
 
+    public static PhpVersion getPhpVersion(FileObject file) {
+        assert file != null;
+        return PhpLanguageProperties.forFileObject(file).getPhpVersion();
+    }
+
     public static boolean isPhpVersion(FileObject file, PhpVersion version) {
         assert file != null;
         assert version != null;
-        return PhpLanguageProperties.forFileObject(file).getPhpVersion() == version;
+        return getPhpVersion(file) == version;
     }
 
     public static boolean isPhpVersionLessThan(FileObject file, PhpVersion version) {
         assert file != null;
         assert version != null;
-        return PhpLanguageProperties.forFileObject(file).getPhpVersion().compareTo(version) < 0;
+        return getPhpVersion(file).compareTo(version) < 0;
     }
 
     public static boolean isPhpVersionGreaterThan(FileObject file, PhpVersion version) {
         assert file != null;
         assert version != null;
-        return PhpLanguageProperties.forFileObject(file).getPhpVersion().compareTo(version) > 0;
+        return getPhpVersion(file).compareTo(version) > 0;
+    }
+
+    /**
+     * @return {@code true} if the {@link StaticDispatch#getDispatcher() dispatcher}
+     * is not just identifier or a namespace name.
+     */
+    public static boolean isUniformVariableSyntax(StaticDispatch dispatch) {
+        assert dispatch != null;
+        return isUniformVariableSyntax(dispatch.getDispatcher());
+    }
+
+    /**
+     * @return {@code true} if the given expression
+     * is not just identifier or a namespace name.
+     */
+    public static boolean isUniformVariableSyntax(Expression expression) {
+        assert expression != null;
+        return extractUnqualifiedName(expression) == null;
     }
 
     @CheckForNull
@@ -544,4 +569,108 @@ public final class CodeUtils {
     public static boolean isConstructor(MethodDeclaration node) {
         return "__construct".equals(extractMethodName(node)); //NOI18N
     }
+
+    /**
+     * Finds common namespace prefixes for the given <b>sorted</b> namespaces.
+     * <p>
+     * Note: all returned prefixes start and end with '\\'.
+     * @param namespaces input namespaces (<b>must be sorted!</b>)
+     * @return list of common namespace prefixes or empty list, never {@code null}
+     */
+    public static List<String> getCommonNamespacePrefixes(List<String> namespaces) {
+        if (namespaces.isEmpty()) {
+            return Collections.emptyList();
+        }
+        LinkedList<String> fqNamespaces = new LinkedList<>();
+        for (String namespace : namespaces) {
+            fqNamespaces.add(fullyQualifyNamespace(namespace));
+        }
+        List<String> prefixes = new ArrayList<>(fqNamespaces.size());
+        while (!fqNamespaces.isEmpty()) {
+            String namespace = fqNamespaces.poll();
+            if (fqNamespaces.isEmpty()) {
+                break;
+            }
+            assert namespace.charAt(0) == '\\' : namespace;
+            int separatorIndex = namespace.indexOf('\\', 1); // NOI18N
+            if (separatorIndex == -1) {
+                // no ns separator
+                continue;
+            }
+            String prefix = namespace.substring(0, separatorIndex + 1);
+            List<String> prefixedNamespaces = new ArrayList<>(fqNamespaces.size());
+            // get all namespaces that start with this prefix
+            for (Iterator<String> iterator = fqNamespaces.iterator(); iterator.hasNext();) {
+                String ns = iterator.next();
+                if (ns.startsWith(prefix)) {
+                    prefixedNamespaces.add(ns);
+                    iterator.remove();
+                } else {
+                    break;
+                }
+            }
+            if (prefixedNamespaces.isEmpty()) {
+                // not common ns prefix
+                continue;
+            }
+            prefixedNamespaces.add(0, namespace);
+            if (prefixedNamespaces.size() > 1) {
+                // find common longest prefix
+                prefix = null;
+                for (int i = 1; i < prefixedNamespaces.size(); i++) {
+                    String prev = prefixedNamespaces.get(i - 1);
+                    String next = prefixedNamespaces.get(i);
+                    String tmpPrefix = getCommonNamespacePrefix(prev, next);
+                    assert tmpPrefix != null : prev + " :: " + next;
+                    if (prefix == null) {
+                        prefix = tmpPrefix;
+                    } else if (prefix.length() > tmpPrefix.length()) {
+                        prefix = tmpPrefix;
+                    }
+                }
+                assert prefix != null : prefixedNamespaces;
+            }
+            prefixes.add(prefix);
+        }
+        return prefixes;
+    }
+
+    @CheckForNull
+    static String getCommonNamespacePrefix(String ns1, String ns2) {
+        assert ns1 != null;
+        assert ns2 != null;
+        String fqns1 = fullyQualifyNamespace(ns1);
+        String fqns2 = fullyQualifyNamespace(ns2);
+        int index;
+        for (index = 0; index < fqns1.length() && index < fqns2.length(); index++) {
+            if (fqns1.charAt(index) != fqns2.charAt(index)) {
+                break;
+            }
+        }
+        // check shortest common prefix (e.g. '\A\')
+        if (index < 3) {
+            return null;
+        }
+        String prefix = fqns1.substring(0, index);
+        if (prefix.charAt(index - 1) == '\\') { // NOI18N
+            return prefix;
+        }
+        // find last '\' (avoid first '\')
+        int lastNsIndex = prefix.lastIndexOf('\\'); // NOI18N
+        if (lastNsIndex <= 0) {
+            // not found or the first '\'
+            return null;
+        }
+        return prefix.substring(0, lastNsIndex + 1);
+    }
+
+    public static String fullyQualifyNamespace(String namespace) {
+        assert namespace != null;
+        if (!namespace.isEmpty()
+                && namespace.charAt(0) != '\\') { // NOI18N
+            return '\\' + namespace; // NOI18N
+        }
+        return namespace;
+    }
+
 }

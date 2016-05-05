@@ -101,7 +101,7 @@ public final class ModelUtils {
         final Set<AliasedName> aliases = new HashSet<>();
         final NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
         if (namespaceScope != null) {
-            Collection<? extends UseScope> declaredUses = namespaceScope.getDeclaredUses();
+            Collection<? extends UseScope> declaredUses = namespaceScope.getAllDeclaredSingleUses();
             for (UseScope useElement : declaredUses) {
                 AliasedName aliasedName = useElement.getAliasedName();
                 if (aliasedName != null) {

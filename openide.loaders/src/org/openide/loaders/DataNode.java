@@ -356,7 +356,7 @@ public class DataNode extends AbstractNode {
             Node n = l.lookup(Node.class);
             if (n != null) {
                 Node parentNode = n.getParentNode();
-                if (parentNode != null) {
+                if (parentNode != null && DataNode.isNodeForFolder(parentNode)) {
                     PasteType[] pts = parentNode.getPasteTypes(t);
                     PasteType[] updated = updateParentPasteTypes(pts);
                     return Arrays.asList(updated);
@@ -364,6 +364,34 @@ public class DataNode extends AbstractNode {
             }
         }
         return Collections.emptyList();
+    }
+
+    /**
+     * Check whether a node represents a file-system folder.
+     * <p>
+     * Note: Simply checking type for FolderNode is not sufficient, as we need
+     * to support also FolderNodes wrapped in FilterNodes.
+     * </p>
+     *
+     * @param node Node to check.
+     * @return True if the node represents a folder, false otherwise.
+     */
+    private static boolean isNodeForFolder(Node node) {
+        Collection<? extends FileObject> fos = node.getLookup().lookupAll(FileObject.class);
+        if (fos.size() == 1) {
+            FileObject fo = fos.iterator().next();
+            if (fo.isFolder()) {
+                return true;
+            }
+        }
+        Collection<? extends DataObject> dos = node.getLookup().lookupAll(DataObject.class);
+        if (dos.size() == 1) {
+            DataObject dob = dos.iterator().next();
+            if (dob.getPrimaryFile().isFolder()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @NbBundle.Messages({

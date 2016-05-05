@@ -53,6 +53,6 @@ import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
  */
 public interface ArchetypeQueries {
 
-    RepositoryQueries.Result<NBVersionInfo> findArchetypes(List<RepositoryInfo> repos);
+    ResultImplementation<NBVersionInfo> findArchetypes(List<RepositoryInfo> repos);
 
 }

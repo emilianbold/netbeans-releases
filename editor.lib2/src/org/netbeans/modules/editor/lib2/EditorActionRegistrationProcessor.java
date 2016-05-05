@@ -252,11 +252,10 @@ public final class EditorActionRegistrationProcessor extends LayerGeneratingProc
         int popupPosition = annotation.popupPosition();
         if (popupPosition != Integer.MAX_VALUE) {
             StringBuilder popupPresenterFilePath = new StringBuilder(50);
-            popupPresenterFilePath.append("Editors/");
+            popupPresenterFilePath.append("Editors/Popup/");
             if (mimeType.length() > 0) {
                 popupPresenterFilePath.append(mimeType).append("/");
             }
-            popupPresenterFilePath.append("Popup/");
             if (popupPath.length() > 0) {
                 popupPresenterFilePath.append(popupPath).append('/');
             }
