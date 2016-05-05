@@ -100,6 +100,8 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
     private final List<ColoredFilter> colors = new ArrayList();
     private final ColorsTableModel colorsModel = new ColorsTableModel();
     
+    private JCheckBox coloringChoice;
+    
     
     public FiltersOptionsPanel() {
         initUI();
@@ -111,17 +113,20 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
     }
 
     public void storeTo(ProfilerIDESettings settings) {
+        settings.setSourcesColoringEnabled(coloringChoice.isSelected());
         PackageColorer.setRegisteredColors(colors);
         for (Window w : Window.getWindows()) w.repaint();
     }
 
     public void loadFrom(ProfilerIDESettings settings) {
+        coloringChoice.setSelected(settings.isSourcesColoringEnabled());
         colors.clear();
         colors.addAll(PackageColorer.getRegisteredColors());
         colorsModel.fireTableDataChanged();
     }
 
     public boolean equalsTo(ProfilerIDESettings settings) {
+        if (coloringChoice.isSelected() != settings.isSourcesColoringEnabled()) return false;
         return Objects.equals(PackageColorer.getRegisteredColors(), colors);
     }
     
@@ -134,7 +139,7 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
         int htab = 8;
         int vgap = 5;
         
-        Separator dataTransferSeparator = new Separator("Results Coloring");
+        Separator dataTransferSeparator = new Separator("Filters");
         c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = y++;
@@ -142,6 +147,24 @@ public final class FiltersOptionsPanel extends ProfilerOptionsPanel {
         c.fill = GridBagConstraints.HORIZONTAL;
         c.insets = new Insets(0, 0, vgap * 2, 0);
         add(dataTransferSeparator, c);
+        
+        coloringChoice = new JCheckBox("Use defined filters for coloring results");
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = y++;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.NONE;
+        c.insets = new Insets(0, htab, vgap * 3, 0);
+        add(coloringChoice, c);
+        
+        JLabel tableCaption = new JLabel("Defined Filters:");
+        c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = y++;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.NONE;
+        c.insets = new Insets(0, htab, vgap, 0);
+        add(tableCaption, c);
         
         final String colorString = "ABCabc123"; // NOI18N
         final ProfilerTable colorsTable = new ProfilerTable(colorsModel, false, false, null);
