@@ -58,6 +58,50 @@ public class InnerToOutterTest extends RefactoringTestBase {
         super(name);
     }
     
+
+    
+    public void test259004() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t;\n"
+                        + "\n"
+                        + "import java.util.function.Consumer;\n"
+                        + "\n"
+                        + "public class A {\n"
+                        + "\n"
+                        + "public static void main(String[] args) {\n"
+                        + "    Consumer<F> c = f -> {};\n"
+                        + "}\n"
+                        + "\n"
+                        + "public static final class F {}\n"
+                        + "}"));
+        performInnerToOuterTest(null, source.indexOf('F') + 1);
+        verifyContent(src,
+                new File("t/A.java", source = "package t;\n"
+                        + "\n"
+                        + "import java.util.function.Consumer;\n"
+                        + "\n"
+                        + "public class A {\n"
+                        + "\n"
+                        + "public static void main(String[] args) {\n"
+                        + "    Consumer<F> c = f -> {};\n"
+                        + "}\n"
+                        + "\n"
+                        + "}"),
+                new File("t/F.java", "/*\n"
+                        + " * Refactoring License\n"
+                        + " */\n"
+                        + "\n"
+                        + "package t;\n"
+                        + "\n"
+                        + "/**\n"
+                        + " *\n"
+                        + " * @author junit\n"
+                        + " */\n"
+                        + "public final class F {\n"
+                        + "}\n"));
+    }
+    
     public void test238000() throws Exception {
         String source;
         writeFilesAndWaitForScan(src,
