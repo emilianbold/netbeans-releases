@@ -61,13 +61,13 @@ made subject to such option by the copyright holder.
             <attribute default="jvm" name="jvm"/>
             <element name="customize" optional="true"/>
             <sequential>
-                <property location="${work.dir}/build/empty" name="empty.dir"/>
-                <mkdir dir="${empty.dir}"/>
-                <java classname="@{modulename}/@{classname}" dir="${work.dir}" failonerror="${java.failonerror}" fork="true" jvm="${platform.java}">
-                    <jvmarg value="-modulepath"/>
-                    <jvmarg path="@{modulepath}:${empty.dir}"/>
-                    <jvmarg value="-classpath"/>
-                    <jvmarg path="@{classpath}:${empty.dir}"/>
+                <java module="@{modulename}" classname="@{classname}" dir="${work.dir}" failonerror="${java.failonerror}" fork="true" jvm="${platform.java}">
+                    <classpath>
+                        <path path="@{classpath}"/>
+                    </classpath>
+                    <modulepath>
+                        <path path="@{modulepath}"/>
+                    </modulepath>
                     <jvmarg value="-Dfile.encoding=${encoding}"/>
                     <redirector errorencoding="${encoding}" inputencoding="${encoding}" outputencoding="${encoding}"/>
                     <jvmarg line="${run.jvmargs}"/>
@@ -76,7 +76,6 @@ made subject to such option by the copyright holder.
                         <mapper from="run-sys-prop.*" to="*" type="glob"/>
                     </syspropertyset>
                     <customize/>
-                    <jvmarg value="-m"/>
                 </java>
             </sequential>
         </macrodef>
@@ -89,17 +88,16 @@ made subject to such option by the copyright holder.
             <attribute default="jvm" name="jvm"/>
             <element name="customize" optional="true"/>
             <sequential>
-                <property location="${work.dir}/build/empty" name="empty.dir"/>
-                <mkdir dir="${empty.dir}"/>
                 <java classname="@{classname}" dir="${work.dir}" failonerror="${java.failonerror}" fork="true" jvm="${platform.java}">
-                    <jvmarg value="-modulepath"/>
-                    <jvmarg path="@{modulepath}:${empty.dir}"/>
-                    <jvmarg value="-Dfile.encoding=${encoding}"/>
-                    <redirector errorencoding="${encoding}" inputencoding="${encoding}" outputencoding="${encoding}"/>
-                    <jvmarg line="${run.jvmargs}"/>
                     <classpath>
                         <path path="@{classpath}"/>
                     </classpath>
+                    <modulepath>
+                        <path path="@{modulepath}"/>
+                    </modulepath>
+                    <jvmarg value="-Dfile.encoding=${encoding}"/>
+                    <redirector errorencoding="${encoding}" inputencoding="${encoding}" outputencoding="${encoding}"/>
+                    <jvmarg line="${run.jvmargs}"/>
                     <syspropertyset>
                         <propertyref prefix="run-sys-prop."/>
                         <mapper from="run-sys-prop.*" to="*" type="glob"/>
