@@ -190,6 +190,13 @@ public final class CompilerSetFactory {
         }
         return null;
     }
-
-
+    
+    public static CompilerSet createCompilerSetWrapper(CompilerSet delegate, ExecutionEnvironment env, String directory) {
+        final CompilerSetManagerImpl csm = (CompilerSetManagerImpl) CompilerSetManagerImpl.get(env);
+        CompilerSetImpl cs = CompilerSetImpl.create(delegate.getCompilerFlavor(), env, directory);
+        if (csm.initCompilerSet(directory, cs, true)){
+            return cs;
+        }
+        return null;
+    }    
 }

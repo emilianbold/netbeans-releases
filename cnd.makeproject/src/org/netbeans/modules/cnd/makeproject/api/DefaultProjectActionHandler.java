@@ -69,7 +69,6 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
-import org.netbeans.modules.cnd.makeproject.BrokenReferencesSupport;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
@@ -312,7 +311,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
             if (actionType == ProjectActionEvent.PredefinedType.PRE_BUILD) {
                 ArrayList<String> expandedArgs = new ArrayList<>();
                 for(String s :args) {
-                    expandedArgs.add(PreBuildSupport.expandMacros(s, cs));
+                    expandedArgs.add(PreBuildSupport.expandMacros(s, cs, env));
                 }
                 args = expandedArgs;
             }
@@ -406,6 +405,9 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
     }
 
     private static void modifyPath(final ExecutionEnvironment execEnv, final Map<String, String> env, final PlatformInfo pi, final CompilerSet cs, final String type) {
+        if (env.get("__CND_TOOL_WRAPPER__") != null) { //NOI18N
+            return;
+        }
         String macro;
         if ("run".equals(type)) { //NOI18N
             macro = cs.getModifyRunPath();
