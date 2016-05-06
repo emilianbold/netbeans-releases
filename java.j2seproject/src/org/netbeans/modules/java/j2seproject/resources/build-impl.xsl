@@ -194,6 +194,13 @@ is divided into following sections:
                 </macrodef>
             </target>
             <target name="-init-source-module-properties" depends="-init-modules-supported,-init-macrodef-modulename" if="modules.supported.internal">
+                <fail message="Java 9 support requires Ant 1.9.7 or higher.">
+                    <condition>
+                        <not>
+                            <antversion atleast="1.9.7"/>
+                        </not>
+                    </condition>
+                </fail>
                 <j2seproject3:modulename property="module.name">
                     <xsl:attribute name="sourcepath">
                             <xsl:call-template name="createPath">
@@ -589,10 +596,12 @@ is divided into following sections:
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
-                            <compilerarg value="-modulepath"/>
-                            <compilerarg path="@{{modulepath}}:${{empty.dir}}"/>
-                            <compilerarg value="-upgrademodulepath"/>
-                            <compilerarg path="@{{upgrademodulepath}}:${{empty.dir}}"/>
+                            <modulepath>
+                                <path path="@{{modulepath}}"/>
+                            </modulepath>
+                            <upgrademodulepath>
+                                <path path="@{{upgrademodulepath}}"/>
+                            </upgrademodulepath>
                             <compilerarg line="${{javac.systemmodulepath.cmd.line.arg}}"/>
                             <compilerarg line="${{javac.profile.cmd.line.arg}}"/>
                             <compilerarg line="${{javac.compilerargs}}"/>
@@ -1707,19 +1716,20 @@ is divided into following sections:
                         <xsl:attribute name="optional">true</xsl:attribute>
                     </element>
                     <sequential>
-                        <property location="${{build.dir}}/empty" name="empty.dir"/>
-                        <mkdir dir="${{empty.dir}}"/>
-                        <java fork="true" classname="@{{modulename}}/@{{classname}}" failonerror="${{java.failonerror}}">
+                        <java fork="true" module="@{{modulename}}" classname="@{{classname}}" failonerror="${{java.failonerror}}">
                             <xsl:attribute name="dir">${work.dir}</xsl:attribute>
                             <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
-                            <jvmarg value="-modulepath"/>
-                            <jvmarg path="@{{modulepath}}:${{empty.dir}}"/>
-                            <jvmarg value="-upgrademodulepath"/>
-                            <jvmarg path="@{{upgrademodulepath}}:${{empty.dir}}"/>
-                            <jvmarg value="-classpath"/>
-                            <jvmarg path="@{{classpath}}:${{empty.dir}}"/>
+                            <classpath>
+                                <path path="@{{classpath}}"/>
+                            </classpath>
+                            <modulepath>
+                                <path path="@{{modulepath}}"/>
+                            </modulepath>
+                            <upgrademodulepath>
+                                <path path="@{{upgrademodulepath}}"/>
+                            </upgrademodulepath>
                             <jvmarg value="-Dfile.encoding=${{runtime.encoding}}"/>
                             <redirector inputencoding="${{runtime.encoding}}" outputencoding="${{runtime.encoding}}" errorencoding="${{runtime.encoding}}"/>
                             <jvmarg line="${{run.jvmargs}}"/>
@@ -1729,7 +1739,6 @@ is divided into following sections:
                                 <mapper type="glob" from="run-sys-prop.*" to="*"/>
                             </syspropertyset>
                             <customize/>
-                            <jvmarg value="-m"/>
                         </java>
                     </sequential>
                 </macrodef>
@@ -1768,24 +1777,24 @@ is divided into following sections:
                         <xsl:attribute name="optional">true</xsl:attribute>
                     </element>
                     <sequential>
-                        <property location="${{build.dir}}/empty" name="empty.dir"/>
-                        <mkdir dir="${{empty.dir}}"/>
                         <java fork="true" classname="@{{classname}}" failonerror="${{java.failonerror}}">
                             <xsl:attribute name="dir">${work.dir}</xsl:attribute>
                             <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
-                            <jvmarg value="-modulepath"/>
-                            <jvmarg path="@{{modulepath}}:${{empty.dir}}"/>
-                            <jvmarg value="-upgrademodulepath"/>
-                            <jvmarg path="@{{upgrademodulepath}}:${{empty.dir}}"/>
+                            <classpath>
+                                <path path="@{{classpath}}"/>
+                            </classpath>
+                            <modulepath>
+                                <path path="@{{modulepath}}"/>
+                            </modulepath>
+                            <upgrademodulepath>
+                                <path path="@{{upgrademodulepath}}"/>
+                            </upgrademodulepath>
                             <jvmarg value="-Dfile.encoding=${{runtime.encoding}}"/>
                             <redirector inputencoding="${{runtime.encoding}}" outputencoding="${{runtime.encoding}}" errorencoding="${{runtime.encoding}}"/>
                             <jvmarg line="${{run.jvmargs}}"/>
                             <jvmarg line="${{run.jvmargs.ide}}"/>
-                            <classpath>
-                                <path path="@{{classpath}}"/>
-                            </classpath>
                             <syspropertyset>
                                 <propertyref prefix="run-sys-prop."/>
                                 <mapper type="glob" from="run-sys-prop.*" to="*"/>
