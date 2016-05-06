@@ -163,6 +163,88 @@ public class UseSpecificCatchTest extends NbTestCase {
                 .assertWarnings();
     }
 
+    public void testParametrizedTypeException() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n"
+                        + "\n"
+                        + "public abstract class Test<X extends SecurityException> {\n"
+                        + "\n"
+                        + "    public abstract void foo() throws X, java.io.IOException;\n"
+                        + "\n"
+                        + "    public void example() {\n"
+                        + "        try {\n"
+                        + "            foo();\n"
+                        + "        } catch (Exception ex) {\n"
+                        + "            // do something\n"
+                        + "        }\n"
+                        + "    }\n"
+                        + "}")
+                .sourceLevel("1.7")
+                .run(UseSpecificCatch.class)
+                .findWarning("9:17-9:26:verifier:ERR_UseSpecificCatch")
+                .applyFix("FIX_UseSpecificCatch")
+                .assertCompilable()
+                .assertOutput("package test;\n"
+                        + "\n"
+                        + "import java.io.IOException;\n"
+                        + "\n"
+                        + "public abstract class Test<X extends SecurityException> {\n"
+                        + "\n"
+                        + "    public abstract void foo() throws X, java.io.IOException;\n"
+                        + "\n"
+                        + "    public void example() {\n"
+                        + "        try {\n"
+                        + "            foo();\n"
+                        + "        } catch (IOException | SecurityException ex) {\n"
+                        + "            // do something\n"
+                        + "        }\n"
+                        + "    }\n"
+                        + "}");
+    }
+
+    public void testParametrizedTypeExceptionJDK6() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n"
+                        + "\n"
+                        + "public abstract class Test<X extends SecurityException> {\n"
+                        + "\n"
+                        + "    public abstract void foo() throws X, java.io.IOException;\n"
+                        + "\n"
+                        + "    public void example() {\n"
+                        + "        try {\n"
+                        + "            foo();\n"
+                        + "        } catch (Exception ex) {\n"
+                        + "            // do something\n"
+                        + "        }\n"
+                        + "    }\n"
+                        + "}")
+                .sourceLevel("1.6")
+                .run(UseSpecificCatch.class)
+                .findWarning("9:17-9:26:verifier:ERR_UseSpecificCatch")
+                .applyFix("FIX_UseSpecificCatchSplit")
+                .assertCompilable()
+                .assertOutput("package test;\n"
+                        + "\n"
+                        + "import java.io.IOException;\n"
+                        + "\n"
+                        + "public abstract class Test<X extends SecurityException> {\n"
+                        + "\n"
+                        + "    public abstract void foo() throws X, java.io.IOException;\n"
+                        + "\n"
+                        + "    public void example() {\n"
+                        + "        try {\n"
+                        + "            foo();\n"
+                        + "        } catch (IOException ex) { \n"
+                        + "            // do something\n"
+                        + "        } catch (SecurityException ex) {\n"
+                        + "            // do something\n"
+                        + "        }\n"
+                        + "    }\n"
+                        + "}");
+    }
+    
     public void testSuppressWarningsOnCatchVariable229740() throws Exception {
         HintTest
                 .create()

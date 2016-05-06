@@ -80,27 +80,32 @@ public class Highlighting extends AbstractHighlightsContainer implements TokenHi
     
     public static final String LAYER_ID = "org.netbeans.modules.javadoc.highlighting"; //NOI18N
     
-    private AttributeSet fontColor;
+    private final AttributeSet fontColor;
     
-    private Document document;
+    private final Document document;
     private TokenHierarchy<? extends Document> hierarchy = null;
     private long version = 0;
     
     /** Creates a new instance of Highlighting */
     public Highlighting(Document doc) {
-        AttributeSet firstLineFontColor = MimeLookup.getLookup(MimePath.get("text/x-java")).lookup(FontColorSettings.class).getTokenFontColors("javadoc-first-sentence");
-        AttributeSet commentFontColor = MimeLookup.getLookup(MimePath.get("text/x-java")).lookup(FontColorSettings.class).getTokenFontColors("comment");
-        Collection<Object> attrs = new LinkedList<Object>();
-        for (Enumeration<?> e = firstLineFontColor.getAttributeNames(); e.hasMoreElements(); ) {
-            Object key = e.nextElement();
-            Object value = firstLineFontColor.getAttribute(key);
-            
-            if (!commentFontColor.containsAttribute(key, value)) {
-                attrs.add(key);
-                attrs.add(value);
+        AttributeSet firstLineFontColor = MimeLookup.getLookup(MimePath.get("text/x-java")).lookup(FontColorSettings.class).getTokenFontColors("javadoc-first-sentence"); //NOI18N
+        AttributeSet commentFontColor = MimeLookup.getLookup(MimePath.get("text/x-java")).lookup(FontColorSettings.class).getTokenFontColors("comment"); //NOI18N
+        if(firstLineFontColor != null && commentFontColor != null) {
+            Collection<Object> attrs = new LinkedList<Object>();
+            for (Enumeration<?> e = firstLineFontColor.getAttributeNames(); e.hasMoreElements(); ) {
+                Object key = e.nextElement();
+                Object value = firstLineFontColor.getAttribute(key);
+
+                if (!commentFontColor.containsAttribute(key, value)) {
+                    attrs.add(key);
+                    attrs.add(value);
+                }
             }
+            fontColor = AttributesUtilities.createImmutable(attrs.toArray());
+        } else {
+            fontColor = AttributesUtilities.createImmutable();
+            LOG.warning("FontColorSettings for javadoc-first-sentence or comment are not available."); //NOI18N
         }
-        fontColor = AttributesUtilities.createImmutable(attrs.toArray());
         this.document = doc;
         hierarchy = TokenHierarchy.get(document);
         if (hierarchy != null) {

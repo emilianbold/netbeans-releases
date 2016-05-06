@@ -133,6 +133,8 @@ import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib2.RectangularSelectionCaretAccessor;
 import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
 import org.netbeans.modules.editor.lib2.actions.EditorActionUtilities;
+import org.netbeans.modules.editor.lib2.document.DocumentPostModificationUtils;
+import org.netbeans.modules.editor.lib2.document.UndoRedoDocumentEventResolver;
 import org.netbeans.modules.editor.lib2.highlighting.CaretOverwriteModeHighlighting;
 import org.netbeans.modules.editor.lib2.view.LockedViewHierarchy;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchy;
@@ -1777,7 +1779,7 @@ public final class EditorCaret implements Caret {
              */
             DocumentUtilities.addDocumentListener(
                     newDoc, listenerImpl, DocumentListenerPriority.CARET_UPDATE);
-            AtomicLockDocument newAtomicDoc = LineDocumentUtils.as(oldDoc, AtomicLockDocument.class);
+            AtomicLockDocument newAtomicDoc = LineDocumentUtils.as(newDoc, AtomicLockDocument.class);
             if (newAtomicDoc != null) {
                 newAtomicDoc.addAtomicLockListener(listenerImpl);
             }
@@ -2468,7 +2470,7 @@ public final class EditorCaret implements Caret {
                     // Manually shift carets at offset zero - do this always even when inside atomic lock
                     runTransaction(CaretTransaction.RemoveType.DOCUMENT_INSERT_ZERO_OFFSET, evt.getLength(), null, null, MoveCaretsOrigin.DISABLE_FILTERS);
                 }
-                modifiedUpdate(offset, offset + length);
+                modifiedUpdate(evt, offset, offset + length);
                 
             }
         }
@@ -2478,7 +2480,7 @@ public final class EditorCaret implements Caret {
             if (c != null) {
                 int offset = evt.getOffset();
                 runTransaction(CaretTransaction.RemoveType.DOCUMENT_REMOVE, offset, null, null);
-                modifiedUpdate(offset, offset);
+                modifiedUpdate(evt, offset, offset);
             }
         }
 
@@ -2499,56 +2501,88 @@ public final class EditorCaret implements Caret {
         public @Override
         void atomicUnlock(AtomicLockEvent evt) {
             inAtomicUnlock = true;
+            synchronized (listenerList) {
+                inAtomicSection = false;
+            }
             try {
                 boolean change = atomicSectionAnyCaretChange;
                 if (!change) { // For no explicit caret placement requests during the atomic transaction
                     if (atomicSectionImplicitSetDotOffset != Integer.MAX_VALUE) { // And if there were any modifications
-                        implicitSetDot(atomicSectionImplicitSetDotOffset); // Request a setDot() on modification's boundary
+                        implicitSetDot(null, atomicSectionImplicitSetDotOffset); // Request a setDot() on modification's boundary
                         change = true;
                     }
                 }
+                if (atomicSectionLowestModOffset != Integer.MAX_VALUE) {
+                    invalidateCaretBounds(atomicSectionLowestModOffset);
+                    change = true;
+                }
                 if (change) {
-                    modifiedOffsetUpdate(atomicSectionLowestModOffset);
+                    updateAndFireChange();
                 }
             } finally {
                 inAtomicUnlock = false;
-                synchronized (listenerList) {
-                    inAtomicSection = false;
-                }
             }
         }
 
-        private void modifiedUpdate(int offset, int setDotOffset) {
+        private void modifiedUpdate(DocumentEvent evt, int offset, int setDotOffset) {
+            if (!implicitSetDot(evt, setDotOffset)) {
+                // Ensure that a valid atomicSectionImplicitSetDotOffset value
+                // will be updated by the just performed document modification
+                if (atomicSectionImplicitSetDotOffset != Integer.MAX_VALUE) {
+                    atomicSectionImplicitSetDotOffset = DocumentUtilities.fixOffset(
+                            atomicSectionImplicitSetDotOffset, evt);
+                }
+            }
+
             if (inAtomicSection) {
                 atomicSectionLowestModOffset = Math.min(atomicSectionLowestModOffset, offset);
-                atomicSectionImplicitSetDotOffset = setDotOffset;
             } else { // Not in atomic section
-                implicitSetDot(setDotOffset);
-                modifiedOffsetUpdate(offset);
+                invalidateCaretBounds(offset);
+                updateAndFireChange();
             }
         }
         
-        private void modifiedOffsetUpdate(int offset) {
-            invalidateCaretBounds(offset);
+        private void updateAndFireChange() {
             dispatchUpdate(false);
             resetBlink();
             fireStateChanged(null);
         }
-        
-        private void implicitSetDot(int offset) {
-            if (getCarets().size() == 1) { // And if there is just a single caret
-                boolean inActiveTransaction;
-                synchronized (listenerList) {
-                    inActiveTransaction = (activeTransaction != null);
-                }
-                // Only set the dot implicitly if not already in an active transaction.
-                // Otherwise the caret framework would report illegal nested transaction.
-                // An explicit active transaction uses the new Caret API anyway
-                // so it should also use the proper caret position(s) saving for undo/redo too.
-                if (!inActiveTransaction) {
-                    setDot(offset);
+
+        /**
+         * Either set the dot to the given or remember it later setting (when in atomic section).
+         * Impose additional restrictions on whether the the given offset will be used as an implicit
+         * dot or not.
+         * 
+         * @param evt document event or null when called in atomic-unlock.
+         * @param offset offset to be used for implicit dot setting.
+         * @return true if the given offset was used or false if not.
+         */
+        private boolean implicitSetDot(DocumentEvent evt, int offset) {
+            if (UndoRedoDocumentEventResolver.isUndoRedoEvent(evt)) {
+                if (getCarets().size() == 1) { // And if there is just a single caret
+                    boolean inActiveTransaction;
+                    synchronized (listenerList) {
+                        inActiveTransaction = (activeTransaction != null);
+                    }
+                    // Only set the dot implicitly if not already in an active transaction.
+                    // Otherwise the caret framework would report illegal nested transaction.
+                    // An explicit active transaction uses the new Caret API anyway
+                    // so it should also use the proper caret position(s) saving for undo/redo too.
+                    if (!inActiveTransaction) {
+                        // Ensure no implicit setDot() for post-modification events
+                        // (evt == null) for call within atomic unlock
+                        if (evt == null || !DocumentPostModificationUtils.isPostModification(evt)) {
+                            if (inAtomicSection) {
+                                atomicSectionImplicitSetDotOffset = offset;
+                            } else {
+                                setDot(offset);
+                            }
+                            return true;
+                        }
+                    }
                 }
             }
+            return false;
         }
 
         // MouseListener methods
@@ -2964,7 +2998,16 @@ public final class EditorCaret implements Caret {
 
         @Override
         public void viewHierarchyChanged(ViewHierarchyEvent evt) {
-            dispatchUpdate(true); // Schedule an update later
+            if (evt.isChangeY()) {
+                int changeStartOffset = evt.changeStartOffset();
+                // Doc should be read/write-locked here => do no sync for inAtomicSection
+                if (inAtomicSection) {
+                    atomicSectionLowestModOffset = Math.min(atomicSectionLowestModOffset, changeStartOffset);
+                } else {
+                    invalidateCaretBounds(changeStartOffset);
+                }
+                dispatchUpdate(true); // Schedule an update later
+            }
         }
 
         @Override
