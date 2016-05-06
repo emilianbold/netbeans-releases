@@ -85,10 +85,16 @@ public abstract class ProfilingPoint {
         
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             ProfilingPoint ppoint = (ProfilingPoint)value;
-            setText("<table cellspacing='0' cellpadding='0'><tr><td height='" + // NOI18N
-                    table.getRowHeight() + "' valign='middle'><nobr>&nbsp;" + // NOI18N
-                    ppoint.getResultsText() + "&nbsp;</nobr></td></tr></table>"); // NOI18N
-            setEnabled(ppoint.isEnabled());
+            if (ppoint == null && table != null) ppoint = (ProfilingPoint)table.getValueAt(row, column);
+            if (ppoint == null) {
+                setText(""); // NOI18N
+                setEnabled(true);
+            } else {
+                setText("<table cellspacing='0' cellpadding='0'><tr><td height='" + // NOI18N
+                        table.getRowHeight() + "' valign='middle'><nobr>&nbsp;" + // NOI18N
+                        ppoint.getResultsText() + "&nbsp;</nobr></td></tr></table>"); // NOI18N
+                setEnabled(ppoint.isEnabled());
+            }
             lastTable = new WeakReference(table);
             lastProfilingPoint = new WeakReference(ppoint);
             return this;
