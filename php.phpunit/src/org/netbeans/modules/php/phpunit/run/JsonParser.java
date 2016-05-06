@@ -43,6 +43,7 @@ package org.netbeans.modules.php.phpunit.run;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -305,7 +306,7 @@ public final class JsonParser {
     private String dumpAllData() {
         String content;
         try {
-            content = new String(Files.readAllBytes(logFile.toPath()));
+            content = new String(Files.readAllBytes(logFile.toPath()), StandardCharsets.UTF_8);
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, "Cannot read PHPUnit log file " + logFile, ex);
             content = "???"; // NOI18N
