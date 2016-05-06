@@ -40,8 +40,88 @@
 #endif
 #include <unistd.h>
 #include <limits.h>
+#ifdef WINDOWS
+#define PATH_SEPARATOR ";"
+#define FILE_SEPARATOR_CHAR '\\'
+#define FILE_SEPARATOR_STRING "\\"
+#else
+#define PATH_SEPARATOR ":"
+#define FILE_SEPARATOR_CHAR '/'
+#define FILE_SEPARATOR_STRING "/"
+#endif
 
 extern char **environ;
+
+char* getPath() {
+    char** e = environ;
+    while (e) {
+        char *buf = malloc(strlen(*e) + 1);
+        strcpy(buf, *e);
+        char* eq = strchr(buf, '=');
+        if (eq != NULL) {
+            *eq = 0;
+            if (strcasecmp("PATH", buf) == 0) {
+                char* path = getenv(buf);
+                free(buf);
+                return path;
+            }
+        }
+        free(buf);
+        e++;
+    }
+    return NULL;
+}
+
+
+char* getBinaryPath(char* path) {
+    if (path[0] == FILE_SEPARATOR_CHAR) {
+        char *buf = malloc(strlen(path) + 1);
+        strcpy(buf, path);
+        char* key = strrchr(buf, FILE_SEPARATOR_CHAR);
+        *key = 0;
+        return buf;
+    } else if (path[1]==':') {
+        char *buf = malloc(strlen(path) + 1);
+        strcpy(buf, path);
+        char* key = strrchr(buf, FILE_SEPARATOR_CHAR);
+        if (key == NULL) {
+            free(buf);
+            return NULL;
+        }
+        *key = 0;
+        return buf;
+    } else if (strrchr(path, FILE_SEPARATOR_CHAR) != NULL) {
+        char *buf = malloc(MY_MAX_PATH + 1);
+        getcwd(buf, MY_MAX_PATH);
+        strcat(buf,FILE_SEPARATOR_STRING);
+        strcat(buf,path);
+        char* key = strrchr(buf, FILE_SEPARATOR_CHAR);
+        *key = 0;
+        return buf;
+    } else {
+        char* searchPath = getPath();
+        if (searchPath != NULL) {
+            char* filters = strdup(searchPath);
+            char* token;
+            for(token = strtok(filters, PATH_SEPARATOR); token; token = strtok(NULL, PATH_SEPARATOR)) {
+                char *buf = malloc(MY_MAX_PATH + 1);
+                strcpy(buf, token);
+                strcat(buf, FILE_SEPARATOR_STRING);
+                strcat(buf, path);
+                FILE *file = fopen(buf, "r");
+                if (file != NULL) {
+                    char* key = strrchr(buf,  FILE_SEPARATOR_CHAR);
+                    *key = 0;
+                    fclose(file);
+                    return buf;
+                }
+                free(buf);
+            }
+        }
+    }
+    return NULL;
+}
+
 
 void prependPath(char* path) {
     char** e = environ;
@@ -56,11 +136,7 @@ void prependPath(char* path) {
                 char *tool_path = malloc(strlen(path) + 1);
                 strcpy(tool_path, path);
                 char* key;
-#ifdef WINDOWS
-                key = strrchr(tool_path, '\\');
-#else
-                key = strrchr(tool_path, '/');
-#endif
+                key = strrchr(tool_path, FILE_SEPARATOR_CHAR);
                 if (key != NULL) {
                     *key = 0;
                 }
@@ -90,12 +166,7 @@ void prependPath(char* path) {
 }
 
 int main(int argc, char**argv) {
-    const char* key;
-#ifdef WINDOWS
-    key = strrchr(argv[0], '\\');
-#else
-    key = strrchr(argv[0], '/');
-#endif
+    const char* key = strrchr(argv[0], FILE_SEPARATOR_CHAR);
     if (key == NULL) {
         key = argv[0];
     } else {
@@ -113,28 +184,63 @@ int main(int argc, char**argv) {
 #endif
 
     char* tool = NULL;
-    char* tool_path_variable = NULL;
+    char* tool_path = NULL;
     if (strcmp(key, "cc") == 0 ||
             strcmp(key, "xgcc") == 0 ||
             strcmp(key, "clang") == 0 ||
             strcmp(key, "icc") == 0 ||
             strcmp(key, "gcc") == 0) {
-        tool = getenv("__CND_C_TOOL__");
-        tool_path_variable = "__CND_C_TOOL__";
+        tool_path = getBinaryPath(argv[0]);
+        if (tool_path != NULL) {
+            char *line = malloc(MY_MAX_PATH + 1);
+            strcat(tool_path,"/compiler.properties");
+            FILE* prop = fopen(tool_path, "r");
+            if (prop != NULL) {
+                while (fgets(line, MY_MAX_PATH, prop)) {
+                    if (line[0] == 'C' && line[1] == '=') {
+                        tool = line+2;
+                        char* eol = strrchr(tool, '\n');
+                        if (eol != NULL) {
+                            *eol = 0;
+                        }
+                        break;
+                    }
+                }
+                fclose(prop);
+            }
+        }
     } else if (strcmp(key, "CC") == 0 ||
             strcmp(key, "c++") == 0 ||
             strcmp(key, "clang++") == 0 ||
             strcmp(key, "icpc") == 0 ||
             strcmp(key, "cl") == 0 ||
             strcmp(key, "g++") == 0) {
-        tool = getenv("__CND_CPP_TOOL__");
-        tool_path_variable = "__CND_CPP_TOOL__";
+        tool_path = getBinaryPath(argv[0]);
+        if (tool_path != NULL) {
+            char *line = malloc(MY_MAX_PATH + 1);
+            strcat(tool_path,FILE_SEPARATOR_STRING);
+            strcat(tool_path,"compiler.properties");
+            FILE* prop = fopen(tool_path, "r");
+            if (prop != NULL) {
+                while (fgets(line, MY_MAX_PATH, prop)) {
+                    if (line[0] == 'C' && line[1] == 'P' && line[2] == 'P' && line[3] == '=') {
+                        tool = line+4;
+                        char* eol = strrchr(tool, '\n');
+                        if (eol != NULL) {
+                            *eol = 0;
+                        }
+                        break;
+                    }
+                }
+                fclose(prop);
+            }
+        }
     } else {
         printf("Unsupported %s compiler", key);
         return -1;
     }
     if (tool == NULL) {
-        printf("Set path to %s compiler in env variable %s", key, tool_path_variable);
+        printf("Set path to %s compiler compiler.properties file in folder %s", key, tool_path);
         return -1;
     }
     argv[0] = tool;
