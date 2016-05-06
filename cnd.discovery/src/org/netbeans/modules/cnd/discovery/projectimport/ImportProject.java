@@ -91,7 +91,6 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.builds.CMakeExecSupport;
 import org.netbeans.modules.cnd.builds.ImportUtils;
@@ -644,7 +643,7 @@ public class ImportProject implements PropertyChangeListener {
         String mime = FileUtil.getMIMEType(configureFileObject);
         // Add arguments to configure script?
         if (configureArguments != null) {
-            configureArguments = PreBuildSupport.expandMacros(configureArguments, toolchain);
+            configureArguments = PreBuildSupport.expandMacros(configureArguments, toolchain, null);
             if (MIMENames.SHELL_MIME_TYPE.equals(mime)){
                 ShellExecSupport ses = node.getLookup().lookup(ShellExecSupport.class);
                 try {
@@ -889,8 +888,10 @@ public class ImportProject implements PropertyChangeListener {
         }
         ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
         MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
-        if(BuildTraceSupport.useBuildTrace(makeConfigurationDescriptor.getActiveConfiguration())) {
-            if (BuildTraceSupport.supportedPlatforms(executionEnvironment)) {
+        MakeConfiguration conf = makeConfigurationDescriptor.getActiveConfiguration();
+        if(BuildTraceSupport.useBuildTrace(conf)) {
+            BuildTraceSupport.BuildTrace support = BuildTraceSupport.supportedPlatforms(executionEnvironment, conf, makeProject);
+            if (support != null) {
                 execLog = DoubleFile.createTmpFile("exec", executionEnvironment); // NOI18N
             }
         }
@@ -978,7 +979,7 @@ public class ImportProject implements PropertyChangeListener {
         }
         List<String> vars;
         if (configureArguments != null) {
-            configureArguments = PreBuildSupport.expandMacros(configureArguments, toolchain);
+            configureArguments = PreBuildSupport.expandMacros(configureArguments, toolchain, null);
             vars = ImportUtils.parseEnvironment(configureArguments);
         } else {
             vars = new ArrayList<>();
