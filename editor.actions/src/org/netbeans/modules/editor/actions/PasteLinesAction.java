@@ -41,15 +41,7 @@
  */
 package org.netbeans.modules.editor.actions;
 
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorActionRegistration;
@@ -62,7 +54,7 @@ import org.netbeans.spi.editor.AbstractEditorAction;
 @EditorActionRegistration(
         name = "clipboard-lines",
         menuPath = "Edit",
-        menuPosition = 1350)
+        menuPosition = 1360)
 public class PasteLinesAction extends AbstractEditorAction {
 
     private static final Logger LOG = Logger.getLogger(PasteLinesAction.class.getName());
