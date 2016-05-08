@@ -2558,7 +2558,7 @@ public final class EditorCaret implements Caret {
          * @return true if the given offset was used or false if not.
          */
         private boolean implicitSetDot(DocumentEvent evt, int offset) {
-            if (UndoRedoDocumentEventResolver.isUndoRedoEvent(evt)) {
+            if (evt == null || UndoRedoDocumentEventResolver.isUndoRedoEvent(evt)) {
                 if (getCarets().size() == 1) { // And if there is just a single caret
                     boolean inActiveTransaction;
                     synchronized (listenerList) {
