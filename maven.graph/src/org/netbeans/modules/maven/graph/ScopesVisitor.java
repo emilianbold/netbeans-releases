@@ -44,36 +44,32 @@ package org.netbeans.modules.maven.graph;
 
 import java.util.List;
 import java.util.Stack;
-import org.apache.maven.shared.dependency.tree.DependencyNode;
-import org.apache.maven.shared.dependency.tree.traversal.DependencyNodeVisitor;
+import org.netbeans.modules.java.graph.DependencyGraphScene;
+import org.netbeans.modules.java.graph.GraphNodeImplementation;
+import org.netbeans.modules.java.graph.GraphNodeVisitor;
 
 /**
  *
  * @author mkleint
  */
-class ScopesVisitor implements DependencyNodeVisitor {
-    private DependencyGraphScene scene;
-    private DependencyNode root;
-    private Stack<DependencyNode> path;
-    private List<String> scopes;
+public class ScopesVisitor implements GraphNodeVisitor<MavenDependencyNode> {
+    private final DependencyGraphScene scene;
+    private GraphNodeImplementation root;
+    private final Stack<GraphNodeImplementation> path;
+    private final List<String> scopes;
 
-    ScopesVisitor(DependencyGraphScene scene, List<String> scopes) {
+    public ScopesVisitor(DependencyGraphScene scene, List<String> scopes) {
         this.scene = scene;
-        path = new Stack<DependencyNode>();
+        path = new Stack<>();
         this.scopes = scopes;
     }
 
-    @Override public boolean visit(DependencyNode node) {
+    @Override public boolean visit(MavenDependencyNode node) {
         if (root == null) {
             root = node;
         }
-        if (node.getState() == DependencyNode.INCLUDED) {
-            ArtifactGraphNode grNode = scene.getGraphNodeRepresentant(node);
-            if (grNode == null) {
-                return false;
-            }
-            ArtifactWidget aw = (ArtifactWidget) scene.findWidget(grNode);
-            aw.hightlightScopes(scopes);
+        if (scene.isIncluded(node)) {
+            node.hightlightScopes(scopes);
             path.push(node);
             return true;
         } else {
@@ -81,8 +77,8 @@ class ScopesVisitor implements DependencyNodeVisitor {
         }
     }
 
-    @Override public boolean endVisit(DependencyNode node) {
-        if (node.getState() == DependencyNode.INCLUDED) {
+    @Override public boolean endVisit(MavenDependencyNode node) {
+        if (scene.isIncluded(node)) {
             path.pop();
         }
         return true;

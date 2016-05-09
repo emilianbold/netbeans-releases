@@ -40,78 +40,52 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.graph;
+package org.netbeans.modules.java.graph;
 
-import java.awt.Rectangle;
-import java.util.Collection;
 import java.util.Stack;
-import org.apache.maven.shared.dependency.tree.DependencyNode;
-import org.apache.maven.shared.dependency.tree.traversal.DependencyNodeVisitor;
 
 /**
  *
  * @author mkleint
  */
-class HighlightVisitor implements DependencyNodeVisitor {
-    private DependencyGraphScene scene;
-    private DependencyNode root;
-    private Stack<DependencyNode> path;
-    private int max = Integer.MAX_VALUE;
-    Rectangle rectangle = new Rectangle (0, 0, 1, 1);
+class SearchVisitor implements GraphNodeVisitor {
+    private final DependencyGraphScene scene;
+    private final Stack<GraphNodeImplementation> path;
+    private GraphNodeImplementation root;
+    private String searchTerm;
 
-    HighlightVisitor(DependencyGraphScene scene) {
+    SearchVisitor(DependencyGraphScene scene) {
         this.scene = scene;
-        path = new Stack<DependencyNode>();
+        path = new Stack<>();
     }
 
-    void setMaxDepth(int max) {
-        this.max = max;
+    public void setSearchString(String search) {
+        searchTerm = search;
     }
 
-    Rectangle getVisibleRectangle() {
-        return rectangle;
-    }
-
-    @Override public boolean visit(DependencyNode node) {
+    @Override public boolean visit(GraphNodeImplementation node) {
         if (root == null) {
             root = node;
         }
-        if (node.getState() == DependencyNode.INCLUDED) {
-            path.push(node);
-            ArtifactGraphNode grNode = scene.getGraphNodeRepresentant(node);
+        if (scene.isIncluded(node)) {
+            GraphNode grNode = scene.getGraphNodeRepresentant(node);
             if (grNode == null) {
                 return false;
             }
-            ArtifactWidget aw = (ArtifactWidget) scene.findWidget(grNode);
-            Collection<ArtifactGraphEdge> edges = scene.findNodeEdges(grNode, true, true);
-            aw.setReadable(false);
-            if (path.size() > max) {
-                aw.setPaintState(EdgeWidget.GRAYED);
-                for (ArtifactGraphEdge e : edges) {
-                    EdgeWidget ew = (EdgeWidget) scene.findWidget(e);
-                    ew.setState(EdgeWidget.GRAYED);
-                }
-            } else {
-                Rectangle bounds = aw.getBounds();
-                if (bounds != null) {
-                    rectangle = rectangle.union(aw.convertLocalToScene(bounds));
-                }
-                aw.setPaintState(EdgeWidget.REGULAR);
-                for (ArtifactGraphEdge e : edges) {
-                    EdgeWidget ew = (EdgeWidget) scene.findWidget(e);
-                    ew.setState(EdgeWidget.REGULAR);
-                }
-            }
+            NodeWidget aw = (NodeWidget) scene.findWidget(grNode);
+            aw.highlightText(searchTerm);
+            path.push(node);
             return true;
         } else {
             return false;
         }
     }
 
-    @Override public boolean endVisit(DependencyNode node) {
-        if (node.getState() == DependencyNode.INCLUDED) {
+    @Override public boolean endVisit(GraphNodeImplementation node) {
+        if (scene.isIncluded(node)) {
             path.pop();
         }
         return true;
     }
+
 }
