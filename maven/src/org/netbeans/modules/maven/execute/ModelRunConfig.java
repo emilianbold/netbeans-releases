@@ -188,7 +188,8 @@ public final class ModelRunConfig extends BeanRunConfig {
                                         }
                                     }
                                     // 2.) the main class
-                                    it.next();
+                                    // doesn't necessaryli have to be after "-cp %classpath", so do not skip.
+                                    // it.next(); 
                                 }
                             }
                             if (val != null && !val.isEmpty()) {
