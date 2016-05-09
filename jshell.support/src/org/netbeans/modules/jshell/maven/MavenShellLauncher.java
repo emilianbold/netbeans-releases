@@ -135,6 +135,7 @@ public class MavenShellLauncher implements PrerequisitesChecker, LateBoundPrereq
             } else {
                 newArgs = sb.append(" ").append(execArgs).toString(); // NOI18N
             }
+            config.setProperty(PROPERTY_EXEC_ARGS, newArgs);
         }        
         config.setProperty(PROPERTY_JSHELL_AGENT, args.get(args.size() -1));
         config.setProperty(PROPERTY_JSHELL_KEY, agent.getAuthorizationKey());
