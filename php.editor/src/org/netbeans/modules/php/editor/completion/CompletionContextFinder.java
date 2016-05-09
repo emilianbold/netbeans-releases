@@ -527,6 +527,17 @@ final class CompletionContextFinder {
         return hadNSSeparator;
     }
 
+    private static boolean consumeComment(TokenSequence tokenSequence) {
+        while (tokenSequence.token().id() == PHPTokenId.PHP_COMMENT_START
+                || tokenSequence.token().id() == PHPTokenId.PHP_COMMENT_END
+                || tokenSequence.token().id() == PHPTokenId.PHP_COMMENT) {
+            if (!tokenSequence.movePrevious()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private static boolean consumeClassesInGroupUse(TokenSequence tokenSequence) {
         if (tokenSequence.token().id() != PHPTokenId.PHP_CURLY_OPEN
                 && tokenSequence.token().id() != PHPTokenId.PHP_TOKEN
@@ -552,7 +563,8 @@ final class CompletionContextFinder {
         } while (tokenSequence.token().id() == PHPTokenId.PHP_CURLY_OPEN
                 || tokenSequence.token().id() == PHPTokenId.PHP_TOKEN
                 || tokenSequence.token().id() == PHPTokenId.WHITESPACE
-                || consumeNameSpace(tokenSequence));
+                || consumeNameSpace(tokenSequence)
+                || consumeComment(tokenSequence));
 
         return hasCurlyOpen;
     }

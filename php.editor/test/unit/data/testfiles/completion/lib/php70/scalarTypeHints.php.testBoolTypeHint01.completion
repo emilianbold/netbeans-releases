@@ -2,6 +2,8 @@ Code completion result for source line:
 function boolTypeHint(|bool $arg) {
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 PACKAGE    A                               [PUBLIC]   null
+PACKAGE    GroupUse1                       [PUBLIC]   null
+PACKAGE    GroupUse2                       [PUBLIC]   null
 PACKAGE    My                              [PUBLIC]   null
 PACKAGE    Run                             [PUBLIC]   null
 CLASS      BoolClass                       [PUBLIC]   scalarTypeHints.php
@@ -12,6 +14,8 @@ CLASS      StringClass                     [PUBLIC]   scalarTypeHints.php
 PACKAGE    B                               [PUBLIC]   A
 PACKAGE    C                               [PUBLIC]   A\B
 PACKAGE    Firm                            [PUBLIC]   My
+CLASS      C1                              [PUBLIC]   GroupUse1
+CLASS      C2                              [PUBLIC]   GroupUse1
 CLASS      Cls                             [PUBLIC]   uniformVariableSyntax01.php
 CLASS      Cls                             [PUBLIC]   uniformVariableSyntax02.php
 CLASS      ClsA                            [PUBLIC]   A
