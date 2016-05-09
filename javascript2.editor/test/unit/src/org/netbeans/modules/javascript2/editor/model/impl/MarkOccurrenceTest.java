@@ -2167,6 +2167,21 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/blockscope/scope04.js", "console.log(f^oo()); // 2", true);
     }
     
+    public void testBlockScope05_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/blockscope/scope05.js", "console.log(\"i: \" + i^);", true);
+    }
+    
+    public void testBlockScope05_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/blockscope/scope05.js", "console.log(\"day: \" + d^ay);", true);
+    }
+    
+    public void testBlockScope05_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/blockscope/scope05.js", "console.log(\"index: \" + i^ndex);", true);
+    }
+    
+    public void testBlockScope05_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/blockscope/scope05.js", "console.log(\"action: \" + ac^tion);", true);
+    }
     
     private String getTestName() {
         String name = getName();

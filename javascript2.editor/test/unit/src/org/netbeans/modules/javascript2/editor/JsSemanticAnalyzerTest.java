@@ -606,4 +606,8 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
     public void testSemanticalKeywords() throws Exception {
         checkSemantic("testfiles/coloring/semanticalKeywords.js");
     }
+    
+    public void testBlockScope05() throws Exception {
+        checkSemantic("testfiles/markoccurences/blockscope/scope05.js");
+    }
 }
