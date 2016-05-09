@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
@@ -90,7 +90,7 @@
                       <EmptySpace min="-2" pref="46" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="jScrollPane1" pref="223" max="32767" attributes="2"/>
+                      <Component id="jScrollPane1" max="32767" attributes="2"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -237,7 +237,7 @@
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/maven/graph/Bundle.properties" key="FixVersionConflictPanel.conflictL.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})">
-                <Argument index="0" javacode="conflictNode.getArtifact().getArtifact().getArtifactId()"/>
+                <Argument index="0" javacode="conflictNode.getDependencyNode().getArtifact().getArtifactId()"/>
                 <Argument index="1" javacode="getClashingVersionsAsText()"/>
               </ResourceString>
             </Property>

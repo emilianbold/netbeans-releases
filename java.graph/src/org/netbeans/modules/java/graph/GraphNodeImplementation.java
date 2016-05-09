@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,57 +37,26 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.java.graph;
 
-package org.netbeans.modules.maven.graph;
-
-import java.util.Stack;
-import org.apache.maven.shared.dependency.tree.DependencyNode;
-import org.apache.maven.shared.dependency.tree.traversal.DependencyNodeVisitor;
+import java.util.List;
 
 /**
  *
- * @author mkleint
+ * @author Tomas Stupka
  */
-class SearchVisitor implements DependencyNodeVisitor {
-    private DependencyGraphScene scene;
-    private DependencyNode root;
-    private Stack<DependencyNode> path;
-    private String searchTerm;
-
-    SearchVisitor(DependencyGraphScene scene) {
-        this.scene = scene;
-        path = new Stack<DependencyNode>();
-    }
-
-    void setSearchString(String search) {
-        searchTerm = search;
-    }
-
-
-    @Override public boolean visit(DependencyNode node) {
-        if (root == null) {
-            root = node;
-        }
-        if (node.getState() == DependencyNode.INCLUDED) {
-            ArtifactGraphNode grNode = scene.getGraphNodeRepresentant(node);
-            if (grNode == null) {
-                return false;
-            }
-            ArtifactWidget aw = (ArtifactWidget) scene.findWidget(grNode);
-            aw.highlightText(searchTerm);
-            path.push(node);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    @Override public boolean endVisit(DependencyNode node) {
-        if (node.getState() == DependencyNode.INCLUDED) {
-            path.pop();
-        }
-        return true;
-    }
+public interface GraphNodeImplementation {
+    
+    String getName();
+    
+    String getQualifiedName();
+    
+    String getTooltipText();
+    
+    <I extends GraphNodeImplementation> List<I> getChildren();
+    
+    <I extends GraphNodeImplementation> I getParent();
+    
 }

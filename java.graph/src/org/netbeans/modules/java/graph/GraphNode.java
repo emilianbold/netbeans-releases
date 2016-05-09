@@ -40,100 +40,81 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.graph;
+package org.netbeans.modules.java.graph;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.apache.maven.shared.dependency.tree.DependencyNode;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import org.netbeans.api.annotations.common.NonNull;
+import static org.netbeans.modules.java.graph.DependencyGraphScene.VersionProvider.VERSION_CONFLICT;
+import static org.netbeans.modules.java.graph.DependencyGraphScene.VersionProvider.VERSION_NO_CONFLICT;
+import static org.netbeans.modules.java.graph.DependencyGraphScene.VersionProvider.VERSION_POTENTIAL_CONFLICT;
+import org.openide.util.Parameters;
 
 /**
  *
  * @author Milos Kleint 
+ * @param <I> 
  */
-public class ArtifactGraphNode {
+public class GraphNode<I extends GraphNodeImplementation> {
 
     public static final int UNMANAGED = 0;
     public static final int MANAGED = 1;
     public static final int OVERRIDES_MANAGED = 2;
 
-    public static final int NO_CONFLICT = 0;
-    public static final int POTENTIAL_CONFLICT = 1;
-    public static final int CONFLICT = 2;
-
-    private DependencyNode artifact, parentAfterFix;
+    private I dependencyNode, parentAfterFix;
     public double locX, locY, dispX, dispY; // for use from FruchtermanReingoldLayout
     private boolean fixed;
-    private ArtifactWidget widget;
-    private HashSet<DependencyNode> dupl;
+    private HashSet<I> dupl;
     private int level;
     private int managedState = UNMANAGED;
 
-    /** Creates a new instance of ArtifactGraphNode */
-    public ArtifactGraphNode(DependencyNode art) {
-        artifact = art;
-        dupl = new HashSet<DependencyNode>();
+    /** 
+     * Creates a new instance of GraphNode
+     * @param dependencyNode 
+     **/
+    public GraphNode(@NonNull I dependencyNode) {
+        Parameters.notNull("dependencyNode", dependencyNode);   //NOI18N
+        this.dependencyNode = dependencyNode;
+        dupl = new HashSet<>();
     }
-    
-    
-    DependencyNode getArtifact() {
-        return artifact;
-    }
-
-    /** After changes in graph parent may change, so it's always better to
-     * call this method instead of getArtifact().getParent()
-     */
-    DependencyNode getArtifactParent() {
-        if (parentAfterFix != null) {
-            return parentAfterFix;
-        }
-        return getArtifact().getParent();
+        
+    public I getDependencyNode() {
+        return dependencyNode;
     }
 
-    void setArtifactParent(DependencyNode newParent) {
-        parentAfterFix = newParent;
-    }
+    public String getTooltipText() {
+        return dependencyNode.getTooltipText();
+    }    
     
-    void setArtifact(DependencyNode ar) {
-        artifact = ar;
-    }
-
-    void addDuplicateOrConflict(DependencyNode nd) {
+    public void addDuplicateOrConflict(I nd) {
         dupl.add(nd);
     }
 
-    Set<DependencyNode> getDuplicatesOrConflicts() {
-        return dupl;
+    public Set<I> getDuplicatesOrConflicts() {
+        return Collections.unmodifiableSet(dupl);
+    }
+    
+    /** 
+     * After changes in graph parent may change, so it's always better to
+     * call this method instead of getDependencyNode().getParent()
+     * 
+     * @return 
+     */
+    public GraphNodeImplementation getParent() {
+        if (parentAfterFix != null) {
+            return parentAfterFix;
+        }
+        return dependencyNode.getParent();
     }
 
-    boolean represents(DependencyNode node) {
-        if (artifact.equals(node)) {
-            return true;
-        }
-        for (DependencyNode nd : dupl) {
-            if (nd.equals(node)) {
-                return true;
-            }
-        }
-        return false;
+    public void setParent(I newParent) {
+        parentAfterFix = newParent;
     }
-
-    int getConflictType () {
-        int ret = NO_CONFLICT;
-        DefaultArtifactVersion includedV = new DefaultArtifactVersion(
-                getArtifact().getArtifact().getVersion());
-        int result;
-        for (DependencyNode curDepN : getDuplicatesOrConflicts()) {
-            if (curDepN.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
-                result = includedV.compareTo(new DefaultArtifactVersion(curDepN.getArtifact().getVersion()));
-                if (result < 0) {
-                    return CONFLICT;
-                }
-                if (result > 0) {
-                    ret = POTENTIAL_CONFLICT;
-                }
-            }
-        }
-        return ret;
+    
+    public void setDependencyNode(I ar) {        
+        dependencyNode = ar;
     }
 
     public boolean isRoot() {
@@ -147,12 +128,8 @@ public class ArtifactGraphNode {
     public boolean isFixed() {
         return fixed;
     }
-    
-    public boolean isVisible() {
-        return widget != null ? widget.isVisible() : true;
-    }
 
-    void setPrimaryLevel(int i) {
+    public void setPrimaryLevel(int i) {
         level = i;
     }
     
@@ -160,14 +137,6 @@ public class ArtifactGraphNode {
         return level;
     }
     
-    void setWidget(ArtifactWidget wid) {
-        widget = wid;
-    }
-
-    ArtifactWidget getWidget() {
-        return widget;
-    }
-
     public int getManagedState() {
         return managedState;
     }
@@ -175,7 +144,24 @@ public class ArtifactGraphNode {
     public void setManagedState(int state) {
         this.managedState = state;
     }
-
+    
+    public int getConflictType(Function<I, Boolean> isConflict, BiFunction<I, I, Integer> compare) {
+        int ret = VERSION_NO_CONFLICT;
+        int result;
+        for (I curDepN : dupl) {
+            if (isConflict.apply(curDepN)) {
+                result = compare.apply(dependencyNode, curDepN);
+                if (result < 0) {
+                    return VERSION_CONFLICT;
+                }
+                if (result > 0) {
+                    ret = VERSION_POTENTIAL_CONFLICT;
+                }
+            }
+        }
+        return ret;
+    }
+    
     static int compareVersions (String v1, String v2) {
         String[] v1Elems = v1.split("\\.");
         String[] v2Elems = v2.split("\\.");
@@ -188,4 +174,16 @@ public class ArtifactGraphNode {
         return v1Elems.length - v2Elems.length;
     }
 
+    public boolean represents(I nd) {
+        if (dependencyNode.equals(nd)) {
+            return true;
+        }
+        for (I d : dupl) {
+            if (nd.equals(d)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
 }

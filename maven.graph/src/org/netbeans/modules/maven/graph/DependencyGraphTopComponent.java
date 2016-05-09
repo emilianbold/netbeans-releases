@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.graph;
 
+import org.netbeans.modules.java.graph.DependencyGraphScene;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -54,12 +55,15 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -80,6 +84,8 @@ import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
@@ -91,6 +97,7 @@ import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerFactory;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.spi.IconResources;
+import org.netbeans.modules.java.graph.GraphNodeImplementation;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
@@ -141,6 +148,8 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
             });
         }
     });
+    
+    private final Map<Artifact, Icon> projectIcons;
     
     @MultiViewElement.Registration(
         displayName="#TAB_Graph",
@@ -197,15 +206,13 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
     }
 
 //    private Project project;
-    private Lookup.Result<DependencyNode> result;
+    private Lookup.Result<org.apache.maven.shared.dependency.tree.DependencyNode> result;
     private Lookup.Result<MavenProject> result2;
     private Lookup.Result<POMModel> result3;
 
-    private DependencyGraphScene scene;
+    private DependencyGraphScene<MavenDependencyNode> scene;
     private MultiViewElementCallback callback;
     final JScrollPane pane = new JScrollPane();
-    
-    private HighlightVisitor highlightV;
     
     private Timer timer = new Timer(500, new ActionListener() {
         @Override public void actionPerformed(ActionEvent arg0) {
@@ -224,6 +231,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, hashCode() + " created: " + lookup, new Exception());
         }
+        projectIcons = getIconsForOpenProjects();
         associateLookup(lookup);
         initComponents();
 //        project = proj;
@@ -284,7 +292,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
                     @SuppressWarnings("unchecked")
                     List<String> selected = (List<String>) comScopes.getSelectedItem();
                     ScopesVisitor vis = new ScopesVisitor(scene, selected);
-                    scene.getRootGraphNode().getArtifact().accept(vis);
+                    vis.accept(scene.getRootGraphNode().getDependencyNode());
                     scene.validate();
                     scene.repaint();
                     revalidate();
@@ -302,15 +310,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         if ("".equals(val)) { //NOI18N
             val = null;
         }
-        SearchVisitor visitor = new SearchVisitor(scene);
-        visitor.setSearchString(val);
-        DependencyNode node = scene.getRootGraphNode().getArtifact();
-        node.accept(visitor);
-        scene.validate();
-        scene.repaint();
-        revalidate();
-        repaint();
-
+        scene.setSearchString(val);
     }
     
     @Override
@@ -322,7 +322,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         super.componentOpened();
         pane.setWheelScrollingEnabled(true);
         add(pane, BorderLayout.CENTER);
-        result = getLookup().lookupResult(DependencyNode.class);
+        result = getLookup().lookupResult(org.apache.maven.shared.dependency.tree.DependencyNode.class);
         result.addLookupListener(this);
         result2 = getLookup().lookupResult(MavenProject.class);
         result2.addLookupListener(this);
@@ -479,7 +479,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
     }//GEN-LAST:event_btnBiggerActionPerformed
 
     private void maxPathSpinnerStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_maxPathSpinnerStateChanged
-        depthHighlight();
+        scene.highlightDepth(getSelectedDepth());
     }//GEN-LAST:event_maxPathSpinnerStateChanged
 
     private void btnGraphActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGraphActionPerformed
@@ -487,7 +487,9 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         createScene();
     }//GEN-LAST:event_btnGraphActionPerformed
 
-    
+    private int getSelectedDepth() {
+        return ((SpinnerNumberModel)maxPathSpinner.getModel()).getNumber().intValue();
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnBigger;
@@ -526,20 +528,6 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         task_reload.schedule(200); // aggregate the events, multiple will be often coming close one by another..
     }
 
-    /** Highlights/diminishes graph nodes and edges based on path from root depth */
-    public void depthHighlight () {
-        if (highlightV == null) {
-            highlightV = new HighlightVisitor(scene);
-        }
-        //int value = sldDepth.getValue();
-        int value = ((SpinnerNumberModel)maxPathSpinner.getModel()).getNumber().intValue();
-        highlightV.setMaxDepth(value);
-        DependencyNode node = scene.getRootGraphNode().getArtifact();
-        node.accept(highlightV);
-        scene.validate();
-        scene.repaint();
-    }
-
     JScrollPane getScrollPane () {
         return pane;
     }
@@ -562,10 +550,10 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
 
     @Messages({
         "Err_CannotLoad=Cannot display Artifact's dependency tree.",
-        "LBL_Loading=Loading and constructing graph (this may take a while)."
+        "LBL_Loading=Loading and constructing graph (this may take a while)."        
     })
     private void createScene() {
-        Iterator<? extends DependencyNode> it1 = result.allInstances().iterator();
+        Iterator<? extends org.apache.maven.shared.dependency.tree.DependencyNode> it1 = result.allInstances().iterator();
         Iterator<? extends MavenProject> it2 = result2.allInstances().iterator();
         Iterator<? extends POMModel> it3 = result3.allInstances().iterator();
         final MavenProject prj = it2.hasNext() ? it2.next() : null;
@@ -577,13 +565,38 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         setPaneText(LBL_Loading(), true);
         final Project nbProj = getLookup().lookup(Project.class);
         if (prj != null && it1.hasNext()) {
-            final DependencyNode root = it1.next();
+            final MavenDependencyNode root = new MavenDependencyNode(it1.next());
             final POMModel model = it3.hasNext() ? it3.next() : null;
             RP.post(new Runnable() {
                 @Override public void run() {
-                    final DependencyGraphScene scene2 = new DependencyGraphScene(prj, nbProj, DependencyGraphTopComponent.this, model);
-                    GraphConstructor constr = new GraphConstructor(scene2);
-                    root.accept(constr);
+                    DependencyGraphScene.VersionProvider<MavenDependencyNode> versionProvider = new DependencyGraphScene.VersionProvider<MavenDependencyNode>() {
+                        @Override
+                        public String getVersion(MavenDependencyNode dependencyNode) {
+                            return dependencyNode.getVersion();
+                        }
+                        @Override
+                        public int compareVersions(MavenDependencyNode dependencyNode1, MavenDependencyNode dependencyNode2) {
+                            return dependencyNode1.compareVersions(dependencyNode2);
+                        }
+                        @Override
+                        public boolean isIncluded(MavenDependencyNode dependencyNode) {
+                            return dependencyNode.getState() == DependencyNode.INCLUDED;
+                        }
+                        @Override
+                        public boolean isConflict(MavenDependencyNode dependencyNode) {
+                             return dependencyNode.getState() == DependencyNode.OMITTED_FOR_CONFLICT;
+                        }
+                    };
+                    
+                    final DependencyGraphScene<MavenDependencyNode> scene2 = new DependencyGraphScene<>(
+                            (MavenDependencyNode n) -> getIcon(n), 
+                            new MavenActionsProvider(DependencyGraphTopComponent.this, nbProj, model), 
+                            DependencyGraphTopComponent.this::getSelectedDepth, 
+                            versionProvider, 
+                            MavenDependencyNode::getScopeColor);
+                    
+                    GraphConstructor constr = new GraphConstructor(scene2, prj);
+                    constr.accept(root);
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override public void run() {
                             scene = scene2;
@@ -608,7 +621,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
                                 maxPathSpinner.setEnabled(true);
                                 maxPathSpinner.setVisible(true);
                             }
-                            depthHighlight();
+                            scene.highlightDepth(getSelectedDepth());
                         }
                     });
                 }
@@ -720,5 +733,30 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         }
 
         pane.setViewportView(vView);
+    }
+    
+    public Icon getIcon(MavenDependencyNode n) {
+        return projectIcons.get(n.getArtifact());
+    }
+    
+    /**
+     * @return map of maven artifact mapped to project icon
+     */
+    private Map<Artifact, Icon> getIconsForOpenProjects() {
+        Map<Artifact, Icon> result = new HashMap<Artifact, Icon>();
+        //NOTE: surely not the best way to get the project icon
+        Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
+        for (Project project : openProjects) {
+            NbMavenProject mavenProject = project.getLookup().lookup(NbMavenProject.class);
+            if (null != mavenProject) {
+                Artifact artifact = mavenProject.getMavenProject().getArtifact();
+                //get icon from opened project
+                Icon icon = ProjectUtils.getInformation(project).getIcon();
+                if (null != icon) {
+                    result.put(artifact, icon);
+                }
+            }
+        }
+        return result;
     }
 }

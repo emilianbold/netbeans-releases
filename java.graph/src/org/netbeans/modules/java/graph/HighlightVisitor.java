@@ -37,68 +37,69 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.graph;
+package org.netbeans.modules.java.graph;
 
-import java.awt.Image;
-import java.io.Serializable;
-import org.netbeans.core.spi.multiview.MultiViewDescription;
-import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.modules.maven.graph.DependencyGraphTopComponent;
-import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
-import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerPanelProvider;
-import org.netbeans.modules.maven.spi.IconResources;
-import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.ServiceProvider;
-import org.openide.windows.TopComponent;
+import java.util.Collection;
+import java.util.Stack;
 
 /**
  *
  * @author mkleint
  */
-public class GraphMD implements MultiViewDescription, Serializable {
+class HighlightVisitor implements GraphNodeVisitor {
+    private final DependencyGraphScene scene;
+    private final Stack<GraphNodeImplementation> path;
+    private GraphNodeImplementation root;
+    private int max = Integer.MAX_VALUE;
 
-    private final Lookup lookup;
-
-    GraphMD(Lookup lkp) {
-        lookup = lkp;
+    HighlightVisitor(DependencyGraphScene scene) {
+        this.scene = scene;
+        path = new Stack<>();
     }
 
-
-    @Override public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_NEVER;
+    public void setMaxDepth(int max) {
+        this.max = max;
     }
 
-    @Override public String getDisplayName() {
-        return Bundle.TAB_Graph();
-    }
-
-    @Override public Image getIcon() {
-        return ImageUtilities.loadImage(IconResources.ICON_DEPENDENCY_JAR, true);
-    }
-
-    @Override public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    @Override public String preferredID() {
-        return ArtifactViewer.HINT_GRAPH;
-    }
-
-    @Override public MultiViewElement createElement() {
-        return new DependencyGraphTopComponent(lookup);
-    }
-
-    @ServiceProvider(service=ArtifactViewerPanelProvider.class, position=400)
-    public static class Factory implements ArtifactViewerPanelProvider {
-
-        @Override public MultiViewDescription createPanel(Lookup content) {
-            return new GraphMD(content);
+    @Override public boolean visit(GraphNodeImplementation node) {
+        if (root == null) {
+            root = node;
+        }
+        if (scene.isIncluded(node)) {
+            path.push(node);
+            GraphNode grNode = scene.getGraphNodeRepresentant(node);
+            if (grNode == null) {
+                return false;
+            }
+            NodeWidget aw = (NodeWidget) scene.findWidget(grNode);
+            Collection<GraphEdge> edges = scene.findNodeEdges(grNode, true, true);
+            aw.setReadable(false);
+            if (path.size() > max) {
+                aw.setPaintState(EdgeWidget.GRAYED);
+                for (GraphEdge e : edges) {
+                    EdgeWidget ew = (EdgeWidget) scene.findWidget(e);
+                    ew.setState(EdgeWidget.GRAYED);
+                }
+            } else {
+                aw.setPaintState(EdgeWidget.REGULAR);
+                for (GraphEdge e : edges) {
+                    EdgeWidget ew = (EdgeWidget) scene.findWidget(e);
+                    ew.setState(EdgeWidget.REGULAR);
+                }
+            }
+            return true;
+        } else {
+            return false;
         }
     }
 
+    @Override public boolean endVisit(GraphNodeImplementation node) {
+        if (scene.isIncluded(node)) {
+            path.pop();
+        }
+        return true;
+    }
 }

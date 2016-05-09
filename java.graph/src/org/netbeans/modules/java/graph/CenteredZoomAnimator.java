@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.module.graph;
+package org.netbeans.modules.java.graph;
 
 import java.awt.Dimension;
 import java.awt.Point;
@@ -51,8 +51,7 @@ import org.netbeans.api.visual.animator.SceneAnimator;
 import org.netbeans.api.visual.widget.Scene;
 
 /**
- * Centered Zoom Animator.
- * Todo: Taken from maven.graph, create support API.
+ *
  * @author Dafe Simonek
  */
 class CenteredZoomAnimator extends Animator {

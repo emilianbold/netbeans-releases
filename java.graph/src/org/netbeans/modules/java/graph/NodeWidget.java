@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.graph;
+package org.netbeans.modules.java.graph;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -49,15 +49,15 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.Timer;
 import javax.swing.UIManager;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.shared.dependency.tree.DependencyNode;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.SelectProvider;
+import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
@@ -66,15 +66,22 @@ import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.LevelOfDetailsWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
-import static org.netbeans.modules.maven.graph.Bundle.*;
+import static org.netbeans.modules.java.graph.Bundle.ACT_FixVersionConflict;
+import static org.netbeans.modules.java.graph.Bundle.TIP_MultipleConflict;
+import static org.netbeans.modules.java.graph.Bundle.TIP_MultipleWarning;
+import static org.netbeans.modules.java.graph.Bundle.TIP_SingleConflict;
+import static org.netbeans.modules.java.graph.Bundle.TIP_SingleWarning;
+import static org.netbeans.modules.java.graph.DependencyGraphScene.VersionProvider.VERSION_CONFLICT;
+import static org.netbeans.modules.java.graph.DependencyGraphScene.VersionProvider.VERSION_NO_CONFLICT;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.Parameters;
 
 /**
  *
  * @author mkleint
  */
-class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
+class NodeWidget<I extends GraphNodeImplementation> extends Widget implements ActionListener {
 
     static final Color ROOT = new Color(178, 228, 255);
     static final Color DIRECTS = new Color(178, 228, 255);
@@ -87,30 +94,24 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
     static final Color WARNING = new Color(255, 150, 20);
     static final Color DISABLE_WARNING = EdgeWidget.deriveColor(WARNING, 0.7f);
 
-    static final Color PROVIDED = new Color(191, 255, 255);
-    static final Color COMPILE = new Color(191, 191, 255);
-    static final Color RUNTIME = new Color(191, 255, 191);
-    static final Color TEST = new Color(202, 151, 151);
-
     private static final int LEFT_TOP = 1;
     private static final int LEFT_BOTTOM = 2;
     private static final int RIGHT_TOP = 3;
     private static final int RIGHT_BOTTOM = 4;
 
-    private static final @StaticResource String LOCK_ICON = "org/netbeans/modules/maven/graph/lock.png";
-    private static final @StaticResource String LOCK_BROKEN_ICON = "org/netbeans/modules/maven/graph/lock-broken.png";
-    private static final @StaticResource String BULB_ICON = "org/netbeans/modules/maven/graph/bulb.gif";
-    private static final @StaticResource String BULB_HIGHLIGHT_ICON = "org/netbeans/modules/maven/graph/bulb-highlight.gif";
+    private static final @StaticResource String LOCK_ICON = "org/netbeans/modules/java/graph/resources/lock.png";
+    private static final @StaticResource String LOCK_BROKEN_ICON = "org/netbeans/modules/java/graph/resources/lock-broken.png";
+    private static final @StaticResource String BULB_ICON = "org/netbeans/modules/java/graph/resources/bulb.gif";
+    private static final @StaticResource String BULB_HIGHLIGHT_ICON = "org/netbeans/modules/java/graph/resources/bulb-highlight.gif";
 
-    private ArtifactGraphNode node;
-    private List<String> scopes;
+    private GraphNode<I> node;
     private boolean readable = false;
     private boolean enlargedFromHover = false;
 
     private Timer hoverTimer;
     private Color hoverBorderC;
 
-    private Widget artifactW;
+    private Widget nodeW;
     private LabelWidget versionW;
     private Widget contentW;
     private ImageWidget lockW, fixHintW;
@@ -121,16 +122,38 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
     private Color origForeground;
 
     private String tooltipText;
-
-    ArtifactWidget(DependencyGraphScene scene, ArtifactGraphNode node, Icon icon) {
+    private final WidgetAction fixConflictAction;
+    private final WidgetAction sceneHoverActionAction; 
+    private final DependencyGraphScene.ScopeProvider<I> scopeProvider;
+    
+    NodeWidget(@NonNull DependencyGraphScene scene, GraphNode<I> node, Icon icon, DependencyGraphScene.ScopeProvider<I> scopeProvider, final Action fixConflictAction, final WidgetAction sceneHoverActionAction) {        
         super(scene);
+        Parameters.notNull("node", node);
+        if(fixConflictAction != null) {
+            Parameters.notNull("sceneHoverActionAction", sceneHoverActionAction);
+        }
         this.node = node;
+        this.scopeProvider = scopeProvider;
+        this.fixConflictAction = fixConflictAction != null ? ActionFactory.createSelectAction(new SelectProvider() {
+            @Override public boolean isAimingAllowed(Widget widget, Point localLocation, boolean invertSelection) {
+                return false;
+            }
 
-        Artifact artifact = node.getArtifact().getArtifact();
+            @Override public boolean isSelectionAllowed(Widget widget, Point localLocation, boolean invertSelection) {
+                return true;
+            }
+
+            @Override
+            public void select(Widget widget, Point localLocation, boolean invertSelection) {
+                fixConflictAction.actionPerformed(null);
+            }
+        }) : null;
+        this.sceneHoverActionAction = sceneHoverActionAction;
+        
         setLayout(LayoutFactory.createVerticalFlowLayout());
 
         updateTooltip();
-        initContent(scene, artifact, icon);
+        initContent(scene, node.getDependencyNode(), icon);
 
         hoverTimer = new Timer(500, this);
         hoverTimer.setRepeats(false);
@@ -140,22 +163,27 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
             hoverBorderC = Color.GRAY;
         }
     }
-
-    @Messages({
-        "TIP_SingleConflict=Conflict with <b>{0}</b> version required by <b>{1}</b>",
-        "TIP_SingleWarning=Warning, older version <b>{0}</b> requested by <b>{1}</b>",
-        "TIP_MultipleConflict=Conflicts with:<table><thead><tr><th>Version</th><th>Artifact</th></tr></thead><tbody>",
-        "TIP_MultipleWarning=Warning, older versions requested:<table><thead><tr><th>Version</th><th>Artifact</th></tr></thead><tbody>",
-        "TIP_Artifact=<html><i>GroupId:</i><b> {0}</b><br><i>ArtifactId:</i><b> {1} </b><br><i>Version:</i><b> {2}</b><br><i>Scope:</i><b> {3}</b><br><i>Type:</i><b> {4}</b><br>{5}</html>"
-    })
+    
+    @Messages({"TIP_Text=<html>{0}<br>{1}</html>",
+               "TIP_SingleConflict=Conflict with <b>{0}</b> version required by <b>{1}</b>",
+               "TIP_SingleWarning=Warning, older version <b>{0}</b> requested by <b>{1}</b>",
+               "TIP_MultipleConflict=Conflicts with:<table><thead><tr><th>Version</th><th>Artifact</th></tr></thead><tbody>",
+               "TIP_MultipleWarning=Warning, older versions requested:<table><thead><tr><th>Version</th><th>Artifact</th></tr></thead><tbody>"})
     private void updateTooltip () {
+        DependencyGraphScene scene = getDependencyGraphScene();
+        tooltipText = Bundle.TIP_Text(node.getTooltipText(), scene.supportsVersions() ? getConflictTooltip(node) : "");
+        setToolTipText(tooltipText);
+    }
+
+    public String getConflictTooltip(GraphNode<I> node) {
+        DependencyGraphScene<I> scene = getDependencyGraphScene();
         StringBuilder tooltip = new StringBuilder();
         int conflictCount = 0;
-        DependencyNode firstConflict = null;
-        int conflictType = node.getConflictType();
-        if (conflictType != ArtifactGraphNode.NO_CONFLICT) {
-            for (DependencyNode nd : node.getDuplicatesOrConflicts()) {
-                if (nd.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
+        I firstConflict = null;
+        int conflictType = node.getConflictType(scene::isConflict, scene::compareVersions);
+        if (conflictType != VERSION_NO_CONFLICT) {
+            for (I nd : node.getDuplicatesOrConflicts()) {
+                if (scene.isConflict(nd)) {
                     conflictCount++;
                     if (firstConflict == null) {
                         firstConflict = nd;
@@ -165,72 +193,52 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
         }
 
         if (conflictCount == 1) {
-            DependencyNode parent = firstConflict.getParent();
-            String version = firstConflict.getArtifact().getVersion();
-            String requester = parent != null ? parent.getArtifact().getArtifactId() : "???";
-            tooltip.append(conflictType == ArtifactGraphNode.CONFLICT ? TIP_SingleConflict(version, requester) : TIP_SingleWarning(version, requester));
+            I parent = firstConflict.getParent();
+            String version = scene.getVersion(firstConflict);
+            String requester = parent != null ? parent.getName() : "???";
+            tooltip.append(conflictType == VERSION_CONFLICT ? TIP_SingleConflict(version, requester) : TIP_SingleWarning(version, requester));
         } else if (conflictCount > 1) {
-            tooltip.append(conflictType == ArtifactGraphNode.CONFLICT ? TIP_MultipleConflict() : TIP_MultipleWarning());
-            for (DependencyNode nd : node.getDuplicatesOrConflicts()) {
-                if (nd.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
+            tooltip.append(conflictType == VERSION_CONFLICT ? TIP_MultipleConflict() : TIP_MultipleWarning());
+            for (I nd : node.getDuplicatesOrConflicts()) {
+                if (scene.isConflict(nd)) {
                     tooltip.append("<tr><td>");
-                    tooltip.append(nd.getArtifact().getVersion());
+                    tooltip.append(scene.getVersion(nd));
                     tooltip.append("</td>");
                     tooltip.append("<td>");
-                    DependencyNode parent = nd.getParent();
+                    GraphNodeImplementation parent = nd.getParent();
                     if (parent != null) {
-                        Artifact artifact = parent.getArtifact();
-                        assert artifact != null;
-                        tooltip.append(artifact.getArtifactId());
+//                        Artifact artifact = parent.getArtifact();
+//                        assert artifact != null;
+                        tooltip.append(parent.getName());
                     }
                     tooltip.append("</td></tr>");
                 }
             }
             tooltip.append("</tbody></table>");
         }
-
-        Artifact artifact = node.getArtifact().getArtifact();
-        final String scope = (artifact.getScope() != null ? artifact.getScope() : "");
-        tooltipText = TIP_Artifact(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), scope, artifact.getType(), tooltip.toString());
-        setToolTipText(tooltipText);
+        return tooltip.toString();
+    }
+    
+    private DependencyGraphScene getDependencyGraphScene() {
+        return (DependencyGraphScene)getScene();
     }
 
-    void highlightText(String searchTerm) {
-        if (searchTerm != null && node.getArtifact().getArtifact().getArtifactId().contains(searchTerm)) {
-            artifactW.setBackground(HIGHTLIGHT);
-            artifactW.setOpaque(true);
+    public void highlightText(String searchTerm) {
+        if (searchTerm != null && node.getDependencyNode().getName().contains(searchTerm)) {
+            nodeW.setBackground(HIGHTLIGHT);
+            nodeW.setOpaque(true);
             setPaintState(EdgeWidget.REGULAR);
             setReadable(true);
         } else {
             //reset
-            artifactW.setBackground(Color.WHITE);
-            artifactW.setOpaque(false);
+            nodeW.setBackground(Color.WHITE);
+            nodeW.setOpaque(false);
             setPaintState(EdgeWidget.GRAYED);
             setReadable(false);
         }
     }
 
-    void hightlightScopes(List<String> scopes) {
-        this.scopes = scopes;
-    }
-
-    private Color colorForScope(String scope) {
-        if (Artifact.SCOPE_COMPILE.equals(scope)) {
-            return COMPILE;
-        }
-        if (Artifact.SCOPE_PROVIDED.equals(scope)) {
-            return PROVIDED;
-        }
-        if (Artifact.SCOPE_RUNTIME.equals(scope)) {
-            return RUNTIME;
-        }
-        if (Artifact.SCOPE_TEST.equals(scope)) {
-            return TEST;
-        }
-        return Color.BLACK;
-    }
-
-    void setPaintState (int state) {
+    public void setPaintState (int state) {
         if (this.paintState == state) {
             return;
         }
@@ -239,7 +247,7 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
         updatePaintContent();
     }
 
-    int getPaintState () {
+    public int getPaintState () {
         return paintState;
     }
 
@@ -263,8 +271,10 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
         }
 
         contentW.setBorder(BorderFactory.createLineBorder(10, foreC));
-        artifactW.setForeground(foreC);
-        versionW.setForeground(foreC);
+        nodeW.setForeground(foreC);
+        if(versionW != null) {
+            versionW.setForeground(foreC);
+        }
         if (lockW != null) {
             lockW.setPaintAsDisabled(paintState == EdgeWidget.GRAYED);
             lockW.setVisible(!isDisabled);
@@ -276,50 +286,53 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
     }
 
     @Messages("ACT_FixVersionConflict=Fix Version Conflict...")
-    private void initContent (DependencyGraphScene scene, Artifact artifact, Icon icon) {
+    private void initContent (DependencyGraphScene scene, GraphNodeImplementation dependencyNode, Icon icon) {
         contentW = new LevelOfDetailsWidget(scene, 0.05, 0.1, Double.MAX_VALUE, Double.MAX_VALUE);
         contentW.setBorder(BorderFactory.createLineBorder(10));
         contentW.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 1));
 
-        //Artifact name (with optional project icon on the left)
-        artifactW = new Widget(scene);
-        artifactW.setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 4));
+        //dependecy node name (with optional project icon on the left)
+        nodeW = new Widget(scene);
+        nodeW.setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 4));
         if (null != icon) {
-            artifactW.addChild(new ImageWidget(scene, ImageUtilities.icon2Image(icon)));
+            nodeW.addChild(new ImageWidget(scene, ImageUtilities.icon2Image(icon)));
         }
-        final LabelWidget labelWidget = new LabelWidget(scene, artifact.getArtifactId() + "  ");
+        final LabelWidget labelWidget = new LabelWidget(scene, dependencyNode.getName() + "  ");
         labelWidget.setUseGlyphVector(true);
-        artifactW.addChild(labelWidget);
+        nodeW.addChild(labelWidget);
       
         if (node.isRoot()) {
             Font defF = scene.getDefaultFont();
-            artifactW.setFont(defF.deriveFont(Font.BOLD, defF.getSize() + 3f));
+            nodeW.setFont(defF.deriveFont(Font.BOLD, defF.getSize() + 3f));
         }
-        contentW.addChild(artifactW);
-        Widget versionDetW = new LevelOfDetailsWidget(scene, 0.5, 0.7, Double.MAX_VALUE, Double.MAX_VALUE);
-        versionDetW.setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 2));
-        contentW.addChild(versionDetW);
-        versionW = new LabelWidget(scene);
-        versionW.setLabel(artifact.getVersion());
-        int mngState = node.getManagedState();
-        if (mngState != ArtifactGraphNode.UNMANAGED) {
-             lockW = new ImageWidget(scene,
-                    mngState == ArtifactGraphNode.MANAGED ? ImageUtilities.loadImage(LOCK_ICON) : ImageUtilities.loadImage(LOCK_BROKEN_ICON));
-        }
-        versionDetW.addChild(versionW);
-        if (lockW != null) {
-            versionDetW.addChild(lockW);
+        contentW.addChild(nodeW);
+        
+        if(getDependencyGraphScene().supportsVersions()) {
+            Widget versionDetW = new LevelOfDetailsWidget(scene, 0.5, 0.7, Double.MAX_VALUE, Double.MAX_VALUE);
+            versionDetW.setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 2));
+            contentW.addChild(versionDetW);
+            versionW = new LabelWidget(scene);
+            versionW.setLabel(scene.getVersion(node.getDependencyNode()));
+            int mngState = node.getManagedState();
+            if (mngState != GraphNode.UNMANAGED) { 
+                 lockW = new ImageWidget(scene,
+                        mngState == GraphNode.MANAGED ? ImageUtilities.loadImage(LOCK_ICON) : ImageUtilities.loadImage(LOCK_BROKEN_ICON));
+            }
+            versionDetW.addChild(versionW);
+            if (lockW != null) {
+                versionDetW.addChild(lockW);
+            }
         }
 
         // fix hint
-        if (scene.isEditable() && DependencyGraphScene.isFixCandidate(node)) {
+        if (fixConflictAction != null) {
             Widget rootW = new Widget(scene);
             rootW.setLayout(LayoutFactory.createOverlayLayout());
             fixHintW = new ImageWidget(scene, ImageUtilities.loadImage(BULB_ICON));
             fixHintW.setVisible(false);
             fixHintW.setToolTipText(ACT_FixVersionConflict());
-            fixHintW.getActions().addAction(scene.hoverAction);
-            fixHintW.getActions().addAction(ActionFactory.createSelectAction(this));
+            fixHintW.getActions().addAction(sceneHoverActionAction);
+            fixHintW.getActions().addAction(fixConflictAction);
             Widget panelW = new Widget(scene);
             panelW.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.LEFT_TOP, 0));
             panelW.setBorder(BorderFactory.createEmptyBorder(0, 3));
@@ -333,13 +346,17 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
 
     }
 
-    void modelChanged () {
-        versionW.setLabel(node.getArtifact().getArtifact().getVersion());
-        if (!DependencyGraphScene.isFixCandidate(node) && fixHintW != null) {
-            fixHintW.setVisible(false);
-            fixHintW = null;
+    public void modelChanged () {
+        DependencyGraphScene scene = getDependencyGraphScene();
+        if(scene.supportsVersions()) {
+            versionW.setLabel(scene.getVersion(node.getDependencyNode()));
+            if (fixConflictAction == null && fixHintW != null) {
+                fixHintW.setVisible(false);
+                fixHintW = null;
+            }
         }
-        updateTooltip();
+        
+        updateTooltip();        
         
         repaint();
     }
@@ -352,25 +369,26 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
             return;
         }
 
-        Graphics2D g = getScene().getGraphics();
+        DependencyGraphScene scene = getDependencyGraphScene();
+        Graphics2D g = scene.getGraphics();
         Rectangle bounds = getClientArea();
 
         if (node.isRoot()) {
             paintBottom(g, bounds, ROOT, Color.WHITE, bounds.height / 2);
         } else {
-            if (scopes != null && scopes.size() > 0 && scopes.contains(node.getArtifact().getArtifact().getScope())) {
-                Color scopeC = colorForScope(node.getArtifact().getArtifact().getScope());
+            Color scopeC = scopeProvider != null ? scopeProvider.getColor(node.getDependencyNode()) : null;
+            if(scopeC != null) {
                 paintCorner(RIGHT_BOTTOM, g, bounds, scopeC, Color.WHITE, bounds.width / 2, bounds.height / 2);
             }
-            int conflictType = node.getConflictType();
+            int conflictType = scene.supportsVersions() ? node.getConflictType(scene::isConflict, scene::compareVersions) : VERSION_NO_CONFLICT;
             Color leftTopC = null;
-            if (conflictType != ArtifactGraphNode.NO_CONFLICT) {
-                leftTopC = conflictType == ArtifactGraphNode.CONFLICT
+            if (conflictType != VERSION_NO_CONFLICT) {
+                leftTopC = conflictType == VERSION_CONFLICT
                         ? (paintState == EdgeWidget.GRAYED ? DISABLE_CONFLICT : CONFLICT)
                         : (paintState == EdgeWidget.GRAYED ? DISABLE_WARNING : WARNING);
             } else {
                 int state = node.getManagedState();
-                if (ArtifactGraphNode.OVERRIDES_MANAGED == state) {
+                if (GraphNode.OVERRIDES_MANAGED == state) {
                     leftTopC = WARNING;
                 }
             }
@@ -481,7 +499,7 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
         }
 
         if (updateNeeded) {
-            updateContent(((DependencyGraphScene)getScene()).isAnimated());
+            updateContent(getDependencyGraphScene().isAnimated());
         } else if (repaintNeeded) {
             repaint();
         }
@@ -490,7 +508,7 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
 
     @Override public void actionPerformed(ActionEvent e) {
         enlargedFromHover = true;
-        updateContent(((DependencyGraphScene)getScene()).isAnimated());
+        updateContent(getDependencyGraphScene().isAnimated());
     }
 
     public void setReadable (boolean readable) {
@@ -498,21 +516,21 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
             return;
         }
         this.readable = readable;
-        updateContent(((DependencyGraphScene)getScene()).isAnimated());
+        updateContent(getDependencyGraphScene().isAnimated());
     }
 
     public boolean isReadable () {
         return readable;
     }
 
-    public ArtifactGraphNode getNode () {
+    public GraphNode getNode () {
         return node;
     }
 
     /**
      * readable widgets are calculated  based on scene zoom factor when zoom factor changes, the readable scope should too
      */
-    void updateReadableZoom() {
+    public void updateReadableZoom() {
         if (isReadable()) {
             updateContent(false);
         }
@@ -521,7 +539,7 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
     private void updateContent (boolean isAnimated) {
 
         if (isAnimated) {
-            artifactW.setPreferredBounds(artifactW.getPreferredBounds());
+            nodeW.setPreferredBounds(nodeW.getPreferredBounds());
         }
 
         boolean makeReadable = getState().isSelected() || enlargedFromHover || readable;
@@ -534,11 +552,13 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
             newF = getReadable(getScene(), origF);
         }
 
-        artifactW.setFont(newF);
-        versionW.setFont(newF);
+        nodeW.setFont(newF);
+        if(versionW != null) {
+            versionW.setFont(newF);
+        }
 
         if (isAnimated) {
-            getScene().getSceneAnimator().animatePreferredBounds(artifactW, null);
+            getScene().getSceneAnimator().animatePreferredBounds(nodeW, null);
         }
 
         if (fixHintW != null) {
@@ -548,7 +568,7 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
 
     private Font getOrigFont () {
         if (origFont == null) {
-            origFont = artifactW.getFont();
+            origFont = nodeW.getFont();
             if (origFont == null) {
                 origFont = getScene().getDefaultFont();
             }
@@ -565,28 +585,16 @@ class ArtifactWidget extends Widget implements ActionListener, SelectProvider {
         return original;
     }
 
-    @Override public boolean isAimingAllowed(Widget widget, Point localLocation, boolean invertSelection) {
-        return false;
-    }
-
-    @Override public boolean isSelectionAllowed(Widget widget, Point localLocation, boolean invertSelection) {
-        return true;
-    }
-
-    @Override public void select(Widget widget, Point localLocation, boolean invertSelection) {
-        ((DependencyGraphScene)getScene()).invokeFixConflict(node);
-    }
-
-    void bulbHovered () {
+    public void bulbHovered () {
         if (fixHintW != null) {
             fixHintW.setImage(ImageUtilities.loadImage(BULB_HIGHLIGHT_ICON));
         }
     }
 
-    void bulbUnhovered () {
+    public void bulbUnhovered () {
         if (fixHintW != null) {
             fixHintW.setImage(ImageUtilities.loadImage(BULB_ICON));
         }
     }
-
+    
 }

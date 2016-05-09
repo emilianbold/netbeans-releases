@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.maven.graph;
 
+import org.netbeans.modules.java.graph.GraphNode;
+import org.netbeans.modules.java.graph.DependencyGraphScene;
 import java.awt.Component;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
@@ -66,6 +68,7 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import static org.netbeans.modules.maven.graph.Bundle.*;
 import org.openide.util.NbBundle.Messages;
+import org.netbeans.modules.java.graph.GraphNodeImplementation;
 
 /**
  *
@@ -74,11 +77,11 @@ import org.openide.util.NbBundle.Messages;
 public class FixVersionConflictPanel extends javax.swing.JPanel {
 
     private DependencyGraphScene scene;
-    private ArtifactGraphNode conflictNode;
+    private GraphNode<MavenDependencyNode> conflictNode;
     private List<ArtifactVersion> clashingVersions;
     private ExclusionTargets eTargets;
 
-    public FixVersionConflictPanel (DependencyGraphScene scene, ArtifactGraphNode node) {
+    public FixVersionConflictPanel (DependencyGraphScene scene, GraphNode<MavenDependencyNode> node) {
         this.scene = scene;
         this.conflictNode = node;
 
@@ -101,7 +104,7 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
         res.isExclude = excludeCheck.isSelected();
         if (res.isExclude) {
             res.exclusionTargets = new HashSet<Artifact>();
-            res.conflictParents = new HashSet<DependencyNode>();
+            res.conflictParents = new HashSet<MavenDependencyNode>();
             ListModel lm = excludesList.getModel();
             for (int i = 0; i < lm.getSize(); i++) {
                 ExclTargetEntry entry = (ExclTargetEntry) lm.getElementAt(i);
@@ -146,10 +149,10 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
     private List<ArtifactVersion> getClashingVersions () {
         if (clashingVersions == null) {
             clashingVersions = new ArrayList<ArtifactVersion>();
-            clashingVersions.add(new DefaultArtifactVersion(conflictNode.getArtifact().getArtifact().getVersion()));
-            Set<DependencyNode> deps = conflictNode.getDuplicatesOrConflicts();
+            clashingVersions.add(new DefaultArtifactVersion(conflictNode.getDependencyNode().getArtifact().getVersion()));
+            Set<MavenDependencyNode> deps = conflictNode.getDuplicatesOrConflicts();
             ArtifactVersion av = null;
-            for (DependencyNode dn : deps) {
+            for (MavenDependencyNode dn : deps) {
                 if (dn.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
                     av = new DefaultArtifactVersion(dn.getArtifact().getVersion());
                     if (!clashingVersions.contains(av)) {
@@ -169,7 +172,7 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
         boolean isExclude = false;
         ArtifactVersion version2Set = null;
         Set<Artifact> exclusionTargets = null;
-        Set<DependencyNode> conflictParents = null;
+        Set<MavenDependencyNode> conflictParents = null;
     }
 
     /** Checks the circumstances of version conflict and offers solution.
@@ -181,7 +184,7 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
 
         boolean isDirect = conflictNode.getPrimaryLevel() == 1;
         ArtifactVersion usedVersion = new DefaultArtifactVersion(
-                conflictNode.getArtifact().getArtifact().getVersion());
+                conflictNode.getDependencyNode().getArtifact().getVersion());
         ArtifactVersion newAvailVersion = getClashingVersions().get(0);
 
         // case: direct dependency to older version -> recommend update to newer
@@ -270,7 +273,7 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
         FixDescription curFix = getResult();
         String part1 = "", part2 = "";
         if (curFix.isSet && curFix.version2Set != null) {
-            part1 = FixVersionConflictPanel_sumPart1_text(getSetText(), curFix.version2Set.toString(), conflictNode.getArtifact().getArtifact().getArtifactId());
+            part1 = FixVersionConflictPanel_sumPart1_text(getSetText(), curFix.version2Set.toString(), conflictNode.getDependencyNode().getArtifact().getArtifactId());
         }
         if (curFix.isExclude && !curFix.exclusionTargets.isEmpty()) {
             StringBuilder sb = new StringBuilder();
@@ -283,7 +286,7 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
                 }
                 sb.append(art.getArtifactId());
             }
-            part2 = FixVersionConflictPanel_sumPart2_text(conflictNode.getArtifact().getArtifact().getArtifactId(), sb);
+            part2 = FixVersionConflictPanel_sumPart2_text(conflictNode.getDependencyNode().getArtifact().getArtifactId(), sb);
         }
 
         if (part1.isEmpty() && part2.isEmpty()) {
@@ -353,7 +356,7 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
                     .addComponent(versionL))
                 .addGap(46, 46, 46))
             .addGroup(addSetPLayout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)
+                .addComponent(jScrollPane1)
                 .addContainerGap())
         );
         addSetPLayout.setVerticalGroup(
@@ -430,7 +433,7 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        conflictL.setText(org.openide.util.NbBundle.getMessage(FixVersionConflictPanel.class, "FixVersionConflictPanel.conflictL.text", new Object[] {conflictNode.getArtifact().getArtifact().getArtifactId(), getClashingVersionsAsText()})); // NOI18N
+        conflictL.setText(org.openide.util.NbBundle.getMessage(FixVersionConflictPanel.class, "FixVersionConflictPanel.conflictL.text", new Object[] {conflictNode.getDependencyNode().getArtifact().getArtifactId(), getClashingVersionsAsText()})); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -518,35 +521,35 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
 
         // mapping; target artifact for exclusion -> related set of parents of conflicting
         // artifact in dependency graph
-        Map<Artifact, Set<DependencyNode>> targets2ConfPar;
+        Map<Artifact, Set<MavenDependencyNode>> targets2ConfPar;
 
-        ArtifactGraphNode conflictNode;
+        GraphNode<MavenDependencyNode> conflictNode;
         ArtifactVersion usedVersion, newestVersion;
 
-        ExclusionTargets(ArtifactGraphNode conflictNode, ArtifactVersion newestVersion) {
+        ExclusionTargets(GraphNode<MavenDependencyNode> conflictNode, ArtifactVersion newestVersion) {
             this.conflictNode = conflictNode;
             this.newestVersion = newestVersion;
             this.usedVersion = new DefaultArtifactVersion(
-                conflictNode.getArtifact().getArtifact().getVersion());
+                conflictNode.getDependencyNode().getArtifact().getVersion());
 
             initialize ();
         }
 
         private void initialize () {
-            targets2Versions = new HashMap<Artifact, Set<ArtifactVersion>>();
-            targets2ConfPar = new HashMap<Artifact, Set<DependencyNode>>();
-            DependencyNode curDn = null;
-            DependencyNode parent = null;
+            targets2Versions = new HashMap<>();
+            targets2ConfPar = new HashMap<>();
+            MavenDependencyNode curDn = null;
+            MavenDependencyNode parent = null;
 
-            List<DependencyNode> allDNs = new ArrayList<DependencyNode>(
+            List<MavenDependencyNode> allDNs = new ArrayList<MavenDependencyNode>(
                     conflictNode.getDuplicatesOrConflicts());
             
             // prevent conflictNode itself to be included in exclusion targets
             if (conflictNode.getPrimaryLevel() > 1) {
-                allDNs.add(conflictNode.getArtifact());
+                allDNs.add(conflictNode.getDependencyNode());
             }
 
-            for (DependencyNode dn : allDNs) {
+            for (MavenDependencyNode dn : allDNs) {
                 curDn = dn;
                 parent = curDn.getParent();
                 // bad luck with no parent...
@@ -558,9 +561,9 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
                     curDn = curDn.getParent();
                 }
                 
-                Set<DependencyNode> confPar = targets2ConfPar.get(curDn.getArtifact());
+                Set<MavenDependencyNode> confPar = targets2ConfPar.get(curDn.getArtifact());
                 if (confPar == null) {
-                    confPar = new HashSet<DependencyNode>();
+                    confPar = new HashSet<MavenDependencyNode>();
                     targets2ConfPar.put(curDn.getArtifact(), confPar);
                 }
                 confPar.add(dn.getParent());
@@ -612,7 +615,7 @@ public class FixVersionConflictPanel extends javax.swing.JPanel {
             return false;
         }
 
-        public Set<DependencyNode> getConflictParents (Artifact art) {
+        public Set<MavenDependencyNode> getConflictParents (Artifact art) {
             return targets2ConfPar.get(art);
         }
 

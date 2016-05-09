@@ -40,65 +40,59 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.graph;
+package org.netbeans.modules.java.graph;
 
-import java.awt.Image;
-import java.io.Serializable;
-import org.netbeans.core.spi.multiview.MultiViewDescription;
-import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.modules.maven.graph.DependencyGraphTopComponent;
-import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
-import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerPanelProvider;
-import org.netbeans.modules.maven.spi.IconResources;
-import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.ServiceProvider;
-import org.openide.windows.TopComponent;
 
 /**
  *
- * @author mkleint
+ * @author Milos Kleint
+ * @param <I>
  */
-public class GraphMD implements MultiViewDescription, Serializable {
+public class GraphEdge<I extends GraphNodeImplementation> {
+    private final String toString;
+    private int level = 0;
+    private final I source;
+    private final I target;
+    private boolean primary;
 
-    private final Lookup lookup;
-
-    GraphMD(Lookup lkp) {
-        lookup = lkp;
+    /** 
+     * Creates a new instance of GraphEdge
+     * @param source
+     * @param target 
+     */
+    public GraphEdge(I source, I target) {
+        toString = source.getQualifiedName() + "--" + target.getQualifiedName(); //NOI18N
+        this.target = target;
+        this.source = source;
+    }
+    
+    @Override
+    public String toString() {
+        return toString;
+    }
+    
+    public void setLevel(int lvl) {
+        level = lvl;
+    }
+    
+    public int getLevel() {
+        return level;
     }
 
-
-    @Override public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_NEVER;
+    public void setPrimaryPath(boolean primary) {
+        this.primary = primary;
     }
 
-    @Override public String getDisplayName() {
-        return Bundle.TAB_Graph();
+    public boolean isPrimary() {
+        return primary;
     }
 
-    @Override public Image getIcon() {
-        return ImageUtilities.loadImage(IconResources.ICON_DEPENDENCY_JAR, true);
+    public I getSource() {
+        return source;
     }
 
-    @Override public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    @Override public String preferredID() {
-        return ArtifactViewer.HINT_GRAPH;
-    }
-
-    @Override public MultiViewElement createElement() {
-        return new DependencyGraphTopComponent(lookup);
-    }
-
-    @ServiceProvider(service=ArtifactViewerPanelProvider.class, position=400)
-    public static class Factory implements ArtifactViewerPanelProvider {
-
-        @Override public MultiViewDescription createPanel(Lookup content) {
-            return new GraphMD(content);
-        }
+    public I getTarget() {
+        return target;
     }
 
 }

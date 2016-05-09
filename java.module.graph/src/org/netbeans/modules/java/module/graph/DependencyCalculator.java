@@ -91,12 +91,14 @@ final class DependencyCalculator {
         if (unseen && !me.isUnnamed()) {
             for (ModuleElement.Directive d : me.getDirectives()) {
                 if (d.getKind() == ModuleElement.DirectiveKind.REQUIRES) {
-                    final ModuleElement.RequiresDirective reqD = (ModuleElement.RequiresDirective) d;
+                    final ModuleElement.RequiresDirective reqD = (ModuleElement.RequiresDirective) d;                 
                     final ModuleNode targetNode = collect(
                         reqD.getDependency(),
                         mods,
                         deps,
-                        currentDepth+1);
+                        currentDepth+1);                    
+                    meNode.addChild(targetNode);
+                    targetNode.setParent(meNode);
                     deps.add(new DependencyEdge(meNode, targetNode, reqD.isPublic()));
                 }
             }

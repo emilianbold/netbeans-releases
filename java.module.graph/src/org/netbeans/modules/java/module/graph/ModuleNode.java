@@ -5,42 +5,34 @@
  */
 package org.netbeans.modules.java.module.graph;
 
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.Parameters;
+import org.netbeans.modules.java.graph.GraphNodeImplementation;
+import org.netbeans.modules.java.graph.GraphNodeVisitor;
 
 /**
  *
  * @author Tomas Zezula
  */
-final class ModuleNode {
+final class ModuleNode implements GraphNodeImplementation {
     private final String moduleName;
-    private final int depth;
-    private boolean fixed;
-    double locX, locY, dispX, dispY; // for use from FruchtermanReingoldLayout
+    private List<ModuleNode> children;
+    private ModuleNode parent;
 
     ModuleNode(
         @NonNull final String moduleName,
         final int depth) {
         Parameters.notNull("moduleNode", moduleName);
         this.moduleName = moduleName;
-        this.depth = depth;
     }
 
     @NonNull
-    String getName() {
+    @Override
+    public String getName() {
         return moduleName;
-    }
-
-    void setFixed(boolean fixed) {
-        this.fixed = fixed;
-    }
-
-    boolean isFixed() {
-        return fixed;
-    }
-
-    int getDepth() {
-        return depth;
     }
 
     @Override
@@ -62,5 +54,36 @@ final class ModuleNode {
         return moduleName == null ?
             0:
             moduleName.hashCode();
+    }
+
+    @Override
+    public synchronized List<ModuleNode> getChildren() {
+        return children != null ? Collections.unmodifiableList(children) : null;
+    }
+
+    @Override
+    public GraphNodeImplementation getParent() {
+        return parent;
+    }
+
+    @Override
+    public String getTooltipText() {
+        return getName();
+    }
+
+    @Override
+    public String getQualifiedName() {
+        return getName();        
+    }
+
+    synchronized void addChild(ModuleNode child) {
+        if(children == null) {
+            children = new LinkedList<>();
+        }
+        children.add(child);
+    }
+
+    void setParent(ModuleNode parent) {
+        this.parent = parent;
     }
 }
