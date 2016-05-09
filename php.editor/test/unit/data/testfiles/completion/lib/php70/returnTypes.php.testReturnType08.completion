@@ -2,6 +2,8 @@ Code completion result for source line:
 function &bar(): \|My\Firm\Comment {
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 PACKAGE    A                               [PUBLIC]   null
+PACKAGE    GroupUse1                       [PUBLIC]   null
+PACKAGE    GroupUse2                       [PUBLIC]   null
 PACKAGE    My                              [PUBLIC]   null
 PACKAGE    Run                             [PUBLIC]   null
 ------------------------------------

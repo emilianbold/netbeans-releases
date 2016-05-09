@@ -448,6 +448,18 @@ public class PHP70CodeCompletionTest extends PHPCodeCompletionTestBase {
 //        checkCompletion("testfiles/completion/lib/php70/uniformVariableSyntax03.php", "UVS3::myStatic3()::myStatic2()::$INSTANCE::mySta^tic1();", false);
 //    }
 
+    public void testIssue259074a() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/issue259074.php", "    C^2", false);
+    }
+
+    public void testIssue259074b() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/issue259074.php", "    C^ONST_2", false);
+    }
+
+    public void testIssue259074c() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/issue259074.php", "    test^2", false);
+    }
+
     // XXX add tests for CC after NS aliases!
 
 }
