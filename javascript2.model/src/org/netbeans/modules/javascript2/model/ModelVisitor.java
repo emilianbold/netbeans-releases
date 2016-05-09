@@ -659,12 +659,12 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
                 CallNode constructor = (CallNode) un.getExpression();
                 createFunctionArgument(constructor.getFunction(), position, functionArguments, result);
             }
-        } /*else if (argument instanceof ReferenceNode) {
-            ReferenceNode reference = (ReferenceNode) argument;
+        } else if (argument instanceof FunctionNode) {
+            FunctionNode reference = (FunctionNode) argument;
             result.add(FunctionArgumentAccessor.getDefault().createForReference(
                     position, argument.getStart(),
-                    Collections.singletonList(reference.getReference().getName())));
-        } */else {
+                    Collections.singletonList(modelBuilder.getFunctionName(reference))));
+        } else {
             result.add(FunctionArgumentAccessor.getDefault().createForUnknown(position));
         }
     }
