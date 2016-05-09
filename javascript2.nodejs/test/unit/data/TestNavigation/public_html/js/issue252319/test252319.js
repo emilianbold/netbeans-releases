@@ -4,7 +4,7 @@ function Pokus() {
 }
 
 Pokus.prototype.aa = function () {
-   ctrl.getDUserEdit()
+   ctrl.getD
 }
 
 

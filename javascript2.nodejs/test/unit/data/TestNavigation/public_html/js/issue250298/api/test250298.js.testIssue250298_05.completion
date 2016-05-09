@@ -5,6 +5,6 @@ mi.|listFiles(); // test5
 METHOD     definedNotNull(obj): Boolean    [PUBLIC]   utils.js
 METHOD     endsWith(pattern, suffix): Boo  [PUBLIC]   utils.js
 METHOD     errorRespond(response, errCode  [PUBLIC]   utils.js
-METHOD     listFiles(path)                 [PUBLIC]   utils.js
+METHOD     listFiles(path: type): Array    [PUBLIC]   utils.js
 METHOD     listFilesAndNames(path)         [PUBLIC]   utils.js
 METHOD     listFoldersAndNames(path)       [PUBLIC]   utils.js
