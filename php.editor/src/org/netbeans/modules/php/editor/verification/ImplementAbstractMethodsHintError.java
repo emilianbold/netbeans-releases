@@ -163,7 +163,8 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
                     final TypeElement type = methodElement.getType();
                     if ((type.isInterface() || methodElement.isAbstract()) && !methodElement.isFinal()) {
                         FileObject fileObject = methodElement.getFileObject();
-                        if (lastFileObject != fileObject) {
+                        if (lastFileObject != fileObject
+                                && fileObject != null) {
                             lastFileObject = fileObject;
                             fileScope = getFileScope(fileObject);
                         }
