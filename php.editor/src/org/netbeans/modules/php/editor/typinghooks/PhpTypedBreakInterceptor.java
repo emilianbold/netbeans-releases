@@ -44,6 +44,7 @@ package org.netbeans.modules.php.editor.typinghooks;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
@@ -129,8 +130,15 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
                 sb.append(begin);
                 sb.append(" "); // NOI18N
             }
-            if (completeIn == PHPTokenId.PHP_CURLY_OPEN || completeIn == PHPTokenId.PHP_CLASS || completeIn == PHPTokenId.PHP_FUNCTION) {
+            if (completeIn == PHPTokenId.PHP_CURLY_OPEN
+                    || completeIn == PHPTokenId.PHP_CLASS
+                    || completeIn == PHPTokenId.PHP_FUNCTION
+                    || completeIn == PHPTokenId.PHP_USE) {
                 sb.append("}"); // NOI18N
+                if (completeIn == PHPTokenId.PHP_USE
+                        && isGroupUseCurlyOpen(ts)) {
+                    sb.append(";"); // NOI18N
+                }
             } else if (completeIn == PHPTokenId.PHP_TRY) {
                 sb.append("} catch (Exception $ex) {\n\n").append(createIndentString(doc, offset, indent)).append("}"); // NOI18N
             } else if (completeIn == PHPTokenId.PHP_IF || completeIn == PHPTokenId.PHP_ELSE || completeIn == PHPTokenId.PHP_ELSEIF) {
@@ -355,7 +363,7 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
             startOfContext[0] = ts.offset();
             // we are interested only in adding end for { or alternative syntax :
             List<PHPTokenId> lookFor = Arrays.asList(PHPTokenId.PHP_CURLY_CLOSE, //PHPTokenId.PHP_SEMICOLON,
-                    PHPTokenId.PHP_CLASS, PHPTokenId.PHP_FUNCTION,
+                    PHPTokenId.PHP_CLASS, PHPTokenId.PHP_FUNCTION, PHPTokenId.PHP_USE,
                     PHPTokenId.PHP_IF, PHPTokenId.PHP_ELSE, PHPTokenId.PHP_ELSEIF,
                     PHPTokenId.PHP_FOR, PHPTokenId.PHP_FOREACH, PHPTokenId.PHP_TRY,
                     PHPTokenId.PHP_DO, PHPTokenId.PHP_WHILE, PHPTokenId.PHP_TOKEN,
@@ -372,7 +380,21 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
                 return null;
             }
             if (bracketColumnToken.id() == PHPTokenId.PHP_CURLY_OPEN) {
-                if (keyToken.id() == PHPTokenId.PHP_CLASS || keyToken.id() == PHPTokenId.PHP_FUNCTION || keyToken.id() == PHPTokenId.PHP_TRY) {
+                if (keyToken.id() == PHPTokenId.PHP_CLASS || keyToken.id() == PHPTokenId.PHP_TRY) {
+                    result = keyToken.id();
+                } else if (keyToken.id() == PHPTokenId.PHP_FUNCTION) {
+                    // try to find : use function Foo\Bar
+                    Token<? extends PHPTokenId> useToken = findPreviousKeyToken(ts, PHPTokenId.PHP_USE);
+                    if (useToken != null) {
+                        keyToken = useToken;
+                    }
+                    result = keyToken.id();
+                } else if (keyToken.id() == PHPTokenId.PHP_USE) {
+                    // try to find : function() use ($a, $b)
+                    Token<? extends PHPTokenId> functionToken = findPreviousKeyToken(ts, PHPTokenId.PHP_FUNCTION);
+                    if (functionToken != null) {
+                        keyToken = functionToken;
+                    }
                     result = keyToken.id();
                 } else {
                     result = PHPTokenId.PHP_CURLY_OPEN;
@@ -410,7 +432,8 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
         int curlyBalance = 0;
         boolean curlyProcessed = false;
         if (startTokenId == PHPTokenId.PHP_CURLY_OPEN || startTokenId == PHPTokenId.PHP_FUNCTION
-                || startTokenId == PHPTokenId.PHP_CLASS || startTokenId == PHPTokenId.PHP_TRY) {
+                || startTokenId == PHPTokenId.PHP_CLASS || startTokenId == PHPTokenId.PHP_TRY
+                || startTokenId == PHPTokenId.PHP_USE) {
             boolean unfinishedComment = false;
             do {
                 token = ts.token();
@@ -770,6 +793,59 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
             }
         }
         return false;
+    }
+
+    /**
+     * Find the specified previous token until ";" or "}".
+     *
+     * @param ts The token sequence
+     * @param id The token id for finding
+     * @return The specified token, ";" or "}" if found them, otherwise
+     * {@code null}
+     */
+    @CheckForNull
+    private static Token<? extends PHPTokenId> findPreviousKeyToken(TokenSequence<? extends PHPTokenId> ts, PHPTokenId id) {
+        Token<? extends PHPTokenId> result = null;
+        int originalOffset = ts.offset();
+        List<PHPTokenId> lookFor = Arrays.asList(PHPTokenId.PHP_SEMICOLON, PHPTokenId.PHP_CURLY_CLOSE, id);
+        Token<? extends PHPTokenId> previousToken = LexUtilities.findPreviousToken(ts, lookFor);
+        if (previousToken != null
+                && previousToken.id() == id) {
+            result = previousToken;
+        } else {
+            ts.move(originalOffset);
+            ts.moveNext();
+        }
+        return result;
+    }
+
+    private static boolean isGroupUseCurlyOpen(TokenSequence<? extends PHPTokenId> ts) {
+        boolean result = false;
+        int originalOffset = ts.offset();
+        while (ts.movePrevious()) {
+            PHPTokenId tokenId = ts.token().id();
+            if (tokenId != PHPTokenId.WHITESPACE
+                    && tokenId != PHPTokenId.PHP_CURLY_OPEN
+                    && !isComment(tokenId)) {
+                if (tokenId == PHPTokenId.PHP_NS_SEPARATOR) {
+                    result = true;
+                }
+                break;
+            }
+        }
+        ts.move(originalOffset);
+        ts.moveNext();
+        return result;
+    }
+
+    private static boolean isComment(PHPTokenId tokenId) {
+        return tokenId == PHPTokenId.PHP_COMMENT_START
+                || tokenId == PHPTokenId.PHP_COMMENT
+                || tokenId == PHPTokenId.PHP_COMMENT_END
+                || tokenId == PHPTokenId.PHPDOC_COMMENT_START
+                || tokenId == PHPTokenId.PHPDOC_COMMENT
+                || tokenId == PHPTokenId.PHPDOC_COMMENT_END
+                || tokenId == PHPTokenId.PHP_LINE_COMMENT;
     }
 
     @Override
