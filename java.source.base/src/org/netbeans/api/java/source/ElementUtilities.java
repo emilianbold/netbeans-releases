@@ -62,7 +62,6 @@ import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ClassType;
-import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Enter;
 import com.sun.tools.javac.comp.Env;
@@ -560,14 +559,35 @@ public final class ElementUtilities {
     }
     
     /**Find all methods in given type and its supertypes, which are not implemented.
+     * Will not return default methods implemented directly in interfaces in impl type closure.
      * 
      * @param type to inspect
      * @return list of all unimplemented methods
      * 
      * @since 0.20
+     * @since 2.15 does not return default methods
      */
     public List<? extends ExecutableElement> findUnimplementedMethods(TypeElement impl) {
-        return findUnimplementedMethods(impl, impl);
+        return findUnimplementedMethods(impl, impl, false);
+    }
+    
+    /**
+     * Finds all unimplemented methods in the given type and supertypes, but possibly include
+     * also interface default methods.
+     * <p/>
+     * If the platform configured for the type is older than JDK8, the method is equivalent
+     * to {@link #findUnimplementedMethods(javax.lang.model.element.TypeElement)}. If `includeDefaults'
+     * is {@code true}, returns also default methods as if the methods were required to be
+     * reimplemented by the final class.
+     * 
+     * @param impl the implementation type
+     * @param includeDefaults if true, will also return interface default methods, which
+     * are not overriden in supertypes 
+     * @return unimplemented (and/or default) methods.
+     * @since 2.15
+     */
+    public List<? extends ExecutableElement> findUnimplementedMethods(TypeElement impl, boolean includeDefaults) {
+        return findUnimplementedMethods(impl, impl, includeDefaults);
     }
 
     /**Find all methods in given type and its supertypes, which are overridable.
@@ -786,24 +806,47 @@ public final class ElementUtilities {
     // private implementation --------------------------------------------------
 
     private static final Set<Modifier> NOT_OVERRIDABLE = EnumSet.of(Modifier.STATIC, Modifier.FINAL, Modifier.PRIVATE);
-
-    private List<? extends ExecutableElement> findUnimplementedMethods(TypeElement impl, TypeElement element) {
+    
+    private List<? extends ExecutableElement> findUnimplementedMethods(TypeElement impl, TypeElement element, boolean includeDefaults) {
         List<ExecutableElement> undef = new ArrayList<ExecutableElement>();
         Types types = JavacTypes.instance(ctx);
         com.sun.tools.javac.code.Types implTypes = com.sun.tools.javac.code.Types.instance(ctx);
         DeclaredType implType = (DeclaredType)impl.asType();
         if (element.getKind().isInterface() || element.getModifiers().contains(Modifier.ABSTRACT)) {
             for (Element e : element.getEnclosedElements()) {
-                if (e.getKind() == ElementKind.METHOD && e.getModifiers().contains(Modifier.ABSTRACT)) {
-                    ExecutableElement ee = (ExecutableElement)e;
-                    Element eeImpl = getImplementationOf(ee, impl);
-                    if ((eeImpl == null || (eeImpl == ee && impl != element)) && implTypes.asSuper((Type)implType, (Symbol)ee.getEnclosingElement()) != null)
+                if (e.getKind() != ElementKind.METHOD) {
+                    continue;
+                }
+                if (element.getKind().isInterface()) {
+                    // as of JDK9 interafce can contain static methods.
+                    if (e.getModifiers().contains(Modifier.STATIC)) {
+                        continue;
+                        /*
+                    } else if (e.getModifiers().contains(Modifier.DEFAULT) && !includeDefaults) {
+                        continue;
+                        */
+                    } 
+                } else if (!e.getModifiers().contains(Modifier.ABSTRACT)) {
+                    continue;
+                }
+                ExecutableElement ee = (ExecutableElement)e;
+                ExecutableElement eeImpl = (ExecutableElement)getImplementationOf(ee, impl);
+                
+                if (eeImpl == null) {
+                    if (implTypes.asSuper((Type)implType, (Symbol)ee.getEnclosingElement()) != null) {
                         undef.add(ee);
+                    }
+                } else if (impl != element && implTypes.asSuper((Type)implType, (Symbol)ee.getEnclosingElement()) != null) {
+                    if (eeImpl == ee) {
+                        undef.add(ee);
+                    } else if (includeDefaults && eeImpl.getModifiers().contains(Modifier.DEFAULT)) {
+                        undef.add((ExecutableElement)eeImpl);
+                    }
                 }
             }
         }
         for (TypeMirror t : types.directSupertypes(element.asType())) {
-            for (ExecutableElement ee : findUnimplementedMethods(impl, (TypeElement) ((DeclaredType) t).asElement())) {
+            for (ExecutableElement ee : findUnimplementedMethods(impl, (TypeElement) ((DeclaredType) t).asElement(), includeDefaults)) {
                 //check if "the same" method has already been added:
                 boolean exists = false;
                 ExecutableType eeType = (ExecutableType)types.asMemberOf(implType, ee);
@@ -813,6 +856,7 @@ public final class ElementUtilities {
                         if (types.isSubsignature(existingType, eeType)) {
                             TypeMirror existingReturnType = existingType.getReturnType();
                             TypeMirror eeReturnType = eeType.getReturnType();
+                            MethodSymbol msExisting = ((MethodSymbol)existing);
                             if (!types.isSubtype(existingReturnType, eeReturnType)) {
                                 if (types.isSubtype(eeReturnType, existingReturnType)) {
                                     undef.remove(existing);
@@ -822,12 +866,15 @@ public final class ElementUtilities {
                                     DeclaredType subType = env != null ? findCommonSubtype((DeclaredType)existingReturnType, (DeclaredType)eeReturnType, env) : null;
                                     if (subType != null) {
                                         undef.remove(existing);
-                                        MethodSymbol ms = ((MethodSymbol)existing).clone((Symbol)impl);
+                                        MethodSymbol ms = msExisting.clone((Symbol)impl);
                                         Type mt = implTypes.createMethodTypeWithReturn(ms.type, (Type)subType);
                                         ms.type = mt;
                                         undef.add(ms);
                                     }
                                 }
+                            } else if (!msExisting.overrides((MethodSymbol)ee, (TypeSymbol)impl, implTypes, true)) {
+                                // 
+                                break;
                             }
                             exists = true;
                             break;
@@ -836,6 +883,15 @@ public final class ElementUtilities {
                 }
                 if (!exists) {
                     undef.add(ee);
+                }
+            }
+        }
+        // if not defaults, prune the defaults out:
+        if (!includeDefaults && element.getKind() == ElementKind.INTERFACE) {
+            for (Iterator<ExecutableElement> it = undef.iterator(); it.hasNext();) {
+                ExecutableElement ee = it.next();
+                if (ee.getModifiers().contains(Modifier.DEFAULT)) {
+                    it.remove();
                 }
             }
         }
