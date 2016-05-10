@@ -3928,7 +3928,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         state().isRunning = false;
 
         // detect first stop (in _start or main)
-        if (firstBreakpointId != null && "breakpoint-hit".equals(results.getConstValue("reason"))) { // NOI18N
+        if (firstBreakpointId != null && results != null && "breakpoint-hit".equals(results.getConstValue("reason"))) { // NOI18N
             if (ATTACH_ID.equals(firstBreakpointId)) {
                 attachDone();
                 return;
@@ -3949,7 +3949,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         //detect silent stop
         if (gdb.isSignalled()) {
-            if ("signal-received".equals(results.getConstValue("reason"))) { //NOI18N
+            if (results != null && "signal-received".equals(results.getConstValue("reason"))) { //NOI18N
                 MIValue signalValue = results.valueOf("signal-name"); //NOI18N
                 if (signalValue != null) {
                     String signal = signalValue.asConst().value();
@@ -3981,7 +3981,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 }
             }
         }
-        MIValue threadIdValue = results.valueOf("thread-id"); // NOI18N
+        MIValue threadIdValue = (results == null) ? null : results.valueOf("thread-id"); // NOI18N
         if (threadIdValue != null) {    // exited case should be omitted
             currentThreadId = threadIdValue.asConst().value();
         }
