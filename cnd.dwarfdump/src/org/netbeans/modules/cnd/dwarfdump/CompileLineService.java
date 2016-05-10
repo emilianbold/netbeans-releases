@@ -236,7 +236,11 @@ public class CompileLineService {
                 continue;
             }
             if (line.startsWith(MAIN_LINE)) {
-                lineNumber = Integer.parseInt(removeQuotesAndComma(line.substring(MAIN_LINE.length())));
+                try {
+                    lineNumber = Integer.parseInt(removeQuotesAndComma(line.substring(MAIN_LINE.length())));
+                } catch (NumberFormatException ex) {
+                    ex.printStackTrace(System.err);
+                }
                 continue;
             }
             if (line.startsWith(DWARF_DUMP)) {

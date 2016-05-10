@@ -33,9 +33,6 @@ import org.netbeans.modules.cnd.debugger.gdb.mi.MITList;
 import org.netbeans.modules.cnd.debugger.gdb.mi.MITListItem;
 import org.netbeans.modules.cnd.debugger.gdb.mi.MIUserInteraction;
 import org.netbeans.modules.cnd.debugger.gdb.mi.MIValue;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
 import org.netbeans.modules.cnd.otool.debugger.api.Executor;
 import org.netbeans.modules.cnd.otool.debugger.api.OtoolNativeFrame;
 import org.netbeans.modules.cnd.otool.debugger.api.OtoolNativeBreakpoint;
@@ -45,10 +42,9 @@ import org.netbeans.modules.cnd.otool.debugger.api.OtoolNativeThread;
 import org.netbeans.modules.cnd.otool.debugger.api.SourceInfo;
 import org.netbeans.modules.cnd.otool.debugger.api.OtoolNativeVariable;
 import org.netbeans.modules.cnd.otool.debugger.api.OtoolDebuggerManagerAdapterImpl;
+import org.netbeans.modules.cnd.otool.debugger.api.breakpoint.OtoolLineBreakpoint;
 import org.netbeans.modules.cnd.otool.debugger.api.io.IOPack;
 import org.netbeans.modules.cnd.otool.debugger.gdb.providers.OtoolGdbEngineProvider;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -82,6 +78,20 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
     static final Logger LOG = Logger.getLogger(OtoolGdbDebugger.class.toString());
     // startup parameters
     private Executor executor;
+    
+    
+    public static class BreakpointList extends ArrayList<OtoolLineBreakpoint> {
+
+        public OtoolLineBreakpoint getBptByLocation(String url, int lineNumber) {
+
+            for (OtoolLineBreakpoint bpt : this) {
+                if (bpt.getUrl().equals(url) && bpt.getLine() == lineNumber) {
+                    return bpt;
+                }
+            }
+            return null;
+        }
+    }    
 
 //    /*package*/ GdbDebugger(Target t, NotificationListener listener) {
 //        super(t, listener);
@@ -203,8 +213,8 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
         setExecutable(getNDI().getTarget());
         Breakpoint[] brs = DebuggerManager.getDebuggerManager().getBreakpoints();
         for (Breakpoint br : brs) {
-            if (br instanceof OtoolNativeBreakpoint) {
-                insertBreakpoint(((OtoolNativeBreakpoint) br).getUrl(), ((OtoolNativeBreakpoint) br).getLine());
+            if (br instanceof OtoolLineBreakpoint) {
+                insertBreakpoint(((OtoolLineBreakpoint) br).getUrl(), ((OtoolLineBreakpoint) br).getLine());
             }
         }
         //   insertTemporaryBreakpoint("main");
@@ -813,7 +823,7 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
         return retVal;
     }
 
-    private OtoolNativeBreakpoint getBreakpointFromRecord(MIRecord record) {
+    private OtoolLineBreakpoint getBreakpointFromRecord(MIRecord record) {
         MITList breakpointresults = record.results();
         MITList breakpoint = breakpointresults.valueOf("bkpt").asList(); // NOI18N
         final String numberValue = breakpoint.getConstValue("number"); // NOI18N
@@ -822,7 +832,7 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
         if (numberValue.isEmpty() || fileName.isEmpty() || line.isEmpty()) {
             return null;
         }
-        return new OtoolNativeBreakpoint(Integer.parseInt(numberValue), fileName, Integer.parseInt(line));
+        return new OtoolLineBreakpoint(Integer.parseInt(numberValue), fileName, Integer.parseInt(line));
     }
 
     private void insertTemporaryBreakpoint(String funcOrLine) {
@@ -907,7 +917,7 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
 
             @Override
             protected void onDone(MIRecord record) {
-                OtoolNativeBreakpoint bpt = getBreakpointFromRecord(record);
+                OtoolLineBreakpoint bpt = getBreakpointFromRecord(record);
                 if (bpt == null) {
                     System.out.println("Something bad happened, no breakpoint added"); // NOI18N
                     return;
@@ -929,7 +939,7 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
 
     public void deleteBreakpoint(final OtoolNativeBreakpoint bpt) {     //FIXME maybe file,line
         String mi_command = "-break-delete "; // NOI18N
-        mi_command += bpt.getNumber();
+        mi_command += bpt.getId();
 
         MICommand cmd = new MiCommandImpl(mi_command) {
 
@@ -1033,8 +1043,8 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
     }
 
     @Override
-    public List<OtoolNativeBreakpoint> getBreakpoints() {
-        return breakpoints;
+    public List<? extends OtoolNativeBreakpoint> getBreakpoints() {
+        return new ArrayList<>(breakpoints);
     }
 
     @Override
@@ -1061,7 +1071,7 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
         return new PropertyChangeEvent(this, PROP_STATE, new Integer(o), new Integer(state));
     }
 
-    @Override
+     @Override
     public void setState(int state) {
         if (state == STATE_RUNNING) {
             List old;
@@ -1086,6 +1096,12 @@ public class OtoolGdbDebugger extends OtoolNativeDebugger<GdbDebuggerInfo> {
             firePropertyChange(evt);
         }
     }
+
+    @Override
+    public boolean isConnected() {
+        return this.myMIProxy != null && this.state != STATE_DISCONNECTED & !postedKillEngine && !postedKill;
+    }
+   
 
     static class MiCommandImpl extends MICommand {
 

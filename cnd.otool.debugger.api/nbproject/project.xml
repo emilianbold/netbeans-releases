@@ -115,11 +115,12 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.cnd.otool.debugger</friend>               
-                <friend>org.netbeans.modules.cnd.otool.debugger.dbx</friend>                
+                <friend>org.netbeans.modules.cnd.otool.debugger</friend>
+                <friend>org.netbeans.modules.cnd.otool.debugger.dbx</friend>
                 <friend>org.netbeans.modules.cnd.otool.debugger.gdb</friend>
                 <package>org.netbeans.modules.cnd.otool.debugger.api</package>
                 <package>org.netbeans.modules.cnd.otool.debugger.api.actions</package>
+                <package>org.netbeans.modules.cnd.otool.debugger.api.breakpoint</package>
                 <package>org.netbeans.modules.cnd.otool.debugger.api.io</package>
                 <package>org.netbeans.modules.cnd.otool.debugger.api.remote</package>
                 <package>org.netbeans.modules.cnd.otool.debugger.spi</package>
