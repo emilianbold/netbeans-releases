@@ -148,9 +148,9 @@ public class RfsRemoteControllerDeathTestCase extends RemoteTestBase {
         //printf("ps -ef | grep %s OUT:\n%s\n", rcPath, pgrepRes.output);
         //printf("ps -ef | grep %s ERR:\n%s\n", rcPath, pgrepRes.error);
         //printf("ps -ef | grep %s RC: %d\n", rcPath, pgrepRes.exitCode);
-        if (pgrepRes.output.contains(rcPath)) {
+        if (pgrepRes.getOutputString().contains(rcPath)) {
             boolean found = false;
-            for (String line : pgrepRes.output.split("\n")) {
+            for (String line : pgrepRes.getOutputString().split("\n")) {
                 String[] parts = line.split(" +");
                 if (parts.length > 1 && parts[1].equals(Integer.toString(pid))) {
                     found = true;

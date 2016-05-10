@@ -1089,7 +1089,7 @@ public abstract class CCCCompiler extends AbstractCompiler {
         ProcessUtils.ExitStatus execute = ProcessUtils.execute(execEnv, compilerPath, argsList.toArray(new String[argsList.size()]));
         // GNU 4.9.2 returns exit code 1
         //if (execute.isOK()) {
-            discoverFlags(execute.output, options, undefinedAlternatives, isGcc);
+            discoverFlags(execute.getOutputString(), options, undefinedAlternatives, isGcc);
         //}
     }
 

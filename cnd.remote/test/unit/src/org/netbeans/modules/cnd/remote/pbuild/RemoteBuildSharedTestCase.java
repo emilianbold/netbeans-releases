@@ -124,7 +124,7 @@ public class RemoteBuildSharedTestCase extends RemoteBuildTestBase {
             ExitStatus rc = ProcessUtils.execute(ExecutionEnvironmentFactory.getLocal(), "/usr/sbin/exportfs");
             if (rc.isOK()) {
                 List<String> res = new ArrayList<>();
-                String[] lines = rc.output.split("\n");
+                String[] lines = rc.getOutputString().split("\n");
                 Pattern pattern = Pattern.compile("\t+| +"); // NOI18N
                 for (String line : lines) {
                     String[] parts = pattern.split(line);

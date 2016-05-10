@@ -349,7 +349,7 @@ public abstract class IOProxy {
                     String name = tmpDir + '/' + FILENAME_PREFIX + "$$" + FILENAME_EXTENSION; // NOI18N
                     ExitStatus status = ProcessUtils.execute(execEnv, "sh", "-c", "mkfifo " + name + ";echo " + name); //NOI18N
                     if (status.isOK()) {
-                        return status.output;
+                        return status.getOutputString();
                     }
                     return null;
                 }

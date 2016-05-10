@@ -1045,8 +1045,8 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                                      );
         if (TRACE_REMOTE_CREATION) {
             logger.log(Level.INFO, "#exitCode={0}", execute.exitCode); // NOI18N
-            logger.log(Level.INFO, execute.error);
-            logger.log(Level.INFO, execute.output);
+            logger.log(Level.INFO, execute.getErrorString());
+            logger.log(Level.INFO, execute.getOutputString());
         }
         if (!execute.isOK()) {
             // probably java does not found an
@@ -1071,8 +1071,8 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                                      );
                 if (TRACE_REMOTE_CREATION) {
                     logger.log(Level.INFO, "#exitCode={0}", execute.exitCode); // NOI18N
-                    logger.log(Level.INFO, execute.error);
-                    logger.log(Level.INFO, execute.output);
+                    logger.log(Level.INFO, execute.getErrorString());
+                    logger.log(Level.INFO, execute.getOutputString());
                 }
             }
         }

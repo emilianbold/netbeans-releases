@@ -84,7 +84,7 @@ public abstract class HostMappingProviderUnixAbstract implements HostMappingProv
         if (hostName != null) {
             ProcessUtils.ExitStatus exit = ProcessUtils.execute(execEnv, getShareCommand());
             if (exit.isOK()) { //NOI18N
-                List<String> paths = parseOutput(execEnv, new StringReader(exit.output));
+                List<String> paths = parseOutput(execEnv, new StringReader(exit.getOutputString()));
                 for (String path : paths) {
                     log.log(Level.FINE, "Path {0}", path);
                     assert path != null && path.length() > 0 && path.charAt(0) == '/';

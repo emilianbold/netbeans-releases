@@ -160,7 +160,7 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
                     System.err.printf("Error downloading remote project content\n");
                 }
             } else {
-                System.err.printf("Can not download remote project: rc=%d err=%s\n", res.exitCode, res.error);
+                System.err.printf("Can not download remote project: rc=%d err=%s\n", res.exitCode, res.getErrorString());
             }            
             throw ex;
         }

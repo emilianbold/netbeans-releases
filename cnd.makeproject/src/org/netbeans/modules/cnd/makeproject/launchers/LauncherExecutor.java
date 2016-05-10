@@ -76,9 +76,9 @@ public final class LauncherExecutor {
                     conf.getFileSystemHost()).setExecutable(exec).setArguments(args);
             final ProcessUtils.ExitStatus status = ProcessUtils.execute(builder);
             if (status.isOK()) {
-                value = status.output;
+                value = status.getOutputString();
             } else {
-                LOG.info(status.error);
+                LOG.info(status.getErrorString());
             }
         } else {
             value = conf.expandMacros(value);

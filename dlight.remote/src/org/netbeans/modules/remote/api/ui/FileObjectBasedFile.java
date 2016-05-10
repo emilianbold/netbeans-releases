@@ -445,7 +445,7 @@ public final class FileObjectBasedFile extends File {
                 ExitStatus result = ProcessUtils.execute(execEnv, "mv", sourceDir, destDir); // NOI18N
 
                 if (!result.isOK() && error != null) {
-                    error.write(result.error);
+                    error.write(result.getErrorString());
                     error.flush();
             }
 

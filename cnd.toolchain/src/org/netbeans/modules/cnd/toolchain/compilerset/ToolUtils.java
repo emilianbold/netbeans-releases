@@ -633,13 +633,13 @@ public final class ToolUtils {
         ExitStatus status = ProcessUtils.executeInDir(path, ExecutionEnvironmentFactory.getLocal(), command, args.toArray(new String[args.size()]));
         StringBuilder buf = new StringBuilder();
         //if (status.isOK()){
-        if (status.output != null) {
-            buf.append(status.output);
+        if (status.getOutputString() != null) {
+            buf.append(status.getOutputString());
         }
         buf.append('\n');
         if (bothStreams) {
-            if (status.error != null) {
-                buf.append(status.error);
+            if (status.getErrorString() != null) {
+                buf.append(status.getErrorString());
             }
         }
         commandCache.put(command+" "+flags, buf.toString()); // NOI18N

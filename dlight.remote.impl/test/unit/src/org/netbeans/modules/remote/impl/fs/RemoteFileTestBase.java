@@ -194,14 +194,14 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
 
     protected static String execute(ExecutionEnvironment env, String command, String... args) {
         ProcessUtils.ExitStatus res = ProcessUtils.execute(env, command, args);
-        assertEquals(command + ' ' + args + " at " + env.getDisplayName() + " failed: " + res.error, 0, res.exitCode);
-        return res.output;
+        assertEquals(command + ' ' + args + " at " + env.getDisplayName() + " failed: " + res.getErrorString(), 0, res.exitCode);
+        return res.getOutputString();
     }
 
     protected static String executeInDir(String dir, ExecutionEnvironment env, String command, String... args) {
         ProcessUtils.ExitStatus res = ProcessUtils.executeInDir(dir, env, command, args);
-        assertEquals(command + ' ' + args + " at " + env.getDisplayName() + " failed: " + res.error, 0, res.exitCode);
-        return res.output;
+        assertEquals(command + ' ' + args + " at " + env.getDisplayName() + " failed: " + res.getErrorString(), 0, res.exitCode);
+        return res.getOutputString();
     }
     
     protected String executeInDir(String dir, String command, String... args) {
@@ -228,7 +228,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
             }
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "ls", "-ld", absPath);
             System.err.printf("Null file object for %s:%s\n", execEnv, absPath);
-            System.err.printf("ls -ld %s\nrc=%d\n%s\n%s", absPath, res.exitCode, res.output, res.error);
+            System.err.printf("ls -ld %s\nrc=%d\n%s\n%s", absPath, res.exitCode, res.getOutputString(), res.getErrorString());
             String dirName = PathUtilities.getDirName(absPath);
             String baseName = PathUtilities.getBaseName(absPath);
             RemoteFileObject parentFO = rootFO.getFileObject(dirName);
@@ -255,9 +255,9 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
                 }
             }
             if (res.isOK()) {
-                message.append("; ls reports that file exists:\n").append(res.output);
+                message.append("; ls reports that file exists:\n").append(res.getOutputString());
             } else {
-                message.append("; ls reports that file does NOT exist:\n").append(res.error);
+                message.append("; ls reports that file does NOT exist:\n").append(res.getErrorString());
             }
             assertTrue(message.toString(), false);
         }

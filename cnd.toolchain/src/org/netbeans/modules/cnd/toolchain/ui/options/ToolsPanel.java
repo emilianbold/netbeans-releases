@@ -1160,7 +1160,7 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 if (uname_exe.exists()) {
                     ProcessUtils.ExitStatus exitStatus = ProcessUtils.execute(ExecutionEnvironmentFactory.getLocal(), uname_exe.getPath(), "-m"); // NOI18N
                     if (exitStatus.isOK()) {
-                        cygwinBitness = exitStatus.output.trim();
+                        cygwinBitness = exitStatus.getOutputString().trim();
                     }
                 }
 

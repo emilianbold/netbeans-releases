@@ -73,7 +73,7 @@ public class Project_65_Test extends CndBaseTestCase {
         if (scriptFile.exists()) {
             ExitStatus res = ProcessUtils.executeInDir(getTestCaseDataDir().getAbsolutePath(), 
                     ExecutionEnvironmentFactory.getLocal(), "/bin/sh", scriptFile.getAbsolutePath());
-            assertTrue(res.error, res.isOK());
+            assertTrue(res.getErrorString(), res.isOK());
         }        
         FileObject projectDirFO = FileUtil.toFileObject(FileUtil.normalizeFile(getDataFile(projectName)));
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);

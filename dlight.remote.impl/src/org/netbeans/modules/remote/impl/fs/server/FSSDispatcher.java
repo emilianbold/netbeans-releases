@@ -495,7 +495,7 @@ import org.openide.util.RequestProcessor;
     private static boolean isFreeBSD(ExecutionEnvironment execEnv) {
         ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "uname"); // NOI18N
         if (res.isOK()) {
-            if (res.output.equals("FreeBSD")) { // NOI18N
+            if (res.getOutputString().equals("FreeBSD")) { // NOI18N
                 return true;
             }
         }
@@ -903,7 +903,7 @@ import org.openide.util.RequestProcessor;
                 if (hostInfo != null && hostInfo.getOSFamily() == HostInfo.OSFamily.SUNOS) {
                     ProcessUtils.ExitStatus res = ProcessUtils.execute(env, "pstack", "" + pid); // NOI18N
                     if (res.isOK()) {
-                        System.err.println(res.output);
+                        System.err.println(res.getOutputString());
                     }
                 }
             }
