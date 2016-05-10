@@ -45,9 +45,10 @@ package org.netbeans.modules.java.hints.errors;
 import com.sun.source.util.TreePath;
 import java.util.List;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.errors.ImplementAllAbstractMethods.FixImpl;
-import org.netbeans.modules.java.hints.errors.ImplementAllAbstractMethods.ImplementOnEnumValues;
+import org.netbeans.modules.java.hints.errors.ImplementAllAbstractMethods.DebugFix;
+import org.netbeans.modules.java.hints.errors.ImplementAllAbstractMethods.ImplementOnEnumValues2;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
+import org.netbeans.modules.java.hints.spiimpl.JavaFixImpl;
 import org.netbeans.spi.editor.hints.Fix;
 
 /**Legacy tests are in ErrorHintsTest.
@@ -107,6 +108,17 @@ public class ImplementAllAbstractMethodsTest extends ErrorHintsTestBase {
                        "     public void run() {\n" +
                        "         throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates.\n" +
                        "     }\n" +
+                       "}\n").replaceAll("[ \t\n]+", " "));
+    }
+
+    public void test204252c() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "final cl|ass Test implements Runnable {\n" +
+                       "}\n",
+                       "MA:Test",
+                       ("package test;\n" +
+                       "abstract class Test implements Runnable {\n" +
                        "}\n").replaceAll("[ \t\n]+", " "));
     }
 
@@ -189,11 +201,15 @@ public class ImplementAllAbstractMethodsTest extends ErrorHintsTestBase {
 
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
-        if (f instanceof FixImpl) {
-            return ((FixImpl) f).toDebugString();
-        } else if (f instanceof ImplementOnEnumValues) {
-            return "IOEV";
+        Object o = f;
+        if (o instanceof JavaFixImpl) {
+            o = ((JavaFixImpl)f).jf;
         }
+        if (o instanceof DebugFix) {
+            return ((DebugFix) o).toDebugString();
+        } else if (o instanceof ImplementOnEnumValues2) {
+            return "IOEV";
+        } else 
         return super.toDebugString(info, f);
     }
 

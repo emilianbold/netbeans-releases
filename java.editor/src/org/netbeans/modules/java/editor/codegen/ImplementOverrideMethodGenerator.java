@@ -49,20 +49,30 @@ import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.RunnableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
 
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
@@ -110,21 +120,9 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
             }
             ElementUtilities eu = controller.getElementUtilities();
             if (typeElement.getKind().isClass() || typeElement.getKind().isInterface() && SourceVersion.RELEASE_8.compareTo(controller.getSourceVersion()) <= 0) {
-                Map<Element, List<ElementNode.Description>> map = new LinkedHashMap<>();
-                for (ExecutableElement method : eu.findUnimplementedMethods(typeElement)) {
-                    List<ElementNode.Description> descriptions = map.get(method.getEnclosingElement());
-                    if (descriptions == null) {
-                        descriptions = new ArrayList<>();
-                        map.put(method.getEnclosingElement(), descriptions);
-                    }
-                    descriptions.add(ElementNode.Description.create(controller, method, null, true, false));
-                }
-                List<ElementNode.Description> implementDescriptions = new ArrayList<>();
-                for (Map.Entry<Element, List<ElementNode.Description>> entry : map.entrySet()) {
-                    implementDescriptions.add(ElementNode.Description.create(controller, entry.getKey(), entry.getValue(), false, false));
-                }
-                if (!implementDescriptions.isEmpty()) {
-                    ret.add(new ImplementOverrideMethodGenerator(component, ElementHandle.create(typeElement), ElementNode.Description.create(implementDescriptions), true));
+                ElementNode.Description root = getImplementDescriptions(controller, typeElement);
+                if (root != null) {
+                    ret.add(new ImplementOverrideMethodGenerator(component, ElementHandle.create(typeElement), root, true));
                 }
             }
             if (typeElement.getKind().isClass() || typeElement.getKind().isInterface()) {
@@ -153,6 +151,99 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
             return ret;
         }
     }
+    
+    private static final List<ElementHandle<? extends Element>> NOT_READY = new ArrayList<>();
+    
+    /**
+     * Returns callback which fills the list of elements to implement. The callback will execute in Swing thread upon query to the {@link Future#get()}.
+     * @param controller
+     * @param typeElement
+     * @return 
+     */
+    public static Future< List<ElementHandle<? extends Element>> > selectMethodsToImplement(CompilationInfo controller, TypeElement typeElement) {
+        final ElementNode.Description root = getImplementDescriptions(controller, typeElement);
+        if (root == null) {
+            return null;
+        }
+        return new RunnableFuture< List<ElementHandle<? extends Element>> >() {
+            private boolean cancelled;
+            private  List<ElementHandle<? extends Element>>  result = NOT_READY;
+            
+            @Override
+            public synchronized boolean cancel(boolean mayInterruptIfRunning) {
+                cancelled = true;
+                return true;
+            }
+
+            @Override
+            public synchronized boolean isCancelled() {
+                return cancelled;
+            }
+
+            @Override
+            public synchronized boolean isDone() {
+                return cancelled || result != NOT_READY;
+            }
+
+            @Override
+            public  List<ElementHandle<? extends Element>>  get() throws InterruptedException, ExecutionException {
+                boolean ok = true;
+                synchronized (this) {
+                    if (isDone()) {
+                        return result == NOT_READY ? null : result;
+                    }
+                }
+                if (SwingUtilities.isEventDispatchThread()) {
+                    run();
+                    return result;
+                } else {
+                    try {
+                        SwingUtilities.invokeAndWait(this);
+                    } catch (InvocationTargetException ex) {
+                        ok = false;
+                    }
+                }
+                synchronized (this) {
+                    if (!ok) {
+                        cancelled = true;
+                        return null;
+                    }
+                    return result;
+                }
+            }
+            
+            public void run() {
+                List<ElementHandle<? extends Element>> tmp = displaySelectionDialog(root, true);
+                synchronized (this) {
+                    this.result = tmp;
+                }
+            }
+
+            @Override
+            public  List<ElementHandle<? extends Element>>  get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                return get(); // sorry, no timeout
+            }
+        };
+    }
+    
+    private static ElementNode.Description getImplementDescriptions(CompilationInfo controller, TypeElement typeElement) {
+        ElementUtilities eu = controller.getElementUtilities();
+        Map<Element, List<ElementNode.Description>> map = new LinkedHashMap<>();
+        for (ExecutableElement method : eu.findUnimplementedMethods(typeElement, true)) {
+            List<ElementNode.Description> descriptions = map.get(method.getEnclosingElement());
+            if (descriptions == null) {
+                descriptions = new ArrayList<>();
+                map.put(method.getEnclosingElement(), descriptions);
+            }
+            boolean mustImplement = !method.getModifiers().contains(Modifier.DEFAULT);
+            descriptions.add(ElementNode.Description.create(controller, method, null, true, mustImplement));
+        }
+        List<ElementNode.Description> implementDescriptions = new ArrayList<>();
+        for (Map.Entry<Element, List<ElementNode.Description>> entry : map.entrySet()) {
+            implementDescriptions.add(ElementNode.Description.create(controller, entry.getKey(), entry.getValue(), false, false));
+        }
+        return  implementDescriptions.isEmpty() ? null : ElementNode.Description.create(implementDescriptions);
+    }
 
     private final JTextComponent component;
     private final ElementHandle<TypeElement> handle;
@@ -171,11 +262,9 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
     public String getDisplayName() {
         return org.openide.util.NbBundle.getMessage(ImplementOverrideMethodGenerator.class, isImplement ? "LBL_implement_method" : "LBL_override_method"); //NOI18N
     }
-
-    @Override
-    public void invoke() {
-        final ImplementOverridePanel panel = new ImplementOverridePanel(description, isImplement);
-        final int caretOffset = component.getCaretPosition();
+    
+    private static List<ElementHandle<? extends Element>> displaySelectionDialog(ElementNode.Description root, boolean isImplement) {
+        final ImplementOverridePanel panel = new ImplementOverridePanel(root, isImplement);
         final DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, 
                 NbBundle.getMessage(ConstructorGenerator.class, isImplement ?  "LBL_generate_implement" : "LBL_generate_override")); //NOI18N
         panel.addPropertyChangeListener(new PropertyChangeListener() {
@@ -187,7 +276,17 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
         });
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         dialog.setVisible(true);
-        if (dialogDescriptor.getValue() == dialogDescriptor.getDefaultValue()) {
+        if (dialogDescriptor.getValue() != dialogDescriptor.getDefaultValue()) {
+            return null;
+        }
+        return panel.getSelectedMethods();
+    }
+
+    @Override
+    public void invoke() {
+        final int caretOffset = component.getCaretPosition();
+        final List<ElementHandle<? extends Element>> methodList = displaySelectionDialog(description, isImplement);
+        if (methodList != null) {
             JavaSource js = JavaSource.forDocument(component.getDocument());
             if (js != null) {
                 try {
@@ -203,7 +302,7 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
                                 org.netbeans.editor.Utilities.setStatusBoldText(component, message);
                             } else {
                                 ArrayList<ExecutableElement> methodElements = new ArrayList<>();
-                                for (ElementHandle<? extends Element> elementHandle : panel.getSelectedMethods()) {
+                                for (ElementHandle<? extends Element> elementHandle : methodList) {
                                     ExecutableElement methodElement = (ExecutableElement)elementHandle.resolve(copy);
                                     if (methodElement != null) {
                                         methodElements.add(methodElement);

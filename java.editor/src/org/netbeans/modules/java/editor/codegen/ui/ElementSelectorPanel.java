@@ -45,14 +45,24 @@
 package org.netbeans.modules.java.editor.codegen.ui;
 
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Deque;
 import java.util.List;
 import javax.lang.model.element.Element;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.netbeans.api.java.source.ElementHandle;
+import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -63,8 +73,16 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
     private ExplorerManager manager = new ExplorerManager();
     private CheckTreeView elementView;
     
+    @NbBundle.Messages({
+        "BTN_SelectAll=Select &All",
+        "BTN_SelectNone=Select &None",
+    })
     /** Creates new form ElementSelectorPanel */
     public ElementSelectorPanel(ElementNode.Description elementDescription, boolean singleSelection ) {        
+        this(elementDescription, singleSelection, false);
+    }
+    
+    public ElementSelectorPanel(ElementNode.Description elementDescription, boolean singleSelection, boolean enableButtons ) {      
         setLayout(new BorderLayout());
         elementView = new CheckTreeView();
         elementView.setRootVisible(false);
@@ -73,13 +91,75 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
         //make sure that the first element is pre-selected
         Node root = manager.getRootContext();
         Node[] children = root.getChildren().getNodes();
-        if( null != children && children.length > 0 ) {
-            try         {
+        if( null != children && children.length > 0 && !elementDescription.hasSelection(true)) {
+            try {
                 manager.setSelectedNodes(new org.openide.nodes.Node[]{children[0]});
             } catch (PropertyVetoException ex) {
                 //ignore
             }
         }
+        if (!singleSelection && hasMultipleSelectables(elementDescription)) {
+            final JButton selectAll = new JButton();
+            final JButton selectNone = new JButton();
+            Mnemonics.setLocalizedText(selectAll, Bundle.BTN_SelectAll());
+            Mnemonics.setLocalizedText(selectNone, Bundle.BTN_SelectNone());
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            buttonPanel.add(selectAll);
+            buttonPanel.add(selectNone);
+
+            add(buttonPanel, BorderLayout.SOUTH);
+            
+            ActionListener al = new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    selectAllNodes(e.getSource() == selectAll);
+                }
+            };
+            selectAll.addActionListener(al);
+            selectNone.addActionListener(al);
+        }
+    }
+    
+    private boolean hasMultipleSelectables(ElementNode.Description elementDescription) {
+        Deque<ElementNode.Description> toProcess = new ArrayDeque<>();
+        toProcess.add(elementDescription);
+        boolean selectableFound = false;
+        while (!toProcess.isEmpty()) {
+            ElementNode.Description d = toProcess.poll();
+            List<ElementNode.Description> subs = d.getSubs();
+            if (subs == null) {
+                if (d.isSelectable()) {
+                    if (selectableFound) {
+                        return true;
+                    }
+                    selectableFound = true;
+                }
+            } else {            
+                toProcess.addAll(subs);
+            }
+        }
+        return false;
+    }
+    
+    private void selectAllNodes(boolean select) {
+        boolean oldScroll = elementView.getScrollsOnExpand();
+        elementView.setScrollsOnExpand( false );
+        Node root = getExplorerManager().getRootContext();
+        Deque<Node> toProcess = new ArrayDeque<>(Arrays.asList(root.getChildren().getNodes(true)));
+        while (!toProcess.isEmpty()) {
+            Node n = toProcess.poll();
+            ElementNode.Description desc = getDescription(n);
+            if (desc == null) {
+                continue;
+            }
+            if (desc.hasSelectableSubs()) {
+                elementView.expandNode(n);
+                toProcess.addAll(Arrays.asList(n.getChildren().getNodes(true)));
+            } else if (desc.isSelectable()) {
+                desc.setSelected(select);
+            }
+        }
+        elementView.setScrollsOnExpand( oldScroll );
     }
     
     public List<ElementHandle<? extends Element>> getTreeSelectedElements() {
@@ -120,6 +200,10 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
         
     }
     
+    private static ElementNode.Description getDescription(Node n) {
+        return  n.getLookup().lookup(ElementNode.Description.class);
+    }
+    
     public void doInitialExpansion( int howMuch ) {
         
         Node root = getExplorerManager().getRootContext();
@@ -136,9 +220,7 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
         elementView.setScrollsOnExpand( false );
         
         for( int i = 0; subNodes != null && i < (howMuch == - 1 || howMuch > subNodes.length ? subNodes.length : howMuch ) ; i++ ) {                    
-            // elementView.expandNode2(subNodes[i]);
-            row ++;
-            elementView.expandRow(row);
+             elementView.expandNode(subNodes[i]);
             Node[] ssn = subNodes[i].getChildren().getNodes( true );
             row += ssn.length;
             if ( toSelect == null ) {                
@@ -146,6 +228,27 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
                     toSelect = ssn[0];
                 }                    
             }
+        }
+        Node toSelect2 = null;
+        // extend the expansion to all initially selected nodes
+        Deque<Node> toProcess = new ArrayDeque<>(Arrays.asList(subNodes));
+        while (!toProcess.isEmpty()) {
+            Node n = toProcess.poll();
+            ElementNode.Description desc = getDescription(n);
+            if (desc == null) {
+                continue;
+            }
+            if (desc.isSelected() && toSelect2 == null) {
+                // respect initial selection, if some is done
+                toSelect2 = n;
+            }
+            if (desc.hasSelection(false)) {
+                elementView.expandNode(n);
+                toProcess.addAll(Arrays.asList(n.getChildren().getNodes(true)));
+            }
+        }
+        if (toSelect2 != null) {
+            toSelect = toSelect2;
         }
         
         elementView.setScrollsOnExpand( oldScroll );

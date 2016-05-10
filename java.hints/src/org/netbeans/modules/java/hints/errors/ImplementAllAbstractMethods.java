@@ -57,37 +57,42 @@ import com.sun.source.util.TreePathScanner;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Future;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.tools.Diagnostic;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.editor.GuardedException;
-import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
+import org.netbeans.modules.java.editor.codegen.ImplementOverrideMethodGenerator;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.JavaFix;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -96,7 +101,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Lahoda
  */
-public final class ImplementAllAbstractMethods implements ErrorRule<Boolean>, OverrideErrorMessage<Boolean> {
+public final class ImplementAllAbstractMethods implements ErrorRule<Object>, OverrideErrorMessage<Object> {
 
     private static final String PREMATURE_EOF_CODE = "compiler.err.premature.eof"; // NOI18N
     
@@ -116,7 +121,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Boolean>, Ov
         "ERR_CannotOverrideAbstractMethods=Inherited abstract methods are not accessible and could not be implemented"
     })
     @Override
-    public String createMessage(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Boolean> data) {
+    public String createMessage(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Object> data) {
         TreePath path = deepTreePath(info, offset);
         Element e = info.getTrees().getElement(path);
         if (e == null || !e.getKind().isClass()) {
@@ -135,47 +140,115 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Boolean>, Ov
         if (e == null) {
             return null;
         }
-        List<? extends ExecutableElement> lee = info.getElementUtilities().findUnimplementedMethods((TypeElement)e);
+        Map<Tree, Object> d = (Map)data.getData();
+        if (d == null) {
+            data.setData(d = new HashMap<>());
+        }
+        List<? extends ExecutableElement> lee = info.getElementUtilities().findUnimplementedMethods((TypeElement)e, true);
         Scope s = info.getTrees().getScope(path);
+        boolean hasDefault = false;
         for (ExecutableElement ee : lee) {
             if (!info.getTrees().isAccessible(s, ee, (DeclaredType)e.asType())) {
-                data.setData(true);
+                // mark the diagnostic as processed; run() will not bother with analysis of the issue.
+                d.put(path.getLeaf(), true);
                 return Bundle.ERR_CannotOverrideAbstractMethods();
                 
             }
+            if (ee.getModifiers().contains(Modifier.DEFAULT)) {
+                hasDefault = true;
+            }
+        }
+        if (hasDefault) {
+            d.put(path.getLeaf(), e);
         }
         return null;
     }
     
-    public List<Fix> run(final CompilationInfo info, String diagnosticKey, final int offset, TreePath treePath, Data<Boolean> data) {
-        final List<Fix> result = new ArrayList<Fix>();
-        if (data != null && Boolean.TRUE == data.getData()) {
+    public List<Fix> run(final CompilationInfo info, String diagnosticKey, final int offset, TreePath treePath, Data<Object> data) {
+        TreePath path = deepTreePath(info, offset);
+        if (path == null) {
             return null;
         }
-        analyze(offset, info, new Performer() {
-            @Override
-            public void fixAllAbstractMethods(TreePath pathToModify, Tree toModify) {
-                result.add(new FixImpl(info.getJavaSource(), offset, null));
-            }
-            @Override
-            public void makeClassAbstract(TreePath pathToModify, String className) {
-                Tree toModify = pathToModify.getLeaf();
-                Element el = info.getTrees().getElement(pathToModify);
-                if (el == null) {
-                    return;
-                }
-                if (el.getKind() == ElementKind.ENUM) {
-                    result.add(new ImplementOnEnumValues(info.getJavaSource(), offset));
-                } else {
-                    result.add(new FixImpl(info.getJavaSource(), offset, className));
-                }
-            }
-            public void inaccessibleMethod(ExecutableElement ee) {
-                
-            }
-        });
+
+        Map<Tree, Object> holder = data == null ? null : (Map)data.getData();
+        Object saved = null;
+        if (holder != null) {
+            saved = holder.get(path.getLeaf());
+        }
+        if (Boolean.TRUE == saved) {
+            return null;
+        }
+        Element e = info.getTrees().getElement(path);
+        boolean isUsableElement = e != null && (e.getKind().isClass() || e.getKind().isInterface());
+        final Tree leaf = path.getLeaf();
         
-        return result;
+        List<Fix> fixes = new ArrayList<>();
+        if (TreeUtilities.CLASS_TREE_KINDS.contains(leaf.getKind())) {
+            CompilationUnitTree cut = info.getCompilationUnit();
+            // do not offer for class declarations without body
+            long start = info.getTrees().getSourcePositions().getStartPosition(cut, leaf);
+            long end = info.getTrees().getSourcePositions().getEndPosition(cut, leaf);
+            for (Diagnostic d : info.getDiagnostics()) {
+                long position = d.getPosition();
+                if (d.getCode().equals(PREMATURE_EOF_CODE) && position > start && position < end) {
+                    return null;
+                }
+            }
+        }
+        
+        if (!isUsableElement) {
+            //if the parent of path.getLeaf is an error, the situation probably is like:
+            //new Runnable {}
+            //(missing '()' for constructor)
+            //do not propose the hint in this case:
+            final boolean[] parentError = new boolean[] {false};
+            new TreePathScanner() {
+                @Override
+                public Object visitNewClass(NewClassTree nct, Object o) {
+                    if (leaf == nct) {
+                        parentError[0] = getCurrentPath().getParentPath().getLeaf().getKind() == Kind.ERRONEOUS;
+                    }
+                    return super.visitNewClass(nct, o);
+                }
+            }.scan(path.getParentPath(), null);
+            if (parentError[0]) {
+                // ignore
+                return null;
+            }
+        }
+        
+        TypeElement tel = (saved instanceof TypeElement) ? (TypeElement)saved : null;
+        
+        if (e == null) {
+            if (leaf.getKind() == Kind.NEW_CLASS) {
+                fixes.add(new ImplementAbstractMethodsFix(info, path, tel));
+            }
+        }
+        
+        X: if (isUsableElement) {
+            for (ExecutableElement ee : ElementFilter.methodsIn(e.getEnclosedElements())) {
+                if (ee.getModifiers().contains(Modifier.ABSTRACT)) {
+                    // make class abstract. In case of enums, suggest to implement the
+                    // abstract methods on all enum values.
+                    if (e.getKind() == ElementKind.ENUM) {
+                        // cannot make enum abstract, but can generate abstract methods skeleton
+                        // to all enum members
+                        fixes.add(new ImplementOnEnumValues2(info,  e));
+                        // avoid other possible fixes:
+                        break X;
+                    }
+                }
+            }
+            // offer to fix all abstract methods
+            
+            fixes.add(new ImplementAbstractMethodsFix(info, path, tel));
+            if (e.getKind() == ElementKind.CLASS && e.getSimpleName() != null && !e.getSimpleName().contentEquals("")) {
+                fixes.add(new MakeAbstractFix(info, path, e.getSimpleName().toString()).toEditorFix());
+            }
+        } else if (e != null && e.getKind() == ElementKind.ENUM_CONSTANT) {
+            fixes.add(new ImplementAbstractMethodsFix(info, path, tel));
+        }
+        return fixes;
     }
     
     public void cancel() {
@@ -194,14 +267,6 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Boolean>, Ov
         return NbBundle.getMessage(ImplementAllAbstractMethods.class, "DSC_Impl_Abstract_Methods"); // NOI18N
     }
     
-    private static interface Performer {
-
-        public void fixAllAbstractMethods(TreePath pathToModify, Tree toModify);
-        public void makeClassAbstract(TreePath toModify, String className);
-//        public void inaccessibleMethod(ExecutableElement ee);
-
-    }
-
     private static TreePath deepTreePath(CompilationInfo info, int offset) {
         TreePath basic = info.getTreeUtilities().pathFor(offset);
         TreePath plusOne = info.getTreeUtilities().pathFor(offset + 1);
@@ -213,180 +278,273 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Boolean>, Ov
         return basic;
     }
     
-    private static void analyze(int offset, CompilationInfo info, Performer performer) {
-        analyze(deepTreePath(info, offset), info, performer);
-    }
-    
-    private static void analyze(TreePath path, CompilationInfo info, Performer performer) {
-        Element e = info.getTrees().getElement(path);
-        boolean isUsableElement = e != null && (e.getKind().isClass() || e.getKind().isInterface());
-        final Tree leaf = path.getLeaf();
+    static abstract class ImplementFixBase implements Fix, Task<WorkingCopy>, DebugFix {
+        protected final JavaSource      source;
+        protected final TreePathHandle  handle;
+        protected final ElementHandle<TypeElement>  implementType;
         
-        if (isUsableElement) {
-            //#85806: do not propose implement all abstract methods when the current class contains abstract methods:
-            for (ExecutableElement ee : ElementFilter.methodsIn(e.getEnclosedElements())) {
-                if (ee.getModifiers().contains(Modifier.ABSTRACT)) {
-                    performer.makeClassAbstract(path, e.getSimpleName().toString());
-                    return;
+        protected TreePath  path;
+        private  boolean   commit;
+        protected WorkingCopy copy;
+        
+        private   int round;
+        private List<ElementHandle<? extends Element>> elementsToImplement;
+
+        protected ImplementFixBase(CompilationInfo info, TreePath p, TypeElement el) {
+            this.source = info.getJavaSource();
+            this.handle = TreePathHandle.create(p, info);
+            this.implementType = el == null ? null : ElementHandle.create(el);
+        }
+
+        protected ImplementFixBase(CompilationInfo info, Element p, TypeElement el) {
+            this.source = info.getJavaSource();
+            this.handle = TreePathHandle.create(p, info);
+            this.implementType = el == null ? null : ElementHandle.create(el);
+        }
+
+        @Override
+        public ChangeInfo implement() throws Exception {
+            if (implementType != null) {
+                final Future[] selector = { null };
+                source.runUserActionTask(new Task<CompilationController>() {
+                    @Override
+                    public void run(CompilationController ctrl) throws Exception {
+                        TypeElement tel = implementType.resolve(ctrl);
+                        selector[0] = ImplementOverrideMethodGenerator.selectMethodsToImplement(ctrl, tel);
+                    }
+                }, true);
+                if (selector[0] != null) {
+                    Future< List<ElementHandle<? extends Element>> > f = (Future< List<ElementHandle<? extends Element>> > )selector[0];
+                    elementsToImplement = f.get();
+                    if (elementsToImplement == null) {
+                        // cancelled.
+                        return null;
+                    }
                 }
+            }
+            // first round, generate curly braces after each member which does
+            // not have any
+            ModificationResult res = source.runModificationTask(this);
+            if (!commit) {
+                return null;
+            }
+            
+            commit = false;
+            round++;
+            res = source.runModificationTask(this);
+            if (commit) {
+                res.commit();
+            }
+            return null;
+        }
+        
+        protected abstract boolean executeRound(Element el, int round) throws Exception;
+
+        @Override
+        public void run(WorkingCopy parameter) throws Exception {
+            this.copy = parameter;
+            parameter.toPhase(Phase.RESOLVED);
+            path = handle.resolve(parameter);
+            if (path == null) {
+                return;
             }
 
+            Element el = copy.getTrees().getElement(path);
+            if (el == null) {
+                return;
+            }
+            commit = executeRound(el, round);
+        }
+        
+        protected boolean generateClassBody(TreePath p) throws Exception {
+            Element e = copy.getTrees().getElement(p);
+            boolean isUsableElement = e != null && (e.getKind().isClass() || e.getKind().isInterface());
+            if (isUsableElement) {
+                return true;
+            }
+            if (e.getKind() == ElementKind.ENUM_CONSTANT) {
+                VariableTree var = (VariableTree) p.getLeaf();
+                if (var.getInitializer() != null && var.getInitializer().getKind() == Kind.NEW_CLASS) {
+                    NewClassTree nct = (NewClassTree) var.getInitializer();
+                    if (nct.getClassBody() != null) {
+                        return true;
+                    }
+                }
+            }
+            return !generateClassBody2(copy, p);
+        }
+        
+        protected boolean generateImplementation(TreePath p) {
+            Tree leaf = p.getLeaf();
+            
             if (TreeUtilities.CLASS_TREE_KINDS.contains(leaf.getKind())) {
-                CompilationUnitTree cut = info.getCompilationUnit();
-                // do not offer for class declarations without body
-                long start = info.getTrees().getSourcePositions().getStartPosition(cut, leaf);
-                long end = info.getTrees().getSourcePositions().getEndPosition(cut, leaf);
-                for (Diagnostic d : info.getDiagnostics()) {
-                    long position = d.getPosition();
-                    if (d.getCode().equals(PREMATURE_EOF_CODE) && position > start && position < end) {
-                        return;
-                    }
+                generateAllAbstractMethodImplementations(copy, p, elementsToImplement);
+                return true;
+            }
+            Element e = copy.getTrees().getElement(p);
+            if (e != null && e.getKind() == ElementKind.ENUM_CONSTANT) {
+                VariableTree var = (VariableTree) leaf;
+                if (var.getInitializer() != null && var.getInitializer().getKind() == Kind.NEW_CLASS) {
+                    NewClassTree nct = (NewClassTree) var.getInitializer();
+                    assert nct.getClassBody() != null;
+                    TreePath enumInit = new TreePath(p, nct);
+                    TreePath toModify = new TreePath(enumInit, nct.getClassBody());
+                    generateAllAbstractMethodImplementations(copy, toModify, elementsToImplement);
+                    return true;
                 }
             }
-            
-            performer.fixAllAbstractMethods(path, leaf);
-            
-            if (e.getKind() == ElementKind.CLASS && e.getSimpleName() != null && !e.getSimpleName().contentEquals(""))
-                performer.makeClassAbstract(path, e.getSimpleName().toString());
-        } else if (leaf.getKind() == Kind.NEW_CLASS) {
-            //if the parent of path.getLeaf is an error, the situation probably is like:
-            //new Runnable {}
-            //(missing '()' for constructor)
-            //do not propose the hint in this case:
-            final boolean[] parentError = new boolean[] {false};
-            new TreePathScanner() {
-                @Override
-                public Object visitNewClass(NewClassTree nct, Object o) {
-                    if (leaf == nct) {
-                        parentError[0] = getCurrentPath().getParentPath().getLeaf().getKind() == Kind.ERRONEOUS;
-                    }
-                    return super.visitNewClass(nct, o);
-                }
-            }.scan(path.getParentPath(), null);
-            if (!parentError[0]) {
-                performer.fixAllAbstractMethods(path, leaf);
-            }
-        } else if (e != null && e.getKind() == ElementKind.ENUM_CONSTANT && leaf.getKind() == Kind.VARIABLE) {
-            VariableTree var = (VariableTree) leaf;
-            if (var.getInitializer() != null && var.getInitializer().getKind() == Kind.NEW_CLASS) {
-                NewClassTree nct = (NewClassTree) var.getInitializer();
-                TreePath toModify = new TreePath(path, var.getInitializer());
-                if (nct.getClassBody() != null) {
-                    performer.fixAllAbstractMethods(new TreePath(toModify, nct.getClassBody()), nct.getClassBody());
-                } else {
-                    performer.fixAllAbstractMethods(toModify, leaf);
-                }
-            }
+            return false;
         }
     }
-    
+
     /**
-     * Implements the abstract methods on each declared value of an enum, if not alredy implemented. The enum may not
-     * derive from any superclass, nor enum so anything abstract (or derived/not implemneted) in the enum type 
-     * must be implemented by individual values.
+     * Fix which implements the [missing] abstract methods on all enum's values. It does so
+     * in two phases: during the first, each of the enum values, which does not (yet) specify
+     * class body, gets curly braces. The source is then reparsed to get fresh trees.
+     * After that, method generation is applied on all enum values.
      */
     @NbBundle.Messages({
-        "LBL_FIX_Impl_Methods_Enum_Values=Implement abstract methods on all enum values"
+        "LBL_FIX_Impl_Methods_Enum_Values2=XImplement abstract methods on all enum values"
     })
-    static final class ImplementOnEnumValues implements Fix {
-        private final JavaSource js;
-        private final int offset;
+    static final class ImplementOnEnumValues2 extends ImplementFixBase {
 
-        public ImplementOnEnumValues(JavaSource js, int offset) {
-            this.js = js;
-            this.offset = offset;
+        public ImplementOnEnumValues2(CompilationInfo info, Element e) {
+            super(info, e, (TypeElement)e);
         }
 
         @Override
         public String getText() {
-            return Bundle.LBL_FIX_Impl_Methods_Enum_Values();
+            return Bundle.LBL_FIX_Impl_Methods_Enum_Values2();
         }
         
         @Override
-        public ChangeInfo implement() throws IOException {
-            final boolean[] repeat = new boolean[] { false };
-            final int[] offsetArr = {offset};
-            js.runModificationTask(new Task<WorkingCopy>() {
-
-                public void run(final WorkingCopy copy) throws IOException {
-                    copy.toPhase(Phase.RESOLVED);
-
-                    TreePath enumPath = deepTreePath(copy, offset);
-                    if (enumPath.getLeaf().getKind() != Tree.Kind.ENUM) {
-                        return;
-                    }
-                    Element el = copy.getTrees().getElement(enumPath);
-                    if (el == null) {
-                        // TODO: report to user
-                        return;
-                    }
-                    ArrayList<? extends Element> al = new ArrayList(el.getEnclosedElements());
-                    Collections.reverse(al);
-                    for (VariableElement e : ElementFilter.fieldsIn(al)) {
-                        if (e.getKind() != ElementKind.ENUM_CONSTANT) {
-                            continue;
-                        }
-                        analyze(copy.getTrees().getPath(e), copy, new Performer() {
-
-                            @Override
-                            public void fixAllAbstractMethods(TreePath pathToModify, Tree toModify) {
-                                fixClassOrVariable(copy, pathToModify, toModify, offsetArr, repeat);
-                            }
-
-                            @Override
-                            public void makeClassAbstract(TreePath toModify, String className) {
-                                // no op
-                            }
-
-                        });
-                    }
-                }
-            }).commit();
-            if (!repeat[0]) {
-                return null;
+        protected boolean executeRound(Element el, int round) throws Exception {
+            if (el.getKind() != ElementKind.ENUM) {
+                return false;
             }
-            // second pass, actually implement all the methods
-            js.runModificationTask(new Task<WorkingCopy>() {
-
-                public void run(final WorkingCopy copy) throws IOException {
-                    copy.toPhase(Phase.RESOLVED);
-
-                    TreePath enumPath = deepTreePath(copy, offset);
-                    if (enumPath.getLeaf().getKind() != Tree.Kind.ENUM) {
-                        return;
-                    }
-                    Element el = copy.getTrees().getElement(enumPath);
-                    if (el == null) {
-                        // TODO: report to user
-                        return;
-                    }
-                    for (VariableElement e : ElementFilter.fieldsIn(el.getEnclosedElements())) {
-                        if (e.getKind() != ElementKind.ENUM_CONSTANT) {
-                            continue;
-                        }
-                        analyze(copy.getTrees().getPath(e), copy, new Performer() {
-
-                            @Override
-                            public void fixAllAbstractMethods(TreePath pathToModify, Tree toModify) {
-                                fixClassOrVariable(copy, pathToModify, toModify, offsetArr, repeat);
-                            }
-
-                            @Override
-                            public void makeClassAbstract(TreePath toModify, String className) {
-                                // no op
-                            }
-
-                        });
-                    }
+            ClassTree ct = (ClassTree)path.getLeaf();
+            for (ListIterator<? extends Tree> it = ct.getMembers().listIterator(ct.getMembers().size()); it.hasPrevious(); ) {
+                Tree t = it.previous();
+                
+                if (t.getKind() != Tree.Kind.VARIABLE) {
+                    continue;
                 }
-            }).commit();
-            return null;
+                TreePath p = new TreePath(path, t);
+                Element e = copy.getTrees().getElement(p);
+                if (e == null || e.getKind() != ElementKind.ENUM_CONSTANT) {
+                    continue;
+                }
+
+                switch (round) {
+                    case 0:
+                        if (!generateClassBody(p)) {
+                            return false;
+                        }
+                        break;
+                    case 1:
+                        if (!generateImplementation(p)) {
+                            return false;
+                        }
+                        break;
+                    default:
+                        throw new IllegalStateException();
+                }
+            }
+            return true;
+        }
+        
+        @Override
+        public String toDebugString() {
+             return "IOEV";
+        }
+    }
+    
+    private static boolean generateClassBody2(WorkingCopy copy, TreePath p) throws Exception {
+        int insertOffset = (int) copy.getTrees().getSourcePositions().getEndPosition(copy.getCompilationUnit(), p.getLeaf());
+        if (insertOffset == -1) {
+            return false;
+        }
+        try {
+            copy.getDocument().insertString(insertOffset, " {}", null);
+        } catch (GuardedException ex) {
+            String message = NbBundle.getMessage(ImplementAllAbstractMethods.class, "ERR_CannotApplyGuarded");
+            StatusDisplayer.getDefault().setStatusText(message);
+            return true;
+        } catch (BadLocationException | IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Makes the class abstract. If the class is final, the final modifier is removed.
+     */
+    private static class MakeAbstractFix extends JavaFix implements DebugFix {
+        private final String makeClassAbstractName;
+
+        public MakeAbstractFix(CompilationInfo info, TreePath tp, String makeClassAbstractName) {
+            super(info, tp);
+            this.makeClassAbstractName = makeClassAbstractName;
+        }
+
+        @Override
+        protected String getText() {
+            return NbBundle.getMessage(ImplementAllAbstractMethods.class, "LBL_FIX_Make_Class_Abstract", makeClassAbstractName); // MOI18N 
+        }
+
+        @Override
+        protected void performRewrite(TransformationContext ctx) throws Exception {
+            WorkingCopy wc = ctx.getWorkingCopy();
+            Tree.Kind k = ctx.getPath().getLeaf().getKind();
+            if (!TreeUtilities.CLASS_TREE_KINDS.contains(k)) {
+                // TODO: report
+                return;
+            }
+            ClassTree ct = (ClassTree)ctx.getPath().getLeaf();
+            ModifiersTree mt = ct.getModifiers();
+            Set<Modifier> mods = new HashSet<>(mt.getFlags());
+            mods.remove(Modifier.FINAL);
+            mods.add(Modifier.ABSTRACT);
+            ModifiersTree newMt = wc.getTreeMaker().Modifiers(mods, mt.getAnnotations());
+            wc.rewrite(mt, newMt);
+        }
+
+        @Override
+        public String toDebugString() {
+            return "MA:" + makeClassAbstractName;
+        }
+    }
+    
+    private static class ImplementAbstractMethodsFix extends ImplementFixBase {
+        public ImplementAbstractMethodsFix(CompilationInfo info, TreePath path, TypeElement e) {
+            super(info, path, e);
+        }
+        
+        @Override
+        public String getText() {
+            return NbBundle.getMessage(ImplementAbstractMethodsFix.class, "LBL_FIX_Impl_Abstract_Methods"); // MOI18N 
+        }
+
+        @Override
+        protected boolean executeRound(Element el, int round) throws Exception {
+            switch (round) {
+                case 0:
+                    return generateClassBody(path);
+                case 1:
+                    return generateImplementation(path);
+            }
+            return false;
+        }
+        @Override
+        public String toDebugString() {
+            return "IAAM";
         }
     }
     
     // copy from GeneratorUtils, need to change the processing a little.
     public static Map<? extends ExecutableElement, ? extends ExecutableElement> generateAllAbstractMethodImplementations(
-            WorkingCopy wc, TreePath path) {
+            WorkingCopy wc, TreePath path, List<ElementHandle<? extends Element>> toImplementHandles) {
         assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te == null) {
@@ -396,7 +554,19 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Boolean>, Ov
         ClassTree clazz = (ClassTree)path.getLeaf();
         GeneratorUtilities gu = GeneratorUtilities.get(wc);
         ElementUtilities elemUtils = wc.getElementUtilities();
-        List<? extends ExecutableElement> toImplement = elemUtils.findUnimplementedMethods(te);
+        List<? extends ExecutableElement> toImplement;
+        if (toImplementHandles != null) {
+            List<ExecutableElement> els = new ArrayList<>();
+            for (ElementHandle<? extends Element> h : toImplementHandles) {
+                Element e = h.resolve(wc);
+                if (e.getKind() == ElementKind.METHOD) {
+                    els.add((ExecutableElement)e);
+                }
+            }
+            toImplement = els;
+        } else {
+            toImplement = elemUtils.findUnimplementedMethods(te);
+        }
         ret = Utilities.findConflictingMethods(wc, te, toImplement);
         if (ret.size() < toImplement.size()) {
             toImplement.removeAll(ret.keySet());
@@ -417,94 +587,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Boolean>, Ov
         StatusDisplayer.getDefault().setStatusText(msg, StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
         return ret;
     }
-
-    private static void fixClassOrVariable(WorkingCopy copy, TreePath pathToModify, Tree toModify,
-            int[] offset, boolean[] repeat) {
-        if (TreeUtilities.CLASS_TREE_KINDS.contains(toModify.getKind())) {
-            generateAllAbstractMethodImplementations(copy, pathToModify);
-            return;
-        } else if (!(toModify.getKind() == Kind.NEW_CLASS || toModify.getKind() == Kind.VARIABLE)) {
-            return;
-        }
-        int insertOffset = (int) copy.getTrees().getSourcePositions().getEndPosition(copy.getCompilationUnit(), toModify);
-        if (insertOffset != (-1)) {
-            try {
-                copy.getDocument().insertString(insertOffset, " {}", null);
-                offset[0] = insertOffset + 1;
-                repeat[0] = true;
-            } catch (GuardedException e) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        String message = NbBundle.getMessage(ImplementAllAbstractMethods.class, "ERR_CannotApplyGuarded");
-                        StatusDisplayer.getDefault().setStatusText(message);
-                    }
-                });
-            } catch (BadLocationException e) {
-                Exceptions.printStackTrace(e);
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
-    }
-
-    static final class FixImpl implements Fix {
-
-        private JavaSource js;
-        private int offset;
-        private String makeClassAbstractName;
-        
-        public FixImpl(JavaSource js, int offset, String makeClassAbstractName) {
-            this.js   = js;
-            this.offset = offset;
-            this.makeClassAbstractName = makeClassAbstractName;
-        }
-        
-        public String getText() {
-            return makeClassAbstractName == null ? 
-                NbBundle.getMessage(ImplementAllAbstractMethods.class, "LBL_FIX_Impl_Abstract_Methods") : // MOI18N 
-                NbBundle.getMessage(ImplementAllAbstractMethods.class, "LBL_FIX_Make_Class_Abstract", makeClassAbstractName); // MOI18N 
-        }
-
-        public ChangeInfo implement() throws IOException {
-            final boolean[] repeat = new boolean[] {true};
-
-            while (repeat[0]) {
-                repeat[0] = false;
-                js.runModificationTask(new Task<WorkingCopy>() {
-
-                    public void run(final WorkingCopy copy) throws IOException {
-                        copy.toPhase(Phase.RESOLVED);
-                        final int[] offsetArr = new int[] { offset };
-                        analyze(offset, copy, new Performer() {
-                            public void fixAllAbstractMethods(TreePath pathToModify, Tree toModify) {
-                                if (makeClassAbstractName != null) return;
-                                fixClassOrVariable(copy, pathToModify, toModify, offsetArr, repeat);
-                            }
-                            public void makeClassAbstract(TreePath pathToModify, String className) {
-                                Tree toModify = pathToModify.getLeaf();
-                                if (makeClassAbstractName == null) return;
-                                //the toModify has to be a class tree:
-                                if (TreeUtilities.CLASS_TREE_KINDS.contains(toModify.getKind())) {
-                                    ClassTree clazz = (ClassTree) toModify;
-                                    ModifiersTree modifiers = clazz.getModifiers();
-                                    Set<Modifier> newModifiersSet = new HashSet<Modifier>(modifiers.getFlags());
-
-                                    newModifiersSet.add(Modifier.ABSTRACT);
-
-                                    copy.rewrite(modifiers, copy.getTreeMaker().Modifiers(newModifiersSet, modifiers.getAnnotations()));
-                                }
-                            }
-                        });
-                        offset = offsetArr[0];
-                    }
-                }).commit();
-            }
-            return null;
-        }
-
-        String toDebugString() {
-            return makeClassAbstractName == null ? "IAAM" : "MA:" + makeClassAbstractName;
-        }
-
+    interface DebugFix {
+        public String toDebugString();
     }
 }
