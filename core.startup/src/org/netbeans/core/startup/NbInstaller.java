@@ -79,7 +79,6 @@ import org.netbeans.ModuleManager;
 import org.netbeans.Stamps;
 import org.netbeans.Util;
 import org.netbeans.core.startup.layers.ModuleLayeredFileSystem;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
@@ -89,10 +88,8 @@ import org.openide.util.NbCollections;
 import org.openide.util.SharedClassObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Task;
-import org.openide.util.TaskListener;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.InstanceContent;
-import org.xml.sax.SAXException;
 
 
 /** Concrete implementation of the module installation functionality.
