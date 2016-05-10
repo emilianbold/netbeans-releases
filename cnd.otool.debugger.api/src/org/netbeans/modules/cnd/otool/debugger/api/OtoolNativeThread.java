@@ -52,6 +52,7 @@ public abstract class OtoolNativeThread {
 
     public static final String PROP_SUSPENDED = "suspended";  // NOI18N
     protected PropertyChangeSupport pch = new PropertyChangeSupport(this);
+    protected boolean current;
 
     
     public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -64,9 +65,16 @@ public abstract class OtoolNativeThread {
 
     abstract public String getId();
     abstract public String getName();
-    abstract public boolean isCurrent(); 
+     
     protected boolean suspended;
     
+    
+    public boolean isCurrent() {
+        return current;
+    }
+    public void setCurrent (boolean current) {
+        this.current = current;
+    }
     public boolean isSuspended() {
         return suspended;
     }  

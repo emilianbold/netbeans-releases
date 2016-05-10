@@ -4,9 +4,11 @@
  */
 package org.netbeans.modules.cnd.otool.debugger.api;
 
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -74,6 +76,59 @@ public final class OtoolNativeDebuggerManager {
     }
     public static OtoolNativeDebuggerManager get() {
         return LazyInitializer.singleton;
+    }    
+    private void switchOutput(final OtoolNativeDebugger od, final OtoolNativeDebugger nd) {
+
+        // Issue 46475 documents how we get this called redundantly at times.
+        final boolean redundant = (od == nd);
+        // Well ... We go one of these off the AWT-EQ when a jpda
+        // debugger was started. I don't like this. What happens if
+        // a user clicks switch sessions quickly that we get called again
+        // between the activate and the deactivate?
+
+//	if (od != null)
+//	    od.savedVisibility(od.termset().getVisibility());
+
+//        if (od != null) {
+//            od.deactivate(redundant);
+//        }
+        currentDebugger = nd;
+//        if (nd != null) {
+//            currentDebugger.updateLocation(true, disActive ? ShowMode.DIS : ShowMode.SOURCE, true);
+//        }
+
+        
+    }
+    public void propertyChange(PropertyChangeEvent e) {
+    
+        if (org.netbeans.api.debugger.DebuggerManager.PROP_CURRENT_SESSION.equals(e.getPropertyName())) {
+
+            if (true) {
+                System.out.printf("DebuggerManager.PROP_CURRENT_SESSION\n"); // NOI18N
+            }
+
+            //System.err.println("DDM.propertyChange: PROP_CURRENT_SESSION");
+            // Our sessions have only one debugger engine
+            // If we get a non-native session, we'll get _some_ engine
+            // and if it's not a native engine then lookup() will return a null
+            // and that will make switchOutput do the correct thing as well.
+
+            OtoolNativeDebugger odebugger = null;
+            Session osession = (Session) e.getOldValue();
+            if (osession != null) {
+                DebuggerEngine oengine = osession.getCurrentEngine();
+                odebugger = oengine.lookupFirst(null, OtoolNativeDebugger.class);
+            }
+
+            OtoolNativeDebugger ndebugger = null;
+            Session nsession = (Session) e.getNewValue();
+            if (nsession != null) {
+                DebuggerEngine nengine = nsession.getCurrentEngine();
+                ndebugger = nengine.lookupFirst(null, OtoolNativeDebugger.class);
+            }
+
+            switchOutput(odebugger, ndebugger);
+        }
     }    
  
     public void setAction(int i) {
@@ -273,13 +328,7 @@ public final class OtoolNativeDebuggerManager {
     
     
     public void setCurrentDebugger (OtoolNativeDebugger<?> debugger) {
-        //find OtoolNativeSession first
-        for (OtoolNativeSession nativeSession : getSessions()) {
-            if (debugger == nativeSession.getDebugger()) {
-                setCurrentSession(nativeSession.coreSession());
-                return;
-            }
-        }
+        this.currentDebugger = debugger;
     }
 
      public OtoolNativeSession[] getSessions() {

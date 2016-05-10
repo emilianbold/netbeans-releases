@@ -233,6 +233,7 @@
                 <friend>org.netbeans.modules.cnd.modelutil</friend>
                 <friend>org.netbeans.modules.cnd.navigation</friend>
                 <friend>org.netbeans.modules.cnd.otool.debugger.api</friend>
+                <friend>org.netbeans.modules.cnd.otool.debugger.dbx</friend>
                 <friend>org.netbeans.modules.cnd.parfait</friend>
                 <friend>org.netbeans.modules.cnd.qnavigator</friend>
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
