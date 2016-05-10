@@ -63,4 +63,12 @@ abstract public class OtoolNativeFrame {
     public int getLevel() {
         return Integer.parseInt(frameno);
     }
+    
+     public void setCurrent (boolean isCurrent) {
+         this.current = isCurrent;
+    }
+
+    public boolean isCurrent() {
+        return current;
+    }    
 }

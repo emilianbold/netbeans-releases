@@ -39,52 +39,55 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.otool.debugger.api;
+package org.netbeans.modules.cnd.otool.debugger.api.breakpoint;
 
-import java.beans.PropertyChangeEvent;
-import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.DebuggerManagerAdapter;
-import org.netbeans.api.debugger.LazyDebuggerManagerListener;
-import org.netbeans.modules.cnd.otool.debugger.api.breakpoint.OtoolLineBreakpoint;
-import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import java.net.MalformedURLException;
+import java.net.URL;
+import org.netbeans.modules.cnd.otool.debugger.api.OtoolNativeBreakpoint;
+import org.openide.util.Exceptions;
 
 /**
  *
- * @author Nikolay Koldunov
+ * @author masha
  */
-
-@DebuggerServiceRegistration(types = LazyDebuggerManagerListener.class)
-public class OtoolDebuggerManagerAdapterImpl extends DebuggerManagerAdapter {
-
-    private static volatile OtoolNativeDebugger currentDebugger;
-
-    public static void assignCurrentDebugger(OtoolNativeDebugger newCurrentDebugger) {
-        currentDebugger = newCurrentDebugger;
-    }
-
-    @Override
-    public void breakpointAdded(Breakpoint breakpoint) {
-        if (breakpoint instanceof OtoolLineBreakpoint) {
-            OtoolLineBreakpoint nativeBreakpoint = (OtoolLineBreakpoint) breakpoint;
-            if (currentDebugger != null) {
-                currentDebugger.toggleLineBreakpoint(nativeBreakpoint.getUrl(), nativeBreakpoint.getLine());
-            }
-        }
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        super.propertyChange(evt); //To change body of generated methods, choose Tools | Templates.
+public final class OtoolLineBreakpoint extends OtoolNativeBreakpoint {
+    private  String url;
+    private  int lineNumber;
+  
+ 
+    public OtoolLineBreakpoint(String url, int lineNumber) {
+        this.url = url;
+        this.lineNumber = lineNumber;
+    }    
+        
+    
+    public OtoolLineBreakpoint(int id, String url, int lineNumber) {
+        this.url = url;
+        this.lineNumber = lineNumber;
+        setId(id);        
     }    
     
-    @Override
-    public void breakpointRemoved(Breakpoint breakpoint) {
-        if (breakpoint instanceof OtoolLineBreakpoint) {
-            OtoolLineBreakpoint nativeBreakpoint = (OtoolLineBreakpoint) breakpoint;
-            if (currentDebugger != null) {
-                currentDebugger.deleteBreakpoint(nativeBreakpoint);
-            }
-        }
+    public void set (String url, int lineNumber){
+       this.url = url;
+       this.lineNumber = lineNumber;               
     }
-
+    
+    public String getUrl() {
+        return url;
+    }
+    
+    public String getPath() {
+        try {
+            return new URL (url).getPath();
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return url;
+    }
+    
+    public int getLine() {
+        return lineNumber;
+    }    
+    
+    
 }
