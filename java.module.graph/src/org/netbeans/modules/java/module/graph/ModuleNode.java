@@ -11,7 +11,6 @@ import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.Parameters;
 import org.netbeans.modules.java.graph.GraphNodeImplementation;
-import org.netbeans.modules.java.graph.GraphNodeVisitor;
 
 /**
  *
