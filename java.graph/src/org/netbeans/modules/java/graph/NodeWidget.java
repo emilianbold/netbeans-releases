@@ -126,6 +126,10 @@ class NodeWidget<I extends GraphNodeImplementation> extends Widget implements Ac
     private final WidgetAction sceneHoverActionAction; 
     private final DependencyGraphScene.ScopeProvider<I> scopeProvider;
     
+    // for use from FruchtermanReingoldLayout
+    public double locX, locY, dispX, dispY; 
+    private boolean fixed; 
+    
     NodeWidget(@NonNull DependencyGraphScene scene, GraphNode<I> node, Icon icon, DependencyGraphScene.ScopeProvider<I> scopeProvider, final Action fixConflictAction, final WidgetAction sceneHoverActionAction) {        
         super(scene);
         Parameters.notNull("node", node);
@@ -251,6 +255,14 @@ class NodeWidget<I extends GraphNodeImplementation> extends Widget implements Ac
         return paintState;
     }
 
+    void setFixed(boolean fixed) {
+        this.fixed = fixed;
+    }
+    
+    boolean isFixed() {
+        return fixed;
+    }
+    
     private void updatePaintContent() {
         if (origForeground == null) {
             origForeground = getForeground();

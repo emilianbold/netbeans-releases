@@ -64,9 +64,6 @@ public final class GraphNode<I extends GraphNodeImplementation> {
     public static final int OVERRIDES_MANAGED = 2;
 
     private I impl, parentAfterFix;
-    // XXX move to nodewidget
-    public double locX, locY, dispX, dispY; // for use from FruchtermanReingoldLayout
-    private boolean fixed; // XXX move to nodewidget ?
     
     private final  HashSet<I> duplicates;
     private int level; // XXX set and use in module-info
@@ -127,14 +124,6 @@ public final class GraphNode<I extends GraphNodeImplementation> {
         return level == 0;
     }
     
-    void setFixed(boolean fixed) {
-        this.fixed = fixed;
-    }
-    
-    boolean isFixed() {
-        return fixed;
-    }
-
     public void setPrimaryLevel(int i) {
         level = i;
     }

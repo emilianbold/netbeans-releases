@@ -48,8 +48,13 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Set;
 import javax.swing.JScrollPane;
 import org.netbeans.api.visual.layout.SceneLayout;
+import org.netbeans.api.visual.model.ObjectSceneEvent;
+import org.netbeans.api.visual.model.ObjectSceneListener;
+import org.netbeans.api.visual.model.ObjectState;
+import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 
 
@@ -106,36 +111,38 @@ class FruchtermanReingoldLayout<I extends GraphNodeImplementation> extends Scene
             int repeats = 0;
             while (true) {
                 
-            for (GraphNode n : scene.getNodes()) {
-                if (n.isFixed()) {
-                    continue;
+                for (GraphNode n : scene.getNodes()) {
+                    NodeWidget w = getWidget(n);
+                    if (w.isFixed()) {
+                        continue;
+                    }
+    //                if (i < iterations / 5) {
+    //                    if (scene.findNodeEdges(n, false, true).size() == 1 
+    //                       && scene.findNodeEdges(n, true, false).size() == 0) {
+    //                        //for leaves, ignore repulsion first, to cause closer location to parent...
+    //                        System.out.println("continue.." + n.getArtifact().getId());
+    //                        continue;
+    //                    }
+    //                }
+                    calcRepulsion(w);
                 }
-//                if (i < iterations / 5) {
-//                    if (scene.findNodeEdges(n, false, true).size() == 1 
-//                       && scene.findNodeEdges(n, true, false).size() == 0) {
-//                        //for leaves, ignore repulsion first, to cause closer location to parent...
-//                        System.out.println("continue.." + n.getArtifact().getId());
-//                        continue;
-//                    }
-//                }
-                calcRepulsion(n);
-            }
-            for (GraphEdge e : scene.getEdges()) {
-                calcAttraction(e);
-            }
-            for (GraphNode n : scene.getNodes()) {
-                if (n.isFixed()) {
-                    continue;
+                for (GraphEdge e : scene.getEdges()) {
+                    calcAttraction(e);
                 }
-                calcPositions(n);
-            }
-            if (areAllFixed() || repeats > 2) {
-                doRelayoutNonFixed();
-                resetFixed();
-                cool(i);
-                break;
-            }
-            repeats = repeats + 1;
+                for (GraphNode n : scene.getNodes()) {
+                    NodeWidget w = getWidget(n);
+                    if (w.isFixed()) {
+                        continue;
+                    }
+                    calcPositions(w);
+                }
+                if (areAllFixed() || repeats > 2) {
+                    doRelayoutNonFixed();
+                    resetFixed();
+                    cool(i);
+                    break;
+                }
+                repeats = repeats + 1;
             }
         }
         if (finish) {
@@ -168,18 +175,20 @@ class FruchtermanReingoldLayout<I extends GraphNodeImplementation> extends Scene
         temp = bounds.getWidth() / 10;
         forceConstant = 0.75 * Math.sqrt(bounds.getHeight() * bounds.getWidth() / nds);
         
-        GraphNode r = scene.getRootGraphNode();
-        r.locX = bounds.getCenterX();
-        r.locY = bounds.getCenterY();
-        r.setFixed(true);
-        layoutCirculary(scene.getNodes(), r);
+        GraphNode<I> rn = scene.getRootGraphNode();
+        NodeWidget rw = getWidget(rn);
+        rw.locX = bounds.getCenterX();
+        rw.locY = bounds.getCenterY();
+        rw.setFixed(true);
+        layoutCirculary(scene.getNodes(), rn);
     }
     
     private void finish() {
         for (GraphNode n : scene.getNodes()) {
+            NodeWidget w = getWidget(n);
             Widget wid = scene.findWidget(n);
             Point point = new Point();
-            point.setLocation(n.locX, n.locY);
+            point.setLocation(w.locX, w.locY);
             if (scene.isAnimated()) {
                 scene.getSceneAnimator().animatePreferredLocation(wid, point);
             } else {
@@ -188,18 +197,18 @@ class FruchtermanReingoldLayout<I extends GraphNodeImplementation> extends Scene
         }
     }
     
-    public void calcPositions(GraphNode n) {
+    private void calcPositions(NodeWidget w) {
         double deltaLength = Math.max(MIN,
-                Math.sqrt(n.dispX * n.dispX + n.dispY * n.dispY));
+                Math.sqrt(w.dispX * w.dispX + w.dispY * w.dispY));
         
-        double xDisp = n.dispX/deltaLength * Math.min(deltaLength, temp);
+        double xDisp = w.dispX/deltaLength * Math.min(deltaLength, temp);
 
-        double yDisp = n.dispY/deltaLength * Math.min(deltaLength, temp);
+        double yDisp = w.dispY/deltaLength * Math.min(deltaLength, temp);
         
-        n.locX += xDisp;
-        n.locY += yDisp;
-        if (isThereFreeSpaceNonFixedSpace(n)) {
-            n.setFixed(true);
+        w.locX += xDisp;
+        w.locY += yDisp;
+        if (isThereFreeSpaceNonFixedSpace(w)) {
+            w.setFixed(true);
         }
 //        double x = n.locX;
 //        double y = n.locY;
@@ -222,16 +231,16 @@ class FruchtermanReingoldLayout<I extends GraphNodeImplementation> extends Scene
     }
 
     public void calcAttraction(GraphEdge e) {
-        GraphNode n1 = scene.getEdgeSource(e);
-        GraphNode n2 = scene.getEdgeTarget(e);
-        assert (n1 != null && n2 != null) : "wrong edge=" + e;
+        NodeWidget w1 = getWidget(scene.getEdgeSource(e));
+        NodeWidget w2 = getWidget(scene.getEdgeTarget(e));
+        assert (w1 != null && w2 != null) : "wrong edge=" + e;
 //        Widget wid1 = scene.findWidget(n1);
 //        Rectangle rect1 = wid1.getBounds();
 //        Widget wid2 = scene.findWidget(n2);
 //        Rectangle rect2 = wid2.getBounds();
         
-        double xDelta = n1.locX - n2.locX;
-        double yDelta = n1.locX - n2.locY;
+        double xDelta = w1.locX - w2.locX;
+        double yDelta = w1.locX - w2.locY;
 
         double deltaLength = Math.max(MIN, Math.sqrt(xDelta*xDelta + yDelta*yDelta));
         double force =  (deltaLength * deltaLength) / forceConstant;
@@ -239,30 +248,31 @@ class FruchtermanReingoldLayout<I extends GraphNodeImplementation> extends Scene
         double xDisp = (xDelta / deltaLength) * force;
         double yDisp = (yDelta / deltaLength) * force;
         
-        n1.dispX -= xDisp; 
-        n1.dispY -= yDisp;
-        n2.dispX += xDisp; 
-        n2.dispY += yDisp;
+        w1.dispX -= xDisp; 
+        w1.dispY -= yDisp;
+        w2.dispX += xDisp; 
+        w2.dispY += yDisp;
     }
 
-    public void calcRepulsion(GraphNode n1) {
-        n1.dispX = 0.0; 
-        n1.dispY = 0.0;
+    public void calcRepulsion(NodeWidget w1) {
+        w1.dispX = 0.0; 
+        w1.dispY = 0.0;
 //        Widget wid1 = scene.findWidget(n1);
 //        Rectangle rect1 = wid1.getBounds();
 
         for (GraphNode n2 : scene.getNodes()) {
+            NodeWidget w2 = getWidget(n2);
 //            Widget wid2 = scene.findWidget(n2);
 //            Rectangle rect2 = wid1.getBounds();
             //TODO..
 //            if (n2.isFixed()) continue;
-            if (n1 != n2) {
-                double xDelta = n1.locX - n2.locX;
-                double yDelta = n1.locY - n2.locY;
+            if (w1 != w2) {
+                double xDelta = w1.locX - w2.locX;
+                double yDelta = w1.locY - w2.locY;
                 double deltaLength = Math.max(MIN, Math.sqrt(xDelta*xDelta + yDelta*yDelta));
                 double force = (forceConstant * forceConstant) / deltaLength;
-                n1.dispX += (xDelta / deltaLength) * force;
-                n1.dispY += (yDelta / deltaLength) * force;
+                w1.dispX += (xDelta / deltaLength) * force;
+                w1.dispY += (yDelta / deltaLength) * force;
             }
         }
     }
@@ -275,8 +285,9 @@ class FruchtermanReingoldLayout<I extends GraphNodeImplementation> extends Scene
     }
     
     
-    private void layoutCirculary(Collection<GraphNode<I>> nodes, GraphNode<I> master) {
+    private void layoutCirculary(Collection<GraphNode<I>> nodes, GraphNode<I> masterNode) {
         Point masterPoint = new Point();
+        NodeWidget master = getWidget(masterNode);
         masterPoint.setLocation(master.locX, master.locY);
         double r;
         double theta;
@@ -284,18 +295,18 @@ class FruchtermanReingoldLayout<I extends GraphNodeImplementation> extends Scene
         r = 150;
         theta = 0;
         Iterator<GraphNode<I>> it = nodes.iterator();
-        GraphNode nd = it.next();
+        NodeWidget nw = getWidget(it.next());
         while (true) {
             AffineTransform tr = AffineTransform.getRotateInstance(theta);
             Point2D d2point = tr.transform(new Point2D.Double(0, r), null);
             Point point = new Point((int)d2point.getX() + masterPoint.x, (int)d2point.getY() + masterPoint.y);
-            if (isThereFreeSpace(point, nd)) {
-                nd.locX = point.getX();
-                nd.locY = point.getY();
-                nd.dispX = 0;
-                nd.dispY = 0;
+            if (isThereFreeSpace(point, nw)) {
+                nw.locX = point.getX();
+                nw.locY = point.getY();
+                nw.dispX = 0;
+                nw.dispY = 0;
                 if (it.hasNext()) {
-                    nd = it.next();
+                    nw = getWidget(it.next());
                 } else {
                     return;
                 }
@@ -310,9 +321,8 @@ class FruchtermanReingoldLayout<I extends GraphNodeImplementation> extends Scene
         
     }
     
-    private boolean isThereFreeSpace(Point pnt, GraphNode node) {
-        if(scene != null) {
-            Widget widget = scene.findWidget(node);
+    private boolean isThereFreeSpace(Point pnt, NodeWidget widget) {
+        if(scene != null) {            
             if(widget != null) {
                 Rectangle bnds = widget.getBounds();
                 if (bnds == null) {
@@ -320,12 +330,13 @@ class FruchtermanReingoldLayout<I extends GraphNodeImplementation> extends Scene
                 }
                 bnds = new Rectangle(pnt.x, pnt.y, bnds.width, bnds.height);
                 for (GraphNode nd : scene.getNodes()) {
-                    Rectangle bnds2 = scene.findWidget(nd).getBounds();
+                    NodeWidget nw = getWidget(nd);
+                    Rectangle bnds2 = nw.getBounds();
                     if (bnds2 == null) {
                         return true;
                     }
                     Point point = new Point();
-                    point.setLocation(nd.locX, nd.locY);
+                    point.setLocation(nw.locX, nw.locY);
                     bnds2 = new Rectangle(point, bnds2.getSize());
                     if (bnds.intersects((bnds2))) {
                         return false;
@@ -338,7 +349,7 @@ class FruchtermanReingoldLayout<I extends GraphNodeImplementation> extends Scene
 
     private boolean areAllFixed() {
         for (GraphNode nd : scene.getNodes()) {
-            if (!nd.isFixed()) {
+            if (!getWidget(nd).isFixed()) {
                 return false;
             }
         }
@@ -347,28 +358,29 @@ class FruchtermanReingoldLayout<I extends GraphNodeImplementation> extends Scene
     
     private void resetFixed() {
         for (GraphNode nd : scene.getNodes()) {
-            nd.setFixed(false);
+            getWidget(nd).setFixed(false); // XXX suboptimal, the same loop & findWidget here and at many other places 
         }
-        scene.getRootGraphNode().setFixed(true);
+        getWidget(scene.getRootGraphNode()).setFixed(true);
     }
     
-    private boolean isThereFreeSpaceNonFixedSpace(GraphNode node) {
-        Rectangle bnds = scene.findWidget(node).getBounds();
+    private boolean isThereFreeSpaceNonFixedSpace(NodeWidget w) {
+        Rectangle bnds = w.getBounds();
         if (bnds == null) {
             return true;
         }
         Point pnt = new Point();
-        pnt.setLocation(node.locX, node.locY);
+        pnt.setLocation(w.locX, w.locY);
         bnds = new Rectangle(pnt, bnds.getSize());
         for (GraphNode nd : scene.getNodes()) {
+            NodeWidget nw = getWidget(nd);
             Rectangle bnds2 = scene.findWidget(nd).getBounds();
             if (bnds2 == null) {
                 return true;
             }
             Point point = new Point();
-            point.setLocation(nd.locX, nd.locY);
+            point.setLocation(nw.locX, nw.locY);
             bnds2 = new Rectangle(point, bnds2.getSize());
-            if (nd.isFixed() && bnds.intersects((bnds2))) {
+            if (nw.isFixed() && bnds.intersects((bnds2))) {
                 return false;
             }
         }
@@ -377,29 +389,30 @@ class FruchtermanReingoldLayout<I extends GraphNodeImplementation> extends Scene
     
     private void doRelayoutNonFixed() {
         for (GraphNode node : scene.getNodes()) {
-            if (!node.isFixed()) {
-                relayoutNonFixed(node);
+            NodeWidget w = getWidget(node);
+            if (!w.isFixed()) {
+                relayoutNonFixed(w);
             }
         }
     }
     
-    private void relayoutNonFixed(GraphNode node) {
+    private void relayoutNonFixed(NodeWidget w) {
         Point masterPoint = new Point();
-        masterPoint.setLocation(node.locX, node.locY);
+        masterPoint.setLocation(w.locX, w.locY);
         double r;
         double theta;
         double thetaStep = Math.PI / 5;
         r = 30;
         theta = 0;
-        node.setFixed(false);
+        w.setFixed(false);
         while (true) {
             AffineTransform tr = AffineTransform.getRotateInstance(theta);
             Point2D d2point = tr.transform(new Point2D.Double(0, r), null);
             Point point = new Point((int)d2point.getX() + masterPoint.x, (int)d2point.getY() + masterPoint.y);
-            node.locX = point.getX();
-            node.locY = point.getY();
-            if (isThereFreeSpaceNonFixedSpace(node)) {
-                node.setFixed(true);
+            w.locX = point.getX();
+            w.locY = point.getY();
+            if (isThereFreeSpaceNonFixedSpace(w)) {
+                w.setFixed(true);
                 return;
             }
             theta = theta + thetaStep;
@@ -411,6 +424,13 @@ class FruchtermanReingoldLayout<I extends GraphNodeImplementation> extends Scene
         }
         
     }
+
+    private NodeWidget getWidget(GraphNode n) {
+        return (NodeWidget) scene.findWidget(n);
+    }
     
-    
+    private EdgeWidget getWidget(GraphEdge e) {
+        return (EdgeWidget) scene.findWidget(e);
+    }
+   
 } 
