@@ -376,7 +376,7 @@ public class DependencyGraphScene<I extends GraphNodeImplementation> extends Gra
         root.getActions().addAction(moveAction);
         root.getActions().addAction(editAction);
         root.getActions().addAction(popupMenuAction);
-        
+                    
         return root;
     }
     
@@ -410,9 +410,9 @@ public class DependencyGraphScene<I extends GraphNodeImplementation> extends Gra
         importantNodes.add(node);
 
         @SuppressWarnings("unchecked")
-        List<? extends GraphNodeImplementation> children = node.getDependencyNode().getChildren();
+        List<I> children = node.getDependencyNode().getChildren();
         if (children != null) {
-            for (GraphNodeImplementation n : children) {
+            for (I n : children) {
                 GraphNode child = getGraphNodeRepresentant(n);
                 if (child != null) {
                     childrenNodes.add(child);

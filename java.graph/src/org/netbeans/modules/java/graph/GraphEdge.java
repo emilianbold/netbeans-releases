@@ -48,9 +48,8 @@ package org.netbeans.modules.java.graph;
  * @author Milos Kleint
  * @param <I>
  */
-public class GraphEdge<I extends GraphNodeImplementation> {
+public final class GraphEdge<I extends GraphNodeImplementation> {
     private final String toString;
-    private int level = 0;
     private final I source;
     private final I target;
     private boolean primary;
@@ -70,19 +69,12 @@ public class GraphEdge<I extends GraphNodeImplementation> {
     public String toString() {
         return toString;
     }
-    
-    public void setLevel(int lvl) {
-        level = lvl;
-    }
-    
-    public int getLevel() {
-        return level;
-    }
 
     public void setPrimaryPath(boolean primary) {
         this.primary = primary;
     }
 
+    // XXX set and use also for module-info
     public boolean isPrimary() {
         return primary;
     }

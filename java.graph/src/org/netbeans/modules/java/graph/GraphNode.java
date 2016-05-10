@@ -57,17 +57,19 @@ import org.openide.util.Parameters;
  * @author Milos Kleint 
  * @param <I> 
  */
-public class GraphNode<I extends GraphNodeImplementation> {
+public final class GraphNode<I extends GraphNodeImplementation> {
 
     public static final int UNMANAGED = 0;
     public static final int MANAGED = 1;
     public static final int OVERRIDES_MANAGED = 2;
 
     private I dependencyNode, parentAfterFix;
+    // XXX move to nodewidget
     public double locX, locY, dispX, dispY; // for use from FruchtermanReingoldLayout
-    private boolean fixed;
-    private HashSet<I> dupl;
-    private int level;
+    private boolean fixed; // XXX move to nodewidget ?
+    
+    private final  HashSet<I> dupl;
+    private int level; // XXX set and use in module-info
     private int managedState = UNMANAGED;
 
     /** 
@@ -80,6 +82,8 @@ public class GraphNode<I extends GraphNodeImplementation> {
         dupl = new HashSet<>();
     }
         
+    // XXX get impl?
+    // XXX check usages?
     public I getDependencyNode() {
         return dependencyNode;
     }
@@ -102,7 +106,7 @@ public class GraphNode<I extends GraphNodeImplementation> {
      * 
      * @return 
      */
-    public GraphNodeImplementation getParent() {
+    public I getParent() {
         if (parentAfterFix != null) {
             return parentAfterFix;
         }
@@ -117,15 +121,15 @@ public class GraphNode<I extends GraphNodeImplementation> {
         dependencyNode = ar;
     }
 
-    public boolean isRoot() {
+    boolean isRoot() {
         return level == 0;
     }
     
-    public void setFixed(boolean fixed) {
+    void setFixed(boolean fixed) {
         this.fixed = fixed;
     }
     
-    public boolean isFixed() {
+    boolean isFixed() {
         return fixed;
     }
 
@@ -137,7 +141,7 @@ public class GraphNode<I extends GraphNodeImplementation> {
         return level;
     }
     
-    public int getManagedState() {
+    int getManagedState() {
         return managedState;
     }
 
@@ -145,7 +149,7 @@ public class GraphNode<I extends GraphNodeImplementation> {
         this.managedState = state;
     }
     
-    public int getConflictType(Function<I, Boolean> isConflict, BiFunction<I, I, Integer> compare) {
+    int getConflictType(Function<I, Boolean> isConflict, BiFunction<I, I, Integer> compare) {
         int ret = VERSION_NO_CONFLICT;
         int result;
         for (I curDepN : dupl) {
@@ -162,18 +166,6 @@ public class GraphNode<I extends GraphNodeImplementation> {
         return ret;
     }
     
-    static int compareVersions (String v1, String v2) {
-        String[] v1Elems = v1.split("\\.");
-        String[] v2Elems = v2.split("\\.");
-        for (int i = 0; i < Math.min(v1Elems.length, v2Elems.length); i++) {
-            int res = v1Elems[i].compareTo(v2Elems[i]);
-            if (res != 0) {
-                return res;
-            }
-        }
-        return v1Elems.length - v2Elems.length;
-    }
-
     public boolean represents(I nd) {
         if (dependencyNode.equals(nd)) {
             return true;
