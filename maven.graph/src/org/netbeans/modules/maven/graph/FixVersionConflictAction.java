@@ -96,7 +96,7 @@ public class FixVersionConflictAction extends MavenAction {
                 dep.setVersion(fixContent.version2Set.toString());
             }
             if (fixContent.isExclude) {
-                excludeDepFromModel(node.getDependencyNode(), fixContent.exclusionTargets);
+                excludeDepFromModel(node.getImpl(), fixContent.exclusionTargets);
             }
         } finally {
             model.endTransaction();
@@ -105,7 +105,7 @@ public class FixVersionConflictAction extends MavenAction {
 
     private void updateGraph(FixVersionConflictPanel.FixDescription fixContent) {
         if (fixContent.isSet) {
-            node.getDependencyNode().getArtifact().setVersion(fixContent.version2Set.toString());
+            node.getImpl().getArtifact().setVersion(fixContent.version2Set.toString());
             Collection<GraphEdge<MavenDependencyNode>> incoming = scene.findNodeEdges(node, false, true);
             for (GraphEdge age : incoming) {
                 scene.notifyModelChanged(age);
@@ -113,14 +113,13 @@ public class FixVersionConflictAction extends MavenAction {
             scene.notifyModelChanged(node);
             // add edge representing direct dependency if not exist yet
             if (scene.findEdgesBetween(rootNode, node).isEmpty()) {
-                GraphEdge ed = scene.addEdge(rootNode.getDependencyNode(), node.getDependencyNode());
-                ed.setLevel(1);
+                GraphEdge ed = scene.addEdge(rootNode.getImpl(), node.getImpl());
                 ed.setPrimaryPath(true);
                 scene.setEdgeTarget(ed, node);
                 scene.setEdgeSource(ed, rootNode);
                 node.setPrimaryLevel(1);
-                node.setParent(rootNode.getDependencyNode());
-                rootNode.getDependencyNode().addChild(node.getDependencyNode());
+                node.setParent(rootNode.getImpl());                
+                rootNode.getImpl().addChild(node.getImpl());
                 scene.validate();
             }
         }

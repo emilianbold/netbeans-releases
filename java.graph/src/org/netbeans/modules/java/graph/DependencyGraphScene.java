@@ -96,11 +96,11 @@ import org.openide.util.NbBundle.Messages;
 public class DependencyGraphScene<I extends GraphNodeImplementation> extends GraphScene<GraphNode<I>, GraphEdge<I>> {
 
     public interface IconProvider<I extends GraphNodeImplementation> {
-        Icon getIcon(I n);
+        Icon getIcon(I impl);
     }
     
     public interface ScopeProvider<I extends GraphNodeImplementation> {        
-        Color getColor(I dependencyNode);
+        Color getColor(I impl);
     }
     
     public interface HighlightDepthProvider {
@@ -113,10 +113,10 @@ public class DependencyGraphScene<I extends GraphNodeImplementation> extends Gra
         public static final int VERSION_POTENTIAL_CONFLICT = 1;
         public static final int VERSION_CONFLICT = 2;
     
-        String getVersion(I dependencyNode);    
-        int compareVersions(I dependencyNode1, I dependencyNode2);
-        boolean isIncluded(I dependencyNode); // XXX == !isConflict ???
-        boolean isConflict(I dependencyNode);
+        String getVersion(I impl);    
+        int compareVersions(I impl1, I impl2);
+        boolean isIncluded(I impl); // XXX == !isConflict ???
+        boolean isConflict(I impl);
     }
     
     public interface ActionsProvider<I extends GraphNodeImplementation> {
@@ -223,20 +223,20 @@ public class DependencyGraphScene<I extends GraphNodeImplementation> extends Gra
         return edge;
     }
     
-    private GraphNode<I> getGraphNode(Collection<GraphNode<I>> nodes, I d) {
+    private GraphNode<I> getGraphNode(Collection<GraphNode<I>> nodes, I i) {
         for(GraphNode<I> n : nodes) {
-            if(n.getDependencyNode().equals(d)) {
+            if(n.getImpl().equals(i)) {
                 return n;
             }
         }
-        assert false : "no node found for " + d.getName();
+        assert false : "no node found for " + i.getName();
         return null;
     }
 
     public void setSearchString(String val) {
         SearchVisitor visitor = new SearchVisitor(this);
         visitor.setSearchString(val);
-        visitor.accept(getRootGraphNode().getDependencyNode());
+        visitor.accept(getRootGraphNode().getImpl());
         validate();
         repaint();
         revalidate();
@@ -277,9 +277,9 @@ public class DependencyGraphScene<I extends GraphNodeImplementation> extends Gra
         return versionProvider.isConflict(node);        
     }
             
-    String getVersion(I dependencyNode) {
+    String getVersion(I impl) {
         assert versionProvider != null;
-        return versionProvider.getVersion(dependencyNode);
+        return versionProvider.getVersion(impl);
     } 
 
     int compareVersions(I n1, I n2) {
@@ -345,12 +345,12 @@ public class DependencyGraphScene<I extends GraphNodeImplementation> extends Gra
         return animated.get();
     }
 
-    @CheckForNull public GraphNode getGraphNodeRepresentant(GraphNodeImplementation node) {
+    @CheckForNull public GraphNode getGraphNodeRepresentant(GraphNodeImplementation impl) {
         for (GraphNode grnode : getNodes()) {
-            if (grnode.getDependencyNode().equals(node)) {
+            if (grnode.getImpl().equals(impl)) {
                 return grnode;                
             }
-            if(supportsVersions() && (grnode.represents(node))) {
+            if(supportsVersions() && (grnode.represents(impl))) { 
                 return grnode;            
             }
         }
@@ -366,7 +366,7 @@ public class DependencyGraphScene<I extends GraphNodeImplementation> extends Gra
         }
         
         Action fixAction = nodeActionProvider != null ? nodeActionProvider.createFixVersionConflictAction(this, rootNode, node) : null;
-        Icon icon = iconProvider != null ? iconProvider.getIcon(node.getDependencyNode()) : null;
+        Icon icon = iconProvider != null ? iconProvider.getIcon(node.getImpl()) : null;
         NodeWidget root = new NodeWidget(this, node, icon, scopeProvider, fixAction, hoverAction);
         mainLayer.addChild(root);
         root.setOpaque(true);
@@ -410,7 +410,7 @@ public class DependencyGraphScene<I extends GraphNodeImplementation> extends Gra
         importantNodes.add(node);
 
         @SuppressWarnings("unchecked")
-        List<I> children = node.getDependencyNode().getChildren();
+        List<I> children = node.getImpl().getChildren();
         if (children != null) {
             for (I n : children) {
                 GraphNode child = getGraphNodeRepresentant(n);
@@ -464,26 +464,26 @@ public class DependencyGraphScene<I extends GraphNodeImplementation> extends Gra
     }
 
     private void addPathToRoot(GraphNode node, List<GraphEdge> edges, List<GraphNode> nodes) {
-        GraphNodeImplementation parentDepN = node.getParent();
-        addPathToRoot(node.getDependencyNode(), parentDepN, edges, nodes);
+        GraphNodeImplementation parentImpl = node.getParent();
+        addPathToRoot(node.getImpl(), parentImpl, edges, nodes);
     }
 
 
-    private void addPathToRoot(GraphNodeImplementation depN, GraphNodeImplementation parentDepN, List<GraphEdge> edges, List<GraphNode> nodes) {
+    private void addPathToRoot(GraphNodeImplementation impl, GraphNodeImplementation parentImpl, List<GraphEdge> edges, List<GraphNode> nodes) {
         GraphNode grNode;
-        while (parentDepN != null) {
-            grNode = getGraphNodeRepresentant(parentDepN);
+        while (parentImpl != null) {
+            grNode = getGraphNodeRepresentant(parentImpl);
             if (grNode == null) {
                 return;
             }
-            GraphNode targetNode = getGraphNodeRepresentant(depN);
+            GraphNode targetNode = getGraphNodeRepresentant(impl);
             if (targetNode == null) {
                 return;
             }
             edges.addAll(findEdgesBetween(grNode, targetNode));
             nodes.add(grNode);
-            depN = parentDepN;
-            parentDepN = grNode.getParent();
+            impl = parentImpl;
+            parentImpl = grNode.getParent();
         }
     }
 
@@ -627,7 +627,7 @@ public class DependencyGraphScene<I extends GraphNodeImplementation> extends Gra
             highlightV = new HighlightVisitor(this);
         }
         highlightV.setMaxDepth(depth);
-        highlightV.accept(getRootGraphNode().getDependencyNode());
+        highlightV.accept(getRootGraphNode().getImpl());
         validate();
         repaint();
     }

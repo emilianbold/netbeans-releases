@@ -153,7 +153,7 @@ class NodeWidget<I extends GraphNodeImplementation> extends Widget implements Ac
         setLayout(LayoutFactory.createVerticalFlowLayout());
 
         updateTooltip();
-        initContent(scene, node.getDependencyNode(), icon);
+        initContent(scene, node.getImpl(), icon);
 
         hoverTimer = new Timer(500, this);
         hoverTimer.setRepeats(false);
@@ -224,7 +224,7 @@ class NodeWidget<I extends GraphNodeImplementation> extends Widget implements Ac
     }
 
     public void highlightText(String searchTerm) {
-        if (searchTerm != null && node.getDependencyNode().getName().contains(searchTerm)) {
+        if (searchTerm != null && node.getName().contains(searchTerm)) {
             nodeW.setBackground(HIGHTLIGHT);
             nodeW.setOpaque(true);
             setPaintState(EdgeWidget.REGULAR);
@@ -286,7 +286,7 @@ class NodeWidget<I extends GraphNodeImplementation> extends Widget implements Ac
     }
 
     @Messages("ACT_FixVersionConflict=Fix Version Conflict...")
-    private void initContent (DependencyGraphScene scene, GraphNodeImplementation dependencyNode, Icon icon) {
+    private void initContent (DependencyGraphScene scene, GraphNodeImplementation impl, Icon icon) {
         contentW = new LevelOfDetailsWidget(scene, 0.05, 0.1, Double.MAX_VALUE, Double.MAX_VALUE);
         contentW.setBorder(BorderFactory.createLineBorder(10));
         contentW.setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 1));
@@ -297,7 +297,7 @@ class NodeWidget<I extends GraphNodeImplementation> extends Widget implements Ac
         if (null != icon) {
             nodeW.addChild(new ImageWidget(scene, ImageUtilities.icon2Image(icon)));
         }
-        final LabelWidget labelWidget = new LabelWidget(scene, dependencyNode.getName() + "  ");
+        final LabelWidget labelWidget = new LabelWidget(scene, impl.getName() + "  ");
         labelWidget.setUseGlyphVector(true);
         nodeW.addChild(labelWidget);
       
@@ -312,7 +312,7 @@ class NodeWidget<I extends GraphNodeImplementation> extends Widget implements Ac
             versionDetW.setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 2));
             contentW.addChild(versionDetW);
             versionW = new LabelWidget(scene);
-            versionW.setLabel(scene.getVersion(node.getDependencyNode()));
+            versionW.setLabel(scene.getVersion(node.getImpl()));
             int mngState = node.getManagedState();
             if (mngState != GraphNode.UNMANAGED) { 
                  lockW = new ImageWidget(scene,
@@ -349,7 +349,7 @@ class NodeWidget<I extends GraphNodeImplementation> extends Widget implements Ac
     public void modelChanged () {
         DependencyGraphScene scene = getDependencyGraphScene();
         if(scene.supportsVersions()) {
-            versionW.setLabel(scene.getVersion(node.getDependencyNode()));
+            versionW.setLabel(scene.getVersion(node.getImpl()));
             if (fixConflictAction == null && fixHintW != null) {
                 fixHintW.setVisible(false);
                 fixHintW = null;
@@ -376,7 +376,7 @@ class NodeWidget<I extends GraphNodeImplementation> extends Widget implements Ac
         if (node.isRoot()) {
             paintBottom(g, bounds, ROOT, Color.WHITE, bounds.height / 2);
         } else {
-            Color scopeC = scopeProvider != null ? scopeProvider.getColor(node.getDependencyNode()) : null;
+            Color scopeC = scopeProvider != null ? scopeProvider.getColor(node.getImpl()) : null;
             if(scopeC != null) {
                 paintCorner(RIGHT_BOTTOM, g, bounds, scopeC, Color.WHITE, bounds.width / 2, bounds.height / 2);
             }

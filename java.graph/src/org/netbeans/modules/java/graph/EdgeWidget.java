@@ -209,13 +209,13 @@ class EdgeWidget<I extends GraphNodeImplementation> extends ConnectionWidget {
             if (isConflict) {
                 DependencyGraphScene grScene = getDependencyGraphScene();
                 assert grScene.supportsVersions();
-                GraphNodeImplementation includedDepN = grScene.getGraphNodeRepresentant(
-                        edge.getTarget()).getDependencyNode();
-                if (includedDepN == null) {
+                GraphNodeImplementation included = grScene.getGraphNodeRepresentant(
+                        edge.getTarget()).getImpl();
+                if (included == null) {
                     return;
                 }
-                String version = grScene.getVersion(includedDepN);
-                GraphNodeImplementation parent = includedDepN.getParent();
+                String version = grScene.getVersion(included);
+                GraphNodeImplementation parent = included.getParent();
                 String requester = parent != null ? parent.getName() : "???";
                 String confText = edgeConflictType == VERSION_CONFLICT ? TIP_VersionConflict(version, requester) : TIP_VersionWarning(version, requester);
                 conflictVersion.setToolTipText(confText);
@@ -260,7 +260,7 @@ class EdgeWidget<I extends GraphNodeImplementation> extends ConnectionWidget {
             return VERSION_NO_CONFLICT;
         }
         DependencyGraphScene<I> scene = getDependencyGraphScene();
-        int ret = scene.compareVersions(edge.getTarget(), included.getDependencyNode());
+        int ret = scene.compareVersions(edge.getTarget(), included.getImpl());
                                 return ret > 0 ? 
                                         VERSION_CONFLICT : 
                                         ret < 0 ?

@@ -63,46 +63,48 @@ public final class GraphNode<I extends GraphNodeImplementation> {
     public static final int MANAGED = 1;
     public static final int OVERRIDES_MANAGED = 2;
 
-    private I dependencyNode, parentAfterFix;
+    private I impl, parentAfterFix;
     // XXX move to nodewidget
     public double locX, locY, dispX, dispY; // for use from FruchtermanReingoldLayout
     private boolean fixed; // XXX move to nodewidget ?
     
-    private final  HashSet<I> dupl;
+    private final  HashSet<I> duplicates;
     private int level; // XXX set and use in module-info
     private int managedState = UNMANAGED;
 
     /** 
      * Creates a new instance of GraphNode
-     * @param dependencyNode 
+     * @param impl 
      **/
-    public GraphNode(@NonNull I dependencyNode) {
-        Parameters.notNull("dependencyNode", dependencyNode);   //NOI18N
-        this.dependencyNode = dependencyNode;
-        dupl = new HashSet<>();
+    public GraphNode(@NonNull I impl) {
+        Parameters.notNull("impl", impl);   //NOI18N
+        this.impl = impl;
+        duplicates = new HashSet<>();
     }
         
-    // XXX get impl?
-    // XXX check usages?
-    public I getDependencyNode() {
-        return dependencyNode;
+    public String getName() {
+        return impl.getName();
+    }
+    
+    public I getImpl() {
+        return impl;
     }
 
     public String getTooltipText() {
-        return dependencyNode.getTooltipText();
+        return impl.getTooltipText();
     }    
     
-    public void addDuplicateOrConflict(I nd) {
-        dupl.add(nd);
+    public void addDuplicateOrConflict(I i) {
+        duplicates.add(i);
     }
 
     public Set<I> getDuplicatesOrConflicts() {
-        return Collections.unmodifiableSet(dupl);
+        return Collections.unmodifiableSet(duplicates);
     }
     
     /** 
      * After changes in graph parent may change, so it's always better to
-     * call this method instead of getDependencyNode().getParent()
+     * call this method instead of getImpl().getParent()
      * 
      * @return 
      */
@@ -110,15 +112,15 @@ public final class GraphNode<I extends GraphNodeImplementation> {
         if (parentAfterFix != null) {
             return parentAfterFix;
         }
-        return dependencyNode.getParent();
+        return impl.getParent();
     }
 
     public void setParent(I newParent) {
         parentAfterFix = newParent;
     }
     
-    public void setDependencyNode(I ar) {        
-        dependencyNode = ar;
+    public void setImpl(I i) {        
+        impl = i;
     }
 
     boolean isRoot() {
@@ -152,9 +154,9 @@ public final class GraphNode<I extends GraphNodeImplementation> {
     int getConflictType(Function<I, Boolean> isConflict, BiFunction<I, I, Integer> compare) {
         int ret = VERSION_NO_CONFLICT;
         int result;
-        for (I curDepN : dupl) {
-            if (isConflict.apply(curDepN)) {
-                result = compare.apply(dependencyNode, curDepN);
+        for (I dupl : duplicates) {
+            if (isConflict.apply(dupl)) {
+                result = compare.apply(impl, dupl);
                 if (result < 0) {
                     return VERSION_CONFLICT;
                 }
@@ -166,12 +168,12 @@ public final class GraphNode<I extends GraphNodeImplementation> {
         return ret;
     }
     
-    public boolean represents(I nd) {
-        if (dependencyNode.equals(nd)) {
+    public boolean represents(I i) {
+        if (impl.equals(i)) {
             return true;
         }
-        for (I d : dupl) {
-            if (nd.equals(d)) {
+        for (I dupl : duplicates) {
+            if (i.equals(dupl)) {
                 return true;
             }
         }

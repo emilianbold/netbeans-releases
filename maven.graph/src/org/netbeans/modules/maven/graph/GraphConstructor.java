@@ -98,7 +98,7 @@ public class GraphConstructor implements GraphNodeVisitor<MavenDependencyNode> {
 //                for (MavenDependencyNode n : cl) { // XXX nasty!
 //                    node.addDuplicateOrConflict(n);
 //                }                
-                grNode.setDependencyNode(node);
+                grNode.setImpl(node);
             }
             grNode.setPrimaryLevel(path.size());
             primary = true;
@@ -114,14 +114,13 @@ public class GraphConstructor implements GraphNodeVisitor<MavenDependencyNode> {
         if (!path.empty()) {
             GraphNodeImplementation parent = path.peek();
             GraphEdge ed = new GraphEdge(parent, node);
-            ed.setLevel(path.size() - 1);
             ed.setPrimaryPath(primary);
             edges.add(ed);
         }
 
-        if (node != root && grNode.getDependencyNode() != null) {
+        if (node != root && grNode.getImpl() != null) {
             grNode.setManagedState(
-                    obtainManagedState(grNode.getDependencyNode(), scene));
+                    obtainManagedState(grNode.getImpl(), scene));
         }
 
         path.push(node);

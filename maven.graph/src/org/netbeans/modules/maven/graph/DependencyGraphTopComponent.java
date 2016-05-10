@@ -292,7 +292,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
                     @SuppressWarnings("unchecked")
                     List<String> selected = (List<String>) comScopes.getSelectedItem();
                     ScopesVisitor vis = new ScopesVisitor(scene, selected);
-                    vis.accept(scene.getRootGraphNode().getDependencyNode());
+                    vis.accept(scene.getRootGraphNode().getImpl());
                     scene.validate();
                     scene.repaint();
                     revalidate();

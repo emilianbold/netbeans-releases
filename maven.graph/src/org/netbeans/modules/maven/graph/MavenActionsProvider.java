@@ -84,7 +84,7 @@ public class MavenActionsProvider implements DependencyGraphScene.ActionsProvide
         "ACT_Show_Graph=Show Dependency Graph", 
     })
     public Action createShowGraphAction(GraphNode<MavenDependencyNode> node) {
-        Action a = CommonArtifactActions.createViewArtifactDetails(node.getDependencyNode().getArtifact(), project.getLookup().lookup(NbMavenProject.class).getMavenProject().getRemoteArtifactRepositories());
+        Action a = CommonArtifactActions.createViewArtifactDetails(node.getImpl().getArtifact(), project.getLookup().lookup(NbMavenProject.class).getMavenProject().getRemoteArtifactRepositories());
         a.putValue("PANEL_HINT", ArtifactViewer.HINT_GRAPH); //NOI18N
         a.putValue(Action.NAME, ACT_Show_Graph());
         return a;
@@ -94,7 +94,7 @@ public class MavenActionsProvider implements DependencyGraphScene.ActionsProvide
         Set<MavenDependencyNode> conf = node.getDuplicatesOrConflicts();
         for (MavenDependencyNode dn : conf) {
             if (dn.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {
-                if (node.getDependencyNode().compareVersions(dn) < 0) {
+                if (node.getImpl().compareVersions(dn) < 0) {
                     return true;
                 }
             }

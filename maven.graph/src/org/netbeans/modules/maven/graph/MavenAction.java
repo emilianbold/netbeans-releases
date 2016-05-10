@@ -83,7 +83,7 @@ public abstract class MavenAction extends AbstractAction {
     
     protected MavenAction(DependencyGraphTopComponent ownerTC, DependencyGraphScene scene, GraphNode<MavenDependencyNode> rootNode, GraphNode<MavenDependencyNode> node, POMModel model, Project nbProject) {
         this.node = node;
-        this.nodeArtif = node.getDependencyNode().getArtifact();
+        this.nodeArtif = node.getImpl().getArtifact();
         this.model = model;
         this.scene = scene;
         this.rootNode = rootNode;
@@ -176,7 +176,7 @@ public abstract class MavenAction extends AbstractAction {
             sourceNode = scene.getEdgeSource(age);
             if (sourceNode != null) {
                 for (MavenDependencyNode dn : exclParents) {
-                    if (sourceNode.getDependencyNode().equals(dn)) {
+                    if (sourceNode.getImpl().equals(dn)) {
                         primaryExcluded = true;
                     }
                     if (sourceNode.represents(dn)) {
@@ -196,7 +196,7 @@ public abstract class MavenAction extends AbstractAction {
         incoming = scene.findNodeEdges(node, false, true);
         if (primaryExcluded) {
             ArtifactVersion newVersion = findNewest(node, true);
-            node.getDependencyNode().getArtifact().setVersion(newVersion.toString());
+            node.getImpl().getArtifact().setVersion(newVersion.toString());
             for (GraphEdge age : incoming) {
                 scene.notifyModelChanged(age);
             }
@@ -245,7 +245,7 @@ public abstract class MavenAction extends AbstractAction {
 
     static ArtifactVersion findNewest(GraphNode<MavenDependencyNode> node, boolean all) {
         Set<MavenDependencyNode> conf = node.getDuplicatesOrConflicts();
-        ArtifactVersion result = new DefaultArtifactVersion(node.getDependencyNode().getArtifact().getVersion());
+        ArtifactVersion result = new DefaultArtifactVersion(node.getImpl().getArtifact().getVersion());
         ArtifactVersion curV = null;
         for (MavenDependencyNode dn : conf) {
             if (all || dn.getState() == DependencyNode.OMITTED_FOR_CONFLICT) {

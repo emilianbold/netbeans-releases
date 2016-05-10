@@ -81,7 +81,7 @@ public class ExcludeDepAction extends MavenAction {
             return;
         }
         try {
-            excludeDepFromModel(node.getDependencyNode(), exclTargets);
+            excludeDepFromModel(node.getImpl(), exclTargets);
         } finally {
             try {
                 model.endTransaction();
