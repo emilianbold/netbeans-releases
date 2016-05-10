@@ -89,7 +89,7 @@ public class RemoteLinksChangeLinkTestCase extends RemoteFileTestBase {
                     "echo abc > " + realFile2;
 
             ProcessUtils.ExitStatus res1 = ProcessUtils.execute(execEnv, "sh", "-c", creationScript);
-            assertEquals("Error executing script \"" + creationScript + "\": " + res1.error, 0, res1.exitCode);
+            assertEquals("Error executing script \"" + creationScript + "\": " + res1.getErrorString(), 0, res1.exitCode);
 
             FileObject realFO, linkFO, linkDirFO;
             RemoteFileObject oldChildFO;
@@ -110,7 +110,7 @@ public class RemoteLinksChangeLinkTestCase extends RemoteFileTestBase {
                     "";
 
             ProcessUtils.ExitStatus res2 = ProcessUtils.execute(execEnv, "sh", "-c", changeScript);
-            assertEquals("Error executing script \"" + creationScript + "\": " + res1.error, 0, res1.exitCode);
+            assertEquals("Error executing script \"" + creationScript + "\": " + res1.getErrorString(), 0, res1.exitCode);
 
             RemoteFileObject baseDirFO = getFileObject(baseDir);
             baseDirFO.nonRecursiveRefresh();
@@ -153,7 +153,7 @@ public class RemoteLinksChangeLinkTestCase extends RemoteFileTestBase {
                     "echo 123 > " + realFile1;
 
             ProcessUtils.ExitStatus res1 = ProcessUtils.execute(execEnv, "sh", "-c", creationScript);
-            assertEquals("Error executing script \"" + creationScript + "\": " + res1.error, 0, res1.exitCode);
+            assertEquals("Error executing script \"" + creationScript + "\": " + res1.getErrorString(), 0, res1.exitCode);
 
             RemoteFileObject baseDirFO = getFileObject(baseDir);
             RemoteFileObject realDirFO1 = getFileObject(realDir1);
@@ -209,7 +209,7 @@ public class RemoteLinksChangeLinkTestCase extends RemoteFileTestBase {
                     "";
 
             ProcessUtils.ExitStatus res2 = ProcessUtils.execute(execEnv, "sh", "-c", changeScript);
-            assertEquals("Error executing script \"" + creationScript + "\": " + res1.error, 0, res1.exitCode);
+            assertEquals("Error executing script \"" + creationScript + "\": " + res1.getErrorString(), 0, res1.exitCode);
 
             baseDirFO.refresh();
             eventList.clear();

@@ -138,7 +138,7 @@ public class RfsGnuParameterizedRemoteBuildTestCase extends RemoteBuildTestBase 
         ExecutionEnvironment env = getTestExecutionEnvironment();
         ProcessUtils.ExitStatus rcs = ProcessUtils.execute(env, "mktemp");
         assertEquals(0, rcs.exitCode);
-        String tmpFile = rcs.output;
+        String tmpFile = rcs.getOutputString();
         tmpFile = stripLf(tmpFile);
         for (File file : files) {
             Future<UploadStatus> task = CommonTasksSupport.uploadFile(file.getAbsolutePath(), env, tmpFile, 0777);

@@ -208,7 +208,7 @@ public class EnvironmentTest extends NativeExecutionBaseTestCase {
                 } else {
                     ExitStatus status = ProcessUtils.execute(execEnv, "cat", tmpFile);
                     assertTrue(status.isOK());
-                    result = Arrays.asList(status.output.split("\n"));
+                    result = Arrays.asList(status.getOutputString().split("\n"));
                 }
             }
 

@@ -96,14 +96,14 @@ public class IZ182478 extends NativeExecutionBaseTestCase {
         ExitStatus result = ProcessUtils.execute(env, "/bin/ptree", pidOfJVM);
         assertEquals(true, result.isOK());
 
-        int initialCount = countShells(info.getShell(), result.output);
+        int initialCount = countShells(info.getShell(), result.getOutputString());
         System.out.println("Before the test there are " + initialCount + " instances of " + info.getShell());
 
         startLoop();
 
         result = ProcessUtils.execute(env, "/bin/ptree", pidOfJVM);
         assertEquals(true, result.isOK());
-        int finalCount = countShells(info.getShell(), result.output);
+        int finalCount = countShells(info.getShell(), result.getOutputString());
 
         System.out.println("After the test there are " + finalCount + " instances of " + info.getShell());
 

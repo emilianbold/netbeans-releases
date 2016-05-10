@@ -93,7 +93,7 @@ public class Agent {
     public Map<String, Object> execute(String filePath) {
         ExitStatus res = ProcessUtils.executeInDir(pathToClass, execEnv, "java", Agent.class.getName(), filePath);
         if (res.exitCode == 0) {
-            String[] split = res.output.split("\n");
+            String[] split = res.getOutputString().split("\n");
             Map<String, Object> map = new HashMap<>();
             for(String s : split) {
                 String key = s.substring(0, s.indexOf('='));
@@ -119,7 +119,7 @@ public class Agent {
             return map;
         } else {
             System.err.println("Cannot run java on "+execEnv.getDisplayName());
-            System.err.println(res.error);
+            System.err.println(res.getErrorString());
             return null;
         }
     }

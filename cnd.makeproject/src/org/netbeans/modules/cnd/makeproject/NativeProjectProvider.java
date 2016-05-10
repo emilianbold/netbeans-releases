@@ -811,7 +811,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                 }
             }
             ExitStatus exitStatus =  ProcessUtils.execute(npb);
-            return new NativeExitStatus(exitStatus.exitCode, exitStatus.output, exitStatus.error);
+            return new NativeExitStatus(exitStatus.exitCode, exitStatus.getOutputString(), exitStatus.getErrorString());
         } catch (Exception e) {
             return new NativeExitStatus(-1, "", e.getMessage());
         }

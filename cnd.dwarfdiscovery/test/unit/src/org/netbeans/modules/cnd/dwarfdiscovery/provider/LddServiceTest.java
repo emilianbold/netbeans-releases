@@ -92,7 +92,7 @@ public class LddServiceTest extends NativeExecutionBaseTestCase {
             ProcessUtils.ExitStatus status = getJavaProcess(java, LddService.class, ExecutionEnvironmentFactory.getLocal(), new String[]{executable});
             assertNotNull(status);
             assertTrue("Cannot execute "+java, status.isOK());
-            BufferedReader br = new BufferedReader(new StringReader(status.output));
+            BufferedReader br = new BufferedReader(new StringReader(status.getOutputString()));
             SharedLibraries res2 = LddService.getPubNames(br);
             assertEquals(res1.getDlls().size(), res2.getDlls().size());
             assertEquals(res1.getPaths().size(), res2.getPaths().size());
@@ -114,7 +114,7 @@ public class LddServiceTest extends NativeExecutionBaseTestCase {
             ProcessUtils.ExitStatus status = getJavaProcess(java, LddService.class, ExecutionEnvironmentFactory.getLocal(), new String[]{executable});
             assertNotNull(status);
             assertTrue("Cannot execute "+java, status.isOK());
-            BufferedReader br = new BufferedReader(new StringReader(status.output));
+            BufferedReader br = new BufferedReader(new StringReader(status.getOutputString()));
             SharedLibraries res2 = LddService.getPubNames(br);
             assertEquals(res1.getDlls().size(), res2.getDlls().size());
             assertEquals(res1.getPaths().size(), res2.getPaths().size());
@@ -136,7 +136,7 @@ public class LddServiceTest extends NativeExecutionBaseTestCase {
             ProcessUtils.ExitStatus status = getJavaProcess(java, LddService.class, ExecutionEnvironmentFactory.getLocal(), new String[]{executable});
             assertNotNull(status);
             assertTrue("Cannot execute "+java, status.isOK());
-            BufferedReader br = new BufferedReader(new StringReader(status.output));
+            BufferedReader br = new BufferedReader(new StringReader(status.getOutputString()));
             SharedLibraries res2 = LddService.getPubNames(br);
             assertEquals(res1.getDlls().size(), res2.getDlls().size());
             assertEquals(res1.getPaths().size(), res2.getPaths().size());
@@ -158,7 +158,7 @@ public class LddServiceTest extends NativeExecutionBaseTestCase {
             ProcessUtils.ExitStatus status = getJavaProcess(java, LddService.class, ExecutionEnvironmentFactory.getLocal(), new String[]{executable});
             assertNotNull(status);
             assertTrue("Cannot execute "+java, status.isOK());
-            BufferedReader br = new BufferedReader(new StringReader(status.output));
+            BufferedReader br = new BufferedReader(new StringReader(status.getOutputString()));
             SharedLibraries res2 = LddService.getPubNames(br);
             assertEquals(res1.getDlls().size(), res2.getDlls().size());
             assertEquals(res1.getPaths().size(), res2.getPaths().size());
@@ -179,7 +179,7 @@ public class LddServiceTest extends NativeExecutionBaseTestCase {
             ProcessUtils.ExitStatus status = getJavaProcess(java, Offset2LineService.class, ExecutionEnvironmentFactory.getLocal(), new String[]{executable});
             assertNotNull(status);
             assertTrue("Cannot execute "+java, status.isOK());
-            BufferedReader br = new BufferedReader(new StringReader(status.output));
+            BufferedReader br = new BufferedReader(new StringReader(status.getOutputString()));
             Map<String, AbstractFunctionToLine> res2 = Offset2LineService.getOffset2Line(br);
             assertEquals(res1.size(), res2.size());
             res2 = new TreeMap<String, AbstractFunctionToLine>(res2);

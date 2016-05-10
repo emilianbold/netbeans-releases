@@ -96,7 +96,7 @@ public class RemoteLinksChangeLinkTestCase2 extends RemoteFileTestBase {
             final String dirOrLinkChildAbsPath = baseDir + '/' + dirOrLinkChild;
 
             ProcessUtils.ExitStatus res0 = ProcessUtils.execute(execEnv, "sh", "-c", changeToLinkScript);
-            assertEquals("Error executing script \"" + changeToLinkScript + "\": " + res0.error, 0, res0.exitCode);
+            assertEquals("Error executing script \"" + changeToLinkScript + "\": " + res0.getErrorString(), 0, res0.exitCode);
 
             final RemoteFileObject baseDirFO = getFileObject(baseDir);
 
@@ -121,14 +121,14 @@ public class RemoteLinksChangeLinkTestCase2 extends RemoteFileTestBase {
                             //System.out.printf("Changing %s to real directory...\n", dirOrLinkAbsPath);
                             ProcessUtils.ExitStatus res2 = ProcessUtils.execute(execEnv, "sh", "-c", changeToRealFileScript);
                             if (!res2.isOK()) {
-                                System.err.println("Error executing script \"" + changeToRealFileScript + "\": " + res2.error);
+                                System.err.println("Error executing script \"" + changeToRealFileScript + "\": " + res2.getErrorString());
                             }
                             //System.out.printf("Refreshing...\n");
                             baseDirFO.refresh();
                             //System.out.printf("Refreshed. Changing %s to link\n", dirOrLinkAbsPath);
                             ProcessUtils.ExitStatus res1 = ProcessUtils.execute(execEnv, "sh", "-c", changeToLinkScript);
                             if (!res1.isOK()) {
-                                System.err.println("Error executing script \"" + changeToLinkScript + "\": " + res1.error);
+                                System.err.println("Error executing script \"" + changeToLinkScript + "\": " + res1.getErrorString());
                             }
                             //System.out.printf("Refreshing...\n");
                             baseDirFO.refresh();

@@ -524,7 +524,11 @@ public final class ProcessUtils {
     public static final class ExitStatus {
 
         public final int exitCode;
+
+        @Deprecated
         public final String error;
+
+        @Deprecated
         public final String output;
 
         public ExitStatus(int exitCode, String output, String error) {
@@ -539,7 +543,15 @@ public final class ProcessUtils {
 
         @Override
         public String toString() {
-            return "ExitStatus " + "exitCode=" + exitCode + "\nerror=" + error + "\noutput=" + output; // NOI18N
+            return "ExitStatus " + "exitCode=" + exitCode + "\nerror=" + getErrorString() + "\noutput=" + getOutputString(); // NOI18N
+        }
+
+        public String getOutputString() {
+            return output;
+        }
+
+        public String getErrorString() {
+            return error;
         }
     }
 

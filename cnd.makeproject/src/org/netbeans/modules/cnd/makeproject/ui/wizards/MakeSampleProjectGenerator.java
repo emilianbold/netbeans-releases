@@ -330,7 +330,7 @@ public class MakeSampleProjectGenerator {
                     Logger.getLogger("remote.support.logger").log(Level.INFO, //NOI18N
                             "__DIAGNOSTICS__", new Object[]{prjLoc, Boolean.TRUE}); //NOI18N
                     ProcessUtils.ExitStatus rc = ProcessUtils.execute(env, "find", prjLoc.getPath(), " -ls"); //NOI18N
-                    System.err.printf("Find in%n%s%nexited with rc=%d;%nerr=%s%nout=%n%s%n", prjLoc.getPath(), rc.exitCode, rc.error, rc.output); //NOI18N
+                    System.err.printf("Find in%n%s%nexited with rc=%d;%nerr=%s%nout=%n%s%n", prjLoc.getPath(), rc.exitCode, rc.getErrorString(), rc.getOutputString()); //NOI18N
                 }
             }
             IOException ex = new IOException(e);

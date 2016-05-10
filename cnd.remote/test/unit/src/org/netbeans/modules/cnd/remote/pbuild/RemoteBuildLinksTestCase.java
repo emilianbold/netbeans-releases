@@ -74,7 +74,7 @@ public class RemoteBuildLinksTestCase extends RemoteBuildTestBase {
         String dir = copiedBase.getAbsolutePath();
         String scriptName = "create_links.sh";
         ProcessUtils.ExitStatus rc = ProcessUtils.executeInDir(dir, ExecutionEnvironmentFactory.getLocal(), "sh", scriptName);
-        assertTrue("Can not execute " + scriptName + " in " + dir + ":\n" + rc.error, rc.isOK());
+        assertTrue("Can not execute " + scriptName + " in " + dir + ":\n" + rc.getErrorString(), rc.isOK());
     }
 
     private void doTest(Toolchain toolchain) throws Exception {
