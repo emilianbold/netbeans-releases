@@ -512,7 +512,6 @@ public final class VariousUtils {
                         String[] frgs = frag.split("\\."); //NOI18N
                         if (frgs.length == 1) {
                             // uniform variable syntax
-                            assert !oldRecentTypes.isEmpty();
                             fieldName = frag;
                             types = oldRecentTypes;
                         } else {
@@ -538,7 +537,6 @@ public final class VariousUtils {
                         String[] frgs = frag.split("\\."); //NOI18N
                         if (frgs.length == 1) {
                             // uniform variable syntax
-                            assert !oldRecentTypes.isEmpty();
                             methodName = frag;
                             types = oldRecentTypes;
                         } else {
