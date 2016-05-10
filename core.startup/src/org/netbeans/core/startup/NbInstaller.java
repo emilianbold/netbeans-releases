@@ -618,7 +618,6 @@ final class NbInstaller extends ModuleInstaller {
                             assert patchesClassPath != null : "At most one resource per module: " + m; // NOI18N
                             Util.err.log(Level.INFO, "Using {0} as layer for {1} not {2}", new Object[]{u, m.getCodeNameBase(), en.nextElement()}); // NOI18N
                         }
-                        break;
                     }
                 }
                 if (! foundSomething) {
