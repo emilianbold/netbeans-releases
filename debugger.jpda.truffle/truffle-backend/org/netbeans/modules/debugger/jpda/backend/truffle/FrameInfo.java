@@ -12,7 +12,6 @@ import com.oracle.truffle.api.frame.FrameInstance;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.MaterializedFrame;
-import com.oracle.truffle.api.instrument.Visualizer;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
 import java.util.ArrayList;
@@ -28,7 +27,7 @@ final class FrameInfo {
     final String topFrame;
     final Object thisObject;
 
-    public FrameInfo(MaterializedFrame frame, Visualizer visualizer, Node astNode,
+    public FrameInfo(MaterializedFrame frame, Node astNode,
                      List<FrameInstance> stack) {
         //System.err.println("new FrameInfo("+frame+" ("+frame.getFrameDescriptor().toString()+"), "+stack+")");
         Object[] arguments = frame.getArguments();
@@ -47,11 +46,7 @@ final class FrameInfo {
         slotNames = new String[slots.length];
         slotTypes = new String[slots.length];
         for (int i = 0; i < slots.length; i++) {
-            if (visualizer != null) {
-                slotNames[i] = visualizer.displayIdentifier(slots[i]); // slots[i].getIdentifier().toString();
-            } else {
-                slotNames[i] = slots[i].getIdentifier().toString();
-            }
+            slotNames[i] = slots[i].getIdentifier().toString();
             slotTypes[i] = slots[i].getKind().toString();
         }
         //System.err.println("FrameInfo: arguments = "+Arrays.toString(arguments));
