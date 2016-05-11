@@ -206,8 +206,10 @@ public class DependencyGraphScene<I extends GraphNodeImplementation> extends Gra
         getActions().addAction(popupMenuAction);
     }
 
-    public void addNode(I d) {
-        addNode(new GraphNode<>(d));
+    public void addNode(I d, int depth) {
+        GraphNode<I> graphNode = new GraphNode<>(d);
+        graphNode.setPrimaryLevel(depth);
+        addNode(graphNode);
     }
     
     public GraphEdge addEdge(I source, I target) {

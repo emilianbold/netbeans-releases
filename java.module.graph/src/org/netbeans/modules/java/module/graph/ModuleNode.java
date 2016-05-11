@@ -20,12 +20,14 @@ final class ModuleNode implements GraphNodeImplementation {
     private final String moduleName;
     private List<ModuleNode> children;
     private ModuleNode parent;
-
+    private int depth = 0;
+    
     ModuleNode(
         @NonNull final String moduleName,
         final int depth) {
         Parameters.notNull("moduleNode", moduleName);
         this.moduleName = moduleName;
+        this.depth = depth;
     }
 
     @NonNull
@@ -34,6 +36,10 @@ final class ModuleNode implements GraphNodeImplementation {
         return moduleName;
     }
 
+    public int getDepth() {
+        return depth;
+    }
+    
     @Override
     public boolean equals(Object other) {
         if (other == this) {
@@ -84,5 +90,9 @@ final class ModuleNode implements GraphNodeImplementation {
 
     void setParent(ModuleNode parent) {
         this.parent = parent;
+    }
+
+    void setDepth(int depth) {
+        this.depth = depth;
     }
 }

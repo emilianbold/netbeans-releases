@@ -11,13 +11,19 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import javax.lang.model.element.ModuleElement;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.JavaSource;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 
 /**
@@ -66,8 +72,10 @@ final class DependencyCalculator {
                                 null;
                         if (me != null) {
                             final Collection<ModuleNode> mods = new LinkedHashSet<>();
-                            final Collection<DependencyEdge> deps = new ArrayList<>();
-                            collect(me, mods, deps,0);
+                            final Collection<DependencyEdge> deps = new ArrayList<>();    
+                            ModuleNode node = new ModuleNode(me.getQualifiedName().toString(), 0);
+                            mods.add(node);
+                            collect(node, me, mods, deps, 0);
                             nodes = mods;
                             edges = deps;
                         }
@@ -79,30 +87,59 @@ final class DependencyCalculator {
         }
     }
 
-    private ModuleNode collect(
+    private void collect(
+        @NonNull ModuleNode meNode, 
+        @NonNull ModuleElement me, 
+        @NonNull Collection<ModuleNode> mods, 
+        @NonNull Collection<? super DependencyEdge> deps, 
+        final int currentDepth) {
+        Collection<Dependency> ns = collect(
+                me,
+                mods,
+                deps,
+                currentDepth+1);
+        for (Dependency d : ns) {
+            meNode.addChild(d.node);
+            d.node.setParent(meNode);
+            deps.add(new DependencyEdge(meNode, d.node, d.reqD.isPublic()));
+        }
+    }
+    
+    private Collection<Dependency> collect(
         @NonNull final ModuleElement me,
-        @NonNull final Collection<? super ModuleNode> mods,
+        @NonNull final Collection<ModuleNode> mods,
         @NonNull final Collection<? super DependencyEdge> deps,
         final int currentDepth) {
-        final ModuleNode meNode = new ModuleNode(
-                me.getQualifiedName().toString(),
-                currentDepth);
-        final boolean unseen = mods.add(meNode);
-        if (unseen && !me.isUnnamed()) {
+        List<Dependency> dependencies = new LinkedList<>();
+        if (!me.isUnnamed()) {
             for (ModuleElement.Directive d : me.getDirectives()) {
                 if (d.getKind() == ModuleElement.DirectiveKind.REQUIRES) {
-                    final ModuleElement.RequiresDirective reqD = (ModuleElement.RequiresDirective) d;                 
-                    final ModuleNode targetNode = collect(
-                        reqD.getDependency(),
-                        mods,
-                        deps,
-                        currentDepth+1);                    
-                    meNode.addChild(targetNode);
-                    targetNode.setParent(meNode);
-                    deps.add(new DependencyEdge(meNode, targetNode, reqD.isPublic()));
+                    ModuleElement.RequiresDirective reqD = (ModuleElement.RequiresDirective) d;                 
+                    ModuleNode n = new ModuleNode(reqD.getDependency().getQualifiedName().toString(), currentDepth);
+                    boolean unseen = mods.add(n);
+                    dependencies.add(new Dependency(n, unseen, reqD));
+                }
+            }
+            
+            for (Dependency d : dependencies) {
+                if(d.unseen) {
+                    collect(d.node, d.reqD.getDependency(), mods, deps, currentDepth);
                 }
             }
         }
-        return meNode;
+        return dependencies;
     }
+    
+    private static class Dependency {
+        final ModuleNode node;
+        final boolean unseen;
+        final ModuleElement.RequiresDirective reqD;
+
+        public Dependency(ModuleNode node, boolean unseen, ModuleElement.RequiresDirective reqD) {
+            this.node = node;
+            this.unseen = unseen;
+            this.reqD = reqD;
+        }
+    }
+    
 }
