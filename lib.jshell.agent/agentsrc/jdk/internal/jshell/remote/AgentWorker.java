@@ -126,7 +126,7 @@ public class AgentWorker extends RemoteAgent implements Executor, Runnable {
     private Executor findExecutor() {
         Object o = System.getProperties().get(PROPERTY_EXECUTOR);;
         if (o instanceof Executor) {
-            this.userExecutor = (Executor)o;
+            return this.userExecutor = (Executor)o;
         } else if (o instanceof String) {
             try {
                 Class executorClazz = Class.forName((String)o);
