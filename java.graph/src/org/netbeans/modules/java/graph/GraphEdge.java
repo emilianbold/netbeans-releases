@@ -74,7 +74,6 @@ public final class GraphEdge<I extends GraphNodeImplementation> {
         this.primary = primary;
     }
 
-    // XXX set and use also for module-info
     public boolean isPrimary() {
         return primary;
     }

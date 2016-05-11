@@ -66,7 +66,7 @@ public final class GraphNode<I extends GraphNodeImplementation> {
     private I impl, parentAfterFix;
     
     private final  HashSet<I> duplicates;
-    private int level; // XXX set and use in module-info
+    private int level; 
     private int managedState = UNMANAGED;
 
     /** 

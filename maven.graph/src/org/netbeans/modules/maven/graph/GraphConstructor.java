@@ -94,10 +94,6 @@ public class GraphConstructor implements GraphNodeVisitor<MavenDependencyNode> {
                 grNode = new GraphNode(node);
                 cache.put(node.getDependencyConflictId(), grNode);
             } else {
-//                Set<MavenDependencyNode> cl = grNode.getDependencyNode().getDuplicatesOrConflicts();                
-//                for (MavenDependencyNode n : cl) { // XXX nasty!
-//                    node.addDuplicateOrConflict(n);
-//                }                
                 grNode.setImpl(node);
             }
             grNode.setPrimaryLevel(path.size());
