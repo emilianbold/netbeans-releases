@@ -71,25 +71,38 @@ public class StreamsHangupTestCase extends NativeExecutionBaseTestCase {
     }
 
     private String remoteScriptPath = null;
+    private static final String scriptName = "err_and_out.sh";
+    private final String prefix;
     private String remoteTmpDir = null;
 
     public StreamsHangupTestCase(String name, ExecutionEnvironment testExecutionEnvironment) {
         super(name, testExecutionEnvironment);
+        prefix = "[" + testExecutionEnvironment + "] ";
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         File dir = getDataDir();
-        File scriptFile = new File(dir, "err_and_out.sh");
+        File scriptFile = new File(dir, scriptName);
         assertTrue(scriptFile.exists());
         ExecutionEnvironment env = getTestExecutionEnvironment();
-        ConnectionManager.getInstance().connectTo(env);
-        remoteTmpDir = createRemoteTmpDir();
-        int rc = CommonTasksSupport.rmDir(env, remoteTmpDir, true, new PrintWriter(System.err)).get();
-        remoteScriptPath = remoteTmpDir + "/" + scriptFile.getName();
-        CommonTasksSupport.UploadStatus res = CommonTasksSupport.uploadFile(scriptFile, env, remoteScriptPath, 0777, true).get();
-        assertEquals("Error uploading file " + scriptFile.getAbsolutePath() + " to " + getTestExecutionEnvironment() + ":" + remoteScriptPath, 0, rc);
+        if (env.isLocal()) {
+            scriptFile.setExecutable(true);
+            remoteScriptPath = scriptFile.getAbsolutePath();
+            remoteTmpDir = File.createTempFile(getClass().getSimpleName(), ".dat").getAbsolutePath();
+        } else {
+            ConnectionManager.getInstance().connectTo(env);
+            remoteTmpDir = createRemoteTmpDir();
+            int rc = CommonTasksSupport.rmDir(env, remoteTmpDir, true, new PrintWriter(System.err)).get();
+            remoteScriptPath = remoteTmpDir + "/" + scriptFile.getName();
+            CommonTasksSupport.UploadStatus res = CommonTasksSupport.uploadFile(scriptFile, env, remoteScriptPath, 0777, true).get();
+            assertEquals("Error uploading file " + scriptFile.getAbsolutePath() + " to " + getTestExecutionEnvironment() + ":" + remoteScriptPath, 0, rc);
+        }
+    }
+
+    private void print(String text) {
+        System.err.println(prefix + text);
     }
 
     @Override
@@ -114,9 +127,9 @@ public class StreamsHangupTestCase extends NativeExecutionBaseTestCase {
         NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(env);
         pb.setExecutable(remoteScriptPath);
         pb.setArguments("-c", ""+cycles, "-o", ""+bufsize, "-e", ""+bufsize);
-        System.err.println("Starting process " + remoteScriptPath);
+        print("Starting process " + scriptName + " with cycles=" + cycles + ", bufsize=" + bufsize);
         NativeProcess process = pb.call();
-        System.err.println("Waiting process " + remoteScriptPath);
+        print("Waiting process " + scriptName + " with timeout=" + timeout);
         long time = System.currentTimeMillis();
         switch (action) {
             case NONE:
@@ -143,19 +156,21 @@ public class StreamsHangupTestCase extends NativeExecutionBaseTestCase {
             throw new TimeoutException("Process jas not finish in " + timeout + " seconds");
         }
         time = System.currentTimeMillis() - time;
-        System.err.println("Waited " + time + " ms");
+        print("Waited " + time + " ms");
         assertEquals("Script exit code", 0, process.exitValue());
         ProcessUtils.ExitStatus res = ProcessUtils.execute(env, "ls", "-l", remoteTmpDir);
         assertEquals(0, res.exitCode);
     }
 
-    private void findBufSize(Action action) throws Exception {
+    private void findBufSize(Action action, int timeout) throws Exception {
         int sz = 32;
         while (true) {
             try {
-                dotest(1, sz, 30, Action.READ_OUT_TTHEN_ERR);
+                dotest(1, sz, timeout, action);
             } catch (TimeoutException ex) {
-                TimeoutException ex2 = new TimeoutException("Hung w/bufsize=" + sz);
+                String text = "Hung with bufsize=" + sz + "; action=" + action;
+                print(text);
+                TimeoutException ex2 = new TimeoutException(text);
                 ex2.initCause(ex);
                 throw ex2;
             }
@@ -171,7 +186,16 @@ public class StreamsHangupTestCase extends NativeExecutionBaseTestCase {
 
     @ForAllEnvironments(section = "remote.platforms")
     public void testHangup() throws Exception {
-        dotest(1, 1024*1024, 30, Action.READ_OUT_TTHEN_ERR);
+
+        //findBufSize(Action.NONE, 10);
+        findBufSize(Action.READ_ERR_THEN_OUT, 10);
+
+        // does not hang
+        // dotest(1, 1024, 20, Action.READ_OUT_TTHEN_ERR);
+
+        // hangs
+        // dotest(1, 1024*1024, 20, Action.READ_OUT_TTHEN_ERR);
+
 //        dotest(1, 1024*1024, 30, Action.NONE);
 //        dotest(1, 1024*1024, 30, Action.CALL_PROCESSUTILS_IGNORE);
     }
