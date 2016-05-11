@@ -577,6 +577,7 @@ public final class ProcessUtils {
                     if (sb.length() > 0) {
                         sb.append('\n'); //NOI18N
                     }
+                    sb.append(line);
                 }
             }
             return sb.toString();
