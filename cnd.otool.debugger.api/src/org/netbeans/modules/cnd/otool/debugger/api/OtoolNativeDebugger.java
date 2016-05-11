@@ -447,12 +447,12 @@ public abstract class OtoolNativeDebugger <T extends OtoolNativeDebuggerInfo> {
 
         @Override
         public boolean isConnected() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N //To change body of generated methods, choose Tools | Templates.
         }
 
         @Override
         public void deleteBreakpoint(OtoolNativeBreakpoint bpt) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N //To change body of generated methods, choose Tools | Templates.
         }
 
 
