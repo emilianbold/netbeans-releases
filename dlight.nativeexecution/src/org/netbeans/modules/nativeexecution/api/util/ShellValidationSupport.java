@@ -104,7 +104,7 @@ public final class ShellValidationSupport {
             // not available yet ...
             ProcessUtils.ExitStatus exitStatus = ProcessUtils.execute(new ProcessBuilder(uname_exe.getPath(), "-m")); // NOI18N
             if (exitStatus.isOK()) {
-                cygwinBitness = exitStatus.output.trim();
+                cygwinBitness = exitStatus.getOutputString().trim();
             }
         }
 

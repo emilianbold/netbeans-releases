@@ -106,7 +106,7 @@ public class RemoteVcsSupportUtilTestCase extends RemoteFileTestBase {
 //                    "ln -s " + origFileInSubdirName + " " + lnkFileInSubdirPathRel + "; " +
                     "";
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
-            assertEquals("Error executing sc    ript \"" + script + "\": " + res.error, 0, res.exitCode);
+            assertEquals("Error executing sc    ript \"" + script + "\": " + res.getErrorString(), 0, res.exitCode);
 
             RemoteFileSystemManager.getInstance().resetFileSystem(execEnv, false);
 
@@ -159,7 +159,7 @@ public class RemoteVcsSupportUtilTestCase extends RemoteFileTestBase {
                     "ln -s " + origFileInSubdirName + " " + lnkFileInSubdirPathRel + "; " +
                     "";
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
-            assertEquals("Error executing sc    ript \"" + script + "\": " + res.error, 0, res.exitCode);
+            assertEquals("Error executing sc    ript \"" + script + "\": " + res.getErrorString(), 0, res.exitCode);
 
             RemoteFileSystemManager.getInstance().resetFileSystem(execEnv, false);
             
@@ -210,7 +210,7 @@ public class RemoteVcsSupportUtilTestCase extends RemoteFileTestBase {
                     "ln -s " + origFileInSubdirName + " " + lnkFileInSubdirPathRel + "; " +
                     "";
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
-            assertEquals("Error executing sc    ript \"" + script + "\": " + res.error, 0, res.exitCode);
+            assertEquals("Error executing sc    ript \"" + script + "\": " + res.getErrorString(), 0, res.exitCode);
 
             assertEquals(false, RemoteVcsSupportUtil.isSymbolicLink(fs, origFilePath));
             assertEquals(true, RemoteVcsSupportUtil.isSymbolicLink(fs, lnkFilePathAbs));
@@ -242,7 +242,7 @@ public class RemoteVcsSupportUtilTestCase extends RemoteFileTestBase {
                     "mkdir -p " + subdir + "; " +
                     "echo 123 > " + path + "; ";
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
-            assertEquals("Error executing sc    ript \"" + script + "\": " + res.error, 0, res.exitCode);
+            assertEquals("Error executing sc    ript \"" + script + "\": " + res.getErrorString(), 0, res.exitCode);
             OutputStream os = RemoteVcsSupportUtil.getOutputStream(fs, path);
             PrintWriter w = new PrintWriter(new OutputStreamWriter(os));
             w.append(text);
@@ -272,7 +272,7 @@ public class RemoteVcsSupportUtilTestCase extends RemoteFileTestBase {
                     "sleep 2; " +
                     "touch " + refFile + ";";
             ProcessUtils.ExitStatus res = ProcessUtils.executeInDir(basePath, execEnv, "sh", "-c", script);
-            assertEquals("Error executing sc    ript \"" + script + "\": " + res.error, 0, res.exitCode);
+            assertEquals("Error executing sc    ript \"" + script + "\": " + res.getErrorString(), 0, res.exitCode);
             //VCSFileProxy baseProxy = VCSFileProxy.createFileProxy(getFileObject(basePath));
             //VCSFileProxy proxy = VCSFileProxy.createFileProxy(baseProxy, file);
             //VCSFileProxy refProxy = VCSFileProxy.createFileProxy(baseProxy, refFile);

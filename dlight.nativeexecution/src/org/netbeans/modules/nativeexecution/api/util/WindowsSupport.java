@@ -365,7 +365,7 @@ public final class WindowsSupport {
             ExitStatus result = ProcessUtils.execute(new ProcessBuilder(activeShell.shell, "--login", "-c", "echo $LANG")); // NOI18N
 
             if (result.isOK()) {
-                String shellOutput = result.output;
+                String shellOutput = result.getOutputString();
                 int dotIndex = shellOutput.indexOf('.');
                 if (dotIndex >= 0) {
                     shellOutput = shellOutput.substring(dotIndex + 1).trim();

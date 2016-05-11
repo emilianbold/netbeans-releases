@@ -51,6 +51,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -374,7 +375,7 @@ public final class ProcessUtils {
                     error = t.getMessage();
                 } finally {
                     if (postExecutor != null) {
-                        postExecutor.processFinished(error == null ? status : new ExitStatus(1, "", error)); // NOI18N
+                        postExecutor.processFinished(error == null ? status : new ExitStatus(1, null, Arrays.asList(error.split("\n")))); // NOI18N
                     }
                 }
 
@@ -426,8 +427,8 @@ public final class ProcessUtils {
      */
     public static ExitStatus execute(final NativeProcessBuilder processBuilder) {
         ExitStatus result;
-        Future<String> error;
-        Future<String> output;
+        Future<List<String>> error;
+        Future<List<String>> output;
 
         if (processBuilder == null) {
             throw new NullPointerException("NULL process builder!"); // NOI18N
@@ -440,27 +441,27 @@ public final class ProcessUtils {
 
         try {
             final Process process = processBuilder.call();
-            error = NativeTaskExecutorService.submit(new Callable<String>() {
+            error = NativeTaskExecutorService.submit(new Callable<List<String>>() {
 
                 @Override
-                public String call() throws Exception {
-                    return readProcessErrorLine(process);
+                public List<String> call() throws Exception {
+                    return readProcessError(process);
                 }
             }, "e"); // NOI18N
-            output = NativeTaskExecutorService.submit(new Callable<String>() {
+            output = NativeTaskExecutorService.submit(new Callable<List<String>>() {
 
                 @Override
-                public String call() throws Exception {
-                    return readProcessOutputLine(process);
+                public List<String> call() throws Exception {
+                    return readProcessOutput(process);
                 }
             }, "o"); // NOI18N
 
             result = new ExitStatus(process.waitFor(), output.get(), error.get());
         } catch (InterruptedException ex) {
-            result = new ExitStatus(-100, "", ex.getMessage());
+            result = new ExitStatus(-100, null, Arrays.asList(ex.getMessage().split("\n"))); //NOI18N
         } catch (Throwable th) {
             org.netbeans.modules.nativeexecution.support.Logger.getInstance().log(Level.INFO, th.getMessage(), th);
-            result = new ExitStatus(-200, "", th.getMessage());
+            result = new ExitStatus(-200, null, Arrays.asList(th.getMessage().split("\n"))); //NOI18N
         }
 
         return result;
@@ -486,8 +487,8 @@ public final class ProcessUtils {
      */
     public static ExitStatus execute(final ProcessBuilder processBuilder) {
         ExitStatus result;
-        Future<String> error;
-        Future<String> output;
+        Future<List<String>> error;
+        Future<List<String>> output;
 
         if (processBuilder == null) {
             throw new NullPointerException("NULL process builder!"); // NOI18N
@@ -495,27 +496,27 @@ public final class ProcessUtils {
 
         try {
             final Process process = processBuilder.start();
-            error = NativeTaskExecutorService.submit(new Callable<String>() {
+            error = NativeTaskExecutorService.submit(new Callable<List<String>>() {
 
                 @Override
-                public String call() throws Exception {
-                    return readProcessErrorLine(process);
+                public List<String> call() throws Exception {
+                    return readProcessError(process);
                 }
             }, "e"); // NOI18N
-            output = NativeTaskExecutorService.submit(new Callable<String>() {
+            output = NativeTaskExecutorService.submit(new Callable<List<String>>() {
 
                 @Override
-                public String call() throws Exception {
-                    return readProcessOutputLine(process);
+                public List<String> call() throws Exception {
+                    return readProcessOutput(process);
                 }
             }, "o"); // NOI18N
 
             result = new ExitStatus(process.waitFor(), output.get(), error.get());
         } catch (InterruptedException ex) {
-            result = new ExitStatus(-100, "", ex.getMessage());
+            result = new ExitStatus(-100, null, Arrays.asList(ex.getMessage().split("\n")));
         } catch (Throwable th) {
             org.netbeans.modules.nativeexecution.support.Logger.getInstance().log(Level.INFO, th.getMessage(), th);
-            result = new ExitStatus(-200, "", th.getMessage());
+            result = new ExitStatus(-200, null, Arrays.asList(th.getMessage().split("\n")));
         }
 
         return result;
@@ -524,13 +525,61 @@ public final class ProcessUtils {
     public static final class ExitStatus {
 
         public final int exitCode;
+
+        /** @deprecated This field will be made private in the next daily build. */
+        @Deprecated
         public final String error;
+
+        /** @deprecated This field will be made private in the next daily build. */
+        @Deprecated
         public final String output;
 
-        public ExitStatus(int exitCode, String output, String error) {
+        private final List<String> outputLines;
+        private final List<String> errorLines;
+
+//        public ExitStatus(int exitCode, String output, String error) {
+//            this.exitCode = exitCode;
+//            this.error = error;
+//            this.output = output;
+//            outputLines = split(output);
+//            errorLines = split(error);
+//        }
+
+        public ExitStatus(int exitCode, List<String> outputLines, List<String> errorLines) {
             this.exitCode = exitCode;
-            this.error = error;
-            this.output = output;
+            this.outputLines = (outputLines == null) ?
+                    Collections.<String>emptyList() : Collections.unmodifiableList(outputLines);
+            this.output = (outputLines == null || outputLines.isEmpty()) ?
+                    "" : merge(outputLines); //NOI18N
+            this.errorLines = (errorLines == null) ?
+                    Collections.<String>emptyList() : Collections.unmodifiableList(errorLines);
+            this.error = (errorLines == null || errorLines.isEmpty()) ?
+                    "" : merge(errorLines); //NOI18N
+        }
+
+//        private List<String> split(String text) {
+//            if (text != null) {
+//                String[] array;
+//                if (Utilities.isWindows() && text.contains("\r\n")) { //NOI18N
+//                    array = text.split("\r\n"); //NOI18N
+//                } else {
+//                    array = text.split("\n"); //NOI18N
+//                }
+//                return Collections.unmodifiableList(Arrays.asList(array));
+//            }
+//            return Collections.<String>emptyList();
+//        }
+
+        private String merge(List<String> outputLines) {
+            StringBuilder sb = new StringBuilder();
+            if (outputLines != null) {
+                for (String line : outputLines) {
+                    if (sb.length() > 0) {
+                        sb.append('\n'); //NOI18N
+                    }
+                }
+            }
+            return sb.toString();
         }
 
         public boolean isOK() {
@@ -539,7 +588,25 @@ public final class ProcessUtils {
 
         @Override
         public String toString() {
-            return "ExitStatus " + "exitCode=" + exitCode + "\nerror=" + error + "\noutput=" + output; // NOI18N
+            return "ExitStatus " + "exitCode=" + exitCode + "\nerror=" + getErrorString() + "\noutput=" + getOutputString(); // NOI18N
+        }
+
+        /** This method may be ineffective. Consider using getOutputLines() */
+        public String getOutputString() {
+            return output;
+        }
+
+        public List<String> getOutputLines() {
+            return outputLines;
+        }
+
+        /** This method may be ineffective. Consider using getErrorLines() */
+        public String getErrorString() {
+            return error;
+        }
+
+        public List<String> getErrorLines() {
+            return errorLines;
         }
     }
 

@@ -335,7 +335,7 @@ public final class PlatformInfo {
         } else {
             final ExitStatus res = ProcessUtils.execute(executionEnvironment, "ls", "-A1"); //NOI18N
             if (res.isOK()) {
-                String files = res.output;
+                String files = res.getOutputString();
                 if (files != null) {
                     BufferedReader bufferedReader = new BufferedReader(new StringReader(files));
                     String line;
