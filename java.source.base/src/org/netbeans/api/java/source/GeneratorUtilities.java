@@ -80,14 +80,18 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Scope.StarImportScope;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.util.Context;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -1915,14 +1919,19 @@ public final class GeneratorUtilities {
         StringBuilder sb = new StringBuilder();
         if (element.isDefault() && element.getEnclosingElement().getKind().isInterface()) {
             Types types = copy.getTypes();
-            TypeMirror enclType = element.getEnclosingElement().asType();
+            Context ctx = ((JavacTaskImpl) copy.impl.getJavacTask()).getContext();
+            com.sun.tools.javac.code.Types typesImpl = com.sun.tools.javac.code.Types.instance(ctx);
+            TypeMirror enclType = typesImpl.asSuper((Type)clazz.asType(), ((Type)element.getEnclosingElement().asType()).tsym);
             if (!types.isSubtype(clazz.getSuperclass(), enclType)) {
+                TypeMirror selected = enclType;
                 for (TypeMirror iface : clazz.getInterfaces()) {
-                    if (types.isSubtype(iface, enclType)) {
-                        sb.append(((DeclaredType)iface).asElement().getSimpleName()).append('.');
+                    if (types.isSubtype(iface, selected) &&
+                        !types.isSameType(iface, enclType)) {
+                        selected = iface;
                         break;
                     }
                 }
+                sb.append(((DeclaredType)selected).asElement().getSimpleName()).append('.');
             }
         }
         sb.append("super.").append(element.getSimpleName()).append('('); //NOI18N

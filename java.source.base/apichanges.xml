@@ -49,6 +49,28 @@ made subject to such option by the copyright holder.
     <apidef name="javasource_base">Java Source API</apidef>
 </apidefs>
 <changes>
+    <change id="utilities.implementAndOverride.defaultMethods">
+        <api name="javasource_base"/>
+        <summary>Allow to return also unimplemented default methods</summary>
+        <version major="1" minor="2.15"/>
+        <date day="10" month="5" year="2016"/>
+        <author login="sdedic"/>
+        <compatibility addition="yes" binary="compatible" source="compatible"/>
+        <description>
+            <p>
+                <code>findUnimplementedMethods</code> and <code>findOverridableMethods</code>
+                work better with interface default methods: they are treated as implemented,
+                but overridable.
+            </p>
+            <p>
+                Allow <code>ElementUtilities.findUnimplementedMethods</code> enumerate
+                also default methods whose implementations are not provided by class or
+                superclasses.
+            </p>
+        </description>
+        <class name="ElementUtilities" package="org.netbeans.api.java.source"/>
+        <issue number=""/>
+    </change>
     <change id="generator.insert.caretlocation">
         <api name="javasource_base"/>
         <summary>Code Generator uses caret location to insert members</summary>

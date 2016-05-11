@@ -49,6 +49,7 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
 import com.sun.tools.javac.code.Scope;
+import com.sun.tools.javac.code.Source;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
@@ -70,6 +71,7 @@ public class ElementsService {
     private com.sun.tools.javac.code.Types jctypes;
     private Names names;
     private Types types;
+    private final boolean allowDefaultMethods;
     
     private static final Context.Key<ElementsService> KEY =
 	    new Context.Key<ElementsService>();
@@ -86,6 +88,7 @@ public class ElementsService {
         jctypes = com.sun.tools.javac.code.Types.instance(context);
         names = Names.instance(context);
         types = JavacTypes.instance(context);
+        allowDefaultMethods = Source.instance(context).allowDefaultMethods();
     }
 
     /** 
@@ -212,9 +215,49 @@ public class ElementsService {
             ((Symbol.ClassSymbol)element).fullname :
             Symbol.TypeSymbol.formFullName(sym.name, sym.owner);
     }
+    
+    private static boolean hasImplementation(MethodSymbol msym) {
+        long f = msym.flags();
+        return ((f & Flags.DEFAULT) != 0) || ((f & Flags.ABSTRACT) == 0);
+    }
 
     public Element getImplementationOf(ExecutableElement method, TypeElement origin) {
-        return ((MethodSymbol)method).implementation((TypeSymbol)origin, jctypes, true);
+        MethodSymbol msym = (MethodSymbol)method;
+        MethodSymbol implmethod = (msym).implementation((TypeSymbol)origin, jctypes, true);
+        if ((msym.flags() & Flags.STATIC) != 0) {
+            // return null if outside of hierarchy, or the method itself if origin extends method's class
+            if (jctypes.isSubtype(((TypeSymbol)origin).type,  ((TypeSymbol)((MethodSymbol)method).owner).type)) {
+                return method;
+            } else {
+                return null;
+            }
+        }
+        if (implmethod == null || implmethod == method) {
+            //look for default implementations
+            if (allowDefaultMethods) {
+                com.sun.tools.javac.util.List<MethodSymbol> candidates = jctypes.interfaceCandidates(((TypeSymbol) origin).type, (MethodSymbol) method);
+                X: for (com.sun.tools.javac.util.List<MethodSymbol> ptr = candidates; ptr.head != null; ptr = ptr.tail) {
+                    MethodSymbol prov = ptr.head;
+                    if (prov != null && prov.overrides((MethodSymbol) method, (TypeSymbol) origin, jctypes, true) &&
+                        hasImplementation(prov)) {
+                        // PENDING: even if `prov' overrides the method, there may be a different method, in different interface, that overrides `method'
+                        // 'prov' must override all such compatible methods in order to present a valid implementation of `method'.
+                        for (com.sun.tools.javac.util.List<MethodSymbol> sibling = candidates; sibling.head != null; sibling = sibling.tail) {
+                            MethodSymbol redeclare = sibling.head;
+
+                            // if the default method does not override the alternative candidate from an interface, then the default will be rejected
+                            // as specified in JLS #8, par. 8.4.8
+                            if (!prov.overrides(redeclare, (TypeSymbol)origin, jctypes, allowDefaultMethods)) {
+                                break X;
+                            }
+                        }
+                        implmethod = prov;
+                        break;
+                    }
+                }
+            }
+        }
+        return implmethod;
     }
 
     public boolean isSynthetic(Element e) {
@@ -223,12 +266,15 @@ public class ElementsService {
     
     public ExecutableElement getOverriddenMethod(ExecutableElement method) {
         MethodSymbol m = (MethodSymbol)method;
+        if ((m.flags() & Flags.STATIC) != 0) {
+            return null;
+        }
 	ClassSymbol origin = (ClassSymbol)m.owner;
         MethodSymbol bridgeCandidate = null;
-	for (Type t = jctypes.supertype(origin.type); t.hasTag(TypeTag.CLASS); t = jctypes.supertype(t)) {
-	    TypeSymbol c = t.tsym;
+        for (Type t = jctypes.supertype(origin.type); t.hasTag(TypeTag.CLASS); t = jctypes.supertype(t)) {
+            TypeSymbol c = t.tsym;
             for (Symbol sym : c.members().getSymbolsByName(m.name)) {
-		if (m.overrides(sym, origin, jctypes, false)) {
+                if (m.overrides(sym, origin, jctypes, false)) {
                     if ((sym.flags() & Flags.BRIDGE) > 0) {
                         if (bridgeCandidate == null) {
                             bridgeCandidate = (MethodSymbol)sym;
@@ -237,8 +283,24 @@ public class ElementsService {
                         return (MethodSymbol)sym;
                     }
                 }
-	    }
-	}
+            }
+        }
+        if (allowDefaultMethods) {
+            for (com.sun.tools.javac.util.List<MethodSymbol> candidates = jctypes.interfaceCandidates(((TypeSymbol) origin).type, (MethodSymbol) method);
+                 candidates != null; candidates = candidates.tail) {
+                MethodSymbol prov = candidates.head;
+                if (prov != null && prov != method && m.overrides(prov, origin, jctypes, true) &&
+                    hasImplementation(prov)) {
+                    if ((prov.flags() & Flags.BRIDGE) > 0) {
+                        if (bridgeCandidate == null) {
+                            bridgeCandidate = (MethodSymbol)prov;
+                        }
+                    } else {
+                        return (MethodSymbol)prov;
+                    }
+                }
+            }
+        }
         return bridgeCandidate;
     }
 }
