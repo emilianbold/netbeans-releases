@@ -115,8 +115,7 @@ public class GraphConstructor implements GraphNodeVisitor<MavenDependencyNode> {
         }
 
         if (node != root && grNode.getImpl() != null) {
-            grNode.setManagedState(
-                    obtainManagedState(grNode.getImpl(), scene));
+            grNode.setManagedState(obtainManagedState(grNode.getImpl()));
         }
 
         path.push(node);
@@ -152,7 +151,7 @@ public class GraphConstructor implements GraphNodeVisitor<MavenDependencyNode> {
         return true;
     }
 
-    private int obtainManagedState(MavenDependencyNode dependencyNode, DependencyGraphScene scene) {        
+    private int obtainManagedState(MavenDependencyNode dependencyNode) {        
         if (proj == null) {
             return GraphNode.UNMANAGED;
         }
