@@ -579,11 +579,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
                             return dependencyNode1.compareVersions(dependencyNode2);
                         }
                         @Override
-                        public boolean isIncluded(MavenDependencyNode dependencyNode) {
-                            return dependencyNode.getState() == DependencyNode.INCLUDED;
-                        }
-                        @Override
-                        public boolean isConflict(MavenDependencyNode dependencyNode) {
+                        public boolean isOmmitedForConflict(MavenDependencyNode dependencyNode) {
                              return dependencyNode.getState() == DependencyNode.OMITTED_FOR_CONFLICT;
                         }
                     };
