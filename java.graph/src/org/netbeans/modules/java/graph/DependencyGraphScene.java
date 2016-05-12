@@ -115,6 +115,7 @@ public class DependencyGraphScene<I extends GraphNodeImplementation> extends Gra
     
         String getVersion(I impl);    
         int compareVersions(I impl1, I impl2);
+        boolean isIncluded(I impl);
         boolean isOmmitedForConflict(I impl);
     }
     
@@ -267,7 +268,7 @@ public class DependencyGraphScene<I extends GraphNodeImplementation> extends Gra
             return true;
         }
         assert versionProvider != null;
-        return !versionProvider.isOmmitedForConflict(node);
+        return versionProvider.isIncluded(node);
     }
     
     boolean isConflict(I node) {

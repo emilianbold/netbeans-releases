@@ -582,6 +582,10 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
                         public boolean isOmmitedForConflict(MavenDependencyNode dependencyNode) {
                              return dependencyNode.getState() == DependencyNode.OMITTED_FOR_CONFLICT;
                         }
+                        @Override
+                        public boolean isIncluded(MavenDependencyNode dependencyNode) {
+                             return dependencyNode.getState() == DependencyNode.INCLUDED;
+                        }
                     };
                     
                     final DependencyGraphScene<MavenDependencyNode> scene2 = new DependencyGraphScene<>(
