@@ -1,4 +1,4 @@
-var |>MARK_OCCURRENCES:MyLib<| = new function |>MARK_OCCURRENCES:MyLib<|() {};
+var |>MARK_OCCURRENCES:MyLib<| = new function MyLib() {};
  *  @return {|>MARK_OCCURRENCES:MyLib<|.ObjB} description */
 |>MARK_OCCURRENCES:MyL^ib<|.ObjB = function (arg) {
  *  @returns {|>MARK_OCCURRENCES:MyLib<|.ObjB} */

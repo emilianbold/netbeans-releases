@@ -1,0 +1,7 @@
+Code completion result for source line:
+console.log(Utils.values().next().d|one);
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     defineProperties(O: Object, Pr  [PUBLIC,   JS Platform
+METHOD     defineProperty(O: Object, P: S  [PUBLIC,   JS Platform
+FIELD      done: Boolean                   [PUBLIC]   JS Platform
