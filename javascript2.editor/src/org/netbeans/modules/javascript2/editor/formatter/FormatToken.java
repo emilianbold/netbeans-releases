@@ -43,7 +43,7 @@ package org.netbeans.modules.javascript2.editor.formatter;
 
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
 
 /**
  *
@@ -295,7 +295,6 @@ public final class FormatToken {
                 return false;
             }
         },
-
         // separate line wrap options
         AFTER_IF_START {
             @Override
@@ -427,6 +426,16 @@ public final class FormatToken {
                 return false;
             }
         },
+        AFTER_ARROW_OPERATOR_WRAP {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
         BEFORE_TERNARY_OPERATOR_WRAP {
             @Override
             public boolean isLineWrapMarker() {
@@ -497,8 +506,48 @@ public final class FormatToken {
                 return false;
             }
         },
+        AFTER_CLASS_START {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        BEFORE_CLASS_END {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        BEFORE_CLASS_EXTENDS {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
         // a bit special tokens to detect proper continuation
         AFTER_PROPERTY {
+            @Override
+            public boolean isLineWrapMarker() {
+                return true;
+            }
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        AFTER_ELEMENT {
             @Override
             public boolean isLineWrapMarker() {
                 return true;
@@ -530,6 +579,10 @@ public final class FormatToken {
         // around assignment operator
         BEFORE_ASSIGNMENT_OPERATOR,
         AFTER_ASSIGNMENT_OPERATOR,
+        
+        // around arrow operator
+        BEFORE_ARROW_OPERATOR,
+        AFTER_ARROW_OPERATOR,
 
         // around property
         BEFORE_PROPERTY_OPERATOR,
@@ -595,6 +648,30 @@ public final class FormatToken {
         BEFORE_TERNARY_OPERATOR,
         AFTER_TERNARY_OPERATOR,
 
+        // only marks the arrow function start, no corresponding option
+        BEFORE_ARROW_FUNCTION_DECLARATION {
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        
+        // marks the arrow block
+        BEFORE_ARROW_BLOCK {
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+
+        // marks the arrow block
+        AFTER_ARROW_BLOCK {
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+        
         BEFORE_ANONYMOUS_FUNCTION_DECLARATION,
         
         BEFORE_FUNCTION_DECLARATION,
@@ -634,6 +711,13 @@ public final class FormatToken {
 
         // before braces
         BEFORE_FUNCTION_DECLARATION_BRACE {
+            @Override
+            public boolean isBraceMarker() {
+                return true;
+            }
+        },
+        
+        BEFORE_CLASS_DECLARATION_BRACE {
             @Override
             public boolean isBraceMarker() {
                 return true;
