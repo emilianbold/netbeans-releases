@@ -298,6 +298,12 @@ class Buffer {
         }
     }
 
+    public BExtent find_line(BCoord coord) {
+        WordDelineator newLine = new WordDelineator();
+        newLine.setWordDelimiters("\n"); //NOI18N
+        return find_word(newLine, coord);
+    }
+
     public BExtent find_word(WordDelineator word_delineator, BCoord coord) {
         /*
          * Find the boundaries of a "word" at 'coord'.

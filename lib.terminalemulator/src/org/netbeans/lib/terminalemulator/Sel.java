@@ -237,6 +237,13 @@ class Sel implements ClipboardOwner {
 	sel_tracking = Sel.SEL_LINE;
 	old_sel_tracking = Sel.SEL_NONE;
     }
+    
+    public void select_line(Extent range) {
+	sel_origin = new Coord(range.begin);
+	sel_extent = new Coord(range.end);
+	sel_tracking = Sel.SEL_LINE;
+	old_sel_tracking = Sel.SEL_NONE;
+    }
 
     private boolean extend_work(Coord p, int tracking) {
 	/*

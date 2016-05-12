@@ -77,9 +77,7 @@ public class WordDelineator {
      * everything else.
      */
     protected int charClass(char c) {
-        if (Character.isWhitespace(c)) {
-            return 1;
-        } else if (delimiters.indexOf(c) >= 0) {
+        if (delimiters.indexOf(c) >= 0) {
             return 2;
         } else {
             return 0;
