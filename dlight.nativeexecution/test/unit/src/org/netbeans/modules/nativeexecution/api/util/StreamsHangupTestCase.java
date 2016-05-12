@@ -52,6 +52,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import junit.framework.Test;
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertNotNull;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -80,124 +82,71 @@ public class StreamsHangupTestCase extends NativeExecutionBaseTestCase {
         prefix = "[" + testExecutionEnvironment + "] ";
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        File dir = getDataDir();
-        File scriptFile = new File(dir, scriptName);
-        assertTrue(scriptFile.exists());
-        ExecutionEnvironment env = getTestExecutionEnvironment();
-        if (env.isLocal()) {
-            scriptFile.setExecutable(true);
-            remoteScriptPath = scriptFile.getAbsolutePath();
-            remoteTmpDir = File.createTempFile(getClass().getSimpleName(), ".dat").getAbsolutePath();
-        } else {
-            ConnectionManager.getInstance().connectTo(env);
-            remoteTmpDir = createRemoteTmpDir();
-            int rc = CommonTasksSupport.rmDir(env, remoteTmpDir, true, new PrintWriter(System.err)).get();
-            remoteScriptPath = remoteTmpDir + "/" + scriptFile.getName();
-            CommonTasksSupport.UploadStatus res = CommonTasksSupport.uploadFile(scriptFile, env, remoteScriptPath, 0777, true).get();
-            assertEquals("Error uploading file " + scriptFile.getAbsolutePath() + " to " + getTestExecutionEnvironment() + ":" + remoteScriptPath, 0, rc);
-        }
-    }
+    private class DelegateImpl implements StreamsHangup.Delegate {
 
-    private void print(String text) {
-        System.err.println(prefix + text);
-    }
+        private volatile File scriptFile;
 
-    @Override
-    protected void tearDown() throws Exception {
-        if (remoteTmpDir != null) {
+        @Override
+        public void setup(File scriptFile) throws Exception {
+            this.scriptFile = scriptFile;
             ExecutionEnvironment env = getTestExecutionEnvironment();
-            CommonTasksSupport.rmDir(env, remoteTmpDir, true, new PrintWriter(System.err)).get();
-        }
-        super.tearDown();
-    }
-
-    enum Action {
-        NONE,
-        CALL_PROCESSUTILS_IGNORE,
-        READ_ERR_THEN_OUT,
-        READ_OUT_TTHEN_ERR,
-    }
-
-    private void dotest(int cycles, int bufsize, int timeout, Action action) throws Exception {
-        assertNotNull(remoteScriptPath);
-        final ExecutionEnvironment env = getTestExecutionEnvironment();
-        NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(env);
-        pb.setExecutable(remoteScriptPath);
-        pb.setArguments("-c", ""+cycles, "-o", ""+bufsize, "-e", ""+bufsize);
-        print("Starting process " + scriptName + " with cycles=" + cycles + ", bufsize=" + bufsize);
-        NativeProcess process = pb.call();
-        print("Waiting process " + scriptName + " with timeout=" + timeout);
-        long time = System.currentTimeMillis();
-        switch (action) {
-            case NONE:
-                break;
-            case CALL_PROCESSUTILS_IGNORE:
-                ProcessUtils.ignoreProcessOutputAndError(process);
-                break;
-            case READ_ERR_THEN_OUT:
-                readStream(process.getErrorStream());
-                readStream(process.getInputStream());
-                break;
-            case READ_OUT_TTHEN_ERR:
-                readStream(process.getInputStream());
-                readStream(process.getErrorStream());
-                break;
-            default:
-                throw new AssertionError(action.name());
-        }
-        boolean exited = process.waitFor(timeout, TimeUnit.SECONDS);
-        if (!exited) {
-            int pid = process.getPID();
-            ProcessUtils.execute(env, "kill", "-9", ""+pid);
-            //process.destroy(); does not work on Mac
-            throw new TimeoutException("Process jas not finish in " + timeout + " seconds");
-        }
-        time = System.currentTimeMillis() - time;
-        print("Waited " + time + " ms");
-        assertEquals("Script exit code", 0, process.exitValue());
-        ProcessUtils.ExitStatus res = ProcessUtils.execute(env, "ls", "-l", remoteTmpDir);
-        assertEquals(0, res.exitCode);
-    }
-
-    private void findBufSize(Action action, int timeout) throws Exception {
-        int sz = 32;
-        while (true) {
-            try {
-                dotest(1, sz, timeout, action);
-            } catch (TimeoutException ex) {
-                String text = "Hung with bufsize=" + sz + "; action=" + action;
-                print(text);
-                TimeoutException ex2 = new TimeoutException(text);
-                ex2.initCause(ex);
-                throw ex2;
-            }
-            if (sz > 1024*16) {
-                sz += 1024*4;
-            } else if (sz > 1024) {
-                sz += 1024;
+            if (env.isLocal()) {
+                scriptFile.setExecutable(true); // just in case
+                remoteScriptPath = scriptFile.getAbsolutePath();
+                remoteTmpDir = File.createTempFile(getClass().getSimpleName(), ".dat").getAbsolutePath();
             } else {
-                sz *= 2;
+                ConnectionManager.getInstance().connectTo(env);
+                remoteTmpDir = createRemoteTmpDir();
+                int rc = CommonTasksSupport.rmDir(env, remoteTmpDir, true, new PrintWriter(System.err)).get();
+                remoteScriptPath = remoteTmpDir + "/" + scriptFile.getName();
+                CommonTasksSupport.UploadStatus res = CommonTasksSupport.uploadFile(scriptFile, env, remoteScriptPath, 0777, true).get();
+                assertEquals("Error uploading file " + scriptFile.getAbsolutePath() + " to " + getTestExecutionEnvironment() + ":" + remoteScriptPath, 0, rc);
             }
         }
+
+
+        @Override
+        public Process createProcess(String... arguments) throws IOException {
+            assertNotNull(remoteScriptPath);
+            final ExecutionEnvironment env = getTestExecutionEnvironment();
+            NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(env);
+            pb.setExecutable(remoteScriptPath);
+            pb.setArguments(arguments);
+            NativeProcess process = pb.call();
+            return process;
+        }
+
+        @Override
+        public void cleanup() throws Exception {
+            if (remoteTmpDir != null) {
+                ExecutionEnvironment env = getTestExecutionEnvironment();
+                if (env.isRemote()) { // in the case of local, we don't copy anything
+                    CommonTasksSupport.rmDir(env, remoteTmpDir, true, new PrintWriter(System.err)).get();
+                }
+            }
+        }
+
+        @Override
+        public String getScriptName() {
+            return scriptName;
+        }
+
+        @Override
+        public String getPrefix() {
+            return prefix;
+        }
+
+        @Override
+        public void kill(Process process) throws IOException {
+            final ExecutionEnvironment env = getTestExecutionEnvironment();
+            int pid = ((NativeProcess) process).getPID();
+            ProcessUtils.execute(env, "kill", "-9", "" + pid);        }
     }
+
 
     @ForAllEnvironments(section = "remote.platforms")
     public void testHangup() throws Exception {
-
-        //findBufSize(Action.NONE, 10);
-        findBufSize(Action.READ_ERR_THEN_OUT, 10);
-
-        // does not hang
-        // dotest(1, 1024, 20, Action.READ_OUT_TTHEN_ERR);
-
-        // hangs
-        // dotest(1, 1024*1024, 20, Action.READ_OUT_TTHEN_ERR);
-
-//        dotest(1, 1024*1024, 30, Action.NONE);
-//        dotest(1, 1024*1024, 30, Action.CALL_PROCESSUTILS_IGNORE);
+        new StreamsHangup(new DelegateImpl()).test();
     }
     
     public static Test suite() {
