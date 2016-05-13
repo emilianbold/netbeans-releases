@@ -712,6 +712,15 @@ public class PhpTypedBreakInterceptorTest extends PhpTypinghooksTestBase {
         );
     }
 
+    public void testInsertBreakAfterGroupUse_08() throws Exception {
+        insertBreak(
+                "use Foo\\{^ // comment",
+                "use Foo\\{\n"
+                + "    ^// comment\n"
+                + "};"
+        );
+    }
+
     public void testInsertBreakAfterUseTrait() throws Exception {
         insertBreak(
                 "class C {\n"
