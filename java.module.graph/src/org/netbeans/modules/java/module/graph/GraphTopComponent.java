@@ -351,9 +351,10 @@ final class GraphTopComponent extends TopComponent implements MultiViewElement, 
         
         scene = new DependencyGraphScene(null, null, GraphTopComponent.this::getSelectedDepth, null, null);
         nodes.stream().forEach((n)-> {
-            scene.addNode(n, n.getDepth());
+            scene.addGraphNodeImpl(n);
         });
         edges.stream().forEach((e)-> scene.addEdge(e.getSource(), e.getTarget()));
+        scene.calculatePrimaryPathsAndLevels();       
         JComponent sceneView = scene.getView();
         if (sceneView == null) {
             sceneView = scene.createView();

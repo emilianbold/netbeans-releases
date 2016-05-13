@@ -43,6 +43,8 @@
 package org.netbeans.modules.java.graph;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Stack;
 
 /**
@@ -55,36 +57,42 @@ class HighlightVisitor implements GraphNodeVisitor {
     private GraphNodeImplementation root;
     private int max = Integer.MAX_VALUE;
 
+    private final Map<GraphNodeImplementation, Integer> node2Path;
+    
     HighlightVisitor(DependencyGraphScene scene) {
         this.scene = scene;
-        path = new Stack<>();
+        path = new Stack<>(); 
+        node2Path = new HashMap<>();
     }
 
     public void setMaxDepth(int max) {
         this.max = max;
+        node2Path.clear();
     }
 
     @Override public boolean visit(GraphNodeImplementation node) {
         if (root == null) {
             root = node;
         }
-        if (scene.isIncluded(node)) {
+        if (scene.isIncluded(node) && acceptDepth(node)) {
             path.push(node);
+            node2Path.put(node, path.size());
+            
             GraphNode grNode = scene.getGraphNodeRepresentant(node);
             if (grNode == null) {
                 return false;
             }
-            NodeWidget aw = (NodeWidget) scene.findWidget(grNode);
+            NodeWidget nw = (NodeWidget) scene.findWidget(grNode);
             Collection<GraphEdge> edges = scene.findNodeEdges(grNode, true, true);
-            aw.setReadable(false);
+            nw.setReadable(false);
             if (path.size() > max) {
-                aw.setPaintState(EdgeWidget.GRAYED);
+                nw.setPaintState(EdgeWidget.GRAYED);
                 for (GraphEdge e : edges) {
                     EdgeWidget ew = (EdgeWidget) scene.findWidget(e);
                     ew.setState(EdgeWidget.GRAYED);
                 }
             } else {
-                aw.setPaintState(EdgeWidget.REGULAR);
+                nw.setPaintState(EdgeWidget.REGULAR);
                 for (GraphEdge e : edges) {
                     EdgeWidget ew = (EdgeWidget) scene.findWidget(e);
                     ew.setState(EdgeWidget.REGULAR);
@@ -97,9 +105,23 @@ class HighlightVisitor implements GraphNodeVisitor {
     }
 
     @Override public boolean endVisit(GraphNodeImplementation node) {
-        if (scene.isIncluded(node)) {
+        if (path.peek() == node) {
             path.pop();
         }
         return true;
     }
+
+    /**
+     * accept only nodes with path shorter as the one already visited
+     * @param node
+     * @return 
+     */
+    private boolean acceptDepth(GraphNodeImplementation node) {
+        Integer d = node2Path.get(node);
+        if(d == null) {
+            return true;
+        }
+        return path.size() < d;
+    }
+
 }

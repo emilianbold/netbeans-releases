@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -206,10 +207,8 @@ public class DependencyGraphScene<I extends GraphNodeImplementation> extends Gra
         getActions().addAction(popupMenuAction);
     }
 
-    public void addNode(I d, int depth) {
-        GraphNode<I> graphNode = new GraphNode<>(d);
-        graphNode.setPrimaryLevel(depth);
-        addNode(graphNode);
+    public void addGraphNodeImpl(I d) {
+        super.addNode(new GraphNode<>(d));
     }
     
     public GraphEdge addEdge(I source, I target) {
@@ -401,7 +400,24 @@ public class DependencyGraphScene<I extends GraphNodeImplementation> extends Gra
         NodeWidget wid = (NodeWidget)findWidget(target);
         ((ConnectionWidget) findWidget(edge)).setTargetAnchor(AnchorFactory.createRectangularAnchor(wid));
     }
-
+    
+    public void calculatePrimaryPathsAndLevels() {
+        Collection<GraphNode<I>> ns = getNodes();        
+        for (GraphNode<I> n : ns) {
+            List<GraphEdge> primaryPathEdges = new ArrayList<>();
+            LinkedList<GraphNode> importantNodes = new LinkedList<>(); // XXX node depth?
+            addPathToRoot(n, primaryPathEdges, importantNodes);
+            for (GraphEdge pe : primaryPathEdges) {
+                pe.setPrimaryPath(true);
+            }
+            int level = primaryPathEdges.size();
+            n.setPrimaryLevel(level);
+            if (level > maxDepth) {
+                maxDepth = level;
+            }
+        }
+    }
+    
     void highlightRelated (GraphNode<I> node) {
         List<GraphNode> importantNodes = new ArrayList<GraphNode>();
         List<GraphEdge> otherPathsEdges = new ArrayList<GraphEdge>();
