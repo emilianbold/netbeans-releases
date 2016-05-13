@@ -66,6 +66,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 
+// XXX create Handler that will process test results so this class can be tested
 @NbBundle.Messages("TestRunner.noName=<no name>")
 public final class TestRunner {
 
