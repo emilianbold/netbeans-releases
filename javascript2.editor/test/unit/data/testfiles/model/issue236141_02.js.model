@@ -20,7 +20,7 @@ angular           : OBJECT angular [ANONYMOUS: false, DECLARED: false - angular,
                                               OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
                                               # PROPERTIES
                                               arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-issue236141_02_L1 : FUNCTION issue236141_02_L1 [ANONYMOUS: true, DECLARED: true - issue236141_02_L1, MODIFIERS: PUBLIC, FUNCTION]
+issue236141_02L$1 : FUNCTION issue236141_02L$1 [ANONYMOUS: true, DECLARED: true - issue236141_02L$1, MODIFIERS: PUBLIC, FUNCTION]
                   # RETURN TYPES
                   undefined, RESOLVED: true
                   # PARAMETERS
