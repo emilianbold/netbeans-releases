@@ -92,4 +92,6 @@ public class TestRunnerTest {
         Assert.assertArrayEquals(expected, TestRunner.processDetails(details));
     }
 
+    // XXX test karma output parsing
+
 }

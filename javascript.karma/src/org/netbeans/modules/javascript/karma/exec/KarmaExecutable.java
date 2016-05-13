@@ -301,6 +301,8 @@ public class KarmaExecutable {
 
     private static final class ServerLineConvertor implements LineConvertor {
 
+        private static final boolean DEBUG = Boolean.getBoolean("nb.karma.debug"); // NOI18N
+
         private static final String NB_BROWSERS = "$NB$netbeans browsers "; // NOI18N
         private static final String KARMA_ERROR = "[31mERROR ["; // NOI18N
         private static final String KARMA_WARN = "[33mWARN ["; // NOI18N
@@ -355,6 +357,9 @@ public class KarmaExecutable {
             } else if (line.startsWith(TestRunner.NB_LINE)) {
                 // test result
                 testRunner.process(line);
+                if (DEBUG) {
+                    return Collections.singletonList(ConvertedLine.forText(line, null));
+                }
                 return Collections.emptyList();
             }
             // some error before browser startup?
