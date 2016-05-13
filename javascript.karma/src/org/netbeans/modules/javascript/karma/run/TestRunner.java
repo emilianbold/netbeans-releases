@@ -344,7 +344,8 @@ public final class TestRunner {
         } else if (line.startsWith(TEST_FAILURE)) {
             testFailure(line);
         } else if (line.startsWith(TEST_IGNORE)) {
-            testIgnore(line);
+            // #259119
+            //testIgnore(line);
         } else {
             LOGGER.log(Level.FINE, "Unexpected test line: {0}", line);
             assert false : line;
