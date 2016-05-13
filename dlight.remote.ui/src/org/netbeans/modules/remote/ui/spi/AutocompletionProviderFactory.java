@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.spi;
+package org.netbeans.modules.remote.ui.spi;
 
 import org.netbeans.modules.remote.api.ui.AutocompletionProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;

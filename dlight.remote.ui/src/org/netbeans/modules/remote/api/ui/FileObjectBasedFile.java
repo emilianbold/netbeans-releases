@@ -59,8 +59,9 @@ import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
+import org.netbeans.modules.remote.api.RemoteFile;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
-import org.netbeans.modules.remote.support.RemoteLogger;
+import org.netbeans.modules.remote.ui.support.RemoteLogger;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -74,7 +75,7 @@ import org.openide.util.Utilities;
  *
  * @author ak119685
  */
-public final class FileObjectBasedFile extends File {
+public final class FileObjectBasedFile extends File implements RemoteFile{
 
     private final ExecutionEnvironment env;
     private FileObject fo;

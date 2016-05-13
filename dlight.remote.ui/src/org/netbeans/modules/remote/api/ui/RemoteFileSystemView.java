@@ -59,7 +59,7 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
-import org.netbeans.modules.remote.support.RemoteLogger;
+import org.netbeans.modules.remote.ui.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 

@@ -37,51 +37,21 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.spi;
+package org.netbeans.modules.remote.ui.spi;
 
-import java.beans.PropertyChangeListener;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
 
 /**
  *
- * @author vk155633
+ * @author Vladimir Kvashin
  */
-public interface ServerRecordUIController {
-    
-    /** valid property. */
-    public static final String      PROP_VALID = "valid"; // NOI18N
-
-    /** Called when "Ok" button is pressed.*/
-    public void ok ();
-
-    /** Called when "Cancel" button is pressed. */
-    public void cancel ();
-
-    /**
-     * Return <code>true</code> whether value of this customizer
-     * is valid (and OK button can be enabled).
-     * <p>
-     * When this interface is implemented by a class that extends
-     * {@link javax.swing.JComponent}, this method clashes with
-     * {@link javax.swing.JComponent#isValid()} method. In this case please implement
-     * this by a different class and override {@link AttachType#getController()},
-     * resp. {@link BreakpointType#getController()}.
-     *
-     * @return <code>true</code> if the value of this customizer is valid, otherewise false
-     */
-    public boolean isValid ();
-
-    /**
-     * Adds property changes listener.
-     * @param listener l the listener to add
-     */
-    public abstract void addPropertyChangeListener (PropertyChangeListener listener);
-
-    /**
-     * Removes property changes listener
-     * @param listener  the listener to remove
-     */
-    public abstract void removePropertyChangeListener (PropertyChangeListener listener);
+public interface ConnectionNotifierImplementation {
+    void addTask(ExecutionEnvironment executionEnvironment, ConnectionNotifier.NamedRunnable task);
+    void removeTask(ExecutionEnvironment executionEnvironment, ConnectionNotifier.NamedRunnable task);
+    public void addExplicitConnectionListener(ExecutionEnvironment executionEnvironment, ConnectionNotifier.ExplicitConnectionListener listener);
+    public void removeExplicitConnectionListener(ExecutionEnvironment executionEnvironment, ConnectionNotifier.ExplicitConnectionListener listener);
 }

@@ -91,6 +91,7 @@
                 <friend>org.netbeans.modules.dlight.perfan</friend>
                 <friend>org.netbeans.modules.dlight.remote</friend>
                 <friend>org.netbeans.modules.dlight.remote.impl</friend>
+                <friend>org.netbeans.modules.dlight.remote.ui</friend>
                 <friend>org.netbeans.modules.cnd.mixeddev</friend>
                 <friend>org.netbeans.modules.remotefs.versioning</friend>
                 <package>org.netbeans.modules.dlight.libs.common</package>
