@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,21 +37,14 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.remote.spi;
-
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
+package org.netbeans.modules.remote.api;
 
 /**
- *
- * @author Vladimir Kvashin
+ * Marker interface
+ * @author masha
  */
-public interface ConnectionNotifierImplementation {
-    void addTask(ExecutionEnvironment executionEnvironment, ConnectionNotifier.NamedRunnable task);
-    void removeTask(ExecutionEnvironment executionEnvironment, ConnectionNotifier.NamedRunnable task);
-    public void addExplicitConnectionListener(ExecutionEnvironment executionEnvironment, ConnectionNotifier.ExplicitConnectionListener listener);
-    public void removeExplicitConnectionListener(ExecutionEnvironment executionEnvironment, ConnectionNotifier.ExplicitConnectionListener listener);
+public interface RemoteFile {
+    
 }

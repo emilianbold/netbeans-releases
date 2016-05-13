@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.remote.api.ui;
 
-import org.netbeans.modules.remote.spi.AutocompletionProviderFactory;
+import org.netbeans.modules.remote.ui.spi.AutocompletionProviderFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

@@ -40,50 +40,48 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.api;
+package org.netbeans.modules.remote.ui.spi;
 
-import java.beans.PropertyEditor;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.explorer.propertysheet.PropertyEnv;
-import org.openide.util.NotImplementedException;
+import java.beans.PropertyChangeListener;
 
 /**
- * Displayes Edit Servers List dialog.
- * @author Vladimir Kvashin
+ *
+ * @author vk155633
  */
-public final class ServerListUI {
+public interface ServerRecordUIController {
+    
+    /** valid property. */
+    public static final String      PROP_VALID = "valid"; // NOI18N
 
-    public interface Accessor<T> {
-        T get();
-        void set(T value);
-    }
+    /** Called when "Ok" button is pressed.*/
+    public void ok ();
 
-    private ServerListUI() {}
-
-    /**
-     * Shows servers list dialog.
-     * @param selectedRecord currently selected serverRecord.
-     * Can be null; in this case "localhost" will be selected.
-     * @return selected ServerRecord if user changed selectioh and pressed enter, otherwise null
-     */
-    public static ServerRecord showServerListDialog(ServerRecord selectedRecord) {
-        return showServerListDialog(selectedRecord.getExecutionEnvironment());
-    }
+    /** Called when "Cancel" button is pressed. */
+    public void cancel ();
 
     /**
-     * Shows servers list dialog.
-     * @param selectedRecord currently selected serverRecord.
-     * Can be null; in this case "localhost" will be selected.
-     * @return selected ServerRecord if user changed selectioh and pressed enter, otherwise null
+     * Return <code>true</code> whether value of this customizer
+     * is valid (and OK button can be enabled).
+     * <p>
+     * When this interface is implemented by a class that extends
+     * {@link javax.swing.JComponent}, this method clashes with
+     * {@link javax.swing.JComponent#isValid()} method. In this case please implement
+     * this by a different class and override {@link AttachType#getController()},
+     * resp. {@link BreakpointType#getController()}.
+     *
+     * @return <code>true</code> if the value of this customizer is valid, otherewise false
      */
-    public static ServerRecord showServerListDialog(ExecutionEnvironment selectedEnv) {
-        throw new NotImplementedException();
-    }
+    public boolean isValid ();
 
     /**
-     * To be used as a custom property editor
+     * Adds property changes listener.
+     * @param listener l the listener to add
      */
-    public static PropertyEditor getCustomPropertyEditor(Accessor<ServerRecord> selectedRecordAccessor) {
-        throw new NotImplementedException();
-    }
+    public abstract void addPropertyChangeListener (PropertyChangeListener listener);
+
+    /**
+     * Removes property changes listener
+     * @param listener  the listener to remove
+     */
+    public abstract void removePropertyChangeListener (PropertyChangeListener listener);
 }

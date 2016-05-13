@@ -37,40 +37,23 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.impl.fs.ui;
+package org.netbeans.modules.remote.ui.spi;
 
-import org.netbeans.modules.remote.ui.spi.ConnectionNotifierImplementation;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
-import org.openide.util.lookup.ServiceProvider;
+import javax.swing.JComponent;
+import org.netbeans.modules.remote.api.ServerRecord;
 
 /**
  *
  * @author Vladimir Kvashin
  */
-@ServiceProvider(service=ConnectionNotifierImplementation.class)
-public class ConnectionNotifierImpl implements ConnectionNotifierImplementation {
+public interface ServerRecordUIProvider {
 
-    @Override
-    public void addTask(ExecutionEnvironment execEnv, ConnectionNotifier.NamedRunnable task) {
-        ConnectionNotifierDelegate.getInstance(execEnv).addTask(task);
-    }
+    String getDisplayName();
 
-    @Override
-    public void removeTask(ExecutionEnvironment execEnv, ConnectionNotifier.NamedRunnable task) {
-        ConnectionNotifierDelegate.getInstance(execEnv).removeTask(task);
-    }
+    ServerRecordUIController createController(ServerRecord record);
 
-    @Override
-    public void addExplicitConnectionListener(ExecutionEnvironment execEnv, ConnectionNotifier.ExplicitConnectionListener listener) {
-        ConnectionNotifierDelegate.getInstance(execEnv).addExplicitConnectionListener(listener);
-    }
-
-    @Override
-    public void removeExplicitConnectionListener(ExecutionEnvironment execEnv, ConnectionNotifier.ExplicitConnectionListener listener) {
-        ConnectionNotifierDelegate.getInstance(execEnv).removeExplicitConnectionListener(listener);
-    }
+    JComponent createCustomizer(ServerRecord record, ServerRecordUIController controller);
 }

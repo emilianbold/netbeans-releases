@@ -149,7 +149,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.modules.dlight.libs.common.DLightLibsCommonLogger;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder.JFileChooserEx;
-import org.netbeans.modules.remote.support.RemoteLogger;
+import org.netbeans.modules.remote.ui.support.RemoteLogger;
 import org.openide.awt.HtmlRenderer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

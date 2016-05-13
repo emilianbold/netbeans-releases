@@ -40,20 +40,50 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.spi;
+package org.netbeans.modules.remote.api.ui;
 
-import javax.swing.JComponent;
+import java.beans.PropertyEditor;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.api.ServerRecord;
+import org.openide.util.NotImplementedException;
 
 /**
- *
+ * Displayes Edit Servers List dialog.
  * @author Vladimir Kvashin
  */
-public interface ServerRecordUIProvider {
+public final class ServerListUI {
 
-    String getDisplayName();
+    public interface Accessor<T> {
+        T get();
+        void set(T value);
+    }
 
-    ServerRecordUIController createController(ServerRecord record);
+    private ServerListUI() {}
 
-    JComponent createCustomizer(ServerRecord record, ServerRecordUIController controller);
+    /**
+     * Shows servers list dialog.
+     * @param selectedRecord currently selected serverRecord.
+     * Can be null; in this case "localhost" will be selected.
+     * @return selected ServerRecord if user changed selectioh and pressed enter, otherwise null
+     */
+    public static ServerRecord showServerListDialog(ServerRecord selectedRecord) {
+        return showServerListDialog(selectedRecord.getExecutionEnvironment());
+    }
+
+    /**
+     * Shows servers list dialog.
+     * @param selectedRecord currently selected serverRecord.
+     * Can be null; in this case "localhost" will be selected.
+     * @return selected ServerRecord if user changed selectioh and pressed enter, otherwise null
+     */
+    public static ServerRecord showServerListDialog(ExecutionEnvironment selectedEnv) {
+        throw new NotImplementedException();
+    }
+
+    /**
+     * To be used as a custom property editor
+     */
+    public static PropertyEditor getCustomPropertyEditor(Accessor<ServerRecord> selectedRecordAccessor) {
+        throw new NotImplementedException();
+    }
 }

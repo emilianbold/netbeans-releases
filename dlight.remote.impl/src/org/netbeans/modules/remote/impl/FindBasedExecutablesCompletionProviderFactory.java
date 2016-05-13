@@ -43,7 +43,7 @@
 package org.netbeans.modules.remote.impl;
 
 import org.netbeans.modules.remote.api.ui.AutocompletionProvider;
-import org.netbeans.modules.remote.spi.AutocompletionProviderFactory;
+import org.netbeans.modules.remote.ui.spi.AutocompletionProviderFactory;
 import org.netbeans.modules.remote.util.ExecSupport;
 import org.netbeans.modules.remote.util.ExecSupport.Status;
 import java.io.IOException;
