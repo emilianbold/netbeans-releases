@@ -105,6 +105,7 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
         PHPTokenId completeIn = insertMatching ? findContextForEnd(ts, offset, startOfContext) : null;
         boolean insert = completeIn != null && isEndMissing(doc, offset, completeIn);
         if (insert) {
+            boolean addSemicolon = canBeAddedSemicolonAfterCloseBrace(completeIn, ts);
             int indent = IndentUtils.lineIndent(doc, IndentUtils.lineStartOffset(doc, startOfContext[0]));
             int afterLastNonWhite = LineDocumentUtils.getLineLastNonWhitespace(doc, offset);
             // We've either encountered a further indented line, or a line that doesn't
@@ -135,8 +136,7 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
                     || completeIn == PHPTokenId.PHP_FUNCTION
                     || completeIn == PHPTokenId.PHP_USE) {
                 sb.append("}"); // NOI18N
-                if (completeIn == PHPTokenId.PHP_USE
-                        && isGroupUseCurlyOpen(ts)) {
+                if (addSemicolon) {
                     sb.append(";"); // NOI18N
                 }
             } else if (completeIn == PHPTokenId.PHP_TRY) {
@@ -324,6 +324,11 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
 
     private static boolean isLineCommentDelimiter(Token<? extends PHPTokenId> token) {
         return token != null && token.id() == PHPTokenId.PHP_LINE_COMMENT && ("//".equals(token.text().toString()) || "#".equals(token.text().toString()));
+    }
+
+    private static boolean canBeAddedSemicolonAfterCloseBrace(PHPTokenId completeIn, TokenSequence<? extends PHPTokenId> ts) {
+        return completeIn == PHPTokenId.PHP_USE
+                && isGroupUseCurlyOpen(ts);
     }
 
     @Override
