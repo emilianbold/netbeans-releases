@@ -129,7 +129,8 @@ public final class RemoteJavaAntLogger extends AntLogger {
     }
     /** Java identifier */
     private static final String JIDENT = "[\\p{javaJavaIdentifierStart}][\\p{javaJavaIdentifierPart}]*"; // NOI18N
-    // should be consistent with o.apache.tools.ant.module.STACK_TRACE
+    // should be consistent with java.project.JavaAntLogger.STACK_TRACE
+    // should be consistent with org.apache.tools.ant.module.bridge.impl.ForkedJavaOverride
     // would be nice to match org.netbeans.modules.hudson.impl.JavaHudsonLogger.STACK_TRACE, but would need to copy more
     /**
      * <ol>
@@ -143,8 +144,8 @@ public final class RemoteJavaAntLogger extends AntLogger {
      * </ol>
      */
     private static final Pattern STACK_TRACE = Pattern.compile(
-              "(.*?((?:" + JIDENT + "[.])*)(" + JIDENT + ")[.](?:" + JIDENT + "|<init>|<clinit>)" + // NOI18N
-            "[(])((" + JIDENT + "[.]java):([0-9]+)|Unknown Source)([)].*)"); // NOI18N
+            "(.*?((?:" + JIDENT + "[.])*)(" + JIDENT + ")[.](?:" + JIDENT + "|<init>|<clinit>)" + // NOI18N
+            "[(])(((?:"+JIDENT+"(?:\\."+JIDENT+")*/)?" + JIDENT + "[.]java):([0-9]+)|Unknown Source)([)].*)"); // NOI18N
     static StackTraceParse/*|null*/ parseStackTraceLine(String line) {
         Matcher m = STACK_TRACE.matcher(line);
         if (m.matches()) {

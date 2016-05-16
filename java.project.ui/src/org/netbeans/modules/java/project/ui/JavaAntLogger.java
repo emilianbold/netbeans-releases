@@ -46,6 +46,7 @@ package org.netbeans.modules.java.project.ui;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
@@ -57,14 +58,16 @@ import java.util.regex.Pattern;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.IOColorPrint;
@@ -83,6 +86,7 @@ import org.openide.windows.OutputWriter;
 public final class JavaAntLogger extends AntLogger {
     
     public static final int LOGGER_MAX_LINE_LENGTH = Integer.getInteger("logger.max.line.length", 3000); //NOI18N
+    private static final String MODULE_INFO_CLZ = "module-info.class";  //NOI18N
     
     static final class StackTraceParse {
         final String line;
@@ -103,13 +107,7 @@ public final class JavaAntLogger extends AntLogger {
         void hyperlink(AntSession session, AntEvent event, FileObject source,
                 int messageLevel, int sessionLevel, SessionData data) {
             if (messageLevel <= sessionLevel && !event.isConsumed()) {
-                OutputListener hyperlink;
-                try {
-                    hyperlink = session.createStandardHyperlink(source.getURL(), guessExceptionMessage(data), lineNumber, -1, -1, -1);
-                } catch (FileStateInvalidException e) {
-                    assert false : e;
-                    return;
-                }
+                final OutputListener hyperlink = session.createStandardHyperlink(source.toURL(), guessExceptionMessage(data), lineNumber, -1, -1, -1);
                 event.consume();
                 InputOutput io = session.getIO();
                 if (IOColorPrint.isSupported(io)) {
@@ -130,7 +128,8 @@ public final class JavaAntLogger extends AntLogger {
     }
     /** Java identifier */
     private static final String JIDENT = "[\\p{javaJavaIdentifierStart}][\\p{javaJavaIdentifierPart}]*"; // NOI18N
-    // should be consistent with o.apache.tools.ant.module.STACK_TRACE
+    // should be consistent with org.apache.tools.ant.module.bridge.impl.ForkedJavaOverride
+    // should be consistent with org.netbeans.modules.java.j2seembedded.project.RemoteJavaAntLogger
     // would be nice to match org.netbeans.modules.hudson.impl.JavaHudsonLogger.STACK_TRACE, but would need to copy more
     /**
      * <ol>
@@ -145,7 +144,7 @@ public final class JavaAntLogger extends AntLogger {
      */
     private static final Pattern STACK_TRACE = Pattern.compile(
             "(.*?((?:" + JIDENT + "[.])*)(" + JIDENT + ")[.](?:" + JIDENT + "|<init>|<clinit>)" + // NOI18N
-            "[(])((" + JIDENT + "[.]java):([0-9]+)|Unknown Source)([)].*)"); // NOI18N
+            "[(])(((?:"+JIDENT+"(?:\\."+JIDENT+")*/)?" + JIDENT + "[.]java):([0-9]+)|Unknown Source)([)].*)"); // NOI18N
     static StackTraceParse/*|null*/ parseStackTraceLine(String line) {
         if (line.length() >= LOGGER_MAX_LINE_LENGTH) { // too long message, probably coming from user, so do not check for stacktrace
             return null;
@@ -156,6 +155,15 @@ public final class JavaAntLogger extends AntLogger {
             String pkg = m.group(2);
             String filename = m.group(5);
             int lineNumber;
+            if (filename != null) {
+                final int index = filename.indexOf('/');    //NOI18N
+                if (index >= 0) {
+                    filename = filename.substring(index+1);
+                    if (filename.isEmpty()) {
+                        filename = null;
+                    }
+                }
+            }
             if (filename == null) {
                 filename = m.group(3).replaceFirst("[$].+", "") + ".java"; // NOI18N
                 lineNumber = 1;
@@ -190,6 +198,8 @@ public final class JavaAntLogger extends AntLogger {
      * </ol>
      */
     private static final Pattern CLASSPATH_ARGS = Pattern.compile("\r?\n'-classpath'\r?\n'(.*)'\r?\n"); // NOI18N
+    private static final Pattern MODULEPATH_ARGS = Pattern.compile("\r?\n'-modulepath'\r?\n'(.*)'\r?\n"); // NOI18N
+    private static final Pattern UPGRADE_MODULEPATH_ARGS = Pattern.compile("\r?\n'-upgrademodulepath'\r?\n'(.*)'\r?\n"); // NOI18N
     
     /**
      * Regexp matching part of a Java task's invocation debug message
@@ -226,17 +236,28 @@ public final class JavaAntLogger extends AntLogger {
     private static final class SessionData {
         public ClassPath platformSources = null;
         public String classpath = null;
-        public volatile Collection<FileObject> classpathSourceRoots = null;
+        public String modulepath = null;
+        public String upgradeModulepath = null;
+        public volatile Collection<FileObject> searchSourceRoots = null;
         public volatile String possibleExceptionText = null;
         public volatile String lastExceptionMessage = null;
         public SessionData() {}
+
         public void setClasspath(String cp) {
             classpath = cp;
-            classpathSourceRoots = null;
+            searchSourceRoots = null;
+        }
+        public void setModulepath(@NullAllowed final String mp) {
+            modulepath = mp;
+            searchSourceRoots = null;
+        }
+        public void setUpgradeModulepath(@NullAllowed final String ump) {
+            upgradeModulepath = ump;
+            searchSourceRoots = null;
         }
         public void setPlatformSources(ClassPath platformSources) {
             this.platformSources = platformSources;
-            classpathSourceRoots = null;
+            searchSourceRoots = null;
         }
     }
     
@@ -329,6 +350,16 @@ public final class JavaAntLogger extends AntLogger {
                 String cp = m2.group(1);
                 data.setClasspath(cp);
             }
+            m2 = MODULEPATH_ARGS.matcher(line);
+            if (m2.find()) {
+                final String mp = m2.group(1);
+                data.setModulepath(mp);
+            }
+            m2 = UPGRADE_MODULEPATH_ARGS.matcher(line);
+            if (m2.find()) {
+                final String ump = m2.group(1);
+                data.setUpgradeModulepath(ump);
+            }
             // XXX should also probably clear classpath when taskFinished called
             m2 = JAVA_EXECUTABLE.matcher(line);
             if (m2.find()) {
@@ -359,26 +390,20 @@ public final class JavaAntLogger extends AntLogger {
      * (as reported by logging from Ant when it runs the Java launcher with -cp).
      */
     private static Collection<FileObject> getCurrentSourceRootsForClasspath(SessionData data) {
-        if (data.classpath == null) {
+        if (data.classpath == null &&
+                data.modulepath == null &&
+                data.upgradeModulepath == null) {
             return Collections.emptySet();
         }
         Collection<FileObject> result;
         synchronized (data) {
-            result = data.classpathSourceRoots;
+            result = data.searchSourceRoots;
         }
         if (result == null) {
-            result = new LinkedHashSet<FileObject>();
-            StringTokenizer tok = new StringTokenizer(data.classpath, File.pathSeparator);
-            while (tok.hasMoreTokens()) {
-                String binrootS = tok.nextToken();
-                File f = FileUtil.normalizeFile(new File(binrootS));
-                URL binroot = FileUtil.urlForArchiveOrDir(f);
-                if (binroot == null) {
-                    continue;
-                }
-                FileObject[] someRoots = SourceForBinaryQuery.findSourceRoots(binroot).getRoots();
-                result.addAll(Arrays.asList(someRoots));
-            }
+            result = new LinkedHashSet<>();
+            addPath(data.classpath, result, false);
+            addPath(data.modulepath, result, true);
+            addPath(data.upgradeModulepath, result, true);
             if (data.platformSources != null) {
                 result.addAll(Arrays.asList(data.platformSources.getRoots()));
             } else {
@@ -391,10 +416,55 @@ public final class JavaAntLogger extends AntLogger {
             }
             result = Collections.unmodifiableCollection(result);
             synchronized (data) {
-                data.classpathSourceRoots = result;
+                data.searchSourceRoots = result;
             }
         }
         return result;
+    }
+
+    private static void addPath(
+        @NullAllowed final String path,
+        @NonNull Collection<? super FileObject> collector,
+        final boolean modulepath) {
+        if (path != null) {
+            final StringTokenizer tok = new StringTokenizer(path, File.pathSeparator);
+            while (tok.hasMoreTokens()) {
+                final String binrootS = tok.nextToken();
+                final File f = FileUtil.normalizeFile(new File(binrootS));
+                final Collection<? extends File> toAdd = modulepath ?
+                        collectModules(f) :
+                        Collections.singleton(f);
+                toAdd.forEach((e) -> {
+                    final URL binroot = FileUtil.urlForArchiveOrDir(f);
+                    if (binroot != null) {
+                        final FileObject[] someRoots = SourceForBinaryQuery.findSourceRoots(binroot).getRoots();
+                        Collections.addAll(collector, someRoots);
+                    }
+                });
+            }
+        }
+    }
+
+    @NonNull
+    private static Collection<? extends File> collectModules(@NonNull final File root) {
+        if (root.isDirectory()) {
+            if (new File(root,MODULE_INFO_CLZ).isFile()) {
+                return Collections.singleton(root);
+            } else {
+                final File[] children = root.listFiles((e) -> {
+                    try {
+                        return FileUtil.isArchiveFile(BaseUtilities.toURI(e).toURL());
+                    } catch (MalformedURLException mue) {
+                        return false;
+                    }
+                });
+                return children == null ?
+                        Collections.emptyList() :
+                        Arrays.asList(children);
+            }
+        } else {
+            return Collections.singleton(root);
+        }
     }
     
     private static String guessExceptionMessage(SessionData data) {
