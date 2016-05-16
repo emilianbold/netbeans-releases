@@ -61,10 +61,12 @@ public class RemoveLastCaretAction extends AbstractEditorAction {
 
     @Override
     protected void actionPerformed(ActionEvent evt, JTextComponent component) {
-        Caret caret = component.getCaret();
-        if(caret instanceof EditorCaret) {
-            EditorCaret editorCaret = (EditorCaret) caret;
-            editorCaret.removeLastCaret();
+        if (component != null) {
+            Caret caret = component.getCaret();
+            if(caret instanceof EditorCaret) {
+                EditorCaret editorCaret = (EditorCaret) caret;
+                editorCaret.removeLastCaret();
+            }
         }
     }
     
