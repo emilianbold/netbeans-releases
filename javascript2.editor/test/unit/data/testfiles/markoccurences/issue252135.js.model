@@ -7,11 +7,12 @@ aa      : FUNCTION aa [ANONYMOUS: false, DECLARED: true - aa, MODIFIERS: PUBLIC,
         undefined, RESOLVED: true
         # PROPERTIES
         arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-bb      : FUNCTION bb [ANONYMOUS: false, DECLARED: true - bb, MODIFIERS: PUBLIC, FUNCTION]
-        # RETURN TYPES
-        undefined, RESOLVED: true
-        # PROPERTIES
-        arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+        bb        : FUNCTION bb [ANONYMOUS: false, DECLARED: true - bb, MODIFIERS: PRIVATE, FUNCTION]
+                  # RETURN TYPES
+                  undefined, RESOLVED: true
+                  # PROPERTIES
+                  arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                  bb        : CYCLE aa.bb
 console : OBJECT console [ANONYMOUS: false, DECLARED: false - console, MODIFIERS: PUBLIC, OBJECT]
         # PROPERTIES
         log : FUNCTION log [ANONYMOUS: false, DECLARED: false - log, MODIFIERS: PUBLIC, METHOD]

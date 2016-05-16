@@ -33,6 +33,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.libs.antlr4.runtime</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.libs.nashorn</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -48,6 +56,15 @@
                     <run-dependency>
                         <release-version>2</release-version>
                         <specification-version>2.50</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.csl.types</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -200,6 +217,50 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.javascript2.doc</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.javascript2.json</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.4</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.javascript2.lexer</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0-1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.javascript2.model</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.javascript2.types</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0-1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.lexer</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -268,6 +329,15 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.84</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.queries</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.43</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -373,6 +443,12 @@
                         <test/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.csl.types</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.bracesmatching</code-name-base>
                         <compile-dependency/>
                         <test/>
@@ -410,9 +486,22 @@
                         <code-name-base>org.netbeans.modules.html.parser</code-name-base>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.javascript2.doc</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.javascript2.editor</code-name-base>
                         <recursive/>
                         <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.javascript2.extdoc</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.javascript2.jsdoc</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.javascript2.sdoc</code-name-base>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.lexer</code-name-base>
@@ -484,25 +573,18 @@
                 <friend>org.netbeans.modules.html.angular</friend>
                 <friend>org.netbeans.modules.html.knockout</friend>
                 <friend>org.netbeans.modules.html.ojet</friend>
-                <friend>org.netbeans.modules.javascript2.debug</friend>
-                <friend>org.netbeans.modules.javascript2.gj.bootstrap</friend>
                 <friend>org.netbeans.modules.javascript2.extjs</friend>
-                <friend>org.netbeans.modules.javascript2.jade</friend>
+                <friend>org.netbeans.modules.javascript2.gj.bootstrap</friend>
+                <friend>org.netbeans.modules.javascript2.gj.react</friend>
+                <friend>org.netbeans.modules.javascript2.gj.typescript</friend>
                 <friend>org.netbeans.modules.javascript2.jquery</friend>
                 <friend>org.netbeans.modules.javascript2.kendo</friend>
-                <friend>org.netbeans.modules.javascript2.knockout</friend>
                 <friend>org.netbeans.modules.javascript2.nodejs</friend>
                 <friend>org.netbeans.modules.javascript2.prototypejs</friend>
-                <friend>org.netbeans.modules.javascript2.gj.react</friend>
                 <friend>org.netbeans.modules.javascript2.requirejs</friend>
-                <friend>org.netbeans.modules.javascript2.gj.typescript</friend>
                 <friend>org.netbeans.modules.nodejscodecompletion</friend>
                 <package>org.netbeans.modules.javascript2.editor.api</package>
-                <package>org.netbeans.modules.javascript2.editor.api.lexer</package>
-                <package>org.netbeans.modules.javascript2.editor.index</package>
-                <package>org.netbeans.modules.javascript2.editor.model</package>
                 <package>org.netbeans.modules.javascript2.editor.spi</package>
-                <package>org.netbeans.modules.javascript2.editor.spi.model</package>
             </friend-packages>
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
