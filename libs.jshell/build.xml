@@ -45,4 +45,11 @@ made subject to such option by the copyright holder.
 -->
 <project name="libs.jshell" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
+
+    <available property="can.build.jshell" file="../nb-javac/make/netbeans/jshell/build.xml"/>
+    <target name="build-jshell" if="can.build.jshell" depends="projectized-common.-release.files">
+        <ant inheritrefs="false" dir="../nb-javac/make/netbeans/jshell/" inheritall="false"/>
+    </target>
+    <target name="-release.files" depends="build-jshell,projectized-common.-release.files">
+    </target>
 </project>
