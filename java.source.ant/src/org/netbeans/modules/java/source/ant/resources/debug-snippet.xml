@@ -101,6 +101,7 @@ made subject to such option by the copyright holder.
     </target>
     <target if="unnamed.module.internal" depends="-init-debug-args" name="-init-macrodef-java-with-unnamed-module">
         <macrodef name="call-java">
+            <attribute default="" name="modulename"/>
             <attribute default="${classname}" name="classname"/>
             <attribute default="${modulepath-translated}" name="modulepath"/>
             <attribute default="${classpath-translated}" name="classpath"/>
@@ -128,7 +129,9 @@ made subject to such option by the copyright holder.
     </target>
     <target name="-init-macrodef-java-without-modules" depends="-init-debug-args" unless="modules.supported.internal">
         <macrodef name="call-java">
+            <attribute default="" name="modulename"/>
             <attribute default="${classname}" name="classname"/>
+            <attribute default="" name="modulepath"/>
             <attribute default="${classpath-translated}" name="classpath"/>
             <attribute default="jvm" name="jvm"/>
             <element name="customize" optional="true"/>
