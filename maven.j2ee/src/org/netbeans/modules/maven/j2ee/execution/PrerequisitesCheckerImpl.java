@@ -138,7 +138,9 @@ public class PrerequisitesCheckerImpl implements PrerequisitesChecker, LateBound
 
         Boolean standardExecution = Boolean.FALSE;
         // Perform standard execution when running single main file --> See issue #241703
-        if ("run.single.main".equals(actionName)) { // NOI18N
+        if ("run.single.main".equals(actionName) // NOI18N
+                || "debug.single.main".equals(actionName) // NOI18N
+                || "profile.single.main".equals(actionName)) { // NOI18N
             standardExecution = Boolean.TRUE;
         }
 
