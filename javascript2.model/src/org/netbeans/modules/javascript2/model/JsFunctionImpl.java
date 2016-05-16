@@ -297,11 +297,13 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                 // at first check whether is not a parameter
                 if (typeName.indexOf('.') == -1) {
                     JsObject parameter = null;
-                    JsFunction scope = this;
+                    DeclarationScope scope = this;
                     while (scope != null && parameter == null && jsObject == null) {
-                        parameter = scope.getParameter(typeName);
-                        jsObject = scope.getProperty(typeName);
-                        scope = (JsFunction)((DeclarationScope)scope).getParentScope();
+                        if (scope instanceof JsFunction) {
+                            parameter = ((JsFunction) scope).getParameter(typeName);
+                        }
+                        jsObject = ((JsObject) scope).getProperty(typeName);
+                        scope = scope.getParentScope();
                     }
                     if (jsObject == null && parameter != null) {
                         jsObject = parameter;
