@@ -60,7 +60,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.cnd.api.remote.SelectHostWizardProvider;
+import org.netbeans.modules.cnd.api.remote.ui.SelectHostWizardProvider;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;

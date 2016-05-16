@@ -52,13 +52,13 @@ import java.util.Collection;
 import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.UIManager;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
-import org.netbeans.modules.cnd.utils.FileFilterFactory;
+import org.netbeans.modules.cnd.utils.ui.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -236,16 +236,16 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
         public Collection<String> addSeveralAction() {
             final String chooser_key = "makeproject.DirectoryChooser"; //NOI18N
             final ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(baseDir.getFileSystem());
-            String seed = RemoteFileUtil.getCurrentChooserFile(chooser_key, env);
+            String seed = RemoteFileChooserUtil.getCurrentChooserFile(chooser_key, env);
             if (seed == null) {
                 seed = baseDir.getPath();
             }
             JFileChooser fileChooser;
             if (DirectoryChooserPanel.this.onlyFolders) {
-                fileChooser = RemoteFileUtil.createFileChooser(env, getString("ADD_DIRECTORY_DIALOG_TITLE"), getString("ADD_DIRECTORY_BUTTON_TXT"),
+                fileChooser = RemoteFileChooserUtil.createFileChooser(env, getString("ADD_DIRECTORY_DIALOG_TITLE"), getString("ADD_DIRECTORY_BUTTON_TXT"),
                         JFileChooser.DIRECTORIES_ONLY, null, seed, true);
             } else {
-                fileChooser = RemoteFileUtil.createFileChooser(env, getString("ADD_DIRECTORY_OR_FILE_DIALOG_TITLE"), getString("ADD_DIRECTORY_OR_FILE_BUTTON_TXT"),
+                fileChooser = RemoteFileChooserUtil.createFileChooser(env, getString("ADD_DIRECTORY_OR_FILE_DIALOG_TITLE"), getString("ADD_DIRECTORY_OR_FILE_BUTTON_TXT"),
                         JFileChooser.FILES_AND_DIRECTORIES, null, seed, true);
                 fileChooser.addChoosableFileFilter(FileFilterFactory.getHeaderSourceFileFilter());
                 fileChooser.setFileFilter(fileChooser.getAcceptAllFileFilter());
@@ -264,7 +264,7 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
             List<String> result = new ArrayList<>();
             for (File selectedFile : selectedFiles) {
                 String itemPath = CndPathUtilities.naturalizeSlashes(selectedFile.getPath());
-                RemoteFileUtil.setCurrentChooserFile(chooser_key, selectedFile.isFile() ? selectedFile.getParentFile().getPath() : itemPath, env);
+                RemoteFileChooserUtil.setCurrentChooserFile(chooser_key, selectedFile.isFile() ? selectedFile.getParentFile().getPath() : itemPath, env);
                 itemPath = ProjectSupport.toProperPath(
                         baseDir,
                         itemPath,

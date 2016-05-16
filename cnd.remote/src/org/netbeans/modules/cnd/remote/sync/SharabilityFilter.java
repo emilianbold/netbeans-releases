@@ -48,7 +48,7 @@ import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.api.queries.SharabilityQuery.Sharability;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.FileObjectFilter;
+import org.netbeans.modules.cnd.utils.ui.FileObjectFilter;
 import org.openide.filesystems.FileObject;
 
 /**

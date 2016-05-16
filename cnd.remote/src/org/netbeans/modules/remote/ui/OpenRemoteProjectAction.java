@@ -57,7 +57,7 @@ import javax.swing.filechooser.FileView;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -161,14 +161,14 @@ public class OpenRemoteProjectAction extends SingleHostAction {
     
     private void openRemoteProject(final ExecutionEnvironment env) {            
         final String chooser_key = "open.remote.project";//NOI18N
-        final String homeDir = RemoteFileUtil.getCurrentChooserFile(chooser_key, env);
+        final String homeDir = RemoteFileChooserUtil.getCurrentChooserFile(chooser_key, env);
         final Callable<String> homeDirCallable = new Callable<String>() {
             @Override
             public String call() throws Exception {
                 return homeDir == null ? getRemoteProjectDir(env) : homeDir;
             }
         };             
-        JFileChooserEx fileChooser = (JFileChooserEx) RemoteFileUtil.createFileChooser(env,
+        JFileChooserEx fileChooser = (JFileChooserEx) RemoteFileChooserUtil.createFileChooser(env,
             NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenProjectTitle", env.getDisplayName()),
             NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenProjectButtonText"),
             JFileChooser.DIRECTORIES_ONLY, null, homeDirCallable, true);
@@ -187,7 +187,7 @@ public class OpenRemoteProjectAction extends SingleHostAction {
             return;
         }
         String currentChooserFile = remoteProjectFO.getParent() == null ? remoteProjectFO.getPath() : remoteProjectFO.getParent().getPath();
-        RemoteFileUtil.setCurrentChooserFile(chooser_key, currentChooserFile, env);
+        RemoteFileChooserUtil.setCurrentChooserFile(chooser_key, currentChooserFile, env);
         Project project;
         try {
             project = ProjectManager.getDefault().findProject(remoteProjectFO);

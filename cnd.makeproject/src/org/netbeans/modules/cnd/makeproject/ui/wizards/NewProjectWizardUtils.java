@@ -50,6 +50,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -126,7 +127,7 @@ public class NewProjectWizardUtils {
                 execEnv = remoteProject.getSourceFileSystemHost();
             }
         }
-        return RemoteFileUtil.createFileChooser(execEnv, titleText, buttonText, mode, filters, initialPath, useParent);
+        return RemoteFileChooserUtil.createFileChooser(execEnv, titleText, buttonText, mode, filters, initialPath, useParent);
     }
     
     public static ExecutionEnvironment getDefaultSourceEnvironment() {
@@ -151,7 +152,7 @@ public class NewProjectWizardUtils {
                 execEnv = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
             }
         }
-        return RemoteFileUtil.createFileChooser(execEnv, titleText, buttonText, mode, filters, initialPath, useParent);
+        return RemoteFileChooserUtil.createFileChooser(execEnv, titleText, buttonText, mode, filters, initialPath, useParent);
     }
 
 

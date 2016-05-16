@@ -97,7 +97,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
@@ -105,11 +105,10 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ExpandableEditableComboBox;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
-import org.netbeans.modules.cnd.utils.FileFilterFactory;
+import org.netbeans.modules.cnd.utils.ui.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.DocumentAdapter;
-import org.netbeans.modules.cnd.utils.ui.EditableComboBox;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -828,7 +827,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
 
     private void sourcesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sourcesButtonActionPerformed
         String seed = sourcesField.getText();
-        JFileChooser fileChooser = RemoteFileUtil.createFileChooser(
+        JFileChooser fileChooser = RemoteFileChooserUtil.createFileChooser(
                 env,
                 getString("SelectBinaryPanelVisual.Source.Browse.Title"), // NOI18N
                 getString("SelectBinaryPanelVisual.Source.Browse.Select"), // NOI18N

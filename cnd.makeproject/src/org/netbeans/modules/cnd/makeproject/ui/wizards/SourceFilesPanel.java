@@ -62,7 +62,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
-import org.netbeans.modules.cnd.utils.FileObjectFilter;
+import org.netbeans.modules.cnd.utils.ui.FileObjectFilter;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
 import org.openide.filesystems.FileObject;

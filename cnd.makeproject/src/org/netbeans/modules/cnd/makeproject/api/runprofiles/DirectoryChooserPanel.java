@@ -48,7 +48,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 import javax.swing.JFileChooser;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
@@ -129,7 +129,7 @@ import org.openide.util.NbBundle;
 
 private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
 
-	    JFileChooser fileChooser = RemoteFileUtil.createFileChooser(
+	    JFileChooser fileChooser = RemoteFileChooserUtil.createFileChooser(
                     fileSystem, getString("Run_Directory"), getString("SelectLabel"), JFileChooser.DIRECTORIES_ONLY, null, seed, true);
 	    int ret = fileChooser.showOpenDialog(this);
 	    if (ret == JFileChooser.CANCEL_OPTION) {

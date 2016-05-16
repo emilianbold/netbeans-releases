@@ -51,7 +51,7 @@ import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerListUI;
+import org.netbeans.modules.cnd.api.remote.ui.ServerListUI;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.ui.ServerListUIEx;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;

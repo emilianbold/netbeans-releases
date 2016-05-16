@@ -52,7 +52,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.api.remote.ServerListUI;
+import org.netbeans.modules.cnd.api.remote.ui.ServerListUI;
 import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.util.actions.Presenter;

@@ -71,6 +71,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
@@ -509,7 +510,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
 
     private void browseLocationAction(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseLocationAction
         String path = this.projectLocationTextField.getText();
-        JFileChooser chooser = RemoteFileUtil.createFileChooser(FileSystemProvider.getFileSystem(env),
+        JFileChooser chooser = RemoteFileChooserUtil.createFileChooser(FileSystemProvider.getFileSystem(env),
                 NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_SelectProjectLocation"),
                 null, JFileChooser.DIRECTORIES_ONLY, null, path, true);
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N

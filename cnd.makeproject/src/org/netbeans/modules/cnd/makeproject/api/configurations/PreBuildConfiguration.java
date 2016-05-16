@@ -50,7 +50,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 import javax.swing.JFileChooser;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
@@ -259,7 +259,7 @@ public class PreBuildConfiguration implements Cloneable {
     private JFileChooser createDirPanel(String seed, final PropertyEditorSupport editor, PropertyEnv propenv) {
         String titleText = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("Run_Directory");
         String buttonText = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("SelectLabel");
-        final JFileChooser chooser = RemoteFileUtil.createFileChooser(getSourceExecutionEnvironment(), titleText, buttonText,
+        final JFileChooser chooser = RemoteFileChooserUtil.createFileChooser(getSourceExecutionEnvironment(), titleText, buttonText,
                 JFileChooser.DIRECTORIES_ONLY, null, seed, true);
         chooser.putClientProperty("title", chooser.getDialogTitle()); // NOI18N
         chooser.setControlButtonsAreShown(false);

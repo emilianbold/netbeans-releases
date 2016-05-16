@@ -50,7 +50,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerListUI;
+import org.netbeans.modules.cnd.api.remote.ui.ServerListUI;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.actions.OpenRemoteProjectAction;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;

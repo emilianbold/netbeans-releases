@@ -50,7 +50,7 @@ import java.util.ArrayList;
 import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -83,11 +83,11 @@ public class AddExternalItemAction extends AbstractAction {
         }
         final String chooser_key = "AddExternalItem"; //NOI18N
         ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(makeProjectDescriptor.getBaseDirFileSystem());
-        String seed = RemoteFileUtil.getCurrentChooserFile(chooser_key, env);
+        String seed = RemoteFileChooserUtil.getCurrentChooserFile(chooser_key, env);
 	if (seed == null) {
 	    seed = makeProjectDescriptor.getBaseDir();
 	}
-	JFileChooser fileChooser = RemoteFileUtil.createFileChooser(
+	JFileChooser fileChooser = RemoteFileChooserUtil.createFileChooser(
                 makeProjectDescriptor.getBaseDirFileSystem(), 
                 NbBundle.getBundle(getClass()).getString("LBL_FileChooserTitle"), 
                 NbBundle.getBundle(getClass()).getString("LBL_SelectButton"), 
@@ -104,7 +104,7 @@ public class AddExternalItemAction extends AbstractAction {
 	ArrayList<Item> items = new ArrayList<>();        
         if (files.length > 0) {
             File selectedFolder = files[0].isFile() ? files[0].getParentFile() : files[0];
-            RemoteFileUtil.setCurrentChooserFile(chooser_key, selectedFolder.getPath(), env);
+            RemoteFileChooserUtil.setCurrentChooserFile(chooser_key, selectedFolder.getPath(), env);
         }
         for (File file : files) {
             if (!file.exists()) {

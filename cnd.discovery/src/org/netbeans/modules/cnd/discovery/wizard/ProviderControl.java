@@ -60,13 +60,13 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.ProviderPropertyType.PropertyKind;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.FSPath;
-import org.netbeans.modules.cnd.utils.FileFilterFactory;
+import org.netbeans.modules.cnd.utils.ui.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -414,7 +414,7 @@ public class ProviderControl<T> {
             }
         }
         ExecutionEnvironment execEnv = FileSystemProvider.getExecutionEnvironment(projectFileSystem);
-        JFileChooser fileChooser = RemoteFileUtil.createFileChooser(execEnv,
+        JFileChooser fileChooser = RemoteFileChooserUtil.createFileChooser(execEnv,
                 title,
                 getString("ROOT_DIR_BUTTON_TXT"), // NOI18N
                 chooserMode,

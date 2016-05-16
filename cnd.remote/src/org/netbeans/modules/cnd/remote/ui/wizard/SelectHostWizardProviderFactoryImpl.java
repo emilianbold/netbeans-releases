@@ -44,8 +44,8 @@ package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import java.util.List;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.api.remote.SelectHostWizardProvider;
-import org.netbeans.modules.cnd.spi.remote.SelectHostWizardProviderFactory;
+import org.netbeans.modules.cnd.api.remote.ui.SelectHostWizardProvider;
+import org.netbeans.modules.cnd.spi.remote.ui.SelectHostWizardProviderFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.WizardDescriptor;
 import org.openide.util.lookup.ServiceProvider;

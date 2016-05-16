@@ -46,7 +46,7 @@ package org.netbeans.modules.cnd.makeproject.ui.utils;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import java.util.List;
 import javax.swing.JFileChooser;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDisplayer;
@@ -69,11 +69,11 @@ public class DirectoryChooserInnerPanel extends ListEditorPanel<String> {
     @Override
     public String addAction() {
         final String chooser_key = "makeproject.DirectoryChooser"; //NOI18N
-        String seed = RemoteFileUtil.getCurrentChooserFile(chooser_key, executionEnvironment);
+        String seed = RemoteFileChooserUtil.getCurrentChooserFile(chooser_key, executionEnvironment);
         if (seed == null) {
             seed = baseDir;
         }
-        JFileChooser fileChooser = RemoteFileUtil.createFileChooser(
+        JFileChooser fileChooser = RemoteFileChooserUtil.createFileChooser(
                 executionEnvironment,
                 getString("ADD_DIRECTORY_DIALOG_TITLE"),
                 getString("ADD_DIRECTORY_BUTTON_TXT"),
@@ -90,7 +90,7 @@ public class DirectoryChooserInnerPanel extends ListEditorPanel<String> {
         }
         String itemPath = fileChooser.getSelectedFile().getPath();
         itemPath = CndPathUtilities.naturalizeSlashes(itemPath);
-        RemoteFileUtil.setCurrentChooserFile(chooser_key, itemPath, executionEnvironment);
+        RemoteFileChooserUtil.setCurrentChooserFile(chooser_key, itemPath, executionEnvironment);
         String bd = baseDir;
         bd = CndPathUtilities.naturalizeSlashes(bd);
         itemPath = CndPathUtilities.toRelativePath(bd, itemPath);

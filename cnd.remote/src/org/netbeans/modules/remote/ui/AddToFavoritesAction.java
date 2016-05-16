@@ -50,7 +50,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.favorites.api.Favorites;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -327,7 +327,7 @@ public class AddToFavoritesAction extends SingleHostAction {
                             return;
                         }
 //Non UI Thread:
-                        final String dir = RemoteFileUtil.getCurrentChooserFile(FILE_CHOOSER_KEY, env);
+                        final String dir = RemoteFileChooserUtil.getCurrentChooserFile(FILE_CHOOSER_KEY, env);
                         final Callable<String> homeDirCallable =  new Callable<String>() {
                             @Override
                             public String call() throws Exception {
@@ -343,7 +343,7 @@ public class AddToFavoritesAction extends SingleHostAction {
                                     //UI thread:
                                     String title = NbBundle.getMessage(AddToFavoritesAction.class, "SelectFolder");
                                     String btn = NbBundle.getMessage(AddToFavoritesAction.class, "AddText");
-                                    JFileChooser fileChooser = RemoteFileUtil.createFileChooser(
+                                    JFileChooser fileChooser = RemoteFileChooserUtil.createFileChooser(
                                             env,
                                             title,
                                             btn,
@@ -368,7 +368,7 @@ public class AddToFavoritesAction extends SingleHostAction {
                                             }
                                         } else {
                                             String lastPath = rootFO.getParent() == null ? rootFO.getPath() : rootFO.getParent().getPath();
-                                            RemoteFileUtil.setCurrentChooserFile(FILE_CHOOSER_KEY, lastPath, env);
+                                            RemoteFileChooserUtil.setCurrentChooserFile(FILE_CHOOSER_KEY, lastPath, env);
                                         }
                                     }
                                     if (rootFO != null) {
@@ -390,7 +390,7 @@ public class AddToFavoritesAction extends SingleHostAction {
 
     static FileObject getRemoteFileObject(final ExecutionEnvironment env, String title, String btn, Frame mainWindow) {
         //Non UI Thread:
-        final String curDir = RemoteFileUtil.getCurrentChooserFile(FILE_CHOOSER_KEY, env);
+        final String curDir = RemoteFileChooserUtil.getCurrentChooserFile(FILE_CHOOSER_KEY, env);
         final Callable<String> homeDirCallable = new Callable<String>() {
             @Override
             public String call() throws Exception {
@@ -400,7 +400,7 @@ public class AddToFavoritesAction extends SingleHostAction {
 
         
         //UI thread:
-        JFileChooser fileChooser = RemoteFileUtil.createFileChooser(
+        JFileChooser fileChooser = RemoteFileChooserUtil.createFileChooser(
                 env,
                 title,
                 btn,
@@ -427,7 +427,7 @@ public class AddToFavoritesAction extends SingleHostAction {
             return null;
         }
         String lastPath = fo.getParent() == null ? fo.getPath() : fo.getParent().getPath();
-        RemoteFileUtil.setCurrentChooserFile(FILE_CHOOSER_KEY, lastPath, env);
+        RemoteFileChooserUtil.setCurrentChooserFile(FILE_CHOOSER_KEY, lastPath, env);
         return fo;
     }
 

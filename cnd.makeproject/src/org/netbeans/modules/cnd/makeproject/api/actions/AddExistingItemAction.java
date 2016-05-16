@@ -50,8 +50,8 @@ import java.util.ResourceBundle;
 import javax.swing.JFileChooser;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.cnd.utils.FileFilterFactory;
+import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
+import org.netbeans.modules.cnd.utils.ui.FileFilterFactory;
 import org.netbeans.modules.cnd.makeproject.MakeSources;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
@@ -122,11 +122,11 @@ public class AddExistingItemAction extends NodeAction {
         }
         final String chooser_key = "AddExistingItem"; //NOI18N
         ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(projectDescriptor.getBaseDirFileSystem());
-        String seed = RemoteFileUtil.getCurrentChooserFile(chooser_key, env);
+        String seed = RemoteFileChooserUtil.getCurrentChooserFile(chooser_key, env);
         if (seed == null) {
             seed = projectDescriptor.getBaseDir();
         }
-        JFileChooser fileChooser = RemoteFileUtil.createFileChooser(projectDescriptor.getBaseDirFileSystem(), getString("SelectItem"), getString("Select"),
+        JFileChooser fileChooser = RemoteFileChooserUtil.createFileChooser(projectDescriptor.getBaseDirFileSystem(), getString("SelectItem"), getString("Select"),
                                    JFileChooser.FILES_ONLY, null, seed, false);                
 	PathPanel pathPanel = new PathPanel();
 	fileChooser.setAccessory(pathPanel);
@@ -147,7 +147,7 @@ public class AddExistingItemAction extends NodeAction {
 
         File[] files = fileChooser.getSelectedFiles();
         if (files.length > 0) {
-            RemoteFileUtil.setCurrentChooserFile(chooser_key, files[0].getParent(), env);
+            RemoteFileChooserUtil.setCurrentChooserFile(chooser_key, files[0].getParent(), env);
         }
         addFilesWorker(project, projectDescriptor, folder, files);
 //	boolean notifySources = false;

@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.SourceFilesPanel;
-import org.netbeans.modules.cnd.utils.FileObjectFilter;
+import org.netbeans.modules.cnd.utils.ui.FileObjectFilter;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;

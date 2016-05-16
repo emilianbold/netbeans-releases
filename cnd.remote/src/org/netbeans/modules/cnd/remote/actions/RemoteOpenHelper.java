@@ -57,7 +57,7 @@ import javax.swing.filechooser.FileView;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
@@ -187,7 +187,7 @@ public class RemoteOpenHelper {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        final JFileChooser fileChooser = RemoteFileUtil.createFileChooser(env,
+                        final JFileChooser fileChooser = RemoteFileChooserUtil.createFileChooser(env,
                                 NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenFileTitle"),
                                 NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenFileButtonText"),
                                 JFileChooser.FILES_ONLY, null, homeDir, true);
@@ -250,7 +250,7 @@ public class RemoteOpenHelper {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        final JFileChooser fileChooser = RemoteFileUtil.createFileChooser(env,
+                        final JFileChooser fileChooser = RemoteFileChooserUtil.createFileChooser(env,
                                 NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenProjectTitle"),
                                 NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenProjectButtonText"),
                                 JFileChooser.DIRECTORIES_ONLY, null, homeDirCallable, true);

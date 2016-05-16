@@ -52,6 +52,7 @@ import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.remote.ui.RemoteFileChooserUtil;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -155,7 +156,7 @@ class OptionDirectoryEditor extends PropertyEditorSupport
 				String baseDir, String path,
                                 FileSystem fileSystem) {
             if (RemoteFileUtil.isRemote(fileSystem)) {
-                fileChooser = RemoteFileUtil.createFileChooser(fileSystem,
+                fileChooser = RemoteFileChooserUtil.createFileChooser(fileSystem,
                         "Experiment Directory", // NOI18N
                         "Select", // NOI18N
                         dirOrFile,
