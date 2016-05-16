@@ -57,7 +57,6 @@ import com.oracle.js.parser.ir.WhileNode;
 import static com.oracle.js.parser.TokenType.EQ;
 import static com.oracle.js.parser.TokenType.NE;
 import com.oracle.js.parser.ir.ClassNode;
-import com.oracle.js.parser.ir.Expression;
 import com.oracle.js.parser.ir.ExpressionStatement;
 import com.oracle.js.parser.ir.IdentNode;
 import java.util.ArrayList;
@@ -89,10 +88,10 @@ import org.openide.util.NbBundle;
  */
 public class JsConventionRule extends JsAstRule {
     
-    private static List<JsTokenId> PREVIOUS_IGNORE = new ArrayList<>();
+    private static final List<JsTokenId> PREVIOUS_IGNORE = new ArrayList<>();
     
     static {
-        Collections.addAll(PREVIOUS_IGNORE, JsTokenId.BLOCK_COMMENT, JsTokenId.DOC_COMMENT, JsTokenId.LINE_COMMENT, JsTokenId.WHITESPACE);
+        Collections.addAll(PREVIOUS_IGNORE, JsTokenId.BLOCK_COMMENT, JsTokenId.DOC_COMMENT, JsTokenId.LINE_COMMENT, JsTokenId.WHITESPACE, JsTokenId.EOL);
     }
     
     @Override
@@ -234,7 +233,7 @@ public class JsConventionRule extends JsAstRule {
                 if ((id == JsTokenId.EOL || id == JsTokenId.BRACKET_RIGHT_CURLY) && ts.movePrevious()) {
                     id = ts.token().id();
                 }
-                if (id == JsTokenId.BLOCK_COMMENT || id == JsTokenId.LINE_COMMENT || id == JsTokenId.WHITESPACE) {
+                if (id == JsTokenId.BLOCK_COMMENT || id == JsTokenId.DOC_COMMENT || id == JsTokenId.LINE_COMMENT || id == JsTokenId.WHITESPACE) {
                     int position = ts.offset();                    
                     //try to find ; or , before
                     Token<? extends JsTokenId> prev = LexUtilities.findPrevious(ts, PREVIOUS_IGNORE);
