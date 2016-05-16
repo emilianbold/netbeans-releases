@@ -43,6 +43,7 @@ package org.netbeans.api.editor.caret;
 
 import org.netbeans.spi.editor.caret.CaretMoveHandler;
 import java.awt.Point;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -110,6 +111,8 @@ final class CaretTransaction {
     
     private GapList<CaretItem> allRemovedItems;
     
+    private List<Position> expandFoldPositions;
+    
     private int[] indexes;
     
     private int indexesLength;
@@ -176,12 +179,17 @@ final class CaretTransaction {
             scrollToLastCaret = true; // Scroll even if setDot() to same offset
             if (dotChanged || markChanged) {
                 editorCaret.ensureValidInfo(caretItem);
+                if (expandFoldPositions == null) {
+                    expandFoldPositions = new ArrayList(2);
+                }
                 if (dotChanged) {
                     caretItem.setDotPos(dotPos);
+                    expandFoldPositions.add(dotPos);
                     anyDotChanged = true;
                 }
                 if (markChanged) {
                     caretItem.setMarkPos(markPos);
+                    expandFoldPositions.add(markPos);
                     anyMarkChanged = true;
                 }
                 updateAffectedIndexes(index, index + 1);
@@ -470,6 +478,10 @@ final class CaretTransaction {
             }
         }
         return allRemovedItems;
+    }
+    
+    List<Position> expandFoldPositions() {
+        return expandFoldPositions;
     }
     
     private GapList<CaretItem> resultItems() {
