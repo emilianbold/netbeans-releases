@@ -41,32 +41,36 @@
  */
 package org.netbeans.modules.terminal.actions;
 
+import java.awt.event.ActionEvent;
 import javax.swing.Action;
+import org.netbeans.modules.terminal.ioprovider.Terminal;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.Actions;
+import org.openide.util.Lookup;
 
-/**
- *
- * @author igromov
- */
-public class ActionFactory {
+@ActionID(id = ActionFactory.NEW_TAB_ACTION_ID, category = ActionFactory.CATEGORY)
+@ActionRegistration(displayName = "#CTL_NewTab", lazy = true) //NOI18N
+@ActionReferences({
+    @ActionReference(path = ActionFactory.ACTIONS_PATH, name = "NewTabAction"), //NOI18N
+    @ActionReference(path = "Shortcuts", name = "CS-T") //NOI18N
+})
+public class NewTabAction extends TerminalAction {
 
-    public static final String CATEGORY = "Terminal"; //NOI18N
-    public static final String ACTIONS_PATH = "Actions/Terminal"; //NOI18N
-    public static final String DUMP_SEQUENCE_ACTION_ID = "org.netbeans.modules.terminal.actions.DumpSequenceAction"; //NOI18N
-    public static final String COPY_ACTION_ID = "org.netbeans.modules.terminal.actions.CopyAction"; //NOI18N
-    public static final String CLOSE_ACTION_ID = "org.netbeans.modules.terminal.actions.CloseAction"; //NOI18N
-    public static final String PASTE_ACTION_ID = "org.netbeans.modules.terminal.actions.PasteAction"; //NOI18N
-    public static final String FIND_ACTION_ID = "org.netbeans.modules.terminal.actions.FindAction"; //NOI18N
-    public static final String CLEAR_ACTION_ID = "org.netbeans.modules.terminal.actions.ClearAction"; //NOI18N
-    public static final String LARGER_FONT_ACTION_ID = "org.netbeans.modules.terminal.actions.LargerFontAction"; //NOI18N
-    public static final String SMALLER_FONT_ACTION_ID = "org.netbeans.modules.terminal.actions.SmallerFontAction"; //NOI18N
-    public static final String WRAP_ACTION_ID = "org.netbeans.modules.terminal.actions.WrapAction"; //NOI18N
-    public static final String SET_TITLE_ACTION_ID = "org.netbeans.modules.terminal.actions.SetTitleAction"; //NOI18N
-    public static final String PIN_TAB_ACTION_ID = "org.netbeans.modules.terminal.actions.PinTabAction"; //NOI18N
-    public static final String SWITCH_TAB_ACTION_ID = "org.netbeans.modules.terminal.actions.SwitchTabAction"; //NOI18N
-    public static final String NEW_TAB_ACTION_ID = "org.netbeans.modules.terminal.actions.NewTabAction"; //NOI18N
+    public NewTabAction(Terminal context) {
+        super(context);
+    }
 
-    public static Action forID(String id) {
-	return Actions.forID(CATEGORY, id);
+    @Override
+    protected void performAction() {
+        Action forID = Actions.forID("Window", "LocalTerminalAction"); //NOI18N
+        forID.actionPerformed(new ActionEvent(getTerminal(), ActionEvent.ACTION_PERFORMED, null));
+    }
+
+    @Override
+    public Action createContextAwareInstance(Lookup actionContext) {
+        return new NewTabAction(actionContext.lookup(Terminal.class));
     }
 }
