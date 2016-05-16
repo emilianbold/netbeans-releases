@@ -393,6 +393,7 @@ public final class Terminal extends JComponent {
 	
 	final Set<Action> actions = new HashSet<Action>();
 	final Set<Action> awareActions = new HashSet<Action>();
+	actions.add(newTabAction);
 	actions.add(copyAction);
 	actions.add(pasteAction);
 	actions.add(findAction);
@@ -970,6 +971,7 @@ public final class Terminal extends JComponent {
     private Action dumpSequencesAction = ActionFactory.forID(ActionFactory.DUMP_SEQUENCE_ACTION_ID);
     private Action closeAction = ActionFactory.forID(ActionFactory.CLOSE_ACTION_ID);
     private Action switchTabAction = ActionFactory.forID(ActionFactory.SWITCH_TAB_ACTION_ID);
+    private Action newTabAction = ActionFactory.forID(ActionFactory.NEW_TAB_ACTION_ID);
 
     private void setupKeymap(Set<Action> actions) {
 	// We need to do two things.
@@ -1049,6 +1051,8 @@ public final class Terminal extends JComponent {
 	
 	JPopupMenu menu = Utilities.actionsToPopup(
 		new Action[]{
+                    newTabAction,
+                    null,
 		    copyAction,
 		    pasteAction,
 		    null,
