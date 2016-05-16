@@ -39,38 +39,29 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.editor.actions;
+package org.netbeans.modules.editor.lib2.caret;
 
-import java.awt.event.ActionEvent;
-import java.util.logging.Logger;
+import java.util.List;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.EditorActionRegistration;
-import org.netbeans.spi.editor.AbstractEditorAction;
+import javax.swing.text.Position;
 
 /**
+ * Editor caret may request a possible fold(s) expansion upon dot or mark position setting.
  *
- * @author Ralph Ruijs <ralphbenjamin@netbeans.org>
+ * @author Miloslav Metelka
  */
-@EditorActionRegistration(
-        name = "clipboard-lines",
-        menuPath = "Edit",
-        menuPosition = 1360)
-public class PasteLinesAction extends AbstractEditorAction {
-
-    private static final Logger LOG = Logger.getLogger(PasteLinesAction.class.getName());
+public abstract class CaretFoldExpander {
     
-    /** Boolean property defining whether paste is being requested to be in lines. */
-    private static final String PASTE_LINES_PROPERTY = "clipboard-lines"; // NOI18N
-
-    @Override
-    protected void actionPerformed(ActionEvent evt, JTextComponent component) {
-        if (component != null) {
-            try {
-                component.putClientProperty(PASTE_LINES_PROPERTY, Boolean.TRUE);
-                component.paste();
-            } finally {
-                component.putClientProperty(PASTE_LINES_PROPERTY, null);
-            }
-        }
+    private static CaretFoldExpander caretFoldExpander;
+    
+    public static CaretFoldExpander get() {
+        return caretFoldExpander;
     }
+    
+    public static void register(CaretFoldExpander caretFoldExpander) {
+        CaretFoldExpander.caretFoldExpander = caretFoldExpander;
+    }
+    
+    public abstract void checkExpandFolds(JTextComponent c, List<Position> posList);
+
 }

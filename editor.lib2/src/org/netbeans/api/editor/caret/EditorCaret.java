@@ -133,6 +133,7 @@ import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib2.RectangularSelectionCaretAccessor;
 import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
 import org.netbeans.modules.editor.lib2.actions.EditorActionUtilities;
+import org.netbeans.modules.editor.lib2.caret.CaretFoldExpander;
 import org.netbeans.modules.editor.lib2.document.DocumentPostModificationUtils;
 import org.netbeans.modules.editor.lib2.document.UndoRedoDocumentEventResolver;
 import org.netbeans.modules.editor.lib2.highlighting.CaretOverwriteModeHighlighting;
@@ -1517,6 +1518,7 @@ public final class EditorCaret implements Caret {
                         activeTransaction.removeOverlappingRegions();
                         int diffCount = 0;
                         boolean inAtomicSectionL;
+                        List<Position> expandFoldPositions;
                         synchronized (listenerList) {
                             inAtomicSectionL = inAtomicSection;
                             GapList<CaretItem> replaceItems = activeTransaction.getReplaceItems();
@@ -1539,6 +1541,7 @@ public final class EditorCaret implements Caret {
                                 }
                             }
                             scrollToLastCaret |= activeTransaction.isScrollToLastCaret();
+                            expandFoldPositions = activeTransaction.expandFoldPositions();
                         }
                         // Repaint bounds of removed items
                         GapList<CaretItem> removedItems = activeTransaction.allRemovedItems();
@@ -1573,6 +1576,12 @@ public final class EditorCaret implements Caret {
                         if (allRemovedItems != null) {
                             for (CaretItem removedItem : allRemovedItems) {
                                 removedItem.repaintIfShowing(c);
+                            }
+                        }
+                        if (expandFoldPositions != null) {
+                            CaretFoldExpander caretFoldExpander = CaretFoldExpander.get();
+                            if (caretFoldExpander != null) {
+                                caretFoldExpander.checkExpandFolds(c, expandFoldPositions);
                             }
                         }
                         if (activeTransaction.isAnyChange()) {
