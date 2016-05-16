@@ -64,11 +64,13 @@ public class PasteLinesAction extends AbstractEditorAction {
 
     @Override
     protected void actionPerformed(ActionEvent evt, JTextComponent component) {
-        try {
-            component.putClientProperty(PASTE_LINES_PROPERTY, Boolean.TRUE);
-            component.paste();
-        } finally {
-            component.putClientProperty(PASTE_LINES_PROPERTY, null);
+        if (component != null) {
+            try {
+                component.putClientProperty(PASTE_LINES_PROPERTY, Boolean.TRUE);
+                component.paste();
+            } finally {
+                component.putClientProperty(PASTE_LINES_PROPERTY, null);
+            }
         }
     }
 }
