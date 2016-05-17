@@ -64,6 +64,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.openide.filesystems.FileObject;
@@ -109,8 +110,12 @@ import org.openide.xml.XMLUtil;
  */
 class PlatformNode extends AbstractNode implements ChangeListener {
 
+    @StaticResource
     private static final String PLATFORM_ICON = "org/netbeans/modules/java/api/common/project/ui/resources/platform.gif";    //NOI18N
+    @StaticResource
     private static final String ARCHIVE_ICON = "org/netbeans/modules/java/api/common/project/ui/resources/jar.gif"; //NOI18N
+    @StaticResource
+    private static final String MODULE_ICON = "org/netbeans/modules/java/api/common/project/ui/resources/module.png"; //NOI18N
 
     private final PlatformProvider pp;
 
@@ -248,22 +253,25 @@ class PlatformNode extends AbstractNode implements ChangeListener {
                 return Collections.<SourceGroup>emptyList();
             }
             final List<SourceGroup> result = new ArrayList<>(roots.length);
-            for (int i = 0; i < roots.length; i++) {
+            for (FileObject root : roots) {
                     FileObject file;
                     Icon icon;
                     Icon openedIcon;
-                    if ("jar".equals(roots[i].toURL().getProtocol())) { //NOI18N
-                        file = FileUtil.getArchiveFile (roots[i]);
-                        icon = openedIcon = ImageUtilities.loadImageIcon(ARCHIVE_ICON, false);
+                    switch (root.toURL().getProtocol()) {
+                        case "jar":
+                            file = FileUtil.getArchiveFile (root);
+                            icon = openedIcon = ImageUtilities.loadImageIcon(ARCHIVE_ICON, false);
+                            break;
+                        case "nbjrt":
+                            file = root;
+                            icon = openedIcon = ImageUtilities.loadImageIcon(MODULE_ICON, false);
+                            break;
+                        default:
+                            file = root;
+                            icon = openedIcon = null;
                     }
-                    else {
-                        file = roots[i];
-                        icon = null;
-                        openedIcon = null;
-                    }
-                    
                     if (file.isValid()) {
-                        result.add (new LibrariesSourceGroup(roots[i],file.getNameExt(),icon, openedIcon));
+                        result.add (new LibrariesSourceGroup(root,file.getNameExt(),icon, openedIcon));
                     }
             }
             return result;

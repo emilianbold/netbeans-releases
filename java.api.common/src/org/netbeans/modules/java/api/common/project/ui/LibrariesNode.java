@@ -77,6 +77,7 @@ import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -543,9 +544,13 @@ public final class LibrariesNode extends AbstractNode {
          * Constant representing a prefix of ant property reference
          */
         private static final String REF_PREFIX = "${"; //NOI18N
-        
+
+        @StaticResource
         private static final String LIBRARIES_ICON = "org/netbeans/modules/java/api/common/project/ui/resources/libraries.gif"; //NOI18N
-        private static final String ARCHIVE_ICON = "org/netbeans/modules/java/api/common/project/ui/resources/jar.gif";//NOI18N        
+        @StaticResource
+        private static final String ARCHIVE_ICON = "org/netbeans/modules/java/api/common/project/ui/resources/jar.gif";//NOI18N
+        @StaticResource
+        private static final String MODULE_ICON = "org/netbeans/modules/java/api/common/project/ui/resources/module.png"; //NOI18N
 
         private final PropertyEvaluator eval;
         private final UpdateHelper helper;
@@ -882,11 +887,13 @@ public final class LibrariesNode extends AbstractNode {
             final URL root,
             final List<? super URL> rootsList) {
             rootsList.add (root);
+            final Icon icon = ImageUtilities.loadImageIcon(MODULE_ICON, false),
+                    openedIcon = icon;
             final String displayName = SourceUtils.getModuleName(root);
             return displayName == null ?
                 null :
                 Optional.ofNullable(URLMapper.findFileObject(root))
-                    .map((fo) -> new LibrariesSourceGroup (fo,displayName,null,null))
+                    .map((fo) -> new LibrariesSourceGroup (fo,displayName,icon,openedIcon))
                     .orElse(null);
         }
     }
