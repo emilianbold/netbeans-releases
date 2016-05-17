@@ -920,7 +920,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
         @StaticResource
         private static final String RES_NET = "org/netbeans/modules/java/j2seplatform/resources/web.gif";       //NOI18N
         @StaticResource
-        private static final String RES_MODULE = "org/netbeans/modules/java/j2seplatform/resources/package.png";    //NOI18N
+        private static final String RES_MODULE = "org/netbeans/modules/java/j2seplatform/resources/module.png";    //NOI18N
         @StaticResource
         private static final String RES_EMPTY = "org/netbeans/modules/java/j2seplatform/resources/empty.png";       //NOI18N
 

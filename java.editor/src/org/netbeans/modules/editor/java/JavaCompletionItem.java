@@ -73,6 +73,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
+import org.netbeans.api.annotations.common.StaticResource;
 
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.editor.document.AtomicLockDocument;
@@ -807,7 +808,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
     static class ModuleItem extends JavaCompletionItem {
 
-        private static final String MODULE = "org/netbeans/modules/java/editor/resources/package.gif"; // NOI18N
+        @StaticResource
+        private static final String MODULE = "org/netbeans/modules/java/editor/resources/module.png"; // NOI18N
         private static final String MODULE_COLOR = Utilities.getHTMLColor(64, 150, 64);
         private static ImageIcon icon;
 

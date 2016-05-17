@@ -90,7 +90,7 @@ public final class Icons {
 	
 	switch( elementKind ) {
             case MODULE:
-                img = ImageUtilities.loadImage( ICON_BASE + "package" + GIF_EXTENSION );
+                img = ImageUtilities.loadImage( ICON_BASE + "module" + PNG_EXTENSION );
 		break;
 	    case PACKAGE:
 		img = ImageUtilities.loadImage( ICON_BASE + "package" + GIF_EXTENSION );
