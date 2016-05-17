@@ -71,6 +71,60 @@ public class InlineTest extends RefactoringTestBase {
         JavacParser.DISABLE_SOURCE_LEVEL_DOWNGRADE = true;
     }
     
+    public void test258579b() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    public static void main(String[] args) {\n"
+                        + "        for (foo(); ; foo(), foo()) { }\n"
+                        + "    }\n"
+                        + "    private void foo() {\n"
+                        + "    }\n"
+                        + "}\n"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 2, r);
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    public static void main(String[] args) {\n"
+                        + "        for (; ; ) { }\n"
+                        + "    }\n"
+                        + "}\n"));
+    }
+    
+    public void test258579a() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    String greet = \"\";\n"
+                        + "    public static void main(String[] args) {\n"
+                        + "        new A().foo(\"\");\n"
+                        + "    }\n"
+                        + "    private void foo(String msg) {\n"
+                        + "    }\n"
+                        + "    private class Inner {\n"
+                        + "        public void bar() {\n"
+                        + "            foo(\"\");\n"
+                        + "        }\n"
+                        + "    }\n"
+                        + "}\n"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 3, r);
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    String greet = \"\";\n"
+                        + "    public static void main(String[] args) {\n"
+                        + "    }\n"
+                        + "    private class Inner {\n"
+                        + "        public void bar() {\n"
+                        + "        }\n"
+                        + "    }\n"
+                        + "}\n"));
+    }
+    
     public void test216817() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
@@ -417,7 +471,6 @@ public class InlineTest extends RefactoringTestBase {
                 new File("t/B.java", "package t;\n"
                 + "public class B {\n"
                 + "    public void testMethodB(A a) {\n"
-                + "        ;\n"
                 + "    }\n"
                 + "}"));
     }
@@ -1428,7 +1481,6 @@ public class InlineTest extends RefactoringTestBase {
                 + "public class A {\n"
                 + "    public int getRating() {\n"
                 + "        System.out.println(\"Less then five?\");\n"
-                + "        ;\n"
                 + "        System.out.println(\"Less then five?\");\n"
                 + "        return (numberOfLateDeliveries > 5) ? 2 : 1;\n"
                 + "    }\n"
