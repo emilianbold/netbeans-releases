@@ -90,15 +90,13 @@ import org.netbeans.spi.java.hints.TriggerTreeKind;
  * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=89258">RFE 89258</a>
  * @see <a href="http://java.sun.com/j2se/1.5.0/docs/guide/language/static-import.html>Static Imports</a>
  */
-@Hint(category="rules15", displayName="#DN_StaticImport", description="#DSC_StaticImport", severity=Severity.HINT, enabled=false, suppressWarnings={"", "StaticImport"})
+@Hint(category="rules15", displayName="#DN_StaticImport", description="#DSC_StaticImport", severity=Severity.HINT, enabled=false, suppressWarnings={"", "StaticImport"},
+        minSourceVersion = "5")
 public class StaticImport {
 
     @TriggerTreeKind(Kind.MEMBER_SELECT)
     public static List<ErrorDescription> run(HintContext ctx) {
         CompilationInfo info = ctx.getInfo();
-        if (!supportsStaticImports(info)) {
-            return null;
-        }
         TreePath treePath = ctx.getPath();
 
         Element e = info.getTrees().getElement(treePath);

@@ -66,14 +66,13 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(displayName = "#DN_org.netbeans.modules.java.hints.jdk.AddUnderscores", description = "#DESC_org.netbeans.modules.java.hints.jdk.AddUnderscores", id=AddUnderscores.ID, category="rules15", enabled=false, severity=Severity.HINT, customizerProvider=CustomizerProviderImpl.class)
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.jdk.AddUnderscores", description = "#DESC_org.netbeans.modules.java.hints.jdk.AddUnderscores", id=AddUnderscores.ID, category="rules15", enabled=false, severity=Severity.HINT, customizerProvider=CustomizerProviderImpl.class,
+        minSourceVersion = "7")
 public class AddUnderscores {
     public static final String ID = "org.netbeans.modules.java.hints.jdk.AddUnderscores";
 
     @TriggerTreeKind({Kind.INT_LITERAL, Kind.LONG_LITERAL})
     public static ErrorDescription hint(HintContext ctx) {
-        if (ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_7) < 0) return null;
-        
         TreePath tp = ctx.getPath();
         int end = (int) ctx.getInfo().getTrees().getSourcePositions().getEndPosition(tp.getCompilationUnit(), tp.getLeaf());
         int start = (int) ctx.getInfo().getTrees().getSourcePositions().getStartPosition(tp.getCompilationUnit(), tp.getLeaf());

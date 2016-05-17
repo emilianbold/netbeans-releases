@@ -108,7 +108,8 @@ import org.openide.util.NbBundle.Messages;
  */
 public class Lambda {
     
-    @Hint(displayName="#DN_lambda2Class", description="#DESC_lambda2Class", category="suggestions", hintKind=Hint.Kind.ACTION)
+    @Hint(displayName="#DN_lambda2Class", description="#DESC_lambda2Class", category="suggestions", hintKind=Hint.Kind.ACTION,
+            minSourceVersion = "8")
     @Messages({
         "DN_lambda2Class=Convert Lambda Expression to Anonymous Innerclass",
         "DESC_lambda2Class=Converts lambda expressions to anonymous inner classes",
@@ -125,7 +126,8 @@ public class Lambda {
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), Bundle.ERR_lambda2Class(), new Lambda2Anonymous(ctx.getInfo(), ctx.getPath()).toEditorFix());
     }
     
-    @Hint(displayName="#DN_lambda2MemberReference", description="#DESC_lambda2MemberReference", category="suggestions", hintKind=Hint.Kind.ACTION)
+    @Hint(displayName="#DN_lambda2MemberReference", description="#DESC_lambda2MemberReference", category="suggestions", hintKind=Hint.Kind.ACTION,
+            minSourceVersion = "8")
     @Messages({
         "DN_lambda2MemberReference=Convert Lambda Expression to Member Reference",
         "DESC_lambda2MemberReference=Converts lambda expressions to member references",
@@ -191,7 +193,8 @@ public class Lambda {
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), Bundle.ERR_lambda2MemberReference(), new Lambda2MemberReference(ctx.getInfo(), ctx.getPath()).toEditorFix());
     }
     
-    @Hint(displayName="#DN_expression2Return", description="#DESC_expression2Return", category="suggestions", hintKind=Hint.Kind.ACTION)
+    @Hint(displayName="#DN_expression2Return", description="#DESC_expression2Return", category="suggestions", hintKind=Hint.Kind.ACTION,
+            minSourceVersion = "8")
     @Messages({
         "DN_expression2Return=Convert Lambda Body to Use a Block",
         "DESC_expression2Return=Converts lambda bodies to use blocks rather than expressions",
