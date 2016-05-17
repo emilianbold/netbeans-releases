@@ -52,6 +52,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.SourceVersion;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.java.hints.CustomizerProvider;
 import org.netbeans.spi.java.hints.Hint;
@@ -74,8 +75,9 @@ public class HintMetadata {
     public final CustomizerProvider customizer;
     public final boolean showInTaskList = false;
     public final Set<Options> options;
+    public final SourceVersion sourceVersion;
 
-    HintMetadata(String id, String displayName, String description, String category, boolean enabled, Hint.Kind kind, Severity severity, Collection<? extends String> suppressWarnings, CustomizerProvider customizer, Set<Options> options) {
+    HintMetadata(String id, String displayName, String description, String category, boolean enabled, Hint.Kind kind, Severity severity, Collection<? extends String> suppressWarnings, CustomizerProvider customizer, Set<Options> options, SourceVersion sourceVersion) {
         this.id = id;
         this.displayName = displayName;
         this.description = description;
@@ -86,6 +88,7 @@ public class HintMetadata {
         this.suppressWarnings = suppressWarnings;
         this.customizer = customizer;
         this.options = options;
+        this.sourceVersion = sourceVersion;
     }
 
     @Override
@@ -113,6 +116,7 @@ public class HintMetadata {
         private final Collection<String> suppressWarnings = new ArrayList<String>();
         private CustomizerProvider customizer;
         private final Set<Options> options = EnumSet.noneOf(Options.class);
+        private SourceVersion sourceVersion;
 
         private Builder(String id) {
             this.id = id;
@@ -182,6 +186,22 @@ public class HintMetadata {
             this.severity = severity;
             return this;
         }
+        
+        public Builder setSourceVersion(String version) {
+            if (version == null || version.isEmpty()) {
+                this.sourceVersion = SourceVersion.RELEASE_4;
+            } else {
+                if (version.startsWith("1.")) {
+                    version = version.substring(2);
+                }
+                try {
+                    this.sourceVersion = SourceVersion.valueOf("RELEASE_" + version);
+                } catch (IllegalArgumentException ex) {
+                    this.sourceVersion = SourceVersion.RELEASE_4;
+                }
+            }
+            return this;
+        }
 
 
         public Builder addSuppressWarnings(String... keys) {
@@ -200,7 +220,7 @@ public class HintMetadata {
         }
 
         public HintMetadata build() {
-            return new HintMetadata(id, displayName, description, category, enabled, kind, severity, suppressWarnings, customizer, options);
+            return new HintMetadata(id, displayName, description, category, enabled, kind, severity, suppressWarnings, customizer, options, sourceVersion);
         }
 
     }
