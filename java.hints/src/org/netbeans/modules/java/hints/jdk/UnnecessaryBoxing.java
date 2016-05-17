@@ -144,14 +144,12 @@ public class UnnecessaryBoxing {
             description = "#DESC_UnnecessaryBoxing",
             category = "rules15",
             enabled = true,
-            suppressWarnings = "UnnecessaryBoxing"
+            suppressWarnings = "UnnecessaryBoxing",
+            minSourceVersion = "5"
     )
     @UseOptions(PREFER_CAST_TO_BOXING)
     public static ErrorDescription run(HintContext ctx) {
         CompilationInfo ci = ctx.getInfo();
-        if (ci.getSourceVersion().compareTo(SourceVersion.RELEASE_5) < 0) {
-            return null;
-        }
         TreePath p = ctx.getPath();
         
         TreePath vp = ctx.getVariables().get("$v"); // NOI18N

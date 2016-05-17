@@ -76,7 +76,8 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Lahoda
  */
-@Hint(displayName = "#DN_org.netbeans.modules.java.hints.jdk.ConvertToStringSwitch", description = "#DESC_org.netbeans.modules.java.hints.jdk.ConvertToStringSwitch", category="rules15", suppressWarnings="ConvertToStringSwitch")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.jdk.ConvertToStringSwitch", description = "#DESC_org.netbeans.modules.java.hints.jdk.ConvertToStringSwitch", category="rules15", suppressWarnings="ConvertToStringSwitch",
+        minSourceVersion = "7")
 @NbBundle.Messages({
     "# {0} - string literal value",
     "TEXT_ChainedIfContainsSameValues=The string value `{0}'' used in String comparison appears earlier in the chained if-else-if statement. This condition never evaluates to true",
@@ -123,8 +124,7 @@ public class ConvertToStringSwitch {
     
     @TriggerPattern(value="if ($cond) $body; else $else;")
     public static List<ErrorDescription> hint(final HintContext ctx) {
-        if (   ctx.getPath().getParentPath().getLeaf().getKind() == Kind.IF
-            || ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_7) < 0) {
+        if (ctx.getPath().getParentPath().getLeaf().getKind() == Kind.IF) {
             return null;
         }
 
