@@ -134,7 +134,7 @@ public class ConvertToStringSwitch {
             return null;
         }
         final Collection<String> initPatterns = new ArrayList<String>(INIT_PATTERNS.length);
-
+        final boolean acceptEqEq = ctx.getPreferences().getBoolean(KEY_ALSO_EQ, DEF_ALSO_EQ);
         initPatterns.addAll(Arrays.asList(INIT_PATTERNS));
         
         IfToSwitchSupport eval = new IfToSwitchSupport(ctx) {
@@ -189,7 +189,8 @@ public class ConvertToStringSwitch {
                             continue;
                         }
                         n |= m.getKind() == TypeKind.NULL;
-                        if (cnt == 2 && !n) {
+                        if (cnt == 2 && !acceptEqEq && !n) {
+                            // do not accept == if not explicitly permitted, and neither side is null
                             continue;
                         }
                         reportConstantAndLiteral(c1, c2);
@@ -247,7 +248,7 @@ public class ConvertToStringSwitch {
 
         ctx.getVariables().put("$var", var);
         
-        boolean acceptEquals = ctx.getPreferences().getBoolean(KEY_ALSO_EQ, DEF_ALSO_EQ);
+        boolean acceptEqEq = ctx.getPreferences().getBoolean(KEY_ALSO_EQ, DEF_ALSO_EQ);
         int i = -1;
         assert PATTERNS.length == 6; // the cycle counts with specific positions
         for (String patt : patterns) {
@@ -264,7 +265,7 @@ public class ConvertToStringSwitch {
                 varConst[0] = true;
             }
             TreePath constPath = ctx.getVariables().get("$constant"); // NOI18N
-            if (i < 4 || acceptEquals) {
+            if (i < 4 || acceptEqEq) {
                 return constPath;
             }
 
