@@ -75,6 +75,7 @@ import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
 import org.netbeans.modules.nativeexecution.api.util.*;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -106,15 +107,15 @@ public class ExecuteCommand {
         this.displayName = displayName;
     }
 
-    public Future<Integer> performAction(ExecutionListener listener, Writer outputListener, List<String> additionalEnvironment) {
-        NativeExecutionService es = prepare(listener, outputListener, additionalEnvironment);
+    public Future<Integer> performAction(ExecutionListener listener, Writer outputListener, List<String> additionalEnvironment, BuildTraceSupport.BuildTrace buldTraceSupport) {
+        NativeExecutionService es = prepare(listener, outputListener, additionalEnvironment, buldTraceSupport);
         if (es != null) {
             return es.run();
         }
         return null;
     }
 
-    private NativeExecutionService prepare(ExecutionListener listener, Writer outputListener, List<String> additionalEnvironment) {
+    private NativeExecutionService prepare(ExecutionListener listener, Writer outputListener, List<String> additionalEnvironment, BuildTraceSupport.BuildTrace buldTraceSupport) {
         HostInfo hostInfo;
         try {
             hostInfo = HostInfoUtils.getHostInfo(execEnv);
@@ -151,9 +152,14 @@ public class ExecuteCommand {
                 return null;
             }
         }
-        expandMacros(hostInfo, BuildSupport.MAKE_MACRO, PredefinedToolKind.MakeTool, "make"); //NOI18N
-        expandMacros(hostInfo, PreBuildSupport.C_COMPILER_MACRO, PredefinedToolKind.CCompiler, "gcc"); //NOI18N
-        expandMacros(hostInfo, PreBuildSupport.CPP_COMPILER_MACRO, PredefinedToolKind.CCCompiler, "g++"); //NOI18N
+        Map<String, String> map = new HashMap<>();
+        expandMacros(hostInfo, BuildSupport.MAKE_MACRO, PredefinedToolKind.MakeTool, map, "make"); //NOI18N
+        if (buldTraceSupport != null && buldTraceSupport.getKind() == BuildTraceSupport.BuildTraceKind.Wrapper) {
+            buldTraceSupport.modifyEnv(map);
+        }
+        expandMacros(hostInfo, PreBuildSupport.C_COMPILER_MACRO, PredefinedToolKind.CCompiler, map, "gcc"); //NOI18N
+        expandMacros(hostInfo, PreBuildSupport.CPP_COMPILER_MACRO, PredefinedToolKind.CCCompiler, map, "g++"); //NOI18N
+        
         // Arguments
         String[] args = new String[]{"-c", command}; // NOI18N
         // Build directory
@@ -182,29 +188,43 @@ public class ExecuteCommand {
                 return null;
             }
         }
+        String wrapper = map.get(BuildTraceSupport.CND_TOOL_WRAPPER);
+        if (wrapper != null) {
+            for(Map.Entry<String,String> e : envMap.entrySet()) {
+                if ("PATH".equals(e.getKey().toUpperCase())) { //NOI18N
+                    if (execEnv.isLocal() && Utilities.isWindows()) {
+                        envMap.put(e.getKey(), wrapper+";"+e.getValue()); //NOI18N
+                    } else {
+                        envMap.put(e.getKey(), wrapper+":"+e.getValue()); //NOI18N
+                    }
+                    break;
+                }
+            }
+        }
 
         MacroMap mm = MacroMap.forExecEnv(execEnv);
         mm.putAll(envMap);
-
-        if (envMap.containsKey(BuildTraceSupport.CND_TOOLS)) { // NOI18N
-            try {
-                if (BuildTraceHelper.isMac(execEnv)) {
-                    String what = BuildTraceHelper.INSTANCE.getLibraryName(execEnv);
-                    if (what.indexOf(':') > 0) {
-                        what = what.substring(0,what.indexOf(':'));
+        if (wrapper == null) {
+            if (envMap.containsKey(BuildTraceSupport.CND_TOOLS)) { // NOI18N
+                try {
+                    if (BuildTraceHelper.isMac(execEnv)) {
+                        String what = BuildTraceHelper.INSTANCE.getLibraryName(execEnv);
+                        if (what.indexOf(':') > 0) {
+                            what = what.substring(0,what.indexOf(':'));
+                        }
+                        String where = BuildTraceHelper.INSTANCE.getLDPaths(execEnv);
+                        if (where.indexOf(':') > 0) {
+                            where = where.substring(0,where.indexOf(':'));
+                        }
+                        String lib = where+'/'+what;
+                        mm.prependPathVariable(BuildTraceHelper.getLDPreloadEnvName(execEnv),lib);
+                    } else {
+                        mm.prependPathVariable(BuildTraceHelper.getLDPreloadEnvName(execEnv), BuildTraceHelper.INSTANCE.getLibraryName(execEnv));
+                        mm.prependPathVariable(BuildTraceHelper.getLDPathEnvName(execEnv), BuildTraceHelper.INSTANCE.getLDPaths(execEnv));
                     }
-                    String where = BuildTraceHelper.INSTANCE.getLDPaths(execEnv);
-                    if (where.indexOf(':') > 0) {
-                        where = where.substring(0,where.indexOf(':'));
-                    }
-                    String lib = where+'/'+what;
-                    mm.prependPathVariable(BuildTraceHelper.getLDPreloadEnvName(execEnv),lib);
-                } else {
-                    mm.prependPathVariable(BuildTraceHelper.getLDPreloadEnvName(execEnv), BuildTraceHelper.INSTANCE.getLibraryName(execEnv));
-                    mm.prependPathVariable(BuildTraceHelper.getLDPathEnvName(execEnv), BuildTraceHelper.INSTANCE.getLDPaths(execEnv));
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
             }
         }
         traceExecutable(executable, buildDir, args, execEnv.toString(), mm.toMap());
@@ -242,14 +262,30 @@ public class ExecuteCommand {
         return NativeExecutionService.newService(npb, descr, name);
     }
 
-    private void expandMacros(HostInfo hostInfo, String macro, PredefinedToolKind tool, String defaultValue) {
+    private void expandMacros(HostInfo hostInfo, String macro, PredefinedToolKind tool, Map<String, String> env, String defaultValue) {
         if (command.contains(macro)) {
             String path = defaultValue;
             CompilerSet compilerSet = getCompilerSet();
             if (compilerSet != null) {
                 Tool findTool = compilerSet.findTool(tool);
                 if (findTool != null && findTool.getPath() != null && findTool.getPath().length() > 0) {
-                    path = findTool.getPath();
+                    if (tool == PredefinedToolKind.CCompiler) {
+                        String wrapper = env.get(BuildTraceSupport.CND_C_WRAPPER);
+                        if (wrapper != null) {
+                            path = wrapper;
+                        } else {
+                            path = findTool.getPath();
+                        }
+                    } else if (tool == PredefinedToolKind.CCCompiler) {
+                        String wrapper = env.get(BuildTraceSupport.CND_CPP_WRAPPER);
+                        if (wrapper != null) {
+                            path = wrapper;
+                        } else {
+                            path = findTool.getPath();
+                        }
+                    } else {
+                        path = findTool.getPath();
+                    }
                     cmdLine = cmdLine.replace(macro, path);
                     if (hostInfo.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
                         String aPath = WindowsSupport.getInstance().convertToShellPath(path);

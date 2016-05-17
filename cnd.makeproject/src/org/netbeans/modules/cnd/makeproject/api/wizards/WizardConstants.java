@@ -79,6 +79,7 @@ public final class WizardConstants {
     public static final WizardConstant<List<? extends SourceFolderInfo>> PROPERTY_SOURCE_FOLDERS_LIST = new WizardConstant<>("sourceFoldersList"); // NOI18N
     public static final WizardConstant<String> PROPERTY_SOURCE_FOLDERS_FILTER = new WizardConstant<>("sourceFoldersFilter"); // NOI18N
     public static final WizardConstant<Boolean> PROPERTY_RESOLVE_SYM_LINKS = new WizardConstant<>("resolveSymLinks"); // NOI18N
+    public static final WizardConstant<Boolean> PROPERTY_USE_BUILD_ANALYZER = new WizardConstant<>("useBuildAnalyzer"); // NOI18N
 
     public static final WizardConstant<ToolsCacheManager> PROPERTY_TOOLS_CACHE_MANAGER = new WizardConstant<>("ToolsCacheManager"); // NOI18N
     public static final WizardConstant<String> PROPERTY_PREFERED_PROJECT_NAME = new WizardConstant<>("displayName"); // NOI18N
