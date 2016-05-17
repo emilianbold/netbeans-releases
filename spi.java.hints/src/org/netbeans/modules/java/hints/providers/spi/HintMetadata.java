@@ -189,7 +189,7 @@ public class HintMetadata {
         
         public Builder setSourceVersion(String version) {
             if (version == null || version.isEmpty()) {
-                this.sourceVersion = SourceVersion.RELEASE_4;
+                this.sourceVersion = SourceVersion.RELEASE_3;
             } else {
                 if (version.startsWith("1.")) {
                     version = version.substring(2);
@@ -197,7 +197,7 @@ public class HintMetadata {
                 try {
                     this.sourceVersion = SourceVersion.valueOf("RELEASE_" + version);
                 } catch (IllegalArgumentException ex) {
-                    this.sourceVersion = SourceVersion.RELEASE_4;
+                    this.sourceVersion = SourceVersion.RELEASE_3;
                 }
             }
             return this;
