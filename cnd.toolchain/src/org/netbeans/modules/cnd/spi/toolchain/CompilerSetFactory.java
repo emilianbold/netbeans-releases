@@ -196,11 +196,11 @@ public final class CompilerSetFactory {
         CompilerSetImpl cs = CompilerSetImpl.create(delegate.getCompilerFlavor(), env, directory);
         Tool tool = delegate.findTool(PredefinedToolKind.CCompiler);
         if (tool != null) {
-            cs.addTool(env, tool.getName(), directory+"/"+tool.getName(), PredefinedToolKind.CCompiler, cs.getCompilerFlavor());
+            cs.addTool(env, tool.getName(), directory+"/"+tool.getName(), PredefinedToolKind.CCompiler, cs.getCompilerFlavor()); //NOI18N
         }
         tool = delegate.findTool(PredefinedToolKind.CCCompiler);
         if (tool != null) {
-            cs.addTool(env, tool.getName(), directory+"/"+tool.getName(), PredefinedToolKind.CCCompiler, cs.getCompilerFlavor());
+            cs.addTool(env, tool.getName(), directory+"/"+tool.getName(), PredefinedToolKind.CCCompiler, cs.getCompilerFlavor()); //NOI18N
         }
         return cs;
     }    
