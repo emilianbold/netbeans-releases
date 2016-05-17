@@ -195,6 +195,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         sourceFolderLabel = new javax.swing.JLabel();
         sourceBrowseButton = new javax.swing.JButton();
         sourceFolder = new ExpandableEditableComboBox();
+        useBuildAnalyzerCheckBox = new javax.swing.JCheckBox();
 
         setPreferredSize(new java.awt.Dimension(450, 350));
         setLayout(new java.awt.GridBagLayout());
@@ -214,7 +215,7 @@ public class SelectModePanel extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
@@ -229,7 +230,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         simpleMode.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 12, 0, 0);
@@ -240,7 +241,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         advancedMode.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 12, 0, 0);
@@ -249,7 +250,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(modeLabel, bundle.getString("SelectModeLabelText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(modeLabel, gridBagConstraints);
@@ -327,6 +328,16 @@ public class SelectModePanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(sourceFolder, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(useBuildAnalyzerCheckBox, org.openide.util.NbBundle.getMessage(SelectModePanel.class, "UseBuildAnalyzer")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 8, 0);
+        add(useBuildAnalyzerCheckBox, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void toolchainComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_toolchainComboBoxItemStateChanged
@@ -433,6 +444,7 @@ public class SelectModePanel extends javax.swing.JPanel {
                 enableHostSensitiveComponents(records, srToSelect, csToSelect, isDefaultCompilerSet, enableHost, enabled);
             }
         });
+        useBuildAnalyzerCheckBox.setSelected(true);
     }
 
     private ExecutionEnvironment getSelectedExecutionEnvironment() {
@@ -484,6 +496,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         FileObject fo = controller.getWizardStorage().getSourcesFileObject();
         WizardConstants.PROPERTY_NATIVE_PROJ_FO.put(wizardDescriptor, fo);
         WizardConstants.PROPERTY_NATIVE_PROJ_DIR.put(wizardDescriptor, (fo == null) ? null : fo.getPath()); 
+        WizardConstants.PROPERTY_USE_BUILD_ANALYZER.put(wizardDescriptor, useBuildAnalyzerCheckBox.isSelected());
         initialized = false;
     }
 
@@ -610,6 +623,7 @@ public class SelectModePanel extends javax.swing.JPanel {
     private javax.swing.JLabel sourceFolderLabel;
     private javax.swing.JComboBox toolchainComboBox;
     private javax.swing.JLabel toolchainLabel;
+    private javax.swing.JCheckBox useBuildAnalyzerCheckBox;
     // End of variables declaration//GEN-END:variables
 
     private void disableHostSensitiveComponents() {

@@ -79,6 +79,7 @@ import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.WindowManager;
@@ -221,6 +222,19 @@ public class ShellRunAction extends AbstractExecutorRunAction {
             if (!syncWorker.startup(envMap)) {
                 trace("RemoteSyncWorker is not started up"); //NOI18N
                 return null;
+            }
+        }
+        String wrapper = envMap.get("__CND_TOOL_WRAPPER__"); //NOI18N
+        if (wrapper != null) {
+            for(Map.Entry<String,String> e : envMap.entrySet()) {
+                if ("PATH".equals(e.getKey().toUpperCase())) { //NOI18N
+                    if (execEnv.isLocal() && Utilities.isWindows()) {
+                        envMap.put(e.getKey(), wrapper+";"+e.getValue()); //NOI18N
+                    } else {
+                        envMap.put(e.getKey(), wrapper+":"+e.getValue()); //NOI18N
+                    }
+                    break;
+                }
             }
         }
         

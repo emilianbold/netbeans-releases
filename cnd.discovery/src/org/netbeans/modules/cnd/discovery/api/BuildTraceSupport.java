@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.discovery.api;
 import org.netbeans.modules.cnd.discovery.buildsupport.ToolsWrapperUtility;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -119,6 +120,33 @@ public final class BuildTraceSupport {
                     tool = wrapper.getTool(PredefinedToolKind.CCCompiler);
                     if (tool != null) {
                         env.putenv(CND_CPP_WRAPPER, tool.getPath());
+                    }
+                }
+            }
+        }
+
+        public void modifyEnv(Map<String, String> env) {
+            if (kind == BuildTraceKind.Wrapper) {
+                CompilerSet wrapper = getToolsWrapper();
+                if (wrapper != null) {
+                    CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+                    PlatformInfo pi = conf.getPlatformInfo();
+                    String defaultPath = pi.getPathAsString();
+                    String cmdDir = CompilerSetUtils.getCommandFolder(compilerSet);
+                    if (cmdDir != null && 0 < cmdDir.length()) {
+                        // Also add msys to path. Thet's where sh, mkdir, ... are.
+                        defaultPath = cmdDir + pi.pathSeparator() + defaultPath;
+                    }
+                    defaultPath = wrapper.getDirectory() + pi.pathSeparator() + defaultPath;
+                    env.put(pi.getPathName(), defaultPath);
+                    env.put(CND_TOOL_WRAPPER, wrapper.getDirectory());
+                    Tool tool = wrapper.getTool(PredefinedToolKind.CCompiler);
+                    if (tool != null) {
+                        env.put(CND_C_WRAPPER, tool.getPath());
+                    }
+                    tool = wrapper.getTool(PredefinedToolKind.CCCompiler);
+                    if (tool != null) {
+                        env.put(CND_CPP_WRAPPER, tool.getPath());
                     }
                 }
             }
@@ -204,10 +232,10 @@ public final class BuildTraceSupport {
             HostInfo.CpuFamily cpuFamily = hostInfo.getCpuFamily();
 
             switch (osFamily) {
-                case MACOSX:
-                    if (cpuFamily == HostInfo.CpuFamily.X86) {
-                        return new BuildTrace(BuildTraceKind.Preload, execEnv, conf, project);
-                    }
+                //case MACOSX:
+                //    if (cpuFamily == HostInfo.CpuFamily.X86) {
+                //        return new BuildTrace(BuildTraceKind.Preload, execEnv, conf, project);
+                //    }
                 case LINUX:
                     if (cpuFamily == HostInfo.CpuFamily.X86 || cpuFamily == HostInfo.CpuFamily.SPARC) {
                         return new BuildTrace(BuildTraceKind.Preload, execEnv, conf, project);
@@ -217,8 +245,7 @@ public final class BuildTraceSupport {
                         return new BuildTrace(BuildTraceKind.Preload, execEnv, conf, project);
                     }
             }
-            // temporary disable wrapper
-            //return new BuildTrace(BuildTraceKind.Wrapper, execEnv, conf, project);
+            return new BuildTrace(BuildTraceKind.Wrapper, execEnv, conf, project);
         } catch (IOException ex) {
         } catch (CancellationException ex) {
         }

@@ -216,6 +216,7 @@ public class ImportProject implements PropertyChangeListener {
     private DoubleFile existingBuildLog;
     private File configureLog = null;
     private boolean resolveSymLinks;
+    private boolean useBuildAnalyzer;
 
     public ImportProject(WizardDescriptor wizard) {
         isFullRemoteProject = WizardConstants.PROPERTY_REMOTE_FILE_SYSTEM_ENV.get(wizard) != null;
@@ -307,6 +308,7 @@ public class ImportProject implements PropertyChangeListener {
         sources = list.iterator();
         sourceFoldersFilter = MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN_EXISTING_PROJECT;
         resolveSymLinks = CommonUtilities.resolveSymbolicLinks();
+        useBuildAnalyzer = WizardConstants.PROPERTY_USE_BUILD_ANALYZER.get(wizard);
     }
 
     private void customSetup(WizardDescriptor wizard) {
@@ -343,6 +345,7 @@ public class ImportProject implements PropertyChangeListener {
         } else {
             resolveSymLinks = CommonUtilities.resolveSymbolicLinks();
         }
+        useBuildAnalyzer = WizardConstants.PROPERTY_USE_BUILD_ANALYZER.get(wizard);
     }
 
     public Set<FileObject> create() throws IOException {
@@ -399,7 +402,9 @@ public class ImportProject implements PropertyChangeListener {
             extConf.getCCompilerConfiguration().getIncludeDirectories().setValue(includeDirectoriesVector);
             extConf.getCCCompilerConfiguration().getIncludeDirectories().setValue(new ArrayList<>(includeDirectoriesVector));
         }
-        extConf.getCodeAssistanceConfiguration().getResolveSymbolicLinks().setValue(TRACE);
+        extConf.getCodeAssistanceConfiguration().getResolveSymbolicLinks().setValue(resolveSymLinks);
+        extConf.getCodeAssistanceConfiguration().getBuildAnalyzer().setValue(useBuildAnalyzer);
+        
         // Macros
         if (macros != null && macros.length() > 0) {
             StringTokenizer tokenizer = new StringTokenizer(macros, "; "); // NOI18N
@@ -528,7 +533,6 @@ public class ImportProject implements PropertyChangeListener {
                     waitSources.countDown();
                 }
                 if (configurationDescriptor.getActiveConfiguration() != null) {
-                    configurationDescriptor.getActiveConfiguration().getCodeAssistanceConfiguration().getResolveSymbolicLinks().setValue(resolveSymLinks);
                     if (runConfigure &&
                         (configurePath != null && configurePath.length() > 0 && configureFileObject != null && configureFileObject.isValid() ||
                         configureCommand != null)) {
@@ -609,14 +613,15 @@ public class ImportProject implements PropertyChangeListener {
             }
         } else {
             try {
+                BuildTraceSupport.BuildTrace buldTraceSupport = getBuildTraceSupport();
                 ExecuteCommand ec = new ExecuteCommand(makeProject, workingDir, configureCommand);
                 String name = NbBundle.getMessage(ImportProject.class, "CONFIGURE_LABEL"); // NOI18N
                 String tabName = ec.getExecutionEnvironment().isLocal() ? name :
                                  NbBundle.getMessage(ExecuteCommand.class, "CONFIGURE_REMOTE_LABEL", ec.getExecutionEnvironment().getDisplayName()); // NOI18N
                 ec.setName(name, tabName);
-                Future<Integer> task = ec.performAction(listener, null, null);
+                Future<Integer> task = ec.performAction(listener, null, null, buldTraceSupport);
                 if (task == null) {
-                    logger.log(Level.INFO, "Cannot execute clean command"); // NOI18N
+                    logger.log(Level.INFO, "Cannot execute configure command"); // NOI18N
                     isFinished = true;
                 }
             } catch (Throwable ex) {
@@ -642,8 +647,13 @@ public class ImportProject implements PropertyChangeListener {
         }
         String mime = FileUtil.getMIMEType(configureFileObject);
         // Add arguments to configure script?
+        BuildTraceSupport.BuildTrace buldTraceSupport = getBuildTraceSupport();
         if (configureArguments != null) {
-            configureArguments = PreBuildSupport.expandMacros(configureArguments, toolchain, null);
+            Map<String, String> map = new HashMap<>();
+            if (buldTraceSupport != null && buldTraceSupport.getKind() == BuildTraceSupport.BuildTraceKind.Wrapper) {
+                buldTraceSupport.modifyEnv(map);
+            }
+            configureArguments = PreBuildSupport.expandMacros(configureArguments, toolchain, map);
             if (MIMENames.SHELL_MIME_TYPE.equals(mime)){
                 ShellExecSupport ses = node.getLookup().lookup(ShellExecSupport.class);
                 try {
@@ -651,6 +661,10 @@ public class ImportProject implements PropertyChangeListener {
                     ses.setArguments(new String[]{configureArguments});
                     // duplicate configure variables in environment
                     List<String> vars = ImportUtils.parseEnvironment(configureArguments);
+                    String wrapper = map.get(BuildTraceSupport.CND_TOOL_WRAPPER);
+                    if (wrapper != null) {
+                        vars.add(BuildTraceSupport.CND_TOOL_WRAPPER+"="+wrapper); //NOI18N
+                    }
                     ses.setEnvironmentVariables(vars.toArray(new String[vars.size()]));
                     if (configureRunFolder != null) {
                         FileObject createdFolder = mkDir(configureFileObject.getParent(), CndPathUtilities.toRelativePath(configureFileObject.getParent(), configureRunFolder));
@@ -675,6 +689,10 @@ public class ImportProject implements PropertyChangeListener {
                         }
                     }
                     ses.setArguments(new String[]{configureArguments});
+                    String wrapper = map.get(BuildTraceSupport.CND_TOOL_WRAPPER);
+                    if (wrapper != null) {
+                        vars.add(BuildTraceSupport.CND_TOOL_WRAPPER+"="+wrapper); //NOI18N
+                    }
                     ses.setEnvironmentVariables(vars.toArray(new String[vars.size()]));
                     if (configureRunFolder != null) {
                         FileObject createdFolder = mkDir(configureFileObject.getParent(), CndPathUtilities.toRelativePath(configureFileObject.getParent(), configureRunFolder));
@@ -693,6 +711,12 @@ public class ImportProject implements PropertyChangeListener {
                 QMakeExecSupport ses = node.getLookup().lookup(QMakeExecSupport.class);
                 try {
                     ses.setArguments(new String[]{configureArguments});
+                    List<String> vars = new ArrayList<>();
+                    String wrapper = map.get(BuildTraceSupport.CND_TOOL_WRAPPER);
+                    if (wrapper != null) {
+                        vars.add(BuildTraceSupport.CND_TOOL_WRAPPER+"="+wrapper); //NOI18N
+                    }
+                    ses.setEnvironmentVariables(vars.toArray(new String[vars.size()]));
                     if (configureRunFolder != null) {
                         FileObject createdFolder = mkDir(configureFileObject.getParent(), CndPathUtilities.toRelativePath(configureFileObject.getParent(), configureRunFolder));
                         if (createdFolder != null) {
@@ -737,6 +761,16 @@ public class ImportProject implements PropertyChangeListener {
             importResult.put(Step.MakeClean, State.Skiped);
             discovery(MakeResult.Skipped, existingBuildLog, null, null);
         }
+    }
+
+    private BuildTraceSupport.BuildTrace getBuildTraceSupport() {
+        ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
+        MakeConfiguration conf = makeConfigurationDescriptor.getActiveConfiguration();
+        if(BuildTraceSupport.useBuildTrace(conf)) {
+            return BuildTraceSupport.supportedPlatforms(executionEnvironment, conf, makeProject);
+        }
+        return null;
     }
 
     private FileObject mkDir(FileObject parent, String relative) {
@@ -866,12 +900,13 @@ public class ImportProject implements PropertyChangeListener {
             logger.log(Level.INFO, "#{0}", cleanCommand); // NOI18N
         }
         try {
+            BuildTraceSupport.BuildTrace buldTraceSupport = getBuildTraceSupport();
             ExecuteCommand ec = new ExecuteCommand(makeProject, workingDir, cleanCommand);
             String name = NbBundle.getMessage(ImportProject.class, "CLEAN_LABEL"); // NOI18N
             String tabName = ec.getExecutionEnvironment().isLocal() ? name :
                              NbBundle.getMessage(ExecuteCommand.class, "CLEAN_REMOTE_LABEL", ec.getExecutionEnvironment().getDisplayName()); // NOI18N
             ec.setName(name, tabName);
-            Future<Integer> task = ec.performAction(listener, null, null);
+            Future<Integer> task = ec.performAction(listener, null, null, buldTraceSupport);
             if (task == null) {
                 logger.log(Level.INFO, "Cannot execute clean command"); // NOI18N
                 isFinished = true;
@@ -977,9 +1012,14 @@ public class ImportProject implements PropertyChangeListener {
                 Exceptions.printStackTrace(ex);
             }
         }
+        BuildTraceSupport.BuildTrace buldTraceSupport = getBuildTraceSupport();
         List<String> vars;
         if (configureArguments != null) {
-            configureArguments = PreBuildSupport.expandMacros(configureArguments, toolchain, null);
+            Map<String, String> map = new HashMap<>();
+            if (buldTraceSupport != null && buldTraceSupport.getKind() == BuildTraceSupport.BuildTraceKind.Wrapper) {
+                buldTraceSupport.modifyEnv(map);
+            }
+            configureArguments = PreBuildSupport.expandMacros(configureArguments, toolchain, map);
             vars = ImportUtils.parseEnvironment(configureArguments);
         } else {
             vars = new ArrayList<>();
@@ -1003,7 +1043,7 @@ public class ImportProject implements PropertyChangeListener {
             String tabName = ec.getExecutionEnvironment().isLocal() ? name :
                              NbBundle.getMessage(ExecuteCommand.class, "BUILD_REMOTE_LABEL", ec.getExecutionEnvironment().getDisplayName()); // NOI18N
             ec.setName(name, tabName);
-            Future<Integer> task = ec.performAction(listener, outputListener, vars);
+            Future<Integer> task = ec.performAction(listener, outputListener, vars, buldTraceSupport);
             if (task == null) {
                 logger.log(Level.INFO, "Cannot execute build command"); // NOI18N
                 isFinished = true;

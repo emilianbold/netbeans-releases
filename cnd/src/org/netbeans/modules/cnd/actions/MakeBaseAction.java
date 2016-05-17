@@ -195,29 +195,44 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         if (execEnv.isLocal() && Utilities.isWindows() && executable.contains("make") && CompilerSetUtils.isMsysBased(compilerSet)) { // NOI18N
             envMap.put("MAKE", WindowsSupport.getInstance().convertToMSysPath(executable)); // NOI18N
         }
+        String wrapper = envMap.get("__CND_TOOL_WRAPPER__"); //NOI18N
+        if (wrapper != null) {
+            for(Map.Entry<String,String> e : envMap.entrySet()) {
+                if ("PATH".equals(e.getKey().toUpperCase())) { //NOI18N
+                    if (execEnv.isLocal() && Utilities.isWindows()) {
+                        envMap.put(e.getKey(), wrapper+";"+e.getValue()); //NOI18N
+                    } else {
+                        envMap.put(e.getKey(), wrapper+":"+e.getValue()); //NOI18N
+                    }
+                    break;
+                }
+            }
+        }
         
         MacroMap mm = MacroMap.forExecEnv(execEnv);
         mm.putAll(envMap);
         
-        if (envMap.containsKey("__CND_TOOLS__")) { // NOI18N
-            try {
-                if (BuildTraceHelper.isMac(execEnv)) {
-                    String what = BuildTraceHelper.INSTANCE.getLibraryName(execEnv);
-                    if (what.indexOf(':') > 0) {
-                        what = what.substring(0,what.indexOf(':'));
+        if (wrapper == null) {
+            if (envMap.containsKey("__CND_TOOLS__")) { // NOI18N
+                try {
+                    if (BuildTraceHelper.isMac(execEnv)) {
+                        String what = BuildTraceHelper.INSTANCE.getLibraryName(execEnv);
+                        if (what.indexOf(':') > 0) {
+                            what = what.substring(0,what.indexOf(':'));
+                        }
+                        String where = BuildTraceHelper.INSTANCE.getLDPaths(execEnv);
+                        if (where.indexOf(':') > 0) {
+                            where = where.substring(0,where.indexOf(':'));
+                        }
+                        String lib = where+'/'+what;
+                        mm.prependPathVariable(BuildTraceHelper.getLDPreloadEnvName(execEnv),lib);
+                    } else {
+                        mm.prependPathVariable(BuildTraceHelper.getLDPreloadEnvName(execEnv), BuildTraceHelper.INSTANCE.getLibraryName(execEnv)); // NOI18N
+                        mm.prependPathVariable(BuildTraceHelper.getLDPathEnvName(execEnv), BuildTraceHelper.INSTANCE.getLDPaths(execEnv)); // NOI18N
                     }
-                    String where = BuildTraceHelper.INSTANCE.getLDPaths(execEnv);
-                    if (where.indexOf(':') > 0) {
-                        where = where.substring(0,where.indexOf(':'));
-                    }
-                    String lib = where+'/'+what;
-                    mm.prependPathVariable(BuildTraceHelper.getLDPreloadEnvName(execEnv),lib);
-                } else {
-                    mm.prependPathVariable(BuildTraceHelper.getLDPreloadEnvName(execEnv), BuildTraceHelper.INSTANCE.getLibraryName(execEnv)); // NOI18N
-                    mm.prependPathVariable(BuildTraceHelper.getLDPathEnvName(execEnv), BuildTraceHelper.INSTANCE.getLDPaths(execEnv)); // NOI18N
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
             }
         }
         StringBuilder argsFlat = new StringBuilder();

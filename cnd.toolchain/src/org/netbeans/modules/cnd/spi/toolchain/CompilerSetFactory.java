@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerAccessorImpl;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
@@ -192,11 +193,15 @@ public final class CompilerSetFactory {
     }
     
     public static CompilerSet createCompilerSetWrapper(CompilerSet delegate, ExecutionEnvironment env, String directory) {
-        final CompilerSetManagerImpl csm = (CompilerSetManagerImpl) CompilerSetManagerImpl.get(env);
         CompilerSetImpl cs = CompilerSetImpl.create(delegate.getCompilerFlavor(), env, directory);
-        if (csm.initCompilerSet(directory, cs, true)){
-            return cs;
+        Tool tool = delegate.findTool(PredefinedToolKind.CCompiler);
+        if (tool != null) {
+            cs.addTool(env, tool.getName(), directory+"/"+tool.getName(), PredefinedToolKind.CCompiler, cs.getCompilerFlavor());
         }
-        return null;
+        tool = delegate.findTool(PredefinedToolKind.CCCompiler);
+        if (tool != null) {
+            cs.addTool(env, tool.getName(), directory+"/"+tool.getName(), PredefinedToolKind.CCCompiler, cs.getCompilerFlavor());
+        }
+        return cs;
     }    
 }
