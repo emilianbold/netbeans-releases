@@ -57,10 +57,14 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JList;
 import javax.swing.JTable;
+import javax.swing.JTree;
 import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.TreeCellRenderer;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
 
@@ -123,6 +127,10 @@ public class ClassPathListCellRenderer extends DefaultListCellRenderer {
 
     public static TableCellRenderer createClassPathTableRenderer(PropertyEvaluator evaluator, FileObject projectFolder) {
         return new ClassPathListCellRenderer.ClassPathTableCellRenderer(evaluator, projectFolder);
+    }
+
+    public static TreeCellRenderer createClassPathTreeRenderer(PropertyEvaluator evaluator, FileObject projectFolder) {
+        return new ClassPathListCellRenderer.ClassPathTreeCellRenderer(evaluator, projectFolder);
     }
 
     @Override
@@ -367,8 +375,32 @@ public class ClassPathListCellRenderer extends DefaultListCellRenderer {
                 setIcon( null );
                 return super.getTableCellRendererComponent( table, null, isSelected, false, row, column );
             }
-        }
-        
+        }        
     }
         
+    static class ClassPathTreeCellRenderer extends DefaultTreeCellRenderer {
+        
+        private ClassPathListCellRenderer renderer;
+        
+        ClassPathTreeCellRenderer(PropertyEvaluator evaluator, FileObject projectFolder) {
+            renderer = new ClassPathListCellRenderer(evaluator, projectFolder);
+        }
+
+        @Override
+        public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+            if (value instanceof DefaultMutableTreeNode) {
+                Object obj = ((DefaultMutableTreeNode) value).getUserObject();
+                if (obj instanceof ClassPathSupport.Item) {
+                    ClassPathSupport.Item item = (ClassPathSupport.Item)obj;
+                    super.getTreeCellRendererComponent(tree, renderer.getDisplayName(item), sel, expanded, leaf, row, false);
+                    setIcon(ClassPathListCellRenderer.getIcon(item));
+                    setToolTipText(renderer.getToolTipText(item));
+                    return this;
+                }
+            }
+            super.getTreeCellRendererComponent(tree, null, sel, expanded, leaf, row, false);
+            setIcon(null);
+            return this;
+        }        
+    }        
 }
