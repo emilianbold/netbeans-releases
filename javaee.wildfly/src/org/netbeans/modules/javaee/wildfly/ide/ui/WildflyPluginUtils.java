@@ -359,7 +359,7 @@ public class WildflyPluginUtils {
                     return productName == null || !productName.toLowerCase().contains("eap");
                 }
             } catch (Exception e) {
-                // Don't care
+                LOGGER.log(Level.FINE, "Can't determine version", e); // NOI18N
             }
         }
         return true;
@@ -377,23 +377,25 @@ public class WildflyPluginUtils {
         assert serverPath != null : "Can't determine version with null server path"; // NOI18N
         String productConf = getProductConf(serverPath);
         if(productConf != null) {
-            try (FileReader reader = new FileReader(productConf)) {
-                Properties props = new Properties();
-                props.load(reader);
-                String slot = props.getProperty("slot");
-                if (slot != null) {
-                    File manifestFile = new File(serverPath, getModulesBase(serverPath.getAbsolutePath()) + "org.jboss.as.product".replace('.', separatorChar) + separatorChar + slot + separatorChar + "dir" + separatorChar + "META-INF" + separatorChar + "MANIFEST.MF");
-                    InputStream stream = new FileInputStream(manifestFile);
-                    Manifest manifest = new Manifest(stream);
-                    String productName = manifest.getMainAttributes().getValue("JBoss-Product-Release-Name");
-                    if(productName == null || productName.isEmpty()) {
-                        productName = manifest.getMainAttributes().getValue("JBoss-Project-Release-Name");
+            File productConfFile = new File(productConf);
+            if(productConfFile.exists() && productConfFile.canRead()) {
+                try (FileReader reader = new FileReader(productConf)) {
+                    Properties props = new Properties();
+                    props.load(reader);
+                    String slot = props.getProperty("slot");
+                    if (slot != null) {
+                        File manifestFile = new File(serverPath, getModulesBase(serverPath.getAbsolutePath()) + "org.jboss.as.product".replace('.', separatorChar) + separatorChar + slot + separatorChar + "dir" + separatorChar + "META-INF" + separatorChar + "MANIFEST.MF");
+                        InputStream stream = new FileInputStream(manifestFile);
+                        Manifest manifest = new Manifest(stream);
+                        String productName = manifest.getMainAttributes().getValue("JBoss-Product-Release-Name");
+                        if(productName == null || productName.isEmpty()) {
+                            productName = manifest.getMainAttributes().getValue("JBoss-Project-Release-Name");
+                        }
+                        return productName != null && (productName.contains("WildFly Web Lite") || productName.contains("WildFly Servlet"));
                     }
-                    return productName != null && (productName.contains("WildFly Web Lite") || productName.contains("WildFly Servlet"));
+                } catch (Exception e) {
+                    LOGGER.log(Level.INFO, "Can't determine version", e); // NOI18N
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-                // Don't care
             }
         }
         return false;
