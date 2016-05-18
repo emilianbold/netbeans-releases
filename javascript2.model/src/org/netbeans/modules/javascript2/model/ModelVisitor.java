@@ -1800,7 +1800,8 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
     public boolean enterObjectNode(ObjectNode objectNode) {
         Node previousVisited = getPath().get(getPath().size() - 1);
         if(previousVisited instanceof CallNode
-                || previousVisited instanceof LiteralNode.ArrayLiteralNode) {
+                || previousVisited instanceof LiteralNode.ArrayLiteralNode
+                || previousVisited instanceof ExpressionStatement) {
             // TODO there should be handled anonymous object that are going as parameter to a funciton
             //create anonymous object
             JsObjectImpl object = ModelElementFactory.createAnonymousObject(parserResult, objectNode,  modelBuilder);
