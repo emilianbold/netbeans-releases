@@ -142,6 +142,8 @@ import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagement
 import static org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.WILDFLY_10_0_0;
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.netbeans.modules.javaee.wildfly.config.WildflyJaxrsResource;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.Version;
@@ -281,13 +283,17 @@ public class WildflyClient {
         }
     }
 
-    public synchronized void shutdownServer() throws IOException {
+    public synchronized void shutdownServer(int timeout) throws IOException, InterruptedException, TimeoutException {
         try {
             WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
             // ModelNode
             Object shutdownOperation = createModelNode(cl);
             setModelNodeChildString(cl, getModelNodeChild(cl, shutdownOperation, OP), SHUTDOWN);
-            executeAsync(cl, shutdownOperation, null);
+            try {
+                executeAsync(cl, shutdownOperation, null).get(timeout, TimeUnit.MILLISECONDS);
+            } catch (ExecutionException ex) {
+                throw new IOException(ex);
+            }
             close();
         } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException ex) {
             throw new IOException(ex);
