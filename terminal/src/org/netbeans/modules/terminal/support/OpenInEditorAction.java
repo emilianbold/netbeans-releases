@@ -35,7 +35,7 @@ public final class OpenInEditorAction implements Runnable {
 
     public static void post(String filePath, int lineNumber) {
         try {
-            RP.post(new OpenInEditorAction(new URL("file://" + filePath), lineNumber));
+            RP.post(new OpenInEditorAction(new URL("file://" + filePath), lineNumber)); //NOI18N
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
