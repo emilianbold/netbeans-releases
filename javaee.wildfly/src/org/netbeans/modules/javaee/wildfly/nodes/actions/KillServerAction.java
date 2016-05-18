@@ -52,18 +52,23 @@ import static org.openide.util.actions.CookieAction.MODE_EXACTLY_ONE;
 import java.awt.event.ActionEvent;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
-import org.openide.util.Exceptions;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 public class KillServerAction extends CookieAction {
+
+    private static final Logger LOGGER = Logger.getLogger(KillServerAction.class.getName());
 
     private final WildflyKiller killer = new WildflyKiller();
 
@@ -72,18 +77,20 @@ public class KillServerAction extends CookieAction {
         return MODE_EXACTLY_ONE;
     }
 
+    @NbBundle.Messages("MSG_KillFailed=Kill action failed")
     @Override
     protected void performAction(Node[] nodes) {
         if ((nodes == null) || (nodes.length != 1)) {
             return;
         }
-        Future<Boolean> killed = Executors.newSingleThreadExecutor().submit(new Callable<Boolean>() {
+        Future<Boolean> killed = RequestProcessor.getDefault().submit(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 return killer.killServers();
             }
         });
         try {
+            // FIXME waiting in EDT
             if (killed.get(10, TimeUnit.SECONDS)) {
                 //Ugly Hack
                 for (Action action : nodes[0].getActions(false)) {
@@ -94,7 +101,9 @@ public class KillServerAction extends CookieAction {
                 }
             }
         } catch (InterruptedException | ExecutionException | TimeoutException ex) {
-            Exceptions.printStackTrace(ex);
+            LOGGER.log(Level.INFO, "Kill action failed", ex);
+            NotifyDescriptor desc = new NotifyDescriptor.Message(Bundle.MSG_KillFailed(), NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(desc);
         }
     }
 

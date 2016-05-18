@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -79,10 +80,12 @@ import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.ChangeSupport;
@@ -110,6 +113,7 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
     
     private final Map<URL, WeakReference<SrcResult>> srcCache = Collections.synchronizedMap(new HashMap<URL, WeakReference<SrcResult>>());
     private final Map<URL, WeakReference<JavadocResult>> javadocCache = Collections.synchronizedMap(new HashMap<URL, WeakReference<JavadocResult>>());
+    private final Map<File, List<Coordinates>> coorCache = Collections.synchronizedMap(new HashMap<>());
 
     //http://maven.apache.org/guides/mini/guide-attached-tests.html
     //issue 219453
@@ -118,6 +122,35 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
     private static final RequestProcessor RP = new RequestProcessor("Maven Repository SFBQ result change");
     private static final Logger LOG = Logger.getLogger(SrcResult.class.getName());
 
+    private final FileChangeAdapter binaryChangeListener = new FileChangeAdapter() {
+        @Override
+        public void fileDataCreated(FileEvent fe) {                                        
+            removeCoordinates(fe);                    
+        }
+        @Override
+        public void fileChanged(FileEvent fe) {
+            removeCoordinates(fe);
+        }
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            removeCoordinates(fe);
+        }
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            removeCoordinates(fe);
+        }
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            removeCoordinates(fe);
+        }
+        private void removeCoordinates(FileEvent fe) {
+            File file = FileUtil.toFile(fe.getFile());
+            if(file != null) {
+                coorCache.remove(file);
+            }
+        }
+    };
+    
     @Override
     public synchronized Result findSourceRoots2(URL url) {
         if (!"jar".equals(url.getProtocol())) { //NOI18N
@@ -173,7 +206,7 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
                                     }
                                 }
                                 File srcs = new File(parent, start + (classifier != null ? ("-" + ("tests".equals(classifier) ? "test" : classifier)) : "") + "-sources.jar"); //NOI18N
-                                SrcResult result = new SrcResult(groupId, artifact, version, classifier, FileUtil.getArchiveFile(url), srcs);
+                                SrcResult result = new SrcResult(groupId, artifact, version, classifier, FileUtil.getArchiveFile(url), srcs, (f) -> getJarMetadataCoordinatesIntern(f));
                                 srcCache.put(url, new WeakReference<SrcResult>(result));
                                 return result;
                             }
@@ -185,7 +218,7 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
             }
             File[] f = SourceJavadocByHash.find(url, false);
             if (f != null && f.length > 0) {
-                SrcResult result = new SrcResult(null, null, null, null, FileUtil.getArchiveFile(url), null);
+                SrcResult result = new SrcResult(null, null, null, null, FileUtil.getArchiveFile(url), null, (file) -> getJarMetadataCoordinatesIntern(file));
                 srcCache.put(url, new WeakReference<SrcResult>(result));
                 return result;
             }
@@ -253,7 +286,7 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
                                     }
                                 }
                                 File javadoc = new File(parent, start + (classifier != null ? ("-" + ("tests".equals(classifier) ? "test" : classifier)) : "") + "-javadoc.jar"); //NOI18N
-                                JavadocResult result = new JavadocResult(groupId, artifact, version, classifier, binRoot, javadoc);
+                                JavadocResult result = new JavadocResult(groupId, artifact, version, classifier, binRoot, javadoc, (f) -> getJarMetadataCoordinatesIntern(f));
                                 javadocCache.put(url, new WeakReference<JavadocResult>(result));
                                 return result;
                             }
@@ -263,7 +296,7 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
             }
             File[] f = SourceJavadocByHash.find(url, true);
             if (f != null && f.length > 0) {
-                JavadocResult result = new JavadocResult(null, null, null, null, binRoot, null);
+                JavadocResult result = new JavadocResult(null, null, null, null, binRoot, null, (file) -> getJarMetadataCoordinatesIntern(file));
                 javadocCache.put(url, new WeakReference<JavadocResult>(result));
                 return result;
             }
@@ -294,14 +327,16 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
         private Boolean cachedPreferedSources;
         private boolean avoidScheduling = false; //to be accessed and modified only under synchronized lock
         private final AtomicBoolean needsFiring = new AtomicBoolean(false);
+        private final Function<File, List<Coordinates>> coorProvider;
 
-        SrcResult(@NullAllowed String groupId, @NullAllowed String artifactId, @NullAllowed String version, @NullAllowed String classifier, @NonNull URL binary, @NullAllowed File sourceJar) {
+        SrcResult(@NullAllowed String groupId, @NullAllowed String artifactId, @NullAllowed String version, @NullAllowed String classifier, @NonNull URL binary, @NullAllowed File sourceJar, Function<File, List<Coordinates>> coorProvider) {
             sourceJarFile = sourceJar;
             this.groupId = groupId;
             this.artifactId = artifactId;
             this.version = version;
             this.binary = binary;
             this.classifier = classifier;
+            this.coorProvider = coorProvider;
 
             support = new ChangeSupport(this);
             checkChangesTask = RP.create(
@@ -343,13 +378,13 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
                 }
             };
             checkChanges(false);
-
+            
             MavenFileOwnerQueryImpl.getInstance().addChangeListener(
                     WeakListeners.create(ChangeListener.class, mfoListener, MavenFileOwnerQueryImpl.getInstance()));
 
             if (sourceJarFile != null) {
                 FileUtil.addFileChangeListener(FileUtil.weakFileChangeListener(sourceJarChangeListener, null));
-            }
+            }            
         }
 
         private void checkChanges(boolean fireChanges) {
@@ -528,7 +563,7 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
 
         private @NonNull synchronized FileObject[] getShadedJarSources() {
             try {
-                List<Coordinates> coordinates = getJarMetadataCoordinates(Utilities.toFile(binary.toURI()));
+                List<Coordinates> coordinates = coorProvider.apply(Utilities.toFile(binary.toURI()));
                 File lrf = EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile();
                 List<FileObject> fos = new ArrayList<FileObject>();
                 if (coordinates != null) {
@@ -560,10 +595,23 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
         }
     }
 
+    private List<Coordinates> getJarMetadataCoordinatesIntern(File binaryFile) {        
+        if (binaryFile == null || !binaryFile.exists() || !binaryFile.isFile()) {
+            return null;
+        }        
+        List<Coordinates> toRet = coorCache.get(binaryFile);
+        if(toRet == null && !coorCache.containsKey(binaryFile)) {
+            toRet = getJarMetadataCoordinates(binaryFile);                            
+            FileUtil.addFileChangeListener(binaryChangeListener, binaryFile);
+            coorCache.put(binaryFile, toRet);
+        } 
+        return toRet;
+    }
+    
     public static List<Coordinates> getJarMetadataCoordinates(File binaryFile) {
         if (binaryFile == null || !binaryFile.exists() || !binaryFile.isFile()) {
             return null;
-        }
+        }        
         ZipFile zip = null;
         try {
             List<Coordinates> toRet = new ArrayList<Coordinates>();
@@ -616,8 +664,9 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
         private static final String ATTR_PATH = "lastRootCheckPath"; //NOI18N
         private static final String ATTR_STAMP = "lastRootCheckStamp"; //NOI18N
         private final ChangeListener mfoListener;
+        private final Function<File, List<Coordinates>> coorProvider;
 
-        JavadocResult(@NullAllowed String groupId, @NullAllowed String artifactId, @NullAllowed String version, @NullAllowed String classifier, @NonNull URL binary, @NullAllowed File javadocJar) {
+        JavadocResult(@NullAllowed String groupId, @NullAllowed String artifactId, @NullAllowed String version, @NullAllowed String classifier, @NonNull URL binary, @NullAllowed File javadocJar, @NonNull Function<File, List<Coordinates>> coorProvider) {
             javadocJarFile = javadocJar;
             this.groupId = groupId;
             this.artifactId = artifactId;
@@ -625,6 +674,7 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
             this.binary = binary;
             this.classifier = classifier;
             this.gav = MavenFileOwnerQueryImpl.cacheKey(groupId, artifactId, version);
+            this.coorProvider = coorProvider;
 
             support = new ChangeSupport(this);
             mfoListener = new ChangeListener() {
@@ -784,7 +834,7 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
 
         private synchronized URL[] checkShadedMultiJars() {
             try {
-                List<Coordinates> coordinates = getJarMetadataCoordinates(Utilities.toFile(binary.toURI()));
+                List<Coordinates> coordinates = coorProvider.apply(Utilities.toFile(binary.toURI()));
                 File lrf = EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile();
                 List<URL> urls = new ArrayList<URL>();
                 if (coordinates != null) {
@@ -833,5 +883,5 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
             }
             return new URL[0];
         }
-    }
+    }        
 }
