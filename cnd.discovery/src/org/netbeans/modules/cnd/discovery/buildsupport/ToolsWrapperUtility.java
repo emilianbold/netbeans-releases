@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -92,7 +93,8 @@ public class ToolsWrapperUtility {
     public CompilerSet getToolsWrapper() {
         try {
             CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-            FileObject wrapperFolder = FileUtil.createFolder(project.getProjectDirectory(), toolsWrapperLocation + compilerSet.getName());
+            String eeID = ExecutionEnvironmentFactory.toUniqueID(execEnv).replace(':', '_').replace('@', '_');
+            FileObject wrapperFolder = FileUtil.createFolder(project.getProjectDirectory(), toolsWrapperLocation + eeID + "/" + compilerSet.getName()); //NOI18N
             CompilerSet res = cache.get(wrapperFolder);
             if (res != null) {
                 return res;
@@ -108,7 +110,7 @@ public class ToolsWrapperUtility {
                     FileObject fo = wrapperFolder.getFileObject(cName);
                     if (fo == null) {
                         fo = copyFile(wrapperBinaryFile, wrapperFolder, cName);
-                        //fixScript(fo, wrapperFolder);
+                        fixScript(fo, cPath);
                     }
                 }
             }
@@ -122,23 +124,11 @@ public class ToolsWrapperUtility {
                     FileObject fo = wrapperFolder.getFileObject(cppName);
                     if (fo == null) {
                         fo = copyFile(wrapperBinaryFile, wrapperFolder, cppName);
-                        //fixScript(fo, wrapperFolder);
+                        fixScript(fo, cppPath);
                     }
                 }
             }
-            {
-                FileObject fo = wrapperFolder.getFileObject(compilerPropertiesName);
-                if (fo == null || !fo.isValid()) {
-                    PrintStream stream = new PrintStream(wrapperFolder.createAndOpen(compilerPropertiesName));
-                    if (cPath != null) {
-                        stream.println("C=" + cPath); //NOI18N
-                    }
-                    if (cppPath != null) {
-                        stream.println("CPP=" + cppPath); //NOI18N
-                    }
-                    stream.close();
-                }
-            }
+            writePropertiesFile(wrapperFolder, cPath, cppPath);
             res = CompilerSetFactory.createCompilerSetWrapper(compilerSet, execEnv, wrapperFolder.getPath());
             cache.put(wrapperFolder, res);
             return res;
@@ -169,15 +159,15 @@ public class ToolsWrapperUtility {
         return file.getAbsolutePath();
     }
 
-    private void fixScript(FileObject f, FileObject folder) throws IOException {
+    private void fixScript(FileObject f, String realTool) throws IOException {
         if (execEnv.isLocal() && Utilities.isWindows()) {
             return;
         }
         List<String> lines = new ArrayList<String>(f.asLines());
         for (int i = 0; i < lines.size(); i++) {
             String line = lines.get(i);
-            if (line.startsWith("tool_folder=")) { //NOI18N
-                lines.set(i, "tool_folder=" + folder.getPath()); //NOI18N
+            if (line.startsWith("real_tool=")) { //NOI18N
+                lines.set(i, "real_tool=" + realTool); //NOI18N
             }
         }
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(f.getOutputStream(), "UTF-8")) { //NOI18N
@@ -192,6 +182,22 @@ public class ToolsWrapperUtility {
             bw.newLine();
         }
         bw.close();
+    }
+
+    private void writePropertiesFile(FileObject wrapperFolder, String cPath, String cppPath) throws IOException {
+        if (execEnv.isLocal() && Utilities.isWindows()) {
+            FileObject fo = wrapperFolder.getFileObject(compilerPropertiesName);
+            if (fo == null || !fo.isValid()) {
+                PrintStream stream = new PrintStream(wrapperFolder.createAndOpen(compilerPropertiesName));
+                if (cPath != null) {
+                    stream.println("C=" + cPath); //NOI18N
+                }
+                if (cppPath != null) {
+                    stream.println("CPP=" + cppPath); //NOI18N
+                }
+                stream.close();
+            }
+        }
     }
 
     private FileObject copyFile(String wrapperBinaryFile, FileObject folder, String name) throws IOException, InterruptedException, ExecutionException {
