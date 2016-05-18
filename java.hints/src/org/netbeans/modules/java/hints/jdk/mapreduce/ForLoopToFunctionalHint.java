@@ -57,7 +57,8 @@ import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle.Messages;
 
-@Hint(displayName = "#DN_ForLoopToFunctionalHint", description = "#DESC_ForLoopToFunctionalHint", category = "general")
+@Hint(displayName = "#DN_ForLoopToFunctionalHint", description = "#DESC_ForLoopToFunctionalHint", category = "general",
+        minSourceVersion = "8")
 @Messages({
     "DN_ForLoopToFunctionalHint=Use Functional Operations",
     "DESC_ForLoopToFunctionalHint=Use functional operations instead of imperative style loop."
@@ -69,7 +70,6 @@ public class ForLoopToFunctionalHint {
     @TriggerTreeKind(Tree.Kind.ENHANCED_FOR_LOOP)
     @Messages("ERR_ForLoopToFunctionalHint=Can use functional operations")
     public static ErrorDescription computeWarning(HintContext ctx) {
-        if (ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_8) < 0) return null;
         if (ctx.getInfo().getElements().getTypeElement("java.util.stream.Streams") == null && !DISABLE_CHECK_FOR_STREAM) return null;
         
         PreconditionsChecker pc = new PreconditionsChecker(ctx.getPath().getLeaf(), ctx.getInfo());

@@ -264,6 +264,7 @@ public class DeclarativeHintRegistry implements HintProvider, ClassPathBasedHint
         String id = parsed.options.get("hint");
         String fallbackDisplayName = file != null ? file.getName() : null;
         String description = parsed.options.get("description");
+        String srcVersion = parsed.options.get("minSourceVersion");
         if (description == null) {
             description = fallbackDisplayName;
         }
@@ -284,7 +285,13 @@ public class DeclarativeHintRegistry implements HintProvider, ClassPathBasedHint
 
             String[] w = suppressWarnings(parsed.options);
 
-            meta = HintMetadata.Builder.create(id).setBundle(bundle, fallbackDisplayName, description).setCategory(cat).addSuppressWarnings(w).build();
+            meta = HintMetadata.Builder.
+                    create(id).
+                    setBundle(bundle, fallbackDisplayName, description).
+                    setCategory(cat).
+                    addSuppressWarnings(w).
+                    setSourceVersion(srcVersion).
+                    build();
         } else {
             meta = null;
         }
@@ -329,10 +336,21 @@ public class DeclarativeHintRegistry implements HintProvider, ClassPathBasedHint
                 }
 
                 if (currentId != null) {
-                    currentMeta = HintMetadata.Builder.create(currentId).setBundle(bundle).setCategory(cat).addSuppressWarnings(w).build();
+                    currentMeta = HintMetadata.Builder.
+                            create(currentId).setBundle(bundle).
+                            setCategory(cat).
+                            addSuppressWarnings(w).
+                            setSourceVersion(srcVersion).
+                            build();
                 } else {
                     currentId = file != null ? file.getNameExt() + "-" + count : String.valueOf(count);
-                    currentMeta = HintMetadata.Builder.create(currentId).setDescription(displayName, "No Description").setCategory(cat).addSuppressWarnings(w).build();
+                    currentMeta = HintMetadata.Builder.
+                            create(currentId).
+                            setDescription(displayName, "No Description").
+                            setCategory(cat).
+                            addSuppressWarnings(w).
+                            setSourceVersion(srcVersion).
+                            build();
                 }
             }
 

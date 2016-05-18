@@ -73,6 +73,7 @@ import com.sun.tools.javac.util.Names;
 import com.sun.tools.javadoc.DocEnv;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -81,6 +82,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.Element;
@@ -603,13 +605,25 @@ public final class ElementUtilities {
         if (!type.getModifiers().contains(Modifier.ABSTRACT)) {
             notOverridable.add(Modifier.ABSTRACT);
         }
+        DeclaredType dt = (DeclaredType)type.asType();
+        Types types = JavacTypes.instance(ctx);
+        Set<String> typeStrings = new HashSet<>();
         for (ExecutableElement ee : ElementFilter.methodsIn(info.getElements().getAllMembers(type))) {
+            
+            TypeMirror methodType = types.erasure(types.asMemberOf(dt, ee));
+            String methodTypeString = ee.getSimpleName().toString() + methodType.toString();
+            if (typeStrings.contains(methodTypeString)) {
+                continue;
+            }
             Set<Modifier> set = EnumSet.copyOf(notOverridable);                
             set.removeAll(ee.getModifiers());                
             if (set.size() == notOverridable.size()
                     && !overridesPackagePrivateOutsidePackage(ee, type) //do not offer package private methods in case they're from different package
                     && !isOverridden(ee, type)) {
                 overridable.add(ee);
+                if (ee.getModifiers().contains(Modifier.ABSTRACT)) {
+                    typeStrings.add(methodTypeString);
+                }
             }
         }
         Collections.reverse(overridable);
@@ -873,7 +887,22 @@ public final class ElementUtilities {
                                     }
                                 }
                             } else if (!msExisting.overrides((MethodSymbol)ee, (TypeSymbol)impl, implTypes, true)) {
-                                // 
+                                // newly added does not override the old one, BUT 
+                                // 1/ the old one might have been defined by an abstract class. In that case, only the abstract class' member should prevail
+                                // 2/ we are in an abstract class AND 
+                                //      both existing and ee are interface methods AND
+                                //      a/ neither of them is default -> select one of them, discard the other
+                                if (existing.getEnclosingElement().getKind().isClass()) {
+                                    exists = true;
+                                } else if (element.getKind().isClass()) {
+                                    // existing is now known to be an interface
+                                    if (ee.getEnclosingElement().getKind().isInterface()) {
+                                        if (!existing.getModifiers().contains(Modifier.DEFAULT) &&
+                                            !ee.getModifiers().contains(Modifier.DEFAULT)) {
+                                            exists = true;
+                                        }
+                                    }
+                                }
                                 break;
                             }
                             exists = true;
