@@ -54,6 +54,7 @@ import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
+import org.netbeans.spi.java.queries.AccessibilityQueryImplementation;
 import org.netbeans.spi.java.queries.AnnotationProcessingQueryImplementation;
 import org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation;
 import org.netbeans.spi.java.queries.CompilerOptionsQueryImplementation;
@@ -435,7 +436,21 @@ public final class QuerySupport {
         Parameters.notNull("roots", roots); //NOI18N
         return new SourcesImpl(project, helper, evaluator, roots);
     }
-    
+
+    /**
+     * Creates a {@link AccessibilityQueryImplementation} based on the module-info.
+     * @param sources the project source roots
+     * @param tests the project test roots
+     * @return the {@link AccessibilityQueryImplementation} instance
+     * @since 1.84
+     */
+    @NonNull
+    public static AccessibilityQueryImplementation createModuleInfoAccessibilityQuery(
+            @NonNull final SourceRoots sources,
+            @NonNull final SourceRoots tests) {
+        return new ModuleInfoAccessibilityQueryImpl(sources, tests);
+    }
+
     private static class AntHelper extends ProjectInfoImpl {
 
         private final AntProjectHelper projectHelper;
