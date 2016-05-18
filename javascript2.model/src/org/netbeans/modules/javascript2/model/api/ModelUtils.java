@@ -432,28 +432,6 @@ public class ModelUtils {
     private enum State {
         INIT
     }
-    
-    private static String getSemiType(TokenSequence<JsTokenId> ts, int offset) {
-        
-        String result = "UNKNOWN";
-        ts.move(offset);
-        if (!ts.moveNext()) {
-           return result;
-        }
-    
-        State state = State.INIT;
-        while (ts.movePrevious()) {
-            Token<JsTokenId> token = ts.token();
-            if (!CTX_DELIMITERS.contains(token.id())){
-                switch (state) {
-                    case INIT:
-                        if (token.id() == JsTokenId.IDENTIFIER)
-                        break;
-                }
-            }
-        }
-        return result;
-    }
 
     public static Collection<TypeUsage> resolveSemiTypeOfExpression(ModelBuilder builder, Node expression) {
         Collection<TypeUsage> result = new HashSet<TypeUsage>();
