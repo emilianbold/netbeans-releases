@@ -100,6 +100,7 @@ class HtmlRendererImpl extends JLabel implements HtmlRenderer.Renderer {
 
     /** Restore the renderer to a pristine state */
     public void reset() {
+        assert SwingUtilities.isEventDispatchThread();
         parentFocused = false;
         setCentered(false);
         html = null;
@@ -302,12 +303,14 @@ class HtmlRendererImpl extends JLabel implements HtmlRenderer.Renderer {
     }
 
     boolean isHtml() {
-        if (html == null) {
+        Boolean isHtml = html;
+        if (isHtml == null) {
             String s = getText();
-            html = checkHtml(s);
+            isHtml = checkHtml(s);
+            html = isHtml;
         }
 
-        return html.booleanValue();
+        return isHtml.booleanValue();
     }
 
     private Boolean checkHtml(String s) {
