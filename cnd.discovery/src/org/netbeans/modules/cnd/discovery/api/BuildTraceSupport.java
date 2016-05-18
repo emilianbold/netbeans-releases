@@ -79,6 +79,9 @@ public final class BuildTraceSupport {
 
     private static final String SEPARATOR = ":"; //NOI18N
 
+    // Prefer wrapper instead of preload
+    private static final boolean USE_WRAPPER = Boolean.getBoolean("cnd.discovery.use.wrapper"); // NOI18N
+    
     public static enum BuildTraceKind {
         Preload,
         Wrapper
@@ -230,20 +233,21 @@ public final class BuildTraceSupport {
             HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
             HostInfo.OSFamily osFamily = hostInfo.getOSFamily();
             HostInfo.CpuFamily cpuFamily = hostInfo.getCpuFamily();
-
-            switch (osFamily) {
-                //case MACOSX:
-                //    if (cpuFamily == HostInfo.CpuFamily.X86) {
-                //        return new BuildTrace(BuildTraceKind.Preload, execEnv, conf, project);
-                //    }
-                case LINUX:
-                    if (cpuFamily == HostInfo.CpuFamily.X86 || cpuFamily == HostInfo.CpuFamily.SPARC) {
-                        return new BuildTrace(BuildTraceKind.Preload, execEnv, conf, project);
-                    }
-                case SUNOS:
-                    if (cpuFamily == HostInfo.CpuFamily.X86 || cpuFamily == HostInfo.CpuFamily.SPARC) {
-                        return new BuildTrace(BuildTraceKind.Preload, execEnv, conf, project);
-                    }
+            if (!USE_WRAPPER){
+                switch (osFamily) {
+                    //case MACOSX:
+                    //    if (cpuFamily == HostInfo.CpuFamily.X86) {
+                    //        return new BuildTrace(BuildTraceKind.Preload, execEnv, conf, project);
+                    //    }
+                    case LINUX:
+                        if (cpuFamily == HostInfo.CpuFamily.X86 || cpuFamily == HostInfo.CpuFamily.SPARC) {
+                            return new BuildTrace(BuildTraceKind.Preload, execEnv, conf, project);
+                        }
+                    case SUNOS:
+                        if (cpuFamily == HostInfo.CpuFamily.X86 || cpuFamily == HostInfo.CpuFamily.SPARC) {
+                            return new BuildTrace(BuildTraceKind.Preload, execEnv, conf, project);
+                        }
+                }
             }
             return new BuildTrace(BuildTraceKind.Wrapper, execEnv, conf, project);
         } catch (IOException ex) {

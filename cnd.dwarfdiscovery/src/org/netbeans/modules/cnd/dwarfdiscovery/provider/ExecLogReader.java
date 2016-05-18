@@ -268,6 +268,9 @@ public final class ExecLogReader {
                             if (line.startsWith("\t")) { //NOI18N
                                 params.add(line.substring(1).trim());
                                 continue;
+                            } else if (line.startsWith("\\t")) { //NOI18N
+                                params.add(line.substring(2).trim());
+                                continue;
                             }
                             if (line.length() == 0) {
                                 // create new result entry

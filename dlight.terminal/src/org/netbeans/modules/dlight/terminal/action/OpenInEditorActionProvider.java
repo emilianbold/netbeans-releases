@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.terminal.spi.ExternalCommandActionProvider;
 import org.netbeans.modules.terminal.support.OpenInEditorAction;
 import org.openide.filesystems.FileObject;
@@ -64,10 +65,15 @@ public class OpenInEditorActionProvider extends ExternalCommandActionProvider {
 
             Object key = lookup.lookup(Term.class).getClientProperty(Term.ExternalCommandsConstants.EXECUTION_ENV_PROPERTY_KEY);
             FileObject fo = null;
-            if (key != null) {
+            if (key != null && (key instanceof String)) {
                 try {
-                    fo = URLMapper.findFileObject(new URL("rfs://" + key + filePath)); //NOI18N
-                } catch (MalformedURLException ex) {
+                    ExecutionEnvironment fromUniqueID = ExecutionEnvironmentFactory.fromUniqueID((String) key);
+                    if (fromUniqueID.isRemote()) {
+                        fo = URLMapper.findFileObject(new URL("rfs://" + key + filePath)); //NOI18N
+                    } else {
+                        fo = FileUtil.toFileObject(new File(filePath));
+                    }
+                } catch (Exception ex) {
                     // ignore
                 }
             }
