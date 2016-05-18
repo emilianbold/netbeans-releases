@@ -63,6 +63,7 @@ import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -94,6 +95,10 @@ public class ToolsWrapperUtility {
         try {
             CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
             String eeID = ExecutionEnvironmentFactory.toUniqueID(execEnv).replace(':', '_').replace('@', '_');
+            if (conf.getFileSystemHost().equals(execEnv)) {
+                // full remote project
+                eeID = "localhost"; //NOI18N
+            }
             FileObject wrapperFolder = FileUtil.createFolder(project.getProjectDirectory(), toolsWrapperLocation + eeID + "/" + compilerSet.getName()); //NOI18N
             CompilerSet res = cache.get(wrapperFolder);
             if (res != null) {
