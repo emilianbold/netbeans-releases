@@ -170,9 +170,10 @@ public class IntroduceParameterPanel extends JPanel implements CustomRefactoring
                         }
                         
                         Scope scope =  null;
-                        TreePath bodyPath = new TreePath(methodPath, methodTree.getBody());
-                        scope = info.getTrees().getScope(bodyPath);
-                        
+                        if(methodTree.getBody() != null) {
+                            TreePath bodyPath = new TreePath(methodPath, methodTree.getBody());
+                            scope = info.getTrees().getScope(bodyPath);
+                        }
                         CodeStyle cs;
                         Document doc = info.getDocument();
                         if(doc != null) {
