@@ -108,7 +108,7 @@ public class ToolsWrapperUtility {
                     FileObject fo = wrapperFolder.getFileObject(cName);
                     if (fo == null) {
                         fo = copyFile(wrapperBinaryFile, wrapperFolder, cName);
-                        fixScript(fo, wrapperFolder);
+                        //fixScript(fo, wrapperFolder);
                     }
                 }
             }
@@ -122,7 +122,7 @@ public class ToolsWrapperUtility {
                     FileObject fo = wrapperFolder.getFileObject(cppName);
                     if (fo == null) {
                         fo = copyFile(wrapperBinaryFile, wrapperFolder, cppName);
-                        fixScript(fo, wrapperFolder);
+                        //fixScript(fo, wrapperFolder);
                     }
                 }
             }

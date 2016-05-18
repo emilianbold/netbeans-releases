@@ -378,7 +378,7 @@ public final class CompilerSetImpl extends CompilerSet {
         return displayName;
     }
 
-    /*package-local*/ Tool addTool(ExecutionEnvironment env, String name, String path, ToolKind kind, CompilerFlavor aFlavor) {
+    public Tool addTool(ExecutionEnvironment env, String name, String path, ToolKind kind, CompilerFlavor aFlavor) {
         if (findTool(kind) != null) {
             return null;
         }

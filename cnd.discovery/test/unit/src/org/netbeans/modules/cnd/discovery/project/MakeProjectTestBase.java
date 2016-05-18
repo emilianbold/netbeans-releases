@@ -614,6 +614,7 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
             WizardConstants.PROPERTY_NATIVE_PROJ_FO.put(this, fsPath.getFileObject());
             WizardConstants.PROPERTY_PROJECT_FOLDER.put(this, fsPath);
             WizardConstants.PROPERTY_TOOLCHAIN.put(this, def);
+            WizardConstants.PROPERTY_USE_BUILD_ANALYZER.put(this, true);
 
             WizardConstants.PROPERTY_HOST_UID.put(this, ExecutionEnvironmentFactory.toUniqueID(ee));
             WizardConstants.PROPERTY_SOURCE_HOST_ENV.put(this, fs);
