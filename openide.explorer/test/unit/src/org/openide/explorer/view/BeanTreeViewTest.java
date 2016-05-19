@@ -93,7 +93,7 @@ public class BeanTreeViewTest extends NbTestCase {
     public BeanTreeViewTest(String name) {
         super(name);
     }
-    
+
     public void testOnlyChildRemoveCausesSelectionOfParent() throws Throwable {
         ExplorerManager em = doChildRemovalTest("one", "one");
         final List<Node> arr = Arrays.asList(em.getSelectedNodes());
@@ -128,24 +128,32 @@ public class BeanTreeViewTest extends NbTestCase {
                 }
                 children = arr.toArray(new Node[0]);
             }
-            Panel p = new Panel();
-            BeanTreeView btv = new BeanTreeView();
-            JFrame f = new JFrame();
-            JTree tree = btv.tree;
+            Panel p;
+            BeanTreeView btv;
+            JFrame f;
+            JTree tree;
             Node operateOn;
 
-            {
-                root.setName("test root");
-                root.getChildren().add(children);
-                p.getExplorerManager().setRootContext(root);
-                p.add(BorderLayout.CENTER, btv);
-                f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                f.getContentPane().add(BorderLayout.CENTER, p);
-                f.setVisible(true);
+            private void initUI() {
+                if (p == null) {
+                    p = new Panel();
+                    btv = new BeanTreeView();
+                    f = new JFrame();
+                    tree = btv.tree;
+                    root.setName("test root");
+                    root.getChildren().add(children);
+                    p.getExplorerManager().setRootContext(root);
+                    p.add(BorderLayout.CENTER, btv);
+                    f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                    f.getContentPane().add(BorderLayout.CENTER, p);
+                    f.setVisible(true);
+                }
             }
 
             @Override
             public void run() {
+
+                initUI();
 
                 for (int i = 0;; i++) {
                     if (name.equals(children[i].getName())) {
@@ -227,11 +235,28 @@ public class BeanTreeViewTest extends NbTestCase {
                 }
                 children = arr.toArray(new Node[0]);
             }
-            Panel p = new Panel();
-            BeanTreeView btv = new BeanTreeView();
-            JFrame f = new JFrame();
-            JTree tree = btv.tree;
+            AbstractNode root = new AbstractNode(new RefreshableChildren());
+            Panel p;
+            BeanTreeView btv;
+            JFrame f;
+            JTree tree;
             Node operateOn;
+            
+            private void initUI() {
+                if (p == null) {
+                    p = new Panel();
+                    btv = new BeanTreeView();
+                    f = new JFrame();
+                    tree = btv.tree;
+                    ((RefreshableChildren) root.getChildren()).refreshKeys(childrenNames);
+                    root.setName("test root");
+                    p.getExplorerManager().setRootContext(root);
+                    p.add(BorderLayout.CENTER, btv);
+                    f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                    f.getContentPane().add(BorderLayout.CENTER, p);
+                    f.setVisible(true);
+                }
+            }
 
             // children must be Children.Keys(lazy)
             class RefreshableChildren extends Children.Keys<String> {
@@ -256,20 +281,11 @@ public class BeanTreeViewTest extends NbTestCase {
                     super.setKeys(keys);
                 }
             }
-            AbstractNode root = new AbstractNode(new RefreshableChildren());
-
-            {
-                ((RefreshableChildren) root.getChildren()).refreshKeys(childrenNames);
-                root.setName("test root");
-                p.getExplorerManager().setRootContext(root);
-                p.add(BorderLayout.CENTER, btv);
-                f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                f.getContentPane().add(BorderLayout.CENTER, p);
-                f.setVisible(true);
-            }
 
             @Override
             public void run() {
+
+                initUI();
 
                 List<Node> selection = new ArrayList<Node>();
                 
@@ -405,23 +421,30 @@ public class BeanTreeViewTest extends NbTestCase {
                 createLeaf("bla")
             };
             VisualizerNode[] visNodes;
-            Panel p = new Panel();
-            BeanTreeView btv = new BeanTreeView();
-            JFrame f = new JFrame();
-            JTree tree = btv.tree;
+            Panel p;
+            BeanTreeView btv;
+            JFrame f;
+            JTree tree;
 
-            {
-                root.setName("test root");
-                root.getChildren().add(children);
-                p.getExplorerManager().setRootContext(root);
-                p.add(BorderLayout.CENTER, btv);
-                f.setDefaultCloseOperation(f.EXIT_ON_CLOSE);
-                f.getContentPane().add(BorderLayout.CENTER, p);
-                f.setVisible(true);
+            private void initUI() {
+                if (p == null) {
+                    p = new Panel();
+                    btv = new BeanTreeView();
+                    f = new JFrame();
+                    tree = btv.tree;
+                    root.setName("test root");
+                    root.getChildren().add(children);
+                    p.getExplorerManager().setRootContext(root);
+                    p.add(BorderLayout.CENTER, btv);
+                    f.setDefaultCloseOperation(f.EXIT_ON_CLOSE);
+                    f.getContentPane().add(BorderLayout.CENTER, p);
+                    f.setVisible(true);
+                }
             }
 
             public void run() {
 
+                initUI();
 
                 try {
                     p.getExplorerManager().setSelectedNodes(children);
@@ -480,22 +503,29 @@ public class BeanTreeViewTest extends NbTestCase {
 
             AbstractNode root = new AbstractNode(new Children.Array());
             VisualizerNode visNode;
-            Panel p = new Panel();
-            BeanTreeView btv = new BeanTreeView();
-            JFrame f = new JFrame();
-            JTree tree = btv.tree;
+            Panel p;
+            BeanTreeView btv;
+            JFrame f;
+            JTree tree;
 
-            {
-                root.setName("test root");
-                p.getExplorerManager().setRootContext(root);
-                p.add(BorderLayout.CENTER, btv);
-                f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                f.getContentPane().add(BorderLayout.CENTER, p);
-                f.setVisible(true);
+            private void initUI() {
+                if (p == null) {
+                    p = new Panel();
+                    btv = new BeanTreeView();
+                    f = new JFrame();
+                    tree = btv.tree;
+                    root.setName("test root");
+                    p.getExplorerManager().setRootContext(root);
+                    p.add(BorderLayout.CENTER, btv);
+                    f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                    f.getContentPane().add(BorderLayout.CENTER, p);
+                    f.setVisible(true);
+                }
             }
 
             @Override
             public void run() {
+                initUI();
                 try {
                     btv.selectionChanged(new Node[] { root }, p.getExplorerManager());
                 } catch (PropertyVetoException ex) {
@@ -525,23 +555,30 @@ public class BeanTreeViewTest extends NbTestCase {
                 createLeaf("bla")
             };
             VisualizerNode visNode;
-            Panel p = new Panel();
-            BeanTreeView btv = new BeanTreeView();
-            JFrame f = new JFrame();
-            JTree tree = btv.tree;
+            Panel p;
+            BeanTreeView btv;
+            JFrame f;
+            JTree tree;
 
-            {
-                root.setName("test root");
-                root.getChildren().add(children);
-                p.getExplorerManager().setRootContext(root);
-                p.add(BorderLayout.CENTER, btv);
-                f.setDefaultCloseOperation(f.EXIT_ON_CLOSE);
-                f.getContentPane().add(BorderLayout.CENTER, p);
-                f.setVisible(true);
+            private void initUI() {
+                if (p == null) {
+                    p = new Panel();
+                    btv = new BeanTreeView();
+                    f = new JFrame();
+                    tree = btv.tree;
+                    root.setName("test root");
+                    root.getChildren().add(children);
+                    p.getExplorerManager().setRootContext(root);
+                    p.add(BorderLayout.CENTER, btv);
+                    f.setDefaultCloseOperation(f.EXIT_ON_CLOSE);
+                    f.getContentPane().add(BorderLayout.CENTER, p);
+                    f.setVisible(true);
+                }
             }
 
             public void run() {
 
+                initUI();
 
                 try {
                     p.getExplorerManager().setSelectedNodes(new Node[] {children[0]});

@@ -75,6 +75,11 @@ public class FindHelpTest extends NbTestCase {
     private static Node[] nodes;
     private static Node root;
 
+    @Override
+    protected boolean runInEQ() {
+        return true;
+    }
+    
     protected void setUp() throws Exception {
         Children kids = new Children.Array();
         nodes = new Node[] {

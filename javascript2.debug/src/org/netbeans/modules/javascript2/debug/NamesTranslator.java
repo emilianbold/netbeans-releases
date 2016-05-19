@@ -159,6 +159,9 @@ public final class NamesTranslator {
                     Parser.Result r = resultIterator.getParserResult();
                     ParserResult pr = (ParserResult) r;
                     Model model = Model.getModel(pr);
+                    if (model == null) {    // no model, no translation
+                        return ;
+                    }
                     Collection<? extends JsObject> variables = model.getVariables(offset);
                     for (JsObject var : variables) {
                         int voffset = var.getOffset();
