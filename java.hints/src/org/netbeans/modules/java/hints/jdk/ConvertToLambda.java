@@ -86,34 +86,23 @@ public class ConvertToLambda {
     @TriggerPatterns({
         @TriggerPattern("new $clazz($params$) { $method; }") //NOI18N
     })
+    @NbBundle.Messages("MSG_AnonymousConvertibleToLambda=This anonymous inner class creation can be turned into a lambda expression.")
     public static ErrorDescription computeAnnonymousToLambda(HintContext ctx) {
         ClassTree clazz = ((NewClassTree) ctx.getPath().getLeaf()).getClassBody();
-        long start = ctx.getInfo().getTrees().getSourcePositions().getStartPosition(ctx.getInfo().getCompilationUnit(), clazz);
-
-        OUTER:
-        for (Diagnostic<?> d : ctx.getInfo().getDiagnostics()) {
-            if (start != d.getStartPosition()) {
-                continue;
-            }
-            if (!CODES.contains(d.getCode())) {
-                continue;
-            }
-
-            ConvertToLambdaPreconditionChecker preconditionChecker =
-                    new ConvertToLambdaPreconditionChecker(ctx.getPath(), ctx.getInfo());
-            if (!preconditionChecker.passesFatalPreconditions()) {
-                return null;
-            }
-
-            FixImpl fix = new FixImpl(ctx.getInfo(), ctx.getPath(), false);
-            if (ctx.getPreferences().getBoolean(KEY_PREFER_MEMBER_REFERENCES, DEF_PREFER_MEMBER_REFERENCES)
-                    && preconditionChecker.foundMemberReferenceCandidate()) {
-                return ErrorDescriptionFactory.forTree(ctx, ((NewClassTree) ctx.getPath().getLeaf()).getIdentifier(), d.getMessage(null),
-                        new FixImpl(ctx.getInfo(), ctx.getPath(), true).toEditorFix(), fix.toEditorFix());
-            }
-            return ErrorDescriptionFactory.forTree(ctx, ((NewClassTree) ctx.getPath().getLeaf()).getIdentifier(), d.getMessage(null), fix.toEditorFix());
+        ConvertToLambdaPreconditionChecker preconditionChecker =
+                new ConvertToLambdaPreconditionChecker(ctx.getPath(), ctx.getInfo());
+        if (!preconditionChecker.passesFatalPreconditions()) {
+            return null;
         }
-        return null;
+
+        FixImpl fix = new FixImpl(ctx.getInfo(), ctx.getPath(), false);
+        if (ctx.getPreferences().getBoolean(KEY_PREFER_MEMBER_REFERENCES, DEF_PREFER_MEMBER_REFERENCES)
+                && preconditionChecker.foundMemberReferenceCandidate()) {
+            return ErrorDescriptionFactory.forTree(ctx, ((NewClassTree) ctx.getPath().getLeaf()).getIdentifier(), Bundle.MSG_AnonymousConvertibleToLambda(),
+                    new FixImpl(ctx.getInfo(), ctx.getPath(), true).toEditorFix(), fix.toEditorFix());
+        }
+        return ErrorDescriptionFactory.forTree(ctx, ((NewClassTree) ctx.getPath().getLeaf()).getIdentifier(), 
+                Bundle.MSG_AnonymousConvertibleToLambda(), fix.toEditorFix());
     }
 
     private static final class FixImpl extends JavaFix {

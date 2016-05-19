@@ -18,8 +18,9 @@ public class ImplementAbstractMethods3 {
     /** Creates a new instance of ImplementAbstractMethod1 */
     public ImplementAbstractMethods3() {
         new AbstractClass() {
-
+            @Override
             public void test(int x, String y, String... args) throws IOException, BadLocationException {
+                throw new UnsupportedOperationException("Not supported yet.");
             }
         };
     }

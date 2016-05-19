@@ -116,6 +116,31 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Object>, Ove
                 "compiler.err.abstract.cant.be.instantiated", // NOI18N
                 "compiler.err.enum.constant.does.not.override.abstract")); // NOI18N
     }
+    
+    /**
+     * Returns the Element which is incomplete, or, for anonymous classes, 
+     * returns the extended TypeElement (which is also incomplete). This is because
+     * an Element is not available for the incomplete class.
+     */
+    private static TypeElement findTypeElement(CompilationInfo info, TreePath path) {
+        Element e = info.getTrees().getElement(path);
+        if (e == null) {
+            return null;
+        } else if (e.getKind().isClass() || e.getKind().isInterface()) {
+            return (TypeElement)e;
+        }
+        TypeMirror tm = info.getTrees().getTypeMirror(path);
+        if (tm == null || tm.getKind() != TypeKind.DECLARED) {
+            if (path.getLeaf().getKind() == Tree.Kind.NEW_CLASS) {
+                tm = info.getTrees().getTypeMirror(new TreePath(path, ((NewClassTree)path.getLeaf()).getIdentifier()));
+            }
+        }
+        if (tm != null && tm.getKind() == TypeKind.DECLARED) {
+            return (TypeElement)((DeclaredType)tm).asElement();
+        } else {
+            return null;
+        }
+    }
 
     @NbBundle.Messages({
         "ERR_CannotOverrideAbstractMethods=Inherited abstract methods are not accessible and could not be implemented"
@@ -123,20 +148,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Object>, Ove
     @Override
     public String createMessage(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Object> data) {
         TreePath path = deepTreePath(info, offset);
-        Element e = info.getTrees().getElement(path);
-        if (e == null || !e.getKind().isClass()) {
-            TypeMirror tm = info.getTrees().getTypeMirror(path);
-            if (tm == null || tm.getKind() != TypeKind.DECLARED) {
-                if (path.getLeaf().getKind() == Tree.Kind.NEW_CLASS) {
-                    tm = info.getTrees().getTypeMirror(new TreePath(path, ((NewClassTree)path.getLeaf()).getIdentifier()));
-                }
-            }
-            if (tm != null && tm.getKind() == TypeKind.DECLARED) {
-                e = ((DeclaredType)tm).asElement();
-            } else {
-                return null;
-            }
-        }
+        Element e = findTypeElement(info, path);
         if (e == null) {
             return null;
         }
@@ -159,7 +171,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Object>, Ove
             }
         }
         if (hasDefault) {
-            d.put(path.getLeaf(), e);
+            d.put(path.getLeaf(), Boolean.FALSE);
         }
         return null;
     }
@@ -179,8 +191,13 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Object>, Ove
             return null;
         }
         Element e = info.getTrees().getElement(path);
-        boolean isUsableElement = e != null && (e.getKind().isClass() || e.getKind().isInterface());
         final Tree leaf = path.getLeaf();
+        boolean isUsableElement = e != null && (e.getKind().isClass() || e.getKind().isInterface());
+        boolean containsDefaultMethod = saved == Boolean.FALSE;
+
+        boolean completingAnonymous = e != null && e.getKind() == ElementKind.CONSTRUCTOR && 
+                leaf.getKind() == Tree.Kind.NEW_CLASS;
+        TypeElement tel = findTypeElement(info, path);
         
         List<Fix> fixes = new ArrayList<>();
         if (TreeUtilities.CLASS_TREE_KINDS.contains(leaf.getKind())) {
@@ -196,7 +213,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Object>, Ove
             }
         }
         
-        if (!isUsableElement) {
+        if (completingAnonymous) {
             //if the parent of path.getLeaf is an error, the situation probably is like:
             //new Runnable {}
             //(missing '()' for constructor)
@@ -215,16 +232,9 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Object>, Ove
                 // ignore
                 return null;
             }
+            fixes.add(new ImplementAbstractMethodsFix(info, path, tel, containsDefaultMethod));
         }
-        
-        TypeElement tel = (saved instanceof TypeElement) ? (TypeElement)saved : null;
-        
-        if (e == null) {
-            if (leaf.getKind() == Kind.NEW_CLASS) {
-                fixes.add(new ImplementAbstractMethodsFix(info, path, tel));
-            }
-        }
-        
+        boolean someAbstract = false;
         X: if (isUsableElement) {
             for (ExecutableElement ee : ElementFilter.methodsIn(e.getEnclosedElements())) {
                 if (ee.getModifiers().contains(Modifier.ABSTRACT)) {
@@ -233,20 +243,25 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Object>, Ove
                     if (e.getKind() == ElementKind.ENUM) {
                         // cannot make enum abstract, but can generate abstract methods skeleton
                         // to all enum members
-                        fixes.add(new ImplementOnEnumValues2(info,  e));
+                        fixes.add(new ImplementOnEnumValues2(info,  tel, containsDefaultMethod));
                         // avoid other possible fixes:
                         break X;
+                    } else if (e.getKind().isClass()) {
+                        someAbstract = true;
+                        break;
                     }
                 }
             }
             // offer to fix all abstract methods
-            
-            fixes.add(new ImplementAbstractMethodsFix(info, path, tel));
+            if (!someAbstract) {
+                fixes.add(new ImplementAbstractMethodsFix(info, path, tel, containsDefaultMethod));
+            }
             if (e.getKind() == ElementKind.CLASS && e.getSimpleName() != null && !e.getSimpleName().contentEquals("")) {
                 fixes.add(new MakeAbstractFix(info, path, e.getSimpleName().toString()).toEditorFix());
             }
-        } else if (e != null && e.getKind() == ElementKind.ENUM_CONSTANT) {
-            fixes.add(new ImplementAbstractMethodsFix(info, path, tel));
+        } 
+        if (e != null && e.getKind() == ElementKind.ENUM_CONSTANT) {
+            fixes.add(new ImplementAbstractMethodsFix(info, path, tel, containsDefaultMethod));
         }
         return fixes;
     }
@@ -271,10 +286,20 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Object>, Ove
         TreePath basic = info.getTreeUtilities().pathFor(offset);
         TreePath plusOne = info.getTreeUtilities().pathFor(offset + 1);
         
-        if (plusOne.getParentPath() != null && plusOne.getParentPath().getLeaf() == basic.getLeaf()) {
+        TreePath parent = plusOne.getParentPath();
+        if (parent == null) {
+            return basic;
+        }
+        if (plusOne.getLeaf().getKind() == Kind.NEW_CLASS &&
+            parent.getLeaf().getKind() == Kind.EXPRESSION_STATEMENT) {
+            parent = parent.getParentPath();
+            if (parent == null) {
+                return basic;
+            }
+        }
+        if (parent.getLeaf() == basic.getLeaf()) {
             return plusOne;
         }
-        
         return basic;
     }
     
@@ -282,6 +307,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Object>, Ove
         protected final JavaSource      source;
         protected final TreePathHandle  handle;
         protected final ElementHandle<TypeElement>  implementType;
+        protected final boolean         displayUI;
         
         protected TreePath  path;
         private  boolean   commit;
@@ -290,21 +316,23 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Object>, Ove
         private   int round;
         private List<ElementHandle<? extends Element>> elementsToImplement;
 
-        protected ImplementFixBase(CompilationInfo info, TreePath p, TypeElement el) {
+        protected ImplementFixBase(CompilationInfo info, TreePath p, TypeElement el, boolean displayUI) {
             this.source = info.getJavaSource();
             this.handle = TreePathHandle.create(p, info);
-            this.implementType = el == null ? null : ElementHandle.create(el);
+            this.implementType = ElementHandle.create(el);
+            this.displayUI = displayUI;
         }
 
-        protected ImplementFixBase(CompilationInfo info, Element p, TypeElement el) {
+        protected ImplementFixBase(CompilationInfo info, TypeElement el, boolean displayUI) {
             this.source = info.getJavaSource();
-            this.handle = TreePathHandle.create(p, info);
-            this.implementType = el == null ? null : ElementHandle.create(el);
+            this.handle = TreePathHandle.create(el, info);
+            this.implementType = ElementHandle.create(el);
+            this.displayUI = displayUI;
         }
 
         @Override
         public ChangeInfo implement() throws Exception {
-            if (implementType != null) {
+            if (displayUI) {
                 final Future[] selector = { null };
                 source.runUserActionTask(new Task<CompilationController>() {
                     @Override
@@ -349,7 +377,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Object>, Ove
                 return;
             }
 
-            Element el = copy.getTrees().getElement(path);
+            Element el = implementType.resolve(copy);
             if (el == null) {
                 return;
             }
@@ -374,13 +402,9 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Object>, Ove
             return !generateClassBody2(copy, p);
         }
         
-        protected boolean generateImplementation(TreePath p) {
+        protected boolean generateImplementation(Element el, TreePath p) {
             Tree leaf = p.getLeaf();
             
-            if (TreeUtilities.CLASS_TREE_KINDS.contains(leaf.getKind())) {
-                generateAllAbstractMethodImplementations(copy, p, elementsToImplement);
-                return true;
-            }
             Element e = copy.getTrees().getElement(p);
             if (e != null && e.getKind() == ElementKind.ENUM_CONSTANT) {
                 VariableTree var = (VariableTree) leaf;
@@ -391,7 +415,13 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Object>, Ove
                     TreePath toModify = new TreePath(enumInit, nct.getClassBody());
                     generateAllAbstractMethodImplementations(copy, toModify, elementsToImplement);
                     return true;
+                } else {
+                    return false;
                 }
+            }
+            if (el.getKind().isClass()) {
+                generateAllAbstractMethodImplementations(copy, p, elementsToImplement);
+                return true;
             }
             return false;
         }
@@ -404,12 +434,12 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Object>, Ove
      * After that, method generation is applied on all enum values.
      */
     @NbBundle.Messages({
-        "LBL_FIX_Impl_Methods_Enum_Values2=XImplement abstract methods on all enum values"
+        "LBL_FIX_Impl_Methods_Enum_Values2=Implement abstract methods on all enum values"
     })
     static final class ImplementOnEnumValues2 extends ImplementFixBase {
 
-        public ImplementOnEnumValues2(CompilationInfo info, Element e) {
-            super(info, e, (TypeElement)e);
+        public ImplementOnEnumValues2(CompilationInfo info, TypeElement e, boolean prompt) {
+            super(info, e, prompt);
         }
 
         @Override
@@ -442,7 +472,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Object>, Ove
                         }
                         break;
                     case 1:
-                        if (!generateImplementation(p)) {
+                        if (!generateImplementation(el, p)) {
                             return false;
                         }
                         break;
@@ -517,8 +547,8 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Object>, Ove
     }
     
     private static class ImplementAbstractMethodsFix extends ImplementFixBase {
-        public ImplementAbstractMethodsFix(CompilationInfo info, TreePath path, TypeElement e) {
-            super(info, path, e);
+        public ImplementAbstractMethodsFix(CompilationInfo info, TreePath path, TypeElement clazz, boolean prompt) {
+            super(info, path, clazz, prompt);
         }
         
         @Override
@@ -531,8 +561,13 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Object>, Ove
             switch (round) {
                 case 0:
                     return generateClassBody(path);
-                case 1:
-                    return generateImplementation(path);
+                case 1: {
+                    TreePath p = path;
+                    if (path.getLeaf().getKind() == Kind.NEW_CLASS) {
+                        p = new TreePath(path, ((NewClassTree)path.getLeaf()).getClassBody());
+                    }
+                    return generateImplementation(el, p);
+                }
             }
             return false;
         }
