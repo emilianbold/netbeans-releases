@@ -105,6 +105,20 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
+        <change id="ModuleInfoAccessibilityQuery">
+            <api name="java-api-common"/>
+            <summary>Added a factory method into <code>QuerySupport</code>to create a module-info based <code>AccessibilityQueryImplementation2</code> instance</summary>
+            <version major="1" minor="85"/>
+            <date day="19" month="5" year="2016"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added a factory method into <code>QuerySupport</code>to create a module-info based <code>AccessibilityQueryImplementation2</code> instance.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.queries" name="QuerySupport"/>
+        </change>
         <change id="UnitTestsCompilerOptionsQuery">
             <api name="java-api-common"/>
             <summary>Added a factory method into <code>QuerySupport</code>to create unit tests <code>CompilerOptionsQueryImplementation</code> provider</summary>

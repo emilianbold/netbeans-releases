@@ -58,6 +58,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -72,7 +73,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.java.project.ui.PackageDisplayUtils;
-import org.netbeans.modules.java.project.ui.PackageDisplayUtils.Accessibility;
 import static org.netbeans.spi.java.project.support.ui.Bundle.*;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
@@ -703,14 +703,15 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         return PackageDisplayUtils.isEmpty( dataFolder.getPrimaryFile() );
     }
     
-    final class PackageNode extends FilterNode {
+    final class PackageNode extends FilterNode implements ChangeListener {
         
         private Action actions[];
         
         private final FileObject root;
         private DataFolder dataFolder;
         private boolean isDefaultPackage;
-        private volatile Accessibility accessibility;
+        private final AtomicReference<AccessibilityQuery.Result> accRes;
+        private volatile AccessibilityQuery.Accessibility accessibility;
         
         public PackageNode( FileObject root, DataFolder dataFolder ) {
             this( root, dataFolder, isEmpty( dataFolder ) );
@@ -727,6 +728,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             this.root = root;
             this.dataFolder = dataFolder;
             this.isDefaultPackage = root.equals( dataFolder.getPrimaryFile() );
+            this.accRes = new AtomicReference<>();
         }
     
         FileObject getRoot() {
@@ -1111,26 +1113,29 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
                 return ImageUtilities.loadImage(PackageDisplayUtils.PACKAGE);
             }
             if (accessibility == null) {
-                ACCESSIBILITY_RP.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        accessibility = Accessibility.fromQuery(AccessibilityQuery.isPubliclyAccessible(folder));
-                        fireIconChange();
+                ACCESSIBILITY_RP.execute(() -> {
+                    AccessibilityQuery.Result res = accRes.get();
+                    if (res == null) {
+                        res = AccessibilityQuery.isPubliclyAccessible2(folder);
+                        if (accRes.compareAndSet(null, res)) {
+                            res.addChangeListener(WeakListeners.change(PackageNode.this, res));
+                        } else {
+                            res = accRes.get();
+                        }
                     }
+                    accessibility = res.getAccessibility();
+                    fireIconChange();
                 });
             }
             return PackageDisplayUtils.getIcon(
                     folder,
                     isLeaf(),
-                    new Callable<Accessibility>() {
-                        @Override
-                        public Accessibility call() throws Exception {
-                            Accessibility res = accessibility;
-                            if (res == null) {
-                                res = Accessibility.UNKNOWN;
-                            }
-                            return res;
+                    ()  -> {
+                        AccessibilityQuery.Accessibility res = accessibility;
+                        if (res == null) {
+                            res = AccessibilityQuery.Accessibility.UNKNOWN;
                         }
+                        return res;
                     });
 
         }
@@ -1198,7 +1203,12 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         private DataFolder getDataFolder() {
             return getCookie(DataFolder.class);
         }
-        
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            accessibility = null;
+            fireIconChange();
+        }
     }
     
     static boolean isValidPackageName(String name) {

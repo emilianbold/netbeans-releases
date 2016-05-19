@@ -76,6 +76,22 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+        <change id="AccessibilityQueryImplementation2">
+            <api name="queries"/>
+            <summary>Added <code>AccessibilityQueryImplementation2</code> to allow to listen on package accessibility changes</summary>
+            <version major="1" minor="62"/>
+            <date day="19" month="5" year="2016"/>
+            <author login="tzezula"/>
+            <compatibility semantic="compatible" source="compatible" binary="compatible"/>
+            <description>
+                <p>
+                    Added <code>AccessibilityQueryImplementation2</code> interface and <code>AccessibilityQuery.isPubliclyAccessible2</code> method
+                    to allow to listen on package accessibility changes.
+                </p>
+            </description>
+            <class package="org.netbeans.api.java.queries" name="AccessibilityQuery"/>
+            <class package="org.netbeans.spi.java.queries" name="AccessibilityQueryImplementation2"/>
+        </change>
         <change id="CompilerOptionsQuery">
             <api name="queries"/>
             <summary>Added <code>CompilerOptionsQuery</code> for additional compiler options</summary>

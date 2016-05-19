@@ -58,17 +58,20 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.lang.model.element.ModuleElement;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.queries.AccessibilityQuery;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.java.api.common.SourceRoots;
-import org.netbeans.spi.java.queries.AccessibilityQueryImplementation;
+import org.netbeans.spi.java.queries.AccessibilityQueryImplementation2;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
@@ -79,11 +82,12 @@ import org.openide.util.WeakListeners;
  * Accessible through the {@link QuerySupport#createModuleInfoAccessibilityQuery}.
  * @author Tomas Zezula
  */
-final class ModuleInfoAccessibilityQueryImpl implements AccessibilityQueryImplementation, PropertyChangeListener, FileChangeListener {
+final class ModuleInfoAccessibilityQueryImpl implements AccessibilityQueryImplementation2, PropertyChangeListener, FileChangeListener {
     private static final String MODULE_INFO_JAVA = "module-info.java";  //NOI18N
 
     private final SourceRoots sources;
     private final SourceRoots tests;
+    private final ChangeSupport listeners;
     private final Set</*@GuardedBy("this")*/File> moduleInfoListeners;
     //@GuardedBy("this")
     private ExportsCache exportsCache;
@@ -98,18 +102,19 @@ final class ModuleInfoAccessibilityQueryImpl implements AccessibilityQueryImplem
         this.sources = sources;
         this.tests = tests;
         this.moduleInfoListeners = new HashSet<>();
+        this.listeners = new ChangeSupport(this);
     }
 
 
     @CheckForNull
     @Override
     @SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
-    public Boolean isPubliclyAccessible(FileObject pkg) {
+    public AccessibilityQueryImplementation2.Result isPubliclyAccessible(FileObject pkg) {
         final ExportsCache cache = getCache();
-        if (!cache.isInModule(pkg)) {
+        if (!cache.isKnown(pkg)) {
             return null;
         }
-        return cache.isExported(pkg);
+        return new ResultImpl(pkg, this);
     }
 
     @Override
@@ -150,10 +155,19 @@ final class ModuleInfoAccessibilityQueryImpl implements AccessibilityQueryImplem
         //Not important
     }
 
+    private void addChangeListener(@NonNull final ChangeListener listener) {
+        this.listeners.addChangeListener(listener);
+    }
+
+    private void removeChangeListener(@NonNull final ChangeListener listener) {
+        this.listeners.removeChangeListener(listener);
+    }
+
     private void reset() {
         synchronized (this) {
             exportsCache = null;
         }
+        listeners.fireChange();
     }
 
     @NonNull
@@ -163,10 +177,11 @@ final class ModuleInfoAccessibilityQueryImpl implements AccessibilityQueryImplem
             ec = exportsCache;
         }
         if (ec == null) {
+            final Set<FileObject> rootsCollector = new HashSet<>();
             final List<Pair<Set<FileObject>,Set<FileObject>>> data = new ArrayList<>(2);
-            readExports(sources).ifPresent(data::add);
-            readExports(tests).ifPresent(data::add);
-            ec = new ExportsCache(data);
+            readExports(sources, rootsCollector).ifPresent(data::add);
+            readExports(tests, rootsCollector).ifPresent(data::add);
+            ec = new ExportsCache(rootsCollector, data);
             synchronized (this) {
                 if (exportsCache == null) {
                     exportsCache = ec;
@@ -178,8 +193,7 @@ final class ModuleInfoAccessibilityQueryImpl implements AccessibilityQueryImplem
                     sources.addPropertyChangeListener(WeakListeners.propertyChange(this, sources));
                     tests.addPropertyChangeListener(WeakListeners.propertyChange(this, tests));
                 }
-                final Set<File> allRoots = data.stream()
-                        .flatMap((p) -> p.first().stream())
+                final Set<File> allRoots = rootsCollector.stream()
                         .map((fo) -> FileUtil.toFile(fo))
                         .filter((f) -> f != null)
                         .collect(Collectors.toSet());
@@ -204,8 +218,11 @@ final class ModuleInfoAccessibilityQueryImpl implements AccessibilityQueryImplem
     }
 
     @NonNull
-    private static Optional<Pair<Set<FileObject>,Set<FileObject>>> readExports(@NonNull final SourceRoots srcRoots) {
+    private static Optional<Pair<Set<FileObject>,Set<FileObject>>> readExports(
+            @NonNull final SourceRoots srcRoots,
+            @NonNull final Set<? super FileObject> rootsCollector) {
         final FileObject[] roots = srcRoots.getRoots();
+        Collections.addAll(rootsCollector, roots);
         final Optional<FileObject> moduleInfo = Arrays.stream(roots)
                 .map((root) -> root.getFileObject(MODULE_INFO_JAVA))
                 .filter((mi) -> mi != null)
@@ -267,10 +284,24 @@ final class ModuleInfoAccessibilityQueryImpl implements AccessibilityQueryImplem
     }
 
     private static final class ExportsCache {
-        private final List<Pair<Set<FileObject>,Set<FileObject>>> data;
+        private final Set<FileObject> roots;    //All roots
+        private final List<Pair<
+                Set<FileObject>,    //Roots in compilation unit with module-info
+                Set<FileObject>>>   //Exported packages
+                    data;
 
-        ExportsCache(@NonNull final List<Pair<Set<FileObject>,Set<FileObject>>> data) {
+        ExportsCache(
+                @NonNull final Set<FileObject> roots,
+                @NonNull final List<Pair<Set<FileObject>,Set<FileObject>>> data) {
+            this.roots = roots;
             this.data = data;
+        }
+
+        boolean isKnown(@NonNull final FileObject pkg) {
+            return roots.stream()
+                    .anyMatch((root) -> {
+                        return root.equals(pkg) || FileUtil.isParentOf(root, pkg);
+                    });
         }
 
         boolean isInModule(@NonNull final FileObject pkg) {
@@ -288,4 +319,37 @@ final class ModuleInfoAccessibilityQueryImpl implements AccessibilityQueryImplem
         }
     }
 
+    private static class ResultImpl implements AccessibilityQueryImplementation2.Result {
+        private final FileObject pkg;
+        private final ModuleInfoAccessibilityQueryImpl owner;
+
+        public ResultImpl(
+                @NonNull final FileObject pkg,
+                @NonNull final ModuleInfoAccessibilityQueryImpl owner) {
+            this.pkg = pkg;
+            this.owner = owner;
+        }
+
+        @Override
+        public AccessibilityQuery.Accessibility getAccessibility() {
+            final ExportsCache cache = owner.getCache();
+            if (!cache.isInModule(pkg)) {
+                return AccessibilityQuery.Accessibility.UNKNOWN;
+            }
+            if (cache.isExported(pkg)) {
+                return AccessibilityQuery.Accessibility.EXPORTED;
+            }
+            return AccessibilityQuery.Accessibility.PRIVATE;
+        }
+
+        @Override
+        public void addChangeListener(@NonNull final ChangeListener listener) {
+            owner.addChangeListener(listener);
+        }
+
+        @Override
+        public void removeChangeListener(@NonNull final ChangeListener listener) {
+            owner.removeChangeListener(listener);
+        }
+    }
 }
