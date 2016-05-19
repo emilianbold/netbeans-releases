@@ -143,13 +143,8 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
         }
         if (contextDataObject == null) {
             try {
-                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(contextXml));
-                if (fo != null) {
-                    contextDataObject = DataObject.find(fo);
-                    contextDataObject.addPropertyChangeListener(this);
-                } else {
-                    LOGGER.log(Level.INFO, "File {0} does not exist", contextXml);
-                }
+                contextDataObject = DataObject.find(FileUtil.toFileObject(FileUtil.normalizeFile(contextXml)));
+                contextDataObject.addPropertyChangeListener(this);
             } catch(DataObjectNotFoundException donfe) {
                 LOGGER.log(Level.FINE, null, donfe);
             }
