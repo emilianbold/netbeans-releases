@@ -59,6 +59,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import javax.lang.model.SourceVersion;
@@ -153,6 +154,11 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
     }
     
     private static final List<ElementHandle<? extends Element>> NOT_READY = new ArrayList<>();
+
+    /**
+     * For testing purposes only
+     */
+    static BiFunction<CompilationInfo, TypeElement, List<ElementHandle<? extends Element>>> testOverrideMethodsSelection = null;
     
     /**
      * Returns callback which fills the list of elements to implement. The callback will execute in Swing thread upon query to the {@link Future#get()}.
@@ -160,7 +166,7 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
      * @param typeElement
      * @return 
      */
-    public static Future< List<ElementHandle<? extends Element>> > selectMethodsToImplement(CompilationInfo controller, TypeElement typeElement) {
+    public static Future< List<ElementHandle<? extends Element>> > selectMethodsToImplement(final CompilationInfo controller, final TypeElement typeElement) {
         final ElementNode.Description root = getImplementDescriptions(controller, typeElement);
         if (root == null) {
             return null;
@@ -193,7 +199,7 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
                         return result == NOT_READY ? null : result;
                     }
                 }
-                if (SwingUtilities.isEventDispatchThread()) {
+                if (testOverrideMethodsSelection != null || SwingUtilities.isEventDispatchThread()) {
                     run();
                     return result;
                 } else {
@@ -213,7 +219,12 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
             }
             
             public void run() {
-                List<ElementHandle<? extends Element>> tmp = displaySelectionDialog(root, true);
+                List<ElementHandle<? extends Element>> tmp;
+                if (testOverrideMethodsSelection != null) {
+                    tmp = testOverrideMethodsSelection.apply(controller, typeElement);
+                } else {
+                    tmp = displaySelectionDialog(root, true);
+                }
                 synchronized (this) {
                     this.result = tmp;
                 }
