@@ -62,6 +62,10 @@ package org.netbeans.lib.terminalemulator;
 public class WordDelineator {
 
     private String delimiters = new String();
+    
+    private WordDelineator(String delimeters) {
+        this.delimiters = delimeters;
+    }
 
     /**
      * Return the <i>character equivalence class</i> of 'c'.
@@ -82,10 +86,6 @@ public class WordDelineator {
         } else {
             return 0;
         }
-    }
-
-    protected void setWordDelimiters(String delimiters) {
-        this.delimiters = delimiters;
     }
 
     /**
@@ -133,5 +133,17 @@ public class WordDelineator {
         }
         rx--;
         return (!success && useLineBound) ? -1 : rx;
+    }
+    
+    public static WordDelineator createCustomDelineator(String delimeters) {
+        if (delimeters.contains(" ")) { //NOI18N
+            return new WordDelineator(delimeters);
+        } else {
+            return new WordDelineator(delimeters.concat(" ")); //NOI18N
+        }
+    }
+    
+    public static WordDelineator createNewlineDelineator() {
+        return new WordDelineator("\n"); //NOI18N
     }
 }

@@ -70,6 +70,8 @@ import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -518,7 +520,7 @@ public final class Terminal extends JComponent {
                         } catch (NumberFormatException x) {
                         }
                     }
-                    OpenInEditorAction.post(FileUtil.toFileObject(new File(filePath)), lineNumber);
+                    OpenInEditorAction.post(filePath, lineNumber);
                 } 
                 else if (userObject instanceof OutputListener) {
                     OutputListener ol = (OutputListener) r.getUserObject();
