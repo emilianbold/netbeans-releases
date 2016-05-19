@@ -574,7 +574,10 @@ public final class ProcessUtils {
             StringBuilder sb = new StringBuilder();
             if (outputLines != null) {
                 for (String line : outputLines) {
-                    sb.append(line).append('\n'); //NOI18N
+                    if (sb.length() > 0) {
+                        sb.append('\n'); //NOI18N
+                    }
+                    sb.append(line);
                 }
             }
             return sb.toString();
