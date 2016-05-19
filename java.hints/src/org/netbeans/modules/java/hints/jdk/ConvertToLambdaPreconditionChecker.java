@@ -50,7 +50,6 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Scope;
-import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -138,6 +137,14 @@ public class ConvertToLambdaPreconditionChecker {
     
     private MethodTree getMethodFromFunctionalInterface(TreePath pathToNewClassTree) {
         //ignore first member, which is a synthetic constructor call
+        if (createdClass == null) {
+            return null;
+        }
+        TreePath typePath = new TreePath(pathToNewClassTree, ((NewClassTree)pathToNewClassTree.getLeaf()).getIdentifier());
+        Element baseElement  = info.getTrees().getElement(typePath);
+        if (baseElement == null || baseElement.getKind().isClass()) {
+            return null;
+        }
         TreeUtilities tu = info.getTreeUtilities();
         for (Tree member : ((NewClassTree)pathToNewClassTree.getLeaf()).getClassBody().getMembers()) {
             if (member.getKind() == Tree.Kind.METHOD && !tu.isSynthetic(new TreePath(pathToNewClassTree, member)))
@@ -161,11 +168,12 @@ public class ConvertToLambdaPreconditionChecker {
     
     private void ensurePreconditionsAreChecked() {
         if (!havePreconditionsBeenChecked) {
-            TreePath path = new TreePath(pathToNewClassTree, lambdaMethodTree);
-            new PreconditionScanner().scan(path, info.getTrees());
-            checkForOverload();
-            verifyTargetType();
-            
+            if (lambdaMethodTree != null) {
+                TreePath path = new TreePath(pathToNewClassTree, lambdaMethodTree);
+                new PreconditionScanner().scan(path, info.getTrees());
+                checkForOverload();
+                verifyTargetType();
+            }
             havePreconditionsBeenChecked = true;
         }
     }
@@ -176,7 +184,8 @@ public class ConvertToLambdaPreconditionChecker {
     }
     
     public boolean passesFatalPreconditions() {
-        return !foundRefToThisOrSuper() &&
+        return lambdaMethodTree != null && 
+               !foundRefToThisOrSuper() &&
                !foundRecursiveCall() &&
                !foundErroneousTargetType() && 
                !foundRefToUninitializedVar();
