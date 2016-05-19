@@ -39,111 +39,40 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.debugger.jpda.projectsui;
+package org.netbeans.modules.javascript2.debug.ui.tooltip;
 
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JEditorPane;
 import javax.swing.UIManager;
-import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ToolTipSupport;
-import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 
 /**
  *
- * @author martin
+ * @author Martin Entlicher
  */
-@DebuggerServiceRegistration(path = "netbeans-JPDASession/PinWatchHeadActions", types = Action.class)
-public class PinWatchExpandAction extends AbstractAction {
-
+public abstract class AbstractExpandTooltipAction extends AbstractAction {
+    
     private final Icon toExpandIcon = UIManager.getIcon ("Tree.collapsedIcon");    // NOI18N
     private final Icon toCollapsIcon = UIManager.getIcon ("Tree.expandedIcon");    // NOI18N
-    private Reference<JPDADebugger> debuggerRef;
-    private String expression;
-    private Reference<ObjectVariable> varRef;
     private boolean expanded;
-
-    public PinWatchExpandAction() {
+    
+    protected AbstractExpandTooltipAction() {
         putValue(Action.SMALL_ICON, toExpandIcon);
         putValue(Action.LARGE_ICON_KEY, toExpandIcon);
     }
-
-    @Override
-    public void putValue(String key, Object value) {
-        switch (key) {
-            case "debugger":
-                synchronized (this) {
-                    if (debuggerRef == null || debuggerRef.get() != value) {
-                        debuggerRef = new WeakReference<>((JPDADebugger) value);
-                    }
-                }
-                break;
-            case "expression":
-                synchronized (this) {
-                    expression = (String) value;
-                }
-                break;
-            case "variable":
-                synchronized (this) {
-                    if (varRef == null || varRef.get() != value) {
-                        varRef = new WeakReference<>((ObjectVariable) value);
-                        expanded = false;
-                    }
-                }
-                break;
-            case "disposeState":
-                synchronized (this) {
-                    debuggerRef = null;
-                    expression = null;
-                    varRef = null;
-                }
-            default:
-                super.putValue(key, value);
-        }
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        JPDADebugger debugger = null;
-        String exp;
-        ObjectVariable var = null;
-        boolean expand;
-        synchronized (this) {
-            if (debuggerRef != null) {
-                debugger = debuggerRef.get();
-            }
-            exp = expression;
-            if (varRef != null) {
-                var = varRef.get();
-            }
-            expanded = !expanded;
-            expand = expanded;
-        }
-        if (debugger != null && exp != null && var != null) {
-            if (expand) {
-                displayExpanded(debugger, expression, var);
-                putValue(Action.SMALL_ICON, toCollapsIcon);
-                putValue(Action.LARGE_ICON_KEY, toCollapsIcon);
-            } else {
-                collapse();
-                putValue(Action.SMALL_ICON, toExpandIcon);
-                putValue(Action.LARGE_ICON_KEY, toExpandIcon);
-            }
-        }
-    }
-
-    private void displayExpanded(JPDADebugger debugger, String expression, ObjectVariable var) {
-        ToolTipView toolTipView = ToolTipView.getToolTipView(debugger, expression, var);
+    
+    protected abstract void openTooltipView();
+    
+    protected final void openTooltipView(DebuggerTooltipSupport dbg, String expression, Object var) {
+        ToolTipView toolTipView = ToolTipView.createToolTipView(dbg, expression, var);
         JEditorPane currentEditor = EditorContextDispatcher.getDefault().getMostRecentEditor();
         EditorUI eui = Utilities.getEditorUI(currentEditor);
         if (eui != null) {
@@ -156,9 +85,7 @@ public class PinWatchExpandAction extends AbstractAction {
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (ToolTipSupport.PROP_STATUS.equals(evt.getPropertyName())) {
                         if (!toolTipSupport.isToolTipVisible()) {
-                            synchronized (PinWatchExpandAction.this) {
-                                expanded = false;
-                            }
+                            expanded = false;
                             putValue(Action.SMALL_ICON, toExpandIcon);
                             putValue(Action.LARGE_ICON_KEY, toExpandIcon);
                             toolTipSupport.removePropertyChangeListener(this);
@@ -167,8 +94,23 @@ public class PinWatchExpandAction extends AbstractAction {
                 }
             });
         }
+        
     }
     
+    @Override
+    public final void actionPerformed(ActionEvent e) {
+        expanded = !expanded;
+        if (expanded) {
+            openTooltipView();
+            putValue(Action.SMALL_ICON, toCollapsIcon);
+            putValue(Action.LARGE_ICON_KEY, toCollapsIcon);
+        } else {
+            collapse();
+            putValue(Action.SMALL_ICON, toExpandIcon);
+            putValue(Action.LARGE_ICON_KEY, toExpandIcon);
+        }
+    }
+
     private void collapse() {
         JEditorPane currentEditor = EditorContextDispatcher.getDefault().getMostRecentEditor();
         EditorUI eui = Utilities.getEditorUI(currentEditor);
@@ -176,5 +118,4 @@ public class PinWatchExpandAction extends AbstractAction {
             eui.getToolTipSupport().setToolTipVisible(false, false);
         }
     }
-
 }

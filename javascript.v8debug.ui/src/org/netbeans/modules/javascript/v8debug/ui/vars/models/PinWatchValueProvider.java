@@ -60,6 +60,7 @@ import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
 import org.netbeans.modules.javascript.v8debug.ui.vars.tooltip.V8DebuggerTooltipSupport;
 import org.netbeans.modules.javascript.v8debug.vars.V8Evaluator;
 import org.netbeans.modules.javascript.v8debug.vars.Variable;
+import org.netbeans.modules.javascript2.debug.ui.tooltip.AbstractExpandTooltipAction;
 import org.netbeans.modules.javascript2.debug.ui.tooltip.AbstractJSToolTipAnnotation;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
@@ -228,21 +229,19 @@ public class PinWatchValueProvider implements PinWatchUISupport.ValueProvider,
         }
     }
 
-    private class ExpandAction extends AbstractAction {
+    private class ExpandAction extends AbstractExpandTooltipAction {
 
         private final Variable var;
 
         ExpandAction(Variable var) {
             this.var = var;
-            Icon expIcon = UIManager.getIcon ("Tree.collapsedIcon");    // NOI18N
-            putValue(Action.SMALL_ICON, expIcon);
-            putValue(Action.LARGE_ICON_KEY, expIcon);
         }
 
         @Override
-        public void actionPerformed(ActionEvent e) {
-            AbstractJSToolTipAnnotation.openTooltipView(new V8DebuggerTooltipSupport(dbg, dbg.getCurrentFrame()), var.getName(), var);
+        protected void openTooltipView() {
+            openTooltipView(new V8DebuggerTooltipSupport(dbg, dbg.getCurrentFrame()), var.getName(), var);
         }
+
     }
 
 }
