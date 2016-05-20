@@ -46,8 +46,7 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.Cancellat
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.remote.api.ui.AutocompletionProvider;
 import org.netbeans.modules.remote.ui.spi.AutocompletionProviderFactory;
-import org.netbeans.modules.remote.util.ExecSupport;
-import org.netbeans.modules.remote.util.ExecSupport.Status;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -179,9 +178,9 @@ public class PathsCompletionProviderFactory implements AutocompletionProviderFac
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
             npb.setExecutable("/bin/ls").setArguments("-1FL", dir); // NOI18N
 
-            Status result = ExecSupport.call(npb);
+            ProcessUtils.ExitStatus result = ProcessUtils.execute(npb);
             if (result.isOK()) {
-                for (String s : result.output) {
+                for (String s : result.getOutputLines()) {
                     if (s.endsWith("*")) { // NOI18N
                         content.add(s.substring(0, s.length() - 1));
                     } else if (s.endsWith("/")) {// NOI18N

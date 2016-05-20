@@ -190,7 +190,7 @@ import org.openide.util.RequestProcessor;
         if (exitFlagFile != null) {
             pb.getEnvironment().put("RFS_CONTROLLER_EXIT_FLAG_FILE", exitFlagFile); // NOI18N
         }
-        NativeProcess remoteControllerProcess = pb.call();
+        NativeProcess remoteControllerProcess = pb.call(); // ProcessUtils.execute doesn't work here
         remoteController = new RemoteProcessController(remoteControllerProcess);
 
         errorReader = new ErrorReader(remoteControllerProcess.getErrorStream(), err);
