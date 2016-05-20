@@ -1,6 +1,6 @@
 /**
  * 
- * @returns {Date|Number|String}^
+ * @returns {Number|String|Date}^
  */
 function testReturnTypes() {
     var arr = ["ahoj", new Date(), 10];
