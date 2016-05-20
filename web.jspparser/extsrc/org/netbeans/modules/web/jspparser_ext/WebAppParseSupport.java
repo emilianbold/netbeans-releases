@@ -510,11 +510,14 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         return waClassLoader;
     }
 
-    public boolean isValid() {
+    @Override
+    public boolean isValid(WebModule wm) {
         boolean valid = wmRoot != null
                 && wmRoot.isValid()
                 && webInf != null
-                && webInf.isValid();
+                && webInf.isValid()
+                && wmRoot.equals(wm.getDocumentBase())
+                && webInf.equals(wm.getWebInf());
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "Checking validity - WM root: {0}, WEB-INF: {1}, valid: {2}", new Object[] {wmRoot, webInf, valid}); // NOI18N
         }
