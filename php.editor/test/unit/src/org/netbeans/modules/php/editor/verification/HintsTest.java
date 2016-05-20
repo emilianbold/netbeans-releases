@@ -549,6 +549,26 @@ public class HintsTest extends PHPHintsTestBase {
         checkHints(new InitializeFieldSuggestion(), "testIssue249306.php", "function __construct(...$f^oo) {");
     }
 
+    public void testIssue259026_01() throws Exception {
+        checkHints(new EmptyStatementHint(), "testIssue259026_01.php");
+    }
+
+    public void testIssue259026_02() throws Exception {
+        checkHints(new EmptyStatementHint(), "testIssue259026_02.php");
+    }
+
+    public void testIssue259026_03() throws Exception {
+        checkHints(new EmptyStatementHint(), "testIssue259026_03.php");
+    }
+
+    public void testIssue259026Fix_02() throws Exception {
+        applyHint(new EmptyStatementHint(), "testIssue259026_02.php", "declare(strict_types=1);;^", "Empty Statement");
+    }
+
+    public void testIssue259026Fix_03() throws Exception {
+        applyHint(new EmptyStatementHint(), "testIssue259026_03.php", "$test1 = 1;;^", "Empty Statement");
+    }
+
     private static final class ArraySyntaxSuggesionStub extends ArraySyntaxSuggestion {
 
         private final PhpVersion phpVersion;
