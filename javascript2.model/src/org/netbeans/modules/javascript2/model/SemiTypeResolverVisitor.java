@@ -400,22 +400,19 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
         return super.enterBinaryNode(binaryNode);
     }
 
-// TRUFFLE
-//    @Override
-//    public Node enter(ReferenceNode rNode) {
-//        List<? extends Node> path = getPath();
-//        boolean functionType = true;
-//        if (!path.isEmpty()) {
-//            Node lastNode = path.get(path.size() - 1);
-//            functionType = !(lastNode instanceof CallNode);
-//        }
-//        if (functionType) {
-//            add(new TypeUsage(Type.FUNCTION, rNode.getReference().getStart(), true));
-//        }
-//        return null;
-//    }
-    
-    
+    @Override
+    public boolean enterFunctionNode(FunctionNode functionNode) {
+        List<? extends Node> path = getPath();
+        boolean functionType = true;
+        if (!path.isEmpty()) {
+            Node lastNode = path.get(path.size() - 1);
+            functionType = !(lastNode instanceof CallNode);
+        }
+        if (functionType) {
+            add(new TypeUsage(Type.FUNCTION, functionNode.getStart(), true));
+        }
+        return false;
+    }
 
     private boolean isResultString(BinaryNode binaryNode) {
         boolean bResult = false;
