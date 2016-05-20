@@ -50,7 +50,9 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.DeclareStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.EmptyStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -96,6 +98,15 @@ public class EmptyStatementHint extends HintRule {
             super.visit(node);
             if (isSemicolon(node)) {
                 createHint(node);
+            }
+        }
+
+        @Override
+        public void visit(DeclareStatement node) {
+            Statement body = node.getBody();
+            // #259026 ignore declare();
+            if (!(body instanceof EmptyStatement)) {
+                super.visit(node);
             }
         }
 
