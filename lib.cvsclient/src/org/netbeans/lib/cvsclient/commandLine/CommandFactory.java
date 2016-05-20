@@ -18,7 +18,7 @@
  * Notice in each file and include the License file at
  * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -63,20 +63,20 @@ import org.netbeans.lib.cvsclient.commandLine.command.CommandProvider;
  * @see org.netbeans.lib.cvsclient.command.Command
  */
 public class CommandFactory {
-    
+
     private static final String[] COMMAND_CLASSES = new String[] {
         "Import", "add", "annotate", "checkout", "commit", "diff", "export",
         "locbundlecheck", "log", "rannotate", "remove", "rlog", "rtag", "status",
         "tag", "update" };
-    
+
     private static CommandFactory instance;
-    
+
     private Map commandProvidersByNames;
-    
+
     private CommandFactory() {
         createCommandProviders();
     }
-    
+
     private void createCommandProviders() {
         commandProvidersByNames = new HashMap();
         String packageName = CommandFactory.class.getPackage().getName() + ".command.";

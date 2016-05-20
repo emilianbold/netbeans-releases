@@ -16,7 +16,7 @@ Other names may be trademarks of their respective owners.
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include parent License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates parent
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Oracle in the GPL Version 2 section of the License file that
  * accompanied parent code. If applicable, add the following below the

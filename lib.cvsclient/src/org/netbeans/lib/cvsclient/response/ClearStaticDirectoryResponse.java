@@ -18,7 +18,7 @@
  * Notice in each file and include the License file at
  * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -69,12 +69,12 @@ class ClearStaticDirectoryResponse implements Response {
             final String localPath = dis.readLine();
 
             final String repositoryPath = dis.readLine();
-            
+
             final String absPath = services.convertPathname(localPath, repositoryPath);
             if (services.getGlobalOptions().isExcluded(new File(absPath))) {
                 return;
             }
-            
+
             //System.err.println("Repository path is: " + repositoryPath);
             // It looks like it's not necessary to call updateAdminData(),
             // because all it does is that it creates CVS/ folder with empty

@@ -23,7 +23,7 @@ import org.openide.nodes.Node;
  * Notice in each file and include the License file at
  * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -41,28 +41,28 @@ import org.openide.util.HelpCtx;
  */
 public abstract class PageFlowSceneElement {
     private String name;
-    
-    
+
+
     public PageFlowSceneElement(){
     }
-    
+
     public boolean equals(Object obj) {
         return (this == obj);
     }
-    
+
     @Override
     public int hashCode() {
         return System.identityHashCode(this);
     }
-    
+
     public void setName( String name ) {
         this.name = name;
     }
-    
+
     public String getName() {
         return name;
     }
-    
+
     private boolean modifiable = true;
     public boolean isModifiable() {
         return modifiable;
@@ -70,7 +70,7 @@ public abstract class PageFlowSceneElement {
     public void setModifiable(boolean modifiable ){
         this.modifiable = modifiable;
     }
-    
+
     public abstract Node getNode();
     public abstract HelpCtx getHelpCtx();
     public abstract void destroy() throws IOException;

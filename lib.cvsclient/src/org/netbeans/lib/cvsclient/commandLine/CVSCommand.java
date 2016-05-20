@@ -18,7 +18,7 @@
  * Notice in each file and include the License file at
  * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -67,11 +67,11 @@ import org.netbeans.lib.cvsclient.event.CVSListener;
  * @author  Robert Greig
  */
 public class CVSCommand {
-    
+
     private static final String HELP_OPTIONS = "--help-options"; // NOI18N
     private static final String HELP_COMMANDS = "--help-commands"; // NOI18N
     private static final String HELP_SYNONYMS = "--help-synonyms"; // NOI18N
-    
+
     /**
      * The path to the repository on the server
      */
@@ -97,7 +97,7 @@ public class CVSCommand {
      * particular command.
      */
     private GlobalOptions globalOptions;
-    
+
     /**
      * The port number that is used to connect to the remote server.
      * It is taken into account only when it's value is greater then zero.
