@@ -93,13 +93,13 @@ public final class RemoteSupport {
      */
     public static SecurityStyle securityStyle(SecuritySettings ss) {
         SecurityStyle defSecurityStyle = securityStyle();
-	if ((defSecurityStyle instanceof SecurityStyle.JSch) ||
-            (defSecurityStyle instanceof SecurityStyle.VJSch)) {
-	    return new SecurityStyle.JSch(ss.sshPort(), ss.sshPublicKeyFile());
-	} else {
-	    // Allow overriding using properties
-	    return defSecurityStyle;
-	}
+        if (defSecurityStyle instanceof SecurityStyle.JSch) {
+            return new SecurityStyle.JSch(ss.sshPort(), ss.sshPublicKeyFile());
+        } else if (defSecurityStyle instanceof SecurityStyle.VJSch) {
+            return new SecurityStyle.VJSch(ss.sshPort());
+        } else {    // Allow overriding using properties
+            return defSecurityStyle;
+        }
     }
 
     public static final class CndKeyring implements Keyring {
