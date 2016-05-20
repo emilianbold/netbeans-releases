@@ -56,7 +56,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -65,15 +64,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -82,6 +80,8 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.support.ReferencesCount;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.imports.ComputeImports;
@@ -103,7 +103,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
-import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 
 
@@ -111,7 +110,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jan Lahoda
  */
-public final class ImportClass implements ErrorRule<Void> {
+public final class ImportClass implements ErrorRule<Void>{
     
     static RequestProcessor WORKER = new RequestProcessor("ImportClassEnabler", 1);
     
@@ -126,13 +125,19 @@ public final class ImportClass implements ErrorRule<Void> {
                 "compiler.err.cant.resolve.location.args",
                 "compiler.err.doesnt.exist",
                 "compiler.err.not.stmt", 
-                "compiler.err.not.def.public.cant.access"));
+                "compiler.err.not.def.public.cant.access",
+                "compiler.err.expected"
+        ));
     }
-    
+
     @Override
     public List<Fix> run(final CompilationInfo info, String diagnosticKey, final int offset, TreePath treePath, Data<Void> data) {
         resume();
-        int errorPosition = offset + 1; //TODO: +1 required to work OK, rethink
+        int errorPosition = offset;
+        boolean expectedErr = "compiler.err.expected".equals(diagnosticKey);
+        if (!expectedErr) {
+            errorPosition++; //TODO: +1 required to work OK, rethink
+        } 
         
         if (errorPosition == (-1)) {
             ErrorHintsProvider.LOG.log(Level.FINE, "ImportClassEnabler.create errorPosition=-1"); //NOI18N
@@ -146,6 +151,27 @@ public final class ImportClass implements ErrorRule<Void> {
         
         try {
             ident = ErrorHintsProvider.findUnresolvedElementToken(info, offset);
+            // handle error 'expected identifier' after UnresolvedIdentifier.|
+            if (ident == null && expectedErr) {
+                TokenHierarchy<?> th = info.getTokenHierarchy();
+                TokenSequence<JavaTokenId> ts = th.tokenSequence(JavaTokenId.language());
+                if (ts != null) {
+                    ts.move(offset);
+                    if (ts.movePrevious()) {
+                        Token<JavaTokenId> check = ts.token();
+                        if (check.id() == JavaTokenId.DOT) {
+                            // backward skip all whitespaces
+                            boolean hasToken = false;
+                            while ((hasToken = ts.movePrevious()) && ts.token().id() == JavaTokenId.WHITESPACE)
+                                ;
+                            if (hasToken && ts.token().id() == JavaTokenId.IDENTIFIER) {
+                                ident = ts.token();
+                            }
+                        }
+                    }
+                    
+                }
+            }
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
         }
