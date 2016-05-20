@@ -49,7 +49,8 @@ import org.netbeans.api.annotations.common.NonNull;
 /**
  * Represents an group element of the 'use' declaration.
  * <pre>
- * use some\namespace\{ClassA, sub\ClassB, ClassC as C};
+ * some\namespace\{ClassA, sub\ClassB, ClassC as C};
+ * some\namespace\{ClassA, function sub\myfnc, const MY_CONST as C};
  * </pre>
  */
 public class GroupUseStatementPart extends UseStatementPart {
