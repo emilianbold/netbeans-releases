@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
@@ -52,14 +53,20 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.File;
 import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.Collection;
 import javax.swing.*;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.customizer.SourceRootsUi;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
+import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDescriptor;
@@ -82,6 +89,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
     private boolean notified;
 
     private final J2SEProjectProperties uiProperties;
+    private final ProfileMediator profileMediator;
 
     public CustomizerSources( J2SEProjectProperties uiProperties ) {
         this.uiProperties = uiProperties;
@@ -129,24 +137,20 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         uiProperties.JAVAC_SOURCE_MODEL.addListDataListener(new ListDataListener () {
             public void intervalAdded(ListDataEvent e) {
                 enableSourceLevel ();
-                enableProfiles();
             }
 
             public void intervalRemoved(ListDataEvent e) {
                 enableSourceLevel ();
-                enableProfiles();
             }
 
             public void contentsChanged(ListDataEvent e) {
                 enableSourceLevel ();
-                enableProfiles();
-            }                                    
+            }
         });
         this.profile.setEditable(false);
         this.profile.setModel(uiProperties.JAVAC_PROFILE_MODEL);
         this.profile.setRenderer(uiProperties.JAVAC_PROFILE_RENDERER);
         enableSourceLevel ();
-        enableProfiles();
         this.originalEncoding = this.uiProperties.getProject().evaluator().getProperty(ProjectProperties.SOURCE_ENCODING);
         if (this.originalEncoding == null) {
             this.originalEncoding = Charset.defaultCharset().name();
@@ -184,6 +188,10 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
                 }
             }
         });
+        this.profileMediator = new ProfileMediator(
+                uiProperties.SOURCE_ROOTS_MODEL,
+                uiProperties.JAVAC_SOURCE_MODEL,
+                Arrays.asList(jLabel6, profile));
     }
     
     private class TableColumnSizeComponentAdapter extends ComponentAdapter {
@@ -254,15 +262,6 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
     
     private void enableSourceLevel () {
         this.sourceLevel.setEnabled(sourceLevel.getItemCount()>0);
-    }
-
-    private void enableProfiles() {
-        final Object si = this.sourceLevel.getSelectedItem();
-        final boolean pe = si != null &&
-              PlatformUiSupport.getSourceLevel(si) != null &&
-              new SpecificationVersion("1.8").compareTo(PlatformUiSupport.getSourceLevel(si)) <= 0; //NOI18N
-        this.profile.setEnabled(pe);
-        this.jLabel6.setEnabled(pe);
     }
     
     private static class ResizableRowHeightTable extends JTable {
@@ -707,7 +706,71 @@ private void includeExcludeButtonActionPerformed(java.awt.event.ActionEvent evt)
     }
 }//GEN-LAST:event_includeExcludeButtonActionPerformed
     
-   
+
+    private static final class ProfileMediator implements TableModelListener, ListDataListener {
+        private static final SpecificationVersion JDK8 = new SpecificationVersion("1.8"); //NOI18N
+        private static final SpecificationVersion JDK9 = new SpecificationVersion("9"); //NOI18N
+        private final TableModel sourcesModel;
+        private final ComboBoxModel<?> sourceLevelModel;
+        private final Collection<? extends Component> profileComponents;
+
+        ProfileMediator(
+            @NonNull final TableModel sourcesModel,
+            @NonNull final ComboBoxModel<?> sourceLevelModel,
+            @NonNull final Collection<? extends Component> profileComponents) {
+            this.sourcesModel = sourcesModel;
+            this.sourceLevelModel = sourceLevelModel;
+            this.profileComponents = profileComponents;
+            this.sourcesModel.addTableModelListener(this);
+            this.sourceLevelModel.addListDataListener(this);
+            revalidate();
+        }
+
+        @Override
+        public void tableChanged(TableModelEvent e) {
+            revalidate();
+        }
+
+        @Override
+        public void contentsChanged(ListDataEvent e) {
+            revalidate();
+        }
+
+        @Override
+        public void intervalAdded(ListDataEvent e) {
+            revalidate();
+        }
+
+        @Override
+        public void intervalRemoved(ListDataEvent e) {
+            revalidate();
+        }
+
+        private void revalidate() {
+            boolean enabled = false;
+            final Object key = sourceLevelModel.getSelectedItem();
+            final SpecificationVersion sl = key == null ? null : PlatformUiSupport.getSourceLevel(key);
+            if (sl != null) {
+                if (JDK9.compareTo(PlatformUiSupport.getSourceLevel(key)) <= 0) {
+                    boolean hasModuleInfo = false;
+                    for (int i = 0; i < sourcesModel.getRowCount(); i++) {
+                        final File root = (File) sourcesModel.getValueAt(i, 0);
+                        if (J2SEProjectUtil.getModuleInfo(root).exists()) {
+                            hasModuleInfo = true;
+                            break;
+                        }
+                    }
+                    enabled = !hasModuleInfo;
+                } else if (JDK8.compareTo(sl) <= 0) {
+                    enabled = true;
+                }
+            }
+            for (Component c : profileComponents) {
+                c.setEnabled(enabled);
+            }
+        }
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addSourceRoot;
     private javax.swing.JButton addTestRoot;

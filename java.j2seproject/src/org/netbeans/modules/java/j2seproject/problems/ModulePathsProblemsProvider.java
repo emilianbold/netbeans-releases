@@ -64,6 +64,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
+import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -92,7 +93,6 @@ import org.openide.util.WeakListeners;
  */
 @ProjectServiceProvider(service = ProjectProblemsProvider.class, projectType = "org-netbeans-modules-java-j2seproject")
 public final class ModulePathsProblemsProvider implements ProjectProblemsProvider, PropertyChangeListener, FileChangeListener {
-    private static final String MODULE_INFO_JAVA = "module-info.java"; //NOI18N
     private static final String PROP_TEST_MODULE_PATHS_CHECK = "ModulePathsProblems.test.paths.check";  //NOI18N
     private static final RequestProcessor RESOLVER = new RequestProcessor(ModulePathsProblemsProvider.class);
 
@@ -168,13 +168,13 @@ public final class ModulePathsProblemsProvider implements ProjectProblemsProvide
                     for (File f : toRemove) {
                         FileUtil.removeFileChangeListener(
                                 this,
-                                new File(f, MODULE_INFO_JAVA));
+                                J2SEProjectUtil.getModuleInfo(f));
                         moduleInfoListeners.remove(f);
                     }
                     for (File f : roots) {
                         FileUtil.addFileChangeListener(
                                 this,
-                                new File(f, MODULE_INFO_JAVA));
+                                J2SEProjectUtil.getModuleInfo(f));
                         moduleInfoListeners.add(f);
                     }
                 }
@@ -255,7 +255,7 @@ public final class ModulePathsProblemsProvider implements ProjectProblemsProvide
             @NonNull final Collection<? super File> rootsCollector) {
         boolean res = false;
         for (FileObject root : roots.getRoots()) {
-            res |= Optional.ofNullable(root.getFileObject(MODULE_INFO_JAVA)).isPresent();
+            res |= Optional.ofNullable(J2SEProjectUtil.getModuleInfo(root)).isPresent();
             Optional.ofNullable(FileUtil.toFile(root)).ifPresent(rootsCollector::add);
         }
         return res;
