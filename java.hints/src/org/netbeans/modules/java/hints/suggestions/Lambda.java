@@ -92,6 +92,7 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.jdk.ConvertToLambdaConverter;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
@@ -466,34 +467,15 @@ public class Lambda {
                 }
             }
 
-            if (tree.getKind() != Tree.Kind.METHOD_INVOCATION) {
-                return;
+            Tree changed = null;
+            if (tree.getKind() == Tree.Kind.METHOD_INVOCATION) {
+                changed = ConvertToLambdaConverter.methodInvocationToMemberReference(copy, tree, ctx.getPath(), lambda.getParameters(), false);
+            } else if (tree.getKind() == Tree.Kind.NEW_CLASS) {
+                changed = ConvertToLambdaConverter.newClassToConstructorReference(copy, tree, ctx.getPath(), lambda.getParameters(), false);
             }
-
-            ExpressionTree ms = ((MethodInvocationTree)tree).getMethodSelect();
-            Name name = null;
-            ExpressionTree expr = null;
-            TreeMaker make = copy.getTreeMaker();
-            if (ms.getKind() == Tree.Kind.IDENTIFIER) {
-                name = ((IdentifierTree)ms).getName();
-                expr = make.Identifier("this"); //NOI18N
-            } else if (ms.getKind() == Tree.Kind.MEMBER_SELECT) {
-                name = ((MemberSelectTree)ms).getIdentifier();
-                if (lambda.getParameters().size() == ((MethodInvocationTree)tree).getArguments().size()) {
-                    expr = ((MemberSelectTree)ms).getExpression();
-                } else {
-                    Element e = copy.getTrees().getElement(new TreePath(ctx.getPath(), ms));
-                    if (e != null && e.getKind() == ElementKind.METHOD) {
-                        expr = make.Identifier(e.getEnclosingElement());
-                    }
-                }
+            if (changed != null) {
+                copy.rewrite(lambda, changed);
             }
-            if (name == null || expr == null) {
-                return;
-            }
-
-            MemberReferenceTree referenceTree = make.MemberReference(MemberReferenceTree.ReferenceMode.INVOKE, expr, name, Collections.<ExpressionTree>emptyList());
-            copy.rewrite(lambda, referenceTree);
         }
     }
 
