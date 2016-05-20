@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2016 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,37 +34,26 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.docker.editor;
+package org.netbeans.modules.java.editor.codegen;
 
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NonNull;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.MIMEResolver;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.List;
+import java.util.function.BiFunction;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
 
 /**
  *
- * @author Tomas Zezula
+ * @author sdedic
  */
-@ServiceProvider(service = MIMEResolver.class)
-public final class DockerfileResolver extends MIMEResolver {
-
-    public static final String MIME_TYPE = "text/x-dockerfile"; //NOI18N
-    private static final String FILE_NAME = "dockerfile";   //NOI18N
-
-    public DockerfileResolver() {
-        super(MIME_TYPE);
+public class ImplementGeneratorAccessor {
+    public static void setOverrideSelection(BiFunction<CompilationInfo, TypeElement, List<ElementHandle<? extends Element>>> f) {
+        ImplementOverrideMethodGenerator.testOverrideMethodsSelection = f;
     }
-
-    @CheckForNull
-    @Override
-    public String findMIMEType(@NonNull final FileObject fo) {
-        final String ext = fo.getExt();
-        final String nameWithExt = fo.getNameExt().toLowerCase();
-        return FILE_NAME.equalsIgnoreCase(ext) || nameWithExt.startsWith(FILE_NAME)?
-            MIME_TYPE :
-            null;
-    }
-
 }

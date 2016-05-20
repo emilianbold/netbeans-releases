@@ -43,7 +43,15 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
+import java.util.ArrayList;
+import java.util.List;
+import javax.lang.model.element.Element;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.java.editor.codegen.ImplementGeneratorAccessor;
 import org.netbeans.modules.java.hints.infrastructure.HintsTestBase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -69,37 +77,37 @@ public class ErrorHintsTest extends HintsTestBase {
 //    }
         
 //
-//    public void testImplementAbstractMethodsHint1() throws Exception {
-//        performTest("ImplementAbstractMethods1", "Implement", 16, 60);
-//    }
-//
-//    public void testImplementAbstractMethodsHint2() throws Exception {
-//        performTest("ImplementAbstractMethods2", "Implement", 17, 15);
-//    }
-//
-//    public void testImplementAbstractMethodsHint3() throws Exception {
-//        performTest("ImplementAbstractMethods3", "Implement", 17, 25);
-//    }
-//
-//    public void testImplementAbstractMethodsHint4() throws Exception {
-//        performTest("ImplementAbstractMethods4", "Implement", 16, 30);
-//    }
-//
-//    public void testImplementAbstractMethodsHint5() throws Exception {
-//        performTest("ImplementAbstractMethods5", "Implement", 16, 30);
-//    }
-//
-//    public void testImplementAbstractMethodsHint6() throws Exception {
-//        performTest("ImplementAbstractMethods6", "Implement", 8, 5);
-//    }
-//
-//    public void testImplementAbstractMethodsHint7() throws Exception {
-//        performTest("ImplementAbstractMethods7", "Implement", 9, 25);
-//    }
-//
-//    public void testImplementAbstractMethodsHint8() throws Exception {
-//        performTest("ImplementAbstractMethods8", "Implement", 12, 43);
-//    }
+    public void testImplementAbstractMethodsHint1() throws Exception {
+        performTest("ImplementAbstractMethods1", "LBL_FIX_Impl_Abstract_Methods", 16, 60);
+    }
+
+    public void testImplementAbstractMethodsHint2() throws Exception {
+        performTest("ImplementAbstractMethods2", "LBL_FIX_Impl_Abstract_Methods", 17, 15);
+    }
+
+    public void testImplementAbstractMethodsHint3() throws Exception {
+        performTest("ImplementAbstractMethods3", "LBL_FIX_Impl_Abstract_Methods", 17, 25);
+    }
+
+    public void testImplementAbstractMethodsHint4() throws Exception {
+        performTest("ImplementAbstractMethods4", "LBL_FIX_Impl_Abstract_Methods", 16, 30);
+    }
+
+    public void testImplementAbstractMethodsHint5() throws Exception {
+        performTest("ImplementAbstractMethods5", "LBL_FIX_Impl_Abstract_Methods", 16, 30);
+    }
+
+    public void testImplementAbstractMethodsHint6() throws Exception {
+        performTest("ImplementAbstractMethods6", "LBL_FIX_Impl_Abstract_Methods", 8, 5);
+    }
+
+    public void testImplementAbstractMethodsHint7() throws Exception {
+        performTest("ImplementAbstractMethods7", "LBL_FIX_Impl_Abstract_Methods", 9, 25);
+    }
+
+    public void testImplementAbstractMethodsHint8() throws Exception {
+        performTest("ImplementAbstractMethods8", "LBL_FIX_Impl_Abstract_Methods", 12, 43);
+    }
     
     public void testImplementAbstractMethodsHint9() throws Exception {
         performTestDoNotPerform("ImplementAbstractMethods9", 8, 15);
@@ -110,7 +118,45 @@ public class ErrorHintsTest extends HintsTestBase {
     }
     
     public void testImplementAbstractMethodsHint11() throws Exception {
-        performTest("ImplementAbstractMethods11", "Implement", 8, 15);
+        performTest("ImplementAbstractMethods11", "LBL_FIX_Impl_Abstract_Methods", 8, 15);
+    }
+    
+    private List<ElementHandle<? extends Element>> findElementHandles(CompilationInfo info, String... specs) {
+        List<ElementHandle<? extends Element>> result = new ArrayList(specs.length);
+        for (String spec : specs) {
+            Element el = info.getElementUtilities().findElement(spec);
+            if (el != null) {
+                result.add(ElementHandle.create(el));
+            }
+        }
+        return result;
+    }
+    
+    public void testImplementDefaultMethods1() throws Exception {
+        ImplementGeneratorAccessor.setOverrideSelection((info, type) -> 
+                findElementHandles(info,
+                        "java.util.Iterator.hasNext()",
+                        "java.util.Iterator.next()"
+                )
+        );
+        performTest("ImplementDefaultMethods1", "ImplementDefaultMethods1", "LBL_FIX_Impl_Abstract_Methods", 7, 15, true, "1.8");
+    }
+    
+    public void testImplementDefaultMethods2() throws Exception {
+        ImplementGeneratorAccessor.setOverrideSelection((info, type) ->  {
+                assertEquals("Wrong number of default overridable methods", 
+                        4, info.getElementUtilities().findUnimplementedMethods(type, true).size());
+                return findElementHandles(info,
+                        "java.util.Iterator.hasNext()",
+                        "java.util.Iterator.next()",
+                        "java.util.Iterator.remove()"
+                );
+        });
+        performTest("ImplementDefaultMethods2", "ImplementDefaultMethods2", "LBL_FIX_Impl_Abstract_Methods", 7, 15, true, "1.8");
+    }
+    
+    public void testImplementEnumMethods() throws Exception {
+        performTest("ImplementEnumMethods", "ImplementEnumMethods", "LBL_FIX_Impl_Methods_Enum_Values2", 8, 11, true, "1.8");
     }
     
 //    public void testAddSemicolonHint() throws Exception {
@@ -451,16 +497,27 @@ public class ErrorHintsTest extends HintsTestBase {
     }
     
     public void testMakeClassAbstract1() throws Exception {
-        performTest("org.netbeans.test.java.hints.MakeClassAbstract1", "abstract", 3, 1);
+        performTest("org.netbeans.test.java.hints.MakeClassAbstract1", "LBL_FIX_Make_Class_Abstract", 3, 1);
     }
     
     public void testMakeClassAbstract2() throws Exception {
-        performTest("org.netbeans.test.java.hints.MakeClassAbstract2", "abstract", 3, 1);
+        performTest("org.netbeans.test.java.hints.MakeClassAbstract2", "LBL_FIX_Make_Class_Abstract", 3, 1);
     }
     
     public void testMakeClassAbstract3() throws Exception {
-        performTest("org.netbeans.test.java.hints.MakeClassAbstract3", "abstract", 3, 1);
+        performTest("org.netbeans.test.java.hints.MakeClassAbstract3", "LBL_FIX_Make_Class_Abstract", 3, 1);
     }
+
+    @Override
+    protected void copyAdditionalData() throws Exception {
+        super.copyAdditionalData();
+        FileObject out = packageRoot;
+        FileObject src = FileUtil.toFileObject(getDataDir());
+        src = src.getFileObject("org/netbeans/test/java/hints/pkg");
+        FileUtil.copyFile(src, out, src.getName());
+    }
+    
+    
     
     static {
         NbBundle.setBranding("test");

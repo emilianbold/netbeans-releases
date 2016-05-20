@@ -58,6 +58,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import org.netbeans.modules.javaee.wildfly.nodes.WildflyManagerNode;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.RequestProcessor;
@@ -68,6 +69,8 @@ import org.openide.util.RequestProcessor;
  */
 public class KillServerAction extends CookieAction {
 
+    private static final RequestProcessor PROCESSOR = new RequestProcessor ("JBoss kill UI", 1); // NOI18N
+    
     private static final Logger LOGGER = Logger.getLogger(KillServerAction.class.getName());
 
     private final WildflyKiller killer = new WildflyKiller();
@@ -79,32 +82,37 @@ public class KillServerAction extends CookieAction {
 
     @NbBundle.Messages("MSG_KillFailed=Kill action failed")
     @Override
-    protected void performAction(Node[] nodes) {
+    protected void performAction(final Node[] nodes) {
         if ((nodes == null) || (nodes.length != 1)) {
             return;
         }
-        Future<Boolean> killed = RequestProcessor.getDefault().submit(new Callable<Boolean>() {
+        
+        final WildflyManagerNode managerNode = nodes[0].getCookie(WildflyManagerNode.class);
+        if (managerNode == null) {
+            return;
+        }
+
+        final Future<Boolean> killed = RequestProcessor.getDefault().submit(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 return killer.killServers();
             }
         });
-        try {
-            // FIXME waiting in EDT
-            if (killed.get(10, TimeUnit.SECONDS)) {
-                //Ugly Hack
-                for (Action action : nodes[0].getActions(false)) {
-                    if ("org.netbeans.modules.j2ee.deployment.impl.ui.actions.RefreshAction".equals(action.getClass().getName())) {
-                        action.actionPerformed(new ActionEvent(nodes[0], 1, "refresh"));
-                        return;
+        PROCESSOR.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if (killed.get(10, TimeUnit.SECONDS)) {
+                        managerNode.getDeploymentManager().getInstanceProperties().refreshServerInstance();
                     }
+                } catch (InterruptedException | ExecutionException | TimeoutException ex) {
+                    LOGGER.log(Level.INFO, "Kill action failed", ex);
+                    NotifyDescriptor desc = new NotifyDescriptor.Message(Bundle.MSG_KillFailed(), NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(desc);
                 }
             }
-        } catch (InterruptedException | ExecutionException | TimeoutException ex) {
-            LOGGER.log(Level.INFO, "Kill action failed", ex);
-            NotifyDescriptor desc = new NotifyDescriptor.Message(Bundle.MSG_KillFailed(), NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(desc);
-        }
+        });
+
     }
 
     @Override
