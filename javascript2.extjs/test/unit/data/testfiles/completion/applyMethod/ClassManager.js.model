@@ -493,7 +493,7 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                                                            arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                            getClass                        : FUNCTION getClass [ANONYMOUS: false, DECLARED: true - getClass, MODIFIERS: PUBLIC, METHOD]
                                                                            # RETURN TYPES
-                                                                           @pro;object@pro;self, RESOLVED: false
+                                                                           unresolved, RESOLVED: true
                                                                            # PARAMETERS
                                                                            OBJECT object [ANONYMOUS: false, DECLARED: true - object, MODIFIERS: PUBLIC, PARAMETER]
                                                                                    # PROPERTIES
@@ -526,7 +526,6 @@ ClassManagerL$214 : FUNCTION ClassManagerL$214 [ANONYMOUS: true, DECLARED: true 
                                                                            instantiators : OBJECT instantiators [ANONYMOUS: false, DECLARED: true - instantiators, MODIFIERS: PRIVATE, VARIABLE]
                                            getName                         : FUNCTION getName [ANONYMOUS: false, DECLARED: true - getName, MODIFIERS: PUBLIC, METHOD]
                                                                            # RETURN TYPES
-                                                                           @pro;object@pro;$className, RESOLVED: false
                                                                            String, RESOLVED: true
                                                                            # PARAMETERS
                                                                            OBJECT object [ANONYMOUS: false, DECLARED: true - object, MODIFIERS: PUBLIC, PARAMETER]

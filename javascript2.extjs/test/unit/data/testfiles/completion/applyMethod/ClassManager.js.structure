@@ -24,7 +24,7 @@ Manager:CLASS:[PRIVATE]:ESCAPED{Manager}:
   get:METHOD:[PUBLIC]:ESCAPED{get}ESCAPED{(}ESCAPED{name}ESCAPED{)}<font color="#999999">ESCAPED{ : }Manager.classesESCAPED{|}get.root</font>:
   getAliasesByName:METHOD:[PUBLIC]:ESCAPED{getAliasesByName}ESCAPED{(}ESCAPED{name}ESCAPED{)}<font color="#999999">ESCAPED{ : }ArrayESCAPED{|}Manager.maps.nameToAliases</font>:
   getByAlias:METHOD:[PUBLIC]:ESCAPED{getByAlias}ESCAPED{(}ESCAPED{alias}ESCAPED{)}<font color="#999999">ESCAPED{ : }Manager.classesESCAPED{|}get.rootESCAPED{|}unresolved</font>:
-  getClass:METHOD:[PUBLIC]:ESCAPED{getClass}ESCAPED{(}ESCAPED{object}ESCAPED{)}:
+  getClass:METHOD:[PUBLIC]:ESCAPED{getClass}ESCAPED{(}ESCAPED{object}ESCAPED{)}<font color="#999999">ESCAPED{ : }unresolved</font>:
   getInstantiator:METHOD:[PUBLIC]:ESCAPED{getInstantiator}ESCAPED{(}ESCAPED{length}ESCAPED{)}<font color="#999999">ESCAPED{ : }getInstantiator.instantiator</font>:
   getName:METHOD:[PUBLIC]:ESCAPED{getName}ESCAPED{(}ESCAPED{object}ESCAPED{)}<font color="#999999">ESCAPED{ : }String</font>:
   getNameByAlias:METHOD:[PUBLIC]:ESCAPED{getNameByAlias}ESCAPED{(}ESCAPED{alias}ESCAPED{)}<font color="#999999">ESCAPED{ : }Manager.maps.aliasToNameESCAPED{|}String</font>:
