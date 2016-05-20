@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.discovery.buildsupport;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -133,7 +135,7 @@ public class ToolsWrapperUtility {
                     }
                 }
             }
-            writePropertiesFile(wrapperFolder, cPath, cppPath);
+            //writePropertiesFile(wrapperFolder, cPath, cppPath);
             res = CompilerSetFactory.createCompilerSetWrapper(compilerSet, execEnv, wrapperFolder.getPath());
             cache.put(wrapperFolder, res);
             return res;
@@ -166,44 +168,68 @@ public class ToolsWrapperUtility {
 
     private void fixScript(FileObject f, String realTool) throws IOException {
         if (execEnv.isLocal() && Utilities.isWindows()) {
-            return;
-        }
-        List<String> lines = new ArrayList<String>(f.asLines());
-        for (int i = 0; i < lines.size(); i++) {
-            String line = lines.get(i);
-            if (line.startsWith("real_tool=")) { //NOI18N
-                lines.set(i, "real_tool=" + realTool); //NOI18N
+            byte[] content = f.asBytes();
+            byte [] pattern = new byte[]{'e', 'c', 'h', 'o', ' ', 'm', 'a', 'g', 'i', 'c', 'e', 'c', 'h', 'o', ' ', 'm', 'a', 'g', 'i', 'c'};
+            for(int i = 0; i < content.length - 1000; i++) {
+                boolean find = true;
+                for(int j = 0; j < pattern.length; j++) {
+                    if (content[i+j] != pattern[j]) {
+                        find = false;
+                        break;
+                    }
+                }
+                if (find) {
+                    byte[] tool_bytes = realTool.getBytes();
+                    for(int k = 0; k < tool_bytes.length && k < 1000; k++) {
+                        content[i+k] = tool_bytes[k];
+                    }
+                    if (tool_bytes.length < 1000) {
+                        content[i+tool_bytes.length] = 0;
+                    }
+                    OutputStream outputStream = f.getOutputStream();
+                    outputStream.write(content);
+                    outputStream.close();
+                    break;
+                }
             }
-        }
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(f.getOutputStream(), "UTF-8")) { //NOI18N
-            @Override
-            public void newLine() throws IOException {
-                write("\n"); //NOI18N
+        } else {
+            List<String> lines = new ArrayList<String>(f.asLines());
+            for (int i = 0; i < lines.size(); i++) {
+                String line = lines.get(i);
+                if (line.startsWith("real_tool=")) { //NOI18N
+                    lines.set(i, "real_tool=" + realTool); //NOI18N
+                }
             }
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(f.getOutputStream(), "UTF-8")) { //NOI18N
+                @Override
+                public void newLine() throws IOException {
+                    write("\n"); //NOI18N
+                }
 
-        };
-        for (String line : lines) {
-            bw.write(line);
-            bw.newLine();
+            };
+            for (String line : lines) {
+                bw.write(line);
+                bw.newLine();
+            }
+            bw.close();
         }
-        bw.close();
     }
 
-    private void writePropertiesFile(FileObject wrapperFolder, String cPath, String cppPath) throws IOException {
-        if (execEnv.isLocal() && Utilities.isWindows()) {
-            FileObject fo = wrapperFolder.getFileObject(compilerPropertiesName);
-            if (fo == null || !fo.isValid()) {
-                PrintStream stream = new PrintStream(wrapperFolder.createAndOpen(compilerPropertiesName));
-                if (cPath != null) {
-                    stream.println("C=" + cPath); //NOI18N
-                }
-                if (cppPath != null) {
-                    stream.println("CPP=" + cppPath); //NOI18N
-                }
-                stream.close();
-            }
-        }
-    }
+//    private void writePropertiesFile(FileObject wrapperFolder, String cPath, String cppPath) throws IOException {
+//        if (execEnv.isLocal() && Utilities.isWindows()) {
+//            FileObject fo = wrapperFolder.getFileObject(compilerPropertiesName);
+//            if (fo == null || !fo.isValid()) {
+//                PrintStream stream = new PrintStream(wrapperFolder.createAndOpen(compilerPropertiesName));
+//                if (cPath != null) {
+//                    stream.println("C=" + cPath); //NOI18N
+//                }
+//                if (cppPath != null) {
+//                    stream.println("CPP=" + cppPath); //NOI18N
+//                }
+//                stream.close();
+//            }
+//        }
+//    }
 
     private FileObject copyFile(String wrapperBinaryFile, FileObject folder, String name) throws IOException, InterruptedException, ExecutionException {
         String ext = "";
