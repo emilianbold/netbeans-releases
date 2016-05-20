@@ -92,11 +92,13 @@ public final class RemoteSupport {
      * @return
      */
     public static SecurityStyle securityStyle(SecuritySettings ss) {
-	if (securityStyle() instanceof SecurityStyle.JSch) {
+        SecurityStyle defSecurityStyle = securityStyle();
+	if ((defSecurityStyle instanceof SecurityStyle.JSch) ||
+            (defSecurityStyle instanceof SecurityStyle.VJSch)) {
 	    return new SecurityStyle.JSch(ss.sshPort(), ss.sshPublicKeyFile());
 	} else {
 	    // Allow overriding using properties
-	    return securityStyle();
+	    return defSecurityStyle;
 	}
     }
 
