@@ -22,8 +22,9 @@ public class ImplementAbstractMethods5 extends AbstractClass3 {
     /** Creates a new instance of ImplementAbstractMethod1 */
     public ImplementAbstractMethods5() {
     }
-
+    @Override
     public String[] test(Map<String, List<String>> l) throws IOException, BadLocationException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
 }
