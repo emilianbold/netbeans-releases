@@ -69,7 +69,8 @@ import org.openide.filesystems.FileObject;
  *
  * @author Dusan Balek
  */
-public final class JavaCompletionItemFactory implements JavaCompletionTask.TypeCastableItemFactory<JavaCompletionItem> {
+public final class JavaCompletionItemFactory implements JavaCompletionTask.TypeCastableItemFactory<JavaCompletionItem>,
+        JavaCompletionTask.LambdaItemFactory<JavaCompletionItem> {
 
     private final WhiteListQuery.WhiteList whiteList;
 
@@ -190,5 +191,10 @@ public final class JavaCompletionItemFactory implements JavaCompletionTask.TypeC
     @Override
     public JavaCompletionItem createInitializeAllConstructorItem(CompilationInfo info, boolean isDefault, Iterable<? extends VariableElement> fields, ExecutableElement superConstructor, TypeElement parent, int substitutionOffset) {
         return JavaCompletionItem.createInitializeAllConstructorItem(info, isDefault, fields, superConstructor, parent, substitutionOffset);
+    }
+
+    @Override
+    public JavaCompletionItem createLambdaItem(CompilationInfo info, TypeElement elem, DeclaredType type, int substitutionOffset, boolean addSemicolon) {
+        return JavaCompletionItem.createLambdaItem(info, elem, type, substitutionOffset, addSemicolon);
     }
 }

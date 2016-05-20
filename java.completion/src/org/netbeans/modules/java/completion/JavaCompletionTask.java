@@ -134,6 +134,10 @@ public final class JavaCompletionTask<T> extends BaseTask {
 
         T createTypeCastableExecutableItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, TypeMirror castType, int substitutionOffset, ReferencesCount referencesCount, boolean isInherited, boolean isDeprecated, boolean inImport, boolean addSemicolon, boolean smartType, int assignToVarOffset, boolean memberRef);        
     }
+    
+    public static interface LambdaItemFactory<T> extends ItemFactory<T> {
+        T createLambdaItem(CompilationInfo info, TypeElement elem, DeclaredType type, int substitutionOffset, boolean addSemicolon);
+    }
 
     public static enum Options {
 
@@ -2778,6 +2782,9 @@ public final class JavaCompletionTask<T> extends BaseTask {
                         final TypeElement element = (TypeElement) type.asElement();
                         if (JAVA_LANG_CLASS.contentEquals(element.getQualifiedName())) {
                             addTypeDotClassMembers(env, type);
+                        } else if (controller.getSourceVersion().compareTo(SourceVersion.RELEASE_8) >= 0
+                                && elements.isFunctionalInterface(element) && itemFactory instanceof LambdaItemFactory) {
+                            results.add(((LambdaItemFactory<T>)itemFactory).createLambdaItem(env.getController(), element, type, anchorOffset, env.addSemicolon()));
                         }
                         final boolean startsWith = startsWith(env, element.getSimpleName().toString());
                         final boolean withinScope = withinScope(env, element);
