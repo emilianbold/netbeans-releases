@@ -9,4 +9,4 @@ MyLib.ObjB = function (arg) {
 MyLib.objB = function () {
     return new MyLib.ObjB(); 
 };        
- 
+

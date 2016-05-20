@@ -94,6 +94,6 @@ public class JsonTypedBreakInterceptorTest extends JsonTestBase {
     }
 
     public void testNoMultilineString() throws Exception {
-        insertBreak("{ \"a\" : \"abc^def\"^ }", "{ \"a\" : \"abc\n    ^def\" }");
+        insertBreak("{ \"a\" : \"abc^def\" }", "{ \"a\" : \"abc\n    ^def\" }");
     }
 }

@@ -3,6 +3,7 @@ ironman.|iterace;
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CLASS      config                          [PUBLIC]   controllers.js
+CLASS      iterace                         [PUBLIC]   <font color=#999999>virtualSource2.js</font>
 CLASS      prototype                       [PUBLIC]   JS Platform
 METHOD     create(O: Object): Object       [PUBLIC,   JS Platform
 METHOD     defineProperties(O: Object, Pr  [PUBLIC,   JS Platform
@@ -26,5 +27,4 @@ METHOD     toString(): String              [PUBLIC]   JS Platform
 METHOD     valueOf(): Object               [PUBLIC]   JS Platform
 FIELD      constructor: Function           [PUBLIC]   JS Platform
 FIELD      date: Date                      [PUBLIC]   controllers.js
-FIELD      iterace                         [PUBLIC]   virtualSource2.js
 FIELD      iteration: Number               [PUBLIC]   controllers.js

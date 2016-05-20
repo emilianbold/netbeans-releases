@@ -62,8 +62,8 @@ import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.model.*;
 import org.netbeans.modules.javascript2.editor.spi.CompletionContext;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.lexer.api.JsTokenId;
+import org.netbeans.modules.javascript2.lexer.api.LexUtilities;
 import org.netbeans.modules.javascript2.editor.spi.CompletionProvider;
 import org.netbeans.modules.javascript2.jquery.PropertyNameDataLoader;
 import org.netbeans.modules.javascript2.jquery.model.JQueryUtils;
@@ -99,7 +99,7 @@ public class JQueryCodeCompletion implements CompletionProvider {
         int offset = ccContext.getCaretOffset();
         lastTsOffset = ccContext.getParserResult().getSnapshot().getEmbeddedOffset(offset);
         switch (jsCompletionContext) {
-            case STRING:
+            case IN_STRING:
                 TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(parserResult.getSnapshot().getTokenHierarchy(), offset);
                 if (ts != null) {
                     ts.move(lastTsOffset);
