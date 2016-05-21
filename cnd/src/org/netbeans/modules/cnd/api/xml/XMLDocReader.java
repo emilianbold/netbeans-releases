@@ -49,11 +49,12 @@ import java.io.InputStream;
 import java.text.MessageFormat;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.netbeans.modules.cnd.spi.CndErrorNotifier;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.openide.DialogDisplayer;
+//import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
+//import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.xml.sax.ContentHandler;
@@ -169,14 +170,16 @@ abstract public class XMLDocReader extends XMLDecoder {
                         new Object[] {what,
                                       "" + actualVersion, // NOI18N
                                       "" + expectedVersion}); // NOI18N
-                    if (CndUtils.isStandalone()) {
-                        System.err.println(errmsg);
-                    } else {
-                        NotifyDescriptor.Message msg = new NotifyDescriptor.
-                            Message(errmsg, NotifyDescriptor.ERROR_MESSAGE);
-
-                        DialogDisplayer.getDefault().notify(msg);
-                    }
+                    CndErrorNotifier.getDefault().notifyError(errmsg);
+//                    if (CndUtils.isStandalone()) {
+//                        System.err.println(errmsg);
+//                    } else {
+//                        Ств
+//                        NotifyDescriptor.Message msg = new NotifyDescriptor.
+//                            Message(errmsg, NotifyDescriptor.ERROR_MESSAGE);
+//
+//                        DialogDisplayer.getDefault().notify(msg);
+//                    }
                 }
 	    } else {
                 if (ex instanceof CancelledException) {

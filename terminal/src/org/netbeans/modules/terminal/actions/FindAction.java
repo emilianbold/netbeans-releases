@@ -57,46 +57,35 @@ import org.openide.util.Lookup;
 @ActionID(id = ActionFactory.FIND_ACTION_ID, category = ActionFactory.CATEGORY)
 @ActionRegistration(displayName = "#CTL_Find", lazy = true) //NOI18N
 @ActionReferences({
-    @ActionReference(path = ActionFactory.ACTIONS_PATH, name = "FindAction") //NOI18N
+    @ActionReference(path = ActionFactory.ACTIONS_PATH, name = "FindAction"), //NOI18N
+    @ActionReference(path = "Shortcuts", name = "CS-F") //NOI18N
 })
 public class FindAction extends TerminalAction {
 
     public FindAction(Terminal context) {
-	super(context);
-	putValue(NAME, getMessage("CTL_Find")); //NOI18N
+        super(context);
+        putValue(NAME, getMessage("CTL_Find")); //NOI18N
 	/* LATER
 	 KeyStroke accelerator = KeyStroke.getKeyStroke(KeyEvent.VK_F,
 	 InputEvent.ALT_MASK);
 	 putValue(ACCELERATOR_KEY, accelerator);
-	 */
+         */
     }
 
     @Override
     public void performAction() {
-	Terminal terminal = getTerminal();
+        Terminal terminal = getTerminal();
 
-	if (!terminal.isEnabled()) {
-	    return;
-	}
+        if (!terminal.isEnabled()) {
+            return;
+        }
 
-	// OLD ioContainer.find(Terminal.this);
-	// the following is code that used to be in TerminalContainer.find():
-	FindState findState = terminal.getFindState();
-
-	if (findState.isVisible()) {
-	    return;
-	}
-	findState.setVisible(true);
-	/* LATER
-	 findBar.setState(findState);
-	 add(findBar, BorderLayout.SOUTH);
-	 validate();
-	 */
+        terminal.activateSearch();
     }
 
     // --------------------------------------------- 
     @Override
     public Action createContextAwareInstance(Lookup actionContext) {
-	return new FindAction(actionContext.lookup(Terminal.class));
+        return new FindAction(actionContext.lookup(Terminal.class));
     }
 }

@@ -89,7 +89,7 @@ public class RfsRemoteControllerDeathTestCase extends RemoteTestBase {
         pb.setExecutable(rcPath); //I18N
         pb.setWorkingDirectory("/tmp");
         pb.getEnvironment().put("RFS_CONTROLLER_TRACE", "1"); // NOI18N
-        NativeProcess controller = pb.call();
+        NativeProcess controller = pb.call(); // ProcessUtils.execute doesn't work here
 
         RequestProcessor.getDefault().post(new ProcessReader(controller.getErrorStream(),
                 ProcessUtils.getWriter(System.err, true)));

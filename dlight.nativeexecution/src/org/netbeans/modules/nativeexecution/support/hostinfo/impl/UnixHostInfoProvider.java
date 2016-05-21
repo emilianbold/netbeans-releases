@@ -50,7 +50,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -67,6 +69,7 @@ import org.netbeans.modules.nativeexecution.support.EnvReader;
 import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.MiscUtils;
+import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.netbeans.modules.nativeexecution.support.hostinfo.HostInfoProvider;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
@@ -136,63 +139,57 @@ public class UnixHostInfoProvider implements HostInfoProvider {
     private Properties getLocalHostInfo() throws IOException {
         Properties hostInfo = new Properties();
 
-        try {
-            ProcessBuilder pb = new ProcessBuilder("/bin/sh", // NOI18N
-                    hostinfoScript.getAbsolutePath());
+        ProcessBuilder pb = new ProcessBuilder("/bin/sh", // NOI18N
+                hostinfoScript.getAbsolutePath());
 
-            String tmpDirBase = null;
-            if (TMPBASE != null) {
-                if (pathIsOK(TMPBASE, false)) {
-                    tmpDirBase = TMPBASE;
-                } else {
-                    log.log(Level.WARNING, "Ignoring cnd.tmpbase property [{0}] as it contains illegal characters", TMPBASE); // NOI18N
-                }
+        String tmpDirBase = null;
+        if (TMPBASE != null) {
+            if (pathIsOK(TMPBASE, false)) {
+                tmpDirBase = TMPBASE;
+            } else {
+                log.log(Level.WARNING, "Ignoring cnd.tmpbase property [{0}] as it contains illegal characters", TMPBASE); // NOI18N
             }
-
-            if (tmpDirBase == null) {
-                File tmpDirFile = new File(System.getProperty("java.io.tmpdir")); // NOI18N
-                tmpDirBase = tmpDirFile.getCanonicalPath();
-            }
-
-
-            pb.environment().put("TMPBASE", tmpDirBase); // NOI18N
-            pb.environment().put("NB_KEY", HostInfoFactory.getNBKey()); // NOI18N
-
-            Process hostinfoProcess = pb.start();
-
-            // In case of some error goes to stderr, waitFor() will not exit
-            // until error stream is read/closed.
-            // So this case sould be handled.
-
-            // We safely can do this in the same thread (in this exact case)
-
-            List<String> errorLines = ProcessUtils.readProcessError(hostinfoProcess);
-            int result = hostinfoProcess.waitFor();
-
-            for (String errLine : errorLines) {
-                log.log(Level.WARNING, "UnixHostInfoProvider: {0}", errLine); // NOI18N
-                if (errLine.startsWith(ERROR_MESSAGE_PREFIX)) {
-                    String title = NbBundle.getMessage(UnixHostInfoProvider.class, "TITLE_PermissionDenied");
-                    String shortMsg = NbBundle.getMessage(UnixHostInfoProvider.class, "SHORTMSG_PermissionDenied", TMPBASE, "localhost");
-                    String msg = NbBundle.getMessage(UnixHostInfoProvider.class, "MSG_PermissionDenied", TMPBASE, "localhost");
-                    MiscUtils.showNotification(title, shortMsg, msg);
-                }
-            }
-
-            if (result != 0) {
-                throw new IOException(hostinfoScript + " rc == " + result); // NOI18N
-            }
-
-            fillProperties(hostInfo, hostinfoProcess.getInputStream());
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new IOException("HostInfo receiving for localhost interrupted " + ex); // NOI18N
         }
+
+        if (tmpDirBase == null) {
+            File tmpDirFile = new File(System.getProperty("java.io.tmpdir")); // NOI18N
+            tmpDirBase = tmpDirFile.getCanonicalPath();
+        }
+
+
+        pb.environment().put("TMPBASE", tmpDirBase); // NOI18N
+        pb.environment().put("NB_KEY", HostInfoFactory.getNBKey()); // NOI18N
+        ProcessUtils.ExitStatus res = ProcessUtils.execute(pb);
+
+        // In case of some error goes to stderr, waitFor() will not exit
+        // until error stream is read/closed.
+        // So this case sould be handled.
+
+        // We safely can do this in the same thread (in this exact case)
+
+        List<String> errorLines = res.getErrorLines();
+        int result = res.exitCode;
+
+        for (String errLine : errorLines) {
+            log.log(Level.WARNING, "UnixHostInfoProvider: {0}", errLine); // NOI18N
+            if (errLine.startsWith(ERROR_MESSAGE_PREFIX)) {
+                String title = NbBundle.getMessage(UnixHostInfoProvider.class, "TITLE_PermissionDenied");
+                String shortMsg = NbBundle.getMessage(UnixHostInfoProvider.class, "SHORTMSG_PermissionDenied", TMPBASE, "localhost");
+                String msg = NbBundle.getMessage(UnixHostInfoProvider.class, "MSG_PermissionDenied", TMPBASE, "localhost");
+                MiscUtils.showNotification(title, shortMsg, msg);
+            }
+        }
+
+        if (result != 0) {
+            throw new IOException(hostinfoScript + " rc == " + result); // NOI18N
+        }
+
+        fillProperties(hostInfo, res.getOutputLines());
 
         return hostInfo;
     }
 
-    private Properties getRemoteHostInfo(ExecutionEnvironment execEnv) throws IOException, InterruptedException {
+    private Properties getRemoteHostInfo(final ExecutionEnvironment execEnv) throws IOException, InterruptedException {
         Properties hostInfo = new Properties();
         ChannelStreams sh_channels = null;
 
@@ -203,8 +200,8 @@ public class UnixHostInfoProvider implements HostInfoProvider {
             long localStartTime = System.currentTimeMillis();
 
             OutputStream out = sh_channels.in;
-            InputStream err = sh_channels.err;
-            InputStream in = sh_channels.out;
+            final InputStream err = sh_channels.err;
+            final InputStream in = sh_channels.out;
 
             // echannel.setEnv() didn't work, so writing this directly
             out.write(("NB_KEY=" + HostInfoFactory.getNBKey() + '\n').getBytes()); // NOI18N
@@ -228,19 +225,28 @@ public class UnixHostInfoProvider implements HostInfoProvider {
 
             scriptReader.close();
 
-            BufferedReader errReader = new BufferedReader(new InputStreamReader(err));
-            String errLine;
-            while ((errLine = errReader.readLine()) != null) {
-                log.log(Level.WARNING, "UnixHostInfoProvider: {0}", errLine); // NOI18N
-                if (errLine.startsWith(ERROR_MESSAGE_PREFIX)) {
-                    String title = NbBundle.getMessage(UnixHostInfoProvider.class, "TITLE_PermissionDenied");
-                    String shortMsg = NbBundle.getMessage(UnixHostInfoProvider.class, "SHORTMSG_PermissionDenied", TMPBASE, execEnv);
-                    String msg = NbBundle.getMessage(UnixHostInfoProvider.class, "MSG_PermissionDenied", TMPBASE, execEnv);
-                    MiscUtils.showNotification(title, shortMsg, msg);
+            NativeTaskExecutorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        BufferedReader errReader = new BufferedReader(new InputStreamReader(err));
+                        String errLine;
+                        while ((errLine = errReader.readLine()) != null) {
+                            log.log(Level.WARNING, "UnixHostInfoProvider: {0}", errLine); // NOI18N
+                            if (errLine.startsWith(ERROR_MESSAGE_PREFIX)) {
+                                String title = NbBundle.getMessage(UnixHostInfoProvider.class, "TITLE_PermissionDenied");
+                                String shortMsg = NbBundle.getMessage(UnixHostInfoProvider.class, "SHORTMSG_PermissionDenied", TMPBASE, execEnv);
+                                String msg = NbBundle.getMessage(UnixHostInfoProvider.class, "MSG_PermissionDenied", TMPBASE, execEnv);
+                                MiscUtils.showNotification(title, shortMsg, msg);
+                            }
+                        }
+                    } catch (IOException ex) {
+                        ex.printStackTrace(System.err);
+                    }
                 }
-            }
+            }, "reading hostInfo script error"); //NOPI18N
 
-            fillProperties(hostInfo, in);
+            fillProperties(hostInfo, readProcessStream(in, execEnv.isRemote()));
 
             long localEndTime = System.currentTimeMillis();
 
@@ -262,17 +268,12 @@ public class UnixHostInfoProvider implements HostInfoProvider {
         return hostInfo;
     }
 
-    private void fillProperties(Properties hostInfo, InputStream inputStream) {
-        try {
-            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-            String s;
-            while ((s = br.readLine()) != null) {
-                String[] data = s.split("=", 2); // NOI18N
-                if (data.length == 2) {
-                    hostInfo.put(data[0], data[1]);
-                }
+    private void fillProperties(Properties hostInfo, List<String> lines) {
+        for(String s : lines) {
+            String[] data = s.split("=", 2); // NOI18N
+            if (data.length == 2) {
+                hostInfo.put(data[0], data[1]);
             }
-        } catch (IOException ex) {
         }
     }
 
@@ -380,5 +381,25 @@ public class UnixHostInfoProvider implements HostInfoProvider {
         }
 
         return true;
+    }
+
+    private static List<String> readProcessStream(final InputStream stream, boolean remoteStream) throws IOException {
+        if (stream == null) {
+            return Collections.<String>emptyList();
+        }
+        final List<String> result = new LinkedList<>();
+        final BufferedReader br = ProcessUtils.getReader(stream, remoteStream);
+
+        try {
+            String line;
+            while ((line = br.readLine()) != null) {
+                result.add(line);
+            }
+        } finally {
+            if (br != null) {
+                br.close();
+            }
+        }
+        return result;
     }
 }
