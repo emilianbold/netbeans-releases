@@ -18,7 +18,7 @@
  * Notice in each file and include the License file at
  * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -66,7 +66,7 @@ public class CommandUtils {
 
         return message.substring(startIndex);
     }
-    
+
     /**
      * for a list of string will return the string that equals the name parameter.
      * To be used everywhere you need to have only one string occupying teh memory space,
@@ -85,5 +85,5 @@ public class CommandUtils {
             list.add(newName);
             return newName;
         }
-    }    
+    }
 }

@@ -18,7 +18,7 @@
  * Notice in each file and include the License file at
  * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * by Oracle in the GPL Version 2 section of the License file that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -69,30 +69,30 @@ import org.netbeans.lib.cvsclient.event.CVSListener;
  * @author  Milos Kleint
  */
 public class locbundlecheck extends CVSAdapter implements CommandProvider {
-    
+
     /**
      * A constructor that is used to create the CommandProvider.
      */
     public locbundlecheck() {
     }
-    
+
     public String getName() {
         return "locbundlecheck"; // NOI18N
     }
-    
+
     public String[] getSynonyms() {
         return new String[] { "lbch", "lbcheck" }; // NOI18N
     }
-    
+
     public String getUsage() {
         return ResourceBundle.getBundle(CommandProvider.class.getPackage().getName()+".Bundle").getString("locbundlecheck.usage"); // NOI18N
     }
-    
+
     public void printShortDescription(PrintStream out) {
         String msg = ResourceBundle.getBundle(CommandProvider.class.getPackage().getName()+".Bundle").getString("locbundlecheck.shortDescription"); // NOI18N
         out.print(msg);
     }
-    
+
     public void printLongDescription(PrintStream out) {
         String msg = ResourceBundle.getBundle(CommandProvider.class.getPackage().getName()+".Bundle").getString("locbundlecheck.longDescription"); // NOI18N
         out.println(msg);
