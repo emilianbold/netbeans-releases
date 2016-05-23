@@ -1,7 +1,7 @@
 Code completion result for source line:
-use function A\ {|
+const |CONSTANTA,
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+CONSTANT   CONSTANTA "CONSTANTA"           [PUBLIC]   A
 ------------------------------------
 PACKAGE    B                               [PUBLIC]   A
-METHOD     fa()                            [PUBLIC]   A
-METHOD     testA()                         [PUBLIC]   A
+CONSTANT   C_A 'C-A'                       [PUBLIC]   A
