@@ -4,3 +4,4 @@ use function A\{|
 ------------------------------------
 PACKAGE    B                               [PUBLIC]   A
 METHOD     fa()                            [PUBLIC]   A
+METHOD     testA()                         [PUBLIC]   A

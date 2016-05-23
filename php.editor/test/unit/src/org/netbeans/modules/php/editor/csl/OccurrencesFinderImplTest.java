@@ -1447,6 +1447,54 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
         checkOccurrences(getTestPath(), "class MyC^ls implements Iface {", true); // unused
     }
 
+    public void testGroupUses02_01() throws Exception {
+        checkOccurrences(getTestPath(), "const CONSTA^NT = \"CONSTANT\";", true);
+    }
+
+    public void testGroupUses02_02() throws Exception {
+        checkOccurrences(getTestPath(), "    const CONST^ANT,", true);
+    }
+
+    public void testGroupUses02_03() throws Exception {
+        checkOccurrences(getTestPath(), "echo CON^STANT; // CONSTANT", true);
+    }
+
+    public void testGroupUses02_04() throws Exception {
+        checkOccurrences(getTestPath(), "function te^st() {", true);
+    }
+
+    public void testGroupUses02_05() throws Exception {
+        checkOccurrences(getTestPath(), "    function te^st,", true);
+    }
+
+    public void testGroupUses02_06() throws Exception {
+        checkOccurrences(getTestPath(), "    function tes^t AS mytest", true);
+    }
+
+    public void testGroupUses02_07() throws Exception {
+        checkOccurrences(getTestPath(), "te^st(); // test", true);
+    }
+
+    public void testGroupUses02_08() throws Exception {
+        checkOccurrences(getTestPath(), "    function test AS myte^st", true);
+    }
+
+    public void testGroupUses02_09() throws Exception {
+        checkOccurrences(getTestPath(), "my^test(); // test", true);
+    }
+
+    public void testGroupUses02_10() throws Exception {
+        checkOccurrences(getTestPath(), "class My^A {}", true);
+    }
+
+    public void testGroupUses02_11() throws Exception {
+        checkOccurrences(getTestPath(), "    M^yA,", true);
+    }
+
+    public void testGroupUses02_12() throws Exception {
+        checkOccurrences(getTestPath(), "new My^A();", true);
+    }
+
     public void testAnonymousClasses01_01() throws Exception {
         checkOccurrences(getTestPath(), "interface Lo^gger {", true);
     }

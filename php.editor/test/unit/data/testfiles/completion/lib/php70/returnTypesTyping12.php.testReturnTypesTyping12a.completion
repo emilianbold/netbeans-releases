@@ -2,6 +2,7 @@ Code completion result for source line:
 function current():| {
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 PACKAGE    A                               [PUBLIC]   null
+PACKAGE    B                               [PUBLIC]   null
 PACKAGE    GroupUse1                       [PUBLIC]   null
 PACKAGE    GroupUse2                       [PUBLIC]   null
 PACKAGE    My                              [PUBLIC]   null
@@ -36,6 +37,8 @@ CLASS      Comment                         [PUBLIC]   returnTypesTyping11.php
 CLASS      CommentsIterator                [PUBLIC]   My\Firm
 CLASS      FloatClass                      [PUBLIC]   scalarTypeHints.php
 CLASS      IntClass                        [PUBLIC]   scalarTypeHints.php
+CLASS      MyA                             [PUBLIC]   A
+CLASS      MyAA                            [PUBLIC]   A
 CLASS      MyCls                           [PUBLIC]   A
 CLASS      Numbers                         [PUBLIC]   uniformVariableSyntax01.php
 CLASS      Numbers                         [PUBLIC]   uniformVariableSyntax02.php

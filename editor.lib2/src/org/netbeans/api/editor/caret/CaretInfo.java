@@ -82,7 +82,7 @@ public final class CaretInfo {
     /**
      * Get position of the caret itself.
      * @return non-null position of the caret placement. The position may be virtual
-     *  so methods in {@link org.netbeans.api.editor.document.ShiftPositions} may be used if necessary.
+     *  so methods in {@link org.netbeans.api.editor.document.ComplexPositions} may be used if necessary.
      */
     @CheckForNull
     public Position getDotPosition() {
@@ -94,7 +94,7 @@ public final class CaretInfo {
      * or return position denoting the other end of an existing selection (which is either before
      * or after the dot position depending of how the selection was created).
      * @return non-null position of the caret placement. The position may be virtual
-     *  so methods in {@link org.netbeans.api.editor.document.ShiftPositions} may be used if necessary.
+     *  so methods in {@link org.netbeans.api.editor.document.ComplexPositions} may be used if necessary.
      */
     @CheckForNull
     public Position getMarkPosition() {

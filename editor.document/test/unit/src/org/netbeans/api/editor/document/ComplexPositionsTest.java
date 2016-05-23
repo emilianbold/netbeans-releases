@@ -39,38 +39,62 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.spi.editor.highlighting;
+package org.netbeans.api.editor.document;
+
+import javax.swing.text.Document;
+import javax.swing.text.PlainDocument;
+import javax.swing.text.Position;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
- * Highlights sequence that supports shifts in addition to regular offsets.
- * This allows to color individual spaces within a tab character
- * or to color extra virtual characters beyond a newline character.
  *
  * @author Miloslav Metelka
- * @since 2.5.0
  */
-public interface ShiftHighlightsSequence extends HighlightsSequence {
-
-    /**
-     * Get extra shift "within" a particular character (either tab or newline)
-     * while {@link #getStartOffset()} points to the tab or newline character.
-     * <br>
-     * To highlight second and third space of a tab character at offset == 123
-     * the {@link #getStartOffset() } == {@link #getEndOffset() } == 123
-     * and {@link #getStartShift() } == 1 and {@link #getEndShift() } == 3.
-     *
-     * @return &gt;=0 start shift.
-     * @see #getStartOffset() 
-     */
-    int getStartShift();
+public class ComplexPositionsTest {
     
-    /**
-     * Get end shift of a highlight "within" a particular character (either tab or newline)
-     * while {@link #getEndOffset()} points to the tab or newline character.
-     *
-     * @return &gt;=0 end shift.
-     * @see #getStartShift() 
-     */
-    int getEndShift();
+    public ComplexPositionsTest() {
+    }
+
+    @Test
+    public void testPos() throws Exception {
+        Document doc = new PlainDocument();
+        doc.insertString(0, "\t\t\n\n", null);
+        Position pos1 = doc.createPosition(1);
+        Position pos2 = doc.createPosition(2);
+        
+        Position pos10 = ComplexPositions.create(pos1, 0);
+        Position pos11 = ComplexPositions.create(pos1, 1);
+        Position pos20 = ComplexPositions.create(pos2, 0);
+        Position pos21 = ComplexPositions.create(pos2, 1);
+        
+        assertEquals(0, ComplexPositions.getSplitOffset(pos1));
+        assertEquals(0, ComplexPositions.getSplitOffset(pos10));
+        assertEquals(1, ComplexPositions.getSplitOffset(pos11));
+        comparePos(pos1, pos10, 0);
+        comparePos(pos10, pos11, -1);
+        comparePos(pos1, pos2, -1);
+        comparePos(pos10, pos20, -1);
+        comparePos(pos20, pos21, -1);
+    }
+    
+    private void comparePos(Position pos1, Position pos2, int expectedResult) {
+        comparePosImpl(pos1, pos2, expectedResult, true);
+    }
+
+    private void comparePosImpl(Position pos1, Position pos2, int expectedResult, boolean reverseCompare) {
+        int result = ComplexPositions.compare(pos1, pos2);
+        assertEquals("Invalid result=" + result + " when comparing positions pos1=" +
+                pos1 + " to pos2=" + pos2, expectedResult, result);
+
+        result = ComplexPositions.compare(pos1.getOffset(), ComplexPositions.getSplitOffset(pos1),
+                pos2.getOffset(), ComplexPositions.getSplitOffset(pos2));
+        assertEquals("Invalid result=" + result + " when comparing positions pos1=" +
+                pos1 + " to pos2=" + pos2, expectedResult, result);
+
+        if (reverseCompare) {
+            comparePosImpl(pos2, pos1, -expectedResult, false);
+        }
+    }
 
 }

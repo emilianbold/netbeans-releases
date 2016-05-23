@@ -122,7 +122,9 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
     
     private boolean hasMultipleSelectables(ElementNode.Description elementDescription) {
         Deque<ElementNode.Description> toProcess = new ArrayDeque<>();
-        toProcess.add(elementDescription);
+        if (elementDescription != null) {
+            toProcess.add(elementDescription);
+        }
         boolean selectableFound = false;
         while (!toProcess.isEmpty()) {
             ElementNode.Description d = toProcess.poll();

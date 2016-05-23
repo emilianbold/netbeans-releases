@@ -112,6 +112,22 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="ComplexPositions">
+          <api name="api"/>
+          <summary>Renamed ShiftPositions to ComplexPositions</summary>
+          <version major="1" minor="9"/>
+          <date day="23" month="5" year="2016"/>
+          <author login="mmetelka"/>
+          <compatibility source="compatible" binary="compatible" semantic="compatible" modification="yes"/>
+          <description>
+              <p>
+                  Renamed ShiftPositions class to ComplexPositions an its getShift() method
+                  to getSplitOffset() for better description.
+              </p>
+          </description>
+          <class name="ComplexPositions" package="org.netbeans.api.editor.document"/>
+          <issue number="257889"/>
+      </change>
         <change id="CustomUndoDocument">
             <api name="api"/>
             <summary>CustomUndoDocument added</summary>
