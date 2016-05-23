@@ -54,7 +54,7 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.caret.EditorCaret;
-import org.netbeans.api.editor.document.ShiftPositions;
+import org.netbeans.api.editor.document.ComplexPositions;
 
 /**
  * Undoable edit for caret.
@@ -168,7 +168,7 @@ class CaretUndoEdit extends AbstractUndoableEdit {
                 int i = 2;
                 while (true) {
                     Position pos = doc.createPosition(offset);
-                    pos = ShiftPositions.create(pos, splitOffset);
+                    pos = ComplexPositions.create(pos, splitOffset);
                     dotAndMarkPosPairs.add(pos);
                     if (i >= extraDotAndMarkOffsets.length) {
                         break;

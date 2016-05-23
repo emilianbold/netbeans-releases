@@ -107,6 +107,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+      <change id="SplitOffsetHighlightsSequence">
+          <summary>Renamed ShiftHighlightsSequence to SplitOffsetHighlightsSequence</summary>
+          <version major="2" minor="13"/>
+          <date day="23" month="5" year="2016"/>
+          <author login="mmetelka"/>
+          <compatibility source="compatible" binary="compatible" semantic="compatible" modification="yes"/>
+          <description>
+              <p>
+                  Renamed ShiftHighlightsSequence to SplitOffsetHighlightsSequence
+                  to and its getStartShift() to getStartSplitOffset() for better description
+                  and getEndShift() to getEndSplitOffset().
+              </p>
+          </description>
+          <class name="SplitOffsetHighlightsSequence" package="org.netbeans.spi.editor.highlighting"/>
+          <issue number="257889"/>
+      </change>
         <change id="EditorUtilities.addCaretUndoableEdit">
             <summary>EditorUtilities.addCaretUndoableEdit added</summary>
             <version major="2" minor="11"/>

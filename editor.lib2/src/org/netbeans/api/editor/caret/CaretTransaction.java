@@ -53,7 +53,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.editor.document.ShiftPositions;
+import org.netbeans.api.editor.document.ComplexPositions;
 import org.netbeans.lib.editor.util.GapList;
 
 /**
@@ -174,8 +174,8 @@ final class CaretTransaction {
         if (index != -1) {
             Position origDotPos = caretItem.getDotPosition();
             Position origMarkPos = caretItem.getMarkPosition();
-            boolean dotChanged = origDotPos == null || ShiftPositions.compare(dotPos, origDotPos) != 0;
-            boolean markChanged = origMarkPos == null || ShiftPositions.compare(markPos, origMarkPos) != 0;
+            boolean dotChanged = origDotPos == null || ComplexPositions.compare(dotPos, origDotPos) != 0;
+            boolean markChanged = origMarkPos == null || ComplexPositions.compare(markPos, origMarkPos) != 0;
             scrollToLastCaret = true; // Scroll even if setDot() to same offset
             if (dotChanged || markChanged) {
                 editorCaret.ensureValidInfo(caretItem);
@@ -637,11 +637,11 @@ final class CaretTransaction {
             Position dotPos = caret.getDotPosition();
             if (dotPos != null) {
                 dotOffset = dotPos.getOffset();
-                dotShift = ShiftPositions.getShift(dotPos);
+                dotShift = ComplexPositions.getSplitOffset(dotPos);
                 Position markPos = caret.getMarkPosition();
                 if (markPos != null && markPos != dotPos) { // Still they may be equal which means no selection
                     int markOffset = markPos.getOffset();
-                    int markShift = ShiftPositions.getShift(markPos);
+                    int markShift = ComplexPositions.getSplitOffset(markPos);
                     if (markOffset < dotOffset || (markOffset == dotOffset && markShift < dotShift)) {
                         startPos = markPos;
                         endPos = dotPos;
@@ -696,22 +696,22 @@ final class CaretTransaction {
         }
         
         boolean overlapsAtStart(CaretItemInfo info) {
-            return (ShiftPositions.compare(info.endOffset, info.endShift,
+            return (ComplexPositions.compare(info.endOffset, info.endShift,
                     startOffset, startShift) > 0);
         }
         
         boolean startsBelow(CaretItemInfo info) {
-            return (ShiftPositions.compare(startOffset, startShift,
+            return (ComplexPositions.compare(startOffset, startShift,
                     info.startOffset, info.startShift) < 0);
         }
         
         boolean endsAbove(CaretItemInfo info) {
-            return (ShiftPositions.compare(endOffset, endShift,
+            return (ComplexPositions.compare(endOffset, endShift,
                     info.endOffset, info.endShift) > 0);
         }
         
         boolean dotsOverlap(CaretItemInfo info) {
-            return (ShiftPositions.compare(dotOffset, dotShift,
+            return (ComplexPositions.compare(dotOffset, dotShift,
                     info.dotOffset, info.dotShift) == 0);
         }
 
