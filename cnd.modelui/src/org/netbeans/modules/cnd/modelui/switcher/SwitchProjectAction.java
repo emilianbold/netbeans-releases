@@ -164,7 +164,10 @@ public final class SwitchProjectAction extends NodeAction {
         for (int i = 0; i < nodes.length; i++) {
             Object o = nodes[i].getValue("Project"); // NOI18N 
             if( ! (o instanceof  Project) ) {
-                return null;
+                o = nodes[0].getLookup().lookup(Project.class);
+                if (o == null) {
+                    return null;
+                }
             }
             NativeProject nativeProject = ((Project) o).getLookup().lookup(NativeProject.class);
             if( nativeProject == null ) {
