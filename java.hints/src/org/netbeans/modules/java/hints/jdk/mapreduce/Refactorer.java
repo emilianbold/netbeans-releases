@@ -51,8 +51,12 @@ import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.List;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 
@@ -84,6 +88,7 @@ public class Refactorer {
     private WorkingCopy workingCopy;
     private TreeMaker treeMaker;
     private PreconditionsChecker preconditionsChecker;
+    private boolean hasIterable;
 
     public Refactorer( EnhancedForLoopTree loop,  WorkingCopy workingCopy,  PreconditionsChecker scanner) {
         this.loop = loop;
@@ -94,7 +99,7 @@ public class Refactorer {
      List<ProspectiveOperation> prospectives;
 
     public Boolean isRefactorable() {
-        prospectives = this.getListRepresentation(loop.getStatement());
+        prospectives = this.getListRepresentation(loop.getStatement(), true);
         if (prospectives != null && !prospectives.isEmpty()) {
             prospectives.get(prospectives.size() - 1).eagerize();
             if (this.untrasformable) {
@@ -104,6 +109,19 @@ public class Refactorer {
                 if (!prospectives.get(i).isLazy()) {
                     return false;
                 }
+            }
+            hasIterable = false;
+            VariableTree var = loop.getVariable();
+            TypeElement el = workingCopy.getElements().getTypeElement("java.lang.Iterable"); // NOI18N
+            if (el != null) {
+                TreePath path = TreePath.getPath(workingCopy.getCompilationUnit(), loop.getExpression());
+                TypeMirror m = workingCopy.getTrees().getTypeMirror(path);
+                Types types  = workingCopy.getTypes();
+                hasIterable = 
+                        types.isSubtype(
+                            types.erasure(m),
+                            types.erasure(el.asType())
+                        );
             }
             prospectives = ProspectiveOperation.mergeIntoComposableOperations(prospectives);
             return prospectives != null;
@@ -144,12 +162,12 @@ public class Refactorer {
         return false;
     }
 
-    private List<ProspectiveOperation> getListRepresentation( StatementTree tree) {
+    private List<ProspectiveOperation> getListRepresentation( StatementTree tree, boolean last) {
         List<ProspectiveOperation> ls = new ArrayList<ProspectiveOperation>();
         if (tree.getKind() == Tree.Kind.BLOCK) {
-            ls.addAll(getBlockListRepresentation(tree));
+            ls.addAll(getBlockListRepresentation(tree, last));
         } else if (tree.getKind() == Tree.Kind.IF) {
-            ls.addAll(getIfListRepresentation(tree));
+            ls.addAll(getIfListRepresentation(tree, last));
 
         } else {
             ls.addAll(getSingleStatementListRepresentation(tree));
@@ -165,6 +183,15 @@ public class Refactorer {
     }
 
     private MethodInvocationTree chainAllProspectives( TreeMaker treeMaker,  ExpressionTree expr) {
+        // Special case: if the only operation is forEach{Ordered}, 
+        if (hasIterable && prospectives.size() == 1 && prospectives.get(0).isForeach()) {
+            ProspectiveOperation prospective = prospectives.get(0);
+            return treeMaker.MethodInvocation(
+                    new ArrayList<ExpressionTree>(),
+                    treeMaker.MemberSelect(expr, "forEach"), // NOI18N
+                    prospective.getArguments()
+            );
+        }
         MethodInvocationTree mi = treeMaker.MethodInvocation(new ArrayList<ExpressionTree>(), treeMaker.MemberSelect(expr, "stream"), new ArrayList<ExpressionTree>());
         //mi = treeMaker.MethodInvocation(new ArrayList<ExpressionTree>(), treeMaker.MemberSelect(mi, "parallel"), new ArrayList<ExpressionTree>());
         for ( ProspectiveOperation prospective : prospectives) {
@@ -198,20 +225,21 @@ public class Refactorer {
         return treeMaker.If(pred, returnExpre, null);
     }
 
-    private List<ProspectiveOperation> getBlockListRepresentation( StatementTree tree) {
+    private List<ProspectiveOperation> getBlockListRepresentation( StatementTree tree, boolean last) {
         List<ProspectiveOperation> ls = new ArrayList<ProspectiveOperation>();
         BlockTree blockTree = (BlockTree) tree;
         List<? extends StatementTree> statements = blockTree.getStatements();
         for ( int i = 0; i < statements.size(); i++) {
             StatementTree statement = statements.get(i);
+            boolean l = last &&  i == statements.size() - 1;
             if (statement.getKind() == Tree.Kind.IF) {
                 IfTree ifTree = (IfTree) statement;
                 if (isIfWithContinue(ifTree)) {
                     ifTree = refactorContinuingIf(ifTree, statements.subList(i + 1, statements.size()));
-                    ls.addAll(this.getListRepresentation(ifTree));
+                    ls.addAll(this.getListRepresentation(ifTree, l));
                     break;
-                } else if (i == statements.size() - 1) {
-                    ls.addAll(this.getListRepresentation(ifTree));
+                } else if (l) {
+                    ls.addAll(this.getListRepresentation(ifTree, true));
                 } else {
                     if (this.isReturningIf(ifTree)) {
                         this.untrasformable = true;
@@ -219,13 +247,13 @@ public class Refactorer {
                     ls.addAll(ProspectiveOperation.createOperator(ifTree, ProspectiveOperation.OperationType.MAP, preconditionsChecker, workingCopy));
                 }
             } else {
-                ls.addAll(getListRepresentation(statement));
+                ls.addAll(getListRepresentation(statement, l));
             }
         }
         return ls;
     }
 
-    private List<ProspectiveOperation> getIfListRepresentation( StatementTree tree) {
+    private List<ProspectiveOperation> getIfListRepresentation( StatementTree tree, boolean last) {
         IfTree ifTree = (IfTree) tree;
         List<ProspectiveOperation> ls = new ArrayList<ProspectiveOperation>();
         if (ifTree.getElseStatement() == null) {
@@ -244,7 +272,7 @@ public class Refactorer {
                 }
             } else {
                 ls.addAll(ProspectiveOperation.createOperator(ifTree, ProspectiveOperation.OperationType.FILTER, this.preconditionsChecker, this.workingCopy));
-                ls.addAll(getListRepresentation(ifTree.getThenStatement()));
+                ls.addAll(getListRepresentation(ifTree.getThenStatement(), last));
             }
         } else {
 
