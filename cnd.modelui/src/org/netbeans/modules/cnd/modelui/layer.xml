@@ -25,7 +25,7 @@ License.  When distributing the software, include this License Header
 Notice in each file and include the License file at
 nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
 particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
+by Oracle in the GPL Version 2 section of the License file that
 accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
@@ -54,7 +54,7 @@ Contributor(s):
             </file>
             <file name="CodeModelDiagnosticAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.modelui.actions.CodeModelDiagnosticAction"/>
-            </file>            
+            </file>
             <file name="TestProjectAllReferencesPerformanceAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getAllReferencesPerformanceAction"/>
             </file>

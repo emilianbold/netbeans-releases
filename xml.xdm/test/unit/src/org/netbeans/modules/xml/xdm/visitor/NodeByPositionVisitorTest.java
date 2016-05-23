@@ -43,10 +43,13 @@
  */
 
 /*
- * Copyright 2005 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
  * SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- * 
- * 
+ *
+ *
  */
 
 package org.netbeans.modules.xml.xdm.visitor;
@@ -67,29 +70,29 @@ import org.w3c.dom.NodeList;
  * @author Ayub Khan
  */
 public class NodeByPositionVisitorTest extends TestCase{
-    
+
     /** Creates a new instance of NodeByPositionVisitorTest */
     public NodeByPositionVisitorTest() {
     }
-    
+
     public static Test suite() {
         TestSuite suite = new TestSuite(NodeByPositionVisitorTest.class);
-        
+
         return suite;
     }
- 
+
     public void testFindPosition(){
         FindVisitor instance = new FindVisitor();
-        
+
         Document root = xmlModel.getDocument();
-        
+
         NodeByPositionVisitor pfVisitor = new NodeByPositionVisitor(root);
-        
+
         //element company
         Element company = (Element)root.getChildNodes().item(0);
         Node result = instance.find(root, company.getId());
         assertEquals(company, result);
-        
+
 		//start-tag:25-82, end-tag:513-522
         Node findCompany = pfVisitor.getContainingElement(83);
         this.assertEquals("Found company by position",company, findCompany);
