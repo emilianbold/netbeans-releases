@@ -448,6 +448,9 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
                 && ((lhs instanceof LiteralNode && ((LiteralNode) lhs).isNumeric())
                 || (rhs instanceof LiteralNode && ((LiteralNode) rhs).isNumeric()))) {
             bResult = true;
+        } else if (tokenType == TokenType.DIV || tokenType == TokenType.MUL 
+                || tokenType == TokenType.SUB ){
+            bResult = true;
         } else {
             if (lhs instanceof BinaryNode) {
                 bResult = isResultNumber((BinaryNode) lhs);
