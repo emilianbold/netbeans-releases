@@ -1249,11 +1249,11 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
     private boolean isFunctionAnonymous(FunctionNode fn) {
         boolean result = false;
         if (fn.isAnonymous() ) {
-            if (fn.getIdent().getName().startsWith("L:")) { //NOI18N
+            Node lastVisited = getPreviousFromPath(2);
+            if (fn.getIdent().getName().startsWith("L:") && !(lastVisited instanceof PropertyNode)) { //NOI18N
                 // XXX this depends on the implemenation of parser. Find the better way
                 result = true;
             } else if (fn.getIdent().getStart() == fn.getIdent().getFinish()) {
-                Node lastVisited = getPreviousFromPath(2);
                 if (lastVisited instanceof CallNode) {
                     result = true;
                 }

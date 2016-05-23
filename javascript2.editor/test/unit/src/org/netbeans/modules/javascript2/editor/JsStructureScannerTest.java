@@ -737,4 +737,8 @@ public class JsStructureScannerTest extends JsTestBase {
     public void testNode01() throws Exception {
         checkStructure("testfiles/parser/node01.js");
     }
+    
+    public void testStrangeMethodNames() throws Exception {
+        checkStructure("testfiles/markoccurences/strangeMethodName.js");
+    }
 }

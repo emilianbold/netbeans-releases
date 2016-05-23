@@ -28,7 +28,7 @@ $:PARAMETER:[PUBLIC]:ESCAPED{$}:
         canvas:CLASS:[PUBLIC]:ESCAPED{canvas}:
           height:FIELD:[PUBLIC]:ESCAPED{height}<font color="#999999">ESCAPED{ : }Number</font>:
           width:FIELD:[PUBLIC]:ESCAPED{width}<font color="#999999">ESCAPED{ : }prv.json.objectSize</font>:
-        columnW:FIELD:[PUBLIC]:ESCAPED{columnW}<font color="#999999">ESCAPED{ : }NumberESCAPED{|}prv.json.columns.lengthESCAPED{|}prv.json.objectSize</font>:
+        columnW:FIELD:[PUBLIC]:ESCAPED{columnW}<font color="#999999">ESCAPED{ : }Number</font>:
         context:CLASS:[PUBLIC]:ESCAPED{context}:
           fillStyle:FIELD:[PUBLIC]:ESCAPED{fillStyle}<font color="#999999">ESCAPED{ : }@var;colorESCAPED{|}String</font>:
           font:FIELD:[PUBLIC]:ESCAPED{font}<font color="#999999">ESCAPED{ : }String</font>:
@@ -52,8 +52,8 @@ $:PARAMETER:[PUBLIC]:ESCAPED{$}:
           width:FIELD:[PUBLIC]:ESCAPED{width}<font color="#999999">ESCAPED{ : }prv.json.objectSize</font>:
         layer_id:FIELD:[PUBLIC]:ESCAPED{layer_id}<font color="#999999">ESCAPED{ : }.G_vmlCanvasManager@call;initElement.idESCAPED{|}.document@call;createElement.idESCAPED{|}StringESCAPED{|}c.id</font>:
         maxValue:FIELD:[PUBLIC]:ESCAPED{maxValue}<font color="#999999">ESCAPED{ : }@var;avgESCAPED{|}@var;baseValueESCAPED{|}NumberESCAPED{|}prv.json.columns.temperature</font>:
-        minValue:FIELD:[PUBLIC]:ESCAPED{minValue}<font color="#999999">ESCAPED{ : }@var;avgESCAPED{|}@var;baseValueESCAPED{|}NumberESCAPED{|}prv.json.columns.temperature</font>:
-        scale:FIELD:[PUBLIC]:ESCAPED{scale}<font color="#999999">ESCAPED{ : }@var;avgESCAPED{|}@var;baseValueESCAPED{|}NumberESCAPED{|}prv.json.columns.temperatureESCAPED{|}prv.maxValueESCAPED{|}prv.minValue</font>:
+        minValue:FIELD:[PUBLIC]:ESCAPED{minValue}<font color="#999999">ESCAPED{ : }NumberESCAPED{|}prv.json.columns.temperature</font>:
+        scale:FIELD:[PUBLIC]:ESCAPED{scale}<font color="#999999">ESCAPED{ : }Number</font>:
       settings:CLASS:[PRIVATE]:ESCAPED{settings}:
 app:CLASS:[PUBLIC]:ESCAPED{app}:
   graph:CLASS:[PUBLIC]:ESCAPED{graph}:

@@ -2183,6 +2183,10 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/blockscope/scope05.js", "console.log(\"action: \" + ac^tion);", true);
     }
     
+    public void testStrangeMethodNames_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/strangeMethodName.js", "dependencies[\"jqu^ery1.6+\"]();", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
