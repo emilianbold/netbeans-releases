@@ -244,7 +244,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
                         ex.printStackTrace(System.err);
                     }
                 }
-            }, "reading hostInfo script error"); //NOPI18N
+            }, "reading hostInfo script error"); //NOPI18N // NOI18N
 
             fillProperties(hostInfo, readProcessStream(in, execEnv.isRemote()));
 
