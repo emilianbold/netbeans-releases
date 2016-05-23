@@ -49,7 +49,7 @@ import javax.swing.undo.UndoableEdit;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.caret.CaretInfo;
 import org.netbeans.api.editor.caret.EditorCaret;
-import org.netbeans.api.editor.document.ShiftPositions;
+import org.netbeans.api.editor.document.ComplexPositions;
 
 /**
  * Editor caret undo related functionality.
@@ -86,8 +86,8 @@ public final class CaretUndo {
                 }
                 int dotOffset = dotPos.getOffset();
                 int markOffset = markPos.getOffset();
-                int dotSplitOffset = ShiftPositions.getShift(dotPos);
-                int markSplitOffset = ShiftPositions.getShift(markPos);
+                int dotSplitOffset = ComplexPositions.getSplitOffset(dotPos);
+                int markSplitOffset = ComplexPositions.getSplitOffset(markPos);
                 boolean complexPos = dotSplitOffset != 0 || markSplitOffset != 0;
                 if (caretsSize == 1) { // Single-caret case
                     if (!complexPos) { // Regular positions
@@ -115,8 +115,8 @@ public final class CaretUndo {
                             if (markPos == null) {
                                 markPos = dotPos;
                             }
-                            dotSplitOffset = ShiftPositions.getShift(dotPos);
-                            markSplitOffset = ShiftPositions.getShift(markPos);
+                            dotSplitOffset = ComplexPositions.getSplitOffset(dotPos);
+                            markSplitOffset = ComplexPositions.getSplitOffset(markPos);
                             if (dotSplitOffset != 0 || markSplitOffset != 0) { // Complex pos
                                 // Copy existing values and insert zero split offsets
                                 int[] newOffsets = new int[(caretsSize << 2) - 1];
@@ -152,8 +152,8 @@ public final class CaretUndo {
                         markPos = caretInfo.getMarkPosition();
                         offsets[i++] = dotPos.getOffset();
                         offsets[i++] = markPos.getOffset();
-                        offsets[i++] = ShiftPositions.getShift(dotPos);
-                        offsets[i++] = ShiftPositions.getShift(markPos);
+                        offsets[i++] = ComplexPositions.getSplitOffset(dotPos);
+                        offsets[i++] = ComplexPositions.getSplitOffset(markPos);
                     }
                     ret = new CaretUndoEdit.ComplexEdit(doc, dotOffset, markOffset, offsets);
                 }

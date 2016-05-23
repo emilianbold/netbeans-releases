@@ -45,34 +45,34 @@ import javax.swing.text.Position;
 
 
 /**
- * Implementation of a shift position. The clients should only use methods
- * in {@link org.netbeans.api.editor.document.ShiftPositions} and never check
- * for an instance of this particular class.
+ * Implementation of a complex position. The clients should only use methods
+ * in {@link org.netbeans.api.editor.document.ComplexPositions} and never check
+ * for an instance of this particular implementation class.
  *
  * @author Miloslav Metelka
  */
-public final class ShiftPos implements Position {
+public final class ComplexPos implements Position {
 
     private final Position pos;
     
-    private final int shift;
+    private final int splitOffset;
 
-    public ShiftPos(Position pos, int shift) {
+    public ComplexPos(Position pos, int splitOffset) {
         this.pos = pos;
-        this.shift = shift;
+        this.splitOffset = splitOffset;
     }
     
-    public ShiftPos(ShiftPos shiftPos, int shift) {
-        this.pos = shiftPos.pos;
-        this.shift = shiftPos.shift + shift;
+    public ComplexPos(ComplexPos complexPos, int splitOffset) {
+        this.pos = complexPos.pos;
+        this.splitOffset = complexPos.splitOffset + splitOffset;
     }
 
     public Position getPosition() {
         return pos;
     }
     
-    public int getShift() {
-        return shift;
+    public int getSplitOffset() {
+        return splitOffset;
     }
 
     @Override

@@ -39,62 +39,45 @@
  *
  * Portions Copyrighted 2016 Sun Microsystems, Inc.
  */
-package org.netbeans.api.editor.document;
-
-import javax.swing.text.Document;
-import javax.swing.text.PlainDocument;
-import javax.swing.text.Position;
-import org.junit.Test;
-import static org.junit.Assert.*;
+package org.netbeans.spi.editor.highlighting;
 
 /**
+ * Highlights sequence that supports split offsets in addition to regular offsets.
+ * This allows to color individual spaces within a tab character
+ * or to color extra virtual characters at line end (as a split of newline character).
  *
  * @author Miloslav Metelka
+ * @since 2.13.0
  */
-public class ShiftPositionsTest {
+public interface SplitOffsetHighlightsSequence extends HighlightsSequence {
+
+    /**
+     * Get zero-based offset "within" a character (usually tab or newline
+     * to which {@link #getStartOffset()} points to) that starts a highlight.
+     * <br>
+     * Zero should be returned if the character is not intended to be split.
+     * <br>
+     * To highlight second and third space of a tab character at offset == 123
+     * the {@link #getStartOffset() } == {@link #getEndOffset() } == 123
+     * and {@link #getStartSplitOffset() } == 1 and {@link #getEndSplitOffset() } == 3.
+     *
+     * @return &gt;=0 start split offset.
+     * @see #getStartOffset() 
+     */
+    int getStartSplitOffset();
     
-    public ShiftPositionsTest() {
-    }
-
-    @Test
-    public void testPos() throws Exception {
-        Document doc = new PlainDocument();
-        doc.insertString(0, "\t\t\n\n", null);
-        Position pos1 = doc.createPosition(1);
-        Position pos2 = doc.createPosition(2);
-        
-        Position pos10 = ShiftPositions.create(pos1, 0);
-        Position pos11 = ShiftPositions.create(pos1, 1);
-        Position pos20 = ShiftPositions.create(pos2, 0);
-        Position pos21 = ShiftPositions.create(pos2, 1);
-        
-        assertEquals(0, ShiftPositions.getShift(pos1));
-        assertEquals(0, ShiftPositions.getShift(pos10));
-        assertEquals(1, ShiftPositions.getShift(pos11));
-        comparePos(pos1, pos10, 0);
-        comparePos(pos10, pos11, -1);
-        comparePos(pos1, pos2, -1);
-        comparePos(pos10, pos20, -1);
-        comparePos(pos20, pos21, -1);
-    }
-    
-    private void comparePos(Position pos1, Position pos2, int expectedResult) {
-        comparePosImpl(pos1, pos2, expectedResult, true);
-    }
-
-    private void comparePosImpl(Position pos1, Position pos2, int expectedResult, boolean reverseCompare) {
-        int result = ShiftPositions.compare(pos1, pos2);
-        assertEquals("Invalid result=" + result + " when comparing positions pos1=" +
-                pos1 + " to pos2=" + pos2, expectedResult, result);
-
-        result = ShiftPositions.compare(pos1.getOffset(), ShiftPositions.getShift(pos1),
-                pos2.getOffset(), ShiftPositions.getShift(pos2));
-        assertEquals("Invalid result=" + result + " when comparing positions pos1=" +
-                pos1 + " to pos2=" + pos2, expectedResult, result);
-
-        if (reverseCompare) {
-            comparePosImpl(pos2, pos1, -expectedResult, false);
-        }
-    }
+    /**
+     * Get zero-based offset "within" a character (usually tab or newline
+     * to which {@link #getEndOffset()} points to) that ends a highlight.
+     * <br>
+     * Zero should be returned if the character is not intended to be split.
+     * <br>
+     * Get end of a highlight "within" a particular character (either tab or newline)
+     * while {@link #getEndOffset()} points to the tab or newline character.
+     *
+     * @return &gt;=0 end split offset.
+     * @see #getStartSplitOffset() 
+     */
+    int getEndSplitOffset();
 
 }

@@ -467,8 +467,8 @@ public final class EditorCaret implements Caret {
     /**
      * Get information about all existing carets sorted by dot positions in ascending order.
      * <br>
-     * If some of the carets are {@link org.netbeans.api.editor.document.ShiftPositions}
-     * their order will reflect the increasing shift.
+     * If some of the carets are {@link org.netbeans.api.editor.document.ComplexPositions}
+     * their order will reflect the increasing split offset.
      * <br>
      * The list is a snapshot of the current state of the carets. The list content itself and its contained
      * caret infos are guaranteed not change after subsequent calls to caret API or document modifications.
