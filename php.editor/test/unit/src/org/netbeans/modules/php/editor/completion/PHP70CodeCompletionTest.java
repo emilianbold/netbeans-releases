@@ -338,6 +338,63 @@ public class PHP70CodeCompletionTest extends PHPCodeCompletionTestBase {
         checkCompletion("testfiles/completion/lib/php70/groupUseFunction03.php", "use function \\A\\{^", false);
     }
 
+    public void testGroupUseMixed01a() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUseMixed01.php", "use A\\{^", false);
+    }
+
+    public void testGroupUseMixed01b() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUseMixed01.php", "    cons^t CONSTANTA,", false);
+    }
+
+    public void testGroupUseMixed01c() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUseMixed01.php", "    const ^CONSTANTA,", false);
+    }
+
+    public void testGroupUseMixed01d() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUseMixed01.php", "    const CON^STANTA,", false);
+    }
+
+    public void testGroupUseMixed01e() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUseMixed01.php", "    function ^testA,", false);
+    }
+
+    public void testGroupUseMixed01f() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUseMixed01.php", "    function te^stA,", false);
+    }
+
+    public void testGroupUseMixed01g() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUseMixed01.php", "    function ^ testA AS mytestA,", false);
+    }
+
+    public void testGroupUseMixed01h() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUseMixed01.php", "    ^MyAA", false);
+    }
+
+    public void testGroupUseMixed01i() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUseMixed01.php", "use function A\\{^", false);
+    }
+
+    public void testGroupUseMixed01j() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUseMixed01.php", "new My^A();", false);
+    }
+
+    // XXX
+    public void testGroupUseMixed01k() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUseMixed01.php", "echo CONST^ANTA; // CONSTANTA", false);
+    }
+
+    public void testGroupUseMixed01l() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUseMixed01.php", "test^A(); // testA", false);
+    }
+
+    public void testGroupUseMixed01m() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUseMixed01.php", "myte^stA(); // testA", false);
+    }
+
+    public void testGroupUseMixed01n() throws Exception {
+        checkCompletion("testfiles/completion/lib/php70/groupUseMixed01.php", "new MyA^A();", false);
+    }
+
     public void testAnonymousClass01a() throws Exception {
         checkCompletion("testfiles/completion/lib/php70/anonymousClass01.php", "$an^on->testAnon();", false);
     }

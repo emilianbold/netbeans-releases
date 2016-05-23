@@ -374,8 +374,8 @@ terminal T_COALESCE;
 
 non terminal Program thestart;
 non terminal List namespace_name;
-non terminal List namespace_parts;
-non terminal SingleUseStatementPart namespace_part;
+non terminal List group_namespace_parts;
+non terminal SingleUseStatementPart group_namespace_part;
 non terminal UseStatementPart use_declaration;
 non terminal List use_declarations;
 non terminal List top_statement_list;
@@ -718,7 +718,7 @@ namespace_name:list
 		new Identifier(aliasNameleft, aliasNameright, aliasName));
 :}
 
-| namespace_name:basens T_NS_SEPARATOR:s T_CURLY_OPEN:open namespace_parts:parts T_CURLY_CLOSE:close
+| namespace_name:basens T_NS_SEPARATOR:s T_CURLY_OPEN:open group_namespace_parts:parts T_CURLY_CLOSE:close
 {:
 	RESULT = new GroupUseStatementPart(basensleft, closeright, new NamespaceName(basensleft, basensright, basens, false, false), parts);
 :}
@@ -736,20 +736,21 @@ namespace_name:list
 		new Identifier(aliasNameleft, aliasNameright, aliasName));
 :}
 
-| T_NS_SEPARATOR:s namespace_name:basens T_NS_SEPARATOR:ss T_CURLY_OPEN:open namespace_parts:parts T_CURLY_CLOSE:close
+| T_NS_SEPARATOR:s namespace_name:basens T_NS_SEPARATOR:ss T_CURLY_OPEN:open group_namespace_parts:parts T_CURLY_CLOSE:close
 {:
 	RESULT = new GroupUseStatementPart(sleft, closeright, new NamespaceName(basensleft, basensright, basens, true, false), parts);
 :}
 ;
 
-namespace_parts ::=
-namespace_parts:list T_COMMA namespace_part:part
+// used only in group uses
+group_namespace_parts ::=
+group_namespace_parts:list T_COMMA group_namespace_part:part
 {:
 	list.add(part);
 	RESULT = list;
 :}
 
-| namespace_part:part
+| group_namespace_part:part
 {:
 	List list = new LinkedList();
 	list.add(part);
@@ -757,7 +758,7 @@ namespace_parts:list T_COMMA namespace_part:part
 :}
 ;
 
-namespace_part ::=
+group_namespace_part ::=
 namespace_name:part
 {:
     RESULT = new SingleUseStatementPart(partleft, partright, new NamespaceName(partleft, partright, part, false, false), null);
@@ -766,6 +767,26 @@ namespace_name:part
 | namespace_name:part T_AS T_STRING:alias
 {:
     RESULT = new SingleUseStatementPart(partleft, aliasright, new NamespaceName(partleft, partright, part, false, false), new Identifier(aliasleft, aliasright, alias));
+:}
+
+| T_FUNCTION:f namespace_name:part
+{:
+    RESULT = new SingleUseStatementPart(fleft, partright, UseStatement.Type.FUNCTION, new NamespaceName(partleft, partright, part, false, false), null);
+:}
+
+| T_FUNCTION:f namespace_name:part T_AS T_STRING:alias
+{:
+    RESULT = new SingleUseStatementPart(fleft, aliasright, UseStatement.Type.FUNCTION, new NamespaceName(partleft, partright, part, false, false), new Identifier(aliasleft, aliasright, alias));
+:}
+
+| T_CONST:c namespace_name:part
+{:
+    RESULT = new SingleUseStatementPart(cleft, partright, UseStatement.Type.CONST, new NamespaceName(partleft, partright, part, false, false), null);
+:}
+
+| T_CONST:c namespace_name:part T_AS T_STRING:alias
+{:
+    RESULT = new SingleUseStatementPart(cleft, aliasright, UseStatement.Type.CONST, new NamespaceName(partleft, partright, part, false, false), new Identifier(aliasleft, aliasright, alias));
 :}
 ;
 

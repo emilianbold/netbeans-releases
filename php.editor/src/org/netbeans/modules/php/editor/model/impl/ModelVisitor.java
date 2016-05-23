@@ -1501,13 +1501,19 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     private void processSingleUseStatement(UseStatement.Type type, @NullAllowed GroupUseStatementPart groupUseStatementPart,
             SingleUseStatementPart singleUseStatementPart) {
         NamespaceName name;
+        UseStatement.Type realType;
         if (groupUseStatementPart == null) {
             name = singleUseStatementPart.getName();
+            realType = type;
         } else {
             name = CodeUtils.compoundName(groupUseStatementPart, singleUseStatementPart, false);
+            realType = singleUseStatementPart.getType();
+            if (realType == null) {
+                realType = type;
+            }
         }
         ScopeImpl currentScope = modelBuilder.getCurrentScope();
-        switch (type) {
+        switch (realType) {
             case CONST:
                 occurencesBuilder.prepare(Kind.CONSTANT, name, currentScope);
                 break;

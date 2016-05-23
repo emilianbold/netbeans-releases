@@ -2,6 +2,7 @@ Code completion result for source line:
 $anon = new class($int, foo(|)) {
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 PACKAGE    A                               [PUBLIC]   null
+PACKAGE    B                               [PUBLIC]   null
 PACKAGE    GroupUse1                       [PUBLIC]   null
 PACKAGE    GroupUse2                       [PUBLIC]   null
 PACKAGE    My                              [PUBLIC]   null
@@ -39,6 +40,8 @@ CLASS      Comment                         [PUBLIC]   returnTypesTyping12.php
 CLASS      CommentsIterator                [PUBLIC]   My\Firm
 CLASS      FloatClass                      [PUBLIC]   scalarTypeHints.php
 CLASS      IntClass                        [PUBLIC]   scalarTypeHints.php
+CLASS      MyA                             [PUBLIC]   A
+CLASS      MyAA                            [PUBLIC]   A
 CLASS      MyCls                           [PUBLIC]   A
 CLASS      Numbers                         [PUBLIC]   uniformVariableSyntax01.php
 CLASS      Numbers                         [PUBLIC]   uniformVariableSyntax02.php
@@ -68,6 +71,7 @@ METHOD     mytest()                        [PUBLIC]   returnTypesTyping04.php
 METHOD     stringTypeHint(string $arg)     [PUBLIC]   scalarTypeHints.php
 METHOD     test1()                         [PUBLIC]   GroupUse1
 METHOD     test2()                         [PUBLIC]   GroupUse1
+METHOD     testA()                         [PUBLIC]   A
 VARIABLE   $GLOBALS                                   PHP Platform
 VARIABLE   $HTTP_RAW_POST_DATA                        PHP Platform
 VARIABLE   $_COOKIE                                   PHP Platform
@@ -82,6 +86,7 @@ VARIABLE   $argc                                      PHP Platform
 VARIABLE   $argv                                      PHP Platform
 VARIABLE   $http_response_header                      PHP Platform
 VARIABLE   $php_errormsg                              PHP Platform
+CONSTANT   CONSTANTA "CONSTANTA"           [PUBLIC]   A
 CONSTANT   CONST_1 "CONST_1"               [PUBLIC]   GroupUse1
 CONSTANT   CONST_2 "CONST_2"               [PUBLIC]   GroupUse1
 CONSTANT   C_A 'C-A'                       [PUBLIC]   A
