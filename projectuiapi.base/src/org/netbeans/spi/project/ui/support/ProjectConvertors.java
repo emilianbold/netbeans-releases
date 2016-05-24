@@ -44,16 +44,23 @@ package org.netbeans.spi.project.ui.support;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ui.convertor.ProjectConvertorFactory;
 import org.netbeans.spi.project.ui.ProjectConvertor;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.LookupListener;
+import org.openide.util.Parameters;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -136,6 +143,17 @@ public final class ProjectConvertors {
         return new CloseableLookup(instances);
     }
 
+    /**
+     * Creates a {@link Lookup} delegating to the owner project.
+     * @param projectDirectory the convertor project directory
+     * @return a {@link Lookup} delegating to the owner project
+     * @since 1.85
+     */
+    @NonNull
+    public static Lookup createDelegateToOwnerLookup(@NonNull final FileObject projectDirectory) {
+        return new OwnerLookup(projectDirectory);
+    }
+
     private static final class ConvertorFileEncodingQuery extends FileEncodingQueryImplementation {
 
         ConvertorFileEncodingQuery() {}
@@ -160,6 +178,86 @@ public final class ProjectConvertors {
         public void close() throws IOException {
             setLookups(Lookup.EMPTY);
         }
+    }
+
+    private static final class OwnerLookup extends Lookup implements Closeable {
+
+        private static final Class[] BLACK_LIST = {
+            ProjectOpenedHook.class,
+            ProjectInformation.class
+        };
+
+        private final FileObject projectDirectory;
+        private volatile boolean closed;
+
+        OwnerLookup(@NonNull final FileObject projectDirectory) {
+            Parameters.notNull("projectDirectory", projectDirectory);   //NOI18N
+            this.projectDirectory = projectDirectory;
+        }
+
+        @Override
+        public <T> T lookup(Class<T> clazz) {
+            if (supports(clazz)) {
+                final Lookup delegate = findDelegate();
+                if (delegate != null) {
+                    return delegate.lookup(clazz);
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public <T> Result<T> lookup(Template<T> template) {
+            if (supports(template.getType())) {
+                final Lookup delegate = findDelegate();
+                if (delegate != null) {
+                    return delegate.lookup(template);
+                }
+            }
+            return (Result<T>) EMPTY_RESULT;
+        }
+
+        @Override
+        public void close() throws IOException {
+            closed = true;
+        }
+
+        private Lookup findDelegate() {
+            if (closed) {
+                return null;
+            }
+            final Project currentOwner = getNonConvertorOwner(projectDirectory);
+            return currentOwner == null ?
+                    null :
+                    currentOwner.getLookup();
+        }
+
+        private static boolean supports (@NullAllowed final Class<?> clz) {
+            if (clz == null) {
+                return false;
+            }
+            for (Class<?> blackListed : BLACK_LIST) {
+                if(blackListed.isAssignableFrom(clz)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private static final Result<?> EMPTY_RESULT = new Result<Object>() {
+            @Override
+            public void addLookupListener(LookupListener l) {
+            }
+
+            @Override
+            public void removeLookupListener(LookupListener l) {
+            }
+
+            @Override
+            public Collection<?> allInstances() {
+                return Collections.emptySet();
+            }
+        };
     }
 
 }

@@ -54,21 +54,20 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.StaticResource;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.netbeans.modules.web.clientproject.createprojectapi.ClientSideProjectGenerator;
 import org.netbeans.modules.web.clientproject.createprojectapi.CreateProjectProperties;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.modules.web.common.api.UsageLogger;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.ui.ProjectConvertor;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * The {@link ProjectConvertor} implements for web client project.
@@ -110,11 +109,9 @@ public final class ClientSideProjectConvertor implements ProjectConvertor {
             // should not happen often
             displayName = projectDirectory.getNameExt();
         }
-        final Lookup transientLkp = ProjectConvertors.createProjectConvertorLookup(
-            new ConvertorClassPathProvider(),
-            ProjectConvertors.createFileEncodingQuery());
+        final Lookup transientLkp = ProjectConvertors.createDelegateToOwnerLookup(projectDirectory);
         return new Result(
-                transientLkp,
+                Lookups.exclude(transientLkp, ProjectProblemsProvider.class),
                 new Factory(projectDirectory, displayName, (Closeable) transientLkp, fileName),
                 displayName,
                 ImageUtilities.image2Icon(ImageUtilities.loadImage(PROJECT_ICON)));
@@ -203,27 +200,4 @@ public final class ClientSideProjectConvertor implements ProjectConvertor {
         }
 
     }
-
-    private static final class ConvertorClassPathProvider implements ClassPathProvider {
-
-        @Override
-        @CheckForNull
-        public ClassPath findClassPath(
-                @NonNull final FileObject file,
-                @NonNull final String type) {
-            if (ClassPathProviderImpl.SOURCE_CP.equals(type)) {
-                final Project p = ProjectConvertors.getNonConvertorOwner(file);
-                if (p != null) {
-                    ClassPathProvider classPathProvider = p.getLookup().lookup(ClassPathProvider.class);
-                    if (classPathProvider == null) { // #255912
-                        LOGGER.log(Level.INFO, "No ClassPathProvider found in lookup of project {0}", p.getClass().getName());
-                        return null;
-                    }
-                    return classPathProvider.findClassPath(file, type);
-                }
-            }
-            return null;
-        }
-    }
-
 }
