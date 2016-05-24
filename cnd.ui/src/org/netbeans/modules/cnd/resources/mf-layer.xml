@@ -134,6 +134,22 @@ made subject to such option by the copyright holder.
                 <attr name="text/x-c/text/x-h" boolvalue="true"/> <!-- special attribute to be checked in CCFSrcFileIterator.initialize -->
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
+            
+            <file name="file_header.c" url="templates/c/file_header-c.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="position" intvalue="350"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/file_header.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CndFileWizardIterator"/>
+                <attr name="templateCategory" stringvalue="c-types"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+            <file name="file_header.h" url="templates/c/file_header-h.template">
+                <attr name="position" intvalue="360"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="hidden"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
 
         </folder> <!-- End cFiles folder -->
 

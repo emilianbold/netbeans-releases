@@ -58,9 +58,9 @@ import org.openide.util.NbBundle;
  *
  * @author sg155630
  */
-public class NewCndClassPanel extends CndPanel {
+public class NewCndFilePanel extends CndPanel {
 
-    NewCndClassPanel(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel) {
+    NewCndFilePanel(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel) {
         super(project, folders, bottomPanel);
     }
 
@@ -68,7 +68,7 @@ public class NewCndClassPanel extends CndPanel {
     public Component getComponent() {
         synchronized (guiLock) {
             if (gui == null) {
-                gui = new NewCndClassPanelGUI(project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), true);
+                gui = new NewCndClassPanelGUI(project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), false);
                 gui.addChangeListener(this);
             }
         }
@@ -78,7 +78,7 @@ public class NewCndClassPanel extends CndPanel {
     @Override
     protected void doStoreSettings(WizardDescriptor settings) {
         String table = (CppSettings.findObject(CppSettings.class, true)).getReplaceableStringsTable();
-        table +="\nCLASSNAME=" + getGui().getClassName(); // NOI18N
+        table +="\nFILENAME=" + getGui().getClassName(); // NOI18N
         table +="\nDEFAULT_HEADER_EXT=" + getGui().getHeaderExt(); // NOI18N
         (CppSettings.findObject(CppSettings.class, true)).setReplaceableStringsTable(table);
         settings.putProperty("headerFileName", getGui().getHeaderFileName()); // NOI18N
@@ -121,10 +121,10 @@ public class NewCndClassPanel extends CndPanel {
 
             return false;
         }
-        if (!CndLexerUtilities.isCppIdentifier( getGui().getClassName() )) {
-            setErrorMessage( NbBundle.getMessage(NewCndClassPanel.class, "MSG_not_valid_classname") );
-            return false;
-        }
+        //if (!CndLexerUtilities.isCppIdentifier( getGui().getClassName() )) {
+        //    setErrorMessage(NbBundle.getMessage(NewCndFilePanel.class, "MSG_not_valid_classname") );
+        //    return false;
+        //}
         // check if the file name can be created
         String errorMessage = canUseFileName(getGui().getTargetGroup().getRootFolder(), getGui().getTargetFolder(), getGui().getSourceFileName(), false);
         if (errorMessage == null) {
