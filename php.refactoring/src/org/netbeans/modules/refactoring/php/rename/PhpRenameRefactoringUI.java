@@ -130,9 +130,15 @@ public class PhpRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
         if (!panel.isUpdateReferences()) {
             return null;
         }
+        boolean firstSet = false;
         if (refactoring instanceof RenameRefactoring) {
-            ((RenameRefactoring) refactoring).setNewName(panel.getNameValue());
-            ((RenameRefactoring) refactoring).getContext().add(new RenameDeclarationFile(panel.renameDeclarationFile(), panel.lowerCaseFileName()));
+            final RenameRefactoring renameRefactoring = (RenameRefactoring) refactoring;
+            firstSet = renameRefactoring.getNewName() == null;
+            renameRefactoring.setNewName(panel.getNameValue());
+            renameRefactoring.getContext().add(new RenameDeclarationFile(panel.renameDeclarationFile(), panel.lowerCaseFileName()));
+        }
+        if (firstSet) {
+            return null;
         }
         return refactoring.checkParameters();
     }
