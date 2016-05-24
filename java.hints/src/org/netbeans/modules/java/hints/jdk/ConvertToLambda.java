@@ -97,7 +97,7 @@ public class ConvertToLambda {
 
         FixImpl fix = new FixImpl(ctx.getInfo(), ctx.getPath(), false);
         if (ctx.getPreferences().getBoolean(KEY_PREFER_MEMBER_REFERENCES, DEF_PREFER_MEMBER_REFERENCES)
-                && preconditionChecker.foundMemberReferenceCandidate()) {
+                && (preconditionChecker.foundMemberReferenceCandidate() || preconditionChecker.foundConstructorReferenceCandidate())) {
             return ErrorDescriptionFactory.forTree(ctx, ((NewClassTree) ctx.getPath().getLeaf()).getIdentifier(), Bundle.MSG_AnonymousConvertibleToLambda(),
                     new FixImpl(ctx.getInfo(), ctx.getPath(), true).toEditorFix(), fix.toEditorFix());
         }

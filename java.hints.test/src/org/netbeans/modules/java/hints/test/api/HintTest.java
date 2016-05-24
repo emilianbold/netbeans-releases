@@ -1023,6 +1023,28 @@ public class HintTest {
 
             return this;
         }
+
+        /**Verifies that the current warning provides the given fixes.
+         *
+         * @param fixes the {@link Fix#getText() } of the expected fixes
+         * @return itself
+         * @throws AssertionError if the expected fixes do not match the provided fixes
+         * @since 1.1
+         */
+        public HintWarning assertFixesNotPresent(String... bannedFixes) throws Exception {
+            assertTrue("Must be computed", warning.getFixes().isComputed());
+
+            List<String> fixNames = new LinkedList<String>();
+            for (Fix f : warning.getFixes().getFixes()) {
+                if (f instanceof SyntheticFix) continue;
+                fixNames.add(f.getText());
+            }
+            Set<String> check = new HashSet<>(fixNames);
+            check.retainAll(Arrays.asList(bannedFixes));
+            assertTrue("Fixes for the current warning do not match the expected fixes. All fixes: " + fixNames.toString(), check.isEmpty());
+
+            return this;
+        }
     }
 
     /**A wrapper over result after applying a fix.

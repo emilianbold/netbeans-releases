@@ -76,7 +76,9 @@ public final class InspectionComboModel extends AbstractListModel implements Com
             if (userObject!=null)
                 hintsList.add(userObject);
         }
-        selected = getElementAt(1);
+        if (getSize() > 0) {
+            selected = getElementAt(Math.min(getSize(), 1));
+        }
     }
     
     @Override
