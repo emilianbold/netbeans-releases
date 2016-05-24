@@ -106,6 +106,18 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="HintTest-fixNotPresent">
+            <api name="JavaHintsTest"/>
+            <summary>Assertion for missing fixes</summary>
+            <version major="1" minor="18"/>
+            <date day="24" month="5" year="2016"/>
+            <author login="sdedic"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                A method <code>assertFixesNotPresent</code> was added to easily detect that fix is gone if e.g. some precondition is not met.
+            </description>
+            <class name="HintTest" package="org.netbeans.modules.java.hints.test.api"/>
+        </change>
         <change id="HintTest-singleHint">
             <api name="JavaHintsTest"/>
             <summary>Allowed to check a single hint</summary>
