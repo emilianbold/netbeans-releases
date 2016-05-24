@@ -394,7 +394,10 @@ public class CsmUtilities {
     public static CsmProject getCsmProject(Document bDoc) {
         CsmProject csmProject = null;
         try {
-            csmProject = getCsmFile(bDoc, false, false).getProject();
+            CsmFile csmFile = getCsmFile(bDoc, false, false);
+            if (csmFile != null) {
+                csmProject = csmFile.getProject();
+            }
         } catch (NullPointerException exc) {
             exc.printStackTrace(System.err);
         }

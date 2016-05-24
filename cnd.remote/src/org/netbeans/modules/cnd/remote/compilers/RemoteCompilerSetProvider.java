@@ -135,22 +135,11 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
             NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(env);
             HostInfo hinfo = HostInfoUtils.getHostInfo(env);
             pb.setExecutable(hinfo.getShell()).setArguments("-s"); // NOI18N
-            Process process = pb.call();
-            process.getOutputStream().write(ToolchainScriptGenerator.generateScript(path, hinfo).getBytes("UTF-8")); //NOI18N
-            process.getOutputStream().close();
-
-            List<String> lines = ProcessUtils.readProcessOutput(process);
-            int status = -1;
-
-            try {
-                status = process.waitFor();
-            } catch (InterruptedException ex) {
-                //Exceptions.printStackTrace(ex);
-            }
-
-            if (status != 0) {
-               RemoteUtil.LOGGER.log(Level.WARNING, "CSSM.runScript: FAILURE {0}", status); // NOI18N
-                ProcessUtils.logError(Level.ALL, RemoteUtil.LOGGER, process);
+            ProcessUtils.ExitStatus res = ProcessUtils.execute(pb, ToolchainScriptGenerator.generateScript(path, hinfo).getBytes("UTF-8")); //NOI18N
+            List<String> lines = res.getOutputLines();
+            if (res.isOK()) {
+               RemoteUtil.LOGGER.log(Level.WARNING, "CSSM.runScript: FAILURE {0}", res.exitCode); // NOI18N
+               ProcessUtils.logError(Level.ALL, RemoteUtil.LOGGER, res);
             } else {
                 return lines.toArray(new String[lines.size()]);
             }
