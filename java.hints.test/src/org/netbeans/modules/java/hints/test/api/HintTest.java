@@ -1029,7 +1029,7 @@ public class HintTest {
          * @param fixes the {@link Fix#getText() } of the expected fixes
          * @return itself
          * @throws AssertionError if the expected fixes do not match the provided fixes
-         * @since 1.1
+         * @since 1.18
          */
         public HintWarning assertFixesNotPresent(String... bannedFixes) throws Exception {
             assertTrue("Must be computed", warning.getFixes().isComputed());
