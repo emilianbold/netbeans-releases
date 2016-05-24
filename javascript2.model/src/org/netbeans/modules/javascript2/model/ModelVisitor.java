@@ -1169,8 +1169,19 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
                         hParent = hParent.getParent();
                     }
                 } 
-            
-                JsObjectImpl jsObject = ModelUtils.getJsObject(modelBuilder, name, true);
+                
+                boolean parentHasSameName = false;
+                if (name.size() > 1 && name.get(0).getName().equals(jsFunction.getName())) {
+                    JsObject property = parent.getProperty(modelBuilder.getFunctionName(fn));
+                    if (property != null && property.equals(jsFunction)) {
+                        // this handles case like:
+                        // theSameName.theSameName = function theSameName () {}
+                        parent.getProperties().remove(modelBuilder.getFunctionName(fn));
+                        ((JsObjectImpl)property).clearOccurrences();
+                        parentHasSameName = true;
+                    }
+                }
+                JsObjectImpl jsObject = ModelUtils.getJsObject(modelBuilder, name, !parentHasSameName);
                 if (!isPriviliged) {
                     parent = jsObject.getParent();
                 }
@@ -1183,7 +1194,9 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
                 }
                 jsFunction.setDeclarationName(jsObject.getDeclarationName());
                 ModelUtils.copyOccurrences(jsObject, jsFunction);
-                jsFunction.getParent().getProperties().remove(modelBuilder.getFunctionName(fn));
+                if (!parentHasSameName) {
+                    jsFunction.getParent().getProperties().remove(modelBuilder.getFunctionName(fn));
+                }
                 parent.addProperty(jsObject.getName(), jsFunction);
                 jsFunction.setParent(parent);
             }
