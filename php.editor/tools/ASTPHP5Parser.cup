@@ -508,6 +508,7 @@ non terminal Variable variable_without_objects;
 non terminal Pair<VariableBase, Boolean> variable_property;
 non terminal VariableBase static_member;
 non terminal List isset_variables;
+non terminal Expression isset_variable;
 non terminal Variable tracked_variable;
 non terminal Integer static_modifier;
 non terminal Integer ppp_modifiers;
@@ -4236,17 +4237,39 @@ T_ISSET:start T_OPEN_PARENTHESE isset_variables:varList T_CLOSE_PARENTHESE:end
 ;
 
 isset_variables ::=
-variable:var
+isset_variable:var
 {:
 	List list = new LinkedList();
 	list.add(var);
 	RESULT = list;
 :}
 
-| isset_variables:varList T_COMMA variable:var
+| isset_variables:varList T_COMMA isset_variable:var
 {:
 	varList.add(var);
 	RESULT = varList;
+:}
+;
+
+isset_variable ::=
+variable:var
+{:
+	RESULT = var;
+:}
+
+| expression_array_access:arrayAccess
+{:
+	RESULT = arrayAccess;
+:}
+
+| class_name:className T_PAAMAYIM_NEKUDOTAYIM constant_array_access:arrayAccess
+{:
+	RESULT = new StaticConstantAccess(classNameleft, arrayAccessright, className, arrayAccess);
+:}
+
+| variable_class_name:className T_PAAMAYIM_NEKUDOTAYIM constant_array_access:arrayAccess
+{:
+	RESULT = new StaticConstantAccess(classNameleft, arrayAccessright, className, arrayAccess);
 :}
 ;
 
