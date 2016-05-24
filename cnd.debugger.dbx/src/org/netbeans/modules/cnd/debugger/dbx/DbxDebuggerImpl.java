@@ -1935,6 +1935,8 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
                 break;
         }
+        
+        watchEnabler.update();
 
     /* CR 6520370
     if (is_a_pointer != 0)
@@ -1961,6 +1963,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         nativeWatch.setSubWatchFor(dbxWatch, this);
         watches.add(dbxWatch);
         dbxWatch.update();
+        watchEnabler.update();
     }
 
     public void dupWatch(int rt, int id) {
@@ -1993,6 +1996,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         nativeWatch.setSubWatchFor(dbxWatch, this);
         watches.add(dbxWatch);
         dbxWatch.update();
+        watchEnabler.update();
     }
 
     /**
@@ -2114,6 +2118,11 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
                 nativeWatch.setExpression(i.plain_lhs);
                 nativeWatch.replacedWith(null);
             }
+            
+            final NativeWatch nativeWatch = w.getNativeWatch();
+            if (nativeWatch != null) {
+                NativeDebuggerManager.get().firePinnedWatchChange(this, nativeWatch.watch());
+            }
         }
 
         watchUpdater().batchOffForce();
@@ -2181,7 +2190,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
     class WatchesEnableLatch extends EnableLatch {
 	protected void setEnabled(boolean enable) {
-	    dbx.display_notify(0, enable);
+	    dbx.display_notify(0, enable || watchBag().hasPinnedWatches());
 	    notePileup(enable, Catalog.get("NoDisplayWhileRunning"));// NOI18N
 	}
     }
