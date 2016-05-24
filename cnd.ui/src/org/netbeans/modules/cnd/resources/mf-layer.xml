@@ -216,6 +216,22 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="hidden"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
+            
+            <file name="file_header.cc" url="templates/cpp/file_header-cc.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+                <attr name="position" intvalue="550"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/file_plus_header.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CndFilePlusWizardIterator"/>
+                <attr name="templateCategory" stringvalue="cpp-types"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+            <file name="file_header.h" url="templates/cpp/file_header-h.template">
+                <attr name="position" intvalue="560"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="hidden"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
 
         </folder> <!-- End cppFiles folder -->
 

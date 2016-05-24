@@ -46,29 +46,29 @@ import java.awt.Component;
 import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author sg155630
  */
 public class NewCndFilePanel extends CndPanel {
+    private final NewCndClassPanelGUI.Kind kind;
 
-    NewCndFilePanel(Project project, SourceGroup[] folders, WizardDescriptor.Panel<WizardDescriptor> bottomPanel) {
+    NewCndFilePanel(Project project, SourceGroup[] folders, NewCndClassPanelGUI.Kind kind, WizardDescriptor.Panel<WizardDescriptor> bottomPanel) {
         super(project, folders, bottomPanel);
+        this.kind = kind;
     }
 
     @Override
     public Component getComponent() {
         synchronized (guiLock) {
             if (gui == null) {
-                gui = new NewCndClassPanelGUI(project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), false);
+                gui = new NewCndClassPanelGUI(project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), kind);
                 gui.addChangeListener(this);
             }
         }
@@ -121,10 +121,6 @@ public class NewCndFilePanel extends CndPanel {
 
             return false;
         }
-        //if (!CndLexerUtilities.isCppIdentifier( getGui().getClassName() )) {
-        //    setErrorMessage(NbBundle.getMessage(NewCndFilePanel.class, "MSG_not_valid_classname") );
-        //    return false;
-        //}
         // check if the file name can be created
         String errorMessage = canUseFileName(getGui().getTargetGroup().getRootFolder(), getGui().getTargetFolder(), getGui().getSourceFileName(), false);
         if (errorMessage == null) {

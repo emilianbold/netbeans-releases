@@ -65,7 +65,7 @@ import org.openide.util.NbBundle;
  *
  * @author sg155630
  */
-public class CndFileWizardIterator extends CCFSrcFileIterator {
+public class CndFilePlusWizardIterator extends CCFSrcFileIterator {
 
     @Override
     public void initialize(WizardDescriptor wiz) {
@@ -73,7 +73,7 @@ public class CndFileWizardIterator extends CCFSrcFileIterator {
         Project project = Templates.getProject(wiz);
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-        targetChooserDescriptorPanel = new NewCndFilePanel(project, groups, NewCndClassPanelGUI.Kind.C, null);
+        targetChooserDescriptorPanel = new NewCndFilePanel(project, groups, NewCndClassPanelGUI.Kind.CPP, null);
     }
 
     @Override
@@ -94,7 +94,7 @@ public class CndFileWizardIterator extends CCFSrcFileIterator {
             DataFolder headerFolderName = (DataFolder) wiz.getProperty("headerFolder"); // NOI18N
             res.add(dobjBro.createFromTemplate(headerFolderName, headerFileName, Collections.singletonMap(CreateFromTemplateHandler.FREE_FILE_EXTENSION, Boolean.TRUE)));
         } else {
-            String errmsg = NbBundle.getMessage(CndFileWizardIterator.class, "MSG_missing_file_header_template", sourceTemplate.getName()+".h"); // NOI18N
+            String errmsg = NbBundle.getMessage(CndFilePlusWizardIterator.class, "MSG_missing_file_header_template", sourceTemplate.getName()+".h"); // NOI18N
             NotifyDescriptor.Message msg = new NotifyDescriptor.
                 Message(errmsg, NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(msg);
@@ -106,6 +106,6 @@ public class CndFileWizardIterator extends CCFSrcFileIterator {
 
     @Override
     public String name() {
-        return "CndFileWizardIterator"; //NOI18N
+        return "CndFilePlusWizardIterator"; //NOI18N
     }
 }

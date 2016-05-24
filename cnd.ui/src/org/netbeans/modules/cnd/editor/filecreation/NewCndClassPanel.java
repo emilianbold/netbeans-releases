@@ -68,7 +68,7 @@ public class NewCndClassPanel extends CndPanel {
     public Component getComponent() {
         synchronized (guiLock) {
             if (gui == null) {
-                gui = new NewCndClassPanelGUI(project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), true);
+                gui = new NewCndClassPanelGUI(project, folders, bottomPanel == null ? null : bottomPanel.getComponent(), NewCndClassPanelGUI.Kind.Class);
                 gui.addChangeListener(this);
             }
         }
