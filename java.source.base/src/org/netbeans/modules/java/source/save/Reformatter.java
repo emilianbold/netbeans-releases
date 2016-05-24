@@ -2126,9 +2126,7 @@ public class Reformatter implements ReformatTask {
                 }
                 WrapStyle wrapElse;
                 boolean preserveNewLine = true;
-                if (cs.specialElseIf() && elseStat.getKind() == Tree.Kind.BLOCK
-                        && ((BlockTree)elseStat).getStatements().size() == 1
-                        && ((BlockTree)elseStat).getStatements().get(0).getKind() == Tree.Kind.IF) {
+                if (cs.specialElseIf() && elseStat.getKind() == Tree.Kind.IF) {
                     redundantIfBraces = CodeStyle.BracesGenerationStyle.ELIMINATE;
                     wrapElse = CodeStyle.WrapStyle.WRAP_NEVER;
                     preserveNewLine = false;
