@@ -192,6 +192,7 @@ public class Refactorer {
                     prospective.getArguments()
             );
         }
+
         MethodInvocationTree mi = treeMaker.MethodInvocation(new ArrayList<ExpressionTree>(), treeMaker.MemberSelect(expr, "stream"), new ArrayList<ExpressionTree>());
         //mi = treeMaker.MethodInvocation(new ArrayList<ExpressionTree>(), treeMaker.MemberSelect(mi, "parallel"), new ArrayList<ExpressionTree>());
         for ( ProspectiveOperation prospective : prospectives) {
@@ -236,7 +237,9 @@ public class Refactorer {
                 IfTree ifTree = (IfTree) statement;
                 if (isIfWithContinue(ifTree)) {
                     ifTree = refactorContinuingIf(ifTree, statements.subList(i + 1, statements.size()));
-                    ls.addAll(this.getListRepresentation(ifTree, l));
+                    // the if was refactored, so that all the statements are nested in it, so it became
+                    // the last (and single) statement within the parent
+                    ls.addAll(this.getListRepresentation(ifTree, last));
                     break;
                 } else if (l) {
                     ls.addAll(this.getListRepresentation(ifTree, true));
