@@ -2,6 +2,7 @@ Code completion result for source line:
 myvar.p|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
+CLASS      p                               [PUBLIC]   <font color=#999999>index.html</font>
 CLASS      prototype                       [PUBLIC]   JS Platform
 METHOD     preventExtensions(O: Object):   [PUBLIC,   JS Platform
 METHOD     propertyIsEnumerable(V: String  [PUBLIC]   JS Platform
