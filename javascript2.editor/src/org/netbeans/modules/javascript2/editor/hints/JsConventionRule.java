@@ -88,10 +88,11 @@ import org.openide.util.NbBundle;
  */
 public class JsConventionRule extends JsAstRule {
     
-    private static final List<JsTokenId> PREVIOUS_IGNORE = new ArrayList<>();
+    private static final List<JsTokenId> IGNORED = new ArrayList<>();
     
     static {
-        Collections.addAll(PREVIOUS_IGNORE, JsTokenId.BLOCK_COMMENT, JsTokenId.DOC_COMMENT, JsTokenId.LINE_COMMENT, JsTokenId.WHITESPACE, JsTokenId.EOL);
+        Collections.addAll(IGNORED, JsTokenId.BLOCK_COMMENT, JsTokenId.DOC_COMMENT,
+                JsTokenId.LINE_COMMENT, JsTokenId.WHITESPACE, JsTokenId.EOL);
     }
     
     @Override
@@ -236,7 +237,7 @@ public class JsConventionRule extends JsAstRule {
                 if (id == JsTokenId.BLOCK_COMMENT || id == JsTokenId.DOC_COMMENT || id == JsTokenId.LINE_COMMENT || id == JsTokenId.WHITESPACE) {
                     int position = ts.offset();                    
                     //try to find ; or , before
-                    Token<? extends JsTokenId> prev = LexUtilities.findPrevious(ts, PREVIOUS_IGNORE);
+                    Token<? extends JsTokenId> prev = LexUtilities.findPrevious(ts, IGNORED);
                     if (prev != null && (prev.id() == JsTokenId.OPERATOR_SEMICOLON || prev.id() == JsTokenId.OPERATOR_COMMA)) {
                         id = prev.id();
                     } else {
@@ -244,7 +245,7 @@ public class JsConventionRule extends JsAstRule {
                         ts.moveNext();
 
                         //try to find ; or , after
-                        Token<? extends JsTokenId> next = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
+                        Token<? extends JsTokenId> next = LexUtilities.findNext(ts, IGNORED);
                         id = next.id();
                         if (id == JsTokenId.IDENTIFIER || id == JsTokenId.BRACKET_RIGHT_CURLY) {
                            // probably we are at the beginning of the next expression or at the end of the context
@@ -253,7 +254,7 @@ public class JsConventionRule extends JsAstRule {
                     }
                 }
                 if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA) {
-                    Token<? extends JsTokenId> previous = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.EOL, JsTokenId.LINE_COMMENT));
+                    Token<? extends JsTokenId> previous = LexUtilities.findPrevious(ts, IGNORED);
                     id = previous.id();
                     // check again whether there is not semicolon and it is not generated
                     if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA
@@ -268,7 +269,7 @@ public class JsConventionRule extends JsAstRule {
                 int originalOffset = ts.offset();
                 CharSequence originalText = ts.token().text();
 
-                Token<? extends JsTokenId> previous = LexUtilities.findPrevious(ts, PREVIOUS_IGNORE);
+                Token<? extends JsTokenId> previous = LexUtilities.findPrevious(ts, IGNORED);
                 if (previous != null && previous.id() == JsTokenId.OPERATOR_SEMICOLON) {
                     return;
                 }

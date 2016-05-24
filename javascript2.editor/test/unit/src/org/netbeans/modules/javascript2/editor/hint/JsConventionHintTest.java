@@ -101,7 +101,11 @@ public class JsConventionHintTest extends HintTestBase {
     }
     
     public void testSemicolon04() throws Exception {
-        checkHints(this, createSemicolonHint(), "testfiles/hints/docComment.js", null);
+        checkHints(this, createSemicolonHint(), "testfiles/hints/docComment1.js", null);
+    }
+    
+    public void testSemicolon05() throws Exception {
+        checkHints(this, createSemicolonHint(), "testfiles/hints/docComment2.js", null);
     }
 
     public void testSemicolonIssue218042() throws Exception {
