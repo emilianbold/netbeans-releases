@@ -72,7 +72,7 @@ import org.openide.nodes.Node;
  * @author Pavel Buzek
  */
 @ActionID(id = "org.netbeans.modules.xml.catalog.CatalogAction", category = "System")
-@ActionRegistration(displayName = "#LBL_CatalogAction_Name", iconInMenu=false, asynchronous=true)
+@ActionRegistration(displayName = "#LBL_CatalogAction_Name", iconInMenu=false, asynchronous=false)
 @ActionReference(path = "Menu/Tools", position = 1100)
 public class CatalogAction implements ActionListener {
 
