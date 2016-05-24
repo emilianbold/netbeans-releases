@@ -55,8 +55,10 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.ConditionalExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.ExpressionArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.GroupUseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
@@ -201,6 +203,12 @@ public class PHP70UnhandledError extends UnhandledErrorRule {
             super.visit(node);
         }
 
+        @Override
+        public void visit(FunctionInvocation node) {
+            checkIssetFunction(node);
+            super.visit(node);
+        }
+
         private void checkScalarTypes(List<FormalParameter> formalParameters) {
             for (FormalParameter formalParameter : formalParameters) {
                 String typeName = CodeUtils.extractUnqualifiedTypeName(formalParameter);
@@ -226,6 +234,23 @@ public class PHP70UnhandledError extends UnhandledErrorRule {
                 return;
             }
             createError(dispatcher);
+        }
+
+        private void checkIssetFunction(FunctionInvocation node) {
+            String functionName = CodeUtils.extractFunctionName(node);
+            if ("isset".equals(functionName)) { // NOI18N
+                List<Expression> parameters = node.getParameters();
+                for (Expression parameter : parameters) {
+                    Expression expression = parameter;
+                    if (expression instanceof StaticConstantAccess) {
+                        StaticConstantAccess sca = (StaticConstantAccess) expression;
+                        expression = sca.getConstant();
+                    }
+                    if (expression instanceof ExpressionArrayAccess) {
+                        createError(parameter);
+                    }
+                }
+            }
         }
 
         private void createError(int startOffset, int endOffset) {

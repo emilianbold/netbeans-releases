@@ -524,7 +524,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 
     String getSuitableMethod() {
         if (this.opType == OperationType.FOREACH) {
-            return "forEach";
+            return "forEachOrdered";
         } else if (this.opType == OperationType.MAP) {
             return "map";
         } else if (this.opType == OperationType.FILTER) {
@@ -665,5 +665,9 @@ import org.netbeans.api.java.source.WorkingCopy;
             return true;
         }
         return available.containsAll(needed);
+    }
+    
+    public boolean isForeach() {
+        return opType == OperationType.FOREACH;
     }
 }
