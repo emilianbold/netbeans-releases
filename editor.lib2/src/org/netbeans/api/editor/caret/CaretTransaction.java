@@ -324,15 +324,14 @@ final class CaretTransaction {
             this.addCaretItems = addCaretItems;
             addOrRemove = true;
         }
+        if (addOrRemove) {
+            scrollToLastCaret = true;
+        }
     }
     
     void runCaretMoveHandler(CaretMoveHandler handler) {
         CaretMoveContext context = new CaretMoveContext(this);
         handler.moveCarets(context);
-    }
-    
-    private static int getOffset(Position pos) {
-        return (pos != null) ? pos.getOffset() : 0;
     }
     
     void removeOverlappingRegions() {
