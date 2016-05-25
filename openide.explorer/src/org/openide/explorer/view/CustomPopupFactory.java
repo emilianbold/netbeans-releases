@@ -49,12 +49,6 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Objects;
-import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -78,9 +72,7 @@ import javax.swing.SwingUtilities;
  * @author Jiri Sedlacek
  */
 class CustomPopupFactory extends PopupFactory {
-    
-    private static final Set<Reference<JWindow>> windowPool = new HashSet<Reference<JWindow>>();
-    
+        
     CustomPopupFactory() {
     }
     
@@ -228,16 +220,14 @@ class CustomPopupFactory extends PopupFactory {
         
         @Override
         void dispose() {
-            if (window != null) {
-                windowPool.add (new SoftReference<JWindow> (window));
-                window = null;
-            }
+            window = null;
             super.dispose();
         }
         
         @Override
         protected void prepareResources() {
-            window = checkOutWindow(owner);
+            window = new JWindow(SwingUtilities.getWindowAncestor(owner));
+            window.setType(JWindow.Type.POPUP);
             window.getContentPane().add (contents);
             window.setLocation (new Point (x, y));
             window.pack();
@@ -258,25 +248,6 @@ class CustomPopupFactory extends PopupFactory {
                 dispose();
             }
         }
-    }
-    
-    private static JWindow checkOutWindow(Component owner) {
-        for (Iterator<Reference<JWindow>> i=windowPool.iterator(); i.hasNext();) {
-            Reference<JWindow> ref = i.next();
-            JWindow win = ref.get();
-            i.remove();
-            if (win != null) {
-                assert !win.isShowing();
-                if (Objects.equals(win.getOwner(), SwingUtilities.getWindowAncestor(owner))) {
-                    win.setBounds (0, 0, 1, 1);
-                    win.getContentPane().removeAll();
-                    return win;
-                }
-            }
-        }
-        JWindow nue = new JWindow(SwingUtilities.getWindowAncestor(owner));
-        nue.setType(JWindow.Type.POPUP);
-        return nue;
     }
     
     private static void disableShadow(JWindow win) {
