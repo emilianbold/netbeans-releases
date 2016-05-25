@@ -520,6 +520,14 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/comments3.js",new IndentPrefs(4, 4));
     }
     
+    public void testComments4() throws Exception {
+        reformatFileContents("testfiles/formatter/comments4.js",new IndentPrefs(4, 4));
+    }
+
+    public void testComments4Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/comments4.js");
+    }
+
     public void testLet1ForAlways() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
         options.put(FmtOptions.wrapFor, CodeStyle.WrapStyle.WRAP_ALWAYS);

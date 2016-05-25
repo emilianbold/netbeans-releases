@@ -1080,7 +1080,8 @@ public class FormatVisitor extends NodeVisitor {
             while (formatToken != null && (formatToken.getKind() == FormatToken.Kind.EOL
                     || formatToken.getKind() == FormatToken.Kind.WHITESPACE
                     || formatToken.getKind() == FormatToken.Kind.LINE_COMMENT
-                    || formatToken.getKind() == FormatToken.Kind.BLOCK_COMMENT)) {
+                    || formatToken.getKind() == FormatToken.Kind.BLOCK_COMMENT
+                    || formatToken.getKind() == FormatToken.Kind.DOC_COMMENT)) {
                 formatToken = formatToken.previous();
             }
             if (block.getStatementCount() == 0 && block.getStart() < block.getFinish()) {
@@ -1147,7 +1148,8 @@ public class FormatVisitor extends NodeVisitor {
                 while (formatToken != null && (formatToken.getKind() == FormatToken.Kind.EOL
                         || formatToken.getKind() == FormatToken.Kind.WHITESPACE
                         || formatToken.getKind() == FormatToken.Kind.LINE_COMMENT
-                        || formatToken.getKind() == FormatToken.Kind.BLOCK_COMMENT)) {
+                        || formatToken.getKind() == FormatToken.Kind.BLOCK_COMMENT
+                        || formatToken.getKind() == FormatToken.Kind.DOC_COMMENT)) {
                     formatToken = formatToken.previous();
                 }
                 if (formatToken != null) {
