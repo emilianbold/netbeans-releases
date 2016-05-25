@@ -69,7 +69,7 @@ public class StandardJavacWarnings extends AbstractHint {
     private final Kind kind;
     
     private StandardJavacWarnings(Kind kind) {
-        super( kind.defaultOn(), false, HintSeverity.WARNING, kind.suppressWarnings );
+        super( kind.defaultOn(), true, HintSeverity.WARNING, kind.suppressWarnings );
         this.kind = kind;        
     }
 
