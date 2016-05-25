@@ -134,6 +134,8 @@ public final class ShellSession {
                     processes.put(env, process);
                 } else {
                     process = null;
+                    ProcessUtils.readProcessError(sh);
+                    ProcessUtils.readProcessOutput(sh);
                 }
             } catch (ConnectionManager.CancellationException ex) {
                 throw new CancellationException(ex.getMessage());

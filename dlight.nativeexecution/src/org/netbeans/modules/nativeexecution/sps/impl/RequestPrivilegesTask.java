@@ -52,6 +52,7 @@ import java.util.concurrent.Future;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.sps.impl.RequestPrivilegesTask.RequestPrivilegesTaskParams;
 import org.netbeans.modules.nativeexecution.support.Computable;
 import org.netbeans.modules.nativeexecution.support.Logger;
@@ -152,16 +153,14 @@ public final class RequestPrivilegesTask implements Computable<RequestPrivileges
         }
 
         public Boolean call() throws Exception {
-            Process ppriv = null;
             // An attempt to grant privileges using pfexec
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(args.support.getExecEnv());
             npb.setExecutable("/bin/pfexec").setArguments("/bin/ppriv", "-s", // NOI18N
                     "I+" + args.privilegesString, args.support.getPID()); // NOI18N
 
-            ppriv = npb.call();
-            int result = ppriv.waitFor();
+            ProcessUtils.ExitStatus res = ProcessUtils.execute(npb);
 
-            if (result == 0) {
+            if (res.isOK()) {
                 // pfexec succeeded ...
                 return Boolean.TRUE;
             }

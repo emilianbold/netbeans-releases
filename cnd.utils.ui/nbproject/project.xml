@@ -181,12 +181,13 @@
                 <friend>org.netbeans.modules.cnd.testrunner</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>
                 <friend>org.netbeans.modules.cnd.toolchain</friend>
+                <friend>org.netbeans.modules.cnd.ui</friend>
                 <friend>org.netbeans.modules.cnd.utils.ui</friend>
                 <friend>org.netbeans.modules.dlight.discover</friend>
                 <friend>org.netbeans.modules.dlight.perfan</friend>
                 <friend>org.netbeans.modules.dlight.previse</friend>
                 <friend>org.netbeans.modules.dlight.tha</friend>
-                <friend>org.netbeans.modules.dlight.uncover</friend>                
+                <friend>org.netbeans.modules.dlight.uncover</friend>
                 <package>org.netbeans.modules.cnd.spi.editor</package>
                 <package>org.netbeans.modules.cnd.spi.source</package>
                 <package>org.netbeans.modules.cnd.utils.ui</package>
