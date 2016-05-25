@@ -419,7 +419,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Object>, Ove
                     return false;
                 }
             }
-            if (el.getKind().isClass()) {
+            if (el.getKind().isClass() || el.getKind().isInterface()) {
                 generateAllAbstractMethodImplementations(copy, p, elementsToImplement);
                 return true;
             }
