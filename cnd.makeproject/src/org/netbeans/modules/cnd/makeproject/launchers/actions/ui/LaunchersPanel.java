@@ -266,6 +266,7 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
             selectedConfiguration.setSymbolFiles(symbolsTextField.getText().trim());
             selectedConfiguration.setPublic(publicCheckBox.isSelected());
             selectedConfiguration.setHide(hideCheckBox.isSelected());
+            selectedConfiguration.setrunInOwnTab(runInOwnTabCheckBox.isSelected());
             if (envVarTable.isEditing()) {
                 TableCellEditor cellEditor = envVarTable.getCellEditor();
                 if (cellEditor != null) {
@@ -332,6 +333,7 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
         buildTextField.setEnabled(b && c);
         publicCheckBox.setEnabled(b && c);
         hideCheckBox.setEnabled(b && c);
+        runInOwnTabCheckBox.setEnabled(b && c);
         runDirTextField.setEnabled(b);
         symbolsTextField.setEnabled(b);
         addEnvButton.setEnabled(b);
@@ -372,6 +374,7 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
         jScrollPane1 = new javax.swing.JScrollPane();
         runTextField = new javax.swing.JTextArea();
         hideCheckBox = new javax.swing.JCheckBox();
+        runInOwnTabCheckBox = new javax.swing.JCheckBox();
 
         launchersListLabel.setLabelFor(LauncersListPanel);
         org.openide.awt.Mnemonics.setLocalizedText(launchersListLabel, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.launchersListLabel.text")); // NOI18N
@@ -515,6 +518,8 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
         org.openide.awt.Mnemonics.setLocalizedText(hideCheckBox, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.hideCheckBox.text")); // NOI18N
         hideCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "HideTooltip")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(runInOwnTabCheckBox, org.openide.util.NbBundle.getMessage(LaunchersPanel.class, "LaunchersPanel.runInOwnTabCheckBox.text")); // NOI18N
+
         javax.swing.GroupLayout rightPanelLayout = new javax.swing.GroupLayout(rightPanel);
         rightPanel.setLayout(rightPanelLayout);
         rightPanelLayout.setHorizontalGroup(
@@ -538,16 +543,19 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
                             .addComponent(runDirTextField, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(buildTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(rightPanelLayout.createSequentialGroup()
-                        .addComponent(publicCheckBox)
+                        .addComponent(envLabel)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(rightPanelLayout.createSequentialGroup()
+                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(runInOwnTabCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, rightPanelLayout.createSequentialGroup()
+                                .addComponent(publicCheckBox)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(hideCheckBox)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(addEnvButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(removeEnvButton))
-                    .addGroup(rightPanelLayout.createSequentialGroup()
-                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(hideCheckBox)
-                            .addComponent(envLabel))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addComponent(removeEnvButton)))
                 .addContainerGap())
         );
         rightPanelLayout.setVerticalGroup(
@@ -581,9 +589,10 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
                 .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(addEnvButton)
                     .addComponent(removeEnvButton)
-                    .addComponent(publicCheckBox))
+                    .addComponent(publicCheckBox)
+                    .addComponent(hideCheckBox))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(hideCheckBox)
+                .addComponent(runInOwnTabCheckBox)
                 .addContainerGap())
         );
 
@@ -820,6 +829,7 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
     private javax.swing.JPanel rightPanel;
     private javax.swing.JLabel runDirLabel;
     private javax.swing.JTextField runDirTextField;
+    private javax.swing.JCheckBox runInOwnTabCheckBox;
     private javax.swing.JLabel runLabel;
     private javax.swing.JTextArea runTextField;
     private javax.swing.JLabel symbolLabel;
@@ -851,6 +861,7 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
             symbolsTextField.setText(cfg == null ? null : cfg.getSymbolFiles());
             publicCheckBox.setSelected(cfg == null ? false : cfg.getPublic());
             hideCheckBox.setSelected(cfg == null ? false : (cfg.isHide() || (cfg.getID() < 0)));
+            runInOwnTabCheckBox.setSelected(cfg == null ? false : (cfg.runInOwnTab() || (cfg.getID() < 0)));
 	    ArrayList<String> col0 = new ArrayList<>();
 	    ArrayList<String> col1 = new ArrayList<>();
             int n;
