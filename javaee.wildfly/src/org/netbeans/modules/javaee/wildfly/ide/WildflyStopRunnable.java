@@ -64,9 +64,6 @@ class WildflyStopRunnable implements Runnable {
 
     private static final Logger LOGGER = Logger.getLogger(WildflyStopRunnable.class.getName());
 
-    private static final String JBOSS_CLI_SH = "/bin/jboss-cli.sh"; // NOI18N
-    private static final String JBOSS_CLI_BAT = "/bin/jboss-cli.bat"; // NOI18N
-
     private static final int TIMEOUT = 300000;
 
     private final WildflyDeploymentManager dm;
