@@ -53,6 +53,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
@@ -62,6 +63,7 @@ import java.util.regex.Pattern;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
+import org.netbeans.api.extexecution.base.Environment;
 import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.api.CommonServerBridge;
@@ -71,7 +73,6 @@ import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
 import org.netbeans.modules.javaee.wildfly.util.WildFlyProperties;
-import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
@@ -144,7 +145,7 @@ class WildflyStartRunnable implements Runnable {
         waitForServerToStart(outputSupport);
     }
 
-    private String[] createEnvironment(final InstanceProperties ip) {
+    private void setupEnvironment(final InstanceProperties ip, Environment env) {
 
         WildFlyProperties properties = dm.getProperties();
         // get Java platform that will run the server
@@ -263,13 +264,10 @@ class WildflyStartRunnable implements Runnable {
         Logger.getLogger("global").log(Level.INFO, JAVA_OPTS + "={0}", javaOpts);
         String javaHome = getJavaHome(platform);
 
-        String envp[] = new String[]{
-            "JAVA=" + javaHome + File.separatorChar + "bin" + File.separatorChar + "java", // NOI18N
-            "JAVA_HOME=" + javaHome, // NOI18N
-            JBOSS_HOME + "=" + ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR), // NOI18N
-            JAVA_OPTS + "=" + javaOpts // NOI18N
-        };
-        return envp;
+        env.setVariable("JAVA", javaHome + File.separatorChar + "bin" + File.separatorChar + "java"); // NOI18N
+        env.setVariable("JAVA_HOME", javaHome); // NOI18N
+        env.setVariable(JBOSS_HOME, ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR)); // NOI18N
+        env.setVariable(JAVA_OPTS, javaOpts); // NOI18N
     }
 
     private static StartupExtender.StartMode getMode(WildflyStartServer.MODE jbMode) {
@@ -305,24 +303,27 @@ class WildflyStartRunnable implements Runnable {
         return true;
     }
 
-    private NbProcessDescriptor createProcessDescriptor(InstanceProperties ip,
-            String[] envp) {
+    private org.netbeans.api.extexecution.base.ProcessBuilder setupBinary(InstanceProperties ip,
+            org.netbeans.api.extexecution.base.ProcessBuilder builder) {
         // fix for BZ#179961 -  [J2EE] No able to start profiling JBoss 5.1.0
-        String serverRunFileName = getRunFileName(ip, envp);
+        String serverRunFileName = getRunFileName(ip);
         if (!new File(serverRunFileName).exists()) {
             fireStartProgressEvent(StateType.FAILED, createProgressMessage("MSG_START_SERVER_FAILED_FNF"));//NOI18N
             return null;
         }
-        String args = "";
+        List<String> args = new LinkedList<>();
         if (ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE) != null && !"".equals(ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE))) {
             String configFile = ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE);
-            args = "-c " + configFile.substring(configFile.lastIndexOf(File.separatorChar) + 1);
+            args.add("-c"); // NOI18N
+            args.add(configFile.substring(configFile.lastIndexOf(File.separatorChar) + 1));
         }
-        return new NbProcessDescriptor(serverRunFileName, args);
+        builder.setExecutable(serverRunFileName);
+        builder.setArguments(args);
+        return builder;
     }
 
-    private String getRunFileName(InstanceProperties ip, String[] envp) {
-        SpacesInPathFix fix = new SpacesInPathFix(ip, envp);
+    private String getRunFileName(InstanceProperties ip) {
+        SpacesInPathFix fix = new SpacesInPathFix(ip);
         return fix.getRunFileName();
     }
 
@@ -347,10 +348,11 @@ class WildflyStartRunnable implements Runnable {
     }
 
     private Process createProcess(InstanceProperties ip) {
-        String envp[] = createEnvironment(ip);
+        org.netbeans.api.extexecution.base.ProcessBuilder builder = org.netbeans.api.extexecution.base.ProcessBuilder.getLocal();
+        setupEnvironment(ip, builder.getEnvironment());
 
-        NbProcessDescriptor pd = createProcessDescriptor(ip, envp);
-        if (pd == null) {
+        builder = setupBinary(ip, builder);
+        if (builder == null) {
             return null;
         }
 
@@ -363,7 +365,8 @@ class WildflyStartRunnable implements Runnable {
             if (rootFile != null && !rootFile.isDirectory()) {
                 rootFile = null;
             }
-            return pd.exec(null, envp, true, rootFile);
+            builder.setWorkingDirectory(rootFile.getAbsolutePath());
+            return builder.call();
         } catch (java.io.IOException ioe) {
             Logger.getLogger("global").log(Level.WARNING, null, ioe);
             final String serverLocation = ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR);
@@ -436,9 +439,9 @@ class WildflyStartRunnable implements Runnable {
     // Fix for BZ#179961 -  [J2EE] No able to start profiling JBoss 5.1.0
     private class SpacesInPathFix {
 
-        SpacesInPathFix(InstanceProperties ip, String[] envp) {
+        SpacesInPathFix(InstanceProperties ip) {
             myProps = ip;
-            needChange = runFileNeedChange(envp);
+            needChange = runFileNeedChange();
         }
 
         String getRunFileName() {
@@ -558,7 +561,7 @@ class WildflyStartRunnable implements Runnable {
             return myProps;
         }
 
-        private boolean runFileNeedChange(String[] envp) {
+        private boolean runFileNeedChange() {
             WildFlyProperties properties = dm.getProperties();
             if (properties.isVersion(WildflyPluginUtils.JBOSS_7_0_0)) {
                 return false;

@@ -49,7 +49,6 @@ import org.openide.util.actions.CookieAction;
 
 import static org.openide.util.actions.CookieAction.MODE_EXACTLY_ONE;
 
-import java.awt.event.ActionEvent;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -57,7 +56,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Action;
+import org.netbeans.modules.javaee.wildfly.ide.WildflyOutputSupport;
 import org.netbeans.modules.javaee.wildfly.nodes.WildflyManagerNode;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -95,6 +94,29 @@ public class KillServerAction extends CookieAction {
         final Future<Boolean> killed = RequestProcessor.getDefault().submit(new Callable<Boolean>() {
             @Override
             public Boolean call() {
+                WildflyOutputSupport output = WildflyOutputSupport.getInstance(
+                        managerNode.getDeploymentManager().getInstanceProperties(), false);
+                if (output != null) {
+                    Process p = output.getProcess();
+                    if (p != null) {
+                        p.destroy();
+                        try {
+                            boolean ok = p.waitFor(5, TimeUnit.SECONDS);
+                            if (!ok) {
+                                ok = p.destroyForcibly().waitFor(5, TimeUnit.SECONDS);
+                            }
+                            if (ok) {
+                                LOGGER.log(Level.INFO, "Succesfully killed WildFly");
+                                return true;
+                            }
+                        } catch (InterruptedException ex) {
+                            LOGGER.log(Level.FINE, null, ex);
+                            Thread.currentThread().interrupt();
+                            return false;
+                        }
+                    }
+                }
+                // pretty ugly; kills all processes
                 return killer.killServers();
             }
         });
@@ -102,7 +124,7 @@ public class KillServerAction extends CookieAction {
             @Override
             public void run() {
                 try {
-                    if (killed.get(10, TimeUnit.SECONDS)) {
+                    if (killed.get(15, TimeUnit.SECONDS)) {
                         managerNode.getDeploymentManager().getInstanceProperties().refreshServerInstance();
                     }
                 } catch (InterruptedException | ExecutionException | TimeoutException ex) {
