@@ -64,25 +64,25 @@ public class OpenInEditorActionProvider extends ExternalCommandActionProvider {
             }
 
             Object key = lookup.lookup(Term.class).getClientProperty(Term.ExternalCommandsConstants.EXECUTION_ENV_PROPERTY_KEY);
-            FileObject fo = null;
-            if (key != null && (key instanceof String)) {
-                try {
-                    ExecutionEnvironment fromUniqueID = ExecutionEnvironmentFactory.fromUniqueID((String) key);
-                    if (fromUniqueID.isRemote()) {
-                        fo = URLMapper.findFileObject(new URL("rfs://" + key + filePath)); //NOI18N
-                    } else {
-                        fo = FileUtil.toFileObject(new File(filePath));
+            URL url = null;
+            try {
+
+                if (key != null && (key instanceof String)) {
+                    ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID((String) key);
+                    if (env.isRemote()) {
+                        url = new URL("rfs://" + key + filePath); //NOI18N
                     }
-                } catch (Exception ex) {
-                    // ignore
+
                 }
-            }
-            if (fo == null) {
-                fo = FileUtil.toFileObject(new File(filePath));
+            } catch (MalformedURLException ex) {
+                // ignore
             }
 
-            // XXX blocker for a remote case is https://netbeans.org/bugzilla/show_bug.cgi?id=258890
-            OpenInEditorAction.post(fo, lineNumber);
+            if (url != null) {
+                OpenInEditorAction.post(url, lineNumber);
+            } else {
+                OpenInEditorAction.post(filePath, lineNumber);
+            }
         }
     }
 

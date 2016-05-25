@@ -66,18 +66,32 @@ import org.openide.util.NbBundle;
  * 
  */
 final class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
+    enum Kind {
+        C,
+        CPP,
+        Class
+    }
   
     private String sourceExt;
     private String headerExt;
-    private final MIMEExtensions sourceExtensions = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE);
+    private final MIMEExtensions sourceExtensions;
     private final MIMEExtensions headerExtensions = MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE);
+    private final Kind kind;
 
     /** Creates new form NewCndFileChooserPanelGUI */
-    NewCndClassPanelGUI( Project project, SourceGroup[] folders, Component bottomPanel) {
+    NewCndClassPanelGUI( Project project, SourceGroup[] folders, Component bottomPanel, Kind kind) {
         super(project, folders);
-
+        this.kind = kind;
+        if (kind == Kind.Class || kind == Kind.CPP) {
+            sourceExtensions = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE);
+        } else {
+            sourceExtensions = MIMEExtensions.get(MIMENames.C_MIME_TYPE);
+        }
         initComponents();
         initMnemonics();
+        if (kind == Kind.C || kind == Kind.CPP) {
+            org.openide.awt.Mnemonics.setLocalizedText(classNameLbl, org.openide.util.NbBundle.getMessage(NewCndClassPanelGUI.class, "LBL_TargetChooser_FileHeaderName_Label")); // NOI18N
+        }
         
         locationComboBox.setRenderer( CELL_RENDERER );
         
@@ -147,8 +161,11 @@ final class NewCndClassPanelGUI extends CndPanelGUI implements ActionListener{
         
         if (template != null) {
             if (documentName == null) {
-                final String baseName = getMessage("NewClassSuggestedName");
-                documentName = baseName;
+                if (kind == Kind.Class) {
+                     documentName = getMessage("NewClassSuggestedName");
+                } else {
+                     documentName = getMessage("NewFileSuggestedName");
+                }
                 FileObject currentFolder = preselectedFolder != null ? preselectedFolder : getTargetGroup().getRootFolder();
                 if (currentFolder != null) {
                     documentName += generateUniqueSuffix(

@@ -89,6 +89,7 @@ public class RemoteFileSearcherImpl implements FileSearcher {
             npb.setExecutable(hostInfo.getShell()).setArguments("-s"); // NOI18N
 
             Process p = npb.call();
+            ProcessUtils.ignoreProcessError(p);
 
             OutputStreamWriter os = new OutputStreamWriter(p.getOutputStream());
             for (String path : sp) {
