@@ -4050,7 +4050,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         @Override
         public int getSortPriority() {
-            return 950 - SMART_TYPE;
+            return 50 - SMART_TYPE;
         }
 
         @Override
