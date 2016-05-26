@@ -2,38 +2,53 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Options Window: PHP: Frameworks &amp; Tools: Zend2</title>
+<title>Options Window: PHP: Frameworks &amp; Tools: Twig</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.php.zend2.options.Zend2Options" name="org.netbeans.modules.php.zend2.options.Zend2Options"></a></p>
-<div id="NBCSH3739"><!-- infolevel="all" infotype="General" --><a id="sthref494" name="sthref494"></a>
-<h1>Options Window: PHP: Frameworks &amp; Tools: Zend2</h1>
+<p>Beta Draft: 2016-05-24</p>
+<p><a id="org.netbeans.modules.php.twig.editor.Options" name="org.netbeans.modules.php.twig.editor.Options"></a></p>
+<div id="NBCSH3734"><!-- infolevel="all" infotype="General" --><a id="sthref495" name="sthref495"></a>
+<h1>Options Window: PHP: Frameworks &amp; Tools: Twig</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>In this panel you can set the location for the Zend2 Skeleton Application archive.</p>
+<p>In this panel you set global options for projects that contain Twig templates.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th style="text-align:left" valign="bottom" id="r1c1-t40">Element</th>
-<th style="text-align:left" valign="bottom" id="r1c2-t40">Description</th>
+<th style="text-align:left" valign="bottom" id="r1c1-t41">Element</th>
+<th style="text-align:left" valign="bottom" id="r1c2-t41">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td style="text-align:left" id="r2c1-t40" headers="r1c1-t40">
-<p>Skeleton</p>
+<td style="text-align:left" id="r2c1-t41" headers="r1c1-t41">
+<p>Toggle comment</p>
 </td>
-<td style="text-align:left" headers="r2c1-t40 r1c2-t40">Specify the path to the Zend Skeleton Application archive on your local file system. Use the Browse button to locate the archive.</td>
+<td style="text-align:left" headers="r2c1-t41 r1c2-t41">Specify how code is designated as a comment in when you choose Toggle Comment in the Source menu or use a keyboard shortcut.</td>
+</tr>
+<tr align="left" valign="top">
+<td style="text-align:left" id="r3c1-t41" headers="r1c1-t41">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;as Twig comment everywhere</p>
+</td>
+<td style="text-align:left" headers="r3c1-t41 r1c2-t41">When selected, the selected line or lines of code are designated as a comment using Twig syntax (<code dir="ltr">{# ... #}</code>).</td>
+</tr>
+<tr align="left" valign="top">
+<td style="text-align:left" id="r4c1-t41" headers="r1c1-t41">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;language sensitive</p>
+</td>
+<td style="text-align:left" headers="r4c1-t41 r1c2-t41">When selected, the editor determines the language of the code based on the position of your insert cursor and all elements in that language in the selected line or lines of code are designated as a comment using the syntax of that language.
+<p>For example, if a line of code contains HTML and Twig elements and your insert cursor is in an HTML element, when you toggle comments all the HTML elements in the selected line or lines of code are designated as comments using HTML syntax (<code dir="ltr">&lt;!-- ... --&gt;</code>) and the Twig elements are not affected.</p>
+</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="NBCSH3741" name="NBCSH3741"></a>
+<a id="NBCSH3738" name="NBCSH3738"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
@@ -51,7 +66,7 @@
 <table summary="" cellspacing="0" cellpadding="0" width="100%">
 <tr>
 <td align="left" width="86%"><a href="legal_notice.htm">
-Copyright&nbsp;&copy;&nbsp;2015,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+Copyright&nbsp;&copy;&nbsp;2016,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
 </td>
 </tr>
 </table>
