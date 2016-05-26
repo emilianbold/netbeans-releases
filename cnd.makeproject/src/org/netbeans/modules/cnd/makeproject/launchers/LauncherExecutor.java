@@ -294,7 +294,7 @@ public final class LauncherExecutor {
             if (name.isEmpty()) {
                 return delegate.getLocalizedName();
             } else {
-                return name;
+                return delegate.getLocalizedName()+" "+name; //NOI18N
             }
         }
 
