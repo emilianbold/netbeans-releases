@@ -325,7 +325,7 @@ public final class TerminalSupportImpl {
                              *  "$@"    "$1" "$2" "$3" ... "${N}"
                              */
                             final String promptCommand = "printf \"\033]3;${PWD}\007\"; " // NOI18N
-                                    + IDE_OPEN + "() { printf \"\033]10;" + COMMAND_PREFIX + IDE_OPEN + " $*;\007\";}";   // NOI18N
+                                    + IDE_OPEN + "() { printf \"\033]10;" + COMMAND_PREFIX + IDE_OPEN + " $*;\007\"; printf \"Opening $# file(s) ...\n\";}";   // NOI18N
                             final String commandName = "PROMPT_COMMAND";                                    // NOI18N
                             String usrPrompt = npb.getEnvironment().get(commandName);
                             npb.getEnvironment().put(commandName,

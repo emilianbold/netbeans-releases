@@ -198,6 +198,8 @@ public class LaunchersConfig {
                         l.name = value;
                     } else if (subkey.equals(LaunchersRegistry.HIDE_TAG)) {
                         l.hide = "true".equals(value); //NOI18N
+                    } else if (subkey.equals(LaunchersRegistry.RUN_IN_OWN_TAB_TAG)) {
+                        l.runInOwnTab = !"false".equals(value); //NOI18N
                     } else if (subkey.equals(LaunchersRegistry.COMMAND_TAG)) {
                         l.command = value;
                     } else if (subkey.equals(LaunchersRegistry.BUILD_COMMAND_TAG)) {
@@ -408,6 +410,13 @@ public class LaunchersConfig {
                             bw.newLine();
                             addNewLine = true;
                         }
+                        if (!l.runInOwnTab) {
+                            bw.write(LaunchersRegistry.LAUNCHER_TAG + l.id + "."); //NOI18N
+                            bw.write(LaunchersRegistry.RUN_IN_OWN_TAB_TAG);
+                            bw.write("=false"); //NOI18N
+                            bw.newLine();
+                            addNewLine = true;
+                        }
                         if (!l.command.isEmpty()) {
                             StringBuilder buf = new StringBuilder();
                             buf.append(LaunchersRegistry.LAUNCHER_TAG + l.id + "."); //NOI18N
@@ -487,6 +496,7 @@ public class LaunchersConfig {
         private String symbolFiles = "";
         private Map<String, String> env = new HashMap<>();
         private boolean hide = false;
+        private boolean runInOwnTab = true;
         private boolean isModified = false;
 
         public LauncherConfig(int id, boolean pub) {
@@ -577,6 +587,15 @@ public class LaunchersConfig {
             this.hide = isHide;
         }
 
+        public boolean runInOwnTab() {
+            return runInOwnTab;
+        }
+
+        public void setrunInOwnTab(boolean runInOwnTab) {
+            isModified |= runInOwnTab != this.runInOwnTab;
+            this.runInOwnTab = runInOwnTab;
+        }
+
         public String getDisplayedName() {
             return (name == null || name.isEmpty() ? command : name);
         }
@@ -586,6 +605,7 @@ public class LaunchersConfig {
             res.command = this.command;
             res.name = this.name;
             res.hide = this.hide;
+            res.runInOwnTab = this.runInOwnTab;
             res.buildCommand = this.buildCommand;
             res.runDir = this.runDir;
             res.symbolFiles = this.symbolFiles;
@@ -598,6 +618,7 @@ public class LaunchersConfig {
             res.command = this.command;
             res.name = this.name;
             res.hide = this.hide;
+            res.runInOwnTab = this.runInOwnTab;
             res.buildCommand = this.buildCommand;
             res.runDir = this.runDir;
             res.symbolFiles = this.symbolFiles;
@@ -629,6 +650,9 @@ public class LaunchersConfig {
                 return false;
             }
             if (this.hide != other.hide) {
+                return false;
+            }
+            if (this.runInOwnTab != other.runInOwnTab) {
                 return false;
             }
             if (this.isModified != other.isModified) {

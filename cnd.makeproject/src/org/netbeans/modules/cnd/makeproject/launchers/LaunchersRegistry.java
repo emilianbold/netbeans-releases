@@ -73,6 +73,7 @@ public final class LaunchersRegistry {
     public static final String SYMFILES_TAG = "symbolFiles";// NOI18N
     public static final String ENV_TAG = "env";// NOI18N
     public static final String HIDE_TAG = "hide";// NOI18N
+    public static final String RUN_IN_OWN_TAB_TAG = "runInOwnTab";// NOI18N
     
     private static  Pattern pattern;
 
@@ -196,6 +197,8 @@ public final class LaunchersRegistry {
         }
         String property = properties.getProperty(name + "." + HIDE_TAG);//NOI18N
         launcher.setHide("true".equals(property));//NOI18N
+        property = properties.getProperty(name + "." + RUN_IN_OWN_TAB_TAG);//NOI18N
+        launcher.setRunInOwnTab(!"false".equals(property));//NOI18N
         return launcher;
     }
     
