@@ -55,24 +55,28 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
+import javax.swing.Action;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableCellEditor;
+import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.launchers.actions.ui.LaunchersConfig.LauncherConfig;
 import org.netbeans.modules.cnd.makeproject.runprofiles.ui.ListTableModel;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeContext;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.view.ListView;
+import org.openide.explorer.view.BeanTreeView;
+import org.openide.explorer.view.TreeView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.Index;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -94,11 +98,10 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
     private final LaunchersConfig instance;
     private final ListTableModel envVarModel;
     private final JTable envVarTable;
-    final ListView h_list;
+    private final TreeView tree;
     private boolean modified = false;
     private volatile boolean resetFields = true;
     private final Preferences panelPreferences = NbPreferences.forModule(getClass()).node("launchers"); // NOI18N
-
 
     /**
      * Creates new form LaunchersPanel
@@ -146,9 +149,10 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
         instance.load();
         launchers.addAll(instance.getLaunchers());
         nodes = new LaunchersNodes(launchers);
-        h_list = new ListView();
-        h_list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        LauncersListPanel.add(h_list, BorderLayout.CENTER);
+        tree = new BeanTreeView();
+        tree.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        tree.setRootVisible(false);
+        LauncersListPanel.add(tree, BorderLayout.CENTER);
         update();
         final ActionListener actionListener = new ActionListener() {
             @Override
@@ -201,7 +205,7 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
 
     final void update() {
         LauncherConfig sc = selectedConfiguration;
-        manager.setRootContext(new AbstractNode(nodes));
+        manager.setRootContext(new RootNode(nodes));
         modified = false;
 
         if (sc == null) {
@@ -670,15 +674,20 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
 
     private void copyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_copyButtonActionPerformed
         updateSelectedConfiguration();
-        int max = 1000;
-        for(LauncherConfig cfg : launchers) {
-            if (cfg.getID() >= max) {
-                max = (cfg.getID() + 1000) / 1000;
-                max = max *1000;
-            }
+        LauncherConfig selectedConfiguration = getSelectedConfiguration();
+        int index = launchers.indexOf(selectedConfiguration);
+        LauncherConfig newConfiguration;
+        if (index == launchers.size()-1) {
+            int max = (selectedConfiguration.getID() + 1000) / 1000;
+            max = max * 1000;
+            newConfiguration = selectedConfiguration.copy(max);
+            launchers.add(newConfiguration);
+        } else {
+            LauncherConfig next = launchers.get(index+1);
+            int max = (selectedConfiguration.getID() + next.getID()) / 2;
+            newConfiguration = selectedConfiguration.copy(max);
+            launchers.add(index+1, newConfiguration);
         }
-        LauncherConfig newConfiguration = getSelectedConfiguration().copy(max);
-        launchers.add(newConfiguration);
         nodes.restKeys();
         selectNode(newConfiguration);
         modified = true;
@@ -791,6 +800,41 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
         }
     }//GEN-LAST:event_downButtonActionPerformed
 
+    private void reorder(int[] perm) {
+        if (perm[0] == 0 && perm[1] == 1) {
+            updateSelectedConfiguration();
+            Node[] selectedNodes = manager.getSelectedNodes();
+            final LaunchersConfig.LauncherConfig current;
+            if (selectedNodes.length == 1 && selectedNodes[0] instanceof LauncherNode) {
+                current = ((LauncherNode) selectedNodes[0]).getConfiguration();
+            } else {
+                current = null;
+            }
+            ArrayList<LaunchersConfig.LauncherConfig> copy = new ArrayList<>(launchers);
+            for (int i = 0; i < perm.length; i++) {
+                launchers.set(perm[i], copy.get(i));
+            }
+            for (int i = 2; i < launchers.size() - 1; i++) {
+                LaunchersConfig.LauncherConfig prev = launchers.get(i - 1);
+                LaunchersConfig.LauncherConfig cur = launchers.get(i);
+                LaunchersConfig.LauncherConfig next = launchers.get(i + 1);
+                if (prev.getID() < cur.getID() && cur.getID() < next.getID()) {
+                    // It's OK
+                } else if (prev.getID() < next.getID()) {
+                    cur.setID((prev.getID() + next.getID()) / 2);
+
+                }
+            }
+            modified = true;
+            ((LaunchersNodes) nodes).restKeys();
+            try {
+                manager.setSelectedNodes(new Node[0]);
+            } catch (PropertyVetoException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+    
     private void addEnvButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addEnvButtonActionPerformed
         envVarModel.addRow();
     }//GEN-LAST:event_addEnvButtonActionPerformed
@@ -878,26 +922,8 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
             envVarTable.tableChanged(null);
 	}
     }
-
-    private static final class LaunchersNodes extends Children.Keys<LauncherConfig> {
-        private final ArrayList<LauncherConfig> launcers;
-        public LaunchersNodes(final ArrayList<LauncherConfig> launcers) {
-            this.launcers = launcers;
-            setKeys(launcers);
-        }
-
-        private void restKeys() {
-            setKeys(launcers);
-        }
-
-        @Override
-        protected Node[] createNodes(LauncherConfig key) {
-            return new LauncherNode[]{new LauncherNode(key)};
-        }
-
-    }
-
-    public static class LauncherNode extends AbstractNode {
+    
+    private static final class LauncherNode extends AbstractNode {
 
         private Image icon;
         private static JTextField test = new JTextField();
@@ -907,8 +933,7 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
         private boolean hide;
         private int id;
 
-
-        public LauncherNode(LauncherConfig cfg) {
+        private LauncherNode(LaunchersConfig.LauncherConfig cfg) {
             super(Children.LEAF, Lookups.fixed(cfg));
             name = cfg.getDisplayedName();
             hide = cfg.isHide();
@@ -957,7 +982,7 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
         @Override
         public String getHtmlDisplayName() {
             if (hide || id < 0) {
-                return "<font color='!textInactiveText'>" + getDisplayName()+"</font>"; // NOI18N
+                return "<font color='!textInactiveText'>" + getDisplayName() + "</font>"; // NOI18N
             }
             return super.getHtmlDisplayName();
         }
@@ -976,9 +1001,109 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
         }
 
         @Override
+        public boolean canCut() {
+            return id >= 0;
+        }
+
+        @Override
+        public boolean canCopy() {
+            return id >= 0;
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[0];
+        }        
+
+        @Override
         public String toString() {
             return getDisplayName();
         }
     }
+
+    private static final class LaunchersNodes extends Children.Keys<LauncherConfig> {
+        private final ArrayList<LauncherConfig> launcers;
+        
+        private LaunchersNodes(final ArrayList<LauncherConfig> launcers) {
+            this.launcers = launcers;
+            setKeys(launcers);
+        }
+
+        public void restKeys() {
+            setKeys(launcers);
+        }
+
+        @Override
+        protected Node[] createNodes(LauncherConfig key) {
+            return new LauncherNode[]{new LauncherNode(key)};
+        }
+    }
     
+    private final class RootNode extends AbstractNode implements Index {
+
+        private RootNode(Children nodes) {
+            super(nodes);
+            getCookieSet().add(this);
+        }
+
+        @Override
+        public int getNodesCount() {
+            return getChildren().getNodesCount();
+        }
+
+        @Override
+        public Node[] getNodes() {
+            return getChildren().getNodes();
+        }
+
+        @Override
+        public int indexOf(Node node) {
+            int i = 0;
+            for (Node n : getChildren().getNodes()) {
+                if (n == node) {
+                    return i;
+                }
+                i++;
+            }
+            return -1;
+        }
+
+        @Override
+        public void reorder() {
+        }
+
+        @Override
+        public void reorder(int[] perm) {
+            LaunchersPanel.this.reorder(perm);
+        }
+
+        @Override
+        public void move(int x, int y) {
+        }
+
+        @Override
+        public void exchange(int x, int y) {
+        }
+
+        @Override
+        public void moveUp(int x) {
+        }
+
+        @Override
+        public void moveDown(int x) {
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener chl) {
+        }
+
+        @Override
+        public void removeChangeListener(ChangeListener chl) {
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[0];
+        }
+    }
 }
