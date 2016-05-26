@@ -246,7 +246,7 @@ public class LaunchersConfig {
     }
 
     public void save(ArrayList<LauncherConfig> launchers) {
-        int max = -2;
+        int max = COMMON_PRIVATE_INDEX - 1;
         boolean monotonius = true;
         for (LauncherConfig l : launchers) {
             if (l.id > max) {
