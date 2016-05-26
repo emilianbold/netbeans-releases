@@ -2,68 +2,71 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Usages Window</title>
+<title>Delete Dialog Box</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.refactoring.spi.impl.RefactoringPanelContainer.find-usages" name="org.netbeans.modules.refactoring.spi.impl.RefactoringPanelContainer.find-usages"></a></p>
-<div id="NBCSH3638"><!-- infolevel="all" infotype="General" --><a id="sthref477" name="sthref477"></a>
-<h1>Usages Window</h1>
+<p>Beta Draft: 2016-05-24</p>
+<p><a id="org.netbeans.modules.refactoring.php.delete.PhpDeleteRefactoringUI" name="org.netbeans.modules.refactoring.php.delete.PhpDeleteRefactoringUI"></a></p>
+<div id="NBCSH3630"><!-- infolevel="all" infotype="General" --><a id="sthref478" name="sthref478"></a>
+<h1>Delete Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The Usages window shows a tree view of all usages of the file that you want to delete. Double-click a usage in the tree to view the line of code in the editor. (The IDE automatically opens the file containing the usage in the editor if it is not already open.)</p>
-<p>The left side of the Usages window contains the following buttons for navigating through the usages and modifying how the usages are organized and displayed in the window.</p>
+<p>When you want to delete a file in a project the IDE displays the following options.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th style="text-align:left" valign="bottom" id="r1c1-t23">Element</th>
-<th style="text-align:left" valign="bottom" id="r1c2-t23">Description</th>
+<th style="text-align:left" valign="bottom" id="r1c1-t24">Element</th>
+<th style="text-align:left" valign="bottom" id="r1c2-t24">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td style="text-align:left" id="r2c1-t23" headers="r1c1-t23">
-<p><img width="16" height="16" src="img/refresh.png" alt="Refresh icon" title="Refresh icon" /></p></td>
-<td style="text-align:left" headers="r2c1-t23 r1c2-t23">Refresh</td>
+<td style="text-align:left" id="r2c1-t24" headers="r1c1-t24">
+<p>Safely delete (with usage search)</p>
+</td>
+<td style="text-align:left" headers="r2c1-t24 r1c2-t24">Select this option to search your project for all usages of the file before you delete it.</td>
 </tr>
 <tr align="left" valign="top">
-<td style="text-align:left" id="r3c1-t23" headers="r1c1-t23">
-<p><img width="16" height="16" src="img/ref-collapse-tree.png" alt="Collapse all node icon" title="Collapse all node icon" /></p></td>
-<td style="text-align:left" headers="r3c1-t23 r1c2-t23">Collapse all nodes in tree</td>
+<td style="text-align:left" id="r3c1-t24" headers="r1c1-t24">
+<p>OK</p>
+</td>
+<td style="text-align:left" headers="r3c1-t24 r1c2-t24">Click to delete the file without searching for usages. This button is enabled only if you do not select Safely delete.</td>
 </tr>
 <tr align="left" valign="top">
-<td style="text-align:left" id="r4c1-t23" headers="r1c1-t23">
-<p><img width="16" height="16" src="img/ref-expand-tree.png" alt="Expand all nodes icon" title="Expand all nodes icon" /></p></td>
-<td style="text-align:left" headers="r4c1-t23 r1c2-t23">Expand all nodes in tree</td>
+<td style="text-align:left" id="r4c1-t24" headers="r1c1-t24">
+<p>Preview and Refactor</p>
+</td>
+<td style="text-align:left" headers="r4c1-t24 r1c2-t24">Click either button to view a list of Warnings and Errors. These buttons appear if you select Safely delete.
+<p>This panel is inherited from Java safe delete, which behaves differently. This is why there are two buttons, Preview and Refactor, that do the same thing.</p>
+</td>
 </tr>
 <tr align="left" valign="top">
-<td style="text-align:left" id="r5c1-t23" headers="r1c1-t23">
-<p><img width="16" height="16" src="img/ref-logical-view.png" alt="Show Logical View icon" title="Show Logical View icon" /></p></td>
-<td style="text-align:left" headers="r5c1-t23 r1c2-t23">Show logical view (organized by syntax)</td>
+<td style="text-align:left" id="r5c1-t24" headers="r1c1-t24">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;List of Errors</p>
+</td>
+<td style="text-align:left" headers="r5c1-t24 r1c2-t24">Displays a list of warnings and errors. If the IDE finds any errors, you cannot delete the file until the errors are resolved. You can delete the file if there are only warnings.</td>
 </tr>
 <tr align="left" valign="top">
-<td style="text-align:left" id="r6c1-t23" headers="r1c1-t23">
-<p><img width="16" height="16" src="img/ref-file-view.png" alt="Show Physical View icon" title="Show Physical View icon" /></p></td>
-<td style="text-align:left" headers="r6c1-t23 r1c2-t23">Show physical view (organized by location)</td>
+<td style="text-align:left" id="r6c1-t24" headers="r1c1-t24">
+<p>Show Usages</p>
+</td>
+<td style="text-align:left" headers="r6c1-t24 r1c2-t24">Click to open the Usages window to view all occurrences of the file in the project.</td>
 </tr>
 <tr align="left" valign="top">
-<td style="text-align:left" id="r7c1-t23" headers="r1c1-t23">
-<p><img width="16" height="16" src="img/diff-prev.png" alt="Previous occurrence icon" title="Previous occurrence icon" /></p></td>
-<td style="text-align:left" headers="r7c1-t23 r1c2-t23">Previous occurrence</td>
-</tr>
-<tr align="left" valign="top">
-<td style="text-align:left" id="r8c1-t23" headers="r1c1-t23">
-<p><img width="16" height="16" src="img/diff-next.png" alt="Next occurrence icon" title="Next occurrence icon" /></p></td>
-<td style="text-align:left" headers="r8c1-t23 r1c2-t23">Next occurrence</td>
+<td style="text-align:left" id="r7c1-t24" headers="r1c1-t24">
+<p>Refactor</p>
+</td>
+<td style="text-align:left" headers="r7c1-t24 r1c2-t24">Click to delete the file. This button is enabled only if no errors are found.</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="NBCSH3646" name="NBCSH3646"></a>
+<a id="NBCSH3637" name="NBCSH3637"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
@@ -81,7 +84,7 @@
 <table summary="" cellspacing="0" cellpadding="0" width="100%">
 <tr>
 <td align="left" width="86%"><a href="legal_notice.htm">
-Copyright&nbsp;&copy;&nbsp;2015,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+Copyright&nbsp;&copy;&nbsp;2016,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
 </td>
 </tr>
 </table>
