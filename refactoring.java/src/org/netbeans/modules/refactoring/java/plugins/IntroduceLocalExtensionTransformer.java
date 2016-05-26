@@ -190,18 +190,26 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
                     VariableTree variable = make.Variable(field, make.QualIdent(field));
                     members.add(0, variable);
                 } else {
-                    MethodTree[] createdGetterAndSetter = createGetterAndSetter(field, field.getModifiers(), cs);
+                    ExecutableElement[] elements = new ExecutableElement[2];
+                    MethodTree[] createdGetterAndSetter = createGetterAndSetter(field, field.getModifiers(), cs, elements);
                     ElementHandle<Element> fieldHandle = ElementHandle.create((Element) field);
+                    MethodTree getter = createdGetterAndSetter[0];
+                    MethodTree setter = createdGetterAndSetter[1];
                     getterSetterMap.put(fieldHandle, new String[]{
-                        createdGetterAndSetter[0].getName().toString(),
-                        createdGetterAndSetter[1].getName().toString()});
-                    members.addAll(Arrays.asList(createdGetterAndSetter));
+                        getter == null ? elements[0].getSimpleName().toString() : getter.getName().toString(),
+                        setter == null ? elements[1].getSimpleName().toString() : setter.getName().toString()});
+                    if(getter != null) {
+                       members.add(getter);
+                    }
+                    if(setter != null) {
+                        members.add(setter);
+                    }
                 }
             }
         }
     }
 
-    private MethodTree[] createGetterAndSetter(VariableElement field, Set<Modifier> useModifiers, CodeStyle cs) {
+    private MethodTree[] createGetterAndSetter(VariableElement field, Set<Modifier> useModifiers, CodeStyle cs, ExecutableElement[] elements) {
         boolean staticMod = field.getModifiers().contains(Modifier.STATIC);
         String getterName = CodeStyleUtils.computeGetterName(field.getSimpleName(), field.asType().getKind() == TypeKind.BOOLEAN, staticMod, cs);
         String setterName = CodeStyleUtils.computeSetterName(field.getSimpleName(), staticMod, cs);
@@ -223,14 +231,12 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
         MethodTree[] result = new MethodTree[2];
 
         ExecutableElement getterElm = null;
-        if (getterName != null) {
-            getterElm = EncapsulateFieldRefactoringPlugin.findMethod(
-                    workingCopy,
-                    (TypeElement) field.getEnclosingElement(),
-                    getterName,
-                    Collections.<VariableElement>emptyList(), false);
-        }
-        if (getterElm == null && getterName != null) {
+        getterElm = EncapsulateFieldRefactoringPlugin.findMethod(
+                workingCopy,
+                (TypeElement) field.getEnclosingElement(),
+                getterName,
+                Collections.<VariableElement>emptyList(), false);
+        if (getterElm == null) {
             MethodTree getter = make.Method(
                     make.Modifiers(mods),
                     getterName,
@@ -243,21 +249,20 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
             result[0] = getter;
             String jdText = null;
             String prefix = jdText == null ? "" : jdText + "\n"; // NOI18N
-            Comment comment = Comment.create(
-                    Comment.Style.JAVADOC, -2, -2, -2,
+            Comment comment = Comment.create(Comment.Style.JAVADOC, -2, -2, -2,
                     prefix + "@return the " + field.getSimpleName()); // NOI18N
             make.addComment(getter, comment, true);
+        } else {
+            elements[0] = getterElm;
         }
 
         ExecutableElement setterElm = null;
-        if (setterName != null) {
-            setterElm = EncapsulateFieldRefactoringPlugin.findMethod(
-                    workingCopy,
-                    (TypeElement) field.getEnclosingElement(),
-                    setterName,
-                    Collections.<VariableElement>singletonList(field), false);
-        }
-        if (setterElm == null && setterName != null) {
+        setterElm = EncapsulateFieldRefactoringPlugin.findMethod(
+                workingCopy,
+                (TypeElement) field.getEnclosingElement(),
+                setterName,
+                Collections.<VariableElement>singletonList(field), false);
+        if (setterElm == null) {
             VariableTree paramTree = make.Variable(
                     make.Modifiers(Collections.<Modifier>emptySet()), parName, fieldTree.getType(), null);
             MethodTree setter = make.Method(
@@ -277,6 +282,8 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
                     Comment.Style.JAVADOC, -2, -2, -2,
                     prefix + String.format("@param %s the %s to set", parName, fieldName)); // NOI18N
             make.addComment(setter, comment, true);
+        } else {
+            elements[1] = setterElm;
         }
         return result;
     }
