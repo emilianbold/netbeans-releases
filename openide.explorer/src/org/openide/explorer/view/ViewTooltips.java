@@ -50,6 +50,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
@@ -86,7 +87,6 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreePath;
-import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
 /**
@@ -396,32 +396,10 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
         }
     }
     
+    private static PopupFactory popupFactory;
     private static PopupFactory getPopupFactory() {
-        if (Utilities.isMac()) {
-            
-            // See ide/applemenu/src/org/netbeans/modules/applemenu/ApplePopupFactory
-            // We have a custom PopupFactory that will consistently use 
-            // lightweight popups on Mac OS, since HW popups get a drop
-            // shadow.  By default, popups returned when a heavyweight popup
-            // is needed (SDI mode) are no-op popups, since some hacks
-            // are necessary to make it really work.
-            
-            // To enable heavyweight popups which have no drop shadow
-            // *most* of the time on mac os, run with
-            // -J-Dnb.explorer.hw.completions=true
-            
-            // To enable heavyweight popups which have no drop shadow 
-            // *ever* on mac os, you need to put the cocoa classes on the
-            // classpath - modify netbeans.conf to add 
-            // System/Library/Java on the bootclasspath.  *Then*
-            // run with the above line switch and 
-            // -J-Dnb.explorer.hw.cocoahack=true
-            
-            PopupFactory result = Lookup.getDefault().lookup (PopupFactory.class);
-            return result == null ? PopupFactory.getSharedInstance() : result;
-        } else {
-            return PopupFactory.getSharedInstance();
-        }
+        if (popupFactory == null) popupFactory = new CustomPopupFactory();
+        return popupFactory;
     }
     
     private Hider hider = null;
@@ -452,7 +430,7 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
      * renderer.
      */
     private static final class ImgComp extends JComponent {
-        private BufferedImage img;
+        private Image img;
         private Dimension d = null;
         
         private Color bg = Color.WHITE;
@@ -468,7 +446,7 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
         /**
          * Create a clone with a specified backing image
          */
-        ImgComp (BufferedImage img, Rectangle off, boolean right) {
+        ImgComp (Image img, Rectangle off, boolean right) {
             this.img = img;
             at = AffineTransform.getTranslateInstance(-off.x, 0);
             d = new Dimension (off.width, off.height);
@@ -494,7 +472,7 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
             boolean lead = path.equals(tree.getSelectionModel().getLeadSelectionPath());
             renderer = tree.getCellRenderer().getTreeCellRendererComponent(tree, nd, sel, exp, leaf, row, lead);
             if (renderer != null) {
-                setComponent (renderer);
+                setComponent (renderer, tree);
             }
             return true;
         }
@@ -510,7 +488,7 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
                 list.getSelectionModel().isSelectedIndex(row);
             renderer = list.getCellRenderer().getListCellRendererComponent(list, nd, row, sel, false);
             if (renderer != null) {
-                setComponent (renderer);
+                setComponent (renderer, list);
             }
             return true;
         }
@@ -537,23 +515,23 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
         /**
          * Set the cell renderer we will proxy.
          */
-        public void setComponent (Component jc) {
-            Dimension d = jc.getPreferredSize();
+        public void setComponent (Component jc, JComponent owner) {
+            Dimension dd = jc.getPreferredSize();
             Rectangle currentScreenBounds = Utilities.getUsableScreenBounds();
             // get some reasonable limit for the width
-            int width = Math.min(d.width, 2 * currentScreenBounds.width);
-            int height = Math.min(d.height + 2, 2 * currentScreenBounds.height);
-            BufferedImage nue = new BufferedImage (width, height, 
-                    BufferedImage.TYPE_INT_ARGB_PRE);
-            Graphics2D g = nue.createGraphics();
+            int width = Math.min(dd.width, 2 * currentScreenBounds.width);
+            int height = Math.min(dd.height + 2, 2 * currentScreenBounds.height);
+            Image nue = !Utilities.isMac() ? owner.createVolatileImage(width, height) :
+                        new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            Graphics g = nue.getGraphics();
             g.setColor (bg);
-            g.fillRect (0, 0, width, d.height + 2);
+            g.fillRect (0, 0, width, dd.height + 2);
             if( jc instanceof Container && !jc.isValid() ) {
                 //#214739
-                jc.setSize( width, d.height );
+                jc.setSize( width, dd.height );
                 jc.doLayout();
             }
-            SwingUtilities.paintComponent(g, jc, this, 0, 0, width, d.height + 2);
+            SwingUtilities.paintComponent(g, jc, this, 0, 0, width, dd.height + 2);
             g.dispose();
             setImage (nue);
         }
@@ -564,7 +542,7 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
             return new Rectangle (0, 0, dd.width, dd.height);
         }
         
-        private void setImage(BufferedImage img) {
+        private void setImage(Image img) {
             this.img = img;
             d = null;
         }
@@ -572,7 +550,7 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
         @Override
         public Dimension getPreferredSize() {
             if (d == null) {
-                d = new Dimension (img.getWidth(), img.getHeight());
+                d = new Dimension (img.getWidth(null), img.getHeight(null));
             }
             return d;
         }
@@ -585,7 +563,7 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
         @Override
         public void paint (Graphics g) {
             Graphics2D g2d = (Graphics2D) g;
-            g2d.drawRenderedImage (img, at);
+            g2d.drawImage (img, at, null);
             g.setColor (Color.GRAY);
             g.drawLine (0, 0, d.width, 0);
             g.drawLine (0, d.height-1, d.width, d.height-1);

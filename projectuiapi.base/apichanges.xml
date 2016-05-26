@@ -107,6 +107,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="ProjectConvertors-delegatingLookup">
+            <api name="BaseProjectUIAPI"/>
+            <summary>Added a support method into <code>ProjectConvertors</code> creating a <code>Lookup</code> delegating to the owner project.</summary>
+            <version major="1" minor="85"/>
+            <date day="24" month="5" year="2016"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added a support method into <code>ProjectConvertors</code> creating a <code>Lookup</code> delegating to the owner project.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.ui.support" name="ProjectConvertors"/>
+            <issue number="256585"/>
+        </change>
         <change id="ProjectConvertors-lookup">
             <api name="BaseProjectUIAPI"/>
             <summary>Added support methods into <code>ProjectConvertors</code> for easier convertor project implementation.</summary>
