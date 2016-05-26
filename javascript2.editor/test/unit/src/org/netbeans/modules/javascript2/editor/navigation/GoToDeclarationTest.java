@@ -117,9 +117,9 @@ public class GoToDeclarationTest extends JsTestBase {
         checkDeclaration("testfiles/navigation/issue227972.js", "c.me^thod();", "this.^method = function() { // navigate from c.method()");
     }
     
-    public void testIssue227972_07() throws Exception {
-        checkDeclaration("testfiles/navigation/issue227972.js", "NS.test.met^hod();", "this.^method = function() { // navigate from c.method()");
-    }
+//    public void testIssue227972_07() throws Exception {
+//        checkDeclaration("testfiles/navigation/issue227972.js", "NS.test.met^hod();", "this.^method = function() { // navigate from c.method()");
+//    }
     
     public void testIssue227972_08() throws Exception {
         checkDeclaration("testfiles/navigation/issue227972.js", "this.f^();", "MyClass.prototype.^f= function() {};");

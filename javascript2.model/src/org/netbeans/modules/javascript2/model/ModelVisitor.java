@@ -3225,6 +3225,9 @@ public class ModelVisitor extends PathNodeVisitor implements ModelResolver {
         if (whereKind.isFunction() && !where.getModifiers().contains(Modifier.PRIVATE) && !where.isAnonymous()) {
             // public or protected method
             if (parent.getJSKind() == JsElement.Kind.OBJECT_LITERAL) {
+                if (Character.isUpperCase(where.getName().charAt(0))) {
+                    return where;
+                }
                 if (Character.isUpperCase(parent.getName().charAt(0))) {
                     return parent;
                 }
