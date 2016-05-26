@@ -149,7 +149,7 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
         instance.load();
         launchers.addAll(instance.getLaunchers());
         nodes = new LaunchersNodes(launchers);
-        tree = new BeanTreeView();
+        tree = new BeanTreeViewImpl();
         tree.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         tree.setRootVisible(false);
         LauncersListPanel.add(tree, BorderLayout.CENTER);
@@ -881,7 +881,23 @@ public class LaunchersPanel extends JPanel implements ExplorerManager.Provider, 
     private javax.swing.JButton upButton;
     // End of variables declaration//GEN-END:variables
 
-    
+    private static class BeanTreeViewImpl extends BeanTreeView {
+
+        public BeanTreeViewImpl() {
+        }
+
+        @Override
+        public void setPreferredSize(Dimension preferredSize) {
+            // Do nothing
+        }
+
+        @Override
+        public void setRootVisible(boolean visible) {
+            super.setRootVisible(visible);
+            tree.setShowsRootHandles(visible);
+        }
+    }
+
     private final class SelectionChangeListener implements PropertyChangeListener {
 
         @Override
