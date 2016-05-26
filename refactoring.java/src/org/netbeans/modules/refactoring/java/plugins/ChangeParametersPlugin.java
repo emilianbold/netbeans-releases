@@ -625,9 +625,13 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
                                 for (int j = 0; j < exMethod.getParameters().size(); j++) {
                                     TypeMirror exType = ((VariableElement) exMethod.getParameters().get(j)).asType();
                                     String type = paramTable[j].getType();
-                                    TypeMirror paramType = javac.getTreeUtilities().parseType(type, enclosingTypeElement);
-                                    if (!javac.getTypes().isSameType(exType, paramType)) {
+                                    if (type == null || type.length() == 0) {
                                         sameParameters = false;
+                                    } else {
+                                        TypeMirror paramType = javac.getTreeUtilities().parseType(type, enclosingTypeElement);
+                                        if (!javac.getTypes().isSameType(exType, paramType)) {
+                                            sameParameters = false;
+                                        }
                                     }
                                 }
                                 if (sameParameters) {
